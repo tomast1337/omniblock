@@ -96,6 +96,19 @@ internal sealed class NetworkInfoWindow : DebugWindow
             ImGui.Spacing();
             ImGuiTextSafe.Text($"Upload Packets:   {uploadPackets}");
             ImGuiTextSafe.Text($"Download Packets: {downloadPackets}");
+
+            // Zero means chunks are arriving on the inherited path — a vanilla server, or a client
+            // whose message registry never negotiated. On loopback that is correct and deliberate:
+            // packets are handed over as objects, so compressing one saves bytes that never exist.
+            long chunks = MetricRegistry.Get(ClientMetrics.ChunksViaMessage);
+            if (chunks > 0)
+            {
+                long bytes = MetricRegistry.Get(ClientMetrics.ChunkMessageBytes);
+
+                ImGui.Spacing();
+                ImGuiTextSafe.Text($"Chunks (palette): {chunks}");
+                ImGuiTextSafe.Text($"  avg {bytes / chunks} B/chunk, {FormatMemory(bytes)} total");
+            }
         }
 
         if (ImGui.CollapsingHeader("Graphs", ImGuiTreeNodeFlags.DefaultOpen))

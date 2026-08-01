@@ -70,7 +70,13 @@ public sealed class TimeSyncMessageTests
     {
         (MessageRegistry server, MessageRegistry client) = NegotiatedPair();
 
-        Assert.Equal(3, server.Count);
+        // The keys, not a count. A count has to be edited every time a message is added, which
+        // trains you to edit it without looking — and the thing worth catching is one of these
+        // quietly dropped from DefaultMessages, which a count would not distinguish from a swap.
+        Assert.Contains(TimeSyncRequestMessage.Id, server.NegotiatedOrder);
+        Assert.Contains(TimeSyncResponseMessage.Id, server.NegotiatedOrder);
+        Assert.Contains(TickStampMessage.Id, server.NegotiatedOrder);
+        Assert.Contains(ChunkDataMessage.Id, server.NegotiatedOrder);
 
         foreach (ResourceLocation key in server.NegotiatedOrder)
         {

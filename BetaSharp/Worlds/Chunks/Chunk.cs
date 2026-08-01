@@ -2,6 +2,7 @@ using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
 using BetaSharp.NBT;
+using BetaSharp.Network.Chunks;
 using BetaSharp.Profiling;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
@@ -288,7 +289,7 @@ public class Chunk
 
     public virtual bool SetBlock(int localX, int y, int localZ, int rawId, int meta, bool notifyBlockPlaced = true)
     {
-        int pos = ChuckFormat.GetIndex(localX,  y, localZ);
+        int pos = ChuckFormat.GetIndex(localX, y, localZ);
         byte newId = (byte)rawId;
         int height = HeightMap[localZ << 4 | localX];
         int oldId = Blocks[pos];
@@ -343,7 +344,7 @@ public class Chunk
 
     public virtual bool SetBlock(int localX, int y, int localZ, int rawId, bool notifyBlockPlaced = true)
     {
-        int pos = ChuckFormat.GetIndex(localX,  y, localZ);
+        int pos = ChuckFormat.GetIndex(localX, y, localZ);
         byte newId = (byte)rawId;
         int height = HeightMap[localZ << 4 | localX];
         int oldId = Blocks[pos];
@@ -676,6 +677,49 @@ public class Chunk
 
             Loaded = true;
             return offset;
+        }
+    }
+
+    /// <summary>
+    ///     Replaces this chunk's contents from a <c>ChunkBlobCodec</c> blob.
+    ///     <para>
+    ///         The whole-chunk counterpart to <see cref="LoadFromPacket" />, and it does the same
+    ///         three things afterwards for the same reasons: the heightmap is derived rather than
+    ///         sent, block entities have to be instantiated for the blocks that declare them, and
+    ///         nothing may read the chunk until <see cref="Loaded" /> says so.
+    ///     </para>
+    ///     <para>
+    ///         Decoding writes into the existing arrays rather than replacing them, so a failed
+    ///         decode leaves this chunk partially overwritten. That is deliberate and matches
+    ///         <see cref="LoadFromPacket" />: the alternative is a full-chunk scratch copy on every
+    ///         chunk received, and a truncated blob costs a redraw rather than correctness — the
+    ///         next full send replaces it.
+    ///     </para>
+    /// </summary>
+    public void LoadFromBlob(ReadOnlySpan<byte> blob)
+    {
+        using (Profiler.Begin("LoadChunkBlob"))
+        {
+            ChunkBlobCodec.Decode(blob, Blocks, Meta.Bytes, BlockLight.Bytes, SkyLight.Bytes);
+
+            PopulateHeightMapOnly();
+
+            for (int x = 0; x < 16; x++)
+            {
+                for (int z = 0; z < 16; z++)
+                {
+                    for (int y = 0; y < ChuckFormat.ChunkHeight; y++)
+                    {
+                        int id = GetBlockId(x, y, z);
+                        if (id > 0 && Block.BlocksWithEntity[id])
+                        {
+                            GetBlockEntity(x, y, z);
+                        }
+                    }
+                }
+            }
+
+            Loaded = true;
         }
     }
 

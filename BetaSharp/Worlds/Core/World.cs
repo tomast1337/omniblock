@@ -632,6 +632,23 @@ public abstract class World : IWorldContext
     }
 
 
+    /// <summary>
+    ///     Applies a whole chunk received as a <c>ChunkBlobCodec</c> blob.
+    ///     <para>
+    ///         The counterpart to <see cref="HandleChunkDataUpdate" /> for the full-chunk path. That
+    ///         one exists to walk an arbitrary box across chunk boundaries, which a whole chunk never
+    ///         does, so this is the same work without the four-way clamping.
+    ///     </para>
+    /// </summary>
+    public void ApplyChunkBlob(int chunkX, int chunkZ, ReadOnlySpan<byte> blob)
+    {
+        BlockHost.GetChunk(chunkX, chunkZ).LoadFromBlob(blob);
+
+        setBlocksDirty(
+            chunkX * 16, 0, chunkZ * 16,
+            (chunkX * 16) + 16, ChuckFormat.WorldHeight, (chunkZ * 16) + 16);
+    }
+
     public void HandleChunkDataUpdate(int x, int y, int z, int sizeX, int sizeY, int sizeZ, byte[] chunkData)
     {
         int startChunkX = x >> 4;

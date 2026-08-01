@@ -73,6 +73,18 @@ public class Connection
     }
 
     /// <summary>
+    ///     Whether packets reach the peer as objects rather than as bytes.
+    ///     <para>
+    ///         True only for loopback, where <see cref="InternalConnection" /> hands the packet
+    ///         straight over. Callers use it to skip work whose entire purpose is to make bytes
+    ///         smaller: on this connection there are no bytes, so compressing is pure cost. It is the
+    ///         same question <c>Packet.ProcessForInternal</c> answers, asked before the packet is
+    ///         built rather than after.
+    ///     </para>
+    /// </summary>
+    public virtual bool IsInternal => false;
+
+    /// <summary>
     ///     Sends a packet, subject to the compatibility gate. Subclasses supply the transport.
     /// </summary>
     public virtual void sendPacket(Packet packet)

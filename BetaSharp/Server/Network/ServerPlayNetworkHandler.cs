@@ -104,6 +104,29 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     }
 
     /// <summary>
+    ///     Whether <see cref="SendMessage" /> would reach this peer.
+    ///     <para>
+    ///         Exists so a caller with a legacy fallback can choose between the two rather than
+    ///         handing over a message and watching it be dropped. <see cref="SendMessage" /> is
+    ///         correct to drop silently — a peer not implementing a message is the designed outcome
+    ///         — but a chunk that vanishes for that reason is a hole in the world.
+    ///     </para>
+    /// </summary>
+    public bool CanSendMessages => Messages is { Negotiated: true };
+
+    /// <summary>
+    ///     Whether it is worth encoding a payload smaller before sending it here.
+    ///     <para>
+    ///         False on loopback, where the packet is handed over as an object and never serialised.
+    ///         Compressing a chunk for singleplayer costs the encode and the matching decode on the
+    ///         other side to save bytes that were never going to exist — which is exactly why
+    ///         <c>ChunkDataS2CPacket.ProcessForInternal</c> swaps the compressed payload back out for
+    ///         the raw one.
+    ///     </para>
+    /// </summary>
+    public bool WantsCompactPayloads => CanSendMessages && !connection.IsInternal;
+
+    /// <summary>
     ///     Sends a message over this connection, or drops it when the client never advertised the
     ///     key. Dropping is the designed outcome for a peer that does not implement a message, not
     ///     an error to report.
