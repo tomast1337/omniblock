@@ -217,11 +217,12 @@ internal sealed class NetworkInfoWindow : DebugWindow
 
         if (frozen > 0)
         {
-            // Not necessarily a fault. Entities on slow tracking frequencies — dropped items update
-            // once a second — need more delay than the ceiling allows, so they starve by design and
-            // hold position, which is what the legacy scheme did for them too. Worth investigating
-            // only if the count is large or the frozen entities are ones that move.
-            ImGuiTextSafe.Text($"{frozen} starving: update slower than the {EntityInterpolator.MaxDelayMs} ms cap.");
+            // The delay now scales with each entity's own update rate, so a slow tracking frequency
+            // is no longer a reason to starve — that was the 600 ms ceiling, and it is gone. What
+            // reaches the bound is an entity that has stopped updating altogether, which holds
+            // position exactly as it should. A count that keeps climbing is worth looking at;
+            // a steady handful next to a large Interpolated is not.
+            ImGuiTextSafe.Text($"{frozen} holding: no update within the {EntityInterpolator.MaxDelayMs} ms bound.");
         }
     }
 

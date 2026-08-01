@@ -34,12 +34,26 @@ public sealed class EntityInterpolator
     public const long DefaultDelayMs = 100;
 
     /// <summary>
-    ///     Ceiling on the per-entity delay. Dropped items update once a second, and honouring that
-    ///     in full would render them two seconds in the past. Beyond this they starve and hold their
-    ///     last known position instead, which is what the legacy scheme effectively did for them
-    ///     anyway and is unobjectionable for entities that barely move.
+    ///     Hard bound on the per-entity delay, for an entity whose updates have stopped or gone
+    ///     pathologically slow. Not a quality knob — nothing normal reaches it.
+    ///     <para>
+    ///         This was 600 ms, chosen as "far enough in the past to be objectionable", and it was
+    ///         the wrong shape rather than the wrong size. A single ceiling can only ever bind on
+    ///         entities that update slowly, which are precisely the ones that need the most delay:
+    ///         dropped items update every 20 ticks, want ~2000 ms, got 600, and starved by
+    ///         construction. Measured at 29 of 985 entities frozen with the rest interpolating.
+    ///     </para>
+    ///     <para>
+    ///         The reasoning that fixed the delay applies to the ceiling too. An entity's update
+    ///         rate is the server's own statement of how much fidelity it deserves —
+    ///         <c>EntityTrackerEntry</c> assigns 2 ticks to players, 3 to mobs, 10 to projectiles,
+    ///         20 to dropped items — so an entity the server sends once a second is already known
+    ///         only to one-second resolution, and rendering it two seconds back costs nothing that
+    ///         was ever visible. Scaling with the interval reads that signal instead of overriding
+    ///         it.
+    ///     </para>
     /// </summary>
-    public const long MaxDelayMs = 600;
+    public const long MaxDelayMs = 3000;
 
     /// <summary>
     ///     Buffers not sampled for this long are dropped. A backstop only — the normal removal path
@@ -235,10 +249,13 @@ public sealed class EntityInterpolator
     ///         interval old and can be a full one; anything less than one interval of delay leaves
     ///         render time past the newest snapshot much of the time, which is exactly the
     ///         Interpolated-zero case this replaced. <see cref="DelayMs" /> remains the floor, so
-    ///         network jitter is still covered when it exceeds the update spacing.
+    ///         network jitter is still covered when it exceeds the update spacing, and
+    ///         <see cref="MaxDelayMs" /> is a bound against an entity that stopped updating rather
+    ///         than a quality setting — see its own remarks for why a tighter ceiling starved the
+    ///         entities that needed it most.
     ///     </para>
     /// </summary>
-    private long DelayForMs(SnapshotBuffer buffer)
+    internal long DelayForMs(SnapshotBuffer buffer)
     {
         long interval = buffer.MedianIntervalMs;
 
@@ -249,7 +266,7 @@ public sealed class EntityInterpolator
             return DelayMs;
         }
 
-        return Math.Clamp(Math.Max(DelayMs, interval * 2), DelayMs, MaxDelayMs);
+        return Math.Clamp(interval * 2, DelayMs, MaxDelayMs);
     }
 
     private void PruneStale(long serverTimeMs)
