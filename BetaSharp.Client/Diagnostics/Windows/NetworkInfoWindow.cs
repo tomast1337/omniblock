@@ -21,6 +21,14 @@ namespace BetaSharp.Client.Diagnostics.Windows;
 ///         a long thin tail, and a bimodal split — are invisible in them. See
 ///         <see cref="HistogramView" />.
 ///     </para>
+///     <para>
+///         <b>Every section draws a fixed number of lines.</b> A warning that appears only when it
+///         applies shifts everything under it, and this window is read while something is going
+///         wrong — which is exactly when those warnings flicker in and out and nothing below them
+///         holds still long enough to read. So a conditional fact goes into a line that is always
+///         there, replacing the benign value it would otherwise sit under, rather than into a line
+///         of its own.
+///     </para>
 /// </summary>
 internal sealed class NetworkInfoWindow : DebugWindow
 {
@@ -131,26 +139,40 @@ internal sealed class NetworkInfoWindow : DebugWindow
         long peak = MetricRegistry.Get(ClientMetrics.ReadQueuePeak);
         long budgetHits = MetricRegistry.Get(ClientMetrics.DrainBudgetHits);
 
-        ImGuiTextSafe.Text($"Read queue: {depth:N0} queued, peak {peak:N0}, {processedPerSecond:N0}/s drained");
+        ImGuiTextSafe.Text($"Queue: {depth:N0}, peak {peak:N0}, {processedPerSecond:N0}/s drained");
+        ImGuiTextSafe.Text($"Drain: {DrainVerdict(depth, peak, budgetHits, processedPerSecond)}");
+    }
+
+    /// <summary>
+    ///     One line covering the three things that used to appear and disappear under the queue
+    ///     depth: whether the drain hit its per-tick budget, how far behind the game is, and whether
+    ///     the backlog is growing.
+    ///     <para>
+    ///         Most specific first. Depth over drain rate is the number that matters — a large queue
+    ///         drained quickly is harmless and a small one drained slowly is not — so it wins over
+    ///         the budget count, which is the reason rather than the effect.
+    ///     </para>
+    /// </summary>
+    private static string DrainVerdict(long depth, long peak, long budgetHits, long processedPerSecond)
+    {
+        if (peak > 1000 && depth > 0)
+        {
+            return "arriving faster than drained; readings below are stale";
+        }
+
+        if (depth > 0 && processedPerSecond > 0)
+        {
+            return $"{depth / (double)processedPerSecond:F1} s behind at this rate";
+        }
 
         // The one number that says the drain is the constraint rather than the network. Zero means
         // every tick emptied the queue within its budget, whatever the depth reached.
         if (budgetHits > 0)
         {
-            ImGuiTextSafe.Text($"  drain budget hit on {budgetHits:N0} ticks (limit {Connection.DrainBudgetMs:F0} ms)");
+            return $"budget hit on {budgetHits:N0} ticks ({Connection.DrainBudgetMs:F0} ms)";
         }
 
-        // Depth over drain rate is how far behind the game is, in seconds, which is the number that
-        // matters — a large queue drained quickly is harmless, a small one drained slowly is not.
-        if (depth > 0 && processedPerSecond > 0)
-        {
-            ImGuiTextSafe.Text($"  behind by {depth / (double)processedPerSecond:F1} s at the current rate");
-        }
-
-        if (peak > 1000)
-        {
-            ImGuiTextSafe.Text("  arriving faster than the drain: everything below is historical");
-        }
+        return "keeping up";
     }
 
     private void DrawThroughput(long totalUpload, long totalDownload)
@@ -201,9 +223,12 @@ internal sealed class NetworkInfoWindow : DebugWindow
 
         if (synced)
         {
-            ImGuiTextSafe.Text($"RTT {MetricRegistry.Get(ClientMetrics.ClockRttMs)} ms median"
-                + $"   jitter {MetricRegistry.Get(ClientMetrics.ClockJitterMs)} ms"
-                + $"   offset {MetricRegistry.Get(ClientMetrics.ClockOffsetMs):+0;-0;0} ms");
+            // Median RTT, mean absolute deviation, and server-minus-client. Labelled tersely because
+            // the full names do not fit a narrow window, and the histogram below states which
+            // statistic each one is.
+            ImGuiTextSafe.Text($"RTT {MetricRegistry.Get(ClientMetrics.ClockRttMs)} ms"
+                + $"  jitter {MetricRegistry.Get(ClientMetrics.ClockJitterMs)} ms"
+                + $"  offset {MetricRegistry.Get(ClientMetrics.ClockOffsetMs):+0;-0;0} ms");
         }
         else
         {
@@ -242,20 +267,18 @@ internal sealed class NetworkInfoWindow : DebugWindow
         {
             // Distinguishes an unstamped server from a stalled one. Interpolation falls back to the
             // legacy behaviour here rather than sample against a timeline that does not exist.
-            ImGuiTextSafe.Text("Batch stamps: none (server does not stamp)");
+            ImGuiTextSafe.Text("Stamps: none (server does not stamp)");
             return;
         }
 
+        // The delay has to exceed the stamp age or the buffer starves every frame. That comparison
+        // decides whether the suggestion above is usable at all, and it rides on this line rather
+        // than a line of its own: it is true intermittently on a marginal connection, and a verdict
+        // that appears and vanishes drags every reading under it up and down while being read.
         long age = MetricRegistry.Get(ClientMetrics.TickStampAgeMs);
-        ImGuiTextSafe.Text($"Batch stamps: {stamps:N0}, newest {age} ms old");
+        string verdict = age > suggested ? "would starve" : "ok";
 
-        // The delay has to exceed the stamp age or the buffer starves every frame. Flagged rather
-        // than left to be read off two numbers, because it is the comparison that decides whether
-        // the suggestion above is usable at all.
-        if (age > suggested)
-        {
-            ImGuiTextSafe.Text("  age exceeds the suggested delay: the buffer would starve");
-        }
+        ImGuiTextSafe.Text($"Stamps: {stamps:N0}, age {age} ms, {verdict}");
     }
 
     /// <summary>Chunk transfer: the palette encoding and the content-hash cache.</summary>
@@ -267,29 +290,25 @@ internal sealed class NetworkInfoWindow : DebugWindow
         long chunks = MetricRegistry.Get(ClientMetrics.ChunksViaMessage);
         long cached = MetricRegistry.Get(ClientMetrics.ChunksFromCache);
 
-        if (chunks == 0 && cached == 0)
-        {
-            return;
-        }
-
         if (!ImGui.CollapsingHeader("World data", ImGuiTreeNodeFlags.DefaultOpen))
         {
             return;
         }
 
-        if (chunks > 0)
-        {
-            long bytes = MetricRegistry.Get(ClientMetrics.ChunkMessageBytes);
-            ImGuiTextSafe.Text($"Chunks sent:   {chunks:N0}   avg {bytes / chunks} B   {FormatMemory(bytes)} total");
-        }
+        // Both lines are drawn whether or not their count is non-zero. A first visit has no cache
+        // hits and a fully-cached rejoin sends no chunks, so either one alone would come and go as
+        // the player moves between explored and new ground.
+        long bytes = MetricRegistry.Get(ClientMetrics.ChunkMessageBytes);
+        ImGuiTextSafe.Text(chunks > 0
+            ? $"Sent:   {chunks:N0}, {FormatMemory(bytes)}, avg {bytes / chunks} B"
+            : "Sent:   none");
 
-        if (cached > 0)
-        {
-            // The hit rate is the number worth watching: on a first visit it is zero by definition,
-            // and on a rejoin to somewhere explored it should dominate.
-            ImGuiTextSafe.Text($"Chunks cached: {cached:N0}   {100 * cached / (chunks + cached)}% hit"
-                + $"   ~{FormatMemory(cached * WireBytesPerChunk(chunks))} not downloaded");
-        }
+        // The hit rate is the number worth watching: on a first visit it is zero by definition, and
+        // on a rejoin to somewhere explored it should dominate.
+        ImGuiTextSafe.Text(cached > 0
+            ? $"Cached: {cached:N0}, {100 * cached / (chunks + cached)}% hit,"
+                + $" ~{FormatMemory(cached * WireBytesPerChunk(chunks))} saved"
+            : "Cached: none");
     }
 
     /// <summary>
@@ -317,17 +336,21 @@ internal sealed class NetworkInfoWindow : DebugWindow
         if (records > 0)
         {
             long bytes = MetricRegistry.Get(ClientMetrics.SnapshotBytes);
-            ImGuiTextSafe.Text($"Snapshots: {records:N0} records   avg {bytes / records} B   {FormatMemory(bytes)} total");
-
             long dropped = MetricRegistry.Get(ClientMetrics.SnapshotsDropped);
-            if (dropped > 0)
-            {
-                ImGuiTextSafe.Text($"  {dropped:N0} dropped: baseline unreachable");
-            }
+
+            ImGuiTextSafe.Text($"Snapshots: {records:N0} rec, {FormatMemory(bytes)}, avg {bytes / records} B");
+
+            // Expected to be zero on a reliable channel, so it is worth saying so explicitly rather
+            // than only appearing once it is not — this is the line that would otherwise show up the
+            // moment something went wrong and push the interpolation counts down a row.
+            ImGuiTextSafe.Text(dropped > 0
+                ? $"  {dropped:N0} dropped: baseline unreachable"
+                : "  none dropped");
         }
         else
         {
             ImGuiTextSafe.Text("Snapshots: none (server sends position packets)");
+            ImGuiTextSafe.Text(string.Empty);
         }
 
         ImGui.Spacing();
@@ -375,31 +398,29 @@ internal sealed class NetworkInfoWindow : DebugWindow
             + $"   {MetricRegistry.Get(ClientMetrics.InterpolationExtrapolated)} extrapolated"
             + $"   {frozen} frozen");
 
-        // Entities mid-ramp between two delays. Steady traffic converges to zero, so a number that
-        // stays high says the observed update spacing is unstable rather than that anything is wrong
-        // with a particular entity.
-        long adjusting = MetricRegistry.Get(ClientMetrics.InterpolationAdjusting);
+        // Adjusting: entities mid-ramp between two delays. Steady traffic converges to zero, so a
+        // number that stays high says the observed update spacing is unstable rather than that
+        // anything is wrong with a particular entity.
+        //
+        // Starvations: entries into starvation over the session, the number §3.5 says to watch.
+        // Counted only while the stream as a whole is stale, so it means "the network broke down"
+        // and not "some mobs stood still" — the two produce identical per-entity buffers, and an
+        // earlier cut of this counted both and read 1180 on a healthy connection.
+        //
+        // Always drawn, both of them. They are the two counters that sit at zero until something is
+        // wrong, which is precisely when a line appearing here would shove the frozen count out from
+        // under the cursor.
+        ImGuiTextSafe.Text($"  {MetricRegistry.Get(ClientMetrics.InterpolationAdjusting)} adjusting"
+            + $"   {MetricRegistry.Get(ClientMetrics.InterpolationStarvations)} starvations");
 
-        // Entries into starvation over the session, which is the number §3.5 says to watch. Counted
-        // only while the stream as a whole is stale, so it means "the network broke down" and not
-        // "some mobs stood still" — the two produce identical per-entity buffers, and an earlier cut
-        // of this counted both and read 1180 on a healthy connection.
-        long starvations = MetricRegistry.Get(ClientMetrics.InterpolationStarvations);
-
-        if (adjusting > 0 || starvations > 0)
-        {
-            ImGuiTextSafe.Text($"  {adjusting} adjusting   {starvations} starvations this session");
-        }
-
-        if (frozen > 0)
-        {
-            // The delay scales with each entity's own update rate, so a slow tracking frequency is
-            // not a reason to starve. What holds here is an entity the server has stopped sending
-            // updates for at all, which for a standing mob is the normal state: EntityTrackerEntry
-            // sends nothing until its 400-tick resync. A steady count next to a large interpolated
-            // count is a field of idle mobs, not a fault.
-            ImGuiTextSafe.Text($"  frozen entities had no update within {EntityInterpolator.MaxDelayMs} ms");
-        }
+        // The delay scales with each entity's own update rate, so a slow tracking frequency is not a
+        // reason to starve. What holds is an entity the server has stopped sending updates for at
+        // all, which for a standing mob is the normal state: EntityTrackerEntry sends nothing until
+        // its 400-tick resync. A steady count next to a large interpolated count is a field of idle
+        // mobs, not a fault.
+        ImGuiTextSafe.Text(frozen > 0
+            ? $"  frozen: no update within {EntityInterpolator.MaxDelayMs} ms"
+            : "  nothing frozen");
     }
 
     /// <summary>

@@ -32,19 +32,18 @@ internal static class HistogramView
     /// <param name="unit">Appended to every duration in the legend.</param>
     public static void Draw(string label, PacketArrivalHistogram? histogram, float height = 46f, string unit = "ms")
     {
-        if (histogram is null || histogram.Count == 0)
-        {
-            ImGuiTextSafe.Text($"{label}: no samples yet");
-            return;
-        }
+        // An empty histogram still draws its full height, label and legend. It fills within a second
+        // of joining, and a widget that grows by three lines at that moment would shift every
+        // section under it exactly while the connection is being watched come up.
+        long samples = histogram?.Count ?? 0;
 
-        long[] counts = histogram.Snapshot();
+        long[] counts = histogram?.Snapshot() ?? new long[PacketArrivalHistogram.UpperBounds.Count];
         IReadOnlyList<double> bounds = PacketArrivalHistogram.UpperBounds;
 
-        double p50 = histogram.PercentileMs(50);
-        double p95 = histogram.PercentileMs(95);
+        double p50 = histogram?.PercentileMs(50) ?? 0.0;
+        double p95 = histogram?.PercentileMs(95) ?? 0.0;
 
-        ImGuiTextSafe.Text($"{label}  ({histogram.Count:N0} samples)");
+        ImGuiTextSafe.Text($"{label}  ({samples:N0} samples)");
 
         long peak = 0;
         foreach (long count in counts)
@@ -86,11 +85,17 @@ internal static class HistogramView
                 counts[i] == 0 ? empty : (bounds[i] > p95 ? tail : bar));
         }
 
+        // The unit is stated once at the end rather than after each of the four figures. They are all
+        // the same quantity, and repeating it was what pushed this line past the window's width.
         ImGuiTextSafe.Text(
-            $"  p50 <= {Format(p50, unit)}   p95 <= {Format(p95, unit)}   max {histogram.MaxMs:F0} {unit}"
-            + $"   mean {histogram.MeanMs:F1} {unit}");
+            $"  p50 {Format(p50)}  p95 {Format(p95)}"
+            + $"  max {histogram?.MaxMs ?? 0.0:F0}  mean {histogram?.MeanMs ?? 0.0:F1} {unit}");
     }
 
-    private static string Format(double value, string unit) =>
-        double.IsPositiveInfinity(value) ? $"over {PacketArrivalHistogram.UpperBounds[^2]:F0} {unit}" : $"{value:F0} {unit}";
+    /// <summary>
+    ///     Percentiles are bucket upper edges, not interpolated estimates, so they read as bounds.
+    ///     The top bucket is unbounded above and says so rather than printing an infinity.
+    /// </summary>
+    private static string Format(double value) =>
+        double.IsPositiveInfinity(value) ? $">{PacketArrivalHistogram.UpperBounds[^2]:F0}" : $"<={value:F0}";
 }
