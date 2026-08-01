@@ -26,6 +26,19 @@ public class MessageRegistrySyncS2CPacket() : ExtendedProtocolPacket(PacketId.Me
     /// <summary>Message keys in wire-ID order: index 0 is ID 0.</summary>
     public IReadOnlyList<ResourceLocation> Keys { get; private set; } = [];
 
+    /// <summary>
+    ///     The server's protocol revision. Here because this is the first extended packet the server
+    ///     sends, so it is the earliest point the client can be told, and because a packet that
+    ///     already exists to negotiate capability is the honest place for it.
+    ///     <para>
+    ///         The client's own declaration travels the other way inside the login field; see
+    ///         <see cref="ProtocolHandshake" />. This is the half that closes the loop, and without
+    ///         it the client could only ever infer that the server is capable, never which revision
+    ///         it is talking to.
+    ///     </para>
+    /// </summary>
+    public int ProtocolVersion { get; private set; }
+
     public static MessageRegistrySyncS2CPacket Get(IReadOnlyList<ResourceLocation> keys)
     {
         ArgumentNullException.ThrowIfNull(keys);
@@ -33,11 +46,14 @@ public class MessageRegistrySyncS2CPacket() : ExtendedProtocolPacket(PacketId.Me
 
         MessageRegistrySyncS2CPacket p = Get<MessageRegistrySyncS2CPacket>(PacketId.MessageRegistrySyncS2C);
         p.Keys = keys;
+        p.ProtocolVersion = ProtocolHandshake.Version;
         return p;
     }
 
     public override void Read(Stream stream)
     {
+        ProtocolVersion = stream.ReadVarInt();
+
         int count = stream.ReadVarInt();
         if (count < 0 || count > MaxEntries)
         {
@@ -56,6 +72,7 @@ public class MessageRegistrySyncS2CPacket() : ExtendedProtocolPacket(PacketId.Me
 
     public override void Write(Stream stream)
     {
+        stream.WriteVarInt(ProtocolVersion);
         stream.WriteVarInt(Keys.Count);
 
         foreach (ResourceLocation key in Keys)
@@ -68,7 +85,7 @@ public class MessageRegistrySyncS2CPacket() : ExtendedProtocolPacket(PacketId.Me
 
     public override int Size()
     {
-        int size = StreamExtensions.VarIntSize(Keys.Count);
+        int size = StreamExtensions.VarIntSize(ProtocolVersion) + StreamExtensions.VarIntSize(Keys.Count);
 
         foreach (ResourceLocation key in Keys)
         {

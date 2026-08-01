@@ -130,6 +130,7 @@ public class ClientNetworkHandler : NetHandler
             MetricRegistry.Set(ClientMetrics.DrainBudgetHits, _netManager.DrainBudgetHits);
             MetricRegistry.Set(ClientMetrics.IsInternal, _netManager is InternalConnection);
             MetricRegistry.Set(ClientMetrics.ServerAddress, _netManager.getAddress()?.ToString() ?? "Unknown");
+            MetricRegistry.Set(ClientMetrics.PeerProtocolVersion, _netManager.PeerProtocolVersion);
 
             PacketArrivalHistogram arrivals = _netManager.ReadIntervals;
             MetricRegistry.Set(ClientMetrics.ReadIntervalSamples, arrivals.Count);
@@ -233,6 +234,17 @@ public class ClientNetworkHandler : NetHandler
         {
             SendPacket(envelope);
         }
+    }
+
+    public override void onMessageRegistrySync(MessageRegistrySyncS2CPacket packet)
+    {
+        base.onMessageRegistrySync(packet);
+
+        // Closes the capability loop. The client declared its own revision inside the login field on
+        // the way out; this is the server answering, and it is the first extended packet the server
+        // sends, so it is the earliest the client can know. Without it the client could only infer
+        // that the server is capable, from having received anything extended at all.
+        _netManager.NotePeerProtocol(packet.ProtocolVersion);
     }
 
     public override void onMessage(Message message)
@@ -742,7 +754,8 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onHandshake(HandshakePacket packet)
     {
-        AddToSendQueue(LoginHelloPacket.Get(_context.Session.username, 14, LoginHelloPacket.BETASHARP_CLIENT_SIGNATURE, 0));
+        AddToSendQueue(LoginHelloPacket.Get(
+            _context.Session.username, 14, ProtocolHandshake.Encode(ProtocolHandshake.Version), 0));
     }
 
     public void Disconnect()

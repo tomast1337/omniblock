@@ -2,10 +2,15 @@ namespace BetaSharp.Network.Packets;
 
 public class LoginHelloPacket() : Packet(PacketId.LoginHello)
 {
-    public const long BETASHARP_CLIENT_SIGNATURE = 0x627368617270; // "bsharp" in hex. Used to identify BetaSharp clients for future protocol extensions without breaking vanilla compatibility.
-
     public int ProtocolVersion { get; private set; }
     public string Username { get; set; } = "";
+
+    /// <summary>
+    ///     Server to client, the world seed. Client to server, the field is meaningless — the client
+    ///     cannot know a seed it is about to be told — so it carries the OmniBlock capability
+    ///     declaration instead. See <see cref="ProtocolHandshake" /> for why that is smuggled here
+    ///     rather than sent as its own packet.
+    /// </summary>
     public long WorldSeed { get; private set; }
     public sbyte DimensionId { get; private set; }
 

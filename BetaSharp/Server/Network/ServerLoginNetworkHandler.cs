@@ -90,9 +90,11 @@ public class ServerLoginNetworkHandler : NetHandler
         {
             packet.Username = "player";
         }
-        if (packet.WorldSeed == LoginHelloPacket.BETASHARP_CLIENT_SIGNATURE)
+        // A vanilla client declares nothing here and stays connectable; extended packets are simply
+        // never sent to it.
+        if (ProtocolHandshake.TryDecode(packet.WorldSeed, out int clientProtocol))
         {
-            connection.betaSharpClient = true;
+            connection.NotePeerProtocol(clientProtocol);
         }
 
         username = packet.Username;

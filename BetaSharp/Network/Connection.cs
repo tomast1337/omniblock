@@ -367,6 +367,29 @@ public class Connection
     }
 
     /// <summary>
+    ///     The peer's declared protocol revision, or 0 when it declared none.
+    ///     <para>
+    ///         Zero does not mean vanilla — <see cref="NotePeerCapability" /> can prove capability
+    ///         from a packet that carries no version. It means "capable, revision unknown", and
+    ///         <see cref="betaSharpClient" /> remains the answer to whether extended packets may be
+    ///         sent.
+    ///     </para>
+    /// </summary>
+    public int PeerProtocolVersion { get; private set; }
+
+    /// <summary>
+    ///     Records an explicit declaration: the peer speaks the protocol, and says which revision.
+    ///     Both ends call this — the server decoding the login field, the client reading the
+    ///     server's registry sync — so the version is known in both directions rather than inferred
+    ///     on one side only.
+    /// </summary>
+    public void NotePeerProtocol(int version)
+    {
+        betaSharpClient = true;
+        PeerProtocolVersion = version;
+    }
+
+    /// <summary>
     ///     Records when a message envelope arrived, on the read thread.
     ///     <para>
     ///         Unconditional and message-agnostic. This used to be a switch over the two concrete

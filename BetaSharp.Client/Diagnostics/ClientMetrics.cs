@@ -12,6 +12,7 @@ internal static class ClientMetrics
     public static readonly MetricHandle<int> DownloadPackets = MetricRegistry.Register<int>("client:download_packets");
     public static readonly MetricHandle<bool> IsInternal = MetricRegistry.Register<bool>("client:is_internal");
     public static readonly MetricHandle<string> ServerAddress = MetricRegistry.Register<string>("client:server_address");
+    public static readonly MetricHandle<long> PeerProtocolVersion = MetricRegistry.Register<long>("client:peer_protocol_version");
 
     // Packet arrival distribution. These size the interpolation delay in
     // docs/time-sync-and-interpolation.md §3.4, which is why p95 is here and not just the mean:

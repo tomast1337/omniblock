@@ -81,6 +81,15 @@ internal sealed class NetworkInfoWindow : DebugWindow
             {
                 ImGuiTextSafe.Text($"Address: {serverAddress}");
             }
+
+            // Zero means the peer never declared one. That is either a vanilla server, which gets no
+            // extended packets at all, or a build predating the declaration — the two look the same
+            // from here, and both explain a clock that never synchronises.
+            long peerProtocol = MetricRegistry.Get(ClientMetrics.PeerProtocolVersion);
+            ImGuiTextSafe.Text(peerProtocol > 0
+                ? $"Protocol: OmniBlock revision {peerProtocol}"
+                : "Protocol: vanilla (no OmniBlock declaration)");
+
             ImGui.Spacing();
             ImGuiTextSafe.Text($"Total Upload:   {FormatMemory(currentUpload)}");
             ImGuiTextSafe.Text($"Total Download: {FormatMemory(currentDownload)}");
