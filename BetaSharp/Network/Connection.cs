@@ -1,15 +1,21 @@
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Net;
-using System.Net.Sockets;
 using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.C2SPlay;
-using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Util;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Network;
 
+/// <summary>
+///     One peer's packet stream: the queue the game drains, the compatibility gate, and the
+///     diagnostics. Owns no socket.
+///     <para>
+///         Transport lives in subclasses — <see cref="UdpConnection" /> over
+///         <see cref="Transport.ITransport" />, <see cref="InternalConnection" /> over a direct
+///         hand-off for singleplayer. Everything that is true regardless of how bytes move is here,
+///         which is what let the transport be replaced without the game noticing.
+///     </para>
+/// </summary>
 public class Connection
 {
     /// <summary>
@@ -52,48 +58,13 @@ public class Connection
     /// </summary>
     public PacketArrivalHistogram ReadIntervals { get; } = new();
 
-    /// <summary>
-    ///     Time spent inside a single blocking write. This is the stall's <em>cause</em> rather than
-    ///     its symptom: the send queue is drained strictly in order, so a large packet occupies the
-    ///     socket for its whole duration and everything behind it waits.
-    /// </summary>
-    public PacketArrivalHistogram WriteDurations { get; } = new();
-
-    /// <summary>Largest single packet written, in bytes. Expected to be a chunk.</summary>
-    public int LargestPacketWritten { get; private set; }
-
     private long _lastReadTimestamp;
 
     private int _timeout;
 
-    /// <summary>
-    ///     Entity replication and timing, drained before <see cref="_bulkQueue" />. See
-    ///     <see cref="PacketPriorities" /> for what qualifies and why the set is an allowlist.
-    /// </summary>
-    private readonly ConcurrentQueue<Packet> _priorityQueue = [];
-
-    /// <summary>Everything else, in strict arrival order — chunks, block updates, inventory, chat.</summary>
-    private readonly ConcurrentQueue<Packet> _bulkQueue = [];
-    private Socket? _socket;
-    private NetworkStream? _networkStream;
-
-    public Connection(Socket socket, string address, NetHandler netHandler)
+    protected Connection(IPEndPoint? address = null)
     {
-        _socket = socket;
-        _address = (IPEndPoint?)socket.RemoteEndPoint;
-        this.netHandler = netHandler;
-
-        socket.ReceiveTimeout = 30000;
-
-        _networkStream = new NetworkStream(socket);
-
-        Task.Factory.StartNew(Reading, TaskCreationOptions.LongRunning);
-        Task.Factory.StartNew(Writing, TaskCreationOptions.LongRunning);
-    }
-
-    protected Connection()
-    {
-        _address = null;
+        _address = address;
     }
 
     public void setNetworkHandler(NetHandler netHandler)
@@ -101,31 +72,14 @@ public class Connection
         this.netHandler = netHandler;
     }
 
+    /// <summary>
+    ///     Sends a packet, subject to the compatibility gate. Subclasses supply the transport.
+    /// </summary>
     public virtual void sendPacket(Packet packet)
     {
-        if (packet is ExtendedProtocolPacket && !betaSharpClient) return;
-
-        if (!closed)
-        {
-            QueueFor(packet).Enqueue(packet);
-        }
     }
 
-    private ConcurrentQueue<Packet> QueueFor(Packet packet) =>
-        PacketPriorities.Of(packet) == SendPriority.High ? _priorityQueue : _bulkQueue;
-
-    /// <summary>
-    ///     Next packet to write: everything queued as <see cref="SendPriority.High" />, then bulk.
-    ///     <para>
-    ///         Preemption is at packet granularity — a chunk already being written still runs to
-    ///         completion, because the bytes are committed to the stream the moment the write
-    ///         starts. Splitting the chunk packet itself is §4.2 and is what removes the remainder.
-    ///     </para>
-    /// </summary>
-    internal bool TryDequeueNext(out Packet? packet) =>
-        _priorityQueue.TryDequeue(out packet) || _bulkQueue.TryDequeue(out packet);
-
-    private void disconnect(Exception e)
+    protected void disconnect(Exception e)
     {
         _logger.LogError(e, e.Message);
         disconnect("disconnect.genericReason", "Internal exception: " + e);
@@ -139,41 +93,8 @@ public class Connection
             this.disconnectedReason = disconnectedReason;
             this.disconnectReasonArgs = disconnectReasonArgs;
             open = false;
-
-            while (TryDequeueNext(out Packet? packet))
-            {
-                WritePacket(packet!);
-            }
-
-            try
-            {
-                _networkStream?.Close();
-                _networkStream = null;
-
-                _socket?.Close();
-                _socket = null;
-            }
-            catch (Exception)
-            {
-                // Ignore.
-            }
         }
     }
-
-    /// <summary>
-    ///     Packets queued for the writer but not yet on the socket. A rising depth is the send side
-    ///     of the same stall <see cref="WriteDurations" /> measures, and is what the priority queue
-    ///     in <c>docs/time-sync-and-interpolation.md</c> §4.1 would reorder.
-    /// </summary>
-    public int SendQueueDepth => _priorityQueue.Count + _bulkQueue.Count;
-
-    /// <summary>
-    ///     Depth of the high-priority queue alone. Distinct from <see cref="SendQueueDepth" />
-    ///     because the two mean different things: bulk depth rising is a chunk backlog and expected,
-    ///     while this one rising means entity updates are queueing behind entity updates, which the
-    ///     priority split cannot help with.
-    /// </summary>
-    public int PrioritySendQueueDepth => _priorityQueue.Count;
 
     /// <summary>
     ///     Packets read off the socket but not yet applied to the handler.
@@ -214,20 +135,14 @@ public class Connection
 
     public virtual void tick()
     {
-        if (SendQueueDepth > 1048576)
-        {
-            disconnect("disconnect.overflow");
-        }
-
         int depth = readQueue.Count;
         if (depth > PeakReadQueueDepth)
         {
             PeakReadQueueDepth = depth;
         }
 
-        // The read side has no equivalent of the send queue's overflow disconnect, and unlike the
-        // send side it cannot simply be paced: the packets are already off the socket. Warn once at
-        // a depth that is unambiguously a losing race, so the log says what the overlay says.
+        // Warn once at a depth that is unambiguously a losing race, so the log says what the overlay
+        // says. There is nothing to shed here — the bytes are already received.
         if (depth > BacklogWarningDepth && !_backlogWarned)
         {
             _backlogWarned = true;
@@ -407,106 +322,29 @@ public class Connection
         }
     }
 
-    private void Reading()
+    /// <summary>
+    ///     Books in one received packet: arrival interval, capability, envelope stamp, counters,
+    ///     queue. Every transport funnels through here so the bookkeeping cannot drift between them.
+    /// </summary>
+    /// <param name="arrivalTicks">
+    ///     When the bytes landed, taken by the transport on whatever thread received them — never
+    ///     here. This runs on the game thread up to a tick later, and a stamp taken at that point
+    ///     measures the tick phase rather than the network.
+    /// </param>
+    protected void AcceptIncoming(Packet packet, long arrivalTicks)
     {
-        while (open && !closed)
+        if (_lastReadTimestamp != 0)
         {
-            try
-            {
-                ArgumentNullException.ThrowIfNull(_networkStream);
-                ArgumentNullException.ThrowIfNull(netHandler);
-
-                Packet? packet = Packet.Read(_networkStream, netHandler.isServerSide());
-
-                if (packet is not null)
-                {
-                    // Stamped here rather than where the packet is drained in tick(): draining
-                    // happens on the game thread up to a full tick later, which would measure the
-                    // tick phase instead of the network. T1 and T3 in particular must be on the
-                    // read path for clock sync to be honest.
-                    long now = MonotonicClock.NowTicks();
-                    if (_lastReadTimestamp != 0)
-                    {
-                        ReadIntervals.Record(MonotonicClock.ElapsedMs(_lastReadTimestamp, now));
-                    }
-
-                    _lastReadTimestamp = now;
-
-                    NotePeerCapability(packet);
-                    StampArrival(packet, now);
-
-                    BytesRead += packet.Size();
-                    PacketsRead++;
-                    readQueue.Enqueue(packet);
-                }
-                else
-                {
-                    disconnect("disconnect.endOfStream");
-                    break;
-                }
-            }
-            catch (Exception exception)
-            {
-                disconnect(exception);
-                break;
-            }
-        }
-    }
-
-    private async Task Writing()
-    {
-        while (open && !closed)
-        {
-            try
-            {
-                ArgumentNullException.ThrowIfNull(_networkStream);
-
-                while (TryDequeueNext(out Packet? packet))
-                {
-                    WritePacket(packet!);
-                }
-
-                await Task.Delay(1);
-            }
-            catch (Exception exception)
-            {
-                if (!disconnected)
-                {
-                    disconnect(exception);
-                }
-                break;
-            }
-        }
-    }
-
-    private void WritePacket(Packet packet)
-    {
-        ArgumentNullException.ThrowIfNull(_networkStream);
-
-        // Stamped as late as possible — inside the write path, immediately before the bytes go to
-        // the socket, rather than in the handler where a send-queue drain could add up to a chunk's
-        // worth of delay. Which messages want this is the message layer's decision, declared by
-        // Message.NeedsSendTimestamp; the transport only knows that the envelope reserved room.
-        if (packet is OmniMessagePacket { CarriesSendTime: true, SentAtMs: 0 } envelope)
-        {
-            envelope.SentAtMs = MonotonicClock.NowMs();
+            ReadIntervals.Record(MonotonicClock.ElapsedMs(_lastReadTimestamp, arrivalTicks));
         }
 
-        long start = MonotonicClock.NowTicks();
+        _lastReadTimestamp = arrivalTicks;
 
-        Packet.Write(packet, _networkStream);
+        NotePeerCapability(packet);
+        StampArrival(packet, arrivalTicks);
 
-        int size = packet.Size();
-        BytesWritten += size;
-        PacketsWritten++;
-
-        _networkStream.Flush();
-
-        WriteDurations.Record(MonotonicClock.ElapsedMs(start, MonotonicClock.NowTicks()));
-
-        if (size > LargestPacketWritten)
-        {
-            LargestPacketWritten = size;
-        }
+        BytesRead += packet.Size();
+        PacketsRead++;
+        readQueue.Enqueue(packet);
     }
 }

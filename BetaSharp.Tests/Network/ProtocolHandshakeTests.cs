@@ -68,7 +68,7 @@ public sealed class ProtocolHandshakeTests
     [Fact]
     public void A_declaration_marks_the_connection_capable_and_records_the_version()
     {
-        TestConnection connection = new();
+        UdpConnection connection = TestConnection();
         Assert.False(connection.betaSharpClient);
         Assert.Equal(0, connection.PeerProtocolVersion);
 
@@ -86,7 +86,7 @@ public sealed class ProtocolHandshakeTests
     [Fact]
     public void Inferred_capability_leaves_the_version_unknown_without_clearing_capability()
     {
-        TestConnection connection = new();
+        UdpConnection connection = TestConnection();
 
         connection.NotePeerCapability(OmniMessagePacket.Get(0, []));
 
@@ -115,6 +115,6 @@ public sealed class ProtocolHandshakeTests
         Assert.Equal(server.NegotiatedOrder, received.Keys);
     }
 
-    /// <summary>Uses the parameterless constructor, so no socket and no reader/writer threads.</summary>
-    private sealed class TestConnection : Connection;
+    /// <summary>A connection over a transport that goes nowhere.</summary>
+    private static UdpConnection TestConnection() => new(new FakeTransportConnection());
 }

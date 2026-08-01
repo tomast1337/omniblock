@@ -1,4 +1,3 @@
-using System.Net.Sockets;
 using BetaSharp.Entities;
 using BetaSharp.Network;
 using BetaSharp.Network.Packets;
@@ -24,12 +23,6 @@ public class ServerLoginNetworkHandler : NetHandler
     private string serverId = "";
 
     private readonly ILogger<ServerLoginNetworkHandler> _logger = Log.Instance.For<ServerLoginNetworkHandler>();
-
-    public ServerLoginNetworkHandler(BetaSharpServer server, Socket socket, string name)
-    {
-        this.server = server;
-        connection = new Connection(socket, name, this);
-    }
 
     public ServerLoginNetworkHandler(BetaSharpServer server, Connection connection)
     {
