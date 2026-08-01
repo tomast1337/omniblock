@@ -53,15 +53,11 @@ public class InternalConnection : Connection
             throw new Exception($"InternalConnection is not initialized");
         }
 
-        int count = 0;
+        // No cap here, deliberately: loopback hands packets over directly, so a queue depth is a
+        // scheduling artefact rather than a transport backlog and there is nothing to pace against.
         while (readQueue.TryDequeue(out var packet))
         {
-            packet.Apply(netHandler);
-            count++;
-        }
-        if (count > 0)
-        {
-            // _logger.LogInformation($"[{Name}] Processed {count} packets");
+            ApplyPacket(packet, netHandler);
         }
     }
 

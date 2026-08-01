@@ -175,11 +175,45 @@ public class Connection
     /// </summary>
     public int PrioritySendQueueDepth => _priorityQueue.Count;
 
+    /// <summary>
+    ///     Packets read off the socket but not yet applied to the handler.
+    ///     <para>
+    ///         The read thread has no rate limit and the drain does, so this is where an overload
+    ///         accumulates. It is <em>not</em> a backlog in the ordinary sense: every packet in here
+    ///         is applied eventually, so a depth that keeps rising is latency growing without bound
+    ///         rather than work being shed. A player rubber-banding to where the server put them
+    ///         several seconds ago is this number, not a physics or interpolation fault.
+    ///     </para>
+    /// </summary>
+    public int ReadQueueDepth => readQueue.Count;
+
+    /// <summary>High-water mark of <see cref="ReadQueueDepth" />, sampled once per tick.</summary>
+    public int PeakReadQueueDepth { get; private set; }
+
+    /// <summary>
+    ///     Packets applied to the handler. Against <see cref="PacketsRead" /> this is the drain rate
+    ///     versus the arrival rate, and the two diverging is the whole diagnosis.
+    /// </summary>
+    public long PacketsProcessed { get; private set; }
+
+    /// <summary>Applies one packet and counts it. The single drain point for every subclass.</summary>
+    protected void ApplyPacket(Packet packet, NetHandler handler)
+    {
+        PacketsProcessed++;
+        packet.Apply(handler);
+    }
+
     public virtual void tick()
     {
         if (SendQueueDepth > 1048576)
         {
             disconnect("disconnect.overflow");
+        }
+
+        int depth = readQueue.Count;
+        if (depth > PeakReadQueueDepth)
+        {
+            PeakReadQueueDepth = depth;
         }
 
         if (readQueue.IsEmpty)
@@ -213,7 +247,7 @@ public class Connection
 
         while (readQueue.TryDequeue(out Packet? packet) && maxPacketsPerTick-- >= 0)
         {
-            packet.Apply(netHandler);
+            ApplyPacket(packet, netHandler);
         }
     }
 

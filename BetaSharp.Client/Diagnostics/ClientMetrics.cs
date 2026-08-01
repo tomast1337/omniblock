@@ -23,6 +23,14 @@ internal static class ClientMetrics
     public static readonly MetricHandle<double> ReadIntervalMaxMs = MetricRegistry.Register<double>("client:read_interval_max_ms");
     public static readonly MetricHandle<long> ReadIntervalSamples = MetricRegistry.Register<long>("client:read_interval_samples");
 
+    // Read backlog. Arrival rate is uncapped and the drain is not, so an overload lands here as
+    // unbounded latency rather than as loss — which is invisible from every other number on this
+    // panel. A rising depth is the cause of stale positions, rubber-banding and a starved
+    // interpolation buffer all at once.
+    public static readonly MetricHandle<long> ReadQueueDepth = MetricRegistry.Register<long>("client:read_queue_depth");
+    public static readonly MetricHandle<long> ReadQueuePeak = MetricRegistry.Register<long>("client:read_queue_peak");
+    public static readonly MetricHandle<long> PacketsProcessed = MetricRegistry.Register<long>("client:packets_processed");
+
     // Server clock sync (docs/time-sync-and-interpolation.md phase 2).
     public static readonly MetricHandle<long> ClockOffsetMs = MetricRegistry.Register<long>("client:clock_offset_ms");
     public static readonly MetricHandle<long> ClockRttMs = MetricRegistry.Register<long>("client:clock_rtt_ms");

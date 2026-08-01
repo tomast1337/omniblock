@@ -12,8 +12,10 @@ internal sealed class NetworkInfoWindow : DebugWindow
     private long _lastUploadBytes;
     private long _lastDownloadBytes;
 
-    private readonly Queue<(float Time, long Upload, long Download)> _history = new();
+    private readonly Queue<(float Time, long Upload, long Download, long Processed)> _history = new();
     private float _currentTime;
+
+    private long _lastProcessedPackets;
 
     public override string Title => "Network Info";
 
@@ -32,16 +34,21 @@ internal sealed class NetworkInfoWindow : DebugWindow
         int uploadPackets = MetricRegistry.Get(ClientMetrics.UploadPackets);
         int downloadPackets = MetricRegistry.Get(ClientMetrics.DownloadPackets);
 
+        long currentProcessed = MetricRegistry.Get(ClientMetrics.PacketsProcessed);
+
         long uploadDelta = currentUpload - _lastUploadBytes;
         long downloadDelta = currentDownload - _lastDownloadBytes;
+        long processedDelta = currentProcessed - _lastProcessedPackets;
         if (uploadDelta < 0) uploadDelta = 0;
         if (downloadDelta < 0) downloadDelta = 0;
+        if (processedDelta < 0) processedDelta = 0;
 
         _currentTime += ImGui.GetIO().DeltaTime;
-        _history.Enqueue((_currentTime, uploadDelta, downloadDelta));
+        _history.Enqueue((_currentTime, uploadDelta, downloadDelta, processedDelta));
 
         long sumUpload = 0;
         long sumDownload = 0;
+        long sumProcessed = 0;
 
         while (_history.Count > 0 && _currentTime - _history.Peek().Time > 1.0f)
         {
@@ -52,6 +59,7 @@ internal sealed class NetworkInfoWindow : DebugWindow
         {
             sumUpload += entry.Upload;
             sumDownload += entry.Download;
+            sumProcessed += entry.Processed;
         }
 
         _uploadGraph.Push(sumUpload);
@@ -59,6 +67,11 @@ internal sealed class NetworkInfoWindow : DebugWindow
 
         _lastUploadBytes = currentUpload;
         _lastDownloadBytes = currentDownload;
+        _lastProcessedPackets = currentProcessed;
+
+        // Before everything else: a read backlog makes every number below it a reading of the past
+        // rather than of the connection, so it has to be seen first.
+        DrawReadBacklog(isInternal, sumProcessed);
 
         if (ImGui.CollapsingHeader("Connection statistics", ImGuiTreeNodeFlags.DefaultOpen))
         {
@@ -85,6 +98,59 @@ internal sealed class NetworkInfoWindow : DebugWindow
         DrawPacketArrival(isInternal);
         DrawClockSync(isInternal);
         DrawInterpolation(isInternal);
+    }
+
+    /// <summary>
+    ///     Packets read off the socket but not yet applied. Drawn first and open by default, because
+    ///     a standing backlog invalidates the panels below it: with one, the clock offset, the
+    ///     interpolation counts and the arrival percentiles all describe a moment that has already
+    ///     passed rather than the connection now.
+    ///     <para>
+    ///         The failure it catches has no other symptom on this window. The read thread is
+    ///         uncapped and the drain is not, so an overload becomes latency growing without bound
+    ///         instead of loss — nothing is dropped, the packet counters look healthy, and the only
+    ///         visible effects are in the game: stale entity positions, a starved interpolation
+    ///         buffer, and the local player rubber-banding to a correction the server issued seconds
+    ///         ago.
+    ///     </para>
+    /// </summary>
+    private static void DrawReadBacklog(bool isInternal, long processedPerSecond)
+    {
+        if (!ImGui.CollapsingHeader("Read backlog", ImGuiTreeNodeFlags.DefaultOpen))
+        {
+            return;
+        }
+
+        if (isInternal)
+        {
+            ImGuiTextSafe.Text("Loopback connection: the drain is uncapped,");
+            ImGuiTextSafe.Text("so there is no backlog to accumulate.");
+            return;
+        }
+
+        long depth = MetricRegistry.Get(ClientMetrics.ReadQueueDepth);
+        long peak = MetricRegistry.Get(ClientMetrics.ReadQueuePeak);
+
+        ImGuiTextSafe.Text($"Queued:    {depth:N0}  (peak {peak:N0})");
+        ImGuiTextSafe.Text($"Processed: {processedPerSecond:N0} packets/s");
+
+        if (depth == 0)
+        {
+            return;
+        }
+
+        // Depth over drain rate is how far behind the game is, in seconds, which is the number that
+        // matters — a large queue drained quickly is harmless, a small one drained slowly is not.
+        if (processedPerSecond > 0)
+        {
+            ImGuiTextSafe.Text($"Behind by: {depth / (double)processedPerSecond:F1} s at the current rate");
+        }
+
+        if (peak > 1000)
+        {
+            ImGuiTextSafe.Text("Backlog: arriving faster than the drain. Positions");
+            ImGuiTextSafe.Text("below are historical, not current.");
+        }
     }
 
     /// <summary>

@@ -111,6 +111,9 @@ public class ClientNetworkHandler : NetHandler
             MetricRegistry.Set(ClientMetrics.DownloadBytes, _netManager.BytesRead);
             MetricRegistry.Set(ClientMetrics.UploadPackets, _netManager.PacketsWritten);
             MetricRegistry.Set(ClientMetrics.DownloadPackets, _netManager.PacketsRead);
+            MetricRegistry.Set(ClientMetrics.ReadQueueDepth, _netManager.ReadQueueDepth);
+            MetricRegistry.Set(ClientMetrics.ReadQueuePeak, _netManager.PeakReadQueueDepth);
+            MetricRegistry.Set(ClientMetrics.PacketsProcessed, _netManager.PacketsProcessed);
             MetricRegistry.Set(ClientMetrics.IsInternal, _netManager is InternalConnection);
             MetricRegistry.Set(ClientMetrics.ServerAddress, _netManager.getAddress()?.ToString() ?? "Unknown");
 
