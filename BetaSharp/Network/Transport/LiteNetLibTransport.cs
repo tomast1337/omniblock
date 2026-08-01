@@ -100,6 +100,20 @@ public sealed class LiteNetLibTransport : ITransport
             // longer than a default keepalive window during world generation, and dropping players
             // for that would be a regression.
             DisconnectTimeout = 30_000,
+
+            // How often the manager flushes queued sends. The default of 15 ms means a packet waits
+            // 7.5 ms on average before leaving, in each direction, so it lands on a round trip
+            // twice: measured at 14 ms of round trip on loopback, where the network contributes
+            // nothing. That is pure pacing, and against a 50 ms tick it is most of a third of one.
+            //
+            // Receive is unaffected — events fire on the receive thread — and the server's own
+            // handling time is already subtracted out of the clock estimate, so this was the entire
+            // difference between 1 ms of round trip on the stream transport and 14 ms here.
+            //
+            // Five buys most of it back for one extra wakeup every 10 ms on a thread that does
+            // nothing when there is nothing queued. Going lower has sharply diminishing returns:
+            // 1 ms would save four more milliseconds for five times the wakeups.
+            UpdateTime = 5,
         };
 
         _listener.ConnectionRequestEvent += request => request.AcceptIfKey(_connectionKey);
