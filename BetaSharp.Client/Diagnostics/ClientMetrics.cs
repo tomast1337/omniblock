@@ -1,4 +1,5 @@
 using BetaSharp.Diagnostics;
+using BetaSharp.Network;
 
 namespace BetaSharp.Client.Diagnostics;
 
@@ -23,6 +24,18 @@ internal static class ClientMetrics
     public static readonly MetricHandle<double> ReadIntervalP99Ms = MetricRegistry.Register<double>("client:read_interval_p99_ms");
     public static readonly MetricHandle<double> ReadIntervalMaxMs = MetricRegistry.Register<double>("client:read_interval_max_ms");
     public static readonly MetricHandle<long> ReadIntervalSamples = MetricRegistry.Register<long>("client:read_interval_samples");
+
+    /// <summary>
+    ///     The distributions behind those percentiles, for the overlay to draw. References rather
+    ///     than copied buckets: the histograms are append-only and their own snapshot is atomic per
+    ///     bucket, so handing over the object costs nothing per tick and always reads current.
+    /// </summary>
+    public static readonly MetricHandle<PacketArrivalHistogram?> ArrivalHistogram =
+        MetricRegistry.Register<PacketArrivalHistogram?>("client:arrival_histogram");
+
+    /// <summary>Round-trip times from the clock probes — the "ping" distribution.</summary>
+    public static readonly MetricHandle<PacketArrivalHistogram?> RttHistogram =
+        MetricRegistry.Register<PacketArrivalHistogram?>("client:rtt_histogram");
 
     // Read backlog. Arrival rate is uncapped and the drain is not, so an overload lands here as
     // unbounded latency rather than as loss — which is invisible from every other number on this

@@ -5,6 +5,23 @@ using Hexa.NET.ImGui;
 
 namespace BetaSharp.Client.Diagnostics.Windows;
 
+/// <summary>
+///     The network overlay, organised by subject rather than by which phase of the rewrite added the
+///     panel.
+///     <para>
+///         It had grown to six sections and around forty lines of scalars, and the ordering recorded
+///         the order things were built: totals and per-chunk averages sat together under "Connection
+///         statistics" while the graphs of those same totals lived two headers below, and latency was
+///         split across "Packet arrival" and "Server clock" — two panels describing one question.
+///         Sections here are topics, each holding its own numbers next to its own picture.
+///     </para>
+///     <para>
+///         <b>Distributions are drawn, not tabulated.</b> Five percentiles describe a shape only to
+///         someone who already knows what shape to expect, and the two failure modes worth catching —
+///         a long thin tail, and a bimodal split — are invisible in them. See
+///         <see cref="HistogramView" />.
+///     </para>
+/// </summary>
 internal sealed class NetworkInfoWindow : DebugWindow
 {
     private readonly FrameGraph _uploadGraph;
@@ -29,38 +46,32 @@ internal sealed class NetworkInfoWindow : DebugWindow
     protected override void OnDraw()
     {
         bool isInternal = MetricRegistry.Get(ClientMetrics.IsInternal);
-        string serverAddress = MetricRegistry.Get(ClientMetrics.ServerAddress) ?? "Unknown";
+
         long currentUpload = MetricRegistry.Get(ClientMetrics.UploadBytes);
         long currentDownload = MetricRegistry.Get(ClientMetrics.DownloadBytes);
-        int uploadPackets = MetricRegistry.Get(ClientMetrics.UploadPackets);
-        int downloadPackets = MetricRegistry.Get(ClientMetrics.DownloadPackets);
-
         long currentProcessed = MetricRegistry.Get(ClientMetrics.PacketsProcessed);
 
-        long uploadDelta = currentUpload - _lastUploadBytes;
-        long downloadDelta = currentDownload - _lastDownloadBytes;
-        long processedDelta = currentProcessed - _lastProcessedPackets;
-        if (uploadDelta < 0) uploadDelta = 0;
-        if (downloadDelta < 0) downloadDelta = 0;
-        if (processedDelta < 0) processedDelta = 0;
+        long uploadDelta = Math.Max(0, currentUpload - _lastUploadBytes);
+        long downloadDelta = Math.Max(0, currentDownload - _lastDownloadBytes);
+        long processedDelta = Math.Max(0, currentProcessed - _lastProcessedPackets);
 
         _currentTime += ImGui.GetIO().DeltaTime;
         _history.Enqueue((_currentTime, uploadDelta, downloadDelta, processedDelta));
-
-        long sumUpload = 0;
-        long sumDownload = 0;
-        long sumProcessed = 0;
 
         while (_history.Count > 0 && _currentTime - _history.Peek().Time > 1.0f)
         {
             _history.Dequeue();
         }
 
-        foreach (var entry in _history)
+        long sumUpload = 0;
+        long sumDownload = 0;
+        long sumProcessed = 0;
+
+        foreach ((float _, long upload, long download, long processed) in _history)
         {
-            sumUpload += entry.Upload;
-            sumDownload += entry.Download;
-            sumProcessed += entry.Processed;
+            sumUpload += upload;
+            sumDownload += download;
+            sumProcessed += processed;
         }
 
         _uploadGraph.Push(sumUpload);
@@ -70,90 +81,325 @@ internal sealed class NetworkInfoWindow : DebugWindow
         _lastDownloadBytes = currentDownload;
         _lastProcessedPackets = currentProcessed;
 
-        // Before everything else: a read backlog makes every number below it a reading of the past
-        // rather than of the connection, so it has to be seen first.
-        DrawReadBacklog(isInternal, sumProcessed);
+        DrawStatus(isInternal, sumProcessed);
+        DrawThroughput(currentUpload, currentDownload);
+        DrawLatency(isInternal);
+        DrawWorldData();
+        DrawEntityReplication(isInternal);
+    }
 
-        if (ImGui.CollapsingHeader("Connection statistics", ImGuiTreeNodeFlags.DefaultOpen))
+    /// <summary>
+    ///     Who this is connected to, and anything that makes the sections below untrustworthy.
+    ///     <para>
+    ///         First and open by default because of the second half. A standing read backlog means
+    ///         every number under it describes a moment that has already passed rather than the
+    ///         connection now, and that failure has no other symptom here: the read thread is
+    ///         uncapped and the drain is not, so an overload becomes latency growing without bound
+    ///         instead of loss. Nothing is dropped, the packet counters look healthy, and the only
+    ///         visible effects are in the game — stale entity positions, a starved interpolation
+    ///         buffer, the local player rubber-banding to a correction issued seconds ago.
+    ///     </para>
+    /// </summary>
+    private static void DrawStatus(bool isInternal, long processedPerSecond)
+    {
+        if (!ImGui.CollapsingHeader("Status", ImGuiTreeNodeFlags.DefaultOpen))
         {
-            ImGuiTextSafe.Text($"Connection Type: {(isInternal ? "Internal Server" : "Remote Server")}");
-            if (!isInternal)
-            {
-                ImGuiTextSafe.Text($"Address: {serverAddress}");
-            }
-
-            // Zero means the peer never declared one. That is either a vanilla server, which gets no
-            // extended packets at all, or a build predating the declaration — the two look the same
-            // from here, and both explain a clock that never synchronises.
-            long peerProtocol = MetricRegistry.Get(ClientMetrics.PeerProtocolVersion);
-            ImGuiTextSafe.Text(peerProtocol > 0
-                ? $"Protocol: OmniBlock revision {peerProtocol}"
-                : "Protocol: vanilla (no OmniBlock declaration)");
-
-            ImGui.Spacing();
-            ImGuiTextSafe.Text($"Total Upload:   {FormatMemory(currentUpload)}");
-            ImGuiTextSafe.Text($"Total Download: {FormatMemory(currentDownload)}");
-            ImGui.Spacing();
-            ImGuiTextSafe.Text($"Upload Packets:   {uploadPackets}");
-            ImGuiTextSafe.Text($"Download Packets: {downloadPackets}");
-
-            // Zero means chunks are arriving on the inherited path — a vanilla server, or a client
-            // whose message registry never negotiated. On loopback that is correct and deliberate:
-            // packets are handed over as objects, so compressing one saves bytes that never exist.
-            long chunks = MetricRegistry.Get(ClientMetrics.ChunksViaMessage);
-            long cached = MetricRegistry.Get(ClientMetrics.ChunksFromCache);
-
-            if (chunks > 0 || cached > 0)
-            {
-                ImGui.Spacing();
-            }
-
-            if (chunks > 0)
-            {
-                long bytes = MetricRegistry.Get(ClientMetrics.ChunkMessageBytes);
-
-                ImGuiTextSafe.Text($"Chunks (palette): {chunks}");
-                ImGuiTextSafe.Text($"  avg {bytes / chunks} B/chunk, {FormatMemory(bytes)} total");
-            }
-
-            if (cached > 0)
-            {
-                // The hit rate is the number worth watching: on a first visit it is zero by
-                // definition, and on a rejoin to somewhere explored it should dominate.
-                ImGuiTextSafe.Text($"Chunks (cached):  {cached} ({100 * cached / (chunks + cached)}% hit)");
-                ImGuiTextSafe.Text($"  ~{FormatMemory(cached * WireBytesPerChunk(chunks))} not downloaded");
-            }
-
-            // Entity replication. Zero on the inherited path for the same reasons chunks are, and the
-            // per-record average is the number to watch: the four position packets it replaces cost 8
-            // to 10 bytes each, so anything at or above that means the deltas are not landing.
-            long snapshotRecords = MetricRegistry.Get(ClientMetrics.SnapshotRecords);
-            if (snapshotRecords > 0)
-            {
-                long snapshotBytes = MetricRegistry.Get(ClientMetrics.SnapshotBytes);
-                long dropped = MetricRegistry.Get(ClientMetrics.SnapshotsDropped);
-
-                ImGui.Spacing();
-                ImGuiTextSafe.Text($"Entity snapshots: {snapshotRecords} records");
-                ImGuiTextSafe.Text($"  avg {snapshotBytes / snapshotRecords} B/record, {FormatMemory(snapshotBytes)} total");
-
-                if (dropped > 0)
-                {
-                    ImGuiTextSafe.Text($"  {dropped} dropped (baseline unreachable)");
-                }
-            }
+            return;
         }
 
-        if (ImGui.CollapsingHeader("Graphs", ImGuiTreeNodeFlags.DefaultOpen))
+        if (isInternal)
         {
-            _uploadGraph.Draw(40f, 1024 * 2);
-            ImGui.Spacing();
-            _downloadGraph.Draw(40f, 1024 * 512f);
+            ImGuiTextSafe.Text("Internal server (loopback)");
+            ImGuiTextSafe.Text("Packets are handed over as objects: no wire, no");
+            ImGuiTextSafe.Text("backlog, no clock offset, no interpolation.");
+            return;
         }
 
-        DrawPacketArrival(isInternal);
-        DrawClockSync(isInternal);
-        DrawInterpolation(isInternal);
+        ImGuiTextSafe.Text($"Remote server: {MetricRegistry.Get(ClientMetrics.ServerAddress) ?? "Unknown"}");
+
+        // Zero means the peer never declared one. That is either a vanilla server, which gets no
+        // extended packets at all, or a build predating the declaration — the two look the same from
+        // here, and both explain a clock that never synchronises.
+        long peerProtocol = MetricRegistry.Get(ClientMetrics.PeerProtocolVersion);
+        ImGuiTextSafe.Text(peerProtocol > 0
+            ? $"Protocol: OmniBlock revision {peerProtocol}"
+            : "Protocol: vanilla (no OmniBlock declaration)");
+
+        ImGui.Spacing();
+
+        long depth = MetricRegistry.Get(ClientMetrics.ReadQueueDepth);
+        long peak = MetricRegistry.Get(ClientMetrics.ReadQueuePeak);
+        long budgetHits = MetricRegistry.Get(ClientMetrics.DrainBudgetHits);
+
+        ImGuiTextSafe.Text($"Read queue: {depth:N0} queued, peak {peak:N0}, {processedPerSecond:N0}/s drained");
+
+        // The one number that says the drain is the constraint rather than the network. Zero means
+        // every tick emptied the queue within its budget, whatever the depth reached.
+        if (budgetHits > 0)
+        {
+            ImGuiTextSafe.Text($"  drain budget hit on {budgetHits:N0} ticks (limit {Connection.DrainBudgetMs:F0} ms)");
+        }
+
+        // Depth over drain rate is how far behind the game is, in seconds, which is the number that
+        // matters — a large queue drained quickly is harmless, a small one drained slowly is not.
+        if (depth > 0 && processedPerSecond > 0)
+        {
+            ImGuiTextSafe.Text($"  behind by {depth / (double)processedPerSecond:F1} s at the current rate");
+        }
+
+        if (peak > 1000)
+        {
+            ImGuiTextSafe.Text("  arriving faster than the drain: everything below is historical");
+        }
+    }
+
+    private void DrawThroughput(long totalUpload, long totalDownload)
+    {
+        if (!ImGui.CollapsingHeader("Throughput", ImGuiTreeNodeFlags.DefaultOpen))
+        {
+            return;
+        }
+
+        // Paired on one line rather than stacked in four. Bytes and packets for one direction are
+        // read together — the ratio is the interesting part, and it was four lines apart.
+        ImGuiTextSafe.Text($"Sent:     {FormatMemory(totalUpload)} in {MetricRegistry.Get(ClientMetrics.UploadPackets):N0} packets");
+        ImGuiTextSafe.Text($"Received: {FormatMemory(totalDownload)} in {MetricRegistry.Get(ClientMetrics.DownloadPackets):N0} packets");
+
+        ImGui.Spacing();
+
+        _uploadGraph.Draw(40f, 1024 * 2);
+        ImGui.Spacing();
+        _downloadGraph.Draw(40f, 1024 * 512f);
+    }
+
+    /// <summary>
+    ///     Everything about timing, which used to be two panels.
+    ///     <para>
+    ///         Round-trip time and inter-arrival gap answer the same question from opposite ends —
+    ///         how long the link takes, and how evenly it delivers — and the interpolation delay is
+    ///         computed from both. Splitting them meant the two halves of one decision were never on
+    ///         screen together.
+    ///     </para>
+    /// </summary>
+    private static void DrawLatency(bool isInternal)
+    {
+        if (!ImGui.CollapsingHeader("Latency", ImGuiTreeNodeFlags.DefaultOpen))
+        {
+            return;
+        }
+
+        if (isInternal)
+        {
+            // InternalConnection hands packets straight to the remote handler's queue: it starts no
+            // read thread and never calls WritePacket, so there is no gap to sample and no probe to
+            // time. Said plainly, because empty histograms here are structural rather than a fault.
+            ImGuiTextSafe.Text("Loopback: nothing to measure. Join a remote server.");
+            return;
+        }
+
+        bool synced = MetricRegistry.Get(ClientMetrics.ClockSynchronised);
+
+        if (synced)
+        {
+            ImGuiTextSafe.Text($"RTT {MetricRegistry.Get(ClientMetrics.ClockRttMs)} ms median"
+                + $"   jitter {MetricRegistry.Get(ClientMetrics.ClockJitterMs)} ms"
+                + $"   offset {MetricRegistry.Get(ClientMetrics.ClockOffsetMs):+0;-0;0} ms");
+        }
+        else
+        {
+            ImGuiTextSafe.Text("Clock synchronising... (login burst in progress)");
+        }
+
+        ImGui.Spacing();
+        HistogramView.Draw("Round-trip time", MetricRegistry.Get(ClientMetrics.RttHistogram));
+
+        ImGui.Spacing();
+        HistogramView.Draw("Packet arrival gap", MetricRegistry.Get(ClientMetrics.ArrivalHistogram));
+
+        ImGui.Spacing();
+        DrawSuggestedDelay(synced);
+    }
+
+    /// <summary>
+    ///     The delay formula from <c>docs/time-sync-and-interpolation.md</c> §3.4, and the one
+    ///     comparison that decides whether its answer is usable on this connection.
+    ///     <para>
+    ///         Falls back to the arrival p95 as a stand-in for the jitter term before the clock has
+    ///         synchronised, which is the only estimate available during the login burst.
+    ///     </para>
+    /// </summary>
+    private static void DrawSuggestedDelay(bool synced)
+    {
+        double suggested = synced
+            ? Math.Clamp(100.0 + (2.0 * MetricRegistry.Get(ClientMetrics.ClockJitterMs)), 100.0, 500.0)
+            : Math.Clamp(100.0 + (2.0 * Math.Max(0.0, MetricRegistry.Get(ClientMetrics.ReadIntervalP95Ms) - 50.0)), 100.0, 500.0);
+
+        ImGuiTextSafe.Text($"Suggested interpolation delay: {suggested:F0} ms"
+            + (synced ? string.Empty : "  (from arrival p95)"));
+
+        long stamps = MetricRegistry.Get(ClientMetrics.TickStampsReceived);
+        if (stamps == 0)
+        {
+            // Distinguishes an unstamped server from a stalled one. Interpolation falls back to the
+            // legacy behaviour here rather than sample against a timeline that does not exist.
+            ImGuiTextSafe.Text("Batch stamps: none (server does not stamp)");
+            return;
+        }
+
+        long age = MetricRegistry.Get(ClientMetrics.TickStampAgeMs);
+        ImGuiTextSafe.Text($"Batch stamps: {stamps:N0}, newest {age} ms old");
+
+        // The delay has to exceed the stamp age or the buffer starves every frame. Flagged rather
+        // than left to be read off two numbers, because it is the comparison that decides whether
+        // the suggestion above is usable at all.
+        if (age > suggested)
+        {
+            ImGuiTextSafe.Text("  age exceeds the suggested delay: the buffer would starve");
+        }
+    }
+
+    /// <summary>Chunk transfer: the palette encoding and the content-hash cache.</summary>
+    private static void DrawWorldData()
+    {
+        // Zero means chunks are arriving on the inherited path — a vanilla server, or a client whose
+        // message registry never negotiated. On loopback that is correct and deliberate: packets are
+        // handed over as objects, so compressing one saves bytes that never exist.
+        long chunks = MetricRegistry.Get(ClientMetrics.ChunksViaMessage);
+        long cached = MetricRegistry.Get(ClientMetrics.ChunksFromCache);
+
+        if (chunks == 0 && cached == 0)
+        {
+            return;
+        }
+
+        if (!ImGui.CollapsingHeader("World data", ImGuiTreeNodeFlags.DefaultOpen))
+        {
+            return;
+        }
+
+        if (chunks > 0)
+        {
+            long bytes = MetricRegistry.Get(ClientMetrics.ChunkMessageBytes);
+            ImGuiTextSafe.Text($"Chunks sent:   {chunks:N0}   avg {bytes / chunks} B   {FormatMemory(bytes)} total");
+        }
+
+        if (cached > 0)
+        {
+            // The hit rate is the number worth watching: on a first visit it is zero by definition,
+            // and on a rejoin to somewhere explored it should dominate.
+            ImGuiTextSafe.Text($"Chunks cached: {cached:N0}   {100 * cached / (chunks + cached)}% hit"
+                + $"   ~{FormatMemory(cached * WireBytesPerChunk(chunks))} not downloaded");
+        }
+    }
+
+    /// <summary>
+    ///     Entity replication end to end: what arrived, and what the interpolator did with it. One
+    ///     section because they are one pipeline — a snapshot rate problem shows up as frozen
+    ///     entities, and diagnosing that from two collapsed panels meant opening both.
+    /// </summary>
+    private static void DrawEntityReplication(bool isInternal)
+    {
+        if (!ImGui.CollapsingHeader("Entity replication"))
+        {
+            return;
+        }
+
+        if (isInternal)
+        {
+            ImGuiTextSafe.Text("Loopback: positions are applied directly, with no");
+            ImGuiTextSafe.Text("snapshots and no interpolation.");
+            return;
+        }
+
+        // The per-record average is the number to watch: the four position packets this replaces
+        // cost 8 to 10 bytes each, so anything at or above that means the deltas are not landing.
+        long records = MetricRegistry.Get(ClientMetrics.SnapshotRecords);
+        if (records > 0)
+        {
+            long bytes = MetricRegistry.Get(ClientMetrics.SnapshotBytes);
+            ImGuiTextSafe.Text($"Snapshots: {records:N0} records   avg {bytes / records} B   {FormatMemory(bytes)} total");
+
+            long dropped = MetricRegistry.Get(ClientMetrics.SnapshotsDropped);
+            if (dropped > 0)
+            {
+                ImGuiTextSafe.Text($"  {dropped:N0} dropped: baseline unreachable");
+            }
+        }
+        else
+        {
+            ImGuiTextSafe.Text("Snapshots: none (server sends position packets)");
+        }
+
+        ImGui.Spacing();
+        DrawInterpolation();
+    }
+
+    /// <summary>
+    ///     Render-time interpolation, and the switch to turn it off. Toggling live on one connection
+    ///     is the only honest A/B — comparing across two sessions compares two different networks.
+    /// </summary>
+    private static void DrawInterpolation()
+    {
+        EntityInterpolator? interpolator = EntityInterpolator.Current;
+        if (interpolator is null)
+        {
+            ImGuiTextSafe.Text("Interpolation: no active connection.");
+            return;
+        }
+
+        bool enabled = interpolator.Enabled;
+        if (ImGui.Checkbox("Interpolate entities", ref enabled))
+        {
+            interpolator.Enabled = enabled;
+        }
+
+        if (!MetricRegistry.Get(ClientMetrics.InterpolationActive))
+        {
+            // Enabled but inactive means the timeline is missing, not that the switch is off. The
+            // two are worth distinguishing here or the checkbox looks broken.
+            ImGuiTextSafe.Text(enabled
+                ? "  inactive: waiting for a stamped, clock-synced server"
+                : "  off: using legacy move-toward-target");
+            return;
+        }
+
+        long frozen = MetricRegistry.Get(ClientMetrics.InterpolationFrozen);
+
+        // A range: the delay follows each entity's own update rate, so players and dropped items are
+        // legitimately rendered at different depths.
+        ImGuiTextSafe.Text($"  delay {MetricRegistry.Get(ClientMetrics.InterpolationDelayMs)}"
+            + $"-{MetricRegistry.Get(ClientMetrics.InterpolationDelayMaxMs)} ms"
+            + $"   {MetricRegistry.Get(ClientMetrics.InterpolationTracked)} tracked");
+
+        ImGuiTextSafe.Text($"  {MetricRegistry.Get(ClientMetrics.InterpolationInterpolated)} interpolated"
+            + $"   {MetricRegistry.Get(ClientMetrics.InterpolationExtrapolated)} extrapolated"
+            + $"   {frozen} frozen");
+
+        // Entities mid-ramp between two delays. Steady traffic converges to zero, so a number that
+        // stays high says the observed update spacing is unstable rather than that anything is wrong
+        // with a particular entity.
+        long adjusting = MetricRegistry.Get(ClientMetrics.InterpolationAdjusting);
+
+        // Entries into starvation over the session, which is the number §3.5 says to watch. Counted
+        // only while the stream as a whole is stale, so it means "the network broke down" and not
+        // "some mobs stood still" — the two produce identical per-entity buffers, and an earlier cut
+        // of this counted both and read 1180 on a healthy connection.
+        long starvations = MetricRegistry.Get(ClientMetrics.InterpolationStarvations);
+
+        if (adjusting > 0 || starvations > 0)
+        {
+            ImGuiTextSafe.Text($"  {adjusting} adjusting   {starvations} starvations this session");
+        }
+
+        if (frozen > 0)
+        {
+            // The delay scales with each entity's own update rate, so a slow tracking frequency is
+            // not a reason to starve. What holds here is an entity the server has stopped sending
+            // updates for at all, which for a standing mob is the normal state: EntityTrackerEntry
+            // sends nothing until its 400-tick resync. A steady count next to a large interpolated
+            // count is a field of idle mobs, not a fault.
+            ImGuiTextSafe.Text($"  frozen entities had no update within {EntityInterpolator.MaxDelayMs} ms");
+        }
     }
 
     /// <summary>
@@ -178,283 +424,23 @@ internal sealed class NetworkInfoWindow : DebugWindow
         return 1966;
     }
 
-    /// <summary>
-    ///     Packets read off the socket but not yet applied. Drawn first and open by default, because
-    ///     a standing backlog invalidates the panels below it: with one, the clock offset, the
-    ///     interpolation counts and the arrival percentiles all describe a moment that has already
-    ///     passed rather than the connection now.
-    ///     <para>
-    ///         The failure it catches has no other symptom on this window. The read thread is
-    ///         uncapped and the drain is not, so an overload becomes latency growing without bound
-    ///         instead of loss — nothing is dropped, the packet counters look healthy, and the only
-    ///         visible effects are in the game: stale entity positions, a starved interpolation
-    ///         buffer, and the local player rubber-banding to a correction the server issued seconds
-    ///         ago.
-    ///     </para>
-    /// </summary>
-    private static void DrawReadBacklog(bool isInternal, long processedPerSecond)
-    {
-        if (!ImGui.CollapsingHeader("Read backlog", ImGuiTreeNodeFlags.DefaultOpen))
-        {
-            return;
-        }
-
-        if (isInternal)
-        {
-            ImGuiTextSafe.Text("Loopback connection: the drain is uncapped,");
-            ImGuiTextSafe.Text("so there is no backlog to accumulate.");
-            return;
-        }
-
-        long depth = MetricRegistry.Get(ClientMetrics.ReadQueueDepth);
-        long peak = MetricRegistry.Get(ClientMetrics.ReadQueuePeak);
-
-        long budgetHits = MetricRegistry.Get(ClientMetrics.DrainBudgetHits);
-
-        ImGuiTextSafe.Text($"Queued:    {depth:N0}  (peak {peak:N0})");
-        ImGuiTextSafe.Text($"Processed: {processedPerSecond:N0} packets/s");
-
-        // The one number that says the drain is the constraint rather than the network. Zero means
-        // every tick emptied the queue within its budget, whatever the depth reached.
-        if (budgetHits > 0)
-        {
-            ImGuiTextSafe.Text($"Budget hit: {budgetHits:N0} ticks (limit {Connection.DrainBudgetMs:F0} ms)");
-        }
-
-        if (depth == 0)
-        {
-            return;
-        }
-
-        // Depth over drain rate is how far behind the game is, in seconds, which is the number that
-        // matters — a large queue drained quickly is harmless, a small one drained slowly is not.
-        if (processedPerSecond > 0)
-        {
-            ImGuiTextSafe.Text($"Behind by: {depth / (double)processedPerSecond:F1} s at the current rate");
-        }
-
-        if (peak > 1000)
-        {
-            ImGuiTextSafe.Text("Backlog: arriving faster than the drain. Positions");
-            ImGuiTextSafe.Text("below are historical, not current.");
-        }
-    }
-
-    /// <summary>
-    ///     Render-time interpolation, and the switch to turn it off. Toggling live on one connection
-    ///     is the only honest A/B — comparing across two sessions compares two different networks.
-    /// </summary>
-    private static void DrawInterpolation(bool isInternal)
-    {
-        if (!ImGui.CollapsingHeader("Entity interpolation"))
-        {
-            return;
-        }
-
-        if (isInternal)
-        {
-            ImGuiTextSafe.Text("Loopback connection: entities are not interpolated,");
-            ImGuiTextSafe.Text("since there is no transport delay to hide.");
-            return;
-        }
-
-        EntityInterpolator? interpolator = EntityInterpolator.Current;
-        if (interpolator is null)
-        {
-            ImGuiTextSafe.Text("No active connection.");
-            return;
-        }
-
-        bool enabled = interpolator.Enabled;
-        if (ImGui.Checkbox("Enabled", ref enabled))
-        {
-            interpolator.Enabled = enabled;
-        }
-
-        if (!MetricRegistry.Get(ClientMetrics.InterpolationActive))
-        {
-            // Enabled but inactive means the timeline is missing, not that the switch is off. The
-            // two are worth distinguishing here or the checkbox looks broken.
-            ImGuiTextSafe.Text(enabled
-                ? "Inactive: waiting for a stamped, clock-synced server."
-                : "Off: using legacy move-toward-target.");
-            return;
-        }
-
-        long frozen = MetricRegistry.Get(ClientMetrics.InterpolationFrozen);
-
-        // A range: the delay follows each entity's own update rate, so players and dropped items
-        // are legitimately rendered at different depths.
-        ImGuiTextSafe.Text($"Delay:        {MetricRegistry.Get(ClientMetrics.InterpolationDelayMs)}"
-            + $"-{MetricRegistry.Get(ClientMetrics.InterpolationDelayMaxMs)} ms");
-        ImGuiTextSafe.Text($"Tracked:      {MetricRegistry.Get(ClientMetrics.InterpolationTracked)}");
-        ImGuiTextSafe.Text($"Interpolated: {MetricRegistry.Get(ClientMetrics.InterpolationInterpolated)}");
-        ImGuiTextSafe.Text($"Extrapolated: {MetricRegistry.Get(ClientMetrics.InterpolationExtrapolated)}");
-        ImGuiTextSafe.Text($"Frozen:       {frozen}");
-
-        // Entities mid-ramp between two delays. Steady traffic converges to zero, so a number that
-        // stays high says the observed update spacing is unstable rather than that anything is wrong
-        // with a particular entity.
-        long adjusting = MetricRegistry.Get(ClientMetrics.InterpolationAdjusting);
-        if (adjusting > 0)
-        {
-            ImGuiTextSafe.Text($"Adjusting:    {adjusting}");
-        }
-
-        // Entries into starvation over the session, which is the number §3.5 says to watch. Counted
-        // only while the stream as a whole is stale, so it means "the network broke down" and not
-        // "some mobs stood still" — the two produce identical per-entity buffers, and an earlier
-        // cut of this counted both and read 1180 on a healthy connection.
-        long starvations = MetricRegistry.Get(ClientMetrics.InterpolationStarvations);
-        if (starvations > 0)
-        {
-            ImGuiTextSafe.Text($"Starvations:  {starvations} total");
-        }
-
-        if (frozen > 0)
-        {
-            // The delay scales with each entity's own update rate, so a slow tracking frequency is
-            // not a reason to starve. What holds here is an entity the server has stopped sending
-            // updates for at all, which for a standing mob is the normal state: EntityTrackerEntry
-            // sends nothing until its 400-tick resync. A steady count next to a large Interpolated
-            // is a field of idle mobs, not a fault.
-            ImGuiTextSafe.Text($"{frozen} holding: no update within the {EntityInterpolator.MaxDelayMs} ms bound.");
-        }
-    }
-
-    /// <summary>
-    ///     Gap between successive packet arrivals. Phase 1 of the interpolation work: the delay is
-    ///     sized against p95 rather than the maximum, so both are shown, and the histogram shape
-    ///     matters more than either number — a long flat tail means TCP head-of-line blocking, while
-    ///     a tight cluster near the 50 ms tick means the stream is keeping up.
-    /// </summary>
-    private static void DrawPacketArrival(bool isInternal)
-    {
-        if (!ImGui.CollapsingHeader("Packet arrival"))
-        {
-            return;
-        }
-
-        if (isInternal)
-        {
-            // InternalConnection hands packets straight to the remote handler's queue: it starts no
-            // read thread and never calls WritePacket, so there is no arrival gap to sample. Said
-            // plainly, because an empty histogram here is structural rather than a fault.
-            ImGuiTextSafe.Text("Loopback connection: packets are handed over directly,");
-            ImGuiTextSafe.Text("so there is no transport delay to measure. Join a remote");
-            ImGuiTextSafe.Text("server to collect arrival statistics.");
-            return;
-        }
-
-        long samples = MetricRegistry.Get(ClientMetrics.ReadIntervalSamples);
-        if (samples == 0)
-        {
-            ImGuiTextSafe.Text("No packets received yet.");
-            return;
-        }
-
-        double p95 = MetricRegistry.Get(ClientMetrics.ReadIntervalP95Ms);
-
-        ImGuiTextSafe.Text($"Samples: {samples:N0}");
-        ImGuiTextSafe.Text($"Mean:  {MetricRegistry.Get(ClientMetrics.ReadIntervalMeanMs):F1} ms");
-        ImGuiTextSafe.Text($"p50:  <= {MetricRegistry.Get(ClientMetrics.ReadIntervalP50Ms):F0} ms");
-        ImGuiTextSafe.Text($"p95:  <= {p95:F0} ms");
-        ImGuiTextSafe.Text($"p99:  <= {MetricRegistry.Get(ClientMetrics.ReadIntervalP99Ms):F0} ms");
-        ImGuiTextSafe.Text($"Max:     {MetricRegistry.Get(ClientMetrics.ReadIntervalMaxMs):F1} ms");
-
-        ImGui.Spacing();
-
-        // clamp(2 * tickInterval + 2 * jitter, 100, 500), with p95 standing in for the jitter term
-        // until the sync handshake supplies a real one. See docs/time-sync-and-interpolation.md §3.4.
-        double suggested = Math.Clamp(100.0 + (2.0 * Math.Max(0.0, p95 - 50.0)), 100.0, 500.0);
-        ImGuiTextSafe.Text($"Suggested interpolation delay: {suggested:F0} ms");
-    }
-
-    /// <summary>
-    ///     NTP-style clock synchronisation. Phase 2 of the interpolation work — RTT, offset and
-    ///     jitter are visible before anything depends on them, so a session of watching them catches
-    ///     surprises before they become bugs.
-    /// </summary>
-    private static void DrawClockSync(bool isInternal)
-    {
-        if (!ImGui.CollapsingHeader("Server clock"))
-        {
-            return;
-        }
-
-        if (isInternal)
-        {
-            ImGuiTextSafe.Text("Loopback connection: offset is identically zero.");
-            ImGuiTextSafe.Text("Clock sync runs only against a remote server.");
-            return;
-        }
-
-        // Stamp arrival is reported before and independently of sync state. The two are separate
-        // mechanisms in separate directions, and gating this behind sync hid the fact that stamps
-        // were arriving fine while the client's own probes were being dropped.
-        DrawStampArrival();
-
-        bool synced = MetricRegistry.Get(ClientMetrics.ClockSynchronised);
-        if (!synced)
-        {
-            ImGuiTextSafe.Text("Synchronising... (login burst in progress)");
-            return;
-        }
-
-        long offset = MetricRegistry.Get(ClientMetrics.ClockOffsetMs);
-        long rtt = MetricRegistry.Get(ClientMetrics.ClockRttMs);
-        long jitter = MetricRegistry.Get(ClientMetrics.ClockJitterMs);
-
-        ImGuiTextSafe.Text($"Clock offset: {offset:+0;-0;0} ms  (server minus client)");
-        ImGuiTextSafe.Text($"RTT (median):  {rtt} ms");
-        ImGuiTextSafe.Text($"Jitter:        {jitter} ms");
-        ImGui.Spacing();
-
-        // The interpolation delay formula from docs/time-sync-and-interpolation.md §3.4,
-        // now with a real jitter term instead of the p95 stand-in.
-        double suggested = Math.Clamp(100.0 + 2.0 * jitter, 100.0, 500.0);
-        ImGuiTextSafe.Text($"Suggested interpolation delay: {suggested:F0} ms");
-
-        long age = MetricRegistry.Get(ClientMetrics.TickStampAgeMs);
-
-        // The delay has to exceed the stamp age or the buffer starves every frame. Flagged rather
-        // than left to be read off two numbers, because it is the one comparison that decides
-        // whether the suggested delay above is usable on this connection.
-        if (MetricRegistry.Get(ClientMetrics.TickStampsReceived) > 0 && age > suggested)
-        {
-            ImGuiTextSafe.Text($"Newest batch age {age} ms exceeds it: buffer would starve.");
-        }
-    }
-
-    /// <summary>
-    ///     Whether the server stamps its entity batches, and how stale the newest one is. Server to
-    ///     client, so it works whether or not the client's own clock probes are getting through.
-    /// </summary>
-    private static void DrawStampArrival()
-    {
-        long stamps = MetricRegistry.Get(ClientMetrics.TickStampsReceived);
-        if (stamps == 0)
-        {
-            // Distinguishes an unstamped server from a stalled one. Phase 4 must fall back to the
-            // legacy behaviour here rather than interpolate against a timeline that does not exist.
-            ImGuiTextSafe.Text("Snapshot stamps: none (server does not stamp)");
-        }
-        else
-        {
-            ImGuiTextSafe.Text($"Snapshot stamps: {stamps:N0}");
-        }
-
-        ImGui.Spacing();
-    }
-
     private static string FormatMemory(long bytes)
     {
         if (bytes < 1024)
+        {
             return $"{bytes} B";
+        }
+
         if (bytes < 1024 * 1024)
+        {
             return $"{bytes / 1024.0:F2} KB";
+        }
+
         if (bytes < 1024 * 1024 * 1024)
+        {
             return $"{bytes / 1024.0 / 1024.0:F2} MB";
+        }
+
         return $"{bytes / 1024.0 / 1024.0 / 1024.0:F2} GB";
     }
 }

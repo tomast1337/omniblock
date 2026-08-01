@@ -1,3 +1,4 @@
+using BetaSharp.Network;
 using BetaSharp.Util;
 
 namespace BetaSharp.Client.Network;
@@ -68,6 +69,19 @@ public sealed class ServerClock
 
     /// <summary>Outstanding probes. Sequence → T0.</summary>
     private readonly Dictionary<uint, long> _pending = [];
+
+    /// <summary>
+    ///     Distribution of measured round-trip times, for the overlay.
+    ///     <para>
+    ///         The median and the mean absolute deviation this class computes are what the delay
+    ///         formula needs, and they are a poor description of a link. A connection whose RTT is 30
+    ///         ms nine times in ten and 300 ms otherwise has a small median and a jitter figure that
+    ///         understates what interpolation actually has to absorb; the shape says so at a glance
+    ///         and two scalars cannot. Reuses the arrival histogram's buckets, which are already
+    ///         clustered where the decisions are.
+    ///     </para>
+    /// </summary>
+    public PacketArrivalHistogram RttHistogram { get; } = new();
 
     // ---- queries ----
 
@@ -171,6 +185,11 @@ public sealed class ServerClock
         {
             return;
         }
+
+        // Recorded before the outlier filter runs. A rejected sample is exactly the tail worth
+        // seeing: filtering it out of the estimate is right, and filtering it out of the picture
+        // would hide the events the estimate is being protected from.
+        RttHistogram.Record(rtt);
 
         long offset = ((t1 - t0) + (t2 - t3)) / 2;
 
