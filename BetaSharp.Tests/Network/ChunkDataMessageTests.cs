@@ -237,7 +237,7 @@ public sealed class ChunkDataMessageTests
         MemoryStream wire = new();
         wire.WriteInt(0);
         wire.WriteInt(0);
-        wire.WriteInt(int.MaxValue);
+        wire.WriteVarInt(int.MaxValue);
         wire.Position = 0;
 
         Assert.Throws<InvalidDataException>(() => new ChunkDataMessage().Read(wire));

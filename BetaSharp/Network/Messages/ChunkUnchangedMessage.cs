@@ -14,33 +14,18 @@ namespace BetaSharp.Network.Messages;
 ///         and the send — it asks for the chunk again rather than guessing.
 ///     </para>
 /// </summary>
-public sealed class ChunkUnchangedMessage : Message
+[WireMessage("betasharp:chunk_unchanged")]
+public sealed partial class ChunkUnchangedMessage : Message
 {
-    public static readonly ResourceLocation Id = new(Namespace.BetaSharp, "chunk_unchanged");
-
-    public override ResourceLocation Key => Id;
-
     /// <summary>
     ///     Bulk, matching <see cref="ChunkDataMessage" />. It is small, but it is the same traffic
     ///     class and reordering it ahead of a chunk it replaces would gain nothing.
     /// </summary>
     public override SendPriority Priority => SendPriority.Normal;
 
+    [WireField]
     public int ChunkX { get; set; }
 
+    [WireField]
     public int ChunkZ { get; set; }
-
-    public override void Read(Stream stream)
-    {
-        ChunkX = stream.ReadInt();
-        ChunkZ = stream.ReadInt();
-    }
-
-    public override void Write(Stream stream)
-    {
-        stream.WriteInt(ChunkX);
-        stream.WriteInt(ChunkZ);
-    }
-
-    public override int Size() => sizeof(int) * 2;
 }

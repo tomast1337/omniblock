@@ -11,32 +11,17 @@ namespace BetaSharp.Network.Messages;
 ///     </para>
 ///     <para>See <c>docs/time-sync-and-interpolation.md</c> §1.</para>
 /// </summary>
-public sealed class TimeSyncRequestMessage : Message
+[WireMessage("betasharp:time_sync_request")]
+public sealed partial class TimeSyncRequestMessage : Message
 {
-    public static readonly ResourceLocation Id = new(Namespace.BetaSharp, "time_sync_request");
-
-    public override ResourceLocation Key => Id;
-
     /// <summary>Latency measurement: a probe queued behind a chunk measures the queue, not the network.</summary>
     public override SendPriority Priority => SendPriority.High;
 
-    /// <summary>Client's monotonic clock when this was sent — T0.</summary>
-    public long ClientSendTime { get; set; }
-
     /// <summary>Rolling serial, for diagnostics and to guard against reordered responses.</summary>
+    [WireField]
     public uint Sequence { get; set; }
 
-    public override void Read(Stream stream)
-    {
-        Sequence = (uint)stream.ReadInt();
-        ClientSendTime = stream.ReadLong();
-    }
-
-    public override void Write(Stream stream)
-    {
-        stream.WriteInt((int)Sequence);
-        stream.WriteLong(ClientSendTime);
-    }
-
-    public override int Size() => sizeof(int) + sizeof(long);
+    /// <summary>Client's monotonic clock when this was sent — T0.</summary>
+    [WireField]
+    public long ClientSendTime { get; set; }
 }

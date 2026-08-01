@@ -17,40 +17,24 @@ namespace BetaSharp.Network.Messages;
 ///         round trip. Taking both at the transport edge is what makes that subtraction honest.
 ///     </para>
 /// </summary>
-public sealed class TimeSyncResponseMessage : Message
+[WireMessage("betasharp:time_sync_response")]
+public sealed partial class TimeSyncResponseMessage : Message
 {
-    public static readonly ResourceLocation Id = new(Namespace.BetaSharp, "time_sync_response");
-
-    public override ResourceLocation Key => Id;
-
     /// <summary>Latency measurement: a probe queued behind a chunk measures the queue, not the network.</summary>
     public override SendPriority Priority => SendPriority.High;
 
     /// <summary>Asks the transport to stamp T2 into the envelope on its way out.</summary>
     public override bool NeedsSendTimestamp => true;
 
-    /// <summary>Echoed verbatim so the client can match the probe — T0.</summary>
-    public long ClientSendTime { get; set; }
-
     /// <summary>Echoed verbatim, for the client's own diagnostics.</summary>
+    [WireField]
     public uint Sequence { get; set; }
 
+    /// <summary>Echoed verbatim so the client can match the probe — T0.</summary>
+    [WireField]
+    public long ClientSendTime { get; set; }
+
     /// <summary>The server's arrival instant for the request — T1.</summary>
+    [WireField]
     public long ServerRecvTime { get; set; }
-
-    public override void Read(Stream stream)
-    {
-        Sequence = (uint)stream.ReadInt();
-        ClientSendTime = stream.ReadLong();
-        ServerRecvTime = stream.ReadLong();
-    }
-
-    public override void Write(Stream stream)
-    {
-        stream.WriteInt((int)Sequence);
-        stream.WriteLong(ClientSendTime);
-        stream.WriteLong(ServerRecvTime);
-    }
-
-    public override int Size() => sizeof(int) + (2 * sizeof(long));
 }

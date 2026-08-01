@@ -27,25 +27,15 @@ namespace BetaSharp.Network.Messages;
 ///         time-sync messages use.
 ///     </para>
 /// </summary>
-public sealed class ChunkDataMessage : Message
+[WireMessage("betasharp:chunk_data")]
+public sealed partial class ChunkDataMessage : Message
 {
-    public static readonly ResourceLocation Id = new(Namespace.BetaSharp, "chunk_data");
-
-    public override ResourceLocation Key => Id;
-
     /// <summary>
     ///     Bulk, and the reason the priority split exists at all. A chunk must never overtake an
     ///     entity update or a clock probe: it is the one payload large enough that letting it go
     ///     first is visible as a stall.
     /// </summary>
     public override SendPriority Priority => SendPriority.Normal;
-
-    public int ChunkX { get; set; }
-
-    public int ChunkZ { get; set; }
-
-    /// <summary>The zlib'd output of <see cref="ChunkBlobCodec.Encode" />.</summary>
-    public byte[] Compressed { get; set; } = [];
 
     /// <summary>
     ///     Refuses a blob that would expand past what a chunk can possibly hold. Without it a
@@ -54,30 +44,15 @@ public sealed class ChunkDataMessage : Message
     /// </summary>
     public const int MaxDecodedBytes = 256 * 1024;
 
-    public override void Read(Stream stream)
-    {
-        ChunkX = stream.ReadInt();
-        ChunkZ = stream.ReadInt();
+    [WireField]
+    public int ChunkX { get; set; }
 
-        int length = stream.ReadInt();
-        if (length < 0 || length > MaxDecodedBytes)
-        {
-            throw new InvalidDataException($"Chunk data declares {length} compressed bytes.");
-        }
+    [WireField]
+    public int ChunkZ { get; set; }
 
-        Compressed = new byte[length];
-        stream.ReadExactly(Compressed);
-    }
-
-    public override void Write(Stream stream)
-    {
-        stream.WriteInt(ChunkX);
-        stream.WriteInt(ChunkZ);
-        stream.WriteInt(Compressed.Length);
-        stream.Write(Compressed);
-    }
-
-    public override int Size() => (sizeof(int) * 3) + Compressed.Length;
+    /// <summary>The zlib'd output of <see cref="ChunkBlobCodec.Encode" />.</summary>
+    [WireField(MaxLength = MaxDecodedBytes)]
+    public byte[] Compressed { get; set; } = [];
 
     /// <summary>
     ///     Encodes and compresses a chunk's arrays into a message.

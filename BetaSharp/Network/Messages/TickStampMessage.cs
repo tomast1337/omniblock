@@ -24,12 +24,9 @@ namespace BetaSharp.Network.Messages;
 ///         send instant, which is the wrong quantity.
 ///     </para>
 /// </summary>
-public sealed class TickStampMessage : Message
+[WireMessage("betasharp:tick_stamp")]
+public sealed partial class TickStampMessage : Message
 {
-    public static readonly ResourceLocation Id = new(Namespace.BetaSharp, "tick_stamp");
-
-    public override ResourceLocation Key => Id;
-
     /// <summary>A stamp that arrives late drags the whole interpolation timeline with it.</summary>
     public override SendPriority Priority => SendPriority.High;
 
@@ -38,11 +35,6 @@ public sealed class TickStampMessage : Message
     ///     tick whose updates follow. Same clock domain as the time-sync T1/T2 stamps, which is what
     ///     makes it comparable to the client's estimate of server time.
     /// </summary>
+    [WireField]
     public long ServerTimeMs { get; set; }
-
-    public override void Read(Stream stream) => ServerTimeMs = stream.ReadLong();
-
-    public override void Write(Stream stream) => stream.WriteLong(ServerTimeMs);
-
-    public override int Size() => sizeof(long);
 }
