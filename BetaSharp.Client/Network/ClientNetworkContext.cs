@@ -12,8 +12,16 @@ public sealed class ClientNetworkContext(
     StatFileWriter statFileWriter,
     ParticleManager particleManager,
     Action<string> addChatMessage,
-    IClientNetworkFactory factory)
+    IClientNetworkFactory factory,
+    string chunkCacheDirectory)
 {
+    /// <summary>
+    ///     Where per-server chunk caches live. Passed in rather than read from a static so a test can
+    ///     point it somewhere disposable, and so nothing in the network layer has to know how the
+    ///     client lays out its data directory.
+    /// </summary>
+    public string ChunkCacheDirectory => chunkCacheDirectory;
+
     public IClientPlayerHost PlayerHost => playerHost;
     public IWorldHost WorldHost => worldHost;
     public IScreenNavigator Navigator => navigator;

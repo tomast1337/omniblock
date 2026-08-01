@@ -95,22 +95,27 @@ public sealed class ChunkDataMessage : Message
         ReadOnlySpan<byte> blocks,
         ReadOnlySpan<byte> meta,
         ReadOnlySpan<byte> blockLight,
-        ReadOnlySpan<byte> skyLight)
-    {
-        byte[] blob = ChunkBlobCodec.Encode(blocks, meta, blockLight, skyLight);
+        ReadOnlySpan<byte> skyLight) => new()
+        {
+            ChunkX = chunkX,
+            ChunkZ = chunkZ,
+            Compressed = Compress(ChunkBlobCodec.Encode(blocks, meta, blockLight, skyLight)),
+        };
 
+    /// <summary>
+    ///     Compresses an encoded blob. Separate from <see cref="Of" /> because the content-hash path
+    ///     needs the blob itself to hash before deciding whether to send it at all, and encoding it
+    ///     twice to get both would double the cost of the case that sends nothing.
+    /// </summary>
+    public static byte[] Compress(ReadOnlySpan<byte> blob)
+    {
         MemoryStream output = new(blob.Length / 4);
         using (ZLibStream compressor = new(output, CompressionLevel.Optimal, leaveOpen: true))
         {
             compressor.Write(blob);
         }
 
-        return new ChunkDataMessage
-        {
-            ChunkX = chunkX,
-            ChunkZ = chunkZ,
-            Compressed = output.ToArray(),
-        };
+        return output.ToArray();
     }
 
     /// <summary>

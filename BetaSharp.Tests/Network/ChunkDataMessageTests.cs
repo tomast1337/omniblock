@@ -3,6 +3,7 @@ using BetaSharp.Network.Chunks;
 using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
 using BetaSharp.Tests.TestSupport;
+using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Gen.Chunks;
 
@@ -80,6 +81,106 @@ public sealed class ChunkDataMessageTests
         Assert.Equal(chunk.Meta.Bytes, meta);
         Assert.Equal(chunk.BlockLight.Bytes, blockLight);
         Assert.Equal(chunk.SkyLight.Bytes, skyLight);
+    }
+
+    /// <summary>
+    ///     The property the whole caching scheme rests on: both ends derive the same hash from the
+    ///     same chunk, without one ever telling the other what it is. Nothing carries a hash on the
+    ///     wire, so if this were false the server and client would silently disagree about which
+    ///     chunks are current and the client would keep stale terrain.
+    /// </summary>
+    [Theory]
+    [InlineData(1L, 0, 0)]
+    [InlineData(987_654_321L, 100, 100)]
+    public void Both_ends_derive_the_same_hash_without_it_crossing_the_wire(long seed, int x, int z)
+    {
+        Chunk chunk = Generate(seed, x, z);
+
+        ulong sent = ChunkHash.Of(ChunkBlobCodec.Encode(
+            chunk.Blocks, chunk.Meta.Bytes, chunk.BlockLight.Bytes, chunk.SkyLight.Bytes));
+
+        ulong received = ChunkHash.Of(MessageFor(chunk).Decompress());
+
+        Assert.Equal(sent, received);
+        Assert.NotEqual(0ul, sent);
+    }
+
+    /// <summary>
+    ///     A one-block change must change the hash, or an edited chunk would be skipped as unchanged
+    ///     and the client would keep terrain that no longer exists.
+    /// </summary>
+    [Fact]
+    public void Changing_one_block_changes_the_hash()
+    {
+        Chunk chunk = Generate();
+
+        ulong before = ChunkHash.Of(ChunkBlobCodec.Encode(
+            chunk.Blocks, chunk.Meta.Bytes, chunk.BlockLight.Bytes, chunk.SkyLight.Bytes));
+
+        chunk.Blocks[ChuckFormat.GetIndex(3, 40, 9)] ^= 0x1;
+
+        ulong after = ChunkHash.Of(ChunkBlobCodec.Encode(
+            chunk.Blocks, chunk.Meta.Bytes, chunk.BlockLight.Bytes, chunk.SkyLight.Bytes));
+
+        Assert.NotEqual(before, after);
+    }
+
+    /// <summary>
+    ///     An offer survives the wire, since it is the one message here the client sends and the only
+    ///     one whose framing has never been exercised in that direction.
+    /// </summary>
+    [Fact]
+    public void A_cache_offer_round_trips()
+    {
+        ChunkCacheOfferMessage sent = new();
+        for (int i = 0; i < 100; i++)
+        {
+            sent.Entries.Add(new KeyValuePair<ChunkPos, ulong>(new ChunkPos(i, -i), (ulong)(i * 0x123456789ABCDEF)));
+        }
+
+        MemoryStream wire = new();
+        sent.Write(wire);
+        Assert.Equal(sent.Size(), (int)wire.Length);
+
+        wire.Position = 0;
+        ChunkCacheOfferMessage received = new();
+        received.Read(wire);
+
+        Assert.Equal(sent.Entries, received.Entries);
+    }
+
+    /// <summary>
+    ///     An offer is untrusted input and its declared count decides an allocation, so the bound is
+    ///     checked before the list is sized rather than after entries start arriving.
+    /// </summary>
+    [Fact]
+    public void An_offer_declaring_more_entries_than_allowed_is_refused()
+    {
+        MemoryStream wire = new();
+        wire.WriteInt(ChunkCacheOfferMessage.MaxEntries + 1);
+        wire.Position = 0;
+
+        Assert.Throws<InvalidDataException>(() => new ChunkCacheOfferMessage().Read(wire));
+    }
+
+    [Fact]
+    public void An_unchanged_notice_round_trips()
+    {
+        ChunkUnchangedMessage sent = new() { ChunkX = -12, ChunkZ = 34 };
+
+        MemoryStream wire = new();
+        sent.Write(wire);
+        Assert.Equal(sent.Size(), (int)wire.Length);
+
+        wire.Position = 0;
+        ChunkUnchangedMessage received = new();
+        received.Read(wire);
+
+        Assert.Equal(-12, received.ChunkX);
+        Assert.Equal(34, received.ChunkZ);
+
+        // The saving this whole mechanism exists for, stated as a number.
+        Assert.True(received.Size() < 16, "the point is that this is tiny next to a chunk");
     }
 
     [Fact]

@@ -33,7 +33,6 @@ public class Chunk
     public List<Entity>[] Entities;
     public bool TerrainPopulated;
     public bool Dirty;
-    public bool Empty;
     public bool LastSaveHadEntities;
     public long LastSaveTime;
 
@@ -593,7 +592,7 @@ public class Chunk
 
     public virtual bool ShouldSave(bool saveEntities)
     {
-        if (Empty) return false;
+        if (IsEmpty()) return false;
 
         if (saveEntities)
         {

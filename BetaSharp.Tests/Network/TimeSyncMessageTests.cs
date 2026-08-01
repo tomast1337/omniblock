@@ -77,6 +77,8 @@ public sealed class TimeSyncMessageTests
         Assert.Contains(TimeSyncResponseMessage.Id, server.NegotiatedOrder);
         Assert.Contains(TickStampMessage.Id, server.NegotiatedOrder);
         Assert.Contains(ChunkDataMessage.Id, server.NegotiatedOrder);
+        Assert.Contains(ChunkCacheOfferMessage.Id, server.NegotiatedOrder);
+        Assert.Contains(ChunkUnchangedMessage.Id, server.NegotiatedOrder);
 
         foreach (ResourceLocation key in server.NegotiatedOrder)
         {

@@ -3,6 +3,7 @@ using BetaSharp.Entities.Behaviors;
 using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.NBT;
+using BetaSharp.Network.Chunks;
 using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.C2SPlay;
@@ -78,6 +79,12 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     }
 
     public Dictionary<ChunkPos, long> ChunksTerrainSentToClient { get; } = [];
+
+    /// <summary>
+    ///     Chunk hashes this client says it already holds, from <c>ChunkCacheOfferMessage</c>. Empty
+    ///     for a vanilla client, a first-time visitor, or one whose cache is unavailable.
+    /// </summary>
+    public Dictionary<ChunkPos, ulong> OfferedChunkHashes { get; } = [];
 
     public ServerPlayNetworkHandler? NetworkHandler { get; set; }
 
@@ -367,9 +374,29 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         {
             Chunk chunk = world.ChunkHost.GetChunk(chunkPos.X, chunkPos.Z);
 
-            handler.SendMessage(ChunkDataMessage.Of(
-                chunkPos.X, chunkPos.Z,
-                chunk.Blocks, chunk.Meta.Bytes, chunk.BlockLight.Bytes, chunk.SkyLight.Bytes));
+            byte[] blob = ChunkBlobCodec.Encode(
+                chunk.Blocks, chunk.Meta.Bytes, chunk.BlockLight.Bytes, chunk.SkyLight.Bytes);
+
+            // The client's claim is checked against the chunk as it is right now, so a stale or
+            // wrong-world offer simply loses and the chunk goes out in full.
+            //
+            // The encode above is paid either way, which is the one inefficiency here: discovering
+            // that a chunk does not need sending costs 0.2 ms of encoding it. Avoiding that needs a
+            // per-chunk cached hash invalidated on modification, and Chunk has no version counter to
+            // hang that on — worth doing, but a change to the chunk rather than to the protocol.
+            if (OfferedChunkHashes.TryGetValue(chunkPos, out ulong offered)
+                && offered == ChunkHash.Of(blob))
+            {
+                handler.SendMessage(new ChunkUnchangedMessage { ChunkX = chunkPos.X, ChunkZ = chunkPos.Z });
+                return;
+            }
+
+            handler.SendMessage(new ChunkDataMessage
+            {
+                ChunkX = chunkPos.X,
+                ChunkZ = chunkPos.Z,
+                Compressed = ChunkDataMessage.Compress(blob),
+            });
 
             return;
         }

@@ -80,10 +80,41 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
     public override void onMessage(Message message)
     {
-        if (message is TimeSyncRequestMessage request)
+        switch (message)
         {
-            onTimeSyncRequest(request);
+            case TimeSyncRequestMessage request:
+                onTimeSyncRequest(request);
+                break;
+
+            case ChunkCacheOfferMessage offer:
+                onChunkCacheOffer(offer);
+                break;
         }
+    }
+
+    /// <summary>
+    ///     Chunk hashes the client claims to already hold.
+    ///     <para>
+    ///         Replaces rather than merges. An offer describes the client's cache around where it now
+    ///         is, so a later one supersedes an earlier one, and merging would grow this table for
+    ///         the life of the session with entries for places the player has left.
+    ///     </para>
+    ///     <para>
+    ///         Nothing here is trusted. Every hash is checked against the server's own copy of the
+    ///         chunk before anything is skipped, so a client that lies only denies itself data.
+    ///     </para>
+    /// </summary>
+    private void onChunkCacheOffer(ChunkCacheOfferMessage offer)
+    {
+        player.OfferedChunkHashes.Clear();
+
+        foreach ((ChunkPos position, ulong hash) in offer.Entries)
+        {
+            player.OfferedChunkHashes[position] = hash;
+        }
+
+        _logger.LogDebug(
+            "{Player} offered {Count} cached chunk hashes.", player.Name, offer.Entries.Count);
     }
 
     /// <summary>

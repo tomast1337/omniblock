@@ -15,6 +15,7 @@ using BetaSharp.Inventorys;
 using BetaSharp.Items;
 using BetaSharp.Items.Behaviors;
 using BetaSharp.Network;
+using BetaSharp.Network.Chunks;
 using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.C2SPlay;
@@ -122,6 +123,7 @@ public class ClientNetworkHandler : NetHandler
             .GetResult();
 
         _netManager = new UdpConnection(peer, this);
+        _cacheKey = $"{address}_{port}";
 
         Clock = new ServerClock();
     }
@@ -294,7 +296,46 @@ public class ClientNetworkHandler : NetHandler
             case ChunkDataMessage chunk:
                 onChunkData(chunk);
                 break;
+
+            case ChunkUnchangedMessage unchanged:
+                onChunkUnchanged(unchanged);
+                break;
         }
+    }
+
+    /// <summary>
+    ///     The server accepted a hash this client offered, so the chunk is loaded from disk instead
+    ///     of the wire.
+    ///     <para>
+    ///         A miss here is possible and is not an error: the entry can be evicted or the file can
+    ///         go bad between the offer and the reply. There is no recovery message, so it is logged
+    ///         and the chunk stays absent until something else causes a full send — which is the
+    ///         honest failure for a cache, and rare enough not to warrant a protocol round trip.
+    ///     </para>
+    /// </summary>
+    private void onChunkUnchanged(ChunkUnchangedMessage message)
+    {
+        byte[]? blob = _chunkCache?.Read(new ChunkPos(message.ChunkX, message.ChunkZ));
+        if (blob is null)
+        {
+            _logger.LogWarning(
+                "Server says chunk {X},{Z} is unchanged, but it is no longer cached.",
+                message.ChunkX, message.ChunkZ);
+
+            return;
+        }
+
+        int worldX = message.ChunkX * 16;
+        int worldZ = message.ChunkZ * 16;
+        _worldClient.ClearBlockResets(
+            worldX, 0, worldZ, worldX + 15, ChuckFormat.WorldHeight - 1, worldZ + 15);
+
+        _worldClient.ApplyChunkBlob(message.ChunkX, message.ChunkZ, blob);
+
+        _chunksFromCache++;
+        _chunkBytesSaved += blob.Length;
+        MetricRegistry.Set(ClientMetrics.ChunksFromCache, _chunksFromCache);
+        MetricRegistry.Set(ClientMetrics.ChunkCacheBytesSaved, _chunkBytesSaved);
     }
 
     /// <summary>
@@ -313,7 +354,13 @@ public class ClientNetworkHandler : NetHandler
             worldX, 0, worldZ,
             worldX + 15, ChuckFormat.WorldHeight - 1, worldZ + 15);
 
-        _worldClient.ApplyChunkBlob(message.ChunkX, message.ChunkZ, message.Decompress());
+        byte[] blob = message.Decompress();
+        _worldClient.ApplyChunkBlob(message.ChunkX, message.ChunkZ, blob);
+
+        // Cached under the hash the server would compute for the same bytes. Nothing carries the
+        // hash on the wire: it is a function of the blob, so both ends derive it and there is no
+        // opportunity for the two to disagree about what a chunk hashes to.
+        _chunkCache?.Write(new ChunkPos(message.ChunkX, message.ChunkZ), ChunkHash.Of(blob), blob);
 
         _chunksViaMessage++;
         _chunkMessageBytes += message.Compressed.Length;
@@ -321,10 +368,14 @@ public class ClientNetworkHandler : NetHandler
         MetricRegistry.Set(ClientMetrics.ChunkMessageBytes, _chunkMessageBytes);
     }
 
-    /// <summary>Session totals behind the two chunk metrics, which are gauges rather than counters.</summary>
+    /// <summary>Session totals behind the chunk metrics, which are gauges rather than counters.</summary>
     private long _chunksViaMessage;
 
     private long _chunkMessageBytes;
+
+    private long _chunksFromCache;
+
+    private long _chunkBytesSaved;
 
     private void onTimeSyncResponse(TimeSyncResponseMessage response)
     {
@@ -376,9 +427,110 @@ public class ClientNetworkHandler : NetHandler
     ///     "stamped once, long ago".</summary>
     public long TickStampsReceived { get; private set; }
 
+    /// <summary>
+    ///     Identifies the server for cache-file naming, or null on a loopback connection, which does
+    ///     not cache. Address and port only — the world seed and dimension are appended once known.
+    /// </summary>
+    private readonly string? _cacheKey;
+
+    private ChunkBlobCache? _chunkCache;
+
+    /// <summary>
+    ///     How far around the player its cached chunks are advertised.
+    ///     <para>
+    ///         Generous against any view distance, and bounded on purpose: an offer is upstream cost
+    ///         paid before any chunk arrives, and a player who has explored ten thousand chunks does
+    ///         not need to mention the ones on the other side of the world to save the ones under
+    ///         their feet. Rejoining where you logged out is the case this exists for, and this
+    ///         covers it entirely.
+    ///     </para>
+    /// </summary>
+    private const int CacheOfferRadius = 24;
+
+    /// <summary>Whether the cache for the current world has been advertised yet.</summary>
+    private bool _cacheOffered;
+
+    /// <summary>
+    ///     Opens the chunk cache for the world just joined, keyed so that two worlds cannot be
+    ///     confused for one another.
+    ///     <para>
+    ///         A mismatched key would not corrupt anything — the server checks every hash against its
+    ///         own chunk and simply sends the chunk when one does not match — but it would make the
+    ///         cache useless, so the seed and dimension are part of the name rather than trusted to
+    ///         coincide.
+    ///     </para>
+    /// </summary>
+    private void OpenChunkCache(long worldSeed, int dimensionId)
+    {
+        _chunkCache?.Dispose();
+        _chunkCache = null;
+        _cacheOffered = false;
+
+        if (_cacheKey is null)
+        {
+            return;
+        }
+
+        string safeKey = string.Concat(_cacheKey.Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c));
+        string path = Path.Combine(
+            _context.ChunkCacheDirectory, safeKey, $"{worldSeed:X16}_dim{dimensionId}.bin");
+
+        _chunkCache = ChunkBlobCache.Open(path);
+        _logger.LogInformation("Chunk cache holds {Count} chunks for this world.", _chunkCache.Count);
+    }
+
+    /// <summary>
+    ///     Advertises the cached chunks near the player, once the player's position is known. Sent
+    ///     from the position handler rather than from login because the offer is positional and the
+    ///     login packet does not carry a position.
+    /// </summary>
+    private void OfferChunkCache()
+    {
+        if (_cacheOffered || _chunkCache is null || _chunkCache.Count == 0)
+        {
+            return;
+        }
+
+        ClientPlayerEntity? player = _context.PlayerHost.Player;
+        if (player is null)
+        {
+            return;
+        }
+
+        _cacheOffered = true;
+
+        int centreX = (int)Math.Floor(player.X) >> 4;
+        int centreZ = (int)Math.Floor(player.Z) >> 4;
+
+        ChunkCacheOfferMessage offer = new();
+
+        foreach ((ChunkPos position, ulong hash) in _chunkCache.Entries)
+        {
+            if (Math.Abs(position.X - centreX) > CacheOfferRadius
+                || Math.Abs(position.Z - centreZ) > CacheOfferRadius)
+            {
+                continue;
+            }
+
+            offer.Entries.Add(new KeyValuePair<ChunkPos, ulong>(position, hash));
+
+            if (offer.Entries.Count == ChunkCacheOfferMessage.MaxEntries)
+            {
+                break;
+            }
+        }
+
+        if (offer.Entries.Count > 0)
+        {
+            SendMessage(offer);
+            _logger.LogInformation("Offered {Count} cached chunks to the server.", offer.Entries.Count);
+        }
+    }
+
     public override void onHello(LoginHelloPacket packet)
     {
         _logger.LogInformation($"[Client] Received onHello from server (id: {packet.ProtocolVersion})");
+        OpenChunkCache(packet.WorldSeed, packet.DimensionId);
         _context.PlayerHost.SetPlayerController(_context.Factory.CreatePlayerController(this));
         _context.StatFileWriter.ReadStat(Stats.Stats.JoinMultiplayerStat, 1);
         _worldClient = new ClientWorld(this, packet.WorldSeed, packet.DimensionId)
@@ -676,6 +828,11 @@ public class ClientNetworkHandler : NetHandler
             ent.PrevPitch = ent.Pitch = packetLook.Pitch % 360.0F;
         }
 
+        // First position from the server is the earliest the cache offer can be built, since which
+        // chunks are worth advertising depends on where the player is. Self-limiting: it runs once
+        // per world.
+        OfferChunkCache();
+
         SendPacket(packet);
         if (!_terrainLoaded)
         {
@@ -832,6 +989,12 @@ public class ClientNetworkHandler : NetHandler
         // per server the player joins in a session, which the stream transport did not do because
         // closing its socket was the whole of its teardown.
         _transport?.DisposeAsync().AsTask().GetAwaiter().GetResult();
+
+        // Flushes and compacts. Losing this on an unclean exit costs the session's newly cached
+        // chunks, not the whole cache — appends before the last flush are already durable, and a
+        // partial trailing record is truncated on the next open.
+        _chunkCache?.Dispose();
+        _chunkCache = null;
     }
 
     public override void onLivingEntitySpawn(LivingEntitySpawnS2CPacket packet)
