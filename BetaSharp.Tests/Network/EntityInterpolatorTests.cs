@@ -208,4 +208,91 @@ public sealed class EntityInterpolatorTests
 
         Assert.Equal(EntityInterpolator.DefaultDelayMs, interpolator.DelayForMs(BufferAtInterval(150, snapshots: 1)));
     }
+
+    /// <summary>
+    ///     Nothing to ease away from on first sight, and ramping from the floor to a dropped item's
+    ///     two seconds would spend the whole ramp in slow motion for no benefit.
+    /// </summary>
+    [Fact]
+    public void The_first_sighting_adopts_its_target_delay_whole()
+    {
+        EntityInterpolator interpolator = new();
+
+        Assert.Equal(2000, interpolator.SmoothedDelayFor(1, BufferAtInterval(1000)));
+    }
+
+    /// <summary>
+    ///     The reason the ramp exists. Recomputing from the observed median every tick makes the
+    ///     delay jump the moment the median moves, and the entity is repositioned by the whole
+    ///     difference in one tick — a teleport into its own past.
+    /// </summary>
+    [Fact]
+    public void A_delay_increase_is_approached_at_the_raise_rate()
+    {
+        EntityInterpolator interpolator = new();
+
+        interpolator.SmoothedDelayFor(1, BufferAtInterval(150));   // settles at 300
+
+        long afterOneTick = interpolator.SmoothedDelayFor(1, BufferAtInterval(400));  // target 800
+
+        Assert.Equal(300 + EntityInterpolator.DelayRaisePerTickMs, afterOneTick);
+    }
+
+    [Fact]
+    public void A_delay_decrease_is_approached_at_the_slower_lower_rate()
+    {
+        EntityInterpolator interpolator = new();
+
+        interpolator.SmoothedDelayFor(1, BufferAtInterval(400));   // settles at 800
+
+        long afterOneTick = interpolator.SmoothedDelayFor(1, BufferAtInterval(150));  // target 300
+
+        Assert.Equal(800 - EntityInterpolator.DelayLowerPerTickMs, afterOneTick);
+    }
+
+    [Fact]
+    public void The_ramp_converges_on_its_target_and_then_holds()
+    {
+        EntityInterpolator interpolator = new();
+
+        interpolator.SmoothedDelayFor(1, BufferAtInterval(150));
+
+        SnapshotBuffer slower = BufferAtInterval(400);
+        long delay = 0;
+        for (int tick = 0; tick < 200; tick++)
+        {
+            delay = interpolator.SmoothedDelayFor(1, slower);
+        }
+
+        Assert.Equal(800, delay);
+        Assert.Equal(800, interpolator.SmoothedDelayFor(1, slower));
+    }
+
+    /// <summary>
+    ///     The constraint that sets the raise rate. Render time is <c>serverTime - delay</c>, so a
+    ///     delay growing by <i>d</i> per 50 ms tick advances render time by <c>50 - d</c>. At the
+    ///     tick interval the entity stops; past it, it walks backwards.
+    /// </summary>
+    [Fact]
+    public void The_raise_rate_stays_below_the_tick_interval_so_render_time_never_reverses()
+    {
+        const long tickIntervalMs = 50;
+
+        Assert.True(
+            EntityInterpolator.DelayRaisePerTickMs < tickIntervalMs,
+            "a raise rate at or above the tick interval stalls or reverses rendered motion");
+        Assert.True(EntityInterpolator.DelayLowerPerTickMs < EntityInterpolator.DelayRaisePerTickMs);
+    }
+
+    [Fact]
+    public void Forgetting_an_entity_drops_its_ramp_state()
+    {
+        EntityInterpolator interpolator = new();
+
+        interpolator.SmoothedDelayFor(1, BufferAtInterval(400));   // settles at 800
+        interpolator.Forget(1);
+
+        // Re-adopted whole rather than eased down from 800.
+        Assert.Equal(300, interpolator.SmoothedDelayFor(1, BufferAtInterval(150)));
+    }
 }

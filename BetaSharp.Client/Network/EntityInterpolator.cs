@@ -63,6 +63,40 @@ public sealed class EntityInterpolator
     private const long StaleBufferMs = 10_000;
 
     /// <summary>
+    ///     Most the delay may grow per tick, when an entity's updates slow down and it needs a
+    ///     deeper buffer.
+    ///     <para>
+    ///         <b>This is a speed limit on time itself, and that is what sets the number.</b> Render
+    ///         time is <c>serverTime - delay</c>, so while the delay grows by <i>d</i> per 50 ms
+    ///         tick, render time advances by <c>50 - d</c> and the entity plays at
+    ///         <c>(50 - d) / 50</c> speed. At 20 ms it moves at 60% — slower, but always forward.
+    ///         At 50 it would stop dead, and past 50 it would visibly walk backwards, which is why
+    ///         the value has to stay well under the tick interval rather than being tuned for how
+    ///         quickly the buffer refills.
+    ///     </para>
+    ///     <para>
+    ///         Adjusting at all is the alternative to snapping. Recomputing the delay from the
+    ///         observed interval every tick makes it jump the moment the median moves — an entity
+    ///         that stalls goes from 300 ms to 800 ms of delay in one tick and teleports half a
+    ///         second into its own past. Ramping converts that teleport into a brief slow-motion,
+    ///         which is the §3.5 requirement not to snap on recovery.
+    ///     </para>
+    /// </summary>
+    public const long DelayRaisePerTickMs = 20;
+
+    /// <summary>
+    ///     Most the delay may shrink per tick, when an entity's updates speed up again.
+    ///     <para>
+    ///         Slower than the rise, per §3.4's asymmetry. Shrinking early re-enters starvation and
+    ///         oscillates, and there is no urgency: too much delay costs a little latency, too
+    ///         little costs a freeze. The same speed-limit arithmetic applies with the sign flipped
+    ///         — at 5 ms the entity plays at 110%, fast enough to converge and slow enough not to
+    ///         read as a skip.
+    ///     </para>
+    /// </summary>
+    public const long DelayLowerPerTickMs = 5;
+
+    /// <summary>
     ///     The active connection's interpolator, for the debug overlay's A/B toggle.
     ///     <para>
     ///         Static because the overlay is a global view with no route to the connection, the same
@@ -75,6 +109,9 @@ public sealed class EntityInterpolator
     private readonly Dictionary<int, SnapshotBuffer> _buffers = [];
     private readonly Dictionary<int, long> _lastSeen = [];
     private readonly List<int> _pendingRemoval = [];
+
+    /// <summary>The delay actually in force per entity, which chases the target rather than jumping to it.</summary>
+    private readonly Dictionary<int, long> _delays = [];
 
     /// <summary>
     ///     Whether sampled positions are actually written to entities. Off falls back to the legacy
@@ -102,6 +139,13 @@ public sealed class EntityInterpolator
     public int ExtrapolatedCount { get; private set; }
     public int FrozenCount { get; private set; }
     public int ClampedCount { get; private set; }
+
+    /// <summary>
+    ///     Entities whose delay was mid-ramp this tick. Steady traffic converges and leaves this at
+    ///     zero, so a number that stays high means the observed interval is unstable rather than
+    ///     that any single entity is in trouble.
+    /// </summary>
+    public int AdjustingCount { get; private set; }
 
     /// <summary>
     ///     Range of per-entity delays applied this frame. A range rather than one number because the
@@ -145,6 +189,7 @@ public sealed class EntityInterpolator
     {
         _buffers.Remove(entityId);
         _lastSeen.Remove(entityId);
+        _delays.Remove(entityId);
     }
 
     /// <summary>
@@ -156,6 +201,11 @@ public sealed class EntityInterpolator
     {
         _buffers.Clear();
         _lastSeen.Clear();
+
+        // The ramp has to go with them. A retained delay would be eased away from on the new
+        // timeline, which is the snap this avoids, applied to the one discontinuity that is
+        // supposed to be a cut.
+        _delays.Clear();
     }
 
     /// <summary>
@@ -181,6 +231,7 @@ public sealed class EntityInterpolator
         ExtrapolatedCount = 0;
         FrozenCount = 0;
         ClampedCount = 0;
+        AdjustingCount = 0;
         MinAppliedDelayMs = 0;
         MaxAppliedDelayMs = 0;
 
@@ -196,7 +247,7 @@ public sealed class EntityInterpolator
                 continue;
             }
 
-            long delay = DelayForMs(buffer);
+            long delay = SmoothedDelayFor(entity.ID, buffer);
             MinAppliedDelayMs = MinAppliedDelayMs == 0 ? delay : Math.Min(MinAppliedDelayMs, delay);
             MaxAppliedDelayMs = Math.Max(MaxAppliedDelayMs, delay);
 
@@ -255,6 +306,45 @@ public sealed class EntityInterpolator
     ///         entities that needed it most.
     ///     </para>
     /// </summary>
+    /// <summary>
+    ///     The delay in force for one entity: <see cref="DelayForMs" />'s answer, approached at a
+    ///     bounded rate rather than adopted outright.
+    ///     <para>
+    ///         The target moves whenever the observed median interval does, and that happens
+    ///         constantly — an entity stops moving and its updates stop, a burst arrives after a
+    ///         stall, a mob crosses into a different tracking frequency. Each of those would
+    ///         otherwise reposition the entity by the whole difference in a single tick.
+    ///     </para>
+    ///     <para>
+    ///         The first sighting is adopted whole. There is nothing to ease away from, and ramping
+    ///         from the floor to a dropped item's two seconds would spend the ramp in slow motion
+    ///         for no benefit.
+    ///     </para>
+    /// </summary>
+    internal long SmoothedDelayFor(int entityId, SnapshotBuffer buffer)
+    {
+        long target = DelayForMs(buffer);
+
+        if (!_delays.TryGetValue(entityId, out long current))
+        {
+            _delays[entityId] = target;
+            return target;
+        }
+
+        if (target == current)
+        {
+            return current;
+        }
+
+        long next = target > current
+            ? Math.Min(target, current + DelayRaisePerTickMs)
+            : Math.Max(target, current - DelayLowerPerTickMs);
+
+        _delays[entityId] = next;
+        AdjustingCount++;
+        return next;
+    }
+
     internal long DelayForMs(SnapshotBuffer buffer)
     {
         long interval = buffer.MedianIntervalMs;

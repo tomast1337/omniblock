@@ -215,6 +215,15 @@ internal sealed class NetworkInfoWindow : DebugWindow
         ImGuiTextSafe.Text($"Extrapolated: {MetricRegistry.Get(ClientMetrics.InterpolationExtrapolated)}");
         ImGuiTextSafe.Text($"Frozen:       {frozen}");
 
+        // Entities mid-ramp between two delays. Steady traffic converges to zero, so a number that
+        // stays high says the observed update spacing is unstable rather than that anything is wrong
+        // with a particular entity.
+        long adjusting = MetricRegistry.Get(ClientMetrics.InterpolationAdjusting);
+        if (adjusting > 0)
+        {
+            ImGuiTextSafe.Text($"Adjusting:    {adjusting}");
+        }
+
         if (frozen > 0)
         {
             // The delay now scales with each entity's own update rate, so a slow tracking frequency

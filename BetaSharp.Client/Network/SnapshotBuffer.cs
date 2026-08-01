@@ -55,13 +55,15 @@ public enum SampleKind
 ///         visible event at all.
 ///     </para>
 ///     <para>
-///         Twenty entries is one second at 20 TPS, comfortably more than the 100–500 ms of delay the
-///         sampler renders behind.
+///         Twenty entries is measured in updates rather than in time, which is what lets one size
+///         fit every tracking frequency: two seconds of history for a player updating every 100 ms,
+///         twenty for a dropped item updating every second. The delay each is rendered at scales
+///         with the same interval, so both keep several entries either side of render time.
 ///     </para>
 /// </summary>
 public sealed class SnapshotBuffer
 {
-    /// <summary>One second at 20 TPS.</summary>
+    /// <summary>Twenty updates, whatever rate this entity is tracked at.</summary>
     public const int Capacity = 20;
 
     /// <summary>

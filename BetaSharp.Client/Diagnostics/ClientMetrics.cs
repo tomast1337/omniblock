@@ -59,6 +59,7 @@ internal static class ClientMetrics
 
     /// <summary>Entities past the extrapolation cap. A rising count means the delay is undersized.</summary>
     public static readonly MetricHandle<long> InterpolationFrozen = MetricRegistry.Register<long>("client:interp_frozen");
+    public static readonly MetricHandle<long> InterpolationAdjusting = MetricRegistry.Register<long>("client:interp_adjusting");
 
     static ClientMetrics() { }
 }

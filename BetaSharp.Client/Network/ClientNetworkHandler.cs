@@ -167,6 +167,7 @@ public class ClientNetworkHandler : NetHandler
             MetricRegistry.Set(ClientMetrics.InterpolationInterpolated, Interpolation.InterpolatedCount);
             MetricRegistry.Set(ClientMetrics.InterpolationExtrapolated, Interpolation.ExtrapolatedCount);
             MetricRegistry.Set(ClientMetrics.InterpolationFrozen, Interpolation.FrozenCount);
+            MetricRegistry.Set(ClientMetrics.InterpolationAdjusting, Interpolation.AdjustingCount);
 
             if (_ticks++ - _lastKeepAliveTime > 200)
             {
