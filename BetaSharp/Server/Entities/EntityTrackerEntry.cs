@@ -2,8 +2,10 @@ using BetaSharp.Blocks;
 using BetaSharp.Entities;
 using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.S2CPlay;
+using BetaSharp.Network.Snapshots;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
@@ -41,6 +43,20 @@ internal class EntityTrackerEntry
     /// </summary>
     public EntityPositionHistory History { get; } = new();
 
+    /// <summary>
+    ///     Whether this tick was one of this entity's tracking ticks, so <see cref="SnapshotState" />
+    ///     describes it. The snapshot path is offered a state on exactly the ticks the legacy path
+    ///     considers sending a packet, so the two carry the same fidelity and
+    ///     <c>trackingFrequency</c> keeps meaning what it meant.
+    /// </summary>
+    public bool OfferedThisTick { get; private set; }
+
+    /// <summary>
+    ///     This entity's position and facing as of the last tracking tick, in wire units. Only
+    ///     meaningful while <see cref="OfferedThisTick" /> is set.
+    /// </summary>
+    public EntitySnapshotState SnapshotState { get; private set; }
+
     public EntityTrackerEntry(Entity entity, int trackedDistance, int trackedFrequency, bool alwaysUpdateVelocity)
     {
         currentTrackedEntity = entity;
@@ -72,6 +88,7 @@ internal class EntityTrackerEntry
         // decided is not worth a packet this tick.
         History.Record(simulationTimeMs, currentTrackedEntity.X, currentTrackedEntity.Y, currentTrackedEntity.Z);
 
+        OfferedThisTick = false;
         newPlayerDataUpdated = false;
         if (!isInitialized || currentTrackedEntity.GetSquaredDistance(x, y, z) > 16.0)
         {
@@ -118,6 +135,15 @@ internal class EntityTrackerEntry
             int deltaX = posX - lastX;
             int deltaY = posY - lastY;
             int deltaZ = posZ - lastZ;
+
+            // Offered to the snapshot encoder unconditionally, before the movement thresholds below.
+            // Those thresholds exist because the packets they gate cost 8 to 10 bytes to say that
+            // something moved slightly; the encoder's field mask says the same thing in one byte per
+            // coordinate and nothing at all when a coordinate did not change, so it does not need
+            // protecting from small movements — and the rotation threshold in particular was
+            // discarding every turn under eleven degrees.
+            OfferedThisTick = true;
+            SnapshotState = new EntitySnapshotState(posX, posY, posZ, (byte)rotYaw, (byte)rotPitch);
             bool hasMoved = Math.Abs(deltaX) >= 1 || Math.Abs(deltaY) >= 1 || Math.Abs(deltaZ) >= 1;
             bool hasRotated = Math.Abs(rotYaw - lastYaw) >= 8 || Math.Abs(rotPitch - lastPitch) >= 8;
             object? positionPacket = null;
@@ -153,7 +179,7 @@ internal class EntityTrackerEntry
 
             if (positionPacket != null)
             {
-                sendToListeners((Packet)positionPacket);
+                sendPositionToLegacyListeners((Packet)positionPacket);
             }
 
             DataSynchronizer dataSync = currentTrackedEntity.DataSynchronizer;
@@ -193,6 +219,30 @@ internal class EntityTrackerEntry
         }
     }
 
+    /// <summary>
+    ///     Sends a position packet to the listeners that have no other way to receive one.
+    ///     <para>
+    ///         A peer that speaks the protocol gets <see cref="EntitySnapshotMessage" /> instead, from
+    ///         <c>EntityTracker</c>'s pass over the same tick. Sending both would not merely waste the
+    ///         bytes: the two disagree about precision — the packets round rotation to an eleven
+    ///         degree threshold and clamp position deltas to four blocks — so whichever arrived last
+    ///         would win, and the snapshot's own delta chain would be measured against a position the
+    ///         client no longer held.
+    ///     </para>
+    /// </summary>
+    private void sendPositionToLegacyListeners(Packet packet)
+    {
+        foreach (var player in listeners)
+        {
+            if (player.NetworkHandler is { WantsCompactPayloads: true })
+            {
+                continue;
+            }
+
+            player.NetworkHandler.SendPacket(packet);
+        }
+    }
+
     public void sendToAround(Packet packet)
     {
         foreach (var p in listeners)
@@ -207,12 +257,20 @@ internal class EntityTrackerEntry
 
     public void notifyEntityRemoved()
     {
+        foreach (var player in listeners)
+        {
+            player.SnapshotStream.Forget(currentTrackedEntity.ID);
+        }
+
         sendToListeners(EntityDestroyS2CPacket.Get(currentTrackedEntity.ID));
     }
 
     public void notifyEntityRemoved(ServerPlayerEntity player)
     {
-        listeners.Remove(player);
+        if (listeners.Remove(player))
+        {
+            player.SnapshotStream.Forget(currentTrackedEntity.ID);
+        }
     }
 
     public void updateListener(ServerPlayerEntity player)
@@ -281,6 +339,7 @@ internal class EntityTrackerEntry
             }
             else if (listeners.Remove(player))
             {
+                player.SnapshotStream.Forget(currentTrackedEntity.ID);
                 player.NetworkHandler.SendPacket(EntityDestroyS2CPacket.Get(currentTrackedEntity.ID));
             }
         }
@@ -365,6 +424,7 @@ internal class EntityTrackerEntry
     {
         if (listeners.Remove(player))
         {
+            player.SnapshotStream.Forget(currentTrackedEntity.ID);
             player.NetworkHandler.SendPacket(EntityDestroyS2CPacket.Get(currentTrackedEntity.ID));
         }
     }

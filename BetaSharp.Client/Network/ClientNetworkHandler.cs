@@ -21,6 +21,7 @@ using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
+using BetaSharp.Network.Snapshots;
 using BetaSharp.Network.Transport;
 using BetaSharp.Registries;
 using BetaSharp.Screens;
@@ -85,6 +86,12 @@ public class ClientNetworkHandler : NetHandler
     ///     <see cref="ShouldInterpolate" />.
     /// </summary>
     public EntityInterpolator Interpolation { get; } = new();
+
+    /// <summary>
+    ///     What this client has been told about every entity it can see, and the baseline incoming
+    ///     deltas are measured against. See <see cref="ClientSnapshotStream" />.
+    /// </summary>
+    public ClientSnapshotStream Snapshots { get; } = new();
 
     /// <summary>
     ///     Whether there is a shared timeline to interpolate against. False on the loopback path
@@ -225,6 +232,11 @@ public class ClientNetworkHandler : NetHandler
             MetricRegistry.Set(ClientMetrics.InterpolationAdjusting, Interpolation.AdjustingCount);
             MetricRegistry.Set(ClientMetrics.InterpolationStarvations, Interpolation.StarvationEvents);
 
+            // One acknowledgement per tick, whether or not a snapshot arrived. Sending only on
+            // receipt would stop acknowledging exactly when the stream stalls, which is when the
+            // server most needs to know which baseline is still good.
+            AcknowledgeSnapshots();
+
             if (_ticks++ - _lastKeepAliveTime > 200)
             {
                 SendPacket(KeepAlivePacket.Get());
@@ -294,6 +306,61 @@ public class ClientNetworkHandler : NetHandler
     }
 
     /// <summary>
+    ///     Tells the server which snapshot the next delta may be measured against.
+    ///     <para>
+    ///         Skipped until a snapshot has actually been applied. Sequence zero is a request to
+    ///         resynchronise, and sending it every tick before the first snapshot arrives would keep
+    ///         resetting a stream that has not started.
+    ///     </para>
+    /// </summary>
+    private void AcknowledgeSnapshots()
+    {
+        if (Snapshots.AppliedSequence == 0)
+        {
+            return;
+        }
+
+        SendMessage(new SnapshotAckMessage { Sequence = Snapshots.AppliedSequence });
+    }
+
+    /// <summary>
+    ///     Applies a delta-compressed batch of entity positions.
+    ///     <para>
+    ///         The same destination as the position packets it replaces: <c>TrackedPos*</c> in wire
+    ///         units, then <see cref="RetargetEntity" />, which records the snapshot against the
+    ///         current batch's server time and hands the entity to whichever movement scheme is
+    ///         active. Nothing downstream of that knows which encoding it came from.
+    ///     </para>
+    /// </summary>
+    private void onEntitySnapshot(EntitySnapshotMessage message)
+    {
+        _snapshotBytes += message.Size();
+        MetricRegistry.Set(ClientMetrics.SnapshotBytes, _snapshotBytes);
+
+        foreach ((int entityId, EntitySnapshotState state) in Snapshots.Apply(message))
+        {
+            _snapshotRecords++;
+            Entity? entity = GetEntityById(entityId);
+            if (entity is null)
+            {
+                continue;
+            }
+
+            entity.TrackedPosX = state.X;
+            entity.TrackedPosY = state.Y;
+            entity.TrackedPosZ = state.Z;
+
+            RetargetEntity(entity, state.Yaw * 360 / 256.0F, state.Pitch * 360 / 256.0F);
+        }
+
+        MetricRegistry.Set(ClientMetrics.SnapshotRecords, _snapshotRecords);
+        MetricRegistry.Set(ClientMetrics.SnapshotsDropped, Snapshots.DroppedSnapshots);
+    }
+
+    private long _snapshotRecords;
+    private long _snapshotBytes;
+
+    /// <summary>
     ///     Sends a message, or drops it when the server never advertised the key — the designed
     ///     outcome for a peer that does not implement it, not an error.
     /// </summary>
@@ -341,6 +408,10 @@ public class ClientNetworkHandler : NetHandler
 
             case ChunkUnchangedMessage unchanged:
                 onChunkUnchanged(unchanged);
+                break;
+
+            case EntitySnapshotMessage snapshot:
+                onEntitySnapshot(snapshot);
                 break;
         }
     }
@@ -863,6 +934,12 @@ public class ClientNetworkHandler : NetHandler
     public override void onEntityDestroy(EntityDestroyS2CPacket packet)
     {
         Interpolation.Forget(packet.EntityId);
+
+        // The server drops it from its baseline on the same event, so both ends stop holding a state
+        // for it in the same order. Leaving it here would leave the two disagreeing about whether the
+        // entity is present, which the delta encoding has no way to detect.
+        Snapshots.Forget(packet.EntityId);
+
         _worldClient.RemoveEntityFromWorld(packet.EntityId);
     }
 
@@ -1156,6 +1233,11 @@ public class ClientNetworkHandler : NetHandler
     {
         if (packet.DimensionId != _context.PlayerHost.Player.DimensionId)
         {
+            // Every entity in the old world is about to go away without a destroy packet each, so
+            // the baseline is asked to start over rather than left holding states for entities whose
+            // IDs the new world is free to reuse. Sequence zero is what tells the server to agree.
+            Snapshots.Reset();
+
             _terrainLoaded = false;
             _worldClient = new ClientWorld(this, _worldClient.Properties.RandomSeed, packet.DimensionId)
             {

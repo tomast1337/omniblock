@@ -24,6 +24,34 @@ internal static class StreamExtensions
         return bytes;
     }
 
+    /// <summary>
+    ///     Maps a signed value onto the unsigned range so that small magnitudes of either sign stay
+    ///     small: 0, -1, 1, -2, 2 become 0, 1, 2, 3, 4.
+    ///     <para>
+    ///         <see cref="WriteVarInt" /> alone is no use for signed quantities — it casts through
+    ///         <see cref="uint" />, so every negative value occupies the full five bytes. That is
+    ///         exactly backwards for a delta, where a step of -1 is as common as +1.
+    ///     </para>
+    /// </summary>
+    public static uint ZigZag(int value) => (uint)((value << 1) ^ (value >> 31));
+
+    public static int UnZigZag(uint value) => (int)(value >> 1) ^ -(int)(value & 1);
+
+    /// <summary>Bytes <see cref="Stream.WriteZigZag" /> will emit, for computing a size without serialising.</summary>
+    public static int ZigZagSize(int value)
+    {
+        uint remaining = ZigZag(value);
+        int bytes = 1;
+
+        while (remaining >= 0x80)
+        {
+            remaining >>= 7;
+            bytes++;
+        }
+
+        return bytes;
+    }
+
     extension(Stream stream)
     {
         public void WriteBoolean(bool value)
@@ -278,6 +306,26 @@ internal static class StreamExtensions
                 }
             }
         }
+
+        /// <summary>
+        ///     Writes a signed value as a zig-zagged varint, so a small delta of either sign costs
+        ///     one byte. See <see cref="StreamExtensions.ZigZag" />.
+        /// </summary>
+        public void WriteZigZag(int value)
+        {
+            uint remaining = ZigZag(value);
+
+            while (remaining >= 0x80)
+            {
+                stream.WriteByte((byte)(remaining | 0x80));
+                remaining >>= 7;
+            }
+
+            stream.WriteByte((byte)remaining);
+        }
+
+        /// <summary>Reads a value written by <see cref="WriteZigZag" />.</summary>
+        public int ReadZigZag() => UnZigZag((uint)stream.ReadVarInt());
 
         public byte[] ReadUntil(byte terminator)
         {
