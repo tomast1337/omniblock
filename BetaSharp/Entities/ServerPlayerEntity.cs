@@ -9,6 +9,7 @@ using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
+using BetaSharp.Network.Snapshots;
 using BetaSharp.Registries;
 using BetaSharp.Screens;
 using BetaSharp.Screens.Slots;
@@ -84,6 +85,13 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     ///     for a vanilla client, a first-time visitor, or one whose cache is unavailable.
     /// </summary>
     public Dictionary<ChunkPos, ulong> OfferedChunkHashes { get; } = [];
+
+    /// <summary>
+    ///     What this client has confirmed knowing about every entity it can see, and the source of
+    ///     the deltas sent to it. Per player because a delta is only meaningful against a state that
+    ///     particular peer holds — see <see cref="PlayerSnapshotStream" />.
+    /// </summary>
+    public PlayerSnapshotStream SnapshotStream { get; } = new();
 
     public ServerPlayNetworkHandler? NetworkHandler { get; set; }
 

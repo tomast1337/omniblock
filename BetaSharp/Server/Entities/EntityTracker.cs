@@ -1,5 +1,7 @@
 using BetaSharp.Entities;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
+using BetaSharp.Network.Snapshots;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Server.Entities;
@@ -8,6 +10,14 @@ public class EntityTracker
 {
     private HashSet<EntityTrackerEntry> entries = [];
     private Dictionary<int, EntityTrackerEntry> entriesById = new();
+
+    /// <summary>
+    ///     Scratch for <see cref="broadcastSnapshots" />: this pass's states, grouped by recipient.
+    ///     A field rather than a local so the dictionary's buckets survive between ticks; the lists
+    ///     inside it do not, and are not worth pooling at one per player per tick.
+    /// </summary>
+    private readonly Dictionary<ServerPlayerEntity, List<KeyValuePair<int, EntitySnapshotState>>> _snapshotStates = [];
+
     private BetaSharpServer world;
     private int viewDistance;
     private int dimensionId;
@@ -117,6 +127,64 @@ public class EntityTracker
                 {
                     tracker.updateListener(player);
                 }
+            }
+        }
+
+        broadcastSnapshots();
+    }
+
+    /// <summary>
+    ///     Turns this pass into one delta-compressed snapshot per protocol-speaking listener.
+    ///     <para>
+    ///         Phase 6 of <c>docs/network-rewrite.md</c> §4.4. Runs after the entries have decided
+    ///         what they have to say, and after listener sets have settled for the tick, so a player
+    ///         who came into range of an entity during this pass gets it in the same snapshot as
+    ///         everything else rather than a tick later.
+    ///     </para>
+    ///     <para>
+    ///         The inversion is the reason this is a separate pass. Entries know their listeners and
+    ///         a delta is per listener, so the loop that sends packets cannot also build snapshots —
+    ///         it would have to encode each entity once per player against a different baseline, in
+    ///         an order neither side controls.
+    ///     </para>
+    /// </summary>
+    private void broadcastSnapshots()
+    {
+        _snapshotStates.Clear();
+
+        foreach (EntityTrackerEntry entry in entries)
+        {
+            if (!entry.OfferedThisTick)
+            {
+                continue;
+            }
+
+            int entityId = entry.currentTrackedEntity.ID;
+            EntitySnapshotState state = entry.SnapshotState;
+
+            foreach (ServerPlayerEntity listener in entry.listeners)
+            {
+                if (listener.NetworkHandler is not { WantsCompactPayloads: true })
+                {
+                    continue;
+                }
+
+                if (!_snapshotStates.TryGetValue(listener, out List<KeyValuePair<int, EntitySnapshotState>>? states))
+                {
+                    states = [];
+                    _snapshotStates[listener] = states;
+                }
+
+                states.Add(new KeyValuePair<int, EntitySnapshotState>(entityId, state));
+            }
+        }
+
+        foreach ((ServerPlayerEntity player, List<KeyValuePair<int, EntitySnapshotState>> states) in _snapshotStates)
+        {
+            EntitySnapshotMessage? snapshot = player.SnapshotStream.Build(states);
+            if (snapshot is not null)
+            {
+                player.NetworkHandler?.SendMessage(snapshot);
             }
         }
     }

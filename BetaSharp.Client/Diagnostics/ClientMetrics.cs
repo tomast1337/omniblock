@@ -96,5 +96,22 @@ internal static class ClientMetrics
     /// </summary>
     public static readonly MetricHandle<long> ChunkCacheBytesSaved = MetricRegistry.Register<long>("client:chunk_cache_bytes_saved");
 
+    /// <summary>
+    ///     Entity records arriving through <c>EntitySnapshotMessage</c>, cumulative. Zero against a
+    ///     vanilla server and on loopback, both by design; against a protocol-speaking server it
+    ///     replaces the four position packets entirely.
+    /// </summary>
+    public static readonly MetricHandle<long> SnapshotRecords = MetricRegistry.Register<long>("client:snapshot_records");
+
+    /// <summary>Payload bytes those snapshots cost, so bytes per entity update can be read live.</summary>
+    public static readonly MetricHandle<long> SnapshotBytes = MetricRegistry.Register<long>("client:snapshot_bytes");
+
+    /// <summary>
+    ///     Snapshots refused because their baseline could not be reconstructed. Expected to be zero
+    ///     on a reliable channel; a non-zero count on one is a bug rather than a link problem, which
+    ///     is why it is worth a line of its own.
+    /// </summary>
+    public static readonly MetricHandle<long> SnapshotsDropped = MetricRegistry.Register<long>("client:snapshots_dropped");
+
     static ClientMetrics() { }
 }

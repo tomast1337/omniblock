@@ -28,5 +28,7 @@ public static class DefaultMessages
         registry.Register(ChunkCacheOfferMessage.Id, 1, () => new ChunkCacheOfferMessage());
         registry.Register(ChunkUnchangedMessage.Id, 1, () => new ChunkUnchangedMessage());
         registry.Register(InteractEntityMessage.Id, 1, () => new InteractEntityMessage());
+        registry.Register(EntitySnapshotMessage.Id, 1, () => new EntitySnapshotMessage());
+        registry.Register(SnapshotAckMessage.Id, 1, () => new SnapshotAckMessage());
     }
 }

@@ -123,6 +123,25 @@ internal sealed class NetworkInfoWindow : DebugWindow
                 ImGuiTextSafe.Text($"Chunks (cached):  {cached} ({100 * cached / (chunks + cached)}% hit)");
                 ImGuiTextSafe.Text($"  ~{FormatMemory(cached * WireBytesPerChunk(chunks))} not downloaded");
             }
+
+            // Entity replication. Zero on the inherited path for the same reasons chunks are, and the
+            // per-record average is the number to watch: the four position packets it replaces cost 8
+            // to 10 bytes each, so anything at or above that means the deltas are not landing.
+            long snapshotRecords = MetricRegistry.Get(ClientMetrics.SnapshotRecords);
+            if (snapshotRecords > 0)
+            {
+                long snapshotBytes = MetricRegistry.Get(ClientMetrics.SnapshotBytes);
+                long dropped = MetricRegistry.Get(ClientMetrics.SnapshotsDropped);
+
+                ImGui.Spacing();
+                ImGuiTextSafe.Text($"Entity snapshots: {snapshotRecords} records");
+                ImGuiTextSafe.Text($"  avg {snapshotBytes / snapshotRecords} B/record, {FormatMemory(snapshotBytes)} total");
+
+                if (dropped > 0)
+                {
+                    ImGuiTextSafe.Text($"  {dropped} dropped (baseline unreachable)");
+                }
+            }
         }
 
         if (ImGui.CollapsingHeader("Graphs", ImGuiTreeNodeFlags.DefaultOpen))

@@ -94,6 +94,10 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             case InteractEntityMessage interact:
                 InteractWithEntity(interact.EntityId, interact.Action, interact.RenderTimeMs);
                 break;
+
+            case SnapshotAckMessage ack:
+                player.SnapshotStream.Acknowledge(ack.Sequence);
+                break;
         }
     }
 
