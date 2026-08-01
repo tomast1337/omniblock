@@ -120,10 +120,8 @@ internal sealed class NetworkInfoWindow : DebugWindow
             {
                 // The hit rate is the number worth watching: on a first visit it is zero by
                 // definition, and on a rejoin to somewhere explored it should dominate.
-                long saved = MetricRegistry.Get(ClientMetrics.ChunkCacheBytesSaved);
-
                 ImGuiTextSafe.Text($"Chunks (cached):  {cached} ({100 * cached / (chunks + cached)}% hit)");
-                ImGuiTextSafe.Text($"  {FormatMemory(saved)} of blob not sent");
+                ImGuiTextSafe.Text($"  ~{FormatMemory(cached * WireBytesPerChunk(chunks))} not downloaded");
             }
         }
 
@@ -137,6 +135,28 @@ internal sealed class NetworkInfoWindow : DebugWindow
         DrawPacketArrival(isInternal);
         DrawClockSync(isInternal);
         DrawInterpolation(isInternal);
+    }
+
+    /// <summary>
+    ///     What a chunk would have cost on the wire, for reporting what the cache avoided.
+    ///     <para>
+    ///         Taken from this session's own sent chunks when there are any, because it varies with
+    ///         terrain and is the honest per-connection figure. This used to report the uncompressed
+    ///         blob size instead, which overstated the saving roughly sixfold — the blob is what the
+    ///         codec produces, not what crosses the wire.
+    ///     </para>
+    /// </summary>
+    /// <param name="sentChunks">Chunks received the normal way, which is the sample.</param>
+    private static long WireBytesPerChunk(long sentChunks)
+    {
+        if (sentChunks > 0)
+        {
+            return MetricRegistry.Get(ClientMetrics.ChunkMessageBytes) / sentChunks;
+        }
+
+        // A fully-cached rejoin sends nothing to average, so fall back to the figure measured over
+        // 200 chunks of a real save while sizing the encoding — see docs/network-rewrite.md §5.4.
+        return 1966;
     }
 
     /// <summary>

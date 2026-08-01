@@ -85,9 +85,14 @@ internal static class ClientMetrics
     public static readonly MetricHandle<long> ChunksFromCache = MetricRegistry.Register<long>("client:chunks_from_cache");
 
     /// <summary>
-    ///     Uncompressed blob bytes those chunks would have carried. An over-estimate of the wire
-    ///     saving, since a sent chunk is compressed — the honest figure is roughly a sixth of this,
-    ///     and both are shown rather than guessed at.
+    ///     Uncompressed blob bytes those chunks carried, summed.
+    ///     <para>
+    ///         <b>Not the wire saving</b>, and about six times larger than it: the blob is what the
+    ///         codec produces and a sent chunk is compressed on top of that. The overlay estimates
+    ///         the wire figure from this session's own sent chunks instead. Kept because it is the
+    ///         honest measure of how much world the cache is holding, which is a different question
+    ///         and the one that says whether the cache is worth its disk.
+    ///     </para>
     /// </summary>
     public static readonly MetricHandle<long> ChunkCacheBytesSaved = MetricRegistry.Register<long>("client:chunk_cache_bytes_saved");
 

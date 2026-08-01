@@ -13,3 +13,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-01 — fix(network): offer the chunk cache before the server sends chunks (Nicolas Vyčas Nery; `943b4005d0e5d8b4171d7f7fcd2543a91d453aa2`)
 - 2026-08-01 — fix(client): release the connection's resources on every disconnect path (Nicolas Vyčas Nery; `27fbf6fbad4a58df217de52a815e79ad3d30558b`)
 - 2026-08-01 — fix(network): advertise the whole chunk cache, not a fixed radius around the player (Nicolas Vyčas Nery; `348a3563ad9eafc758bc19a430bd2309cf105f39`)
+- 2026-08-01 — fix(client): report the wire saving the chunk cache achieved, not the blob size (Nicolas Vyčas Nery; `c3e646803678ff5dcd7ecb20b6ff5f9d53083011`)
