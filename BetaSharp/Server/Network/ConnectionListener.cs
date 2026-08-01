@@ -1,16 +1,19 @@
 using System.Net;
-using System.Net.Sockets;
 using BetaSharp.Network;
-using BetaSharp.Server.Threading;
+using BetaSharp.Network.Transport;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server.Network;
 
 public class ConnectionListener
 {
-    public Socket Socket { get; }
+    /// <summary>
+    ///     The UDP transport peers arrive on, or null for the singleplayer server, which accepts
+    ///     only loopback connections handed to it directly.
+    /// </summary>
+    public LiteNetLibTransport? Transport { get; }
 
-    private readonly AcceptConnectionThread _thread;
+    private readonly CancellationTokenSource? _accepting;
     private readonly ILogger<ConnectionListener> _logger = Log.Instance.For<ConnectionListener>();
 
     public volatile bool open;
@@ -27,27 +30,78 @@ public class ConnectionListener
     {
         this.server = server;
 
-        Socket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
-        if (address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
-        {
-            Socket.DualMode = dualStack;
-        }
-        Socket.Bind(new IPEndPoint(address, port));
-        Socket.Listen();
+        // dualStack maps onto whether the transport binds IPv6 at all, which is the same choice the
+        // stream listener expressed through Socket.DualMode.
+        Transport = new LiteNetLibTransport(enableIPv6: dualStack);
+        Transport.Listen(address, port);
 
-        this.port = port;
+        this.port = Transport.LocalPort;
         open = true;
-        _thread = new AcceptConnectionThread(this, "Listen Thread");
-        _thread.Run();
+
+        _accepting = new CancellationTokenSource();
+        _ = Task.Run(() => AcceptLoopAsync(_accepting.Token));
+
+        _logger.LogInformation("Listening for UDP connections on {Address}:{Port}", address, this.port);
     }
 
     public ConnectionListener(BetaSharpServer server)
     {
         this.server = server;
-        Socket = null;
+        Transport = null;
         port = 0;
         open = true;
-        _thread = null;
+        _accepting = null;
+    }
+
+    /// <summary>
+    ///     Turns accepted transport peers into pending logins.
+    ///     <para>
+    ///         The per-address throttle the stream listener carried is gone with it. It existed
+    ///         because a TCP accept is cheap for the attacker and expensive for the server; the
+    ///         transport now refuses anything that fails the connection-key handshake before a peer
+    ///         object exists at all, which covers the same ground at a lower layer. A real rate
+    ///         limit belongs there too, not here.
+    ///     </para>
+    /// </summary>
+    private async Task AcceptLoopAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await foreach (ITransportConnection peer in Transport!.AcceptAsync(cancellationToken))
+            {
+                UdpConnection connection = new(peer);
+                ServerLoginNetworkHandler handler = new(server, connection);
+
+                _logger.LogDebug(
+                    "Connection # {Id} from {Peer}", GetNextConnectionCounter(), peer.RemoteEndPoint);
+
+                AddPendingConnection(handler);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Shutting down.
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "The accept loop stopped.");
+        }
+    }
+
+    /// <summary>Stops accepting and releases the socket.</summary>
+    public async Task StopAsync()
+    {
+        open = false;
+
+        if (_accepting is not null)
+        {
+            await _accepting.CancelAsync();
+        }
+
+        if (Transport is not null)
+        {
+            await Transport.DisposeAsync();
+        }
     }
 
     public int GetNextConnectionCounter()

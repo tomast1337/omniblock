@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading.Channels;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
@@ -69,7 +70,7 @@ public sealed class LiteNetLibTransport : ITransport
     /// <summary>The port actually bound, which matters when 0 was requested.</summary>
     public int LocalPort => _manager.LocalPort;
 
-    public LiteNetLibTransport(string connectionKey = DefaultConnectionKey)
+    public LiteNetLibTransport(string connectionKey = DefaultConnectionKey, bool enableIPv6 = true)
     {
         _connectionKey = connectionKey;
         _listener = new EventBasedNetListener();
@@ -87,7 +88,18 @@ public sealed class LiteNetLibTransport : ITransport
             AutoRecycle = true,
 
             ChannelsCount = Channels,
-            IPv6Enabled = true,
+            IPv6Enabled = enableIPv6,
+
+            // A raw chunk is 81,920 bytes against a ~1,200 byte payload MTU, so a single reliable
+            // send is around seventy fragments. The default ceiling is well above that; it is
+            // pinned here because the number is load-bearing and silently truncating a chunk would
+            // present as corrupt terrain rather than as a transport error.
+            MaxFragmentsCount = 1024,
+
+            // Matches the 30 s receive timeout the socket transport used. The server can stall
+            // longer than a default keepalive window during world generation, and dropping players
+            // for that would be a regression.
+            DisconnectTimeout = 30_000,
         };
 
         _listener.ConnectionRequestEvent += request => request.AcceptIfKey(_connectionKey);
@@ -98,9 +110,28 @@ public sealed class LiteNetLibTransport : ITransport
             s_logger.LogDebug("Transport error from {EndPoint}: {Error}", endPoint, error);
     }
 
-    /// <summary>Binds and begins listening. Port 0 takes an ephemeral one; read it back from
-    ///     <see cref="LocalPort" />.</summary>
+    /// <summary>Binds every interface and begins listening. Port 0 takes an ephemeral one; read it
+    ///     back from <see cref="LocalPort" />.</summary>
     public void Listen(int port) => Start(port);
+
+    /// <summary>
+    ///     Binds one address. Kept distinct from <see cref="Listen(int)" /> because the difference
+    ///     matters operationally: a server told to bind loopback and silently given every interface
+    ///     is exposed to a network its operator meant to exclude.
+    /// </summary>
+    public void Listen(IPAddress address, int port)
+    {
+        ArgumentNullException.ThrowIfNull(address);
+
+        bool bound = address.AddressFamily == AddressFamily.InterNetworkV6
+            ? _manager.Start(IPAddress.Any, address, port)
+            : _manager.Start(address, IPAddress.IPv6Any, port);
+
+        if (!bound)
+        {
+            throw new IOException($"Could not bind a UDP socket on {address}:{port}.");
+        }
+    }
 
     /// <summary>Binds an ephemeral port for outbound use.</summary>
     public void StartClient() => Start(0);
@@ -182,8 +213,10 @@ public sealed class LiteNetLibTransport : ITransport
         if (_connections.TryGetValue(peer, out LiteNetLibConnection? connection))
         {
             // Copied here, on the callback, because AutoRecycle reclaims the reader the moment this
-            // returns.
-            connection.Enqueue(new ReceivedDatagram(channel, reader.GetRemainingBytes()));
+            // returns. The arrival stamp is taken here for the same reason it cannot be taken later:
+            // this is the only point that knows when the bytes actually landed.
+            connection.Enqueue(new ReceivedDatagram(
+                channel, reader.GetRemainingBytes(), Util.MonotonicClock.NowTicks()));
         }
     }
 

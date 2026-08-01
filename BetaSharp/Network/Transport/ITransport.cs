@@ -68,7 +68,17 @@ public readonly record struct ConnectionStats(int RoundTripMs, int Mtu);
 /// </summary>
 /// <param name="Channel">The channel the sender used.</param>
 /// <param name="Payload">The bytes, exactly as sent.</param>
-public readonly record struct ReceivedDatagram(byte Channel, byte[] Payload);
+/// <param name="ReceivedAtTicks">
+///     <see cref="Util.MonotonicClock" /> reading taken as the datagram arrived, on the transport's
+///     own thread.
+///     <para>
+///         Only the transport can take this honestly. A timestamp taken where the game drains its
+///         inbox measures how long ago the tick started, not when the bytes landed, and the two
+///         differ by up to a whole tick — which is the quantity clock synchronisation is trying to
+///         measure in the first place.
+///     </para>
+/// </param>
+public readonly record struct ReceivedDatagram(byte Channel, byte[] Payload, long ReceivedAtTicks);
 
 /// <summary>
 ///     A live connection to one peer, in bytes. Knows nothing about packets, messages, chunks or

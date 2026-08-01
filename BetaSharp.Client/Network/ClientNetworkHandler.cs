@@ -20,6 +20,7 @@ using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
+using BetaSharp.Network.Transport;
 using BetaSharp.Registries;
 using BetaSharp.Screens;
 using BetaSharp.Stats;
@@ -92,21 +93,46 @@ public class ClientNetworkHandler : NetHandler
     public bool ShouldInterpolate =>
         Clock is { Synchronised: true } && CurrentBatchServerTimeMs != 0;
 
+    /// <summary>
+    ///     The transport, kept so it can be shut down with the connection. One instance is one
+    ///     socket, and a client's serves exactly this peer.
+    /// </summary>
+    private readonly LiteNetLibTransport? _transport;
+
     public ClientNetworkHandler(ClientNetworkContext context, string address, int port)
     {
         _context = context;
 
         IPAddress[] addresses = Dns.GetHostAddresses(address);
-        var endPoint = new IPEndPoint(addresses.FirstOrDefault(a => a.AddressFamily is AddressFamily.InterNetwork) ?? addresses.First(), port);
+        IPEndPoint endPoint = new(
+            addresses.FirstOrDefault(a => a.AddressFamily is AddressFamily.InterNetwork) ?? addresses.First(),
+            port);
 
-        Socket socket = new(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
+        _transport = new LiteNetLibTransport();
+        _transport.StartClient();
 
-        socket.Connect(endPoint);
+        // Blocking, because this constructor already runs on ThreadConnectToServer rather than on
+        // the game thread, and the connecting screen is driven by that thread finishing. The wait
+        // is bounded so a black hole of an address fails rather than hanging the screen forever.
+        using CancellationTokenSource timeout = new(ConnectTimeout);
+        ITransportConnection peer = _transport
+            .ConnectAsync(endPoint, timeout.Token)
+            .AsTask()
+            .GetAwaiter()
+            .GetResult();
 
-        _netManager = new Connection(socket, "Client", this);
+        _netManager = new UdpConnection(peer, this);
 
         Clock = new ServerClock();
     }
+
+    /// <summary>
+    ///     How long to wait for the UDP handshake. Longer than a round trip on any plausible link,
+    ///     and short enough that a wrong address or a closed port reports rather than hangs. UDP has
+    ///     no equivalent of a TCP connection refusal, so an unreachable peer can only present as a
+    ///     timeout.
+    /// </summary>
+    private static readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(15);
 
     public ClientNetworkHandler(ClientNetworkContext context, Connection connection)
     {
@@ -762,6 +788,11 @@ public class ClientNetworkHandler : NetHandler
     {
         Disconnected = true;
         _netManager.disconnect("disconnect.closed");
+
+        // The transport owns a bound port and a receive thread. Leaving them behind would leak both
+        // per server the player joins in a session, which the stream transport did not do because
+        // closing its socket was the whole of its teardown.
+        _transport?.DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
 
     public override void onLivingEntitySpawn(LivingEntitySpawnS2CPacket packet)

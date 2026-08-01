@@ -14,38 +14,47 @@ namespace BetaSharp.Tests.Network;
 /// </summary>
 public sealed class ExtendedProtocolGateTests
 {
-    /// <summary>Uses the parameterless constructor, so no socket and no reader/writer threads.</summary>
-    private sealed class TestConnection : Connection;
-
     /// <summary>An extended packet, standing in for whatever the peer happens to send first.</summary>
     private static OmniMessagePacket Extended(int messageId = 0) => OmniMessagePacket.Get(messageId, []);
+
+    private sealed class Fixture
+    {
+        public FakeTransportConnection Transport { get; } = new();
+
+        public UdpConnection Connection { get; }
+
+        public int SentCount => Transport.Sent.Count;
+
+        public Fixture() => Connection = new UdpConnection(Transport);
+    }
 
     [Fact]
     public void Extended_packets_are_dropped_while_the_peer_is_unknown()
     {
-        TestConnection connection = new();
-        connection.sendPacket(Extended());
+        Fixture fixture = new();
+        fixture.Connection.sendPacket(Extended());
 
-        Assert.Equal(0, connection.SendQueueDepth);
+        Assert.Equal(0, fixture.SentCount);
     }
 
     [Fact]
     public void Extended_packets_are_sent_once_the_peer_is_known()
     {
-        TestConnection connection = new() { betaSharpClient = true };
-        connection.sendPacket(Extended());
+        Fixture fixture = new();
+        fixture.Connection.betaSharpClient = true;
+        fixture.Connection.sendPacket(Extended());
 
-        Assert.Equal(1, connection.SendQueueDepth);
+        Assert.Equal(1, fixture.SentCount);
     }
 
     [Fact]
     public void Ordinary_packets_are_never_gated()
     {
         // The gate must not touch the vanilla protocol: a plain packet goes out regardless.
-        TestConnection connection = new();
-        connection.sendPacket(KeepAlivePacket.Get());
+        Fixture fixture = new();
+        fixture.Connection.sendPacket(KeepAlivePacket.Get());
 
-        Assert.Equal(1, connection.SendQueueDepth);
+        Assert.Equal(1, fixture.SentCount);
     }
 
     // ---- the capability signal ----
@@ -55,27 +64,27 @@ public sealed class ExtendedProtocolGateTests
     {
         // The actual regression. A client that never sets this discards its own probes forever, and
         // the symptom is a clock stuck on "Synchronising..." with a healthy connection underneath.
-        TestConnection connection = new();
-        Assert.False(connection.betaSharpClient);
+        Fixture fixture = new();
+        Assert.False(fixture.Connection.betaSharpClient);
 
-        connection.NotePeerCapability(Extended());
+        fixture.Connection.NotePeerCapability(Extended());
 
-        Assert.True(connection.betaSharpClient);
+        Assert.True(fixture.Connection.betaSharpClient);
     }
 
     [Fact]
     public void A_client_can_reply_after_the_server_sends_its_first_extended_packet()
     {
         // End to end in one direction: silent before the server identifies itself, sending after.
-        TestConnection connection = new();
+        Fixture fixture = new();
 
-        connection.sendPacket(Extended());
-        Assert.Equal(0, connection.SendQueueDepth);
+        fixture.Connection.sendPacket(Extended());
+        Assert.Equal(0, fixture.SentCount);
 
-        connection.NotePeerCapability(Extended());
+        fixture.Connection.NotePeerCapability(Extended());
 
-        connection.sendPacket(Extended(1));
-        Assert.Equal(1, connection.SendQueueDepth);
+        fixture.Connection.sendPacket(Extended(1));
+        Assert.Equal(1, fixture.SentCount);
     }
 
     [Fact]
@@ -83,11 +92,11 @@ public sealed class ExtendedProtocolGateTests
     {
         // A vanilla peer sends plenty of these. Inferring capability from them would defeat the
         // gate entirely and push unparseable ids at it.
-        TestConnection connection = new();
+        Fixture fixture = new();
 
-        connection.NotePeerCapability(KeepAlivePacket.Get());
+        fixture.Connection.NotePeerCapability(KeepAlivePacket.Get());
 
-        Assert.False(connection.betaSharpClient);
+        Assert.False(fixture.Connection.betaSharpClient);
     }
 
     [Fact]

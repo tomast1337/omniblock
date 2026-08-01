@@ -315,6 +315,11 @@ public abstract class BetaSharpServer : ICommandOutput
 
         _logger.LogInformation("Stopping server");
 
+        // Before saving, so no player is accepted into a world that is mid-save. The stream
+        // listener leaked its socket here; a UDP transport holds a bound port and a receive thread,
+        // and leaving those behind makes a restart on the same port fail.
+        connections?.StopAsync().GetAwaiter().GetResult();
+
         playerManager?.savePlayers();
 
         foreach (ServerWorld world in worlds)
