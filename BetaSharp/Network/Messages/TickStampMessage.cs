@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Packets.S2CPlay;
+namespace BetaSharp.Network.Messages;
 
 /// <summary>
 ///     Announces the server-clock instant that the entity updates following it describe.
@@ -11,42 +11,38 @@ namespace BetaSharp.Network.Packets.S2CPlay;
 ///     <para>
 ///         <b>One stamp per tick, not per entity.</b> Every entity update produced by a single
 ///         simulation tick describes the same instant, so a per-entity timestamp would be eight
-///         bytes of redundancy per entity per tick and no more accurate. TCP delivers in order, so a
-///         stamp sent ahead of the batch unambiguously covers everything until the next stamp.
+///         bytes of redundancy per entity per tick and no more accurate. The stream delivers in
+///         order, so a stamp sent ahead of the batch unambiguously covers everything until the next
+///         stamp.
 ///     </para>
 ///     <para>
 ///         <b>The value is the simulation instant, not the send instant.</b> Positions change in
 ///         <c>BetaSharpServer.Tick</c>; the entity tracker broadcasts the resulting deltas later, in
-///         <c>TickFixed</c>. Stamping at send time would fold that scheduling gap into the
-///         timestamp and jitter the interpolation by however long the two loops happened to drift
-///         apart.
-///     </para>
-///     <para>
-///         An <see cref="ExtendedProtocolPacket" />, so a vanilla client never receives one and
-///         keeps its existing move-toward-target behaviour.
+///         <c>TickFixed</c>. Stamping at send time would fold that scheduling gap into the timestamp
+///         and jitter the interpolation by however long the two loops happened to drift apart.
+///         <see cref="Message.TransportSentAtMs" /> is deliberately not used here — it would be the
+///         send instant, which is the wrong quantity.
 ///     </para>
 /// </summary>
-public class TickStampS2CPacket() : ExtendedProtocolPacket(PacketId.TickStamp)
+public sealed class TickStampMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.BetaSharp, "tick_stamp");
+
+    public override ResourceLocation Key => Id;
+
+    /// <summary>A stamp that arrives late drags the whole interpolation timeline with it.</summary>
+    public override SendPriority Priority => SendPriority.High;
+
     /// <summary>
     ///     The server's <see cref="Util.MonotonicClock" /> reading at the start of the simulation
     ///     tick whose updates follow. Same clock domain as the time-sync T1/T2 stamps, which is what
     ///     makes it comparable to the client's estimate of server time.
     /// </summary>
-    public long ServerTimeMs { get; private set; }
-
-    public static TickStampS2CPacket Get(long serverTimeMs)
-    {
-        TickStampS2CPacket p = Get<TickStampS2CPacket>(PacketId.TickStamp);
-        p.ServerTimeMs = serverTimeMs;
-        return p;
-    }
+    public long ServerTimeMs { get; set; }
 
     public override void Read(Stream stream) => ServerTimeMs = stream.ReadLong();
 
     public override void Write(Stream stream) => stream.WriteLong(ServerTimeMs);
-
-    public override void Apply(NetHandler handler) => handler.onTickStamp(this);
 
     public override int Size() => sizeof(long);
 }

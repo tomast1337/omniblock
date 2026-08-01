@@ -1,8 +1,7 @@
 using BetaSharp.Network;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
-using BetaSharp.Network.Packets.S2CPlay;
 
 namespace BetaSharp.Tests.Network;
 
@@ -18,11 +17,14 @@ public sealed class ExtendedProtocolGateTests
     /// <summary>Uses the parameterless constructor, so no socket and no reader/writer threads.</summary>
     private sealed class TestConnection : Connection;
 
+    /// <summary>An extended packet, standing in for whatever the peer happens to send first.</summary>
+    private static OmniMessagePacket Extended(int messageId = 0) => OmniMessagePacket.Get(messageId, []);
+
     [Fact]
     public void Extended_packets_are_dropped_while_the_peer_is_unknown()
     {
         TestConnection connection = new();
-        connection.sendPacket(TimeSyncRequestC2SPacket.Get(0, 0));
+        connection.sendPacket(Extended());
 
         Assert.Equal(0, connection.SendQueueDepth);
     }
@@ -31,7 +33,7 @@ public sealed class ExtendedProtocolGateTests
     public void Extended_packets_are_sent_once_the_peer_is_known()
     {
         TestConnection connection = new() { betaSharpClient = true };
-        connection.sendPacket(TimeSyncRequestC2SPacket.Get(0, 0));
+        connection.sendPacket(Extended());
 
         Assert.Equal(1, connection.SendQueueDepth);
     }
@@ -56,7 +58,7 @@ public sealed class ExtendedProtocolGateTests
         TestConnection connection = new();
         Assert.False(connection.betaSharpClient);
 
-        connection.NotePeerCapability(TickStampS2CPacket.Get(0));
+        connection.NotePeerCapability(Extended());
 
         Assert.True(connection.betaSharpClient);
     }
@@ -67,12 +69,12 @@ public sealed class ExtendedProtocolGateTests
         // End to end in one direction: silent before the server identifies itself, sending after.
         TestConnection connection = new();
 
-        connection.sendPacket(TimeSyncRequestC2SPacket.Get(0, 0));
+        connection.sendPacket(Extended());
         Assert.Equal(0, connection.SendQueueDepth);
 
-        connection.NotePeerCapability(TickStampS2CPacket.Get(0));
+        connection.NotePeerCapability(Extended());
 
-        connection.sendPacket(TimeSyncRequestC2SPacket.Get(1, 0));
+        connection.sendPacket(Extended(1));
         Assert.Equal(1, connection.SendQueueDepth);
     }
 
@@ -89,11 +91,11 @@ public sealed class ExtendedProtocolGateTests
     }
 
     [Fact]
-    public void Both_time_sync_directions_are_gated_packets()
+    public void The_message_envelope_is_a_gated_packet()
     {
-        // If either stopped being an ExtendedProtocolPacket, a vanilla peer would receive an id it
-        // cannot parse and drop the connection.
-        Assert.IsAssignableFrom<ExtendedProtocolPacket>(TimeSyncRequestC2SPacket.Get(0, 0));
-        Assert.IsAssignableFrom<ExtendedProtocolPacket>(TimeSyncResponseS2CPacket.Get(0, 0, 0, 0));
+        // Every extensible-layer message travels inside this one packet, so this single assertion
+        // covers all of them. If it stopped being an ExtendedProtocolPacket, a vanilla peer would
+        // receive an id it cannot parse and drop the connection.
+        Assert.IsAssignableFrom<ExtendedProtocolPacket>(Extended());
     }
 }

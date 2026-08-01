@@ -161,7 +161,7 @@ public sealed class EntityInterpolator
 
     /// <summary>
     ///     Records where the server says an entity was, as of the batch currently being read.
-    ///     <paramref name="serverTimeMs" /> comes from the most recent <c>TickStampS2CPacket</c>;
+    ///     <paramref name="serverTimeMs" /> comes from the most recent <c>TickStampMessage</c>;
     ///     a zero means the server does not stamp and the snapshot is dropped, since a snapshot
     ///     without a timeline is exactly the guess this replaces.
     /// </summary>

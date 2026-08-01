@@ -366,19 +366,21 @@ public class Connection
         }
     }
 
-    private static void StampTimeSyncTimestamp(Packet packet, long timestampTicks)
+    /// <summary>
+    ///     Records when a message envelope arrived, on the read thread.
+    ///     <para>
+    ///         Unconditional and message-agnostic. This used to be a switch over the two concrete
+    ///         time-sync packet types, which put knowledge of one feature's clock arithmetic inside
+    ///         the transport; now the transport records when things arrive and the message layer
+    ///         decides what that is worth. It costs nothing — the clock reading is one the read loop
+    ///         already takes for the arrival histogram.
+    ///     </para>
+    /// </summary>
+    private static void StampArrival(Packet packet, long timestampTicks)
     {
-        long ms = MonotonicClock.ToMs(timestampTicks);
-
-        switch (packet)
+        if (packet is OmniMessagePacket envelope)
         {
-            case TimeSyncRequestC2SPacket request:
-                request.ServerRecvTime = ms;
-                break;
-
-            case TimeSyncResponseS2CPacket response:
-                response.ClientRecvTime = ms;
-                break;
+            envelope.ReceivedAtMs = MonotonicClock.ToMs(timestampTicks);
         }
     }
 
@@ -408,7 +410,7 @@ public class Connection
                     _lastReadTimestamp = now;
 
                     NotePeerCapability(packet);
-                    StampTimeSyncTimestamp(packet, now);
+                    StampArrival(packet, now);
 
                     BytesRead += packet.Size();
                     PacketsRead++;
@@ -458,12 +460,13 @@ public class Connection
     {
         ArgumentNullException.ThrowIfNull(_networkStream);
 
-        // T2: the server's timestamp for the time-sync response, stamped as late as possible —
-        // inside the write path, immediately before the bytes go to the socket, rather than in the
-        // handler where a send-queue drain could add up to a chunk's worth of delay.
-        if (packet is TimeSyncResponseS2CPacket response && response.ServerSendTime == 0)
+        // Stamped as late as possible — inside the write path, immediately before the bytes go to
+        // the socket, rather than in the handler where a send-queue drain could add up to a chunk's
+        // worth of delay. Which messages want this is the message layer's decision, declared by
+        // Message.NeedsSendTimestamp; the transport only knows that the envelope reserved room.
+        if (packet is OmniMessagePacket { CarriesSendTime: true, SentAtMs: 0 } envelope)
         {
-            response.ServerSendTime = MonotonicClock.NowMs();
+            envelope.SentAtMs = MonotonicClock.NowMs();
         }
 
         long start = MonotonicClock.NowTicks();

@@ -35,6 +35,51 @@ public abstract class Message
     /// </summary>
     public virtual int SchemaVersion => 1;
 
+    /// <summary>
+    ///     Which send queue this message is drained from.
+    ///     <para>
+    ///         Declared per message rather than inherited from the envelope's packet ID, because
+    ///         every message shares one ID and they do not share one urgency — a clock probe and a
+    ///         mod's bulk asset transfer would otherwise be indistinguishable to the sender. This is
+    ///         also the extensibility that matters: a mod says its message is latency-sensitive
+    ///         instead of hunting for a packet ID that happens to be prioritised.
+    ///     </para>
+    ///     <para>
+    ///         A local send decision, so it is not serialised. See <c>PacketPriorities</c> for what
+    ///         may safely overtake bulk traffic; the same rule applies here.
+    ///     </para>
+    /// </summary>
+    public virtual SendPriority Priority => SendPriority.Normal;
+
+    /// <summary>
+    ///     Whether the transport should stamp its send instant into the envelope on the way out.
+    ///     <para>
+    ///         For anything that measures the network rather than describing the world. The value
+    ///         has to be taken inside the write path, immediately before the bytes reach the socket,
+    ///         or the time a packet spent queued behind a chunk is counted as network latency. A
+    ///         payload field cannot do that: the payload is serialised when the message is handed to
+    ///         the layer, which is before the moment it would be describing.
+    ///     </para>
+    /// </summary>
+    public virtual bool NeedsSendTimestamp => false;
+
+    /// <summary>
+    ///     Transport send instant, from the envelope, or 0 when this message did not ask for one.
+    ///     See <see cref="NeedsSendTimestamp" />.
+    /// </summary>
+    public long TransportSentAtMs { get; internal set; }
+
+    /// <summary>
+    ///     Transport arrival instant, taken on the read thread before the packet was queued.
+    ///     <para>
+    ///         Always present, because it costs one clock reading the read loop already takes. It is
+    ///         not the same as "when the handler saw it": handlers run on the game thread up to a
+    ///         full tick later, so a timestamp taken there measures the tick phase rather than the
+    ///         network. Never serialised — it describes this peer's own receipt.
+    ///     </para>
+    /// </summary>
+    public long TransportReceivedAtMs { get; internal set; }
+
     public abstract void Read(Stream stream);
 
     public abstract void Write(Stream stream);

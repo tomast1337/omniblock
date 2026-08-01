@@ -246,6 +246,7 @@ public sealed class MessageLayerTests
     {
         MemoryStream stream = new();
         stream.WriteVarInt(1);
+        stream.WriteByte(0); // flags: no send timestamp
         stream.WriteVarInt(OmniMessagePacket.MaxPayloadBytes + 1);
         stream.Position = 0;
 

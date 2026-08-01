@@ -74,6 +74,12 @@ public abstract class NetHandler
             return;
         }
 
+        // Transport timing rides on the envelope rather than in the payload, so it is transferred
+        // before the message is handed on. Anything that measures the network needs values taken at
+        // the transport edge; a payload field would be serialised before the moment it describes.
+        message.TransportSentAtMs = packet.SentAtMs;
+        message.TransportReceivedAtMs = packet.ReceivedAtMs;
+
         try
         {
             using MemoryStream payload = new(packet.Payload, writable: false);
@@ -92,30 +98,6 @@ public abstract class NetHandler
 
     /// <summary>Handles a decoded message. The override point for content and mods.</summary>
     public virtual void onMessage(Message message)
-    {
-    }
-
-    /// <summary>
-    ///     Client sends a time-sync probe. Server stamps T1 here (on the read path), then
-    ///     <see cref="onTimeSyncResponse" /> stamps T2 on the write path.
-    /// </summary>
-    public virtual void onTimeSyncRequest(TimeSyncRequestC2SPacket packet)
-    {
-    }
-
-    /// <summary>
-    ///     Server echoes a completed time-sync probe. Client stamps T3 here (on the read path) and
-    ///     feeds the four timestamps to its <see cref="ServerClock" />.
-    /// </summary>
-    public virtual void onTimeSyncResponse(TimeSyncResponseS2CPacket packet)
-    {
-    }
-
-    /// <summary>
-    ///     Server announces the simulation instant that the entity updates following it describe.
-    ///     Everything received until the next stamp belongs to this instant.
-    /// </summary>
-    public virtual void onTickStamp(TickStampS2CPacket packet)
     {
     }
 

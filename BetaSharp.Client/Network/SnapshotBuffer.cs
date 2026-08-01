@@ -4,7 +4,7 @@ namespace BetaSharp.Client.Network;
 ///     One remote entity's position as of one server tick.
 /// </summary>
 /// <param name="ServerTimeMs">
-///     The server-clock instant this describes, from <c>TickStampS2CPacket</c>. Not the arrival
+///     The server-clock instant this describes, from <c>TickStampMessage</c>. Not the arrival
 ///     time — that is the whole point, see <see cref="SnapshotBuffer" />.
 /// </param>
 public readonly record struct Snapshot(

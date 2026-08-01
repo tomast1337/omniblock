@@ -1,3 +1,5 @@
+using BetaSharp.Network.Messages;
+
 namespace BetaSharp.Network.Packets;
 
 /// <summary>
@@ -26,12 +28,49 @@ public class OmniMessagePacket() : ExtendedProtocolPacket(PacketId.OmniMessage)
     /// </summary>
     public const int MaxPayloadBytes = 2 * 1024 * 1024;
 
+    /// <summary>Set when the envelope carries a transport send instant.</summary>
+    private const byte SendTimestampFlag = 1;
+
     /// <summary>Negotiated wire ID, meaningful only against the session's <c>MessageRegistry</c>.</summary>
     public int MessageId { get; private set; }
 
     public byte[] Payload { get; private set; } = [];
 
-    public static OmniMessagePacket Get(int messageId, byte[] payload)
+    /// <summary>
+    ///     Whether this envelope reserves room for a send instant. Fixed when the envelope is
+    ///     built, so <see cref="Size" /> stays stable while the value itself is filled in later.
+    /// </summary>
+    public bool CarriesSendTime { get; private set; }
+
+    /// <summary>
+    ///     The wrapped message's declared priority, so <c>PacketPriorities</c> can route this
+    ///     envelope without decoding it. Not serialised: it is a local decision about this peer's
+    ///     own send queue, and the receiver has no use for it.
+    /// </summary>
+    public SendPriority Priority { get; private set; } = SendPriority.Normal;
+
+    /// <summary>
+    ///     The transport's send instant, filled in by <c>Connection.WritePacket</c> immediately
+    ///     before the bytes reach the socket. Zero when <see cref="CarriesSendTime" /> is false.
+    ///     <para>
+    ///         Here rather than in the payload because the payload is already serialised by the time
+    ///         anything knows when it will be sent, and a queued message can wait behind a chunk for
+    ///         longer than the round trip it is trying to measure.
+    ///     </para>
+    /// </summary>
+    public long SentAtMs { get; internal set; }
+
+    /// <summary>
+    ///     Arrival instant, stamped on the read thread before this was queued. Never serialised —
+    ///     it describes this peer's own receipt, so there is nothing to transmit.
+    /// </summary>
+    public long ReceivedAtMs { get; internal set; }
+
+    public static OmniMessagePacket Get(
+        int messageId,
+        byte[] payload,
+        bool carriesSendTime = false,
+        SendPriority priority = SendPriority.Normal)
     {
         ArgumentNullException.ThrowIfNull(payload);
         ArgumentOutOfRangeException.ThrowIfNegative(messageId);
@@ -40,12 +79,42 @@ public class OmniMessagePacket() : ExtendedProtocolPacket(PacketId.OmniMessage)
         OmniMessagePacket p = Get<OmniMessagePacket>(PacketId.OmniMessage);
         p.MessageId = messageId;
         p.Payload = payload;
+        p.CarriesSendTime = carriesSendTime;
+        p.Priority = priority;
+        p.SentAtMs = 0;
+        p.ReceivedAtMs = 0;
         return p;
+    }
+
+    /// <summary>
+    ///     Wraps a message for the session's negotiated table, or returns null when the peer never
+    ///     advertised the key. Null is the normal answer for a message the peer does not implement,
+    ///     not an error — it is the per-type degradation the layer exists to allow.
+    /// </summary>
+    public static OmniMessagePacket? For(MessageRegistry registry, Message message)
+    {
+        ArgumentNullException.ThrowIfNull(registry);
+        ArgumentNullException.ThrowIfNull(message);
+
+        int id = registry.GetId(message.Key);
+        if (id < 0)
+        {
+            return null;
+        }
+
+        using MemoryStream buffer = new(message.Size());
+        message.Write(buffer);
+
+        return Get(id, buffer.ToArray(), message.NeedsSendTimestamp, message.Priority);
     }
 
     public override void Read(Stream stream)
     {
         MessageId = stream.ReadVarInt();
+
+        byte flags = (byte)stream.ReadByte();
+        CarriesSendTime = (flags & SendTimestampFlag) != 0;
+        SentAtMs = CarriesSendTime ? stream.ReadLong() : 0;
 
         int length = stream.ReadVarInt();
         if (length < 0 || length > MaxPayloadBytes)
@@ -61,6 +130,13 @@ public class OmniMessagePacket() : ExtendedProtocolPacket(PacketId.OmniMessage)
     public override void Write(Stream stream)
     {
         stream.WriteVarInt(MessageId);
+
+        stream.WriteByte(CarriesSendTime ? SendTimestampFlag : (byte)0);
+        if (CarriesSendTime)
+        {
+            stream.WriteLong(SentAtMs);
+        }
+
         stream.WriteVarInt(Payload.Length);
         stream.Write(Payload);
     }
@@ -72,5 +148,9 @@ public class OmniMessagePacket() : ExtendedProtocolPacket(PacketId.OmniMessage)
     public override void Apply(NetHandler handler) => handler.onOmniMessage(this);
 
     public override int Size() =>
-        StreamExtensions.VarIntSize(MessageId) + StreamExtensions.VarIntSize(Payload.Length) + Payload.Length;
+        StreamExtensions.VarIntSize(MessageId)
+        + sizeof(byte)
+        + (CarriesSendTime ? sizeof(long) : 0)
+        + StreamExtensions.VarIntSize(Payload.Length)
+        + Payload.Length;
 }

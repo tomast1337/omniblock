@@ -63,7 +63,7 @@ public abstract class BetaSharpServer : ICommandOutput
     /// <summary>
     ///     <see cref="MonotonicClock" /> reading at the start of the most recent simulation tick.
     ///     This is the instant that every entity position set during that tick describes, and it is
-    ///     what <see cref="TickStampS2CPacket" /> carries — see that packet for why it is not the
+    ///     what <see cref="TickStampMessage" /> carries — see that message for why it is not the
     ///     send time.
     /// </summary>
     private long _simulationTimeMs;
@@ -124,7 +124,10 @@ public abstract class BetaSharpServer : ICommandOutput
         RegisterReloadListener(new RecipeManager());
 
         // Freeze the message table before the listener accepts anyone. Every client is told this
-        // ordering during configuration, so it must not be able to change afterwards.
+        // ordering during configuration, so it must not be able to change afterwards. Mods register
+        // between here and RegisterAll; ordering does not matter, since IDs come from the sorted key
+        // set rather than from registration sequence.
+        DefaultMessages.RegisterAll(Messages);
         Messages.NegotiateAsServer();
 
         onlineMode = config.GetOnlineMode(true);
@@ -516,7 +519,14 @@ public abstract class BetaSharpServer : ICommandOutput
         if (_simulationTimeMs != _broadcastSimulationTimeMs)
         {
             _broadcastSimulationTimeMs = _simulationTimeMs;
-            playerManager.sendToAll(TickStampS2CPacket.Get(_simulationTimeMs));
+
+            OmniMessagePacket? stamp = OmniMessagePacket.For(
+                Messages, new TickStampMessage { ServerTimeMs = _simulationTimeMs });
+
+            if (stamp is not null)
+            {
+                playerManager.sendToAll(stamp);
+            }
         }
 
         foreach (EntityTracker t in entityTrackers)

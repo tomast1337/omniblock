@@ -1,4 +1,5 @@
 using BetaSharp.Network;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
 
 namespace BetaSharp.Tests.Network;
@@ -24,6 +25,10 @@ public sealed class SendPriorityTests
             betaSharpClient = true;
         }
 
+        /// <summary>An envelope wrapping a message of the given priority.</summary>
+        public static OmniMessagePacket Message(SendPriority priority) =>
+            OmniMessagePacket.Get(0, [], carriesSendTime: false, priority);
+
         public List<Packet> DrainAll()
         {
             List<Packet> drained = [];
@@ -43,9 +48,28 @@ public sealed class SendPriorityTests
         Assert.Equal(SendPriority.High, PacketPriorities.Of(Packet.Get(PacketId.EntityPositionS2C)));
         Assert.Equal(SendPriority.High, PacketPriorities.Of(Packet.Get(PacketId.EntityDestroyS2C)));
         Assert.Equal(SendPriority.High, PacketPriorities.Of(Packet.Get(PacketId.LivingEntitySpawnS2C)));
-        Assert.Equal(SendPriority.High, PacketPriorities.Of(Packet.Get(PacketId.TickStamp)));
-        Assert.Equal(SendPriority.High, PacketPriorities.Of(Packet.Get(PacketId.TimeSyncResponse)));
         Assert.Equal(SendPriority.High, PacketPriorities.Of(Packet.Get(PacketId.KeepAlive)));
+    }
+
+    /// <summary>
+    ///     Every extensible-layer message shares one packet ID, so the ID cannot say how urgent one
+    ///     is. A clock probe and a mod's bulk transfer arrive here as the same packet type and must
+    ///     still be routed differently.
+    /// </summary>
+    [Fact]
+    public void A_message_envelope_takes_its_priority_from_the_message()
+    {
+        Assert.Equal(SendPriority.High, PacketPriorities.Of(QueueOnlyConnection.Message(SendPriority.High)));
+        Assert.Equal(SendPriority.Normal, PacketPriorities.Of(QueueOnlyConnection.Message(SendPriority.Normal)));
+    }
+
+    /// <summary>The messages migrated off their own packet IDs must keep the priority those had.</summary>
+    [Fact]
+    public void The_migrated_time_sync_messages_are_high_priority()
+    {
+        Assert.Equal(SendPriority.High, new TimeSyncRequestMessage().Priority);
+        Assert.Equal(SendPriority.High, new TimeSyncResponseMessage().Priority);
+        Assert.Equal(SendPriority.High, new TickStampMessage().Priority);
     }
 
     /// <summary>
@@ -74,14 +98,14 @@ public sealed class SendPriorityTests
         connection.sendPacket(Packet.Get(PacketId.ChunkDataS2C));
         connection.sendPacket(Packet.Get(PacketId.EntityMoveRelativeS2C));
         connection.sendPacket(Packet.Get(PacketId.BlockUpdateS2C));
-        connection.sendPacket(Packet.Get(PacketId.TickStamp));
+        connection.sendPacket(QueueOnlyConnection.Message(SendPriority.High));
 
         byte[] order = [.. connection.DrainAll().Select(p => p.Id)];
 
         Assert.Equal(
             [
                 (byte)PacketId.EntityMoveRelativeS2C,
-                (byte)PacketId.TickStamp,
+                (byte)PacketId.OmniMessage,
                 (byte)PacketId.ChunkDataS2C,
                 (byte)PacketId.BlockUpdateS2C,
             ],
@@ -127,7 +151,7 @@ public sealed class SendPriorityTests
 
         connection.sendPacket(Packet.Get(PacketId.ChunkDataS2C));
         connection.sendPacket(Packet.Get(PacketId.EntityMoveRelativeS2C));
-        connection.sendPacket(Packet.Get(PacketId.TickStamp));
+        connection.sendPacket(QueueOnlyConnection.Message(SendPriority.High));
 
         Assert.Equal(3, connection.SendQueueDepth);
         Assert.Equal(2, connection.PrioritySendQueueDepth);

@@ -50,13 +50,16 @@ public static class PacketPriorities
     {
         ArgumentNullException.ThrowIfNull(packet);
 
+        // Every extensible-layer message shares one packet ID, so the ID cannot say how urgent one
+        // is. The message declares it and the envelope carries the answer, which is what stops a
+        // mod's bulk transfer and a clock probe from being indistinguishable here.
+        if (packet is OmniMessagePacket envelope)
+        {
+            return envelope.Priority;
+        }
+
         return (PacketId)packet.Id switch
         {
-            // Timing. A probe queued behind a chunk measures the queue, not the network, and a tick
-            // stamp that arrives late drags the whole interpolation timeline with it.
-            PacketId.TimeSyncRequest or
-            PacketId.TimeSyncResponse or
-            PacketId.TickStamp or
             PacketId.KeepAlive => SendPriority.High,
 
             // Entity replication. The reason the queue exists.

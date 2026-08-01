@@ -78,15 +78,49 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     }
 
 
-    public override void onTimeSyncRequest(TimeSyncRequestC2SPacket packet)
+    public override void onMessage(Message message)
     {
-        // T1 was stamped by Connection.Reading before queueing. T2 is zero here — it is stamped
-        // by Connection.WritePacket immediately before the bytes go to the socket, which is as late
-        // as the architecture can place it.
-        TimeSyncResponseS2CPacket response = TimeSyncResponseS2CPacket.Get(
-            packet.Sequence, packet.ClientSendTime, packet.ServerRecvTime, serverSendTime: 0);
+        if (message is TimeSyncRequestMessage request)
+        {
+            onTimeSyncRequest(request);
+        }
+    }
 
-        SendPacket(response);
+    /// <summary>
+    ///     Echoes a probe. The server is stateless here: it returns every field it cannot derive and
+    ///     lets the client validate the response against its own pending table.
+    /// </summary>
+    private void onTimeSyncRequest(TimeSyncRequestMessage request)
+    {
+        // T1 came in on the envelope, stamped on the read thread before queueing. T2 is not set
+        // here at all — the response declares NeedsSendTimestamp and Connection.WritePacket fills it
+        // in immediately before the bytes reach the socket, which is as late as it can be placed.
+        SendMessage(new TimeSyncResponseMessage
+        {
+            Sequence = request.Sequence,
+            ClientSendTime = request.ClientSendTime,
+            ServerRecvTime = request.TransportReceivedAtMs,
+        });
+    }
+
+    /// <summary>
+    ///     Sends a message over this connection, or drops it when the client never advertised the
+    ///     key. Dropping is the designed outcome for a peer that does not implement a message, not
+    ///     an error to report.
+    /// </summary>
+    public void SendMessage(Message message)
+    {
+        MessageRegistry? registry = Messages;
+        if (registry is null || !registry.Negotiated)
+        {
+            return;
+        }
+
+        OmniMessagePacket? envelope = OmniMessagePacket.For(registry, message);
+        if (envelope is not null)
+        {
+            SendPacket(envelope);
+        }
     }
 
     public override void onPlayerInput(PlayerInputC2SPacket packet) => player.updateInput(packet);

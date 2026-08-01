@@ -55,12 +55,25 @@ public class ClientNetworkHandler : NetHandler
     ///     match the server's when <c>MessageRegistrySyncS2CPacket</c> arrives during configuration.
     ///     Per-connection rather than static, since two servers may advertise different tables.
     /// </summary>
-    public override MessageRegistry? Messages { get; } = new();
+    public override MessageRegistry? Messages { get; } = BuildMessageRegistry();
+
+    /// <summary>
+    ///     Registers the same set the server does. Both sides go through
+    ///     <see cref="DefaultMessages" /> rather than keeping two lists, because a divergence is
+    ///     silent in both directions — a key the server advertises and this peer lacks becomes a
+    ///     hole and its messages are dropped, and a key registered only here can never be sent.
+    /// </summary>
+    private static MessageRegistry BuildMessageRegistry()
+    {
+        MessageRegistry registry = new();
+        DefaultMessages.RegisterAll(registry);
+        return registry;
+    }
 
     /// <summary>
     ///     Synchronised server clock. Null for the loopback path (<see cref="InternalConnection" />),
     ///     where offset is identically zero and there is no jitter to measure. Polled each tick and
-    ///     fed from <see cref="onTimeSyncResponse" />.
+    ///     fed from the time-sync response message.
     /// </summary>
     public ServerClock? Clock { get; }
 
@@ -195,16 +208,58 @@ public class ClientNetworkHandler : NetHandler
         (uint Sequence, long ClientSendTime)? probe = Clock.Poll();
         if (probe is not null)
         {
-            SendPacket(TimeSyncRequestC2SPacket.Get(probe.Value.Sequence, probe.Value.ClientSendTime));
+            SendMessage(new TimeSyncRequestMessage
+            {
+                Sequence = probe.Value.Sequence,
+                ClientSendTime = probe.Value.ClientSendTime,
+            });
         }
     }
 
-    public override void onTimeSyncResponse(TimeSyncResponseS2CPacket packet)
+    /// <summary>
+    ///     Sends a message, or drops it when the server never advertised the key — the designed
+    ///     outcome for a peer that does not implement it, not an error.
+    /// </summary>
+    private void SendMessage(Message message)
     {
-        // T3 was stamped by Connection.Reading before queueing. The handler reads it rather than
-        // stamping its own, because it runs on the game thread up to a tick later.
-        Clock?.Complete(packet.Sequence, packet.ClientSendTime, packet.ServerRecvTime,
-            packet.ServerSendTime, packet.ClientRecvTime);
+        MessageRegistry? registry = Messages;
+        if (registry is null || !registry.Negotiated)
+        {
+            return;
+        }
+
+        OmniMessagePacket? envelope = OmniMessagePacket.For(registry, message);
+        if (envelope is not null)
+        {
+            SendPacket(envelope);
+        }
+    }
+
+    public override void onMessage(Message message)
+    {
+        switch (message)
+        {
+            case TimeSyncResponseMessage response:
+                onTimeSyncResponse(response);
+                break;
+
+            case TickStampMessage stamp:
+                onTickStamp(stamp);
+                break;
+        }
+    }
+
+    private void onTimeSyncResponse(TimeSyncResponseMessage response)
+    {
+        // T2 and T3 rode in on the envelope: T2 stamped inside the server's write path, T3 on this
+        // client's read thread before queueing. Neither is read here, because this runs on the game
+        // thread up to a tick later and would measure the tick phase rather than the network.
+        Clock?.Complete(
+            response.Sequence,
+            response.ClientSendTime,
+            response.ServerRecvTime,
+            response.TransportSentAtMs,
+            response.TransportReceivedAtMs);
     }
 
     /// <summary>
@@ -222,19 +277,17 @@ public class ClientNetworkHandler : NetHandler
         Interpolation.Apply(world, Clock.ServerTimeMs);
     }
 
-    public override void onTickStamp(TickStampS2CPacket packet)
+    private void onTickStamp(TickStampMessage stamp)
     {
         // Every entity update read after this and before the next stamp describes this instant.
-        // Phase 4 will attach it to snapshots; for now it is recorded so the F3 overlay can show
-        // that the stream really is stamped, and how far behind the client's estimate of server
-        // time the newest batch is.
-        CurrentBatchServerTimeMs = packet.ServerTimeMs;
+        // RetargetEntity attaches it to each snapshot it records.
+        CurrentBatchServerTimeMs = stamp.ServerTimeMs;
         TickStampsReceived++;
         MetricRegistry.Set(ClientMetrics.TickStampsReceived, TickStampsReceived);
     }
 
     /// <summary>
-    ///     Server-clock instant of the most recent <see cref="TickStampS2CPacket" />, or 0 if the
+    ///     Server-clock instant of the most recent <see cref="TickStampMessage" />, or 0 if the
     ///     stream has never been stamped. Zero is the signal that this server does not stamp — an
     ///     older OmniBlock build, or the loopback path — and that phase 4's interpolation must fall
     ///     back to the legacy move-toward-target behaviour rather than interpolate against a

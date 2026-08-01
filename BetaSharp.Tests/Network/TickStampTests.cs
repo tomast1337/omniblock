@@ -1,18 +1,18 @@
-using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.S2CPlay;
+using BetaSharp.Network;
+using BetaSharp.Network.Messages;
 using BetaSharp.Util;
 
 namespace BetaSharp.Tests.Network;
 
 public sealed class TickStampTests
 {
-    private static TickStampS2CPacket RoundTrip(long serverTimeMs)
+    private static TickStampMessage RoundTrip(long serverTimeMs)
     {
         MemoryStream stream = new();
-        TickStampS2CPacket.Get(serverTimeMs).Write(stream);
+        new TickStampMessage { ServerTimeMs = serverTimeMs }.Write(stream);
         stream.Position = 0;
 
-        TickStampS2CPacket read = new();
+        TickStampMessage read = new();
         read.Read(stream);
         return read;
     }
@@ -36,23 +36,32 @@ public sealed class TickStampTests
     public void Reports_the_size_it_writes()
     {
         MemoryStream stream = new();
-        TickStampS2CPacket packet = TickStampS2CPacket.Get(42);
-        packet.Write(stream);
+        TickStampMessage message = new() { ServerTimeMs = 42 };
+        message.Write(stream);
 
-        Assert.Equal(packet.Size(), stream.Length);
+        Assert.Equal(message.Size(), stream.Length);
     }
 
+    /// <summary>
+    ///     A stamp that arrives behind a chunk drags the interpolation timeline with it, so it goes
+    ///     in the priority queue. Declared by the message rather than by the envelope's packet ID,
+    ///     which every message shares.
+    /// </summary>
     [Fact]
-    public void Is_an_extended_protocol_packet()
+    public void Is_high_priority()
     {
-        // Gates it behind the OmniBlock client check, so a vanilla client never receives one.
-        Assert.IsAssignableFrom<ExtendedProtocolPacket>(TickStampS2CPacket.Get(0));
+        Assert.Equal(SendPriority.High, new TickStampMessage().Priority);
     }
 
+    /// <summary>
+    ///     The value is the simulation instant, taken before anything moved, not the moment the
+    ///     bytes left. Asking the transport to stamp it would substitute the second for the first
+    ///     and fold the gap between the two server loops into the timeline.
+    /// </summary>
     [Fact]
-    public void Is_registered_under_its_id()
+    public void Does_not_ask_the_transport_for_a_send_timestamp()
     {
-        Assert.Equal((byte)PacketId.TickStamp, TickStampS2CPacket.Get(0).Id);
+        Assert.False(new TickStampMessage().NeedsSendTimestamp);
     }
 }
 

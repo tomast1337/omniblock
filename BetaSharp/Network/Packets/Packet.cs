@@ -184,9 +184,6 @@ public abstract class Packet
             New(PacketId.IncreaseStatS2C, true, false, false, () => new IncreaseStatS2CPacket()),
             New(PacketId.MessageRegistrySyncS2C, true, false, false, () => new MessageRegistrySyncS2CPacket()),
             New(PacketId.OmniMessage, true, true, false, () => new OmniMessagePacket()),
-            New(PacketId.TimeSyncRequest, false, true, false, () => new TimeSyncRequestC2SPacket()),
-            New(PacketId.TimeSyncResponse, true, false, false, () => new TimeSyncResponseS2CPacket()),
-            New(PacketId.TickStamp, true, false, false, () => new TickStampS2CPacket()),
             New(PacketId.Disconnect, true, true, false, () => new DisconnectPacket())
         ]);
 
