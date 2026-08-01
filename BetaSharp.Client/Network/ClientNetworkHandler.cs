@@ -175,6 +175,11 @@ public class ClientNetworkHandler : NetHandler
             MetricRegistry.Set(ClientMetrics.ReadIntervalP99Ms, arrivals.PercentileMs(99));
             MetricRegistry.Set(ClientMetrics.ReadIntervalMaxMs, arrivals.MaxMs);
 
+            // The distributions themselves, so the overlay can draw the shape rather than infer it
+            // from percentiles. Null on the RTT side for a loopback connection, which has no clock.
+            MetricRegistry.Set(ClientMetrics.ArrivalHistogram, arrivals);
+            MetricRegistry.Set(ClientMetrics.RttHistogram, Clock?.RttHistogram);
+
             // Tracks the player so the next join can advertise the right region before the server
             // has said where they are. Two fields in memory; it reaches disk on flush.
             if (_chunkCache is not null && _context.PlayerHost.Player is { } located)
