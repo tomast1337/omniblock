@@ -88,13 +88,21 @@ public class EntityTracker
         }
     }
 
+    /// <summary>
+    ///     This entity's recent position history, or null when nothing tracks it. See
+    ///     <see cref="EntityPositionHistory" /> for what reads it.
+    /// </summary>
+    public EntityPositionHistory? HistoryFor(int entityId) =>
+        entriesById.TryGetValue(entityId, out EntityTrackerEntry entry) ? entry.History : null;
+
     public void tick()
     {
         List<ServerPlayerEntity> players = [];
+        long simulationTimeMs = world.SimulationTimeMs;
 
         foreach (EntityTrackerEntry tracker in entries)
         {
-            tracker.notifyNewLocation(world.getWorld(dimensionId).Entities.Players.Cast<ServerPlayerEntity>());
+            tracker.notifyNewLocation(world.getWorld(dimensionId).Entities.Players.Cast<ServerPlayerEntity>(), simulationTimeMs);
             if (tracker.newPlayerDataUpdated && tracker.currentTrackedEntity is ServerPlayerEntity player)
             {
                 players.Add(player);

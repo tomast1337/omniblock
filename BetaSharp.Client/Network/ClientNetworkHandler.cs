@@ -260,6 +260,40 @@ public class ClientNetworkHandler : NetHandler
     }
 
     /// <summary>
+    ///     Reports a click on another entity, with the instant this client was rendering that entity
+    ///     at so the server can check reach against what the player actually saw.
+    ///     <para>
+    ///         The render time is per-entity, because the delay is: <c>EntityInterpolator</c> gives a
+    ///         player 200 ms and a dropped item two seconds, and sending a connection-wide figure
+    ///         would misplace every target that is not on the average update rate.
+    ///     </para>
+    ///     <para>
+    ///         Falls back to the legacy packet whenever the answer would be a guess — a server that
+    ///         does not implement the message, or interpolation not actually driving this entity, in
+    ///         which case it is drawn at the last position received and the present is the honest
+    ///         claim.
+    ///     </para>
+    /// </summary>
+    public void SendInteractEntity(int playerId, int entityId, byte action)
+    {
+        if (Messages is { Negotiated: true }
+            && Clock is { Synchronised: true }
+            && Interpolation.IsInterpolating(entityId))
+        {
+            SendMessage(new InteractEntityMessage
+            {
+                EntityId = entityId,
+                Action = action,
+                RenderTimeMs = Clock.ServerTimeMs - Interpolation.AppliedDelayFor(entityId),
+            });
+
+            return;
+        }
+
+        AddToSendQueue(PlayerInteractEntityC2SPacket.Get(playerId, entityId, action));
+    }
+
+    /// <summary>
     ///     Sends a message, or drops it when the server never advertised the key — the designed
     ///     outcome for a peer that does not implement it, not an error.
     /// </summary>

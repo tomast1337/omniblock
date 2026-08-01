@@ -68,6 +68,14 @@ public abstract class BetaSharpServer : ICommandOutput
     /// </summary>
     private long _simulationTimeMs;
 
+    /// <summary>
+    ///     The same instant, for anything that has to place a client's statement about the past on
+    ///     the server's own timeline — <see cref="EntityPositionHistory" /> and the rewind that reads
+    ///     it. Exposed rather than re-read from the clock, because a fresh reading taken while
+    ///     handling a packet is a different instant from the one the positions describe.
+    /// </summary>
+    public long SimulationTimeMs => _simulationTimeMs;
+
     /// <summary>The value last broadcast, so a fixed tick with no simulation between it and the
     ///     previous one does not re-announce a stamp the client already has.</summary>
     private long _broadcastSimulationTimeMs;
