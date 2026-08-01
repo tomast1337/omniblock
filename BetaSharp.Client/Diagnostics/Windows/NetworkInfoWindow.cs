@@ -233,9 +233,10 @@ internal sealed class NetworkInfoWindow : DebugWindow
             ImGuiTextSafe.Text($"Adjusting:    {adjusting}");
         }
 
-        // Entries into starvation over the session, which is the number §3.5 says to watch. Frozen
-        // alone cannot answer the question: a handful of idle entities holding position reads
-        // identically to a stream that keeps breaking down and recovering.
+        // Entries into starvation over the session, which is the number §3.5 says to watch. Counted
+        // only while the stream as a whole is stale, so it means "the network broke down" and not
+        // "some mobs stood still" — the two produce identical per-entity buffers, and an earlier
+        // cut of this counted both and read 1180 on a healthy connection.
         long starvations = MetricRegistry.Get(ClientMetrics.InterpolationStarvations);
         if (starvations > 0)
         {
@@ -244,11 +245,11 @@ internal sealed class NetworkInfoWindow : DebugWindow
 
         if (frozen > 0)
         {
-            // The delay now scales with each entity's own update rate, so a slow tracking frequency
-            // is no longer a reason to starve — that was the 600 ms ceiling, and it is gone. What
-            // reaches the bound is an entity that has stopped updating altogether, which holds
-            // position exactly as it should. A count that keeps climbing is worth looking at;
-            // a steady handful next to a large Interpolated is not.
+            // The delay scales with each entity's own update rate, so a slow tracking frequency is
+            // not a reason to starve. What holds here is an entity the server has stopped sending
+            // updates for at all, which for a standing mob is the normal state: EntityTrackerEntry
+            // sends nothing until its 400-tick resync. A steady count next to a large Interpolated
+            // is a field of idle mobs, not a fault.
             ImGuiTextSafe.Text($"{frozen} holding: no update within the {EntityInterpolator.MaxDelayMs} ms bound.");
         }
     }

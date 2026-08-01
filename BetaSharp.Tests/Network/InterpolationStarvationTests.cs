@@ -44,6 +44,13 @@ public sealed class InterpolationStarvationTests
         buffer.Push(new Snapshot(timeMs, timeMs / (double)IntervalMs, 0, 0, 0, 0));
 
     /// <summary>
+    ///     A pass in which the stream is stalled, which is the only condition under which a frozen
+    ///     entity is blamed on the network rather than on having stopped moving.
+    /// </summary>
+    private static EntityInterpolator.InterpolationTick Stalled(long serverTimeMs) =>
+        new(serverTimeMs, TickMs, StreamStalled: true);
+
+    /// <summary>
     ///     Runs the interpolator forward, feeding it nothing. Returns the last sample and kind.
     /// </summary>
     private static (SampleKind Kind, Snapshot Sample, long ServerTimeMs) Run(
@@ -54,7 +61,7 @@ public sealed class InterpolationStarvationTests
 
         for (int i = 0; i < ticks; i++)
         {
-            kind = interpolator.Advance(1, buffer, serverTimeMs, TickMs, out sample);
+            kind = interpolator.Advance(1, buffer, Stalled(serverTimeMs), out sample);
             serverTimeMs += TickMs;
         }
 
@@ -97,6 +104,67 @@ public sealed class InterpolationStarvationTests
     }
 
     /// <summary>
+    ///     The regression that shipped with the first cut of this and was caught in-game.
+    ///     <para>
+    ///         <c>EntityTrackerEntry</c> only emits a position packet when the entity moved or
+    ///         turned, so a standing mob sends nothing at all until its 400-tick resync twenty
+    ///         seconds later. Its buffer is then indistinguishable from one whose updates were lost,
+    ///         and crediting it walks the delay to the hard bound for an entity that is not moving —
+    ///         then spends thirty seconds of 110% playback repaying a debt that bought nothing.
+    ///     </para>
+    ///     <para>
+    ///         Measured at 1180 events and 181 of 368 entities permanently mid-ramp on an otherwise
+    ///         healthy loopback connection, which is a field of standing cows, not a network fault.
+    ///     </para>
+    /// </summary>
+    [Fact]
+    public void An_entity_that_merely_stopped_moving_earns_no_credit()
+    {
+        EntityInterpolator interpolator = new();
+        SnapshotBuffer buffer = Moving();
+
+        long serverTimeMs = 1800;
+        SampleKind kind = SampleKind.Empty;
+
+        // Nothing arrives for this entity, but the stream as a whole is healthy: other entities are
+        // still being updated, so this one stopped rather than the network.
+        for (int i = 0; i < 40; i++)
+        {
+            kind = interpolator.Advance(
+                1, buffer, new EntityInterpolator.InterpolationTick(serverTimeMs, TickMs, false), out _);
+            serverTimeMs += TickMs;
+        }
+
+        // Frozen is still correct — there is nothing to interpolate — but it is not the network's
+        // doing, so it costs neither an event nor a millisecond of delay.
+        Assert.Equal(SampleKind.Frozen, kind);
+        Assert.Equal(0, interpolator.StarvationEvents);
+        Assert.Equal(IntervalMs * 2, interpolator.AppliedDelayFor(1));
+    }
+
+    /// <summary>
+    ///     The stream-age test itself: a pass in which something did arrive recently is not a stall,
+    ///     and one in which nothing has is.
+    /// </summary>
+    [Fact]
+    public void The_stream_is_judged_stalled_only_when_nothing_at_all_has_arrived()
+    {
+        EntityInterpolator interpolator = new() { Available = true };
+        interpolator.Record(1, 1000, 0, 0, 0, 0, 0);
+
+        Assert.False(
+            interpolator.IsStreamStalledAt(1000 + EntityInterpolator.StreamStallMs),
+            "a stream updated within the threshold is not stalled");
+
+        Assert.True(interpolator.IsStreamStalledAt(1000 + EntityInterpolator.StreamStallMs + 1));
+
+        // Any entity's update refreshes the judgement: the question is about the stream, not about
+        // whichever entity happens to be frozen.
+        interpolator.Record(2, 5000, 0, 0, 0, 0, 0);
+        Assert.False(interpolator.IsStreamStalledAt(5000));
+    }
+
+    /// <summary>
     ///     While frozen the delay tracks the clock exactly, which is what "render time is pinned"
     ///     means in the one currency this class has. The raise limit does not apply: it exists to
     ///     keep rendered motion from slowing visibly, and there is no motion left to slow.
@@ -108,10 +176,10 @@ public sealed class InterpolationStarvationTests
         SnapshotBuffer buffer = Moving();
 
         Run(interpolator, buffer, serverTimeMs: 1800, ticks: 10);
-        Assert.Equal(SampleKind.Frozen, interpolator.Advance(1, buffer, 2300, TickMs, out _));
+        Assert.Equal(SampleKind.Frozen, interpolator.Advance(1, buffer, Stalled(2300), out _));
 
         long before = interpolator.AppliedDelayFor(1);
-        interpolator.Advance(1, buffer, 2350, TickMs, out _);
+        interpolator.Advance(1, buffer, Stalled(2350), out _);
 
         Assert.Equal(before + TickMs, interpolator.AppliedDelayFor(1));
         Assert.True(
@@ -166,7 +234,7 @@ public sealed class InterpolationStarvationTests
         SnapshotBuffer buffer = Moving();
 
         (_, Snapshot frozen, long serverTimeMs) = Run(interpolator, buffer, 1800, ticks: stallTicks);
-        Assert.Equal(SampleKind.Frozen, interpolator.Advance(1, buffer, serverTimeMs, TickMs, out frozen));
+        Assert.Equal(SampleKind.Frozen, interpolator.Advance(1, buffer, Stalled(serverTimeMs), out frozen));
         serverTimeMs += TickMs;
 
         // The backlog lands: the server's updates for the whole stall arrive at once.
@@ -175,7 +243,7 @@ public sealed class InterpolationStarvationTests
             Push(buffer, time);
         }
 
-        interpolator.Advance(1, buffer, serverTimeMs, TickMs, out Snapshot resumed);
+        interpolator.Advance(1, buffer, Stalled(serverTimeMs), out Snapshot resumed);
 
         // X is in units of IntervalMs, so a skip of one X is 100 ms of the entity's own timeline.
         double skippedMs = (resumed.X - frozen.X) * IntervalMs;
@@ -207,7 +275,7 @@ public sealed class InterpolationStarvationTests
             Push(buffer, time);
         }
 
-        interpolator.Advance(1, buffer, serverTimeMs, TickMs, out Snapshot resumed);
+        interpolator.Advance(1, buffer, Stalled(serverTimeMs), out Snapshot resumed);
 
         Assert.True(
             (resumed.X - frozen.X) * IntervalMs > SnapshotBuffer.ExtrapolationCapMs,
@@ -253,7 +321,9 @@ public sealed class InterpolationStarvationTests
                 Push(buffer, serverTimeMs);
             }
 
-            interpolator.Advance(1, buffer, serverTimeMs, TickMs, out _);
+            // Healthy again, so the stream is no longer stalled and the credit is repaid.
+            interpolator.Advance(
+                1, buffer, new EntityInterpolator.InterpolationTick(serverTimeMs, TickMs, false), out _);
             serverTimeMs += TickMs;
         }
 

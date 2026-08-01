@@ -117,6 +117,10 @@ public sealed class EntityInterpolator
     ///     can be pinned against however much the clock actually advanced.</summary>
     private long _lastServerTimeMs;
 
+    /// <summary>Newest batch stamp any entity has been recorded at, which is how stale the stream as
+    ///     a whole is.</summary>
+    private long _newestRecordedStampMs;
+
     /// <summary>
     ///     Whether sampled positions are actually written to entities. Off falls back to the legacy
     ///     move-toward-target behaviour, so the two can be compared live on one connection rather
@@ -159,8 +163,31 @@ public sealed class EntityInterpolator
     public long NetworkJitterMs { get; set; }
 
     /// <summary>
-    ///     Times an entity has run out of buffered future since the connection opened — counted per
-    ///     entry into starvation, not per frame spent in it.
+    ///     How stale the stream as a whole must be before an individual entity running out of future
+    ///     is blamed on the network.
+    ///     <para>
+    ///         <b>Position samples cannot distinguish a stopped entity from lost updates, and the
+    ///         server makes that unavoidable.</b> <c>EntityTrackerEntry</c> only emits a position
+    ///         packet when the entity moved or turned; a standing mob sends nothing at all until the
+    ///         400-tick full resync, twenty seconds later. So an idle cow and a cow whose updates
+    ///         were dropped produce exactly the same buffer, and no amount of looking at that one
+    ///         buffer will tell them apart.
+    ///     </para>
+    ///     <para>
+    ///         What does tell them apart is that a stall starves <em>everything</em> while an idle
+    ///         entity is alone. This threshold is that test: a quarter second in which no entity at
+    ///         all was updated is a stalled stream at 20 TPS, and anything less is entities being
+    ///         entities. The one case it cannot resolve is a connection tracking a single entity that
+    ///         stops moving, where the two really are indistinguishable; that costs some unearned
+    ///         delay on one entity and is the right way to be wrong.
+    ///     </para>
+    /// </summary>
+    public const long StreamStallMs = SnapshotBuffer.ExtrapolationCapMs;
+
+    /// <summary>
+    ///     Times the <em>stream</em> starved an entity of buffered future since the connection
+    ///     opened — counted per entry into starvation, not per frame spent in it, and not counted at
+    ///     all for an entity that simply stopped moving.
     ///     <para>
     ///         §3.5's metric: this is what says the buffer is undersized for this connection.
     ///         <see cref="FrozenCount" /> cannot answer that, because it is instantaneous and a
@@ -169,6 +196,12 @@ public sealed class EntityInterpolator
     ///     </para>
     /// </summary>
     public long StarvationEvents { get; private set; }
+
+    /// <summary>
+    ///     Whether the stream was stale beyond <see cref="StreamStallMs" /> at the last
+    ///     <see cref="Apply" />. Frozen entities are attributed to the network only while this holds.
+    /// </summary>
+    public bool StreamStalled { get; private set; }
 
     // Per-frame counts, for the overlay. Rising Frozen is the signal that the delay is undersized.
     public int InterpolatedCount { get; private set; }
@@ -216,6 +249,10 @@ public sealed class EntityInterpolator
 
         buffer.Push(new Snapshot(serverTimeMs, x, y, z, yaw, pitch));
         _lastSeen[entityId] = serverTimeMs;
+
+        // Stream-wide, deliberately: this is the only quantity that separates a stall from an entity
+        // that stopped moving. See StreamStallMs.
+        _newestRecordedStampMs = Math.Max(_newestRecordedStampMs, serverTimeMs);
     }
 
     /// <summary>Whether an entity is being driven from snapshots, so callers can skip the legacy retarget.</summary>
@@ -247,6 +284,11 @@ public sealed class EntityInterpolator
         // Not zero: zero means "no previous pass" and suppresses the first advance. After a step the
         // next pass genuinely has no comparable previous time, which is the same thing.
         _lastServerTimeMs = 0;
+
+        // Likewise a stamp on the old timeline, which would read as an enormous stream age against
+        // the new one and declare a stall that never happened.
+        _newestRecordedStampMs = 0;
+        StreamStalled = false;
     }
 
     /// <summary>
@@ -287,6 +329,10 @@ public sealed class EntityInterpolator
         long advanceMs = _lastServerTimeMs == 0 ? 0 : Math.Max(0, serverTimeMs - _lastServerTimeMs);
         _lastServerTimeMs = serverTimeMs;
 
+        StreamStalled = IsStreamStalledAt(serverTimeMs);
+
+        InterpolationTick tick = new(serverTimeMs, advanceMs, StreamStalled);
+
         foreach (Entity entity in world.Entities.Entities)
         {
             if (!_buffers.TryGetValue(entity.ID, out SnapshotBuffer? buffer))
@@ -294,7 +340,7 @@ public sealed class EntityInterpolator
                 continue;
             }
 
-            SampleKind kind = Advance(entity.ID, buffer, serverTimeMs, advanceMs, out Snapshot sample);
+            SampleKind kind = Advance(entity.ID, buffer, tick, out Snapshot sample);
 
             if (kind == SampleKind.Empty)
             {
@@ -325,19 +371,15 @@ public sealed class EntityInterpolator
     ///         what lets a stall be tested as a sequence of ticks rather than as a live connection.
     ///     </para>
     /// </summary>
-    /// <param name="advanceMs">
-    ///     Server-clock time since the previous pass — 50 ms in normal operation. Passed in rather
-    ///     than assumed, so a pass that took two ticks credits a starving entity for both.
-    /// </param>
     internal SampleKind Advance(
-        int entityId, SnapshotBuffer buffer, long serverTimeMs, long advanceMs, out Snapshot sample)
+        int entityId, SnapshotBuffer buffer, in InterpolationTick tick, out Snapshot sample)
     {
         long delay = SmoothedDelayFor(entityId, buffer);
         MinAppliedDelayMs = MinAppliedDelayMs == 0 ? delay : Math.Min(MinAppliedDelayMs, delay);
         MaxAppliedDelayMs = Math.Max(MaxAppliedDelayMs, delay);
 
-        SampleKind kind = buffer.Sample(serverTimeMs - delay, out sample);
-        NoteSample(entityId, kind, buffer, advanceMs);
+        SampleKind kind = buffer.Sample(tick.ServerTimeMs - delay, out sample);
+        NoteSample(entityId, kind, buffer, tick);
 
         switch (kind)
         {
@@ -357,6 +399,14 @@ public sealed class EntityInterpolator
 
         return kind;
     }
+
+    /// <summary>
+    ///     Whether nothing at all has been recorded within <see cref="StreamStallMs" /> of
+    ///     <paramref name="serverTimeMs" />. Zero means nothing has ever arrived, which is a
+    ///     connection that has not started rather than one that stopped.
+    /// </summary>
+    internal bool IsStreamStalledAt(long serverTimeMs) =>
+        _newestRecordedStampMs != 0 && serverTimeMs - _newestRecordedStampMs > StreamStallMs;
 
     /// <summary>The delay currently in force for one entity, for tests and diagnostics.</summary>
     internal long AppliedDelayFor(int entityId) =>
@@ -438,17 +488,26 @@ public sealed class EntityInterpolator
     ///         rather than accumulate render time debt without limit.
     ///     </para>
     /// </summary>
-    private void NoteSample(int entityId, SampleKind kind, SnapshotBuffer buffer, long advanceMs)
+    private void NoteSample(int entityId, SampleKind kind, SnapshotBuffer buffer, in InterpolationTick tick)
     {
         if (!_delays.TryGetValue(entityId, out DelayState state))
         {
             return;
         }
 
-        // Frozen with fewer than two snapshots is an entity that has only just come into range, not
-        // one that ran out of future: there is no history to have run past. Crediting it would hand
-        // every newly-tracked entity a margin for the crime of being new.
-        bool starving = kind == SampleKind.Frozen && buffer.Count >= 2;
+        // Two things disqualify a freeze from being starvation.
+        //
+        // Fewer than two snapshots is an entity that has only just come into range: there is no
+        // history to have run past, and crediting it would hand every new entity a margin for the
+        // crime of being new.
+        //
+        // A stream that is not stalled means the entity stopped moving rather than the network
+        // stopping. That case is the common one — EntityTrackerEntry sends nothing at all for a
+        // standing mob until its twenty-second resync — and treating it as starvation credits idle
+        // entities up to the hard bound, then spends thirty seconds of 110% playback repaying a debt
+        // that bought nothing. Measured at 1180 events and half of 368 entities permanently mid-ramp
+        // on an otherwise healthy loopback connection.
+        bool starving = kind == SampleKind.Frozen && buffer.Count >= 2 && tick.StreamStalled;
 
         if (starving)
         {
@@ -457,12 +516,26 @@ public sealed class EntityInterpolator
                 StarvationEvents++;
             }
 
-            state.MarginMs += advanceMs;
+            state.MarginMs += tick.AdvanceMs;
         }
 
         state.Starving = starving;
         _delays[entityId] = state;
     }
+
+    /// <summary>
+    ///     What one pass of <see cref="Apply" /> knows that is the same for every entity in it.
+    /// </summary>
+    /// <param name="ServerTimeMs">The client's estimate of the server's clock right now.</param>
+    /// <param name="AdvanceMs">
+    ///     Server-clock time since the previous pass — 50 ms in normal operation. Carried rather than
+    ///     assumed, so a pass that took two ticks credits a starving entity for both.
+    /// </param>
+    /// <param name="StreamStalled">
+    ///     Whether nothing at all has been received recently, which is the only evidence available
+    ///     that a frozen entity is the network's doing. See <see cref="StreamStallMs" />.
+    /// </param>
+    internal readonly record struct InterpolationTick(long ServerTimeMs, long AdvanceMs, bool StreamStalled);
 
     /// <summary>
     ///     How far behind the server clock this particular entity is rendered, before starvation
