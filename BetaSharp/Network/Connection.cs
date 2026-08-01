@@ -191,6 +191,15 @@ public class Connection
     public int PeakReadQueueDepth { get; private set; }
 
     /// <summary>
+    ///     Depth at which the backlog is logged, once. Well above anything a normal tick produces —
+    ///     a hundred tracked entities is a few hundred packets a tick — and well below the depths a
+    ///     genuinely losing race reaches within seconds.
+    /// </summary>
+    private const int BacklogWarningDepth = 20_000;
+
+    private bool _backlogWarned;
+
+    /// <summary>
     ///     Packets applied to the handler. Against <see cref="PacketsRead" /> this is the drain rate
     ///     versus the arrival rate, and the two diverging is the whole diagnosis.
     /// </summary>
@@ -216,6 +225,17 @@ public class Connection
             PeakReadQueueDepth = depth;
         }
 
+        // The read side has no equivalent of the send queue's overflow disconnect, and unlike the
+        // send side it cannot simply be paced: the packets are already off the socket. Warn once at
+        // a depth that is unambiguously a losing race, so the log says what the overlay says.
+        if (depth > BacklogWarningDepth && !_backlogWarned)
+        {
+            _backlogWarned = true;
+            _logger.LogWarning(
+                "Read backlog of {Depth} packets: arriving faster than they can be applied, so positions are being applied late. See docs/time-sync-and-interpolation.md.",
+                depth);
+        }
+
         if (readQueue.IsEmpty)
         {
             if (_timeout++ == 1200)
@@ -236,6 +256,47 @@ public class Connection
         }
     }
 
+    /// <summary>
+    ///     Wall-clock budget for one tick's drain, out of a 50 ms tick.
+    ///     <para>
+    ///         Replaces a fixed cap of 100 packets per tick, which at 20 TPS was a hard ceiling of
+    ///         2,000 packets per second regardless of how cheap they were. A few hundred tracked
+    ///         entities exceed that on their own — a thousand mobs at <c>trackingFrequency</c> 3
+    ///         produce roughly 6,700 movement packets per second — and past the ceiling the read
+    ///         queue grows without bound, so the client applies positions from further and further
+    ///         in the past. Measured at 84 seconds behind on a thousand-cow world, with the local
+    ///         player rubber-banding to server corrections issued a minute earlier.
+    ///     </para>
+    ///     <para>
+    ///         A budget rather than a larger count because the two limit different things. What
+    ///         must not happen is the drain overrunning the tick; the number of packets that fits is
+    ///         a consequence of how expensive they turn out to be, and entity movement packets are
+    ///         far cheaper than a chunk. A count has to be sized for the worst packet and then
+    ///         throttles the cheap ones for no reason.
+    ///     </para>
+    ///     <para>
+    ///         Per connection, not per tick globally. That is fine in practice because the direction
+    ///         that carries volume is server to client, where a client has exactly one connection.
+    ///         A server with many players has many budgets, but each inbound stream is a handful of
+    ///         movement and action packets per second and never approaches this.
+    ///     </para>
+    /// </summary>
+    public const double DrainBudgetMs = 10.0;
+
+    /// <summary>
+    ///     Packets applied between budget checks. Reading the clock per packet would cost more than
+    ///     applying one, and it also sets the floor on forward progress: the drain always applies at
+    ///     least this many, so a single expensive packet cannot leave the queue permanently stuck.
+    /// </summary>
+    private const int BudgetCheckInterval = 64;
+
+    /// <summary>
+    ///     Ticks whose drain hit <see cref="DrainBudgetMs" /> and stopped early. Non-zero means
+    ///     packets are arriving faster than they can be applied, which no other counter shows —
+    ///     nothing is dropped, so the totals stay healthy while latency grows.
+    /// </summary>
+    public long DrainBudgetHits { get; private set; }
+
     protected virtual void processPackets()
     {
         if (netHandler == null)
@@ -243,11 +304,25 @@ public class Connection
             throw new Exception("networkHandler is null");
         }
 
-        int maxPacketsPerTick = 100;
+        long start = MonotonicClock.NowTicks();
+        int sinceCheck = 0;
 
-        while (readQueue.TryDequeue(out Packet? packet) && maxPacketsPerTick-- >= 0)
+        while (readQueue.TryDequeue(out Packet? packet))
         {
             ApplyPacket(packet, netHandler);
+
+            if (++sinceCheck < BudgetCheckInterval)
+            {
+                continue;
+            }
+
+            sinceCheck = 0;
+
+            if (MonotonicClock.ElapsedMs(start, MonotonicClock.NowTicks()) >= DrainBudgetMs)
+            {
+                DrainBudgetHits++;
+                break;
+            }
         }
     }
 

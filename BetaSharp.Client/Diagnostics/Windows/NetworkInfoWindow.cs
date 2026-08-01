@@ -1,5 +1,6 @@
 using BetaSharp.Client.Network;
 using BetaSharp.Diagnostics;
+using BetaSharp.Network;
 using Hexa.NET.ImGui;
 
 namespace BetaSharp.Client.Diagnostics.Windows;
@@ -131,8 +132,17 @@ internal sealed class NetworkInfoWindow : DebugWindow
         long depth = MetricRegistry.Get(ClientMetrics.ReadQueueDepth);
         long peak = MetricRegistry.Get(ClientMetrics.ReadQueuePeak);
 
+        long budgetHits = MetricRegistry.Get(ClientMetrics.DrainBudgetHits);
+
         ImGuiTextSafe.Text($"Queued:    {depth:N0}  (peak {peak:N0})");
         ImGuiTextSafe.Text($"Processed: {processedPerSecond:N0} packets/s");
+
+        // The one number that says the drain is the constraint rather than the network. Zero means
+        // every tick emptied the queue within its budget, whatever the depth reached.
+        if (budgetHits > 0)
+        {
+            ImGuiTextSafe.Text($"Budget hit: {budgetHits:N0} ticks (limit {Connection.DrainBudgetMs:F0} ms)");
+        }
 
         if (depth == 0)
         {

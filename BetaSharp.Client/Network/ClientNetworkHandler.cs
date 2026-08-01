@@ -114,6 +114,7 @@ public class ClientNetworkHandler : NetHandler
             MetricRegistry.Set(ClientMetrics.ReadQueueDepth, _netManager.ReadQueueDepth);
             MetricRegistry.Set(ClientMetrics.ReadQueuePeak, _netManager.PeakReadQueueDepth);
             MetricRegistry.Set(ClientMetrics.PacketsProcessed, _netManager.PacketsProcessed);
+            MetricRegistry.Set(ClientMetrics.DrainBudgetHits, _netManager.DrainBudgetHits);
             MetricRegistry.Set(ClientMetrics.IsInternal, _netManager is InternalConnection);
             MetricRegistry.Set(ClientMetrics.ServerAddress, _netManager.getAddress()?.ToString() ?? "Unknown");
 

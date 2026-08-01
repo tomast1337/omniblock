@@ -30,6 +30,7 @@ internal static class ClientMetrics
     public static readonly MetricHandle<long> ReadQueueDepth = MetricRegistry.Register<long>("client:read_queue_depth");
     public static readonly MetricHandle<long> ReadQueuePeak = MetricRegistry.Register<long>("client:read_queue_peak");
     public static readonly MetricHandle<long> PacketsProcessed = MetricRegistry.Register<long>("client:packets_processed");
+    public static readonly MetricHandle<long> DrainBudgetHits = MetricRegistry.Register<long>("client:drain_budget_hits");
 
     // Server clock sync (docs/time-sync-and-interpolation.md phase 2).
     public static readonly MetricHandle<long> ClockOffsetMs = MetricRegistry.Register<long>("client:clock_offset_ms");
