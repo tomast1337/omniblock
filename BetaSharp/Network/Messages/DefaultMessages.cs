@@ -21,14 +21,14 @@ public static class DefaultMessages
     {
         ArgumentNullException.ThrowIfNull(registry);
 
-        registry.Register(TimeSyncRequestMessage.Id, 1, () => new TimeSyncRequestMessage());
-        registry.Register(TimeSyncResponseMessage.Id, 1, () => new TimeSyncResponseMessage());
-        registry.Register(TickStampMessage.Id, 1, () => new TickStampMessage());
-        registry.Register(ChunkDataMessage.Id, 1, () => new ChunkDataMessage());
-        registry.Register(ChunkCacheOfferMessage.Id, 1, () => new ChunkCacheOfferMessage());
-        registry.Register(ChunkUnchangedMessage.Id, 1, () => new ChunkUnchangedMessage());
-        registry.Register(InteractEntityMessage.Id, 1, () => new InteractEntityMessage());
-        registry.Register(EntitySnapshotMessage.Id, 1, () => new EntitySnapshotMessage());
-        registry.Register(SnapshotAckMessage.Id, 1, () => new SnapshotAckMessage());
+        GeneratedMessages.RegisterAll(registry);
+
+        // The two messages whose payloads the generator has no encoding for: a list of chunk
+        // position/hash pairs, and a variable-length run of field-masked entity deltas. Both are
+        // shapes a declarative field list cannot express, and inventing a list encoding to cover one
+        // of them would be a worse format than the one they already have. They stay hand-written and
+        // are registered here; everything above this line is derived from the declarations.
+        registry.Register(ChunkCacheOfferMessage.Id, 1, static () => new ChunkCacheOfferMessage());
+        registry.Register(EntitySnapshotMessage.Id, 1, static () => new EntitySnapshotMessage());
     }
 }

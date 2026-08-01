@@ -15,12 +15,9 @@ namespace BetaSharp.Network.Messages;
 ///         wrong positions instead of a visible fault.
 ///     </para>
 /// </summary>
-public sealed class SnapshotAckMessage : Message
+[WireMessage("betasharp:snapshot_ack")]
+public sealed partial class SnapshotAckMessage : Message
 {
-    public static readonly ResourceLocation Id = new(Namespace.BetaSharp, "snapshot_ack");
-
-    public override ResourceLocation Key => Id;
-
     /// <summary>
     ///     An acknowledgement that arrives late costs a snapshot's worth of redundant delta, so it
     ///     travels with the snapshots it is answering rather than behind bulk traffic.
@@ -28,11 +25,6 @@ public sealed class SnapshotAckMessage : Message
     public override SendPriority Priority => SendPriority.High;
 
     /// <summary>Zero means nothing has been applied yet, and the server must send an absolute snapshot.</summary>
+    [WireField(Encoding = WireEncoding.VarInt)]
     public uint Sequence { get; set; }
-
-    public override void Read(Stream stream) => Sequence = (uint)stream.ReadVarInt();
-
-    public override void Write(Stream stream) => stream.WriteVarInt((int)Sequence);
-
-    public override int Size() => StreamExtensions.VarIntSize((int)Sequence);
 }

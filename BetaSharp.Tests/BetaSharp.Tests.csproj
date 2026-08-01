@@ -23,6 +23,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BetaSharp\BetaSharp.csproj" />
+    <!--
+      Referenced as an ordinary library, not as an analyzer: the determinism analysis synthesises a
+      compilation of the BetaSharp sources and has to run the same generators over it that the real
+      build does, or every [WireMessage] partial is missing its serialization and binds as an error.
+    -->
+    <ProjectReference Include="..\BetaSharp.Generators\BetaSharp.Generators.csproj" />
     <ProjectReference Include="..\BetaSharp.Client\BetaSharp.Client.csproj" />
     <ProjectReference Include="..\BetaSharp.Server\BetaSharp.Server.csproj" />
   </ItemGroup>

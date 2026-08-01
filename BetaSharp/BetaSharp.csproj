@@ -36,6 +36,18 @@
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
   </ItemGroup>
 
+  <!--
+    The message serializer generator. Exactly one project may reference it: it injects the
+    [WireMessage] attributes into whatever compilation it runs in, and two assemblies each emitting
+    a public copy would collide the moment one referenced the other. The shared core is the right
+    single home anyway — a message type has to exist identically on both peers.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\BetaSharp.Generators\BetaSharp.Generators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="shaders\**\*" />
   </ItemGroup>

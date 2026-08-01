@@ -335,6 +335,21 @@ internal sealed class CallGraph
                 allowUnsafe: true,
                 nullableContextOptions: NullableContextOptions.Enable));
 
+        // The real build runs this generator, and half the message layer is abstract without it —
+        // a [WireMessage] partial with no generated Read/Write/Size does not satisfy Message. Running
+        // it here rather than tolerating the resulting errors also means the generated bodies are
+        // inside the call graph, which is where they belong: generated code executes.
+        // The parse options have to be handed over too: the driver parses what it emits, and its
+        // default is not the Preview the sources above were parsed with — a mismatch the compilation
+        // rejects outright rather than tolerating.
+        CSharpGeneratorDriver
+            .Create(
+                [new global::BetaSharp.Generators.MessageGenerator().AsSourceGenerator()],
+                parseOptions: parseOptions)
+            .RunGeneratorsAndUpdateCompilation(compilation, out Compilation generated, out _);
+
+        compilation = (CSharpCompilation)generated;
+
         errors =
         [
             .. compilation.GetDiagnostics()

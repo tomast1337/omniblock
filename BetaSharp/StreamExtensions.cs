@@ -52,6 +52,19 @@ internal static class StreamExtensions
         return bytes;
     }
 
+    /// <summary>Bytes <see cref="Stream.WriteByteArray" /> will emit, for computing a size without serialising.</summary>
+    public static int ByteArraySize(byte[] value) => VarIntSize(value.Length) + value.Length;
+
+    /// <summary>
+    ///     Bytes <see cref="Stream.WriteResourceLocation" /> will emit. Mirrors that writer's
+    ///     shortcut for the default namespace, which travels as a single sentinel byte rather than
+    ///     as its name.
+    /// </summary>
+    public static int ResourceLocationSize(ResourceLocation value) =>
+        (value.Namespace.GetHashCode() == 0 ? 1 : 1 + value.Namespace.ToString().Length)
+        + 1
+        + value.Path.Length;
+
     extension(Stream stream)
     {
         public void WriteBoolean(bool value)
@@ -326,6 +339,44 @@ internal static class StreamExtensions
 
         /// <summary>Reads a value written by <see cref="WriteZigZag" />.</summary>
         public int ReadZigZag() => UnZigZag((uint)stream.ReadVarInt());
+
+        /// <summary>
+        ///     Writes a length-prefixed blob. The length is a varint rather than the fixed
+        ///     <see cref="ushort" /> the string writers use, because blobs are the one payload here
+        ///     that legitimately exceeds 64 KB — a chunk does.
+        /// </summary>
+        public void WriteByteArray(byte[] value)
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            stream.WriteVarInt(value.Length);
+            stream.Write(value);
+        }
+
+        /// <summary>
+        ///     Reads a blob written by <see cref="WriteByteArray" />, refusing one longer than
+        ///     <paramref name="maximumLength" />.
+        ///     <para>
+        ///         The bound is checked before the allocation rather than after it. A limit applied
+        ///         to the result is not a limit — by then the memory the sender asked for has
+        ///         already been taken.
+        ///     </para>
+        /// </summary>
+        public byte[] ReadByteArray(int maximumLength = int.MaxValue)
+        {
+            int length = stream.ReadVarInt();
+
+            if (length < 0 || length > maximumLength)
+            {
+                throw new InvalidDataException(
+                    $"Blob declares {length} bytes; the accepted range is 0 to {maximumLength}.");
+            }
+
+            byte[] buffer = new byte[length];
+            stream.ReadExactly(buffer);
+
+            return buffer;
+        }
 
         public byte[] ReadUntil(byte terminator)
         {
