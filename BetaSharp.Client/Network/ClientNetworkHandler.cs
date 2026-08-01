@@ -168,6 +168,14 @@ public class ClientNetworkHandler : NetHandler
             MetricRegistry.Set(ClientMetrics.ReadIntervalP99Ms, arrivals.PercentileMs(99));
             MetricRegistry.Set(ClientMetrics.ReadIntervalMaxMs, arrivals.MaxMs);
 
+            // Tracks the player so the next join can advertise the right region before the server
+            // has said where they are. Two fields in memory; it reaches disk on flush.
+            if (_chunkCache is not null && _context.PlayerHost.Player is { } located)
+            {
+                _chunkCache.LastCentre = new ChunkPos(
+                    (int)Math.Floor(located.X) >> 4, (int)Math.Floor(located.Z) >> 4);
+            }
+
             // Drive the time-sync state machine: burst during login, then background pacer.
             PollClock();
 
@@ -480,27 +488,40 @@ public class ClientNetworkHandler : NetHandler
     }
 
     /// <summary>
-    ///     Advertises the cached chunks near the player, once the player's position is known. Sent
-    ///     from the position handler rather than from login because the offer is positional and the
-    ///     login packet does not carry a position.
+    ///     Advertises the cached chunks near where the player was last in this world.
+    ///     <para>
+    ///         <b>Sent from configuration, not from the first position packet.</b> The server starts
+    ///         streaming chunks immediately after it places the player, so an offer triggered by that
+    ///         placement arrives after the chunks it was meant to save. Configuration is the last
+    ///         point that is both after message-registry negotiation — without which this would be
+    ///         silently dropped — and before any chunk is queued.
+    ///     </para>
+    ///     <para>
+    ///         Which means there is no position yet, hence <see cref="ChunkBlobCache.LastCentre" />.
+    ///         Rejoining puts the player where they logged out, so the stored centre is the right
+    ///         one; on a first visit the cache is empty and the centre does not matter.
+    ///     </para>
     /// </summary>
     private void OfferChunkCache()
     {
-        if (_cacheOffered || _chunkCache is null || _chunkCache.Count == 0)
+        if (_cacheOffered || _chunkCache is null)
         {
             return;
         }
 
-        ClientPlayerEntity? player = _context.PlayerHost.Player;
-        if (player is null)
-        {
-            return;
-        }
-
+        // Set before the emptiness check, not after. An empty cache has nothing to offer and that is
+        // the final answer for this world — leaving the flag clear made this retry on every later
+        // trigger, and by then the cache was full of chunks the server had just sent, so the offer
+        // told it precisely what it already knew. Measured at 925 chunks advertised on a first join.
         _cacheOffered = true;
 
-        int centreX = (int)Math.Floor(player.X) >> 4;
-        int centreZ = (int)Math.Floor(player.Z) >> 4;
+        if (_chunkCache.Count == 0)
+        {
+            return;
+        }
+
+        int centreX = _chunkCache.LastCentre.X;
+        int centreZ = _chunkCache.LastCentre.Z;
 
         ChunkCacheOfferMessage offer = new();
 
@@ -827,11 +848,6 @@ public class ClientNetworkHandler : NetHandler
             ent.PrevYaw = ent.Yaw = packetLook.Yaw % 360.0F;
             ent.PrevPitch = ent.Pitch = packetLook.Pitch % 360.0F;
         }
-
-        // First position from the server is the earliest the cache offer can be built, since which
-        // chunks are worth advertising depends on where the player is. Self-limiting: it runs once
-        // per world.
-        OfferChunkCache();
 
         SendPacket(packet);
         if (!_terrainLoaded)
@@ -1314,6 +1330,9 @@ public class ClientNetworkHandler : NetHandler
     public override void onFinishConfiguration(FinishConfigurationS2CPacket packet)
     {
         _logger.LogInformation("Configuration finished");
+
+        // After registry negotiation and before the server queues a single chunk. See OfferChunkCache.
+        OfferChunkCache();
     }
 
     public override void onPlayerGameModeUpdate(PlayerGameModeUpdateS2CPacket packet)

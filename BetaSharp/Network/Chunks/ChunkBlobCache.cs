@@ -37,6 +37,28 @@ public sealed class ChunkBlobCache : IDisposable
     /// </summary>
     private const int RecordHeaderBytes = (sizeof(int) * 2) + sizeof(ulong) + sizeof(int);
 
+    /// <summary>Identifies the file, so a foreign or older one is discarded rather than parsed.</summary>
+    private const uint Magic = 0x4F42_4348;   // "OBCH"
+
+    private const byte FormatVersion = 1;
+
+    /// <summary>
+    ///     Magic, version, three reserved bytes, then the chunk coordinates the player was last at.
+    /// </summary>
+    private const int FileHeaderBytes = sizeof(uint) + 1 + 3 + (sizeof(int) * 2);
+
+    /// <summary>
+    ///     Where the player was when this cache was last written, in chunk coordinates.
+    ///     <para>
+    ///         Persisted because the offer has to be sent <em>before</em> the server starts streaming
+    ///         chunks, and at that point the server has not said where the player is. Rejoining puts
+    ///         you where you logged out, so the last centre is the right one — and without it the
+    ///         offer either has to wait for a position, by which time the chunks it would have saved
+    ///         are already arriving, or list the whole cache regardless of distance.
+    ///     </para>
+    /// </summary>
+    public ChunkPos LastCentre { get; set; }
+
     /// <summary>
     ///     Compact once superseded bytes exceed live bytes. Below that the wasted space is bounded by
     ///     a factor of two, which for a cache measured in tens of megabytes is not worth the rewrite.
@@ -180,6 +202,9 @@ public sealed class ChunkBlobCache : IDisposable
                 Compact();
             }
 
+            // The centre goes out with every flush, so an unclean exit loses at most the movement
+            // since the last one rather than the whole hint.
+            WriteFileHeader();
             _file.Flush();
         }
         catch (IOException exception)
@@ -227,8 +252,17 @@ public sealed class ChunkBlobCache : IDisposable
         _index.Clear();
         _deadBytes = 0;
 
-        long offset = 0;
         long length = _file.Length;
+        if (!ReadFileHeader(length))
+        {
+            // A file we did not write, or one from an older format. Discarding it is always safe:
+            // the cost is re-fetching chunks, which is what would have happened without a cache.
+            _file.SetLength(0);
+            WriteFileHeader();
+            return;
+        }
+
+        long offset = FileHeaderBytes;
         Span<byte> header = stackalloc byte[RecordHeaderBytes];
 
         while (offset + RecordHeaderBytes <= length)
@@ -287,6 +321,13 @@ public sealed class ChunkBlobCache : IDisposable
         {
             using (FileStream destination = new(temporary, FileMode.Create, FileAccess.Write, FileShare.None))
             {
+                Span<byte> fileHeader = stackalloc byte[FileHeaderBytes];
+                WriteInt(fileHeader[..4], unchecked((int)Magic));
+                fileHeader[4] = FormatVersion;
+                WriteInt(fileHeader[8..12], LastCentre.X);
+                WriteInt(fileHeader[12..16], LastCentre.Z);
+                destination.Write(fileHeader);
+
                 Span<byte> header = stackalloc byte[RecordHeaderBytes];
 
                 foreach ((ChunkPos position, Entry entry) in _index)
@@ -329,6 +370,66 @@ public sealed class ChunkBlobCache : IDisposable
                 _file?.Dispose();
                 _file = null;
             }
+        }
+    }
+
+    /// <summary>
+    ///     Reads and validates the file header. False means the file is not one of ours and should be
+    ///     started over; an empty file is initialised rather than rejected.
+    /// </summary>
+    private bool ReadFileHeader(long length)
+    {
+        if (_file is null)
+        {
+            return false;
+        }
+
+        if (length == 0)
+        {
+            WriteFileHeader();
+            return true;
+        }
+
+        if (length < FileHeaderBytes)
+        {
+            return false;
+        }
+
+        Span<byte> header = stackalloc byte[FileHeaderBytes];
+        _file.Position = 0;
+        if (_file.Read(header) != FileHeaderBytes)
+        {
+            return false;
+        }
+
+        if ((uint)ReadInt(header[..4]) != Magic || header[4] != FormatVersion)
+        {
+            return false;
+        }
+
+        LastCentre = new ChunkPos(ReadInt(header[8..12]), ReadInt(header[12..16]));
+        return true;
+    }
+
+    private void WriteFileHeader()
+    {
+        if (_file is null)
+        {
+            return;
+        }
+
+        Span<byte> header = stackalloc byte[FileHeaderBytes];
+        WriteInt(header[..4], unchecked((int)Magic));
+        header[4] = FormatVersion;
+        WriteInt(header[8..12], LastCentre.X);
+        WriteInt(header[12..16], LastCentre.Z);
+
+        _file.Position = 0;
+        _file.Write(header);
+
+        if (_file.Length < FileHeaderBytes)
+        {
+            _file.SetLength(FileHeaderBytes);
         }
     }
 

@@ -196,6 +196,64 @@ public sealed class ChunkBlobCacheTests : IDisposable
         Assert.Equal(0, cache.Count);
     }
 
+    /// <summary>
+    ///     The centre survives a session, which is what lets the offer be sent during configuration —
+    ///     before the server has said where the player is, and therefore before it starts streaming
+    ///     the chunks the offer exists to prevent.
+    /// </summary>
+    [Fact]
+    public void The_last_centre_survives_a_reopen()
+    {
+        using (ChunkBlobCache cache = ChunkBlobCache.Open(Path_))
+        {
+            cache.Write(new ChunkPos(0, 0), 1, Blob(1));
+            cache.LastCentre = new ChunkPos(-341, 78);
+        }
+
+        using ChunkBlobCache reopened = ChunkBlobCache.Open(Path_);
+
+        Assert.Equal(new ChunkPos(-341, 78), reopened.LastCentre);
+        Assert.Equal(1, reopened.Count);
+    }
+
+    [Fact]
+    public void The_last_centre_survives_compaction()
+    {
+        using ChunkBlobCache cache = ChunkBlobCache.Open(Path_);
+        cache.LastCentre = new ChunkPos(12, -34);
+
+        for (int i = 0; i < 20; i++)
+        {
+            cache.Write(new ChunkPos(0, 0), (ulong)i, Blob(i));
+        }
+
+        cache.Flush();
+
+        Assert.Equal(new ChunkPos(12, -34), cache.LastCentre);
+        Assert.Equal(Blob(19), cache.Read(new ChunkPos(0, 0)));
+    }
+
+    /// <summary>
+    ///     A file this build did not write is discarded rather than parsed. Without the magic, any
+    ///     file at all decodes as "records until something stops making sense", which for a format
+    ///     that is about to be handed chunk payloads is not a good default.
+    /// </summary>
+    [Fact]
+    public void A_file_that_is_not_ours_is_discarded_rather_than_parsed()
+    {
+        Directory.CreateDirectory(_directory);
+        File.WriteAllBytes(Path_, Enumerable.Range(0, 4096).Select(i => (byte)i).ToArray());
+
+        using ChunkBlobCache cache = ChunkBlobCache.Open(Path_);
+
+        Assert.False(cache.Disabled);
+        Assert.Equal(0, cache.Count);
+
+        // And it is usable from there rather than permanently poisoned.
+        cache.Write(new ChunkPos(1, 2), 5, Blob(1));
+        Assert.Equal(Blob(1), cache.Read(new ChunkPos(1, 2)));
+    }
+
     [Fact]
     public void Entries_lists_everything_held_for_advertising()
     {
