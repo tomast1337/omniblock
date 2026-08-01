@@ -65,7 +65,15 @@ public class Connection
     private long _lastReadTimestamp;
 
     private int _timeout;
-    private readonly ConcurrentQueue<Packet> _sendQueue = [];
+
+    /// <summary>
+    ///     Entity replication and timing, drained before <see cref="_bulkQueue" />. See
+    ///     <see cref="PacketPriorities" /> for what qualifies and why the set is an allowlist.
+    /// </summary>
+    private readonly ConcurrentQueue<Packet> _priorityQueue = [];
+
+    /// <summary>Everything else, in strict arrival order — chunks, block updates, inventory, chat.</summary>
+    private readonly ConcurrentQueue<Packet> _bulkQueue = [];
     private Socket? _socket;
     private NetworkStream? _networkStream;
 
@@ -99,9 +107,23 @@ public class Connection
 
         if (!closed)
         {
-            _sendQueue.Enqueue(packet);
+            QueueFor(packet).Enqueue(packet);
         }
     }
+
+    private ConcurrentQueue<Packet> QueueFor(Packet packet) =>
+        PacketPriorities.Of(packet) == SendPriority.High ? _priorityQueue : _bulkQueue;
+
+    /// <summary>
+    ///     Next packet to write: everything queued as <see cref="SendPriority.High" />, then bulk.
+    ///     <para>
+    ///         Preemption is at packet granularity — a chunk already being written still runs to
+    ///         completion, because the bytes are committed to the stream the moment the write
+    ///         starts. Splitting the chunk packet itself is §4.2 and is what removes the remainder.
+    ///     </para>
+    /// </summary>
+    internal bool TryDequeueNext(out Packet? packet) =>
+        _priorityQueue.TryDequeue(out packet) || _bulkQueue.TryDequeue(out packet);
 
     private void disconnect(Exception e)
     {
@@ -118,9 +140,9 @@ public class Connection
             this.disconnectReasonArgs = disconnectReasonArgs;
             open = false;
 
-            foreach (var packet in _sendQueue)
+            while (TryDequeueNext(out Packet? packet))
             {
-                WritePacket(packet);
+                WritePacket(packet!);
             }
 
             try
@@ -143,11 +165,19 @@ public class Connection
     ///     of the same stall <see cref="WriteDurations" /> measures, and is what the priority queue
     ///     in <c>docs/time-sync-and-interpolation.md</c> §4.1 would reorder.
     /// </summary>
-    public int SendQueueDepth => _sendQueue.Count;
+    public int SendQueueDepth => _priorityQueue.Count + _bulkQueue.Count;
+
+    /// <summary>
+    ///     Depth of the high-priority queue alone. Distinct from <see cref="SendQueueDepth" />
+    ///     because the two mean different things: bulk depth rising is a chunk backlog and expected,
+    ///     while this one rising means entity updates are queueing behind entity updates, which the
+    ///     priority split cannot help with.
+    /// </summary>
+    public int PrioritySendQueueDepth => _priorityQueue.Count;
 
     public virtual void tick()
     {
-        if (_sendQueue.Count > 1048576)
+        if (SendQueueDepth > 1048576)
         {
             disconnect("disconnect.overflow");
         }
@@ -297,9 +327,9 @@ public class Connection
             {
                 ArgumentNullException.ThrowIfNull(_networkStream);
 
-                while (_sendQueue.TryDequeue(out var packet))
+                while (TryDequeueNext(out Packet? packet))
                 {
-                    WritePacket(packet);
+                    WritePacket(packet!);
                 }
 
                 await Task.Delay(1);

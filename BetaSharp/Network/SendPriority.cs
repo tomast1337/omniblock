@@ -1,0 +1,89 @@
+using BetaSharp.Network.Packets;
+
+namespace BetaSharp.Network;
+
+/// <summary>
+///     Which of <see cref="Connection" />'s two send queues a packet is drained from.
+/// </summary>
+public enum SendPriority
+{
+    /// <summary>Strict FIFO against every other <see cref="Normal" /> packet. The default.</summary>
+    Normal,
+
+    /// <summary>Drained ahead of anything <see cref="Normal" />. See <see cref="PacketPriorities" />.</summary>
+    High,
+}
+
+/// <summary>
+///     Decides which packets may overtake bulk traffic on the send queue.
+///     <para>
+///         This is <c>docs/time-sync-and-interpolation.md</c> §4.1. A chunk is ~81 KB before
+///         compression and the writer drains strictly in order, so once one is being written every
+///         entity update behind it waits for all of it — the stall the snapshot buffer then has to
+///         absorb. Draining a second queue first shrinks the stall rather than hiding it.
+///     </para>
+///     <para>
+///         <b>An allowlist, deliberately, rather than "everything except chunks".</b> Reordering is
+///         only safe for packets whose meaning does not depend on world data having arrived first.
+///         A block update that overtakes the chunk it edits is applied to a chunk the client does
+///         not have and is silently lost, and a server-sent player position that overtakes the login
+///         chunk batch places the player in unloaded terrain. Both stay <see cref="SendPriority.Normal" />,
+///         so their order relative to chunk data is exactly what it was.
+///     </para>
+///     <para>
+///         What is on the list is entity replication and timing. Entity packets keep their order
+///         relative to <em>each other</em> because they share one queue, so a move never overtakes
+///         its own spawn; and a spawn arriving before its chunk is a case the client already
+///         handles, by parking the entity in <c>ClientWorld.pendingEntities</c> until the chunk
+///         loads.
+///     </para>
+/// </summary>
+public static class PacketPriorities
+{
+    /// <summary>
+    ///     Strict priority — high drains until empty — rather than a weighted share. Safe because
+    ///     the high set is bounded by tick rate and tracked-entity count, a few KB/s, while bulk
+    ///     traffic is elastic and takes whatever is left. There is no rate at which entity
+    ///     replication starves chunk streaming outright.
+    /// </summary>
+    public static SendPriority Of(Packet packet)
+    {
+        ArgumentNullException.ThrowIfNull(packet);
+
+        return (PacketId)packet.Id switch
+        {
+            // Timing. A probe queued behind a chunk measures the queue, not the network, and a tick
+            // stamp that arrives late drags the whole interpolation timeline with it.
+            PacketId.TimeSyncRequest or
+            PacketId.TimeSyncResponse or
+            PacketId.TickStamp or
+            PacketId.KeepAlive => SendPriority.High,
+
+            // Entity replication. The reason the queue exists.
+            PacketId.EntityS2C or
+            PacketId.EntityMoveRelativeS2C or
+            PacketId.EntityRotateS2C or
+            PacketId.EntityRotateAndMoveRelativeS2C or
+            PacketId.EntityPositionS2C or
+            PacketId.EntityVelocityUpdateS2C or
+            PacketId.EntityTrackerUpdateS2C or
+            PacketId.EntityStatusS2C or
+            PacketId.EntityAnimation or
+            PacketId.EntityEquipmentUpdateS2C or
+            PacketId.EntityVehicleSetS2C or
+            PacketId.EntityDestroyS2C or
+            PacketId.ItemPickupAnimationS2C => SendPriority.High,
+
+            // Spawns travel with the updates that follow them, or a move can overtake the spawn it
+            // describes and be dropped as referring to an unknown entity.
+            PacketId.PlayerSpawnS2C or
+            PacketId.EntitySpawnS2C or
+            PacketId.LivingEntitySpawnS2C or
+            PacketId.ItemEntitySpawnS2C or
+            PacketId.PaintingEntitySpawnS2C or
+            PacketId.GlobalEntitySpawnS2C => SendPriority.High,
+
+            _ => SendPriority.Normal,
+        };
+    }
+}
