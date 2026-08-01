@@ -10,3 +10,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-01 — feat(network): add a palette-based chunk wire encoding (Nicolas Vyčas Nery; `d175f594f766d7929a06136aec238a32e023d929`)
 - 2026-08-01 — feat(network): send chunks in the palette encoding (Nicolas Vyčas Nery; `4153cb2e2a9dd385c7dc6a1afe2b8d083602d0fb`)
 - 2026-08-01 — feat(network): skip sending chunks the client already has (Nicolas Vyčas Nery; `02d2489e8efc50854ed9e3f0a1c9b4150829bda3`)
+- 2026-08-01 — fix(network): offer the chunk cache before the server sends chunks (Nicolas Vyčas Nery; `943b4005d0e5d8b4171d7f7fcd2543a91d453aa2`)
