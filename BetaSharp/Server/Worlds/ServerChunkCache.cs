@@ -201,7 +201,7 @@ public class ServerChunkCache : IChunkSource
         for (int chunkIndex = 0; chunkIndex < _chunks.Count; chunkIndex++)
         {
             Chunk chunk = _chunks[chunkIndex];
-            if (saveEntities && !chunk.Empty)
+            if (saveEntities && !chunk.IsEmpty())
             {
                 this.saveEntities(chunk);
             }

@@ -78,5 +78,18 @@ internal static class ClientMetrics
     /// <summary>Compressed bytes those chunks cost, so the per-chunk average can be read live.</summary>
     public static readonly MetricHandle<long> ChunkMessageBytes = MetricRegistry.Register<long>("client:chunk_message_bytes");
 
+    /// <summary>
+    ///     Chunks the server skipped sending because this client already had them. Zero on a first
+    ///     visit and expected to dominate on a rejoin.
+    /// </summary>
+    public static readonly MetricHandle<long> ChunksFromCache = MetricRegistry.Register<long>("client:chunks_from_cache");
+
+    /// <summary>
+    ///     Uncompressed blob bytes those chunks would have carried. An over-estimate of the wire
+    ///     saving, since a sent chunk is compressed — the honest figure is roughly a sixth of this,
+    ///     and both are shown rather than guessed at.
+    /// </summary>
+    public static readonly MetricHandle<long> ChunkCacheBytesSaved = MetricRegistry.Register<long>("client:chunk_cache_bytes_saved");
+
     static ClientMetrics() { }
 }

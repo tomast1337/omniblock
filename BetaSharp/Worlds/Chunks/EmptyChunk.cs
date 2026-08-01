@@ -5,17 +5,26 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Chunks;
 
+/// <summary>
+///     The chunk a cache returns for a position it does not hold.
+///     <para>
+///         A null object, not a variant: every accessor is inert, so a caller can write
+///         <c>GetChunk(x, z).GetBlockId(...)</c> and get zero rather than a null reference. That is
+///         what the roughly thirty overrides below buy, and it is why this is a subclass rather than
+///         a flag — collapsing it would move all thirty into <see cref="Chunk" /> as
+///         <c>if (empty)</c> branches, each of them a place to forget the check.
+///     </para>
+///     <para>
+///         Distinct from the composition-over-inheritance rule in <c>CLAUDE.md</c>, which is about
+///         blocks, items and entities assembling behaviour from data. Nothing here varies; the point
+///         is precisely that nothing happens.
+///     </para>
+/// </summary>
 public class EmptyChunk : Chunk
 {
-    public EmptyChunk(IWorldContext world, int x, int z) : base(world, x, z)
-    {
-        Empty = true;
-    }
+    public EmptyChunk(IWorldContext world, int x, int z) : base(world, x, z) { }
 
-    public EmptyChunk(IWorldContext world, byte[] blocks, int x, int z) : base(world, blocks, x, z)
-    {
-        Empty = true;
-    }
+    public EmptyChunk(IWorldContext world, byte[] blocks, int x, int z) : base(world, blocks, x, z) { }
 
     public override bool ChunkPosEquals(int x, int z) => x == X && z == Z;
 

@@ -101,13 +101,29 @@ internal sealed class NetworkInfoWindow : DebugWindow
             // whose message registry never negotiated. On loopback that is correct and deliberate:
             // packets are handed over as objects, so compressing one saves bytes that never exist.
             long chunks = MetricRegistry.Get(ClientMetrics.ChunksViaMessage);
+            long cached = MetricRegistry.Get(ClientMetrics.ChunksFromCache);
+
+            if (chunks > 0 || cached > 0)
+            {
+                ImGui.Spacing();
+            }
+
             if (chunks > 0)
             {
                 long bytes = MetricRegistry.Get(ClientMetrics.ChunkMessageBytes);
 
-                ImGui.Spacing();
                 ImGuiTextSafe.Text($"Chunks (palette): {chunks}");
                 ImGuiTextSafe.Text($"  avg {bytes / chunks} B/chunk, {FormatMemory(bytes)} total");
+            }
+
+            if (cached > 0)
+            {
+                // The hit rate is the number worth watching: on a first visit it is zero by
+                // definition, and on a rejoin to somewhere explored it should dominate.
+                long saved = MetricRegistry.Get(ClientMetrics.ChunkCacheBytesSaved);
+
+                ImGuiTextSafe.Text($"Chunks (cached):  {cached} ({100 * cached / (chunks + cached)}% hit)");
+                ImGuiTextSafe.Text($"  {FormatMemory(saved)} of blob not sent");
             }
         }
 
