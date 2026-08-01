@@ -19,3 +19,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-01 — feat(network): rewind entity positions for hit registration (Nicolas Vyčas Nery; `e7e43cac39fd3496ec48373e41a60ea06e3d8aaa`)
 - 2026-08-01 — feat(network): delta-compress entity snapshots against an acked baseline (Nicolas Vyčas Nery; `e8666fdb1500791bb56cfacadff759dfd7427746`)
 - 2026-08-01 — refactor(client): reorganise the network overlay by subject, and draw the distributions (Nicolas Vyčas Nery; `c315e576ce5087a09919645ebe8870d65a3edba7`)
+- 2026-08-01 — fix(client): stop the network overlay reflowing when a warning appears (Nicolas Vyčas Nery; `d5253b2f82d7ab17d87b106c25a3f04cf365d3d6`)
