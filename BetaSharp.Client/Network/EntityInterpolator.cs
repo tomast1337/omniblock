@@ -25,10 +25,9 @@ public sealed class EntityInterpolator
     ///     Render this far behind the server's clock. The buffer needs snapshots on both sides of
     ///     render time to interpolate, so the delay is what absorbs jitter and stalls.
     ///     <para>
-    ///         Held at the floor from §3.4's <c>clamp(2 * tickInterval + 2 * jitter, 100, 500)</c>.
-    ///         Two tick intervals is the minimum that keeps two snapshots bracketing render time at
-    ///         20 TPS; the jitter term is zero on the only connection measured so far. Phase 5 makes
-    ///         this adaptive, which is where the term starts to matter.
+    ///         The floor from §3.4's <c>clamp(2 * tickInterval + 2 * jitter, …)</c>. Two tick
+    ///         intervals is the minimum that keeps two snapshots bracketing render time at 20 TPS.
+    ///         The jitter term is added on top, from <see cref="NetworkJitterMs" />.
     ///     </para>
     /// </summary>
     public const long DefaultDelayMs = 100;
@@ -110,8 +109,13 @@ public sealed class EntityInterpolator
     private readonly Dictionary<int, long> _lastSeen = [];
     private readonly List<int> _pendingRemoval = [];
 
-    /// <summary>The delay actually in force per entity, which chases the target rather than jumping to it.</summary>
-    private readonly Dictionary<int, long> _delays = [];
+    /// <summary>Per-entity delay state: what is in force, what starvation has bought it, and whether
+    ///     it is starving right now.</summary>
+    private readonly Dictionary<int, DelayState> _delays = [];
+
+    /// <summary>Server time at the previous <see cref="Apply" />, so a starving entity's render time
+    ///     can be pinned against however much the clock actually advanced.</summary>
+    private long _lastServerTimeMs;
 
     /// <summary>
     ///     Whether sampled positions are actually written to entities. Off falls back to the legacy
@@ -134,6 +138,38 @@ public sealed class EntityInterpolator
 
     public long DelayMs { get; set; } = DefaultDelayMs;
 
+    /// <summary>
+    ///     Mean absolute deviation of round-trip time, from <see cref="ServerClock.JitterMs" />.
+    ///     Twice this is added to every entity's delay, per §3.4.
+    ///     <para>
+    ///         Connection-wide rather than per-entity, and that is the point: the interval term
+    ///         covers how often the <em>server</em> chooses to speak about this entity, and this
+    ///         covers how unevenly the <em>network</em> delivers whatever it says. They are
+    ///         independent — a player tracked every 100 ms on a link with 80 ms of jitter needs both
+    ///         terms, and either alone leaves render time past the newest snapshot a good fraction of
+    ///         the time.
+    ///     </para>
+    ///     <para>
+    ///         Twice rather than once because the margin has to cover a deviation in the direction
+    ///         that hurts, and the mean absolute deviation is an average over both. It reads 4 ms on
+    ///         loopback UDP, so it contributes nothing there by design; it is sized for a real link,
+    ///         where it is the difference between absorbing jitter and merely measuring it.
+    ///     </para>
+    /// </summary>
+    public long NetworkJitterMs { get; set; }
+
+    /// <summary>
+    ///     Times an entity has run out of buffered future since the connection opened — counted per
+    ///     entry into starvation, not per frame spent in it.
+    ///     <para>
+    ///         §3.5's metric: this is what says the buffer is undersized for this connection.
+    ///         <see cref="FrozenCount" /> cannot answer that, because it is instantaneous and a
+    ///         standing handful of genuinely idle entities looks identical to a stream that keeps
+    ///         breaking down.
+    ///     </para>
+    /// </summary>
+    public long StarvationEvents { get; private set; }
+
     // Per-frame counts, for the overlay. Rising Frozen is the signal that the delay is undersized.
     public int InterpolatedCount { get; private set; }
     public int ExtrapolatedCount { get; private set; }
@@ -149,8 +185,8 @@ public sealed class EntityInterpolator
 
     /// <summary>
     ///     Range of per-entity delays applied this frame. A range rather than one number because the
-    ///     delay tracks each entity's own update rate — seeing players at 200 ms and items at the
-    ///     600 ms ceiling in the same frame is correct, not a fault.
+    ///     delay tracks each entity's own update rate — seeing players at 200 ms and dropped items
+    ///     at 2000 ms in the same frame is correct, not a fault.
     /// </summary>
     public long MinAppliedDelayMs { get; private set; }
 
@@ -204,8 +240,13 @@ public sealed class EntityInterpolator
 
         // The ramp has to go with them. A retained delay would be eased away from on the new
         // timeline, which is the snap this avoids, applied to the one discontinuity that is
-        // supposed to be a cut.
+        // supposed to be a cut. Starvation credit goes the same way: it was bought against a
+        // timeline that no longer exists.
         _delays.Clear();
+
+        // Not zero: zero means "no previous pass" and suppresses the first advance. After a step the
+        // next pass genuinely has no comparable previous time, which is the same thing.
+        _lastServerTimeMs = 0;
     }
 
     /// <summary>
@@ -237,8 +278,14 @@ public sealed class EntityInterpolator
 
         if (!Active || _buffers.Count == 0)
         {
+            _lastServerTimeMs = serverTimeMs;
             return;
         }
+
+        // How far the shared timeline moved since the last pass. A starving entity's delay grows by
+        // exactly this, which pins its render time; see NoteSample.
+        long advanceMs = _lastServerTimeMs == 0 ? 0 : Math.Max(0, serverTimeMs - _lastServerTimeMs);
+        _lastServerTimeMs = serverTimeMs;
 
         foreach (Entity entity in world.Entities.Entities)
         {
@@ -247,28 +294,11 @@ public sealed class EntityInterpolator
                 continue;
             }
 
-            long delay = SmoothedDelayFor(entity.ID, buffer);
-            MinAppliedDelayMs = MinAppliedDelayMs == 0 ? delay : Math.Min(MinAppliedDelayMs, delay);
-            MaxAppliedDelayMs = Math.Max(MaxAppliedDelayMs, delay);
+            SampleKind kind = Advance(entity.ID, buffer, serverTimeMs, advanceMs, out Snapshot sample);
 
-            SampleKind kind = buffer.Sample(serverTimeMs - delay, out Snapshot sample);
-
-            switch (kind)
+            if (kind == SampleKind.Empty)
             {
-                case SampleKind.Empty:
-                    continue;
-                case SampleKind.Interpolated:
-                    InterpolatedCount++;
-                    break;
-                case SampleKind.Extrapolated:
-                    ExtrapolatedCount++;
-                    break;
-                case SampleKind.Frozen:
-                    FrozenCount++;
-                    break;
-                case SampleKind.Clamped:
-                    ClampedCount++;
-                    break;
+                continue;
             }
 
             // The engine's own in-tick movement hook, with one step so the entity lands exactly on
@@ -287,28 +317,54 @@ public sealed class EntityInterpolator
     }
 
     /// <summary>
-    ///     How far behind the server clock this particular entity is rendered.
+    ///     One entity's whole per-tick step: settle its delay, sample it, and book the outcome
+    ///     against its starvation credit.
     ///     <para>
-    ///         Per-entity, because the update rate is per-entity: <c>EntityTrackerEntry</c> sends
-    ///         one update every <c>trackingFrequency</c> ticks and that ranges from 2 (players) to 20
-    ///         (dropped items). A single global delay cannot serve both — sized for players it leaves
-    ///         everything slower permanently starved, and sized for items it renders players half a
-    ///         second in the past.
-    ///     </para>
-    ///     <para>
-    ///         Twice the observed interval, because the newest snapshot is on average half an
-    ///         interval old and can be a full one; anything less than one interval of delay leaves
-    ///         render time past the newest snapshot much of the time, which is exactly the
-    ///         Interpolated-zero case this replaced. <see cref="DelayMs" /> remains the floor, so
-    ///         network jitter is still covered when it exceeds the update spacing, and
-    ///         <see cref="MaxDelayMs" /> is a bound against an entity that stopped updating rather
-    ///         than a quality setting — see its own remarks for why a tighter ceiling starved the
-    ///         entities that needed it most.
+    ///         Split out from <see cref="Apply" /> because it is the unit the adaptation logic lives
+    ///         in and the only part of it that needs no <see cref="World" />. Driving it directly is
+    ///         what lets a stall be tested as a sequence of ticks rather than as a live connection.
     ///     </para>
     /// </summary>
+    /// <param name="advanceMs">
+    ///     Server-clock time since the previous pass — 50 ms in normal operation. Passed in rather
+    ///     than assumed, so a pass that took two ticks credits a starving entity for both.
+    /// </param>
+    internal SampleKind Advance(
+        int entityId, SnapshotBuffer buffer, long serverTimeMs, long advanceMs, out Snapshot sample)
+    {
+        long delay = SmoothedDelayFor(entityId, buffer);
+        MinAppliedDelayMs = MinAppliedDelayMs == 0 ? delay : Math.Min(MinAppliedDelayMs, delay);
+        MaxAppliedDelayMs = Math.Max(MaxAppliedDelayMs, delay);
+
+        SampleKind kind = buffer.Sample(serverTimeMs - delay, out sample);
+        NoteSample(entityId, kind, buffer, advanceMs);
+
+        switch (kind)
+        {
+            case SampleKind.Interpolated:
+                InterpolatedCount++;
+                break;
+            case SampleKind.Extrapolated:
+                ExtrapolatedCount++;
+                break;
+            case SampleKind.Frozen:
+                FrozenCount++;
+                break;
+            case SampleKind.Clamped:
+                ClampedCount++;
+                break;
+        }
+
+        return kind;
+    }
+
+    /// <summary>The delay currently in force for one entity, for tests and diagnostics.</summary>
+    internal long AppliedDelayFor(int entityId) =>
+        _delays.TryGetValue(entityId, out DelayState state) ? state.AppliedMs : 0;
+
     /// <summary>
-    ///     The delay in force for one entity: <see cref="DelayForMs" />'s answer, approached at a
-    ///     bounded rate rather than adopted outright.
+    ///     The delay in force for one entity: <see cref="DelayForMs" />'s answer plus whatever
+    ///     starvation has bought it, approached at a bounded rate rather than adopted outright.
     ///     <para>
     ///         The target moves whenever the observed median interval does, and that happens
     ///         constantly — an entity stops moving and its updates stop, a burst arrives after a
@@ -323,41 +379,139 @@ public sealed class EntityInterpolator
     /// </summary>
     internal long SmoothedDelayFor(int entityId, SnapshotBuffer buffer)
     {
-        long target = DelayForMs(buffer);
-
-        if (!_delays.TryGetValue(entityId, out long current))
+        if (!_delays.TryGetValue(entityId, out DelayState state))
         {
-            _delays[entityId] = target;
-            return target;
+            long first = DelayForMs(buffer);
+            _delays[entityId] = new DelayState { AppliedMs = first };
+            return first;
         }
 
-        if (target == current)
+        long target = Math.Clamp(DelayForMs(buffer) + state.MarginMs, DelayMs, MaxDelayMs);
+
+        if (target != state.AppliedMs)
         {
-            return current;
+            state.AppliedMs = target > state.AppliedMs
+                // A starving entity is exempt from the raise limit. That limit exists to stop
+                // rendered time from slowing enough to be visible, and a starving entity's rendered
+                // time has already stopped — there is no motion left to slow. Tracking the target
+                // outright is exactly what makes playback resume from where it froze.
+                ? (state.Starving ? target : Math.Min(target, state.AppliedMs + DelayRaisePerTickMs))
+                : Math.Max(target, state.AppliedMs - DelayLowerPerTickMs);
+
+            AdjustingCount++;
         }
 
-        long next = target > current
-            ? Math.Min(target, current + DelayRaisePerTickMs)
-            : Math.Max(target, current - DelayLowerPerTickMs);
+        // Repay the credit starvation bought, but only while not starving, and at the same rate the
+        // applied delay is allowed to fall — repaying faster than that would leave the target below
+        // the applied value and turn the repayment into the ramp's own business rather than a
+        // decision made here.
+        if (!state.Starving && state.MarginMs > 0)
+        {
+            state.MarginMs = Math.Max(0, state.MarginMs - DelayLowerPerTickMs);
+        }
 
-        _delays[entityId] = next;
-        AdjustingCount++;
-        return next;
+        _delays[entityId] = state;
+        return state.AppliedMs;
     }
 
+    /// <summary>
+    ///     Books the outcome of one sample against the entity's starvation credit.
+    ///     <para>
+    ///         <b>While an entity is frozen its delay grows by exactly the clock's own advance</b>,
+    ///         which pins render time where playback stopped. That is §3.5's "on recovery, do not
+    ///         snap", arrived at from the other end: the delay <em>is</em> the render-time offset, so
+    ///         holding render time still and growing the delay at the tick rate are the same
+    ///         operation, and expressing it as the latter means the existing asymmetric ramp handles
+    ///         the way back out for free.
+    ///     </para>
+    ///     <para>
+    ///         Without it, recovery skips. Render time keeps advancing through the stall while the
+    ///         entity holds at the newest snapshot it had; when the backlog lands, render time is
+    ///         already a stall's worth into the new data and the entity jumps straight to it,
+    ///         discarding the motion in between. Pinning means the buffer refills <em>ahead</em> of
+    ///         render time and playback continues from the frozen instant, at 110% speed until the
+    ///         credit is repaid.
+    ///     </para>
+    ///     <para>
+    ///         The credit is bounded by <see cref="MaxDelayMs" /> through the clamp in
+    ///         <see cref="SmoothedDelayFor" />, so a stall longer than that does eventually skip
+    ///         rather than accumulate render time debt without limit.
+    ///     </para>
+    /// </summary>
+    private void NoteSample(int entityId, SampleKind kind, SnapshotBuffer buffer, long advanceMs)
+    {
+        if (!_delays.TryGetValue(entityId, out DelayState state))
+        {
+            return;
+        }
+
+        // Frozen with fewer than two snapshots is an entity that has only just come into range, not
+        // one that ran out of future: there is no history to have run past. Crediting it would hand
+        // every newly-tracked entity a margin for the crime of being new.
+        bool starving = kind == SampleKind.Frozen && buffer.Count >= 2;
+
+        if (starving)
+        {
+            if (!state.Starving)
+            {
+                StarvationEvents++;
+            }
+
+            state.MarginMs += advanceMs;
+        }
+
+        state.Starving = starving;
+        _delays[entityId] = state;
+    }
+
+    /// <summary>
+    ///     How far behind the server clock this particular entity is rendered, before starvation
+    ///     credit and before the ramp.
+    ///     <para>
+    ///         Per-entity, because the update rate is per-entity: <c>EntityTrackerEntry</c> sends
+    ///         one update every <c>trackingFrequency</c> ticks and that ranges from 2 (players) to 20
+    ///         (dropped items). A single global delay cannot serve both — sized for players it leaves
+    ///         everything slower permanently starved, and sized for items it renders players half a
+    ///         second in the past.
+    ///     </para>
+    ///     <para>
+    ///         Twice the observed interval, because the newest snapshot is on average half an
+    ///         interval old and can be a full one; anything less than one interval of delay leaves
+    ///         render time past the newest snapshot much of the time, which is exactly the
+    ///         Interpolated-zero case this replaced. <see cref="DelayMs" /> remains the floor and
+    ///         <see cref="MaxDelayMs" /> is a bound against an entity that stopped updating rather
+    ///         than a quality setting — see its own remarks for why a tighter ceiling starved the
+    ///         entities that needed it most.
+    ///     </para>
+    /// </summary>
     internal long DelayForMs(SnapshotBuffer buffer)
     {
         long interval = buffer.MedianIntervalMs;
 
+        // §3.4's jitter term. Independent of the update rate, so it is added rather than folded in:
+        // a slow-updating entity on a jittery link needs both margins, not the larger of them.
+        long jitterMargin = 2 * NetworkJitterMs;
+
         // Below two snapshots there is no interval to measure and nothing to interpolate between,
         // so the network floor is as good an answer as exists.
-        if (interval <= 0)
-        {
-            return DelayMs;
-        }
+        long unclamped = interval <= 0 ? DelayMs + jitterMargin : (interval * 2) + jitterMargin;
 
-        return Math.Clamp(interval * 2, DelayMs, MaxDelayMs);
+        return Math.Clamp(unclamped, DelayMs, MaxDelayMs);
     }
+
+    /// <summary>
+    ///     One entity's adaptation state.
+    /// </summary>
+    /// <param name="AppliedMs">The delay in force, which chases the target rather than jumping to it.</param>
+    /// <param name="MarginMs">
+    ///     Extra delay bought by starvation, on top of what the update interval and jitter ask for.
+    ///     Repaid slowly once the entity is fed again.
+    /// </param>
+    /// <param name="Starving">
+    ///     Whether the last sample ran past the buffer. Carried between passes because the delay for
+    ///     the next one is computed before that pass's sample exists.
+    /// </param>
+    private record struct DelayState(long AppliedMs, long MarginMs, bool Starving);
 
     private void PruneStale(long serverTimeMs)
     {

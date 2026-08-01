@@ -176,6 +176,11 @@ public class ClientNetworkHandler : NetHandler
                 MetricRegistry.Set(ClientMetrics.ClockJitterMs, Clock.JitterMs);
                 MetricRegistry.Set(ClientMetrics.ClockSynchronised, true);
 
+                // §3.4's jitter term. Fed from here rather than read by the interpolator because the
+                // clock is per-connection and the interpolator is handed one number per tick, which
+                // keeps it testable without a synchronised clock to stand up.
+                Interpolation.NetworkJitterMs = Clock.JitterMs;
+
                 // Only meaningful once the clock is synchronised: before that, ServerTimeMs is a
                 // degenerate guess and the age would be a reading of the offset error, not of how
                 // stale the newest batch is.
@@ -208,6 +213,7 @@ public class ClientNetworkHandler : NetHandler
             MetricRegistry.Set(ClientMetrics.InterpolationExtrapolated, Interpolation.ExtrapolatedCount);
             MetricRegistry.Set(ClientMetrics.InterpolationFrozen, Interpolation.FrozenCount);
             MetricRegistry.Set(ClientMetrics.InterpolationAdjusting, Interpolation.AdjustingCount);
+            MetricRegistry.Set(ClientMetrics.InterpolationStarvations, Interpolation.StarvationEvents);
 
             if (_ticks++ - _lastKeepAliveTime > 200)
             {

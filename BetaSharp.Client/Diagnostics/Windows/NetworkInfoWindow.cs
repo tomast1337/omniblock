@@ -233,6 +233,15 @@ internal sealed class NetworkInfoWindow : DebugWindow
             ImGuiTextSafe.Text($"Adjusting:    {adjusting}");
         }
 
+        // Entries into starvation over the session, which is the number §3.5 says to watch. Frozen
+        // alone cannot answer the question: a handful of idle entities holding position reads
+        // identically to a stream that keeps breaking down and recovering.
+        long starvations = MetricRegistry.Get(ClientMetrics.InterpolationStarvations);
+        if (starvations > 0)
+        {
+            ImGuiTextSafe.Text($"Starvations:  {starvations} total");
+        }
+
         if (frozen > 0)
         {
             // The delay now scales with each entity's own update rate, so a slow tracking frequency

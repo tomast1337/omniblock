@@ -225,9 +225,29 @@ public sealed class SnapshotBufferTests
         Assert.Equal(SampleKind.Extrapolated, buffer.Sample(newest + SnapshotBuffer.ExtrapolationCapMs, out _));
         Assert.Equal(SampleKind.Frozen, buffer.Sample(newest + SnapshotBuffer.ExtrapolationCapMs + 1, out Snapshot s));
 
-        // Frozen holds the last real position rather than the last extrapolated one, so recovery
-        // corrects from a true sample.
-        Assert.Equal(4.0, s.X, 9);
+        // Frozen holds where the extrapolation had reached, not the last real sample. This used to
+        // return the newest snapshot, on the reasoning that recovery should correct from something
+        // true — but the correction happens on recovery either way, and returning the snapshot made
+        // *giving up* a second, earlier jump: the model walked forward on the guess and then snapped
+        // a quarter second back the instant the guess was abandoned. Clamping makes freezing exactly
+        // what it says, the motion stopping.
+        Assert.Equal(4.0 + (SnapshotBuffer.ExtrapolationCapMs / 50.0), s.X, 9);
+    }
+
+    /// <summary>
+    ///     The position is continuous across the cap: one millisecond either side of it differs by
+    ///     one millisecond of motion, not by the whole extrapolated distance.
+    /// </summary>
+    [Fact]
+    public void Freezing_is_continuous_with_the_extrapolation_it_gives_up_on()
+    {
+        SnapshotBuffer buffer = Walking();
+        long cap = buffer.NewestServerTimeMs + SnapshotBuffer.ExtrapolationCapMs;
+
+        buffer.Sample(cap, out Snapshot last);
+        buffer.Sample(cap + 1, out Snapshot frozen);
+
+        Assert.Equal(last.X, frozen.X, 9);
     }
 
     [Fact]
