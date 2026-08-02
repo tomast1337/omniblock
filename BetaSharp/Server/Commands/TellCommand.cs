@@ -1,5 +1,5 @@
 using BetaSharp.Entities;
-using BetaSharp.Network.Packets.Play;
+using BetaSharp.Network.Messages;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 using Microsoft.Extensions.Logging;
@@ -26,7 +26,11 @@ public class TellCommand : Command.Command
         string whisper = "§7" + context.Source.SenderName + " whispers " + message;
         s_logger.LogInformation(whisper);
 
-        if (!PlayerManager.sendPacket(target, ChatMessagePacket.Get(whisper)))
+        if (target.NetworkHandler is { } handler)
+        {
+            handler.SendMessage(new ChatMessage { Text = whisper });
+        }
+        else
         {
             context.Source.Output.SendMessage("There's no player by that name online.");
         }

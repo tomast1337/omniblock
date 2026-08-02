@@ -1,4 +1,5 @@
 using BetaSharp.Client.Network;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Registries;
@@ -14,8 +15,8 @@ public class RaceConditionTests
         var registries = new ClientRegistryAccess();
         RegistryKey<GameMode> key = RegistryKeys.GameModes;
 
-        var packet1 = RegistryDataS2CPacket.Get(key, BuildRegistry("survival", "deleted_mode"));
-        registries.Accumulate(packet1);
+        var message1 = RegistryDataMessage.FromRegistry(key, BuildRegistry("survival", "deleted_mode"));
+        registries.Accumulate(message1);
 
         Holder<GameMode> survivalHolder = registries.Get(key, "survival")!;
         Holder<GameMode> deletedHolder = registries.Get(key, "deleted_mode")!;
@@ -23,8 +24,8 @@ public class RaceConditionTests
         Assert.NotNull(survivalHolder.Value);
         Assert.NotNull(deletedHolder.Value);
 
-        var packet2 = RegistryDataS2CPacket.Get(key, BuildRegistry("survival"));
-        registries.Accumulate(packet2);
+        var message2 = RegistryDataMessage.FromRegistry(key, BuildRegistry("survival"));
+        registries.Accumulate(message2);
 
         _ = registries.Get(key, "survival");
 
@@ -33,36 +34,23 @@ public class RaceConditionTests
     }
 
     [Fact]
-    public void BundlePacket_Prevents_RaceCondition_By_Updating_State_Atomically()
+    public void Sequential_Message_Delivery_Prevents_RaceCondition_By_Updating_State_Atomically()
     {
         var registries = new ClientRegistryAccess();
         RegistryKey<GameMode> key = RegistryKeys.GameModes;
 
-        registries.Accumulate(RegistryDataS2CPacket.Get(key, BuildRegistry("survival", "deleted_mode")));
+        registries.Accumulate(RegistryDataMessage.FromRegistry(key, BuildRegistry("survival", "deleted_mode")));
         Holder<GameMode> initialHolder = registries.Get(key, "deleted_mode")!;
         Holder<GameMode> currentPlayerHolder = initialHolder;
 
-        var bundle = new BundleS2CPacket();
-
-        bundle.Packets.Add(RegistryDataS2CPacket.Get(key, BuildRegistry("survival")));
+        // Simulate sequential message delivery: registry data arrives, then migration packet.
+        registries.Accumulate(RegistryDataMessage.FromRegistry(key, BuildRegistry("survival")));
 
         var migrationPacket = PlayerGameModeUpdateS2CPacket.Get(new GameMode { Name = "survival", Namespace = Namespace.BetaSharp });
-        bundle.Packets.Add(migrationPacket);
 
-        // We simulate the sequential handle calls here.
-        foreach (Packet p in bundle.Packets)
-        {
-            if (p is RegistryDataS2CPacket dp)
-            {
-                registries.Accumulate(dp);
-            }
-            if (p is PlayerGameModeUpdateS2CPacket mg)
-            {
-                // This simulates ClientNetworkHandler.onPlayerGameModeUpdate
-                Holder<GameMode> updated = registries.Get(key, mg.GameModeName)!;
-                currentPlayerHolder = updated;
-            }
-        }
+        // This simulates ClientNetworkHandler.onPlayerGameModeUpdate
+        Holder<GameMode> updated = registries.Get(key, migrationPacket.GameModeName)!;
+        currentPlayerHolder = updated;
 
         Assert.True(initialHolder.IsInvalid, "The old holder should have been invalidated during the merge.");
         Assert.False(currentPlayerHolder.IsInvalid, "The current holder should be the newly acquired valid one.");

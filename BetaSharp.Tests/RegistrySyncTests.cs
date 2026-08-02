@@ -2,6 +2,7 @@ using System.Collections;
 using System.Net;
 using System.Net.Sockets;
 using BetaSharp.Client.Network;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Registries;
 using BetaSharp.Registries.Data;
@@ -43,7 +44,7 @@ file sealed class StubRegistry<T>(RegistryKey<T> key, IEnumerable<T> items) : IR
 }
 
 // ---------------------------------------------------------------------------
-// BuildSyncPackets / IsReloadable tests — mutate s_dynamicEntries
+// BuildSyncMessages / IsReloadable tests — mutate s_dynamicEntries
 // ---------------------------------------------------------------------------
 
 [Collection("RegistryAccess")]
@@ -79,7 +80,7 @@ public sealed class RegistrySyncTests : IDisposable
     }
 
     [Fact]
-    public void BuildSyncPackets_yields_packet_for_reloadable_registry()
+    public void BuildSyncMessages_yields_message_for_reloadable_registry()
     {
         WriteBaseEnchantment("sharpness", maxLevel: 5);
 
@@ -87,13 +88,13 @@ public sealed class RegistrySyncTests : IDisposable
         RegistryAccess.AddDynamic(def);
         RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
 
-        List<RegistryDataS2CPacket> packets = ra.BuildSyncPackets().ToList();
-        Assert.Single(packets);
-        Assert.Equal(s_enchKey.Location, packets[0].RegistryId);
+        List<RegistryDataMessage> messages = ra.BuildSyncMessages().ToList();
+        Assert.Single(messages);
+        Assert.Equal(s_enchKey.Location, messages[0].RegistryId);
     }
 
     [Fact]
-    public void BuildSyncPackets_skips_non_reloadable_registry()
+    public void BuildSyncMessages_skips_non_reloadable_registry()
     {
         WriteBaseEnchantment("sharpness", maxLevel: 5);
 
@@ -101,12 +102,12 @@ public sealed class RegistrySyncTests : IDisposable
         RegistryAccess.AddDynamic(def);
         RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
 
-        List<RegistryDataS2CPacket> packets = ra.BuildSyncPackets().ToList();
-        Assert.Empty(packets);
+        List<RegistryDataMessage> messages = ra.BuildSyncMessages().ToList();
+        Assert.Empty(messages);
     }
 
     [Fact]
-    public void BuildSyncPackets_packet_contains_entry_for_each_loaded_asset()
+    public void BuildSyncMessages_message_contains_entry_for_each_loaded_asset()
     {
         WriteBaseEnchantment("sharpness", maxLevel: 5);
         WriteBaseEnchantment("fortune", maxLevel: 3);
@@ -115,13 +116,13 @@ public sealed class RegistrySyncTests : IDisposable
         RegistryAccess.AddDynamic(def);
         RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
 
-        RegistryDataS2CPacket packet = ra.BuildSyncPackets().Single();
-        IEnumerable<string> names = packet.Entries.Select(e => e.key.Path).OrderBy(n => n);
+        RegistryDataMessage message = ra.BuildSyncMessages().Single();
+        IEnumerable<string> names = message.Entries.Select(e => e.Key.Path).OrderBy(n => n);
         Assert.Equal(["fortune", "sharpness"], names);
     }
 
     [Fact]
-    public void BuildSyncPackets_only_reloadable_of_mixed_definitions_are_included()
+    public void BuildSyncMessages_only_reloadable_of_mixed_definitions_are_included()
     {
         WriteBaseEnchantment("sharpness", maxLevel: 5);
 
@@ -135,13 +136,13 @@ public sealed class RegistrySyncTests : IDisposable
 
         RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
 
-        List<ResourceLocation> ids = ra.BuildSyncPackets().Select(p => p.RegistryId!).ToList();
+        List<ResourceLocation> ids = ra.BuildSyncMessages().Select(p => p.RegistryId).ToList();
         Assert.Single(ids);
         Assert.Equal(reloadable.Location, ids[0]);
     }
 
     [Fact]
-    public void Rebuild_reloadable_definition_produces_updated_sync_packet()
+    public void Rebuild_reloadable_definition_produces_updated_sync_message()
     {
         WriteBaseEnchantment("sharpness", maxLevel: 5);
 
@@ -152,14 +153,14 @@ public sealed class RegistrySyncTests : IDisposable
         WriteBaseEnchantment("fortune", maxLevel: 3);
         RegistryAccess rebuilt = first.Rebuild();
 
-        RegistryDataS2CPacket packet = rebuilt.BuildSyncPackets().Single();
-        IEnumerable<string> names = packet.Entries.Select(e => e.key.Path).OrderBy(n => n);
+        RegistryDataMessage message = rebuilt.BuildSyncMessages().Single();
+        IEnumerable<string> names = message.Entries.Select(e => e.Key.Path).OrderBy(n => n);
         Assert.Equal(["fortune", "sharpness"], names);
     }
 }
 
 // ---------------------------------------------------------------------------
-// Packet serialization tests — no global state mutations
+// Message serialization tests — no global state mutations
 // ---------------------------------------------------------------------------
 
 public sealed class PacketSerializationTests
@@ -180,34 +181,34 @@ public sealed class PacketSerializationTests
         );
     }
 
-    // ---- RegistryDataS2CPacket ----
+    // ---- RegistryDataMessage ----
 
     [Fact]
-    public void RegistryDataS2CPacket_Get_sets_registry_id_from_key()
+    public void RegistryDataMessage_FromRegistry_sets_registry_id()
     {
         var mode = new GameMode { Name = "survival" };
         var registry = new StubRegistry<GameMode>(RegistryKeys.GameModes, [mode]);
 
-        RegistryDataS2CPacket packet = RegistryDataS2CPacket.Get(RegistryKeys.GameModes, registry);
+        RegistryDataMessage message = RegistryDataMessage.FromRegistry(RegistryKeys.GameModes, registry);
 
-        Assert.Equal(RegistryKeys.GameModes.Location, packet.RegistryId);
+        Assert.Equal(RegistryKeys.GameModes.Location, message.RegistryId);
     }
 
     [Fact]
-    public void RegistryDataS2CPacket_Get_serializes_each_entry_to_json()
+    public void RegistryDataMessage_FromRegistry_serializes_each_entry_to_json()
     {
         var survival = new GameMode { Name = "survival" };
         var creative = new GameMode { Name = "creative" };
         var registry = new StubRegistry<GameMode>(RegistryKeys.GameModes, [survival, creative]);
 
-        RegistryDataS2CPacket packet = RegistryDataS2CPacket.Get(RegistryKeys.GameModes, registry);
+        RegistryDataMessage message = RegistryDataMessage.FromRegistry(RegistryKeys.GameModes, registry);
 
-        Assert.Equal(2, packet.Entries.Count);
-        Assert.All(packet.Entries, e => Assert.NotNull(e.JsonData));
+        Assert.Equal(2, message.Entries.Count);
+        Assert.All(message.Entries, e => Assert.NotNull(e.JsonData));
     }
 
     [Fact]
-    public void RegistryDataS2CPacket_WhenWritingNull_preserves_boolean_false_values()
+    public void RegistryDataMessage_WhenWritingNull_preserves_boolean_false_values()
     {
         // GameMode properties all default to true; creative sets several to false.
         var creative = new GameMode
@@ -223,9 +224,9 @@ public sealed class PacketSerializationTests
         };
         var registry = new StubRegistry<GameMode>(RegistryKeys.GameModes, [creative]);
 
-        RegistryDataS2CPacket packet = RegistryDataS2CPacket.Get(RegistryKeys.GameModes, registry);
+        RegistryDataMessage message = RegistryDataMessage.FromRegistry(RegistryKeys.GameModes, registry);
 
-        string json = packet.Entries.Single().JsonData!;
+        string json = message.Entries.Single().JsonData!;
         Assert.Contains("\"DisallowFlying\":false", json);
         Assert.Contains("\"FiniteResources\":false", json);
         Assert.Contains("\"BlockDrops\":false", json);
@@ -236,25 +237,25 @@ public sealed class PacketSerializationTests
     }
 
     [Fact]
-    public void RegistryDataS2CPacket_roundtrip_preserves_registry_id_and_entries()
+    public void RegistryDataMessage_roundtrip_preserves_registry_id_and_entries()
     {
         var enchantment = new TestEnchantment { Name = "sharpness", MaxLevel = 5, Rarity = "common" };
         var key = new RegistryKey<TestEnchantment>(ResourceLocation.Parse("test:enchantment"));
         var registry = new StubRegistry<TestEnchantment>(key, [enchantment]);
 
-        RegistryDataS2CPacket sent = RegistryDataS2CPacket.Get(key, registry);
+        RegistryDataMessage sent = RegistryDataMessage.FromRegistry(key, registry);
 
         (NetworkStream? writeStream, NetworkStream? readStream, Action? cleanup) = MakeLoopbackPair();
         try
         {
             sent.Write(writeStream);
 
-            var received = new RegistryDataS2CPacket();
+            var received = new RegistryDataMessage();
             received.Read(readStream);
 
             Assert.Equal(key.Location, received.RegistryId);
             Assert.Single(received.Entries);
-            Assert.Equal("sharpness", received.Entries[0].key.Path);
+            Assert.Equal("sharpness", received.Entries[0].Key.Path);
             Assert.NotNull(received.Entries[0].JsonData);
         }
         finally
@@ -264,25 +265,25 @@ public sealed class PacketSerializationTests
     }
 
     [Fact]
-    public void RegistryDataS2CPacket_roundtrip_null_json_entry_reads_back_as_null()
+    public void RegistryDataMessage_roundtrip_null_json_entry_reads_back_as_null()
     {
-        // Construct a packet directly via round-trip: pack a null entry by sending
+        // Construct a message directly via round-trip: pack a null entry by sending
         // known bytes over a loopback stream.
         (NetworkStream? writeStream, NetworkStream? readStream, Action? cleanup) = MakeLoopbackPair();
         try
         {
-            // Manually write the packet wire format: registryId, count=1, name, hasData=false
+            // Manually write the wire format: registryId, count=1 (varint), name, hasData=false
             writeStream.WriteResourceLocation("test:enchantment");
-            writeStream.WriteShort(1);
+            writeStream.WriteVarInt(1);
             writeStream.WriteResourceLocation("test:silk_touch");
             writeStream.WriteBoolean(false); // no JSON data
 
-            var received = new RegistryDataS2CPacket();
+            var received = new RegistryDataMessage();
             received.Read(readStream);
 
             Assert.Equal("test:enchantment", received.RegistryId);
             Assert.Single(received.Entries);
-            Assert.Equal("test:silk_touch", received.Entries[0].key);
+            Assert.Equal("test:silk_touch", received.Entries[0].Key);
             Assert.Null(received.Entries[0].JsonData);
         }
         finally
@@ -332,10 +333,10 @@ public sealed class ClientRegistryAccessTests
 {
     private static readonly RegistryKey<GameMode> s_gameModeKey = RegistryKeys.GameModes;
 
-    private static RegistryDataS2CPacket BuildPacket(params GameMode[] modes)
+    private static RegistryDataMessage BuildMessage(params GameMode[] modes)
     {
         var registry = new StubRegistry<GameMode>(s_gameModeKey, modes);
-        return RegistryDataS2CPacket.Get(s_gameModeKey, registry);
+        return RegistryDataMessage.FromRegistry(s_gameModeKey, registry);
     }
 
     [Fact]
@@ -345,7 +346,7 @@ public sealed class ClientRegistryAccessTests
         var creative = new GameMode { Name = "creative" };
 
         var access = new ClientRegistryAccess();
-        access.Accumulate(BuildPacket(survival, creative));
+        access.Accumulate(BuildMessage(survival, creative));
 
         IReadOnlyDictionary<ResourceLocation, Holder<GameMode>> all = access.GetAll(s_gameModeKey);
         Assert.Equal(2, all.Count);
@@ -360,7 +361,7 @@ public sealed class ClientRegistryAccessTests
         var creative = new GameMode { Name = "creative", BreakSpeed = 0.5f }; // distinct value
 
         var access = new ClientRegistryAccess();
-        access.Accumulate(BuildPacket(survival, creative));
+        access.Accumulate(BuildMessage(survival, creative));
 
         GameMode? found = access.Get(s_gameModeKey, "creative")?.Value;
         Assert.NotNull(found);
@@ -371,7 +372,7 @@ public sealed class ClientRegistryAccessTests
     public void Get_returns_null_for_unknown_name()
     {
         var access = new ClientRegistryAccess();
-        access.Accumulate(BuildPacket(new GameMode { Name = "survival" }));
+        access.Accumulate(BuildMessage(new GameMode { Name = "survival" }));
 
         Assert.Null(access.Get(s_gameModeKey, "spectator"));
     }
@@ -391,7 +392,7 @@ public sealed class ClientRegistryAccessTests
     {
         var initial = new GameMode { Name = "survival", BreakSpeed = 1f };
         var access = new ClientRegistryAccess();
-        access.Accumulate(BuildPacket(initial));
+        access.Accumulate(BuildMessage(initial));
 
         // Force the cache to populate.
         GameMode? first = access.Get(s_gameModeKey, "survival")?.Value;
@@ -400,7 +401,7 @@ public sealed class ClientRegistryAccessTests
 
         // Re-accumulate with changed data.
         var updated = new GameMode { Name = "survival", BreakSpeed = 0.5f };
-        access.Accumulate(BuildPacket(updated));
+        access.Accumulate(BuildMessage(updated));
 
         GameMode? second = access.Get(s_gameModeKey, "survival")?.Value;
         Assert.NotNull(second);
@@ -426,7 +427,7 @@ public sealed class ClientRegistryAccessTests
         };
 
         var access = new ClientRegistryAccess();
-        access.Accumulate(BuildPacket(creative));
+        access.Accumulate(BuildMessage(creative));
 
         GameMode? result = access.Get(s_gameModeKey, "creative")?.Value;
         Assert.NotNull(result);
@@ -445,7 +446,7 @@ public sealed class ClientRegistryAccessTests
         var survival = new GameMode { Name = "survival" };
         var creative = new GameMode { Name = "creative" };
         var access = new ClientRegistryAccess();
-        access.Accumulate(BuildPacket(survival, creative));
+        access.Accumulate(BuildMessage(survival, creative));
 
         // Retain a holder reference before the resync.
         Holder<GameMode>? holder = access.Get(s_gameModeKey, "creative");
@@ -453,7 +454,7 @@ public sealed class ClientRegistryAccessTests
         Assert.False(holder.IsInvalid);
 
         // Resync drops "creative" entirely.
-        access.Accumulate(BuildPacket(survival));
+        access.Accumulate(BuildMessage(survival));
         access.GetAll(s_gameModeKey); // trigger the merge
 
         Assert.True(holder.IsInvalid);
@@ -465,7 +466,7 @@ public sealed class ClientRegistryAccessTests
     {
         var mode = new GameMode { Name = "survival" };
         var access = new ClientRegistryAccess();
-        access.Accumulate(BuildPacket(mode));
+        access.Accumulate(BuildMessage(mode));
 
         GameMode? result = access.Get(s_gameModeKey, "survival")?.Value;
         Assert.NotNull(result);

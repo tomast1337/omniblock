@@ -1,4 +1,4 @@
-using BetaSharp.Network.Packets.S2CPlay;
+using BetaSharp.Network.Messages;
 using BetaSharp.Registries.Data;
 
 namespace BetaSharp.Registries;
@@ -36,7 +36,7 @@ public sealed class RegistryAccess
         bool CanSync { get; }
         DataAssetLoader CreateLoader();
         DataAssetLoader? CloneForWorld(DataAssetLoader loader, string worldDatapackPath);
-        RegistryDataS2CPacket? BuildSyncPacket(RegistryAccess registryAccess);
+        RegistryDataMessage? BuildSyncMessage(RegistryAccess registryAccess);
     }
 
     private sealed class DynamicRegistryEntry<T>(RegistryDefinition<T> definition) : IDynamicRegistryEntry
@@ -47,10 +47,10 @@ public sealed class RegistryAccess
         public bool CanSync => definition.CanSync;
         public DataAssetLoader CreateLoader() => definition.CreateLoader();
         public DataAssetLoader? CloneForWorld(DataAssetLoader loader, string worldDatapackPath) => loader.CloneForWorldDatapacks(worldDatapackPath);
-        public RegistryDataS2CPacket? BuildSyncPacket(RegistryAccess registryAccess)
+        public RegistryDataMessage? BuildSyncMessage(RegistryAccess registryAccess)
         {
             IReadableRegistry<T>? registry = registryAccess.Get(definition.Key);
-            return registry is null ? null : RegistryDataS2CPacket.Get(definition.Key, registry);
+            return registry is null ? null : RegistryDataMessage.FromRegistry(definition.Key, registry);
         }
     }
 
@@ -237,15 +237,15 @@ public sealed class RegistryAccess
         => new(_builtIns, _serverLoaders, _serverLoaders, _basePath, _datapackPath);
 
     /// <summary>
-    /// Builds a <see cref="RegistryDataS2CPacket"/> for each reloadable dynamic registry.
+    /// Builds a <see cref="RegistryDataMessage"/> for each reloadable dynamic registry.
     /// </summary>
-    public IEnumerable<RegistryDataS2CPacket> BuildSyncPackets()
+    public IEnumerable<RegistryDataMessage> BuildSyncMessages()
     {
         foreach (IDynamicRegistryEntry entry in s_dynamicEntries)
         {
             if (!entry.IsReloadable || !entry.CanSync) continue;
-            RegistryDataS2CPacket? packet = entry.BuildSyncPacket(this);
-            if (packet is not null) yield return packet;
+            RegistryDataMessage? message = entry.BuildSyncMessage(this);
+            if (message is not null) yield return message;
         }
     }
 

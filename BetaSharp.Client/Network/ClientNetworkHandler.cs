@@ -247,7 +247,7 @@ public class ClientNetworkHandler : NetHandler
 
             if (_ticks++ - _lastKeepAliveTime > 200)
             {
-                SendPacket(KeepAlivePacket.Get());
+                SendMessage(new KeepAliveMessage());
             }
         }
     }
@@ -427,6 +427,10 @@ public class ClientNetworkHandler : NetHandler
         MessageHandlers.On<ScreenHandlerPropertyMessage>(onScreenHandlerProperty);
         MessageHandlers.On<ScreenHandlerAckMessage>(onScreenHandlerAck);
         MessageHandlers.On<UpdateSignMessage>(onUpdateSign);
+        MessageHandlers.On<ChatMessage>(onChatMessage);
+        MessageHandlers.On<DisconnectMessage>(onDisconnect);
+        MessageHandlers.On<RegistryDataMessage>(onRegistryData);
+        MessageHandlers.On<FinishConfigurationMessage>(onFinishConfiguration);
     }
 
     /// <summary>
@@ -1015,7 +1019,7 @@ public class ClientNetworkHandler : NetHandler
         _worldClient.SetBlockWithMetaFromPacket(packet.X, packet.Y, packet.Z, packet.BlockRawId, packet.BlockMetadata);
     }
 
-    public override void onDisconnect(DisconnectPacket packet)
+    private void onDisconnect(DisconnectMessage packet)
     {
         _netManager.disconnect("disconnect.kicked");
         Disconnected = true;
@@ -1068,9 +1072,9 @@ public class ClientNetworkHandler : NetHandler
 
     }
 
-    public override void onChatMessage(ChatMessagePacket packet)
+    private void onChatMessage(ChatMessage packet)
     {
-        _context.AddChatMessage(packet.ChatMessage);
+        _context.AddChatMessage(packet.Text);
     }
 
     private void onEntityAnimation(EntityAnimationMessage packet)
@@ -1465,12 +1469,12 @@ public class ClientNetworkHandler : NetHandler
         }
     }
 
-    public override void onRegistryData(RegistryDataS2CPacket packet)
+    private void onRegistryData(RegistryDataMessage packet)
     {
         _clientRegistries.Accumulate(packet);
     }
 
-    public override void onFinishConfiguration(FinishConfigurationS2CPacket packet)
+    private void onFinishConfiguration(FinishConfigurationMessage packet)
     {
         _logger.LogInformation("Configuration finished");
 

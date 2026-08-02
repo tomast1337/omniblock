@@ -120,10 +120,8 @@ public abstract class Packet
 
     static Packet() =>
         Registry.Register([
-            New(PacketId.KeepAlive, true, true, false, () => new KeepAlivePacket()),
             New(PacketId.LoginHello, true, true, false, () => new LoginHelloPacket()),
             New(PacketId.Handshake, true, true, false, () => new HandshakePacket()),
-            New(PacketId.ChatMessage, true, true, false, () => new ChatMessagePacket()),
             New(PacketId.WorldTimeUpdateS2C, true, false, false, () => new WorldTimeUpdateS2CPacket()),
             New(PacketId.PlayerSpawnPositionS2C, true, false, false, () => new PlayerSpawnPositionS2CPacket()),
             New(PacketId.HealthUpdateS2C, true, false, false, () => new HealthUpdateS2CPacket()),
@@ -144,13 +142,10 @@ public abstract class Packet
             New(PacketId.MapUpdateS2C, true, false, true, () => new MapUpdateS2CPacket()),
             New(PacketId.PlayerConnectionUpdateS2C, true, false, false, () => new PlayerConnectionUpdateS2CPacket()),
             New(PacketId.PlayerGameModeUpdateS2C, true, false, false, () => new PlayerGameModeUpdateS2CPacket()),
-            New(PacketId.RegistryDataS2C, true, false, false, () => new RegistryDataS2CPacket()),
-            New(PacketId.FinishConfigurationS2C, true, false, false, () => new FinishConfigurationS2CPacket()),
             New(PacketId.BundleS2C, true, false, false, () => new BundleS2CPacket()),
             New(PacketId.IncreaseStatS2C, true, false, false, () => new IncreaseStatS2CPacket()),
             New(PacketId.MessageRegistrySyncS2C, true, false, false, () => new MessageRegistrySyncS2CPacket()),
-            New(PacketId.OmniMessage, true, true, false, () => new OmniMessagePacket()),
-            New(PacketId.Disconnect, true, true, false, () => new DisconnectPacket())
+            New(PacketId.OmniMessage, true, true, false, () => new OmniMessagePacket())
         ]);
 
     public class PacketRegisterItem(byte rawId, bool clientBound, bool serverBound, bool worldPacket, Func<Packet> factory) : FactoryItem<Packet>(rawId, factory)

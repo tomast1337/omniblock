@@ -1,3 +1,4 @@
+using BetaSharp.Network.Messages;
 using BetaSharp.Server.Network;
 using BetaSharp.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
@@ -85,7 +86,7 @@ public class InternalServer : BetaSharpServer
                     _ => "Unknown"
                 };
 
-                playerManager?.sendToAll(BetaSharp.Network.Packets.Play.ChatMessagePacket.Get($"Difficulty set to {difficultyName}"));
+                playerManager?.sendToAll(new ChatMessage { Text = $"Difficulty set to {difficultyName}" });
             }
         }
     }

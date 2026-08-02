@@ -643,7 +643,7 @@ public abstract class BetaSharpServer : ICommandOutput
         => _reloadListeners.Add(listener);
 
     /// <summary>
-    /// Sends all reloadable registry data packets followed by <see cref="FinishConfigurationS2CPacket"/>
+    /// Sends all reloadable registry data messages followed by <see cref="FinishConfigurationMessage"/>
     /// </summary>
     public void SendConfigurationTo(Action<Packet> send)
     {
@@ -652,12 +652,12 @@ public abstract class BetaSharpServer : ICommandOutput
         // it is an ExtendedProtocolPacket.
         send(MessageRegistrySyncS2CPacket.Get(Messages.NegotiatedOrder));
 
-        foreach (RegistryDataS2CPacket packet in RegistryAccess.BuildSyncPackets())
+        foreach (RegistryDataMessage message in RegistryAccess.BuildSyncMessages())
         {
-            send(packet);
+            send(OmniMessagePacket.For(Messages, message)!);
         }
 
-        send(FinishConfigurationS2CPacket.Get());
+        send(OmniMessagePacket.For(Messages, new FinishConfigurationMessage())!);
     }
 
     /// <summary>
@@ -667,7 +667,7 @@ public abstract class BetaSharpServer : ICommandOutput
     public void ReloadDatapacks()
     {
         _logger.LogInformation("Reloading datapacks...");
-        playerManager.sendToAll(ChatMessagePacket.Get("§eReloading datapacks..."));
+        playerManager.sendToAll(new ChatMessage { Text = "§eReloading datapacks..." });
         try
         {
             RegistryAccess = RegistryAccess.Rebuild();
@@ -675,7 +675,7 @@ public abstract class BetaSharpServer : ICommandOutput
             RegistryReloadPipeline.SyncToPlayers(RegistryAccess, _reloadListeners, playerManager.players);
 
             _logger.LogInformation("Datapacks reloaded.");
-            playerManager.sendToAll(ChatMessagePacket.Get("§aDatapacks reloaded."));
+            playerManager.sendToAll(new ChatMessage { Text = "§aDatapacks reloaded." });
         }
         catch (AssetLoadException ex)
         {
@@ -683,7 +683,7 @@ public abstract class BetaSharpServer : ICommandOutput
 
             if (this is InternalServer)
             {
-                playerManager.sendToAll(ChatMessagePacket.Get($"§cReload failed! See console for details."));
+                playerManager.sendToAll(new ChatMessage { Text = $"§cReload failed! See console for details." });
             }
         }
     }

@@ -1,7 +1,7 @@
 using BetaSharp.Client.Chunks;
 using BetaSharp.Client.Network;
 using BetaSharp.Entities;
-using BetaSharp.Network.Packets.Play;
+using BetaSharp.Network.Messages;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
 using BetaSharp.Worlds.Chunks;
@@ -208,5 +208,9 @@ public class ClientWorld : World
         return false;
     }
 
-    public override void Disconnect() => _networkHandler.SendPacketAndDisconnect(DisconnectPacket.Get("Quitting"));
+    public override void Disconnect()
+    {
+        _networkHandler.SendMessage(new DisconnectMessage { Reason = "Quitting" });
+        _networkHandler.Disconnect();
+    }
 }

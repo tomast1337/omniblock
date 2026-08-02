@@ -22,7 +22,7 @@ public sealed class DrainBudgetTests
     ///     the budget is measured against the monotonic clock, and a sleep would hand the test's
     ///     timing to the scheduler.
     /// </summary>
-    private sealed class CountingPacket(double burnMs) : Packet(PacketId.KeepAlive)
+    private sealed class CountingPacket(double burnMs) : Packet(PacketId.Handshake)
     {
         public static int Applied;
 

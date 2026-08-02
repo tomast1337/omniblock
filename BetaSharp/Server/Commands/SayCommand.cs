@@ -1,4 +1,4 @@
-using BetaSharp.Network.Packets.Play;
+using BetaSharp.Network.Messages;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 using Microsoft.Extensions.Logging;
@@ -20,7 +20,7 @@ public class SayCommand : Command.Command
     {
         string message = context.GetArgument<string>("message");
         s_logger.LogInformation("[" + context.Source.SenderName + "] " + message);
-        context.Source.Server.playerManager.sendToAll(ChatMessagePacket.Get("§d[Server] " + message));
+        context.Source.Server.playerManager.sendToAll(new ChatMessage { Text = "§d[Server] " + message });
         return 1;
     }
 }

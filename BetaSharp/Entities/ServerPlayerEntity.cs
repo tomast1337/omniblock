@@ -698,7 +698,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     public override void SendMessage(string message)
     {
         string translatedMessage = Translations.Get(message);
-        NetworkHandler?.SendPacket(ChatMessagePacket.Get(translatedMessage));
+        NetworkHandler?.SendMessage(new ChatMessage { Text = translatedMessage });
     }
 
     //client only

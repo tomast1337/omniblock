@@ -1,7 +1,6 @@
 using BetaSharp.Network;
 using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.Play;
 
 namespace BetaSharp.Tests.Network;
 
@@ -52,7 +51,7 @@ public sealed class ExtendedProtocolGateTests
     {
         // The gate must not touch the vanilla protocol: a plain packet goes out regardless.
         Fixture fixture = new();
-        fixture.Connection.sendPacket(KeepAlivePacket.Get());
+        fixture.Connection.sendPacket(Packet.Get(PacketId.Handshake));
 
         Assert.Equal(1, fixture.SentCount);
     }
@@ -94,7 +93,7 @@ public sealed class ExtendedProtocolGateTests
         // gate entirely and push unparseable ids at it.
         Fixture fixture = new();
 
-        fixture.Connection.NotePeerCapability(KeepAlivePacket.Get());
+        fixture.Connection.NotePeerCapability(Packet.Get(PacketId.Handshake));
 
         Assert.False(fixture.Connection.betaSharpClient);
     }
