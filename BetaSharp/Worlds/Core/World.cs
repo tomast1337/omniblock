@@ -162,7 +162,21 @@ public abstract class World : IWorldContext
 
     public RuleSet Rules { get; protected set; }
 
-    public bool SpawnEntity(Entity entity) => Entities.SpawnEntity(entity);
+    /// <summary>
+    ///     Adds an entity to the world, by whichever of the two routes its type calls for.
+    /// </summary>
+    /// <remarks>
+    ///     A type declaring a <c>GlobalSpawnId</c> is announced to every nearby client rather than
+    ///     tracked per chunk, and only <see cref="EntityManager.SpawnGlobalEntity" /> raises the
+    ///     event that announces it. Choosing here rather than at each call site is what stops a
+    ///     caller silently getting the wrong one: a lightning bolt spawned the ordinary way still
+    ///     ticks, still lights fires and still makes no sound and no picture, because the client is
+    ///     never told it exists.
+    /// </remarks>
+    public bool SpawnEntity(Entity entity) =>
+        entity.Type?.Definition is { GlobalSpawnId: > 0 }
+            ? Entities.SpawnGlobalEntity(entity)
+            : Entities.SpawnEntity(entity);
 
     public bool SpawnItemDrop(double x, double y, double z, ItemStack itemStack)
     {

@@ -61,3 +61,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-02 — feat(diagnostics): hash fixed scenes so a rendering change can be checked (Nicolas Vyčas Nery; `b536a0cd45a6f67d4a631b92efb1462b62878636`)
 - 2026-08-02 — feat(rendering): describe blend, depth and cull as one value (Nicolas Vyčas Nery; `bba553853138c3c27040dccc8cc4a5afeeb4b4a0`)
 - 2026-08-02 — refactor(rendering): give the lightning bolt a whole state instead of two toggles (Nicolas Vyčas Nery; `1bb9c065ee845de324a8060bbaacbb90b9962982`)
+- 2026-08-02 — fix(worlds): spawn global entities by the route that announces them (Nicolas Vyčas Nery; `ff8117ddc54d9719bd2b41c796d4a4ef94a06412`)
