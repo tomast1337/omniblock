@@ -112,7 +112,15 @@ public class ServerWorld : World
         };
         explosion.doExplosionA();
         explosion.doExplosionB(false);
-        server.playerManager.sendToAround(x, y, z, 64.0, Dimension.Id, ExplosionS2CPacket.Get(x, y, z, power, explosion.destroyedBlockPositions));
+        var explosionMessage = new ExplosionMessage
+        {
+            X = x,
+            Y = y,
+            Z = z,
+            Radius = power
+        };
+        explosionMessage.DestroyedBlocks.AddRange(explosion.destroyedBlockPositions);
+        server.playerManager.sendToAround(x, y, z, 64.0, Dimension.Id, explosionMessage);
         return explosion;
     }
 

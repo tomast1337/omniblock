@@ -1,7 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
 using BetaSharp.Items;
-using BetaSharp.Network.Packets.S2CPlay;
+using BetaSharp.Network.Messages;
 using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -168,7 +168,14 @@ public class ServerPlayerInteractionManager
             if (player.GameMode.BlockDrops && player.CanHarvest(block))
             {
                 block.onAfterBreak(new OnAfterBreakEvent(world, player, blockMeta, x, y, z));
-                ((ServerPlayerEntity)player).NetworkHandler.SendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
+                ((ServerPlayerEntity)player).NetworkHandler.SendMessage(new BlockUpdateMessage
+                {
+                    X = x,
+                    Y = (sbyte)y,
+                    Z = z,
+                    BlockRawId = (byte)world.Reader.GetBlockId(x, y, z),
+                    BlockMetadata = (byte)world.Reader.GetBlockMeta(x, y, z)
+                });
             }
         }
 

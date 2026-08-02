@@ -60,11 +60,13 @@ public sealed class SendPriorityTests
     public void World_data_and_anything_ordered_against_it_stays_normal()
     {
         Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Packet.Get(PacketId.ChunkDataS2C)));
-        Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Packet.Get(PacketId.BlockUpdateS2C)));
-        Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Packet.Get(PacketId.ChunkDeltaUpdateS2C)));
-        Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Packet.Get(PacketId.ChunkStatusUpdateS2C)));
         Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Packet.Get(PacketId.PlayerMoveFull)));
-        Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Packet.Get(PacketId.MapUpdateS2C)));
+        // Block updates, chunk deltas, status updates, and map updates migrated to the message
+        // layer. Their priority is Normal by default.
+        Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Envelope(new BlockUpdateMessage())));
+        Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Envelope(new ChunkDeltaUpdateMessage())));
+        Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Envelope(new ChunkStatusUpdateMessage())));
+        Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Envelope(new MapUpdateMessage())));
         // ChatMessage migrated; its priority is Normal by default on the message.
         Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Envelope(new ChatMessage())));
     }
@@ -112,7 +114,8 @@ public sealed class SendPriorityTests
     public void World_data_and_block_updates_share_the_ordered_channel()
     {
         Assert.Equal(UdpConnection.OrderedChannel, UdpConnection.ChannelFor(Packet.Get(PacketId.ChunkDataS2C)));
-        Assert.Equal(UdpConnection.OrderedChannel, UdpConnection.ChannelFor(Packet.Get(PacketId.BlockUpdateS2C)));
+        // Block updates migrated; travels through the envelope on the ordered channel.
+        Assert.Equal(UdpConnection.OrderedChannel, UdpConnection.ChannelFor(Envelope(new BlockUpdateMessage())));
         // ChatMessage migrated; travels through the envelope on the ordered channel.
         Assert.Equal(UdpConnection.OrderedChannel, UdpConnection.ChannelFor(Envelope(new ChatMessage())));
     }

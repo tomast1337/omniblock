@@ -359,7 +359,7 @@ internal class ChunkMap
 
             if (player.ActiveChunks.Add(_chunkPos))
             {
-                player.NetworkHandler.SendPacket(ChunkStatusUpdateS2CPacket.Get(_chunkPos.X, _chunkPos.Z, true));
+                player.NetworkHandler.SendMessage(new ChunkStatusUpdateMessage { X = _chunkPos.X, Z = _chunkPos.Z, Loaded = true });
             }
 
             player.ScheduleChunkSend(_chunkPos);
@@ -400,7 +400,7 @@ internal class ChunkMap
 
                 if (player.ActiveChunks.Remove(_chunkPos))
                 {
-                    player.NetworkHandler.SendPacket(ChunkStatusUpdateS2CPacket.Get(_chunkPos.X, _chunkPos.Z, false));
+                    player.NetworkHandler.SendMessage(new ChunkStatusUpdateMessage { X = _chunkPos.X, Z = _chunkPos.Z, Loaded = false });
                 }
 
                 player.CancelChunkSend(_chunkPos);
@@ -496,7 +496,14 @@ internal class ChunkMap
                     int worldX = _chunkPos.X * 16 + _dirtyBlockMinX;
                     int worldY = _dirtyBlockMinY;
                     int worldZ = _chunkPos.Z * 16 + _dirtyBlockMinZ;
-                    sendPacketToPlayers(BlockUpdateS2CPacket.Get(worldX, worldY, worldZ, sWorld));
+                    sendMessageToPlayers(new BlockUpdateMessage
+                    {
+                        X = worldX,
+                        Y = (sbyte)worldY,
+                        Z = worldZ,
+                        BlockRawId = (byte)sWorld.Reader.GetBlockId(worldX, worldY, worldZ),
+                        BlockMetadata = (byte)sWorld.Reader.GetBlockMeta(worldX, worldY, worldZ)
+                    });
                     if (Block.BlocksWithEntity[sWorld.Reader.GetBlockId(worldX, worldY, worldZ)])
                     {
                         sendBlockEntityUpdate(sWorld.Entities.GetBlockEntity<BlockEntity>(worldX, worldY, worldZ));
@@ -522,7 +529,21 @@ internal class ChunkMap
                 }
                 else
                 {
-                    sendPacketToPlayers(ChunkDeltaUpdateS2CPacket.Get(_chunkPos.X, _chunkPos.Z, _dirtyBlocks, _dirtyBlockCount, sWorld));
+                    var delta = new ChunkDeltaUpdateMessage { X = _chunkPos.X, Z = _chunkPos.Z };
+                    delta.Positions = new short[_dirtyBlockCount];
+                    delta.BlockRawIds = new byte[_dirtyBlockCount];
+                    delta.BlockMetadata = new byte[_dirtyBlockCount];
+                    Chunk chunk = sWorld.BlockHost.GetChunk(_chunkPos.X, _chunkPos.Z);
+                    for (int i = 0; i < _dirtyBlockCount; i++)
+                    {
+                        int bx = (_dirtyBlocks[i] >> 12) & 15;
+                        int bz = (_dirtyBlocks[i] >> 8) & 15;
+                        int by = _dirtyBlocks[i] & 255;
+                        delta.Positions[i] = _dirtyBlocks[i];
+                        delta.BlockRawIds[i] = (byte)chunk.GetBlockId(bx, by, bz);
+                        delta.BlockMetadata[i] = (byte)chunk.GetBlockMeta(bx, by, bz);
+                    }
+                    sendMessageToPlayers(delta);
 
                     for (int i = 0; i < _dirtyBlockCount; i++)
                     {

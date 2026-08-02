@@ -439,6 +439,14 @@ public class ClientNetworkHandler : NetHandler
         MessageHandlers.On<GameStateChangeMessage>(onGameStateChange);
         MessageHandlers.On<IncreaseStatMessage>(onIncreaseStat);
         MessageHandlers.On<PlayerRespawnMessage>(onPlayerRespawn);
+        MessageHandlers.On<BlockUpdateMessage>(onBlockUpdate);
+        MessageHandlers.On<ChunkDeltaUpdateMessage>(onChunkDeltaUpdate);
+        MessageHandlers.On<ChunkStatusUpdateMessage>(onChunkStatusUpdate);
+        MessageHandlers.On<WorldEventMessage>(onWorldEvent);
+        MessageHandlers.On<WorldTimeUpdateMessage>(onWorldTimeUpdate);
+        MessageHandlers.On<PlayNoteSoundMessage>(onPlayNoteSound);
+        MessageHandlers.On<ExplosionMessage>(onExplosion);
+        MessageHandlers.On<MapUpdateMessage>(onMapUpdate);
     }
 
     /// <summary>
@@ -990,18 +998,18 @@ public class ClientNetworkHandler : NetHandler
 
     }
 
-    public override void onChunkStatusUpdate(ChunkStatusUpdateS2CPacket packet)
+    private void onChunkStatusUpdate(ChunkStatusUpdateMessage packet)
     {
-        _worldClient.UpdateChunk(packet.X, packet.Z, packet.Load);
+        _worldClient.UpdateChunk(packet.X, packet.Z, packet.Loaded);
     }
 
-    public override void onChunkDeltaUpdate(ChunkDeltaUpdateS2CPacket packet)
+    private void onChunkDeltaUpdate(ChunkDeltaUpdateMessage packet)
     {
         Chunk chunk = _worldClient.BlockHost.GetChunk(packet.X, packet.Z);
         int x = packet.X * 16;
         int y = packet.Z * 16;
 
-        for (int i = 0; i < packet.Count; ++i)
+        for (int i = 0; i < packet.Positions.Length; ++i)
         {
             short positions = packet.Positions[i];
             int blockRawId = packet.BlockRawIds[i] & 255;
@@ -1022,7 +1030,7 @@ public class ClientNetworkHandler : NetHandler
         _worldClient.HandleChunkDataUpdate(packet.X, packet.Y, packet.Z, packet.SizeX, packet.SizeY, packet.SizeZ, packet.ChunkData);
     }
 
-    public override void onBlockUpdate(BlockUpdateS2CPacket packet)
+    private void onBlockUpdate(BlockUpdateMessage packet)
     {
         _worldClient.SetBlockWithMetaFromPacket(packet.X, packet.Y, packet.Z, packet.BlockRawId, packet.BlockMetadata);
     }
@@ -1186,7 +1194,7 @@ public class ClientNetworkHandler : NetHandler
         ent.DataSynchronizer.ApplyChanges(new MemoryStream(packet.Data));
     }
 
-    public override void onWorldTimeUpdate(WorldTimeUpdateS2CPacket packet)
+    private void onWorldTimeUpdate(WorldTimeUpdateMessage packet)
     {
         _context.WorldHost.World?.SetTime(packet.Time);
     }
@@ -1256,11 +1264,11 @@ public class ClientNetworkHandler : NetHandler
         _context.PlayerHost.Respawn(true, packet.DimensionId);
     }
 
-    public override void onExplosion(ExplosionS2CPacket packet)
+    private void onExplosion(ExplosionMessage packet)
     {
-        Explosion explosion = new(_context.WorldHost.World, null, packet.ExplosionX, packet.ExplosionY, packet.ExplosionZ, packet.ExplosionSize)
+        Explosion explosion = new(_context.WorldHost.World, null, packet.X, packet.Y, packet.Z, packet.Radius)
         {
-            destroyedBlockPositions = packet.DestroyedBlockPositions
+            destroyedBlockPositions = [.. packet.DestroyedBlocks]
         };
         explosion.doExplosionB(true);
     }
@@ -1402,9 +1410,9 @@ public class ClientNetworkHandler : NetHandler
 
     }
 
-    public override void onPlayNoteSound(PlayNoteSoundS2CPacket packet)
+    private void onPlayNoteSound(PlayNoteSoundMessage packet)
     {
-        _context.WorldHost.World?.Broadcaster.PlayNote(packet.XLocation, packet.YLocation, packet.ZLocation, packet.InstrumentType, packet.Pitch);
+        _context.WorldHost.World?.Broadcaster.PlayNote(packet.X, packet.Y, packet.Z, packet.Instrument, packet.Pitch);
     }
 
     private void onGameStateChange(GameStateChangeMessage packet)
@@ -1437,11 +1445,11 @@ public class ClientNetworkHandler : NetHandler
         }
     }
 
-    public override void onMapUpdate(MapUpdateS2CPacket packet)
+    private void onMapUpdate(MapUpdateMessage packet)
     {
         if (packet.ItemRawId == Item.ByName("map").Id)
         {
-            MapBehavior.GetMapState(packet.MapId, _context.WorldHost.World).UpdateData(packet.UpdateData);
+            MapBehavior.GetMapState(packet.MapId, _context.WorldHost.World).UpdateData(packet.Data);
         }
         else
         {
@@ -1450,7 +1458,7 @@ public class ClientNetworkHandler : NetHandler
 
     }
 
-    public override void onWorldEvent(WorldEventS2CPacket packet)
+    private void onWorldEvent(WorldEventMessage packet)
     {
         _context.WorldHost.World?.Broadcaster.WorldEvent(packet.EventId, packet.X, packet.Y, packet.Z, packet.Data);
     }

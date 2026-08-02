@@ -163,7 +163,7 @@ public class ServerLoginNetworkHandler : NetHandler
             server.playerManager.addPlayer(ent);
             handler.teleport(ent.X, ent.Y, ent.Z, ent.Yaw, ent.Pitch);
             server.connections.AddConnection(handler);
-            handler.SendPacket(WorldTimeUpdateS2CPacket.Get(playerWorld.GetTime()));
+            handler.SendMessage(new WorldTimeUpdateMessage { Time = playerWorld.GetTime() });
             ent.initScreenHandler();
         }
 
