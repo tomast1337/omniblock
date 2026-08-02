@@ -1,536 +1,536 @@
-﻿{
+{
     "gui": {
-        "joinServer": "Join Server",
-        "rename": "Rename",
-        "edit": "Edit",
-        "refresh": "Refresh",
-        "done": "Done",
-        "cancel": "Cancel",
-        "delete": "Delete",
-        "toMenu": "Back to title screen",
-        "up": "Up",
-        "down": "Down",
-        "yes": "Yes",
-        "no": "No",
-        "connect": "Connect",
-        "directConnect": "Direct Connect",
-        "addServer": "Add Server",
-        "create": "Create",
-        "customize": "Customize",
-        "achievements": "Achievements",
-        "stats": "Statistics",
+        "joinServer": "Liity palvelimelle",
+        "rename": "Nimeä uudelleen",
+        "edit": "Muokkaa",
+        "refresh": "Päivitä",
+        "done": "Valmis",
+        "cancel": "Peruuta",
+        "delete": "Poista",
+        "toMenu": "Takaisin otsikkonäyttöön",
+        "up": "Ylös",
+        "down": "Alas",
+        "yes": "Kyllä",
+        "no": "Ei",
+        "connect": "Yhdistä",
+        "directConnect": "Suora yhteys",
+        "addServer": "Lisää palvelin",
+        "create": "Luo",
+        "customize": "Mukauta",
+        "achievements": "Saavutukset",
+        "stats": "Tilastot",
         "container": {
-            "crafting": "Crafting",
-            "inventory": "Inventory",
-            "dispenser": "Dispenser",
-            "furnace": "Furnace",
+            "crafting": "Valmistus",
+            "inventory": "Inventaario",
+            "dispenser": "Jakelulaite",
+            "furnace": "Uuni",
             "tip": {
-                "move": "Move",
-                "quickMove": "Quick Move",
-                "takeHalf": "Take Half",
-                "place": "Place",
-                "placeOne": "Place One"
+                "move": "Siirrä",
+                "quickMove": "Pikasiirto",
+                "takeHalf": "Ota puolet",
+                "place": "Aseta",
+                "placeOne": "Aseta yksi"
             }
         }
     },
     "menu": {
-        "singleplayer": "Singleplayer",
-        "multiplayer": "Multiplayer",
-        "texturePacks": "Texture Packs",
-        "options": "Options...",
-        "language": "Language",
-        "quit": "Quit Game",
-        "credits": "Credits",
-        "sendFeedback": "Send Feedback",
-        "reportBugs": "Report Bugs",
-        "saveAndQuitToTitle": "Save and quit to title",
-        "disconnect": "Disconnect"
+        "singleplayer": "Yksinpeli",
+        "multiplayer": "Moninpeli",
+        "texturePacks": "Tekstuuripaketit",
+        "options": "Asetukset...",
+        "language": "Kieli",
+        "quit": "Lopeta peli",
+        "credits": "Tekijät",
+        "sendFeedback": "Lähetä palautetta",
+        "reportBugs": "Ilmoita vioista",
+        "saveAndQuitToTitle": "Tallenna ja palaa otsikkoon",
+        "disconnect": "Katkaise yhteys"
     },
     "selectWorld": {
-        "title": "Select World",
-        "empty": "empty",
-        "world": "World",
-        "select": "Play Selected World",
-        "create": "Create New World",
-        "createDemo": "Play New Demo World",
-        "deleteQuestion": "Are you sure you want to delete this world?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "renameTitle": "Rename World",
-        "conversion": "Must be converted!",
-        "newWorld": "New World",
-        "enterName": "World Name",
-        "resultFolder": "Will be saved in:",
-        "enterSeed": "Seed for the World Generator",
-        "seedInfo": "Leave blank for a random seed",
-        "selectWorldType": "Select World Type",
-        "worldType": "World Type",
-        "customize": "Customize",
-        "moreWorldOptions": "More World Options...",
+        "title": "Valitse maailma",
+        "empty": "tyhjä",
+        "world": "Maailma",
+        "select": "Pelaa valittua maailmaa",
+        "create": "Luo uusi maailma",
+        "createDemo": "Pelaa uutta demo-maailmaa",
+        "deleteQuestion": "Haluatko varmasti poistaa tämän maailman?",
+        "deleteWarning": "katoaa ikuisesti! (Pitkäksi aikaa!)",
+        "renameTitle": "Nimeä maailma uudelleen",
+        "conversion": "Täytyy muuntaa!",
+        "newWorld": "Uusi maailma",
+        "enterName": "Maailman nimi",
+        "resultFolder": "Tallennetaan sijaintiin:",
+        "enterSeed": "Maailman generaattorin siemen",
+        "seedInfo": "Jätä tyhjäksi satunnaista siementä varten",
+        "selectWorldType": "Valitse maailman tyyppi",
+        "worldType": "Maailman tyyppi",
+        "customize": "Mukauta",
+        "moreWorldOptions": "Lisää maailman asetuksia...",
         "type": {
             "default": {
-                "title": "Default",
-                "description": "The standard Minecraft world."
+                "title": "Oletus",
+                "description": "Tavallinen Minecraft-maailma."
             },
             "flat": {
-                "title": "Flat",
-                "description": "A completely flat world."
+                "title": "Tasainen",
+                "description": "Täysin tasainen maailma."
             },
             "sky": {
-                "title": "Sky",
-                "description": "A world floating in the sky."
+                "title": "Taivas",
+                "description": "Maailma, joka leijuu taivaalla."
             }
         }
     },
     "newWorld": {
         "customize": {
             "superflatWorld": {
-                "title": "Customize Superflat World"
+                "title": "Mukauta supertasaista maailmaa"
             },
-            "removeLayer": "Remove Layer",
-            "presets": "Presets",
-            "height": "Height",
+            "removeLayer": "Poista kerros",
+            "presets": "Esiasetukset",
+            "height": "Korkeus",
             "unknown": "???"
         }
     },
     "world": {
-        "world": "World",
-        "unsupportedFormat": "Unsupported Format!"
+        "world": "Maailma",
+        "unsupportedFormat": "Ei tuettu formaatti!"
     },
     "multiplayer": {
-        "title": "Play Multiplayer",
-        "betasharpServer": "BetaSharp Server",
-        "info1": "Minecraft Multiplayer is currently not finished, but there",
-        "info2": "is some buggy early testing going on.",
-        "ipinfo": "Enter the IP of a server to connect to it:",
-        "deleteQuestion": "Are you sure you want to delete this server?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "downloadingTerrain": "Downloading terrain",
-        "stopSleeping": "Leave Bed",
-        "editServerTitle": "Edit Server Info",
-        "addServerTitle": "Add Server Info",
-        "serverName": "Server Name",
-        "serverAddress": "Server Address"
+        "title": "Pelaa moninpeliä",
+        "betasharpServer": "BetaSharp-palvelin",
+        "info1": "Minecraftin moninpeli ei ole vielä valmis, mutta",
+        "info2": "sitä testataan jo varhaisessa vaiheessa bugisesti.",
+        "ipinfo": "Syötä palvelimen IP-osoite yhdistääksesi siihen:",
+        "deleteQuestion": "Haluatko varmasti poistaa tämän palvelimen?",
+        "deleteWarning": "katoaa ikuisesti! (Pitkäksi aikaa!)",
+        "downloadingTerrain": "Ladataan maastoa",
+        "stopSleeping": "Nouse sängystä",
+        "editServerTitle": "Muokkaa palvelimen tietoja",
+        "addServerTitle": "Lisää palvelimen tiedot",
+        "serverName": "Palvelimen nimi",
+        "serverAddress": "Palvelimen osoite"
     },
     "loading": {
-        "loadingLevel": "Loading level",
-        "startingServer": "Starting server...",
-        "preparingSpawnArea": "Preparing spawn area"
+        "loadingLevel": "Ladataan maailmaa",
+        "startingServer": "Käynnistetään palvelinta...",
+        "preparingSpawnArea": "Valmistellaan syntymäaluetta"
     },
     "achievements": {
-        "title": "Achievements"
+        "title": "Saavutukset"
     },
     "gameover": {
-        "title": "Game Over!",
-        "score": "Score",
-        "respawn": "Respawn",
-        "titleMenu": "Title menu"
+        "title": "Peli päättyi!",
+        "score": "Pisteet",
+        "respawn": "Synny uudelleen",
+        "titleMenu": "Päävalikko"
     },
     "gamemenu": {
-        "title": "Game Menu",
-        "backToGame": "Back to Game"
+        "title": "Pelivalikko",
+        "backToGame": "Takaisin peliin"
     },
     "sign": {
-        "title": "Edit sign message:"
+        "title": "Muokkaa kyltin tekstiä:"
     },
     "stats": {
-        "title": "Statistics",
-        "general": "General",
+        "title": "Tilastot",
+        "general": "Yleistä",
         "blocks": {
-            "name": "Blocks",
-            "mined": "Mined",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Lohkot",
+            "mined": "Louhittu",
+            "crafted": "Valmistettu",
+            "used": "Käytetty"
         },
         "items": {
-            "name": "Items",
-            "broken": "Broken",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Esineet",
+            "broken": "Kulunut",
+            "crafted": "Valmistettu",
+            "used": "Käytetty"
         },
-        "item": "Item"
+        "item": "Esine"
     },
     "connect": {
-        "connecting": "Connecting to the server...",
-        "authorizing": "Logging in...",
-        "failed": "Failed to connect to the server"
+        "connecting": "Yhdistetään palvelimeen...",
+        "authorizing": "Kirjaudutaan sisään...",
+        "failed": "Palvelimeen yhdistäminen epäonnistui"
     },
     "disconnect": {
         "genericReason": "{0}",
-        "disconnected": "Disconnected by Server",
-        "lost": "Connection Lost",
-        "kicked": "Was kicked from the game",
-        "timeout": "Timed out",
-        "closed": "Connection closed",
-        "loginFailed": "Failed to login",
-        "quitting": "Quitting",
-        "endOfStream": "End of stream",
-        "overflow": "Buffer overflow"
+        "disconnected": "Palvelin katkaisi yhteyden",
+        "lost": "Yhteys katkesi",
+        "kicked": "Sinut poistettiin pelistä",
+        "timeout": "Aikakatkaisu",
+        "closed": "Yhteys suljettu",
+        "loginFailed": "Kirjautuminen epäonnistui",
+        "quitting": "Lopetetaan",
+        "endOfStream": "Tietovirran loppu",
+        "overflow": "Puskurin ylivuoto"
     },
     "options": {
-        "off": "OFF",
-        "on": "ON",
-        "disabled": "Disabled",
-        "title": "Options",
-        "controls": "Controls...",
-        "keyboardControls": "Keyboard Controls...",
-        "controllerSettings": "Controller Settings...",
-        "controllerType": "Controller Type",
+        "off": "POIS",
+        "on": "PÄÄLLÄ",
+        "disabled": "Ei käytössä",
+        "title": "Asetukset",
+        "controls": "Ohjaus...",
+        "keyboardControls": "Näppäimistöohjaus...",
+        "controllerSettings": "Ohjaimen asetukset...",
+        "controllerType": "Ohjaimen tyyppi",
         "video": {
-            "text": "Video Settings...",
-            "performance": "Performance",
-            "display": "Display"
+            "text": "Videon asetukset...",
+            "performance": "Suorituskyky",
+            "display": "Näyttö"
         },
-        "uiSettings": "UI Settings...",
-        "audioSettings": "Audio Settings...",
-        "audioTitle": "Audio Settings",
-        "videoTitle": "Video Settings",
-        "language": "Language...",
-        "anisoLevel": "Aniso Level",
-        "music": "Music",
-        "sound": "Sound",
-        "invertMouse": "Invert Mouse",
-        "alternateBlocks": "Alternate Blocks",
-        "chunkFade": "Chunk Fade",
+        "uiSettings": "Käyttöliittymän asetukset...",
+        "audioSettings": "Äänen asetukset...",
+        "audioTitle": "Äänen asetukset",
+        "videoTitle": "Videon asetukset",
+        "language": "Kieli...",
+        "anisoLevel": "Anisotropiataso",
+        "music": "Musiikki",
+        "sound": "Äänet",
+        "invertMouse": "Käänteinen hiiri",
+        "alternateBlocks": "Vaihtoehtoiset lohkot",
+        "chunkFade": "Lohkojen häivytys",
         "sensitivity": {
-            "text": "Sensitivity",
-            "controllerText": "Controller Sensitivity",
-            "min": "*yawn*",
-            "max": "HYPERSPEED!!!"
+            "text": "Herkkyys",
+            "controllerText": "Ohjaimen herkkyys",
+            "min": "*haukotus*",
+            "max": "HYPERNOPEUS!!!"
         },
         "renderDistance": {
-            "text": "Render Distance",
-            "chunks": "Chunks",
-            "tiny": "Tiny",
-            "short": "Short",
-            "normal": "Normal",
-            "far": "Far"
+            "text": "Piirtoetäisyys",
+            "chunks": "Chunkit",
+            "tiny": "Pikkuruinen",
+            "short": "Lyhyt",
+            "normal": "Normaali",
+            "far": "Kaukana"
         },
-        "viewBobbing": "View Bobbing",
-        "ao": "Smooth Lighting",
-        "anaglyph": "3D Anaglyph",
-        "framerateLimit": "Performance",
+        "viewBobbing": "Näkymän keinunta",
+        "ao": "Pehmeä valaistus",
+        "anaglyph": "3D-anaglyfi",
+        "framerateLimit": "Suorituskyky",
         "difficulty": {
-            "text": "Difficulty",
-            "peaceful": "Peaceful",
-            "easy": "Easy",
-            "normal": "Normal",
-            "hard": "Hard"
+            "text": "Vaikeusaste",
+            "peaceful": "Rauhallinen",
+            "easy": "Helppo",
+            "normal": "Normaali",
+            "hard": "Vaikea"
         },
         "graphics": {
-            "text": "Graphics",
-            "fancy": "Fancy",
-            "fast": "Fast"
+            "text": "Grafiikka",
+            "fancy": "Hieno",
+            "fast": "Nopea"
         },
         "cloudsQuality": {
-            "text": "Clouds Quality",
-            "off": "No Clouds",
-            "legacy": "Old Clouds",
+            "text": "Pilvien laatu",
+            "off": "Ei pilviä",
+            "legacy": "Vanhat pilvet",
             "shader": "Shader"
         },
         "softClouds": {
-            "text": "Soft Clouds"
+            "text": "Pehmeät pilvet"
         },
         "guiScale": {
-            "text": "GUI Scale",
-            "auto": "Auto",
-            "small": "Small",
-            "normal": "Normal",
-            "large": "Large"
+            "text": "Käyttöliittymän koko",
+            "auto": "Automaattinen",
+            "small": "Pieni",
+            "normal": "Normaali",
+            "large": "Suuri"
         },
         "chatScale": {
-            "text": "Chat Scale"
+            "text": "Keskustelun koko"
         },
         "chatWidth": {
-            "text": "Chat Width"
+            "text": "Keskustelun leveys"
         },
-        "advancedOpengl": "Advanced OpenGL",
+        "advancedOpengl": "Edistynyt OpenGL",
         "fps": {
             "text": "FPS",
-            "maxFps": "Max FPS",
-            "unlimited": "Unlimited"
+            "maxFps": "Maksimi FPS",
+            "unlimited": "Rajoittamaton"
         },
-        "showCoordinates": "Show Coordinates",
-        "uiCursors": "UI Cursors",
+        "showCoordinates": "Näytä koordinaatit",
+        "uiCursors": "Käyttöliittymän kohdistimet",
         "gamma": "Gamma",
         "vSync": "VSync",
-        "mipmaps": "Mipmaps",
-        "menuMusic": "Menu Music",
+        "mipmaps": "Mipmapit",
+        "menuMusic": "Valikon musiikki",
         "msaa": "MSAA",
         "fov": "FOV",
         "movement": {
-            "text": "Movement"
+            "text": "Liikkuminen"
         },
         "view": {
-            "text": "View"
+            "text": "Näkymä"
         },
         "other": {
-            "text": "Other"
+            "text": "Muut"
         },
-        "editBindings": "Edit Bindings...",
-        "resetBindings": "Reset Bindings...",
-        "controllerBindings": "Controller Bindings",
+        "editBindings": "Muokkaa näppäimiä...",
+        "resetBindings": "Palauta näppäimet...",
+        "controllerBindings": "Ohjaimen näppäimet",
         "shader": {
-            "text": "Shader Options",
+            "text": "Shader-asetukset",
             "chunkVert": {
-                "text": "World",
-                "WavyLeavesStrength": "Wavy Leaves Strength",
-                "WavyLeavesSpeed": "Wavy Leaves Speed",
-                "WavyPlantStrength": "Wavy Plant Strength",
-                "WavyPlantSpeed": "Wavy Plant Speed",
-                "WavyPlantMode": "Wavy Plant Mode"
+                "text": "Maailma",
+                "WavyLeavesStrength": "Lehtien aaltoilun voimakkuus",
+                "WavyLeavesSpeed": "Lehtien aaltoilun nopeus",
+                "WavyPlantStrength": "Kasvien aaltoilun voimakkuus",
+                "WavyPlantSpeed": "Kasvien aaltoilun nopeus",
+                "WavyPlantMode": "Kasvien aaltoilutila"
             },
             "cloud": {
-                "text": "Clouds",
-                "minParallax": "Min Parallax",
-                "maxParallax": "Max Parallax",
-                "minGradient": "Min Gradient",
-                "maxGradient": "Max Gradient",
-                "cloudHeight": "Cloud Height",
-                "shadow": "Shadow Color",
-                "smoothWidth": "Smooth Width",
-                "smoothSamples": "Smooth Samples",
-                "closeFade": "Close Fade",
-                "smoothTop": "Smooth Top",
-                "smoothEdge": "Smooth Edge",
-                "smoothBottom": "Smooth Bottom",
-                "smoothBottomTopDown": "Smooth Bottom Top Down"
+                "text": "Pilvet",
+                "minParallax": "Min. parallaksi",
+                "maxParallax": "Maks. parallaksi",
+                "minGradient": "Min. gradientti",
+                "maxGradient": "Maks. gradientti",
+                "cloudHeight": "Pilvien korkeus",
+                "shadow": "Varjon väri",
+                "smoothWidth": "Pehmennysleveys",
+                "smoothSamples": "Pehmennysnäytteet",
+                "closeFade": "Lähihäivytys",
+                "smoothTop": "Pehmennä yläosa",
+                "smoothEdge": "Pehmennä reuna",
+                "smoothBottom": "Pehmennä alaosa",
+                "smoothBottomTopDown": "Pehmennä alaosa ylhäältä alas"
             },
             "ui": {
-                "text": "UI",
-                "darkMode": "Dark Mode"
+                "text": "Käyttöliittymä",
+                "darkMode": "Tumma tila"
             },
             "preset": {
-                "text": "Preset",
-                "disabled": "Disabled",
-                "default": "Default",
-                "custom": "Custom",
+                "text": "Esiasetus",
+                "disabled": "Ei käytössä",
+                "default": "Oletus",
+                "custom": "Mukautettu",
                 "2d": "2D",
                 "3d": "3D",
-                "low": "Low",
-                "medium": "Medium",
-                "high": "High",
+                "low": "Matala",
+                "medium": "Keskitaso",
+                "high": "Korkea",
                 "ultra": "Ultra"
             }
         }
     },
     "performance": {
-        "max": "Max FPS",
-        "balanced": "Balanced",
-        "powersaver": "Power saver"
+        "max": "Maksimi FPS",
+        "balanced": "Tasapainoinen",
+        "powersaver": "Virransäästö"
     },
     "controls": {
-        "title": "Controls"
+        "title": "Ohjaus"
     },
     "key": {
-        "forward": "Forward",
-        "left": "Left",
-        "back": "Back",
-        "right": "Right",
-        "jump": "Jump",
-        "inventory": "Inventory",
-        "drop": "Drop",
-        "chat": "Chat",
-        "fog": "Toggle Fog",
-        "sneak": "Sneak",
-        "playerlist": "List players",
-        "zoom": "Zoom",
-        "hotbarLeft": "Hotbar Left",
-        "hotbarRight": "Hotbar Right",
-        "pickBlock": "Pick Block",
-        "camera": "Camera Mode",
-        "pause": "Pause"
+        "forward": "Eteenpäin",
+        "left": "Vasemmalle",
+        "back": "Taaksepäin",
+        "right": "Oikealle",
+        "jump": "Hyppy",
+        "inventory": "Inventaario",
+        "drop": "Pudota",
+        "chat": "Keskustelu",
+        "fog": "Sumun kytkin",
+        "sneak": "Hiivi",
+        "playerlist": "Pelaajaluettelo",
+        "zoom": "Zoomaus",
+        "hotbarLeft": "Pikapalkki vasemmalle",
+        "hotbarRight": "Pikapalkki oikealle",
+        "pickBlock": "Poimi lohko",
+        "camera": "Kameratila",
+        "pause": "Tauko"
     },
     "texturePack": {
-        "openFolder": "Open texture pack folder",
-        "title": "Select Texture Pack",
-        "folderInfo": "(Place texture pack files here)"
+        "openFolder": "Avaa tekstuuripakettien kansio",
+        "title": "Valitse tekstuuripaketti",
+        "folderInfo": "(Aseta tekstuuripakettien tiedostot tähän)"
     },
     "tile": {
         "tallgrass": {
-            "name": "Tallgrass",
+            "name": "Pitkä ruoho",
             "desc": ""
         },
         "stone": {
-            "name": "Stone",
+            "name": "Kivi",
             "desc": ""
         },
         "grass": {
-            "name": "Grass",
+            "name": "Ruohokuutio",
             "desc": ""
         },
         "dirt": {
-            "name": "Dirt",
+            "name": "Multa",
             "desc": ""
         },
         "stonebrick": {
-            "name": "Cobblestone",
+            "name": "Mukulakivi",
             "desc": ""
         },
         "wood": {
-            "name": "Wooden Planks",
+            "name": "Puulankut",
             "desc": ""
         },
         "sapling": {
-            "name": "Sapling",
+            "name": "Taimi",
             "desc": ""
         },
         "bedrock": {
-            "name": "Bedrock",
+            "name": "Peruskallio",
             "desc": ""
         },
         "water": {
-            "name": "Water",
+            "name": "Vesi",
             "desc": ""
         },
         "lava": {
-            "name": "Lava",
+            "name": "Laava",
             "desc": ""
         },
         "sand": {
-            "name": "Sand",
+            "name": "Hiekka",
             "desc": ""
         },
-        "sandStone": { "name": "Sandstone" },
+        "sandStone": { "name": "Hiekkakivi" },
         "gravel": {
-            "name": "Gravel",
+            "name": "Sora",
             "desc": ""
         },
         "oreGold": {
-            "name": "Gold Ore",
+            "name": "Kultamalmi",
             "desc": ""
         },
         "oreIron": {
-            "name": "Iron Ore",
+            "name": "Rautamalmi",
             "desc": ""
         },
         "oreCoal": {
-            "name": "Coal Ore",
+            "name": "Hiilimalmi",
             "desc": ""
         },
         "log": {
-            "name": "Wood",
+            "name": "Halko",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Lehdet",
             "desc": ""
         },
         "sponge": {
-            "name": "Sponge",
+            "name": "Pesusieni",
             "desc": ""
         },
         "glass": {
-            "name": "Glass",
+            "name": "Lasi",
             "desc": ""
         },
         "cloth": {
-            "name": "Wool",
+            "name": "Villa",
             "desc": "",
             "black": {
-                "name": "Black Wool",
+                "name": "Musta villa",
                 "desc": ""
             },
             "red": {
-                "name": "Red Wool",
+                "name": "Punainen villa",
                 "desc": ""
             },
             "green": {
-                "name": "Green Wool",
+                "name": "Vihreä villa",
                 "desc": ""
             },
             "brown": {
-                "name": "Brown Wool",
+                "name": "Ruskea villa",
                 "desc": ""
             },
             "blue": {
-                "name": "Blue Wool",
+                "name": "Sininen villa",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Wool",
+                "name": "Violetti villa",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Wool",
+                "name": "Syaani villa",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Wool",
+                "name": "Vaaleanharmaa villa",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Wool",
+                "name": "Harmaa villa",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Wool",
+                "name": "Vaaleanpunainen villa",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Wool",
+                "name": "Limetinvihreä villa",
                 "desc": ""
             },
             "yellow": {
-                "name": "Yellow Wool",
+                "name": "Keltainen villa",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Wool",
+                "name": "Vaaleansininen villa",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Wool",
+                "name": "Purppura villa",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Wool",
+                "name": "Oranssi villa",
                 "desc": ""
             },
             "white": {
-                "name": "Wool",
+                "name": "Villa",
                 "desc": ""
             }
         },
         "flower": {
-            "name": "Flower",
+            "name": "Kukka",
             "desc": ""
         },
         "rose": {
-            "name": "Rose",
+            "name": "Ruusu",
             "desc": ""
         },
         "mushroom": {
-            "name": "Mushroom",
+            "name": "Sieni",
             "desc": ""
         },
         "blockGold": {
-            "name": "Block of Gold",
+            "name": "Kultakuutio",
             "desc": ""
         },
         "blockIron": {
-            "name": "Block of Iron",
+            "name": "Rautakuutio",
             "desc": ""
         },
         "stoneSlab": {
             "stone": {
-                "name": "Stone Slab",
+                "name": "Kivilaatta",
                 "desc": ""
             },
             "sand": {
-                "name": "Sandstone Slab",
+                "name": "Hiekkakivilaatta",
                 "desc": ""
             },
             "wood": {
-                "name": "Wooden Slab",
+                "name": "Puulaatta",
                 "desc": ""
             },
             "cobble": {
-                "name": "Stone Slab",
+                "name": "Kivilaatta",
                 "desc": ""
             }
         },
         "brick": {
-            "name": "Bricks",
+            "name": "Tiili",
             "desc": ""
         },
         "tnt": {
@@ -538,151 +538,151 @@
             "desc": ""
         },
         "bookshelf": {
-            "name": "Bookshelf",
+            "name": "Kirjahylly",
             "desc": ""
         },
         "stoneMoss": {
-            "name": "Moss Stone",
+            "name": "Sammaleinen mukulakivi",
             "desc": ""
         },
         "obsidian": {
-            "name": "Obsidian",
+            "name": "Obsidiaani",
             "desc": ""
         },
         "torch": {
-            "name": "Torch",
+            "name": "Soihtu",
             "desc": ""
         },
         "fire": {
-            "name": "Fire",
+            "name": "Tuli",
             "desc": ""
         },
         "mobSpawner": {
-            "name": "Monster Spawner",
+            "name": "Luojakuutio",
             "desc": ""
         },
         "stairsWood": {
-            "name": "Wooden Stairs",
+            "name": "Puuportaat",
             "desc": ""
         },
         "chest": {
-            "name": "Chest",
+            "name": "Arkku",
             "desc": ""
         },
         "redstoneDust": {
-            "name": "Redstone Dust",
+            "name": "Redstone-pöly",
             "desc": ""
         },
         "oreDiamond": {
-            "name": "Diamond Ore",
+            "name": "Timanttimalmi",
             "desc": ""
         },
         "blockDiamond": {
-            "name": "Block of Diamond",
+            "name": "Timanttikuutio",
             "desc": ""
         },
         "workbench": {
-            "name": "Crafting Table",
+            "name": "Työpöytä",
             "desc": ""
         },
         "crops": {
-            "name": "Crops",
+            "name": "Vilja",
             "desc": ""
         },
         "farmland": {
-            "name": "Farmland",
+            "name": "Viljelysmaa",
             "desc": ""
         },
         "furnace": {
-            "name": "Furnace",
+            "name": "Uuni",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Kyltti",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Puuovi",
             "desc": ""
         },
         "ladder": {
-            "name": "Ladder",
+            "name": "Tikas",
             "desc": ""
         },
         "rail": {
-            "name": "Rail",
+            "name": "Raide",
             "desc": ""
         },
         "goldenRail": {
-            "name": "Powered Rail",
+            "name": "Kiihdytinraide",
             "desc": ""
         },
         "detectorRail": {
-            "name": "Detector Rail",
+            "name": "Tunnistinraide",
             "desc": ""
         },
         "stairsStone": {
-            "name": "Stone Stairs",
+            "name": "Kiviportaat",
             "desc": ""
         },
         "lever": {
-            "name": "Lever",
+            "name": "Vipu",
             "desc": ""
         },
         "pressurePlate": {
-            "name": "Pressure Plate",
+            "name": "Painelaatta",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Rautaovi",
             "desc": ""
         },
         "oreRedstone": {
-            "name": "Redstone Ore",
+            "name": "Redstone-malmi",
             "desc": ""
         },
         "notGate": {
-            "name": "Redstone Torch",
+            "name": "Redstone-soihtu",
             "desc": ""
         },
         "button": {
-            "name": "Button",
+            "name": "Nappi",
             "desc": ""
         },
         "snow": {
-            "name": "Snow",
+            "name": "Lumi",
             "desc": ""
         },
         "ice": {
-            "name": "Ice",
+            "name": "Jää",
             "desc": ""
         },
         "cactus": {
-            "name": "Cactus",
+            "name": "Kaktus",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Savi",
             "desc": ""
         },
         "reeds": {
-            "name": "Sugar cane",
+            "name": "Sokeriruoko",
             "desc": ""
         },
         "jukebox": {
-            "name": "Jukebox",
+            "name": "Jukeboksi",
             "desc": ""
         },
         "fence": {
-            "name": "Fence",
+            "name": "Aita",
             "desc": ""
         },
         "pumpkin": {
-            "name": "Pumpkin",
+            "name": "Kurpitsa",
             "desc": ""
         },
         "litpumpkin": {
-            "name": "Jack 'o' Lantern",
+            "name": "Kurpitsalyhty",
             "desc": ""
         },
         "hellrock": {
@@ -690,680 +690,680 @@
             "desc": ""
         },
         "hellsand": {
-            "name": "Soul Sand",
+            "name": "Sieluhiekka",
             "desc": ""
         },
         "lightgem": {
-            "name": "Glowstone",
+            "name": "Hehkukivi",
             "desc": ""
         },
         "portal": {
-            "name": "Portal",
+            "name": "Portaali",
             "desc": ""
         },
         "oreLapis": {
-            "name": "Lapis Lazuli Ore",
+            "name": "Lasuriittimalmi",
             "desc": ""
         },
         "blockLapis": {
-            "name": "Lapis Lazuli Block",
+            "name": "Lasuriittikuutio",
             "desc": ""
         },
         "dispenser": {
-            "name": "Dispenser",
+            "name": "Jakelulaite",
             "desc": ""
         },
         "musicBlock": {
-            "name": "Note Block",
+            "name": "Sointukuutio",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Kakku",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Sänky",
             "desc": "",
-            "occupied": "This bed is occupied",
-            "noSleep": "You can only sleep at night",
-            "notValid": "Your home bed was missing or obstructed"
+            "occupied": "Tämä sänky on varattu",
+            "noSleep": "Voit nukkua vain öisin",
+            "notValid": "Kotisänkysi puuttuu tai se on tukossa"
         },
         "lockedchest": {
-            "name": "Locked chest",
+            "name": "Lukittu arkku",
             "desc": ""
         },
         "trapdoor": {
-            "name": "Trapdoor",
+            "name": "Luukku",
             "desc": ""
         },
         "web": {
-            "name": "Cobweb",
+            "name": "Hämähäkinseitti",
             "desc": ""
         },
         "stonebricksmooth": {
-            "name": "Stone Bricks",
+            "name": "Kivitiili",
             "desc": ""
         },
         "pistonBase": {
-            "name": "Piston",
+            "name": "Mäntä",
             "desc": ""
         },
         "pistonStickyBase": {
-            "name": "Sticky Piston",
+            "name": "Tarttumamäntä",
             "desc": ""
         }
     },
     "item": {
         "shovelIron": {
-            "name": "Iron Shovel",
+            "name": "Rautalapio",
             "desc": ""
         },
         "pickaxeIron": {
-            "name": "Iron Pickaxe",
+            "name": "Rautahakku",
             "desc": ""
         },
         "hatchetIron": {
-            "name": "Iron Axe",
+            "name": "Rautakirves",
             "desc": ""
         },
         "flintAndSteel": {
-            "name": "Flint and Steel",
+            "name": "Tulukset",
             "desc": ""
         },
         "apple": {
-            "name": "Apple",
+            "name": "Omena",
             "desc": ""
         },
         "cookie": {
-            "name": "Cookie",
+            "name": "Keksi",
             "desc": ""
         },
         "bow": {
-            "name": "Bow",
+            "name": "Jousi",
             "desc": ""
         },
         "arrow": {
-            "name": "Arrow",
+            "name": "Nuoli",
             "desc": ""
         },
         "coal": {
-            "name": "Coal",
+            "name": "Hiili",
             "desc": ""
         },
         "charcoal": {
-            "name": "Charcoal",
+            "name": "Puuhiili",
             "desc": ""
         },
         "diamond": {
-            "name": "Diamond",
+            "name": "Timantti",
             "desc": ""
         },
         "ingotIron": {
-            "name": "Iron Ingot",
+            "name": "Rautaharkko",
             "desc": ""
         },
         "ingotGold": {
-            "name": "Gold Ingot",
+            "name": "Kultaharkko",
             "desc": ""
         },
         "swordIron": {
-            "name": "Iron Sword",
+            "name": "Rautamiekka",
             "desc": ""
         },
         "swordWood": {
-            "name": "Wooden Sword",
+            "name": "Puumiekka",
             "desc": ""
         },
         "shovelWood": {
-            "name": "Wooden Shovel",
+            "name": "Puulapio",
             "desc": ""
         },
         "pickaxeWood": {
-            "name": "Wooden Pickaxe",
+            "name": "Puuhakku",
             "desc": ""
         },
         "hatchetWood": {
-            "name": "Wooden Axe",
+            "name": "Puukirves",
             "desc": ""
         },
         "swordStone": {
-            "name": "Stone Sword",
+            "name": "Kivimiekka",
             "desc": ""
         },
         "shovelStone": {
-            "name": "Stone Shovel",
+            "name": "Kivilapio",
             "desc": ""
         },
         "pickaxeStone": {
-            "name": "Stone Pickaxe",
+            "name": "Kivihakku",
             "desc": ""
         },
         "hatchetStone": {
-            "name": "Stone Axe",
+            "name": "Kivikirves",
             "desc": ""
         },
         "swordDiamond": {
-            "name": "Diamond Sword",
+            "name": "Timanttimiekka",
             "desc": ""
         },
         "shovelDiamond": {
-            "name": "Diamond Shovel",
+            "name": "Timanttilapio",
             "desc": ""
         },
         "pickaxeDiamond": {
-            "name": "Diamond Pickaxe",
+            "name": "Timanttihakku",
             "desc": ""
         },
         "hatchetDiamond": {
-            "name": "Diamond Axe",
+            "name": "Timanttikirves",
             "desc": ""
         },
         "stick": {
-            "name": "Stick",
+            "name": "Keppi",
             "desc": ""
         },
         "bowl": {
-            "name": "Bowl",
+            "name": "Kulho",
             "desc": ""
         },
         "mushroomStew": {
-            "name": "Mushroom Stew",
+            "name": "Sienimuhennos",
             "desc": ""
         },
         "swordGold": {
-            "name": "Golden Sword",
+            "name": "Kultamiekka",
             "desc": ""
         },
         "shovelGold": {
-            "name": "Golden Shovel",
+            "name": "Kultalapio",
             "desc": ""
         },
         "pickaxeGold": {
-            "name": "Golden Pickaxe",
+            "name": "Kultahakku",
             "desc": ""
         },
         "hatchetGold": {
-            "name": "Golden Axe",
+            "name": "Kultakirves",
             "desc": ""
         },
         "string": {
-            "name": "String",
+            "name": "Lanka",
             "desc": ""
         },
         "feather": {
-            "name": "Feather",
+            "name": "Höyhen",
             "desc": ""
         },
         "gunpowder": {
-            "name": "Gunpowder",
+            "name": "Ruuti",
             "desc": ""
         },
         "hoeWood": {
-            "name": "Wooden Hoe",
+            "name": "Puukuokka",
             "desc": ""
         },
         "hoeStone": {
-            "name": "Stone Hoe",
+            "name": "Kivikuokka",
             "desc": ""
         },
         "hoeIron": {
-            "name": "Iron Hoe",
+            "name": "Rautakuokka",
             "desc": ""
         },
         "hoeDiamond": {
-            "name": "Diamond Hoe",
+            "name": "Timanttikuokka",
             "desc": ""
         },
         "hoeGold": {
-            "name": "Golden Hoe",
+            "name": "Kultakuokka",
             "desc": ""
         },
         "seeds": {
-            "name": "Seeds",
+            "name": "Siemenet",
             "desc": ""
         },
         "wheat": {
-            "name": "Wheat",
+            "name": "Vehnä",
             "desc": ""
         },
         "bread": {
-            "name": "Bread",
+            "name": "Leipä",
             "desc": ""
         },
         "helmetLeather": {
-            "name": "Leather Cap",
+            "name": "Nahkalakki",
             "desc": ""
         },
         "chestplateLeather": {
-            "name": "Leather Tunic",
+            "name": "Nahkatakki",
             "desc": ""
         },
         "leggingsLeather": {
-            "name": "Leather Pants",
+            "name": "Nahkahousut",
             "desc": ""
         },
         "bootsLeather": {
-            "name": "Leather Boots",
+            "name": "Nahkasaappaat",
             "desc": ""
         },
         "helmetChain": {
-            "name": "Chain Helmet",
+            "name": "Ketjukypärä",
             "desc": ""
         },
         "chestplateChain": {
-            "name": "Chain Chestplate",
+            "name": "Ketjurintapanssari",
             "desc": ""
         },
         "leggingsChain": {
-            "name": "Chain Leggings",
+            "name": "Ketjuhousut",
             "desc": ""
         },
         "bootsChain": {
-            "name": "Chain Boots",
+            "name": "Ketjusaappaat",
             "desc": ""
         },
         "helmetIron": {
-            "name": "Iron Helmet",
+            "name": "Rautakypärä",
             "desc": ""
         },
         "chestplateIron": {
-            "name": "Iron Chestplate",
+            "name": "Rautarintapanssari",
             "desc": ""
         },
         "leggingsIron": {
-            "name": "Iron Leggings",
+            "name": "Rautahousut",
             "desc": ""
         },
         "bootsIron": {
-            "name": "Iron Boots",
+            "name": "Rautasaappaat",
             "desc": ""
         },
         "helmetDiamond": {
-            "name": "Diamond Helmet",
+            "name": "Timanttikypärä",
             "desc": ""
         },
         "chestplateDiamond": {
-            "name": "Diamond Chestplate",
+            "name": "Timanttirintapanssari",
             "desc": ""
         },
         "leggingsDiamond": {
-            "name": "Diamond Leggings",
+            "name": "Timanttihousut",
             "desc": ""
         },
         "bootsDiamond": {
-            "name": "Diamond Boots",
+            "name": "Timanttisaappaat",
             "desc": ""
         },
         "helmetGold": {
-            "name": "Golden Helmet",
+            "name": "Kultakypärä",
             "desc": ""
         },
         "chestplateGold": {
-            "name": "Golden Chestplate",
+            "name": "Kultarintapanssari",
             "desc": ""
         },
         "leggingsGold": {
-            "name": "Golden Leggings",
+            "name": "Kultahousut",
             "desc": ""
         },
         "bootsGold": {
-            "name": "Golden boots",
+            "name": "Kultasaappaat",
             "desc": ""
         },
         "flint": {
-            "name": "Flint",
+            "name": "Piikivi",
             "desc": ""
         },
         "porkchopRaw": {
-            "name": "Raw Porkchop",
+            "name": "Raaka porsaankyljys",
             "desc": ""
         },
         "porkchopCooked": {
-            "name": "Cooked Porkchop",
+            "name": "Paistettu porsaankyljys",
             "desc": ""
         },
         "painting": {
-            "name": "Painting",
+            "name": "Maalaus",
             "desc": ""
         },
         "appleGold": {
-            "name": "Golden Apple",
+            "name": "Kultaomena",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Kyltti",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Puuovi",
             "desc": ""
         },
         "bucket": {
-            "name": "Bucket",
+            "name": "Ämpäri",
             "desc": ""
         },
         "bucketWater": {
-            "name": "Water Bucket",
+            "name": "Vesiämpäri",
             "desc": ""
         },
         "bucketLava": {
-            "name": "Lava bucket",
+            "name": "Laavaämpäri",
             "desc": ""
         },
         "minecart": {
-            "name": "Minecart",
+            "name": "Kaivosvaunu",
             "desc": ""
         },
         "saddle": {
-            "name": "Saddle",
+            "name": "Satula",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Rautaovi",
             "desc": ""
         },
         "redstone": {
-            "name": "Redstone",
+            "name": "Redstone-jauhe",
             "desc": ""
         },
         "snowball": {
-            "name": "Snowball",
+            "name": "Lumipallo",
             "desc": ""
         },
         "boat": {
-            "name": "Boat",
+            "name": "Vene",
             "desc": ""
         },
         "leather": {
-            "name": "Leather",
+            "name": "Nahka",
             "desc": ""
         },
         "milk": {
-            "name": "Milk",
+            "name": "Maito",
             "desc": ""
         },
         "brick": {
-            "name": "Brick",
+            "name": "Tiili",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Savi",
             "desc": ""
         },
         "sugarCanes": {
-            "name": "Sugar Canes",
+            "name": "Sokeriruoko",
             "desc": ""
         },
         "paper": {
-            "name": "Paper",
+            "name": "Paperi",
             "desc": ""
         },
         "book": {
-            "name": "Book",
+            "name": "Kirja",
             "desc": ""
         },
         "slimeball": {
-            "name": "Slimeball",
+            "name": "Limapallo",
             "desc": ""
         },
         "minecartChest": {
-            "name": "Minecart with Chest",
+            "name": "Arkullinen kaivosvaunu",
             "desc": ""
         },
         "minecartFurnace": {
-            "name": "Minecart with Furnace",
+            "name": "Uunillinen kaivosvaunu",
             "desc": ""
         },
         "egg": {
-            "name": "Egg",
+            "name": "Kananmuna",
             "desc": ""
         },
         "compass": {
-            "name": "Compass",
+            "name": "Kompassi",
             "desc": ""
         },
         "fishingRod": {
-            "name": "Fishing Rod",
+            "name": "Onkivapa",
             "desc": ""
         },
         "clock": {
-            "name": "Clock",
+            "name": "Kello",
             "desc": ""
         },
         "yellowDust": {
-            "name": "Glowstone Dust",
+            "name": "Hehkukivijauhe",
             "desc": ""
         },
         "fishRaw": {
-            "name": "Raw Fish",
+            "name": "Raaka kala",
             "desc": ""
         },
         "fishCooked": {
-            "name": "Cooked Fish",
+            "name": "Paistettu kala",
             "desc": ""
         },
         "record": {
-            "name": "Music Disc",
+            "name": "Musiikkilevy",
             "desc": ""
         },
         "bone": {
-            "name": "Bone",
+            "name": "Luu",
             "desc": ""
         },
         "dyePowder": {
             "black": {
-                "name": "Ink Sac",
+                "name": "Mustepussi",
                 "desc": ""
             },
             "red": {
-                "name": "Rose Red",
+                "name": "Ruusunpunainen",
                 "desc": ""
             },
             "green": {
-                "name": "Cactus Green",
+                "name": "Kaktuksenvihreä",
                 "desc": ""
             },
             "brown": {
-                "name": "Cocoa Beans",
+                "name": "Kaakaopavut",
                 "desc": ""
             },
             "blue": {
-                "name": "Lapis Lazuli",
+                "name": "Lasuriitti",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Dye",
+                "name": "Violetti väriaine",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Dye",
+                "name": "Syaani väriaine",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Dye",
+                "name": "Vaaleanharmaa väriaine",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Dye",
+                "name": "Harmaa väriaine",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Dye",
+                "name": "Vaaleanpunainen väriaine",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Dye",
+                "name": "Limetinvihreä väriaine",
                 "desc": ""
             },
             "yellow": {
-                "name": "Dandelion Yellow",
+                "name": "Voikukankeltainen",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Dye",
+                "name": "Vaaleansininen väriaine",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Dye",
+                "name": "Purppura väriaine",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Dye",
+                "name": "Oranssi väriaine",
                 "desc": ""
             },
             "white": {
-                "name": "Bone Meal",
+                "name": "Luujauho",
                 "desc": ""
             }
         },
         "sugar": {
-            "name": "Sugar",
+            "name": "Sokeri",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Kakku",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Sänky",
             "desc": ""
         },
         "redstoneRepeater": {
-            "name": "Redstone Repeater",
+            "name": "Redstone-toistin",
             "desc": ""
         },
         "map": {
-            "name": "Map",
+            "name": "Kartta",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Lehdet",
             "desc": ""
         },
         "shears": {
-            "name": "Shears",
+            "name": "Keritsimet",
             "desc": ""
         }
     },
     "stat": {
-        "generalButton": "General",
-        "blocksButton": "Blocks",
-        "itemsButton": "Items",
-        "used": "Times Used",
-        "mined": "Times Mined",
-        "depleted": "Times Depleted",
-        "crafted": "Times Crafted",
-        "startGame": "Times played",
-        "createWorld": "Worlds played",
-        "loadWorld": "Saves loaded",
-        "joinMultiplayer": "Multiplayer joins",
-        "leaveGame": "Games quit",
-        "playOneMinute": "Minutes Played",
-        "walkOneCm": "Distance Walked",
-        "fallOneCm": "Distance Fallen",
-        "swimOneCm": "Distance Swum",
-        "flyOneCm": "Distance Flown",
-        "climbOneCm": "Distance Climbed",
-        "diveOneCm": "Distance Dove",
-        "minecartOneCm": "Distance by Minecart",
-        "boatOneCm": "Distance by Boat",
-        "pigOneCm": "Distance by Pig",
-        "jump": "Jumps",
-        "drop": "Items Dropped",
-        "damageDealt": "Damage Dealt",
-        "damageTaken": "Damage Taken",
-        "deaths": "Number of Deaths",
-        "mobKills": "Mob Kills",
-        "playerKills": "Player Kills",
-        "fishCaught": "Fish Caught",
-        "mineBlock": "{0} Mined",
-        "craftItem": "{0} Crafted",
-        "useItem": "{0} Used",
-        "breakItem": "{0} Depleted"
+        "generalButton": "Yleistä",
+        "blocksButton": "Lohkot",
+        "itemsButton": "Esineet",
+        "used": "Käyttökerrat",
+        "mined": "Louhintakerrat",
+        "depleted": "Kulutuskerrat",
+        "crafted": "Valmistuskerrat",
+        "startGame": "Pelikerrat",
+        "createWorld": "Pelatut maailmat",
+        "loadWorld": "Ladatut tallennukset",
+        "joinMultiplayer": "Moninpeliin liittymiset",
+        "leaveGame": "Lopetetut pelit",
+        "playOneMinute": "Pelatut minuutit",
+        "walkOneCm": "Kävelty matka",
+        "fallOneCm": "Pudottu matka",
+        "swimOneCm": "Uitu matka",
+        "flyOneCm": "Lennetty matka",
+        "climbOneCm": "Kivuttu matka",
+        "diveOneCm": "Sukellettu matka",
+        "minecartOneCm": "Matka kaivosvaunulla",
+        "boatOneCm": "Matka veneellä",
+        "pigOneCm": "Matka sialla",
+        "jump": "Hypyt",
+        "drop": "Pudotetut esineet",
+        "damageDealt": "Jaettu vahinko",
+        "damageTaken": "Otettu vahinko",
+        "deaths": "Kuolemien määrä",
+        "mobKills": "Hirviötapot",
+        "playerKills": "Pelaajatapot",
+        "fishCaught": "Pyydetyt kalat",
+        "mineBlock": "{0} louhittu",
+        "craftItem": "{0} valmistettu",
+        "useItem": "{0} käytetty",
+        "breakItem": "{0} kulutettu"
     },
-    "achievements.title": "Achievements",
+    "achievements.title": "Saavutukset",
     "achievement": {
-        "get": "Achievement get!",
-        "taken": "Taken!",
-        "challenge": "CHALLENGE",
-        "unlocked": "UNLOCKED",
-        "locked": "LOCKED",
-        "requires": "Requires '{0}'",
+        "get": "Saavutus saavutettu!",
+        "taken": "Otettu!",
+        "challenge": "HAASTE",
+        "unlocked": "AVAUTUNUT",
+        "locked": "LUKITTU",
+        "requires": "Vaatii '{0}'",
         "openInventory": {
-            "title": "Taking Inventory",
-            "desc": "Open your inventory."
+            "title": "Inventaario",
+            "desc": "Avaa inventaariosi."
         },
         "mineWood": {
-            "title": "Getting Wood",
-            "desc": "Attack a tree until a block of wood pops out"
+            "title": "Puuta pukkaa",
+            "desc": "Hakkaa puuta, kunnes puulohko irtoaa"
         },
         "buildWorkBench": {
-            "title": "Benchmarking",
-            "desc": "Craft a workbench with four blocks of planks"
+            "title": "Työpöydän ääressä",
+            "desc": "Valmista työpöytä neljästä lankkupalasta"
         },
         "buildPickaxe": {
-            "title": "Time to Mine!",
-            "desc": "Use planks and sticks to make a pickaxe"
+            "title": "Aika kaivaa!",
+            "desc": "Tee hakku lankuista ja kepeistä"
         },
         "buildFurnace": {
-            "title": "Hot Topic",
-            "desc": "Construct a furnace out of eight stone blocks"
+            "title": "Kuuma aihe",
+            "desc": "Rakenna uuni kahdeksasta kivilohkosta"
         },
         "acquireIron": {
-            "title": "Acquire Hardware",
-            "desc": "Smelt an iron ingot"
+            "title": "Hanki rautatavaraa",
+            "desc": "Sulata rautaharkko"
         },
         "buildHoe": {
-            "title": "Time to Farm!",
-            "desc": "Use planks and sticks to make a hoe"
+            "title": "Aika viljellä!",
+            "desc": "Tee kuokka lankuista ja kepeistä"
         },
         "makeBread": {
-            "title": "Bake Bread",
-            "desc": "Turn wheat into bread"
+            "title": "Leivo leipää",
+            "desc": "Muuta vehnä leiväksi"
         },
         "bakeCake": {
-            "title": "The Lie",
-            "desc": "Wheat, sugar, milk and eggs!"
+            "title": "Valhe",
+            "desc": "Vehnää, sokeria, maitoa ja munia!"
         },
         "buildBetterPickaxe": {
-            "title": "Getting an Upgrade",
-            "desc": "Construct a better pickaxe"
+            "title": "Askel parempaan päin",
+            "desc": "Rakenna parempi hakku"
         },
         "cookFish": {
-            "title": "Delicious Fish",
-            "desc": "Catch and cook fish!"
+            "title": "Herkullista kalaa",
+            "desc": "Pyydä ja paista kala!"
         },
         "onARail": {
-            "title": "On A Rail",
-            "desc": "Travel by minecart at least 1 km from where you started "
+            "title": "Kiskoilla",
+            "desc": "Matkusta kaivosvaunulla vähintään 1 km lähtöpisteestä"
         },
         "buildSword": {
-            "title": "Time to Strike!",
-            "desc": "Use planks and sticks to make a sword"
+            "title": "Aika iskeä!",
+            "desc": "Tee miekka lankuista ja kepeistä"
         },
         "killEnemy": {
-            "title": "Monster Hunter",
-            "desc": "Attack and destroy a monster"
+            "title": "Hirviönmetsästäjä",
+            "desc": "Hyökkää hirviön kimppuun ja tuhoa se"
         },
         "killCow": {
-            "title": "Cow Tipper",
-            "desc": "Harvest some leather"
+            "title": "Lehmänkaataja",
+            "desc": "Kerää hieman nahkaa"
         },
         "flyPig": {
-            "title": "When Pigs Fly",
-            "desc": "Fly a pig off a cliff"
+            "title": "Kun sika lentää",
+            "desc": "Lennätä sika alas kalliolta"
         }
     },
     "credits": {
-        "version": "BetaSharp Version %1$s",
-        "description": "An enhanced of Minecraft Beta 1.7.3, written in C#.",
-        "github": "On GitHub",
-        "author": "Made by Fazin85",
-        "libs": "Libraries",
-        "slik": "Slik.NET - Graphics",
-        "imgui": "ImGui - Debug UI",
-        "sfml": "SFML.NET - Audio",
-        "sixlabors": "SixLabors - Fonts, image processing",
-        "translations": "Translations Credits"
+        "version": "BetaSharp versio %1$s",
+        "description": "Minecraft Beta 1.7.3:n paranneltu versio, kirjoitettu C#:lla.",
+        "github": "GitHubissa",
+        "author": "Tehnyt Fazin85",
+        "libs": "Kirjastot",
+        "slik": "Slik.NET - Grafiikka",
+        "imgui": "ImGui - Debug-käyttöliittymä",
+        "sfml": "SFML.NET - Ääni",
+        "sixlabors": "SixLabors - Fontit, kuvankäsittely",
+        "translations": "Käännökset"
     }
 }
