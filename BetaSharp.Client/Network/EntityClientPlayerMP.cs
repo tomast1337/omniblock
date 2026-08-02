@@ -1,7 +1,6 @@
 using BetaSharp.Client.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
@@ -81,30 +80,30 @@ public class EntityClientPlayerMP : ClientPlayerEntity
         {
             if (rotationChanged)
             {
-                sendQueue.AddToSendQueue(PlayerMovePositionAndOnGroundPacket.Get(VelocityX, -1000.0D, -1000.0D, VelocityZ, OnGround));
+                sendQueue.SendMessage(new PlayerMovePositionMessage { X = VelocityX, Y = -1000.0D, EyeHeight = -1000.0D, Z = VelocityZ, OnGround = OnGround });
             }
             else
             {
-                sendQueue.AddToSendQueue(PlayerMoveFullPacket.Get(VelocityX, -1000.0D, -1000.0D, VelocityZ, Yaw, Pitch, OnGround));
+                sendQueue.SendMessage(new PlayerMoveFullMessage { X = VelocityX, Y = -1000.0D, EyeHeight = -1000.0D, Z = VelocityZ, Yaw = Yaw, Pitch = Pitch, OnGround = OnGround });
             }
 
             positionChanged = false;
         }
         else if (positionChanged && rotationChanged)
         {
-            sendQueue.AddToSendQueue(PlayerMoveFullPacket.Get(X, BoundingBox.MinY, Y, Z, Yaw, Pitch, OnGround));
+            sendQueue.SendMessage(new PlayerMoveFullMessage { X = X, Y = BoundingBox.MinY, EyeHeight = Y, Z = Z, Yaw = Yaw, Pitch = Pitch, OnGround = OnGround });
         }
         else if (positionChanged)
         {
-            sendQueue.AddToSendQueue(PlayerMovePositionAndOnGroundPacket.Get(X, BoundingBox.MinY, Y, Z, OnGround));
+            sendQueue.SendMessage(new PlayerMovePositionMessage { X = X, Y = BoundingBox.MinY, EyeHeight = Y, Z = Z, OnGround = OnGround });
         }
         else if (rotationChanged)
         {
-            sendQueue.AddToSendQueue(PlayerMoveLookAndOnGroundPacket.Get(Yaw, Pitch, OnGround));
+            sendQueue.SendMessage(new PlayerMoveLookMessage { Yaw = Yaw, Pitch = Pitch, OnGround = OnGround });
         }
         else if (lastOnGround != OnGround)
         {
-            sendQueue.AddToSendQueue(PlayerMovePacket.Get(OnGround));
+            sendQueue.SendMessage(new PlayerMoveMessage { OnGround = OnGround });
         }
 
         lastOnGround = OnGround;

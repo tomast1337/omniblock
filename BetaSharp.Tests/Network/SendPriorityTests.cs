@@ -60,7 +60,7 @@ public sealed class SendPriorityTests
     public void World_data_and_anything_ordered_against_it_stays_normal()
     {
         Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Envelope(new RegionDataMessage())));
-        Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Packet.Get(PacketId.PlayerMoveFull)));
+        Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Envelope(new PlayerMoveFullMessage())));
         // Block updates, chunk deltas, status updates, and map updates migrated to the message
         // layer. Their priority is Normal by default.
         Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Envelope(new BlockUpdateMessage())));
