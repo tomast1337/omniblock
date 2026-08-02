@@ -1,1369 +1,1369 @@
-﻿{
+{
     "gui": {
-        "joinServer": "Join Server",
-        "rename": "Rename",
-        "edit": "Edit",
-        "refresh": "Refresh",
-        "done": "Done",
-        "cancel": "Cancel",
-        "delete": "Delete",
-        "toMenu": "Back to title screen",
-        "up": "Up",
-        "down": "Down",
-        "yes": "Yes",
-        "no": "No",
-        "connect": "Connect",
-        "directConnect": "Direct Connect",
-        "addServer": "Add Server",
-        "create": "Create",
-        "customize": "Customize",
-        "achievements": "Achievements",
-        "stats": "Statistics",
+        "joinServer": "الانضمام إلى الخادم",
+        "rename": "إعادة تسمية",
+        "edit": "تعديل",
+        "refresh": "تحديث",
+        "done": "تم",
+        "cancel": "إلغاء",
+        "delete": "حذف",
+        "toMenu": "العودة إلى الشاشة الرئيسية",
+        "up": "أعلى",
+        "down": "أسفل",
+        "yes": "نعم",
+        "no": "لا",
+        "connect": "اتصال",
+        "directConnect": "اتصال مباشر",
+        "addServer": "إضافة خادم",
+        "create": "إنشاء",
+        "customize": "تخصيص",
+        "achievements": "الإنجازات",
+        "stats": "الإحصائيات",
         "container": {
-            "crafting": "Crafting",
-            "inventory": "Inventory",
-            "dispenser": "Dispenser",
-            "furnace": "Furnace",
+            "crafting": "التصنيع",
+            "inventory": "الحقيبة",
+            "dispenser": "الموزع",
+            "furnace": "الفرن",
             "tip": {
-                "move": "Move",
-                "quickMove": "Quick Move",
-                "takeHalf": "Take Half",
-                "place": "Place",
-                "placeOne": "Place One"
+                "move": "نقل",
+                "quickMove": "نقل سريع",
+                "takeHalf": "أخذ النصف",
+                "place": "وضع",
+                "placeOne": "وضع واحدة"
             }
         }
     },
     "menu": {
-        "singleplayer": "Singleplayer",
-        "multiplayer": "Multiplayer",
-        "texturePacks": "Texture Packs",
-        "options": "Options...",
-        "language": "Language",
-        "quit": "Quit Game",
-        "credits": "Credits",
-        "sendFeedback": "Send Feedback",
-        "reportBugs": "Report Bugs",
-        "saveAndQuitToTitle": "Save and quit to title",
-        "disconnect": "Disconnect"
+        "singleplayer": "لاعب واحد",
+        "multiplayer": "تعدد اللاعبين",
+        "texturePacks": "حزم الملمس",
+        "options": "الخيارات...",
+        "language": "اللغة",
+        "quit": "إنهاء اللعبة",
+        "credits": "الاعتمادات",
+        "sendFeedback": "إرسال ملاحظات",
+        "reportBugs": "الإبلاغ عن الأخطاء",
+        "saveAndQuitToTitle": "حفظ والخروج إلى الشاشة الرئيسية",
+        "disconnect": "قطع الاتصال"
     },
     "selectWorld": {
-        "title": "Select World",
-        "empty": "empty",
-        "world": "World",
-        "select": "Play Selected World",
-        "create": "Create New World",
-        "createDemo": "Play New Demo World",
-        "deleteQuestion": "Are you sure you want to delete this world?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "renameTitle": "Rename World",
-        "conversion": "Must be converted!",
-        "newWorld": "New World",
-        "enterName": "World Name",
-        "resultFolder": "Will be saved in:",
-        "enterSeed": "Seed for the World Generator",
-        "seedInfo": "Leave blank for a random seed",
-        "selectWorldType": "Select World Type",
-        "worldType": "World Type",
-        "customize": "Customize",
-        "moreWorldOptions": "More World Options...",
+        "title": "اختيار العالم",
+        "empty": "فارغ",
+        "world": "العالم",
+        "select": "تشغيل العالم المحدد",
+        "create": "إنشاء عالم جديد",
+        "createDemo": "تشغيل عالم تجريبي جديد",
+        "deleteQuestion": "هل أنت متأكد من رغبتك في حذف هذا العالم؟",
+        "deleteWarning": "سيُفقد إلى الأبد! (لفترة طويلة!)",
+        "renameTitle": "إعادة تسمية العالم",
+        "conversion": "يجب تحويله!",
+        "newWorld": "عالم جديد",
+        "enterName": "اسم العالم",
+        "resultFolder": "سيُحفظ في:",
+        "enterSeed": "بذرة مولّد العالم",
+        "seedInfo": "اتركها فارغة لبذرة عشوائية",
+        "selectWorldType": "اختيار نوع العالم",
+        "worldType": "نوع العالم",
+        "customize": "تخصيص",
+        "moreWorldOptions": "المزيد من خيارات العالم...",
         "type": {
             "default": {
-                "title": "Default",
-                "description": "The standard Minecraft world."
+                "title": "افتراضي",
+                "description": "عالم ماين كرافت القياسي."
             },
             "flat": {
-                "title": "Flat",
-                "description": "A completely flat world."
+                "title": "مسطح",
+                "description": "عالم مسطح تماماً."
             },
             "sky": {
-                "title": "Sky",
-                "description": "A world floating in the sky."
+                "title": "سماوي",
+                "description": "عالم يطفو في السماء."
             }
         }
     },
     "newWorld": {
         "customize": {
             "superflatWorld": {
-                "title": "Customize Superflat World"
+                "title": "تخصيص العالم المسطح"
             },
-            "removeLayer": "Remove Layer",
-            "presets": "Presets",
-            "height": "Height",
+            "removeLayer": "إزالة الطبقة",
+            "presets": "الإعدادات المسبقة",
+            "height": "الارتفاع",
             "unknown": "???"
         }
     },
     "world": {
-        "world": "World",
-        "unsupportedFormat": "Unsupported Format!"
+        "world": "العالم",
+        "unsupportedFormat": "تنسيق غير مدعوم!"
     },
     "multiplayer": {
-        "title": "Play Multiplayer",
-        "betasharpServer": "BetaSharp Server",
-        "info1": "Minecraft Multiplayer is currently not finished, but there",
-        "info2": "is some buggy early testing going on.",
-        "ipinfo": "Enter the IP of a server to connect to it:",
-        "deleteQuestion": "Are you sure you want to delete this server?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "downloadingTerrain": "Downloading terrain",
-        "stopSleeping": "Leave Bed",
-        "editServerTitle": "Edit Server Info",
-        "addServerTitle": "Add Server Info",
-        "serverName": "Server Name",
-        "serverAddress": "Server Address"
+        "title": "لعب متعدد اللاعبين",
+        "betasharpServer": "خادم BetaSharp",
+        "info1": "اللعب الجماعي في ماين كرافت غير مكتمل حالياً، لكن",
+        "info2": "هناك بعض الاختبارات المبكرة التي بها أخطاء.",
+        "ipinfo": "أدخل عنوان IP الخاص بخادم للاتصال به:",
+        "deleteQuestion": "هل أنت متأكد من رغبتك في حذف هذا الخادم؟",
+        "deleteWarning": "سيُفقد إلى الأبد! (لفترة طويلة!)",
+        "downloadingTerrain": "جارٍ تنزيل التضاريس",
+        "stopSleeping": "مغادرة السرير",
+        "editServerTitle": "تعديل معلومات الخادم",
+        "addServerTitle": "إضافة معلومات الخادم",
+        "serverName": "اسم الخادم",
+        "serverAddress": "عنوان الخادم"
     },
     "loading": {
-        "loadingLevel": "Loading level",
-        "startingServer": "Starting server...",
-        "preparingSpawnArea": "Preparing spawn area"
+        "loadingLevel": "جارٍ تحميل المستوى",
+        "startingServer": "جارٍ بدء الخادم...",
+        "preparingSpawnArea": "جارٍ تجهيز منطقة الظهور"
     },
     "achievements": {
-        "title": "Achievements"
+        "title": "الإنجازات"
     },
     "gameover": {
-        "title": "Game Over!",
-        "score": "Score",
-        "respawn": "Respawn",
-        "titleMenu": "Title menu"
+        "title": "انتهت اللعبة!",
+        "score": "النقاط",
+        "respawn": "إعادة الظهور",
+        "titleMenu": "القائمة الرئيسية"
     },
     "gamemenu": {
-        "title": "Game Menu",
-        "backToGame": "Back to Game"
+        "title": "قائمة اللعبة",
+        "backToGame": "العودة إلى اللعبة"
     },
     "sign": {
-        "title": "Edit sign message:"
+        "title": "تحرير نص اللافتة:"
     },
     "stats": {
-        "title": "Statistics",
-        "general": "General",
+        "title": "الإحصائيات",
+        "general": "عام",
         "blocks": {
-            "name": "Blocks",
-            "mined": "Mined",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "الكتل",
+            "mined": "المحفورة",
+            "crafted": "المصنّعة",
+            "used": "المستخدمة"
         },
         "items": {
-            "name": "Items",
-            "broken": "Broken",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "العناصر",
+            "broken": "المكسورة",
+            "crafted": "المصنّعة",
+            "used": "المستخدمة"
         },
-        "item": "Item"
+        "item": "عنصر"
     },
     "connect": {
-        "connecting": "Connecting to the server...",
-        "authorizing": "Logging in...",
-        "failed": "Failed to connect to the server"
+        "connecting": "جارٍ الاتصال بالخادم...",
+        "authorizing": "جارٍ تسجيل الدخول...",
+        "failed": "فشل الاتصال بالخادم"
     },
     "disconnect": {
         "genericReason": "{0}",
-        "disconnected": "Disconnected by Server",
-        "lost": "Connection Lost",
-        "kicked": "Was kicked from the game",
-        "timeout": "Timed out",
-        "closed": "Connection closed",
-        "loginFailed": "Failed to login",
-        "quitting": "Quitting",
-        "endOfStream": "End of stream",
-        "overflow": "Buffer overflow"
+        "disconnected": "تم قطع الاتصال من قبل الخادم",
+        "lost": "فقدان الاتصال",
+        "kicked": "تم طردك من اللعبة",
+        "timeout": "انتهت المهلة",
+        "closed": "تم إغلاق الاتصال",
+        "loginFailed": "فشل تسجيل الدخول",
+        "quitting": "جارٍ الخروج",
+        "endOfStream": "نهاية الدفق",
+        "overflow": "تجاوز سعة المخزن المؤقت"
     },
     "options": {
-        "off": "OFF",
-        "on": "ON",
-        "disabled": "Disabled",
-        "title": "Options",
-        "controls": "Controls...",
-        "keyboardControls": "Keyboard Controls...",
-        "controllerSettings": "Controller Settings...",
-        "controllerType": "Controller Type",
+        "off": "إيقاف",
+        "on": "تشغيل",
+        "disabled": "معطّل",
+        "title": "الخيارات",
+        "controls": "أدوات التحكم...",
+        "keyboardControls": "أدوات التحكم بلوحة المفاتيح...",
+        "controllerSettings": "إعدادات وحدة التحكم...",
+        "controllerType": "نوع وحدة التحكم",
         "video": {
-            "text": "Video Settings...",
-            "performance": "Performance",
-            "display": "Display"
+            "text": "إعدادات الفيديو...",
+            "performance": "الأداء",
+            "display": "العرض"
         },
-        "uiSettings": "UI Settings...",
-        "audioSettings": "Audio Settings...",
-        "audioTitle": "Audio Settings",
-        "videoTitle": "Video Settings",
-        "language": "Language...",
-        "anisoLevel": "Aniso Level",
-        "music": "Music",
-        "sound": "Sound",
-        "invertMouse": "Invert Mouse",
-        "alternateBlocks": "Alternate Blocks",
-        "chunkFade": "Chunk Fade",
+        "uiSettings": "إعدادات الواجهة...",
+        "audioSettings": "إعدادات الصوت...",
+        "audioTitle": "إعدادات الصوت",
+        "videoTitle": "إعدادات الفيديو",
+        "language": "اللغة...",
+        "anisoLevel": "مستوى الترشيح متباين الخواص",
+        "music": "الموسيقى",
+        "sound": "الصوت",
+        "invertMouse": "عكس الماوس",
+        "alternateBlocks": "الكتل البديلة",
+        "chunkFade": "تلاشي القطع",
         "sensitivity": {
-            "text": "Sensitivity",
-            "controllerText": "Controller Sensitivity",
-            "min": "*yawn*",
-            "max": "HYPERSPEED!!!"
+            "text": "الحساسية",
+            "controllerText": "حساسية وحدة التحكم",
+            "min": "*تثاؤب*",
+            "max": "سرعة فائقة!!!"
         },
         "renderDistance": {
-            "text": "Render Distance",
-            "chunks": "Chunks",
-            "tiny": "Tiny",
-            "short": "Short",
-            "normal": "Normal",
-            "far": "Far"
+            "text": "مسافة العرض",
+            "chunks": "قطع",
+            "tiny": "صغير جداً",
+            "short": "قصير",
+            "normal": "عادي",
+            "far": "بعيد"
         },
-        "viewBobbing": "View Bobbing",
-        "ao": "Smooth Lighting",
-        "anaglyph": "3D Anaglyph",
-        "framerateLimit": "Performance",
+        "viewBobbing": "اهتزاز المنظر",
+        "ao": "إضاءة ناعمة",
+        "anaglyph": "أناجليف ثلاثي الأبعاد",
+        "framerateLimit": "الأداء",
         "difficulty": {
-            "text": "Difficulty",
-            "peaceful": "Peaceful",
-            "easy": "Easy",
-            "normal": "Normal",
-            "hard": "Hard"
+            "text": "الصعوبة",
+            "peaceful": "سلمي",
+            "easy": "سهل",
+            "normal": "عادي",
+            "hard": "صعب"
         },
         "graphics": {
-            "text": "Graphics",
-            "fancy": "Fancy",
-            "fast": "Fast"
+            "text": "الرسوميات",
+            "fancy": "فاخر",
+            "fast": "سريع"
         },
         "cloudsQuality": {
-            "text": "Clouds Quality",
-            "off": "No Clouds",
-            "legacy": "Old Clouds",
-            "shader": "Shader"
+            "text": "جودة الغيوم",
+            "off": "لا غيوم",
+            "legacy": "غيوم قديمة",
+            "shader": "تظليل"
         },
         "softClouds": {
-            "text": "Soft Clouds"
+            "text": "غيوم ناعمة"
         },
         "guiScale": {
-            "text": "GUI Scale",
-            "auto": "Auto",
-            "small": "Small",
-            "normal": "Normal",
-            "large": "Large"
+            "text": "مقياس الواجهة",
+            "auto": "تلقائي",
+            "small": "صغير",
+            "normal": "عادي",
+            "large": "كبير"
         },
         "chatScale": {
-            "text": "Chat Scale"
+            "text": "مقياس الدردشة"
         },
         "chatWidth": {
-            "text": "Chat Width"
+            "text": "عرض الدردشة"
         },
-        "advancedOpengl": "Advanced OpenGL",
+        "advancedOpengl": "OpenGL متقدم",
         "fps": {
             "text": "FPS",
-            "maxFps": "Max FPS",
-            "unlimited": "Unlimited"
+            "maxFps": "أقصى FPS",
+            "unlimited": "غير محدود"
         },
-        "showCoordinates": "Show Coordinates",
-        "uiCursors": "UI Cursors",
-        "gamma": "Gamma",
+        "showCoordinates": "إظهار الإحداثيات",
+        "uiCursors": "مؤشرات الواجهة",
+        "gamma": "جاما",
         "vSync": "VSync",
         "mipmaps": "Mipmaps",
-        "menuMusic": "Menu Music",
+        "menuMusic": "موسيقى القائمة",
         "msaa": "MSAA",
         "fov": "FOV",
         "movement": {
-            "text": "Movement"
+            "text": "الحركة"
         },
         "view": {
-            "text": "View"
+            "text": "المنظر"
         },
         "other": {
-            "text": "Other"
+            "text": "أخرى"
         },
-        "editBindings": "Edit Bindings...",
-        "resetBindings": "Reset Bindings...",
-        "controllerBindings": "Controller Bindings",
+        "editBindings": "تعديل الأزرار...",
+        "resetBindings": "إعادة ضبط الأزرار...",
+        "controllerBindings": "أزرار وحدة التحكم",
         "shader": {
-            "text": "Shader Options",
+            "text": "خيارات التظليل",
             "chunkVert": {
-                "text": "World",
-                "WavyLeavesStrength": "Wavy Leaves Strength",
-                "WavyLeavesSpeed": "Wavy Leaves Speed",
-                "WavyPlantStrength": "Wavy Plant Strength",
-                "WavyPlantSpeed": "Wavy Plant Speed",
-                "WavyPlantMode": "Wavy Plant Mode"
+                "text": "العالم",
+                "WavyLeavesStrength": "شدة تمايل الأوراق",
+                "WavyLeavesSpeed": "سرعة تمايل الأوراق",
+                "WavyPlantStrength": "شدة تمايل النباتات",
+                "WavyPlantSpeed": "سرعة تمايل النباتات",
+                "WavyPlantMode": "وضع تمايل النباتات"
             },
             "cloud": {
-                "text": "Clouds",
-                "minParallax": "Min Parallax",
-                "maxParallax": "Max Parallax",
-                "minGradient": "Min Gradient",
-                "maxGradient": "Max Gradient",
-                "cloudHeight": "Cloud Height",
-                "shadow": "Shadow Color",
-                "smoothWidth": "Smooth Width",
-                "smoothSamples": "Smooth Samples",
-                "closeFade": "Close Fade",
-                "smoothTop": "Smooth Top",
-                "smoothEdge": "Smooth Edge",
-                "smoothBottom": "Smooth Bottom",
-                "smoothBottomTopDown": "Smooth Bottom Top Down"
+                "text": "الغيوم",
+                "minParallax": "الحد الأدنى لتزيح المنظور",
+                "maxParallax": "الحد الأقصى لتزيح المنظور",
+                "minGradient": "الحد الأدنى للتدرج",
+                "maxGradient": "الحد الأقصى للتدرج",
+                "cloudHeight": "ارتفاع الغيوم",
+                "shadow": "لون الظل",
+                "smoothWidth": "عرض النعومة",
+                "smoothSamples": "عينات النعومة",
+                "closeFade": "التلاشي القريب",
+                "smoothTop": "تنعيم الأعلى",
+                "smoothEdge": "تنعيم الحواف",
+                "smoothBottom": "تنعيم الأسفل",
+                "smoothBottomTopDown": "تنعيم الأسفل من الأعلى إلى الأسفل"
             },
             "ui": {
-                "text": "UI",
-                "darkMode": "Dark Mode"
+                "text": "الواجهة",
+                "darkMode": "الوضع الداكن"
             },
             "preset": {
-                "text": "Preset",
-                "disabled": "Disabled",
-                "default": "Default",
-                "custom": "Custom",
+                "text": "الإعداد المسبق",
+                "disabled": "معطّل",
+                "default": "افتراضي",
+                "custom": "مخصص",
                 "2d": "2D",
                 "3d": "3D",
-                "low": "Low",
-                "medium": "Medium",
-                "high": "High",
-                "ultra": "Ultra"
+                "low": "منخفض",
+                "medium": "متوسط",
+                "high": "مرتفع",
+                "ultra": "فائق"
             }
         }
     },
     "performance": {
-        "max": "Max FPS",
-        "balanced": "Balanced",
-        "powersaver": "Power saver"
+        "max": "أقصى FPS",
+        "balanced": "متوازن",
+        "powersaver": "توفير الطاقة"
     },
     "controls": {
-        "title": "Controls"
+        "title": "أدوات التحكم"
     },
     "key": {
-        "forward": "Forward",
-        "left": "Left",
-        "back": "Back",
-        "right": "Right",
-        "jump": "Jump",
-        "inventory": "Inventory",
-        "drop": "Drop",
-        "chat": "Chat",
-        "fog": "Toggle Fog",
-        "sneak": "Sneak",
-        "playerlist": "List players",
-        "zoom": "Zoom",
-        "hotbarLeft": "Hotbar Left",
-        "hotbarRight": "Hotbar Right",
-        "pickBlock": "Pick Block",
-        "camera": "Camera Mode",
-        "pause": "Pause"
+        "forward": "للأمام",
+        "left": "يسار",
+        "back": "للخلف",
+        "right": "يمين",
+        "jump": "قفز",
+        "inventory": "الحقيبة",
+        "drop": "إسقاط",
+        "chat": "دردشة",
+        "fog": "تبديل الضباب",
+        "sneak": "تسلل",
+        "playerlist": "قائمة اللاعبين",
+        "zoom": "تكبير",
+        "hotbarLeft": "شريط الأدوات يسار",
+        "hotbarRight": "شريط الأدوات يمين",
+        "pickBlock": "تحديد الكتلة",
+        "camera": "وضع الكاميرا",
+        "pause": "إيقاف مؤقت"
     },
     "texturePack": {
-        "openFolder": "Open texture pack folder",
-        "title": "Select Texture Pack",
-        "folderInfo": "(Place texture pack files here)"
+        "openFolder": "فتح مجلد حزم الملمس",
+        "title": "اختيار حزمة الملمس",
+        "folderInfo": "(ضع ملفات حزم الملمس هنا)"
     },
     "tile": {
         "tallgrass": {
-            "name": "Tallgrass",
+            "name": "عشب طويل",
             "desc": ""
         },
         "stone": {
-            "name": "Stone",
+            "name": "حجر",
             "desc": ""
         },
         "grass": {
-            "name": "Grass",
+            "name": "عشب",
             "desc": ""
         },
         "dirt": {
-            "name": "Dirt",
+            "name": "تراب",
             "desc": ""
         },
         "stonebrick": {
-            "name": "Cobblestone",
+            "name": "حجر مرصوف",
             "desc": ""
         },
         "wood": {
-            "name": "Wooden Planks",
+            "name": "ألواح خشبية",
             "desc": ""
         },
         "sapling": {
-            "name": "Sapling",
+            "name": "شتلة",
             "desc": ""
         },
         "bedrock": {
-            "name": "Bedrock",
+            "name": "صخر الأساس",
             "desc": ""
         },
         "water": {
-            "name": "Water",
+            "name": "ماء",
             "desc": ""
         },
         "lava": {
-            "name": "Lava",
+            "name": "حمم",
             "desc": ""
         },
         "sand": {
-            "name": "Sand",
+            "name": "رمل",
             "desc": ""
         },
-        "sandStone": { "name": "Sandstone" },
+        "sandStone": { "name": "حجر رملي" },
         "gravel": {
-            "name": "Gravel",
+            "name": "حصى",
             "desc": ""
         },
         "oreGold": {
-            "name": "Gold Ore",
+            "name": "خام الذهب",
             "desc": ""
         },
         "oreIron": {
-            "name": "Iron Ore",
+            "name": "خام الحديد",
             "desc": ""
         },
         "oreCoal": {
-            "name": "Coal Ore",
+            "name": "خام الفحم",
             "desc": ""
         },
         "log": {
-            "name": "Wood",
+            "name": "خشب",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "أوراق الشجر",
             "desc": ""
         },
         "sponge": {
-            "name": "Sponge",
+            "name": "إسفنجة",
             "desc": ""
         },
         "glass": {
-            "name": "Glass",
+            "name": "زجاج",
             "desc": ""
         },
         "cloth": {
-            "name": "Wool",
+            "name": "صوف",
             "desc": "",
             "black": {
-                "name": "Black Wool",
+                "name": "صوف أسود",
                 "desc": ""
             },
             "red": {
-                "name": "Red Wool",
+                "name": "صوف أحمر",
                 "desc": ""
             },
             "green": {
-                "name": "Green Wool",
+                "name": "صوف أخضر",
                 "desc": ""
             },
             "brown": {
-                "name": "Brown Wool",
+                "name": "صوف بني",
                 "desc": ""
             },
             "blue": {
-                "name": "Blue Wool",
+                "name": "صوف أزرق",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Wool",
+                "name": "صوف بنفسجي",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Wool",
+                "name": "صوف سماوي",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Wool",
+                "name": "صوف رمادي فاتح",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Wool",
+                "name": "صوف رمادي",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Wool",
+                "name": "صوف وردي",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Wool",
+                "name": "صوف ليموني",
                 "desc": ""
             },
             "yellow": {
-                "name": "Yellow Wool",
+                "name": "صوف أصفر",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Wool",
+                "name": "صوف أزرق فاتح",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Wool",
+                "name": "صوف أرجواني",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Wool",
+                "name": "صوف برتقالي",
                 "desc": ""
             },
             "white": {
-                "name": "Wool",
+                "name": "صوف",
                 "desc": ""
             }
         },
         "flower": {
-            "name": "Flower",
+            "name": "زهرة",
             "desc": ""
         },
         "rose": {
-            "name": "Rose",
+            "name": "وردة",
             "desc": ""
         },
         "mushroom": {
-            "name": "Mushroom",
+            "name": "فطر",
             "desc": ""
         },
         "blockGold": {
-            "name": "Block of Gold",
+            "name": "كتلة ذهب",
             "desc": ""
         },
         "blockIron": {
-            "name": "Block of Iron",
+            "name": "كتلة حديد",
             "desc": ""
         },
         "stoneSlab": {
             "stone": {
-                "name": "Stone Slab",
+                "name": "بلاطة حجرية",
                 "desc": ""
             },
             "sand": {
-                "name": "Sandstone Slab",
+                "name": "بلاطة حجر رملي",
                 "desc": ""
             },
             "wood": {
-                "name": "Wooden Slab",
+                "name": "بلاطة خشبية",
                 "desc": ""
             },
             "cobble": {
-                "name": "Stone Slab",
+                "name": "بلاطة حجرية",
                 "desc": ""
             }
         },
         "brick": {
-            "name": "Bricks",
+            "name": "طوب",
             "desc": ""
         },
         "tnt": {
-            "name": "TNT",
+            "name": "تي إن تي",
             "desc": ""
         },
         "bookshelf": {
-            "name": "Bookshelf",
+            "name": "رف الكتب",
             "desc": ""
         },
         "stoneMoss": {
-            "name": "Moss Stone",
+            "name": "حجر مطحلب",
             "desc": ""
         },
         "obsidian": {
-            "name": "Obsidian",
+            "name": "سبج",
             "desc": ""
         },
         "torch": {
-            "name": "Torch",
+            "name": "مشعل",
             "desc": ""
         },
         "fire": {
-            "name": "Fire",
+            "name": "نار",
             "desc": ""
         },
         "mobSpawner": {
-            "name": "Monster Spawner",
+            "name": "مولّد الوحوش",
             "desc": ""
         },
         "stairsWood": {
-            "name": "Wooden Stairs",
+            "name": "درج خشبي",
             "desc": ""
         },
         "chest": {
-            "name": "Chest",
+            "name": "صندوق",
             "desc": ""
         },
         "redstoneDust": {
-            "name": "Redstone Dust",
+            "name": "غبار ريدستون",
             "desc": ""
         },
         "oreDiamond": {
-            "name": "Diamond Ore",
+            "name": "خام الألماس",
             "desc": ""
         },
         "blockDiamond": {
-            "name": "Block of Diamond",
+            "name": "كتلة ألماس",
             "desc": ""
         },
         "workbench": {
-            "name": "Crafting Table",
+            "name": "طاولة التصنيع",
             "desc": ""
         },
         "crops": {
-            "name": "Crops",
+            "name": "محاصيل",
             "desc": ""
         },
         "farmland": {
-            "name": "Farmland",
+            "name": "أرض مزروعة",
             "desc": ""
         },
         "furnace": {
-            "name": "Furnace",
+            "name": "فرن",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "لافتة",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "باب خشبي",
             "desc": ""
         },
         "ladder": {
-            "name": "Ladder",
+            "name": "سلم",
             "desc": ""
         },
         "rail": {
-            "name": "Rail",
+            "name": "سكة حديدية",
             "desc": ""
         },
         "goldenRail": {
-            "name": "Powered Rail",
+            "name": "سكة طاقة",
             "desc": ""
         },
         "detectorRail": {
-            "name": "Detector Rail",
+            "name": "سكة كاشف",
             "desc": ""
         },
         "stairsStone": {
-            "name": "Stone Stairs",
+            "name": "درج حجري",
             "desc": ""
         },
         "lever": {
-            "name": "Lever",
+            "name": "رافعة",
             "desc": ""
         },
         "pressurePlate": {
-            "name": "Pressure Plate",
+            "name": "لوح ضغط",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "باب حديدي",
             "desc": ""
         },
         "oreRedstone": {
-            "name": "Redstone Ore",
+            "name": "خام ريدستون",
             "desc": ""
         },
         "notGate": {
-            "name": "Redstone Torch",
+            "name": "مشعل ريدستون",
             "desc": ""
         },
         "button": {
-            "name": "Button",
+            "name": "زر",
             "desc": ""
         },
         "snow": {
-            "name": "Snow",
+            "name": "ثلج",
             "desc": ""
         },
         "ice": {
-            "name": "Ice",
+            "name": "جليد",
             "desc": ""
         },
         "cactus": {
-            "name": "Cactus",
+            "name": "صبار",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "صلصال",
             "desc": ""
         },
         "reeds": {
-            "name": "Sugar cane",
+            "name": "قصب السكر",
             "desc": ""
         },
         "jukebox": {
-            "name": "Jukebox",
+            "name": "مشغل الأسطوانات",
             "desc": ""
         },
         "fence": {
-            "name": "Fence",
+            "name": "سياج",
             "desc": ""
         },
         "pumpkin": {
-            "name": "Pumpkin",
+            "name": "قرع",
             "desc": ""
         },
         "litpumpkin": {
-            "name": "Jack 'o' Lantern",
+            "name": "فانوس القرع",
             "desc": ""
         },
         "hellrock": {
-            "name": "Netherrack",
+            "name": "حجر جهنمي",
             "desc": ""
         },
         "hellsand": {
-            "name": "Soul Sand",
+            "name": "رمل النفوس",
             "desc": ""
         },
         "lightgem": {
-            "name": "Glowstone",
+            "name": "حجر متوهج",
             "desc": ""
         },
         "portal": {
-            "name": "Portal",
+            "name": "بوابة",
             "desc": ""
         },
         "oreLapis": {
-            "name": "Lapis Lazuli Ore",
+            "name": "خام اللازورد",
             "desc": ""
         },
         "blockLapis": {
-            "name": "Lapis Lazuli Block",
+            "name": "كتلة اللازورد",
             "desc": ""
         },
         "dispenser": {
-            "name": "Dispenser",
+            "name": "موزع",
             "desc": ""
         },
         "musicBlock": {
-            "name": "Note Block",
+            "name": "كتلة موسيقية",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "كعكة",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "سرير",
             "desc": "",
-            "occupied": "This bed is occupied",
-            "noSleep": "You can only sleep at night",
-            "notValid": "Your home bed was missing or obstructed"
+            "occupied": "هذا السرير مشغول",
+            "noSleep": "لا يمكنك النوم إلا في الليل",
+            "notValid": "سريرك في المنزل مفقود أو مسدود"
         },
         "lockedchest": {
-            "name": "Locked chest",
+            "name": "صندوق مقفول",
             "desc": ""
         },
         "trapdoor": {
-            "name": "Trapdoor",
+            "name": "باب سفلي",
             "desc": ""
         },
         "web": {
-            "name": "Cobweb",
+            "name": "خيط العنكبوت",
             "desc": ""
         },
         "stonebricksmooth": {
-            "name": "Stone Bricks",
+            "name": "طوب حجري",
             "desc": ""
         },
         "pistonBase": {
-            "name": "Piston",
+            "name": "مكبس",
             "desc": ""
         },
         "pistonStickyBase": {
-            "name": "Sticky Piston",
+            "name": "مكبس لاصق",
             "desc": ""
         }
     },
     "item": {
         "shovelIron": {
-            "name": "Iron Shovel",
+            "name": "مجرفة حديدية",
             "desc": ""
         },
         "pickaxeIron": {
-            "name": "Iron Pickaxe",
+            "name": "معول حديدي",
             "desc": ""
         },
         "hatchetIron": {
-            "name": "Iron Axe",
+            "name": "فأس حديدية",
             "desc": ""
         },
         "flintAndSteel": {
-            "name": "Flint and Steel",
+            "name": "قداحة",
             "desc": ""
         },
         "apple": {
-            "name": "Apple",
+            "name": "تفاحة",
             "desc": ""
         },
         "cookie": {
-            "name": "Cookie",
+            "name": "بسكويت",
             "desc": ""
         },
         "bow": {
-            "name": "Bow",
+            "name": "قوس",
             "desc": ""
         },
         "arrow": {
-            "name": "Arrow",
+            "name": "سهم",
             "desc": ""
         },
         "coal": {
-            "name": "Coal",
+            "name": "فحم",
             "desc": ""
         },
         "charcoal": {
-            "name": "Charcoal",
+            "name": "فحم نباتي",
             "desc": ""
         },
         "diamond": {
-            "name": "Diamond",
+            "name": "ألماس",
             "desc": ""
         },
         "ingotIron": {
-            "name": "Iron Ingot",
+            "name": "سبيكة حديد",
             "desc": ""
         },
         "ingotGold": {
-            "name": "Gold Ingot",
+            "name": "سبيكة ذهب",
             "desc": ""
         },
         "swordIron": {
-            "name": "Iron Sword",
+            "name": "سيف حديدي",
             "desc": ""
         },
         "swordWood": {
-            "name": "Wooden Sword",
+            "name": "سيف خشبي",
             "desc": ""
         },
         "shovelWood": {
-            "name": "Wooden Shovel",
+            "name": "مجرفة خشبية",
             "desc": ""
         },
         "pickaxeWood": {
-            "name": "Wooden Pickaxe",
+            "name": "معول خشبي",
             "desc": ""
         },
         "hatchetWood": {
-            "name": "Wooden Axe",
+            "name": "فأس خشبية",
             "desc": ""
         },
         "swordStone": {
-            "name": "Stone Sword",
+            "name": "سيف حجري",
             "desc": ""
         },
         "shovelStone": {
-            "name": "Stone Shovel",
+            "name": "مجرفة حجرية",
             "desc": ""
         },
         "pickaxeStone": {
-            "name": "Stone Pickaxe",
+            "name": "معول حجري",
             "desc": ""
         },
         "hatchetStone": {
-            "name": "Stone Axe",
+            "name": "فأس حجرية",
             "desc": ""
         },
         "swordDiamond": {
-            "name": "Diamond Sword",
+            "name": "سيف ألماسي",
             "desc": ""
         },
         "shovelDiamond": {
-            "name": "Diamond Shovel",
+            "name": "مجرفة ألماسية",
             "desc": ""
         },
         "pickaxeDiamond": {
-            "name": "Diamond Pickaxe",
+            "name": "معول ألماسي",
             "desc": ""
         },
         "hatchetDiamond": {
-            "name": "Diamond Axe",
+            "name": "فأس ألماسية",
             "desc": ""
         },
         "stick": {
-            "name": "Stick",
+            "name": "عصا",
             "desc": ""
         },
         "bowl": {
-            "name": "Bowl",
+            "name": "وعاء",
             "desc": ""
         },
         "mushroomStew": {
-            "name": "Mushroom Stew",
+            "name": "حساء الفطر",
             "desc": ""
         },
         "swordGold": {
-            "name": "Golden Sword",
+            "name": "سيف ذهبي",
             "desc": ""
         },
         "shovelGold": {
-            "name": "Golden Shovel",
+            "name": "مجرفة ذهبية",
             "desc": ""
         },
         "pickaxeGold": {
-            "name": "Golden Pickaxe",
+            "name": "معول ذهبي",
             "desc": ""
         },
         "hatchetGold": {
-            "name": "Golden Axe",
+            "name": "فأس ذهبية",
             "desc": ""
         },
         "string": {
-            "name": "String",
+            "name": "خيط",
             "desc": ""
         },
         "feather": {
-            "name": "Feather",
+            "name": "ريشة",
             "desc": ""
         },
         "gunpowder": {
-            "name": "Gunpowder",
+            "name": "بارود",
             "desc": ""
         },
         "hoeWood": {
-            "name": "Wooden Hoe",
+            "name": "منجل خشبي",
             "desc": ""
         },
         "hoeStone": {
-            "name": "Stone Hoe",
+            "name": "منجل حجري",
             "desc": ""
         },
         "hoeIron": {
-            "name": "Iron Hoe",
+            "name": "منجل حديدي",
             "desc": ""
         },
         "hoeDiamond": {
-            "name": "Diamond Hoe",
+            "name": "منجل ألماسي",
             "desc": ""
         },
         "hoeGold": {
-            "name": "Golden Hoe",
+            "name": "منجل ذهبي",
             "desc": ""
         },
         "seeds": {
-            "name": "Seeds",
+            "name": "بذور",
             "desc": ""
         },
         "wheat": {
-            "name": "Wheat",
+            "name": "قمح",
             "desc": ""
         },
         "bread": {
-            "name": "Bread",
+            "name": "خبز",
             "desc": ""
         },
         "helmetLeather": {
-            "name": "Leather Cap",
+            "name": "قبعة جلدية",
             "desc": ""
         },
         "chestplateLeather": {
-            "name": "Leather Tunic",
+            "name": "سترة جلدية",
             "desc": ""
         },
         "leggingsLeather": {
-            "name": "Leather Pants",
+            "name": "بنطال جلدي",
             "desc": ""
         },
         "bootsLeather": {
-            "name": "Leather Boots",
+            "name": "حذاء جلدي",
             "desc": ""
         },
         "helmetChain": {
-            "name": "Chain Helmet",
+            "name": "خوذة سلسلة",
             "desc": ""
         },
         "chestplateChain": {
-            "name": "Chain Chestplate",
+            "name": "درع سلسلة",
             "desc": ""
         },
         "leggingsChain": {
-            "name": "Chain Leggings",
+            "name": "طماق سلسلة",
             "desc": ""
         },
         "bootsChain": {
-            "name": "Chain Boots",
+            "name": "حذاء سلسلة",
             "desc": ""
         },
         "helmetIron": {
-            "name": "Iron Helmet",
+            "name": "خوذة حديدية",
             "desc": ""
         },
         "chestplateIron": {
-            "name": "Iron Chestplate",
+            "name": "درع حديدي",
             "desc": ""
         },
         "leggingsIron": {
-            "name": "Iron Leggings",
+            "name": "طماق حديدية",
             "desc": ""
         },
         "bootsIron": {
-            "name": "Iron Boots",
+            "name": "حذاء حديدي",
             "desc": ""
         },
         "helmetDiamond": {
-            "name": "Diamond Helmet",
+            "name": "خوذة ألماسية",
             "desc": ""
         },
         "chestplateDiamond": {
-            "name": "Diamond Chestplate",
+            "name": "درع ألماسي",
             "desc": ""
         },
         "leggingsDiamond": {
-            "name": "Diamond Leggings",
+            "name": "طماق ألماسية",
             "desc": ""
         },
         "bootsDiamond": {
-            "name": "Diamond Boots",
+            "name": "حذاء ألماسي",
             "desc": ""
         },
         "helmetGold": {
-            "name": "Golden Helmet",
+            "name": "خوذة ذهبية",
             "desc": ""
         },
         "chestplateGold": {
-            "name": "Golden Chestplate",
+            "name": "درع ذهبي",
             "desc": ""
         },
         "leggingsGold": {
-            "name": "Golden Leggings",
+            "name": "طماق ذهبية",
             "desc": ""
         },
         "bootsGold": {
-            "name": "Golden boots",
+            "name": "حذاء ذهبي",
             "desc": ""
         },
         "flint": {
-            "name": "Flint",
+            "name": "صوّان",
             "desc": ""
         },
         "porkchopRaw": {
-            "name": "Raw Porkchop",
+            "name": "لحم خنزير نيء",
             "desc": ""
         },
         "porkchopCooked": {
-            "name": "Cooked Porkchop",
+            "name": "لحم خنزير مطبوخ",
             "desc": ""
         },
         "painting": {
-            "name": "Painting",
+            "name": "لوحة",
             "desc": ""
         },
         "appleGold": {
-            "name": "Golden Apple",
+            "name": "تفاحة ذهبية",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "لافتة",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "باب خشبي",
             "desc": ""
         },
         "bucket": {
-            "name": "Bucket",
+            "name": "دلو",
             "desc": ""
         },
         "bucketWater": {
-            "name": "Water Bucket",
+            "name": "دلو ماء",
             "desc": ""
         },
         "bucketLava": {
-            "name": "Lava bucket",
+            "name": "دلو حمم",
             "desc": ""
         },
         "minecart": {
-            "name": "Minecart",
+            "name": "عربة سكة حديدية",
             "desc": ""
         },
         "saddle": {
-            "name": "Saddle",
+            "name": "سرج",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "باب حديدي",
             "desc": ""
         },
         "redstone": {
-            "name": "Redstone",
+            "name": "ريدستون",
             "desc": ""
         },
         "snowball": {
-            "name": "Snowball",
+            "name": "كرة ثلجية",
             "desc": ""
         },
         "boat": {
-            "name": "Boat",
+            "name": "قارب",
             "desc": ""
         },
         "leather": {
-            "name": "Leather",
+            "name": "جلد",
             "desc": ""
         },
         "milk": {
-            "name": "Milk",
+            "name": "حليب",
             "desc": ""
         },
         "brick": {
-            "name": "Brick",
+            "name": "طوبة",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "صلصال",
             "desc": ""
         },
         "sugarCanes": {
-            "name": "Sugar Canes",
+            "name": "قصب السكر",
             "desc": ""
         },
         "paper": {
-            "name": "Paper",
+            "name": "ورق",
             "desc": ""
         },
         "book": {
-            "name": "Book",
+            "name": "كتاب",
             "desc": ""
         },
         "slimeball": {
-            "name": "Slimeball",
+            "name": "كرة الوحل",
             "desc": ""
         },
         "minecartChest": {
-            "name": "Minecart with Chest",
+            "name": "عربة سكة حديدية بصندوق",
             "desc": ""
         },
         "minecartFurnace": {
-            "name": "Minecart with Furnace",
+            "name": "عربة سكة حديدية بفرن",
             "desc": ""
         },
         "egg": {
-            "name": "Egg",
+            "name": "بيضة",
             "desc": ""
         },
         "compass": {
-            "name": "Compass",
+            "name": "بوصلة",
             "desc": ""
         },
         "fishingRod": {
-            "name": "Fishing Rod",
+            "name": "صنارة صيد",
             "desc": ""
         },
         "clock": {
-            "name": "Clock",
+            "name": "ساعة",
             "desc": ""
         },
         "yellowDust": {
-            "name": "Glowstone Dust",
+            "name": "غبار الحجر المتوهج",
             "desc": ""
         },
         "fishRaw": {
-            "name": "Raw Fish",
+            "name": "سمكة نيئة",
             "desc": ""
         },
         "fishCooked": {
-            "name": "Cooked Fish",
+            "name": "سمكة مطبوخة",
             "desc": ""
         },
         "record": {
-            "name": "Music Disc",
+            "name": "أسطوانة موسيقى",
             "desc": ""
         },
         "bone": {
-            "name": "Bone",
+            "name": "عظمة",
             "desc": ""
         },
         "dyePowder": {
             "black": {
-                "name": "Ink Sac",
+                "name": "كيس حبر",
                 "desc": ""
             },
             "red": {
-                "name": "Rose Red",
+                "name": "أحمر وردي",
                 "desc": ""
             },
             "green": {
-                "name": "Cactus Green",
+                "name": "أخضر الصبار",
                 "desc": ""
             },
             "brown": {
-                "name": "Cocoa Beans",
+                "name": "حبوب الكاكاو",
                 "desc": ""
             },
             "blue": {
-                "name": "Lapis Lazuli",
+                "name": "لازورد",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Dye",
+                "name": "صبغة بنفسجية",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Dye",
+                "name": "صبغة سماوية",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Dye",
+                "name": "صبغة رمادية فاتحة",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Dye",
+                "name": "صبغة رمادية",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Dye",
+                "name": "صبغة وردية",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Dye",
+                "name": "صبغة ليمونية",
                 "desc": ""
             },
             "yellow": {
-                "name": "Dandelion Yellow",
+                "name": "أصفر الهندباء",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Dye",
+                "name": "صبغة زرقاء فاتحة",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Dye",
+                "name": "صبغة أرجوانية",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Dye",
+                "name": "صبغة برتقالية",
                 "desc": ""
             },
             "white": {
-                "name": "Bone Meal",
+                "name": "مسحوق العظام",
                 "desc": ""
             }
         },
         "sugar": {
-            "name": "Sugar",
+            "name": "سكر",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "كعكة",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "سرير",
             "desc": ""
         },
         "redstoneRepeater": {
-            "name": "Redstone Repeater",
+            "name": "مكرر ريدستون",
             "desc": ""
         },
         "map": {
-            "name": "Map",
+            "name": "خريطة",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "أوراق الشجر",
             "desc": ""
         },
         "shears": {
-            "name": "Shears",
+            "name": "مقص",
             "desc": ""
         }
     },
     "stat": {
-        "generalButton": "General",
-        "blocksButton": "Blocks",
-        "itemsButton": "Items",
-        "used": "Times Used",
-        "mined": "Times Mined",
-        "depleted": "Times Depleted",
-        "crafted": "Times Crafted",
-        "startGame": "Times played",
-        "createWorld": "Worlds played",
-        "loadWorld": "Saves loaded",
-        "joinMultiplayer": "Multiplayer joins",
-        "leaveGame": "Games quit",
-        "playOneMinute": "Minutes Played",
-        "walkOneCm": "Distance Walked",
-        "fallOneCm": "Distance Fallen",
-        "swimOneCm": "Distance Swum",
-        "flyOneCm": "Distance Flown",
-        "climbOneCm": "Distance Climbed",
-        "diveOneCm": "Distance Dove",
-        "minecartOneCm": "Distance by Minecart",
-        "boatOneCm": "Distance by Boat",
-        "pigOneCm": "Distance by Pig",
-        "jump": "Jumps",
-        "drop": "Items Dropped",
-        "damageDealt": "Damage Dealt",
-        "damageTaken": "Damage Taken",
-        "deaths": "Number of Deaths",
-        "mobKills": "Mob Kills",
-        "playerKills": "Player Kills",
-        "fishCaught": "Fish Caught",
-        "mineBlock": "{0} Mined",
-        "craftItem": "{0} Crafted",
-        "useItem": "{0} Used",
-        "breakItem": "{0} Depleted"
+        "generalButton": "عام",
+        "blocksButton": "الكتل",
+        "itemsButton": "العناصر",
+        "used": "عدد مرات الاستخدام",
+        "mined": "عدد مرات الحفر",
+        "depleted": "عدد مرات الاستنفاد",
+        "crafted": "عدد مرات التصنيع",
+        "startGame": "عدد مرات اللعب",
+        "createWorld": "العوالم التي لعبت فيها",
+        "loadWorld": "مرات تحميل الحفظ",
+        "joinMultiplayer": "مرات الانضمام متعدد اللاعبين",
+        "leaveGame": "مرات الخروج من اللعبة",
+        "playOneMinute": "دقائق اللعب",
+        "walkOneCm": "مسافة المشي",
+        "fallOneCm": "مسافة السقوط",
+        "swimOneCm": "مسافة السباحة",
+        "flyOneCm": "مسافة الطيران",
+        "climbOneCm": "مسافة التسلق",
+        "diveOneCm": "مسافة الغوص",
+        "minecartOneCm": "المسافة بعربة السكة",
+        "boatOneCm": "المسافة بالقارب",
+        "pigOneCm": "المسافة بالخنزير",
+        "jump": "القفزات",
+        "drop": "العناصر المسقطة",
+        "damageDealt": "الضرر المُحدث",
+        "damageTaken": "الضرر المتلقى",
+        "deaths": "عدد الوفيات",
+        "mobKills": "قتلى الوحوش",
+        "playerKills": "قتلى اللاعبين",
+        "fishCaught": "الأسماك المُصطادة",
+        "mineBlock": "تم حفر {0}",
+        "craftItem": "تم تصنيع {0}",
+        "useItem": "تم استخدام {0}",
+        "breakItem": "تم استنفاد {0}"
     },
-    "achievements.title": "Achievements",
+    "achievements.title": "الإنجازات",
     "achievement": {
-        "get": "Achievement get!",
-        "taken": "Taken!",
-        "challenge": "CHALLENGE",
-        "unlocked": "UNLOCKED",
-        "locked": "LOCKED",
-        "requires": "Requires '{0}'",
+        "get": "تم الحصول على إنجاز!",
+        "taken": "تم!",
+        "challenge": "تحدي",
+        "unlocked": "مفتوح",
+        "locked": "مقفل",
+        "requires": "يتطلب '{0}'",
         "openInventory": {
-            "title": "Taking Inventory",
-            "desc": "Open your inventory."
+            "title": "فتح الحقيبة",
+            "desc": "افتح حقيبتك."
         },
         "mineWood": {
-            "title": "Getting Wood",
-            "desc": "Attack a tree until a block of wood pops out"
+            "title": "جمع الخشب",
+            "desc": "اضرب شجرة حتى تسقط قطعة خشب"
         },
         "buildWorkBench": {
-            "title": "Benchmarking",
-            "desc": "Craft a workbench with four blocks of planks"
+            "title": "طاولة العمل",
+            "desc": "اصنع طاولة عمل من أربع كتل من الألواح"
         },
         "buildPickaxe": {
-            "title": "Time to Mine!",
-            "desc": "Use planks and sticks to make a pickaxe"
+            "title": "حان وقت التعدين!",
+            "desc": "استخدم الألواح والعصي لصنع معول"
         },
         "buildFurnace": {
-            "title": "Hot Topic",
-            "desc": "Construct a furnace out of eight stone blocks"
+            "title": "الموضوع الساخن",
+            "desc": "ابنِ فرناً من ثماني كتل حجرية"
         },
         "acquireIron": {
-            "title": "Acquire Hardware",
-            "desc": "Smelt an iron ingot"
+            "title": "اقتناء العتاد",
+            "desc": "صهر سبيكة حديد"
         },
         "buildHoe": {
-            "title": "Time to Farm!",
-            "desc": "Use planks and sticks to make a hoe"
+            "title": "حان وقت الزراعة!",
+            "desc": "استخدم الألواح والعصي لصنع منجل"
         },
         "makeBread": {
-            "title": "Bake Bread",
-            "desc": "Turn wheat into bread"
+            "title": "خبز الخبز",
+            "desc": "حوّل القمح إلى خبز"
         },
         "bakeCake": {
-            "title": "The Lie",
-            "desc": "Wheat, sugar, milk and eggs!"
+            "title": "الكذبة",
+            "desc": "قمح وسكر وحليب وبيض!"
         },
         "buildBetterPickaxe": {
-            "title": "Getting an Upgrade",
-            "desc": "Construct a better pickaxe"
+            "title": "الحصول على ترقية",
+            "desc": "اصنع معولاً أفضل"
         },
         "cookFish": {
-            "title": "Delicious Fish",
-            "desc": "Catch and cook fish!"
+            "title": "سمكة لذيذة",
+            "desc": "اصطد السمك واطبخه!"
         },
         "onARail": {
-            "title": "On A Rail",
-            "desc": "Travel by minecart at least 1 km from where you started "
+            "title": "على السكة",
+            "desc": "سافر بعربة السكة الحديدية مسافة كيلومتر واحد على الأقل من نقطة البداية"
         },
         "buildSword": {
-            "title": "Time to Strike!",
-            "desc": "Use planks and sticks to make a sword"
+            "title": "حان وقت الضرب!",
+            "desc": "استخدم الألواح والعصي لصنع سيف"
         },
         "killEnemy": {
-            "title": "Monster Hunter",
-            "desc": "Attack and destroy a monster"
+            "title": "صائد الوحوش",
+            "desc": "اهاجم وحشاً ودمره"
         },
         "killCow": {
-            "title": "Cow Tipper",
-            "desc": "Harvest some leather"
+            "title": "مُطيح الأبقار",
+            "desc": "احصد بعض الجلد"
         },
         "flyPig": {
-            "title": "When Pigs Fly",
-            "desc": "Fly a pig off a cliff"
+            "title": "عندما تطير الخنازير",
+            "desc": "أطِر خنزيراً من على منحدر"
         }
     },
     "credits": {
-        "version": "BetaSharp Version %1$s",
-        "description": "An enhanced of Minecraft Beta 1.7.3, written in C#.",
-        "github": "On GitHub",
-        "author": "Made by Fazin85",
-        "libs": "Libraries",
-        "slik": "Slik.NET - Graphics",
-        "imgui": "ImGui - Debug UI",
-        "sfml": "SFML.NET - Audio",
-        "sixlabors": "SixLabors - Fonts, image processing",
-        "translations": "Translations Credits"
+        "version": "إصدار BetaSharp %1$s",
+        "description": "نسخة محسّنة من ماين كرافت Beta 1.7.3، مكتوبة بلغة C#.",
+        "github": "على GitHub",
+        "author": "صنع بواسطة Fazin85",
+        "libs": "المكتبات",
+        "slik": "Slik.NET - الرسوميات",
+        "imgui": "ImGui - واجهة التصحيح",
+        "sfml": "SFML.NET - الصوت",
+        "sixlabors": "SixLabors - الخطوط، معالجة الصور",
+        "translations": "اعتمادات الترجمات"
     }
 }
