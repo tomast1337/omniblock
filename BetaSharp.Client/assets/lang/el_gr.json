@@ -1,536 +1,536 @@
-﻿{
+{
     "gui": {
-        "joinServer": "Join Server",
-        "rename": "Rename",
-        "edit": "Edit",
-        "refresh": "Refresh",
-        "done": "Done",
-        "cancel": "Cancel",
-        "delete": "Delete",
-        "toMenu": "Back to title screen",
-        "up": "Up",
-        "down": "Down",
-        "yes": "Yes",
-        "no": "No",
-        "connect": "Connect",
-        "directConnect": "Direct Connect",
-        "addServer": "Add Server",
-        "create": "Create",
-        "customize": "Customize",
-        "achievements": "Achievements",
-        "stats": "Statistics",
+        "joinServer": "Σύνδεση σε Διακομιστή",
+        "rename": "Μετονομασία",
+        "edit": "Επεξεργασία",
+        "refresh": "Ανανέωση",
+        "done": "Τέλος",
+        "cancel": "Ακύρωση",
+        "delete": "Διαγραφή",
+        "toMenu": "Επιστροφή στην αρχική οθόνη",
+        "up": "Πάνω",
+        "down": "Κάτω",
+        "yes": "Ναι",
+        "no": "Όχι",
+        "connect": "Σύνδεση",
+        "directConnect": "Απευθείας Σύνδεση",
+        "addServer": "Προσθήκη Διακομιστή",
+        "create": "Δημιουργία",
+        "customize": "Προσαρμογή",
+        "achievements": "Επιτεύγματα",
+        "stats": "Στατιστικά",
         "container": {
-            "crafting": "Crafting",
-            "inventory": "Inventory",
-            "dispenser": "Dispenser",
-            "furnace": "Furnace",
+            "crafting": "Κατασκευή",
+            "inventory": "Αποθέματα",
+            "dispenser": "Διανομέας",
+            "furnace": "Φούρνος",
             "tip": {
-                "move": "Move",
-                "quickMove": "Quick Move",
-                "takeHalf": "Take Half",
-                "place": "Place",
-                "placeOne": "Place One"
+                "move": "Μετακίνηση",
+                "quickMove": "Γρήγορη Μετακίνηση",
+                "takeHalf": "Πάρε το Μισό",
+                "place": "Τοποθέτηση",
+                "placeOne": "Τοποθέτησε Ένα"
             }
         }
     },
     "menu": {
-        "singleplayer": "Singleplayer",
-        "multiplayer": "Multiplayer",
-        "texturePacks": "Texture Packs",
-        "options": "Options...",
-        "language": "Language",
-        "quit": "Quit Game",
-        "credits": "Credits",
-        "sendFeedback": "Send Feedback",
-        "reportBugs": "Report Bugs",
-        "saveAndQuitToTitle": "Save and quit to title",
-        "disconnect": "Disconnect"
+        "singleplayer": "Μονοπαίκτης",
+        "multiplayer": "Πολυπαίκτης",
+        "texturePacks": "Πακέτα Υφών",
+        "options": "Επιλογές...",
+        "language": "Γλώσσα",
+        "quit": "Έξοδος από το Παιχνίδι",
+        "credits": "Συντελεστές",
+        "sendFeedback": "Αποστολή Σχολίων",
+        "reportBugs": "Αναφορά Σφαλμάτων",
+        "saveAndQuitToTitle": "Αποθήκευση και έξοδος στην αρχική οθόνη",
+        "disconnect": "Αποσύνδεση"
     },
     "selectWorld": {
-        "title": "Select World",
-        "empty": "empty",
-        "world": "World",
-        "select": "Play Selected World",
-        "create": "Create New World",
-        "createDemo": "Play New Demo World",
-        "deleteQuestion": "Are you sure you want to delete this world?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "renameTitle": "Rename World",
-        "conversion": "Must be converted!",
-        "newWorld": "New World",
-        "enterName": "World Name",
-        "resultFolder": "Will be saved in:",
-        "enterSeed": "Seed for the World Generator",
-        "seedInfo": "Leave blank for a random seed",
-        "selectWorldType": "Select World Type",
-        "worldType": "World Type",
-        "customize": "Customize",
-        "moreWorldOptions": "More World Options...",
+        "title": "Επιλογή Κόσμου",
+        "empty": "κενό",
+        "world": "Κόσμος",
+        "select": "Παίξε τον Επιλεγμένο Κόσμο",
+        "create": "Δημιουργία Νέου Κόσμου",
+        "createDemo": "Παίξε Νέο Δοκιμαστικό Κόσμο",
+        "deleteQuestion": "Είσαι σίγουρος ότι θέλεις να διαγράψεις αυτόν τον κόσμο;",
+        "deleteWarning": "θα χαθεί για πάντα! (Πολύς καιρός!)",
+        "renameTitle": "Μετονομασία Κόσμου",
+        "conversion": "Πρέπει να μετατραπεί!",
+        "newWorld": "Νέος Κόσμος",
+        "enterName": "Όνομα Κόσμου",
+        "resultFolder": "Θα αποθηκευτεί σε:",
+        "enterSeed": "Σπόρος για τη Γεννήτρια Κόσμου",
+        "seedInfo": "Άφησε κενό για τυχαίο σπόρο",
+        "selectWorldType": "Επιλογή Τύπου Κόσμου",
+        "worldType": "Τύπος Κόσμου",
+        "customize": "Προσαρμογή",
+        "moreWorldOptions": "Περισσότερες Επιλογές Κόσμου...",
         "type": {
             "default": {
-                "title": "Default",
-                "description": "The standard Minecraft world."
+                "title": "Προεπιλογή",
+                "description": "Ο τυπικός κόσμος του Minecraft."
             },
             "flat": {
-                "title": "Flat",
-                "description": "A completely flat world."
+                "title": "Επίπεδος",
+                "description": "Ένας εντελώς επίπεδος κόσμος."
             },
             "sky": {
-                "title": "Sky",
-                "description": "A world floating in the sky."
+                "title": "Ουρανός",
+                "description": "Ένας κόσμος που αιωρείται στον ουρανό."
             }
         }
     },
     "newWorld": {
         "customize": {
             "superflatWorld": {
-                "title": "Customize Superflat World"
+                "title": "Προσαρμογή Υπερεπίπεδου Κόσμου"
             },
-            "removeLayer": "Remove Layer",
-            "presets": "Presets",
-            "height": "Height",
+            "removeLayer": "Αφαίρεση Στρώματος",
+            "presets": "Προεπιλογές",
+            "height": "Ύψος",
             "unknown": "???"
         }
     },
     "world": {
-        "world": "World",
-        "unsupportedFormat": "Unsupported Format!"
+        "world": "Κόσμος",
+        "unsupportedFormat": "Μη υποστηριζόμενη Μορφή!"
     },
     "multiplayer": {
-        "title": "Play Multiplayer",
-        "betasharpServer": "BetaSharp Server",
-        "info1": "Minecraft Multiplayer is currently not finished, but there",
-        "info2": "is some buggy early testing going on.",
-        "ipinfo": "Enter the IP of a server to connect to it:",
-        "deleteQuestion": "Are you sure you want to delete this server?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "downloadingTerrain": "Downloading terrain",
-        "stopSleeping": "Leave Bed",
-        "editServerTitle": "Edit Server Info",
-        "addServerTitle": "Add Server Info",
-        "serverName": "Server Name",
-        "serverAddress": "Server Address"
+        "title": "Παιχνίδι Πολυπαίκτη",
+        "betasharpServer": "Διακομιστής BetaSharp",
+        "info1": "Το Minecraft Multiplayer δεν έχει ολοκληρωθεί ακόμα, αλλά υπάρχει",
+        "info2": "κάποιος δοκιμαστικός έλεγχος με σφάλματα σε εξέλιξη.",
+        "ipinfo": "Εισάγετε τη διεύθυνση IP ενός διακομιστή για να συνδεθείτε σε αυτόν:",
+        "deleteQuestion": "Είσαι σίγουρος ότι θέλεις να διαγράψεις αυτόν τον διακομιστή;",
+        "deleteWarning": "θα χαθεί για πάντα! (Πολύς καιρός!)",
+        "downloadingTerrain": "Λήψη εδάφους",
+        "stopSleeping": "Σήκω από το Κρεβάτι",
+        "editServerTitle": "Επεξεργασία Πληροφοριών Διακομιστή",
+        "addServerTitle": "Προσθήκη Πληροφοριών Διακομιστή",
+        "serverName": "Όνομα Διακομιστή",
+        "serverAddress": "Διεύθυνση Διακομιστή"
     },
     "loading": {
-        "loadingLevel": "Loading level",
-        "startingServer": "Starting server...",
-        "preparingSpawnArea": "Preparing spawn area"
+        "loadingLevel": "Φόρτωση επιπέδου",
+        "startingServer": "Εκκίνηση διακομιστή...",
+        "preparingSpawnArea": "Προετοιμασία περιοχής εμφάνισης"
     },
     "achievements": {
-        "title": "Achievements"
+        "title": "Επιτεύγματα"
     },
     "gameover": {
-        "title": "Game Over!",
-        "score": "Score",
-        "respawn": "Respawn",
-        "titleMenu": "Title menu"
+        "title": "Τέλος Παιχνιδιού!",
+        "score": "Σκορ",
+        "respawn": "Αναγέννηση",
+        "titleMenu": "Αρχικό μενού"
     },
     "gamemenu": {
-        "title": "Game Menu",
-        "backToGame": "Back to Game"
+        "title": "Μενού Παιχνιδιού",
+        "backToGame": "Επιστροφή στο Παιχνίδι"
     },
     "sign": {
-        "title": "Edit sign message:"
+        "title": "Επεξεργασία μηνύματος πινακίδας:"
     },
     "stats": {
-        "title": "Statistics",
-        "general": "General",
+        "title": "Στατιστικά",
+        "general": "Γενικά",
         "blocks": {
-            "name": "Blocks",
-            "mined": "Mined",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Μπλοκ",
+            "mined": "Εξόρυξη",
+            "crafted": "Κατασκευή",
+            "used": "Χρήση"
         },
         "items": {
-            "name": "Items",
-            "broken": "Broken",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Αντικείμενα",
+            "broken": "Φθορά",
+            "crafted": "Κατασκευή",
+            "used": "Χρήση"
         },
-        "item": "Item"
+        "item": "Αντικείμενο"
     },
     "connect": {
-        "connecting": "Connecting to the server...",
-        "authorizing": "Logging in...",
-        "failed": "Failed to connect to the server"
+        "connecting": "Σύνδεση στον διακομιστή...",
+        "authorizing": "Είσοδος...",
+        "failed": "Αποτυχία σύνδεσης στον διακομιστή"
     },
     "disconnect": {
         "genericReason": "{0}",
-        "disconnected": "Disconnected by Server",
-        "lost": "Connection Lost",
-        "kicked": "Was kicked from the game",
-        "timeout": "Timed out",
-        "closed": "Connection closed",
-        "loginFailed": "Failed to login",
-        "quitting": "Quitting",
-        "endOfStream": "End of stream",
-        "overflow": "Buffer overflow"
+        "disconnected": "Αποσυνδέθηκες από τον Διακομιστή",
+        "lost": "Η Σύνδεση Χάθηκε",
+        "kicked": "Σε απομάκρυναν από το παιχνίδι",
+        "timeout": "Λήξη χρονικού ορίου",
+        "closed": "Η σύνδεση έκλεισε",
+        "loginFailed": "Αποτυχία σύνδεσης",
+        "quitting": "Αποχώρηση",
+        "endOfStream": "Τέλος ροής",
+        "overflow": "Υπερχείλιση προσωρινής μνήμης"
     },
     "options": {
         "off": "OFF",
         "on": "ON",
-        "disabled": "Disabled",
-        "title": "Options",
-        "controls": "Controls...",
-        "keyboardControls": "Keyboard Controls...",
-        "controllerSettings": "Controller Settings...",
-        "controllerType": "Controller Type",
+        "disabled": "Απενεργοποιημένο",
+        "title": "Επιλογές",
+        "controls": "Χειρισμός...",
+        "keyboardControls": "Χειρισμός Πληκτρολογίου...",
+        "controllerSettings": "Ρυθμίσεις Χειριστηρίου...",
+        "controllerType": "Τύπος Χειριστηρίου",
         "video": {
-            "text": "Video Settings...",
-            "performance": "Performance",
-            "display": "Display"
+            "text": "Ρυθμίσεις Βίντεο...",
+            "performance": "Απόδοση",
+            "display": "Οθόνη"
         },
-        "uiSettings": "UI Settings...",
-        "audioSettings": "Audio Settings...",
-        "audioTitle": "Audio Settings",
-        "videoTitle": "Video Settings",
-        "language": "Language...",
-        "anisoLevel": "Aniso Level",
-        "music": "Music",
-        "sound": "Sound",
-        "invertMouse": "Invert Mouse",
-        "alternateBlocks": "Alternate Blocks",
-        "chunkFade": "Chunk Fade",
+        "uiSettings": "Ρυθμίσεις Διεπαφής...",
+        "audioSettings": "Ρυθμίσεις Ήχου...",
+        "audioTitle": "Ρυθμίσεις Ήχου",
+        "videoTitle": "Ρυθμίσεις Βίντεο",
+        "language": "Γλώσσα...",
+        "anisoLevel": "Επίπεδο Aniso",
+        "music": "Μουσική",
+        "sound": "Ήχος",
+        "invertMouse": "Αντιστροφή Ποντικιού",
+        "alternateBlocks": "Εναλλακτικά Μπλοκ",
+        "chunkFade": "Ξεθώριασμα Chunk",
         "sensitivity": {
-            "text": "Sensitivity",
-            "controllerText": "Controller Sensitivity",
-            "min": "*yawn*",
-            "max": "HYPERSPEED!!!"
+            "text": "Ευαισθησία",
+            "controllerText": "Ευαισθησία Χειριστηρίου",
+            "min": "*χασμουρητό*",
+            "max": "ΥΠΕΡΤΑΧΥΤΗΤΑ!!!"
         },
         "renderDistance": {
-            "text": "Render Distance",
+            "text": "Απόσταση Απόδοσης",
             "chunks": "Chunks",
-            "tiny": "Tiny",
-            "short": "Short",
-            "normal": "Normal",
-            "far": "Far"
+            "tiny": "Μικροσκοπική",
+            "short": "Μικρή",
+            "normal": "Κανονική",
+            "far": "Μακρινή"
         },
-        "viewBobbing": "View Bobbing",
-        "ao": "Smooth Lighting",
-        "anaglyph": "3D Anaglyph",
-        "framerateLimit": "Performance",
+        "viewBobbing": "Αναπήδηση Προβολής",
+        "ao": "Ομαλός Φωτισμός",
+        "anaglyph": "3D Ανάγλυφο",
+        "framerateLimit": "Απόδοση",
         "difficulty": {
-            "text": "Difficulty",
-            "peaceful": "Peaceful",
-            "easy": "Easy",
-            "normal": "Normal",
-            "hard": "Hard"
+            "text": "Δυσκολία",
+            "peaceful": "Ειρηνικό",
+            "easy": "Εύκολο",
+            "normal": "Κανονικό",
+            "hard": "Δύσκολο"
         },
         "graphics": {
-            "text": "Graphics",
-            "fancy": "Fancy",
-            "fast": "Fast"
+            "text": "Γραφικά",
+            "fancy": "Φανταχτερά",
+            "fast": "Γρήγορα"
         },
         "cloudsQuality": {
-            "text": "Clouds Quality",
-            "off": "No Clouds",
-            "legacy": "Old Clouds",
+            "text": "Ποιότητα Σύννεφων",
+            "off": "Χωρίς Σύννεφα",
+            "legacy": "Παλιά Σύννεφα",
             "shader": "Shader"
         },
         "softClouds": {
-            "text": "Soft Clouds"
+            "text": "Απαλά Σύννεφα"
         },
         "guiScale": {
-            "text": "GUI Scale",
-            "auto": "Auto",
-            "small": "Small",
-            "normal": "Normal",
-            "large": "Large"
+            "text": "Κλίμακα GUI",
+            "auto": "Αυτόματο",
+            "small": "Μικρό",
+            "normal": "Κανονικό",
+            "large": "Μεγάλο"
         },
         "chatScale": {
-            "text": "Chat Scale"
+            "text": "Κλίμακα Συνομιλίας"
         },
         "chatWidth": {
-            "text": "Chat Width"
+            "text": "Πλάτος Συνομιλίας"
         },
-        "advancedOpengl": "Advanced OpenGL",
+        "advancedOpengl": "Προηγμένο OpenGL",
         "fps": {
             "text": "FPS",
-            "maxFps": "Max FPS",
-            "unlimited": "Unlimited"
+            "maxFps": "Μέγιστο FPS",
+            "unlimited": "Απεριόριστο"
         },
-        "showCoordinates": "Show Coordinates",
-        "uiCursors": "UI Cursors",
+        "showCoordinates": "Εμφάνιση Συντεταγμένων",
+        "uiCursors": "Δρομείς Διεπαφής",
         "gamma": "Gamma",
         "vSync": "VSync",
         "mipmaps": "Mipmaps",
-        "menuMusic": "Menu Music",
+        "menuMusic": "Μουσική Μενού",
         "msaa": "MSAA",
         "fov": "FOV",
         "movement": {
-            "text": "Movement"
+            "text": "Κίνηση"
         },
         "view": {
-            "text": "View"
+            "text": "Προβολή"
         },
         "other": {
-            "text": "Other"
+            "text": "Άλλα"
         },
-        "editBindings": "Edit Bindings...",
-        "resetBindings": "Reset Bindings...",
-        "controllerBindings": "Controller Bindings",
+        "editBindings": "Επεξεργασία Συνδέσεων...",
+        "resetBindings": "Επαναφορά Συνδέσεων...",
+        "controllerBindings": "Συνδέσεις Χειριστηρίου",
         "shader": {
-            "text": "Shader Options",
+            "text": "Επιλογές Shader",
             "chunkVert": {
-                "text": "World",
-                "WavyLeavesStrength": "Wavy Leaves Strength",
-                "WavyLeavesSpeed": "Wavy Leaves Speed",
-                "WavyPlantStrength": "Wavy Plant Strength",
-                "WavyPlantSpeed": "Wavy Plant Speed",
-                "WavyPlantMode": "Wavy Plant Mode"
+                "text": "Κόσμος",
+                "WavyLeavesStrength": "Ένταση Κυματισμού Φύλλων",
+                "WavyLeavesSpeed": "Ταχύτητα Κυματισμού Φύλλων",
+                "WavyPlantStrength": "Ένταση Κυματισμού Φυτών",
+                "WavyPlantSpeed": "Ταχύτητα Κυματισμού Φυτών",
+                "WavyPlantMode": "Λειτουργία Κυματισμού Φυτών"
             },
             "cloud": {
-                "text": "Clouds",
-                "minParallax": "Min Parallax",
-                "maxParallax": "Max Parallax",
-                "minGradient": "Min Gradient",
-                "maxGradient": "Max Gradient",
-                "cloudHeight": "Cloud Height",
-                "shadow": "Shadow Color",
-                "smoothWidth": "Smooth Width",
-                "smoothSamples": "Smooth Samples",
-                "closeFade": "Close Fade",
-                "smoothTop": "Smooth Top",
-                "smoothEdge": "Smooth Edge",
-                "smoothBottom": "Smooth Bottom",
-                "smoothBottomTopDown": "Smooth Bottom Top Down"
+                "text": "Σύννεφα",
+                "minParallax": "Ελάχιστη Παράλλαξη",
+                "maxParallax": "Μέγιστη Παράλλαξη",
+                "minGradient": "Ελάχιστη Διαβάθμιση",
+                "maxGradient": "Μέγιστη Διαβάθμιση",
+                "cloudHeight": "Ύψος Σύννεφων",
+                "shadow": "Χρώμα Σκιάς",
+                "smoothWidth": "Ομαλό Πλάτος",
+                "smoothSamples": "Ομαλά Δείγματα",
+                "closeFade": "Κοντινό Ξεθώριασμα",
+                "smoothTop": "Ομαλή Κορυφή",
+                "smoothEdge": "Ομαλή Ακμή",
+                "smoothBottom": "Ομαλός Πυθμένας",
+                "smoothBottomTopDown": "Ομαλός Πυθμένας Από Πάνω προς τα Κάτω"
             },
             "ui": {
-                "text": "UI",
-                "darkMode": "Dark Mode"
+                "text": "Διεπαφή",
+                "darkMode": "Σκοτεινή Λειτουργία"
             },
             "preset": {
-                "text": "Preset",
-                "disabled": "Disabled",
-                "default": "Default",
-                "custom": "Custom",
+                "text": "Προεπιλογή",
+                "disabled": "Απενεργοποιημένο",
+                "default": "Προεπιλογή",
+                "custom": "Προσαρμοσμένο",
                 "2d": "2D",
                 "3d": "3D",
-                "low": "Low",
-                "medium": "Medium",
-                "high": "High",
+                "low": "Χαμηλό",
+                "medium": "Μεσαίο",
+                "high": "Υψηλό",
                 "ultra": "Ultra"
             }
         }
     },
     "performance": {
-        "max": "Max FPS",
-        "balanced": "Balanced",
-        "powersaver": "Power saver"
+        "max": "Μέγιστο FPS",
+        "balanced": "Ισορροπημένο",
+        "powersaver": "Εξοικονόμηση ενέργειας"
     },
     "controls": {
-        "title": "Controls"
+        "title": "Χειρισμός"
     },
     "key": {
-        "forward": "Forward",
-        "left": "Left",
-        "back": "Back",
-        "right": "Right",
-        "jump": "Jump",
-        "inventory": "Inventory",
-        "drop": "Drop",
-        "chat": "Chat",
-        "fog": "Toggle Fog",
-        "sneak": "Sneak",
-        "playerlist": "List players",
-        "zoom": "Zoom",
-        "hotbarLeft": "Hotbar Left",
-        "hotbarRight": "Hotbar Right",
-        "pickBlock": "Pick Block",
-        "camera": "Camera Mode",
-        "pause": "Pause"
+        "forward": "Εμπρός",
+        "left": "Αριστερά",
+        "back": "Πίσω",
+        "right": "Δεξιά",
+        "jump": "Άλμα",
+        "inventory": "Αποθέματα",
+        "drop": "Πέταγμα",
+        "chat": "Συνομιλία",
+        "fog": "Εναλλαγή Ομίχλης",
+        "sneak": "Γλίστρημα",
+        "playerlist": "Λίστα παικτών",
+        "zoom": "Μεγέθυνση",
+        "hotbarLeft": "Γραμμή Εργαλείων Αριστερά",
+        "hotbarRight": "Γραμμή Εργαλείων Δεξιά",
+        "pickBlock": "Επιλογή Μπλοκ",
+        "camera": "Λειτουργία Κάμερας",
+        "pause": "Παύση"
     },
     "texturePack": {
-        "openFolder": "Open texture pack folder",
-        "title": "Select Texture Pack",
-        "folderInfo": "(Place texture pack files here)"
+        "openFolder": "Άνοιγμα φακέλου πακέτων υφών",
+        "title": "Επιλογή Πακέτου Υφών",
+        "folderInfo": "(Τοποθετήστε τα αρχεία πακέτων υφών εδώ)"
     },
     "tile": {
         "tallgrass": {
-            "name": "Tallgrass",
+            "name": "Ψηλό Χορτάρι",
             "desc": ""
         },
         "stone": {
-            "name": "Stone",
+            "name": "Πέτρα",
             "desc": ""
         },
         "grass": {
-            "name": "Grass",
+            "name": "Γρασίδι",
             "desc": ""
         },
         "dirt": {
-            "name": "Dirt",
+            "name": "Χώμα",
             "desc": ""
         },
         "stonebrick": {
-            "name": "Cobblestone",
+            "name": "Λιθόστρωτο",
             "desc": ""
         },
         "wood": {
-            "name": "Wooden Planks",
+            "name": "Ξύλινες Σανίδες",
             "desc": ""
         },
         "sapling": {
-            "name": "Sapling",
+            "name": "Φυντάνι",
             "desc": ""
         },
         "bedrock": {
-            "name": "Bedrock",
+            "name": "Βραχώδες Υπόστρωμα",
             "desc": ""
         },
         "water": {
-            "name": "Water",
+            "name": "Νερό",
             "desc": ""
         },
         "lava": {
-            "name": "Lava",
+            "name": "Λάβα",
             "desc": ""
         },
         "sand": {
-            "name": "Sand",
+            "name": "Άμμος",
             "desc": ""
         },
-        "sandStone": { "name": "Sandstone" },
+        "sandStone": { "name": "Ψαμμίτης" },
         "gravel": {
-            "name": "Gravel",
+            "name": "Χαλίκι",
             "desc": ""
         },
         "oreGold": {
-            "name": "Gold Ore",
+            "name": "Μετάλλευμα Χρυσού",
             "desc": ""
         },
         "oreIron": {
-            "name": "Iron Ore",
+            "name": "Μετάλλευμα Σιδήρου",
             "desc": ""
         },
         "oreCoal": {
-            "name": "Coal Ore",
+            "name": "Μετάλλευμα Κάρβουνου",
             "desc": ""
         },
         "log": {
-            "name": "Wood",
+            "name": "Ξύλο",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Φύλλα",
             "desc": ""
         },
         "sponge": {
-            "name": "Sponge",
+            "name": "Σφουγγάρι",
             "desc": ""
         },
         "glass": {
-            "name": "Glass",
+            "name": "Γυαλί",
             "desc": ""
         },
         "cloth": {
-            "name": "Wool",
+            "name": "Μαλλί",
             "desc": "",
             "black": {
-                "name": "Black Wool",
+                "name": "Μαύρο Μαλλί",
                 "desc": ""
             },
             "red": {
-                "name": "Red Wool",
+                "name": "Κόκκινο Μαλλί",
                 "desc": ""
             },
             "green": {
-                "name": "Green Wool",
+                "name": "Πράσινο Μαλλί",
                 "desc": ""
             },
             "brown": {
-                "name": "Brown Wool",
+                "name": "Καφέ Μαλλί",
                 "desc": ""
             },
             "blue": {
-                "name": "Blue Wool",
+                "name": "Μπλε Μαλλί",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Wool",
+                "name": "Μωβ Μαλλί",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Wool",
+                "name": "Κυανό Μαλλί",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Wool",
+                "name": "Ανοιχτό Γκρι Μαλλί",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Wool",
+                "name": "Γκρι Μαλλί",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Wool",
+                "name": "Ροζ Μαλλί",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Wool",
+                "name": "Λαχανί Μαλλί",
                 "desc": ""
             },
             "yellow": {
-                "name": "Yellow Wool",
+                "name": "Κίτρινο Μαλλί",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Wool",
+                "name": "Ανοιχτό Μπλε Μαλλί",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Wool",
+                "name": "Ματζέντα Μαλλί",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Wool",
+                "name": "Πορτοκαλί Μαλλί",
                 "desc": ""
             },
             "white": {
-                "name": "Wool",
+                "name": "Μαλλί",
                 "desc": ""
             }
         },
         "flower": {
-            "name": "Flower",
+            "name": "Λουλούδι",
             "desc": ""
         },
         "rose": {
-            "name": "Rose",
+            "name": "Τριαντάφυλλο",
             "desc": ""
         },
         "mushroom": {
-            "name": "Mushroom",
+            "name": "Μανιτάρι",
             "desc": ""
         },
         "blockGold": {
-            "name": "Block of Gold",
+            "name": "Κύβος Χρυσού",
             "desc": ""
         },
         "blockIron": {
-            "name": "Block of Iron",
+            "name": "Κύβος Σιδήρου",
             "desc": ""
         },
         "stoneSlab": {
             "stone": {
-                "name": "Stone Slab",
+                "name": "Πέτρινη Πλάκα",
                 "desc": ""
             },
             "sand": {
-                "name": "Sandstone Slab",
+                "name": "Πλάκα Ψαμμίτη",
                 "desc": ""
             },
             "wood": {
-                "name": "Wooden Slab",
+                "name": "Ξύλινη Πλάκα",
                 "desc": ""
             },
             "cobble": {
-                "name": "Stone Slab",
+                "name": "Πέτρινη Πλάκα",
                 "desc": ""
             }
         },
         "brick": {
-            "name": "Bricks",
+            "name": "Τούβλα",
             "desc": ""
         },
         "tnt": {
@@ -538,832 +538,832 @@
             "desc": ""
         },
         "bookshelf": {
-            "name": "Bookshelf",
+            "name": "Βιβλιοθήκη",
             "desc": ""
         },
         "stoneMoss": {
-            "name": "Moss Stone",
+            "name": "Βρυόπετρα",
             "desc": ""
         },
         "obsidian": {
-            "name": "Obsidian",
+            "name": "Οψιδιανός",
             "desc": ""
         },
         "torch": {
-            "name": "Torch",
+            "name": "Δαυλός",
             "desc": ""
         },
         "fire": {
-            "name": "Fire",
+            "name": "Φωτιά",
             "desc": ""
         },
         "mobSpawner": {
-            "name": "Monster Spawner",
+            "name": "Εκκολαπτήρας Τεράτων",
             "desc": ""
         },
         "stairsWood": {
-            "name": "Wooden Stairs",
+            "name": "Ξύλινες Σκάλες",
             "desc": ""
         },
         "chest": {
-            "name": "Chest",
+            "name": "Σεντούκι",
             "desc": ""
         },
         "redstoneDust": {
-            "name": "Redstone Dust",
+            "name": "Σκόνη Κοκκινόπετρας",
             "desc": ""
         },
         "oreDiamond": {
-            "name": "Diamond Ore",
+            "name": "Μετάλλευμα Διαμαντιού",
             "desc": ""
         },
         "blockDiamond": {
-            "name": "Block of Diamond",
+            "name": "Κύβος Διαμαντιού",
             "desc": ""
         },
         "workbench": {
-            "name": "Crafting Table",
+            "name": "Τραπέζι Κατασκευών",
             "desc": ""
         },
         "crops": {
-            "name": "Crops",
+            "name": "Καλλιέργειες",
             "desc": ""
         },
         "farmland": {
-            "name": "Farmland",
+            "name": "Καλλιεργήσιμη Γη",
             "desc": ""
         },
         "furnace": {
-            "name": "Furnace",
+            "name": "Φούρνος",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Πινακίδα",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Ξύλινη Πόρτα",
             "desc": ""
         },
         "ladder": {
-            "name": "Ladder",
+            "name": "Σκάλα",
             "desc": ""
         },
         "rail": {
-            "name": "Rail",
+            "name": "Σιδηροτροχιά",
             "desc": ""
         },
         "goldenRail": {
-            "name": "Powered Rail",
+            "name": "Τροφοδοτούμενη Σιδηροτροχιά",
             "desc": ""
         },
         "detectorRail": {
-            "name": "Detector Rail",
+            "name": "Σιδηροτροχιά Ανίχνευσης",
             "desc": ""
         },
         "stairsStone": {
-            "name": "Stone Stairs",
+            "name": "Πέτρινες Σκάλες",
             "desc": ""
         },
         "lever": {
-            "name": "Lever",
+            "name": "Μοχλός",
             "desc": ""
         },
         "pressurePlate": {
-            "name": "Pressure Plate",
+            "name": "Πλάκα Πίεσης",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Σιδερένια Πόρτα",
             "desc": ""
         },
         "oreRedstone": {
-            "name": "Redstone Ore",
+            "name": "Μετάλλευμα Κοκκινόπετρας",
             "desc": ""
         },
         "notGate": {
-            "name": "Redstone Torch",
+            "name": "Δαυλός Κοκκινόπετρας",
             "desc": ""
         },
         "button": {
-            "name": "Button",
+            "name": "Κουμπί",
             "desc": ""
         },
         "snow": {
-            "name": "Snow",
+            "name": "Χιόνι",
             "desc": ""
         },
         "ice": {
-            "name": "Ice",
+            "name": "Πάγος",
             "desc": ""
         },
         "cactus": {
-            "name": "Cactus",
+            "name": "Κάκτος",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Πηλός",
             "desc": ""
         },
         "reeds": {
-            "name": "Sugar cane",
+            "name": "Ζαχαροκάλαμο",
             "desc": ""
         },
         "jukebox": {
-            "name": "Jukebox",
+            "name": "Τζούκμποξ",
             "desc": ""
         },
         "fence": {
-            "name": "Fence",
+            "name": "Φράχτης",
             "desc": ""
         },
         "pumpkin": {
-            "name": "Pumpkin",
+            "name": "Κολοκύθα",
             "desc": ""
         },
         "litpumpkin": {
-            "name": "Jack 'o' Lantern",
+            "name": "Φαναράκι",
             "desc": ""
         },
         "hellrock": {
-            "name": "Netherrack",
+            "name": "Νέθεραξ",
             "desc": ""
         },
         "hellsand": {
-            "name": "Soul Sand",
+            "name": "Άμμος Ψυχών",
             "desc": ""
         },
         "lightgem": {
-            "name": "Glowstone",
+            "name": "Φωτόπετρα",
             "desc": ""
         },
         "portal": {
-            "name": "Portal",
+            "name": "Πύλη",
             "desc": ""
         },
         "oreLapis": {
-            "name": "Lapis Lazuli Ore",
+            "name": "Μετάλλευμα Λάπις Λάζουλι",
             "desc": ""
         },
         "blockLapis": {
-            "name": "Lapis Lazuli Block",
+            "name": "Κύβος Λάπις Λάζουλι",
             "desc": ""
         },
         "dispenser": {
-            "name": "Dispenser",
+            "name": "Διανομέας",
             "desc": ""
         },
         "musicBlock": {
-            "name": "Note Block",
+            "name": "Μουσικό Μπλοκ",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Κέικ",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Κρεβάτι",
             "desc": "",
-            "occupied": "This bed is occupied",
-            "noSleep": "You can only sleep at night",
-            "notValid": "Your home bed was missing or obstructed"
+            "occupied": "Αυτό το κρεβάτι είναι κατειλημμένο",
+            "noSleep": "Μπορείς να κοιμηθείς μόνο τη νύχτα",
+            "notValid": "Το κρεβάτι του σπιτιού σου λείπει ή είναι αποκλεισμένο"
         },
         "lockedchest": {
-            "name": "Locked chest",
+            "name": "Κλειδωμένο Σεντούκι",
             "desc": ""
         },
         "trapdoor": {
-            "name": "Trapdoor",
+            "name": "Καταπακτή",
             "desc": ""
         },
         "web": {
-            "name": "Cobweb",
+            "name": "Ιστός Αράχνης",
             "desc": ""
         },
         "stonebricksmooth": {
-            "name": "Stone Bricks",
+            "name": "Πέτρινα Τούβλα",
             "desc": ""
         },
         "pistonBase": {
-            "name": "Piston",
+            "name": "Έμβολο",
             "desc": ""
         },
         "pistonStickyBase": {
-            "name": "Sticky Piston",
+            "name": "Κολλώδες Έμβολο",
             "desc": ""
         }
     },
     "item": {
         "shovelIron": {
-            "name": "Iron Shovel",
+            "name": "Σιδερένιο Φτυάρι",
             "desc": ""
         },
         "pickaxeIron": {
-            "name": "Iron Pickaxe",
+            "name": "Σιδερένια Αξίνα",
             "desc": ""
         },
         "hatchetIron": {
-            "name": "Iron Axe",
+            "name": "Σιδερένιο Τσεκούρι",
             "desc": ""
         },
         "flintAndSteel": {
-            "name": "Flint and Steel",
+            "name": "Πυριτόλιθος και Ατσάλι",
             "desc": ""
         },
         "apple": {
-            "name": "Apple",
+            "name": "Μήλο",
             "desc": ""
         },
         "cookie": {
-            "name": "Cookie",
+            "name": "Μπισκότο",
             "desc": ""
         },
         "bow": {
-            "name": "Bow",
+            "name": "Τόξο",
             "desc": ""
         },
         "arrow": {
-            "name": "Arrow",
+            "name": "Βέλος",
             "desc": ""
         },
         "coal": {
-            "name": "Coal",
+            "name": "Κάρβουνο",
             "desc": ""
         },
         "charcoal": {
-            "name": "Charcoal",
+            "name": "Ξυλοκάρβουνο",
             "desc": ""
         },
         "diamond": {
-            "name": "Diamond",
+            "name": "Διαμάντι",
             "desc": ""
         },
         "ingotIron": {
-            "name": "Iron Ingot",
+            "name": "Ράβδος Σιδήρου",
             "desc": ""
         },
         "ingotGold": {
-            "name": "Gold Ingot",
+            "name": "Ράβδος Χρυσού",
             "desc": ""
         },
         "swordIron": {
-            "name": "Iron Sword",
+            "name": "Σιδερένιο Σπαθί",
             "desc": ""
         },
         "swordWood": {
-            "name": "Wooden Sword",
+            "name": "Ξύλινο Σπαθί",
             "desc": ""
         },
         "shovelWood": {
-            "name": "Wooden Shovel",
+            "name": "Ξύλινο Φτυάρι",
             "desc": ""
         },
         "pickaxeWood": {
-            "name": "Wooden Pickaxe",
+            "name": "Ξύλινη Αξίνα",
             "desc": ""
         },
         "hatchetWood": {
-            "name": "Wooden Axe",
+            "name": "Ξύλινο Τσεκούρι",
             "desc": ""
         },
         "swordStone": {
-            "name": "Stone Sword",
+            "name": "Πέτρινο Σπαθί",
             "desc": ""
         },
         "shovelStone": {
-            "name": "Stone Shovel",
+            "name": "Πέτρινο Φτυάρι",
             "desc": ""
         },
         "pickaxeStone": {
-            "name": "Stone Pickaxe",
+            "name": "Πέτρινη Αξίνα",
             "desc": ""
         },
         "hatchetStone": {
-            "name": "Stone Axe",
+            "name": "Πέτρινο Τσεκούρι",
             "desc": ""
         },
         "swordDiamond": {
-            "name": "Diamond Sword",
+            "name": "Διαμαντένιο Σπαθί",
             "desc": ""
         },
         "shovelDiamond": {
-            "name": "Diamond Shovel",
+            "name": "Διαμαντένιο Φτυάρι",
             "desc": ""
         },
         "pickaxeDiamond": {
-            "name": "Diamond Pickaxe",
+            "name": "Διαμαντένια Αξίνα",
             "desc": ""
         },
         "hatchetDiamond": {
-            "name": "Diamond Axe",
+            "name": "Διαμαντένιο Τσεκούρι",
             "desc": ""
         },
         "stick": {
-            "name": "Stick",
+            "name": "Ραβδί",
             "desc": ""
         },
         "bowl": {
-            "name": "Bowl",
+            "name": "Μπολ",
             "desc": ""
         },
         "mushroomStew": {
-            "name": "Mushroom Stew",
+            "name": "Στιφάδο Μανιταριών",
             "desc": ""
         },
         "swordGold": {
-            "name": "Golden Sword",
+            "name": "Χρυσό Σπαθί",
             "desc": ""
         },
         "shovelGold": {
-            "name": "Golden Shovel",
+            "name": "Χρυσό Φτυάρι",
             "desc": ""
         },
         "pickaxeGold": {
-            "name": "Golden Pickaxe",
+            "name": "Χρυσή Αξίνα",
             "desc": ""
         },
         "hatchetGold": {
-            "name": "Golden Axe",
+            "name": "Χρυσό Τσεκούρι",
             "desc": ""
         },
         "string": {
-            "name": "String",
+            "name": "Σπάγκος",
             "desc": ""
         },
         "feather": {
-            "name": "Feather",
+            "name": "Φτερό",
             "desc": ""
         },
         "gunpowder": {
-            "name": "Gunpowder",
+            "name": "Μπαρούτι",
             "desc": ""
         },
         "hoeWood": {
-            "name": "Wooden Hoe",
+            "name": "Ξύλινη Τσάπα",
             "desc": ""
         },
         "hoeStone": {
-            "name": "Stone Hoe",
+            "name": "Πέτρινη Τσάπα",
             "desc": ""
         },
         "hoeIron": {
-            "name": "Iron Hoe",
+            "name": "Σιδερένια Τσάπα",
             "desc": ""
         },
         "hoeDiamond": {
-            "name": "Diamond Hoe",
+            "name": "Διαμαντένια Τσάπα",
             "desc": ""
         },
         "hoeGold": {
-            "name": "Golden Hoe",
+            "name": "Χρυσή Τσάπα",
             "desc": ""
         },
         "seeds": {
-            "name": "Seeds",
+            "name": "Σπόροι",
             "desc": ""
         },
         "wheat": {
-            "name": "Wheat",
+            "name": "Σιτάρι",
             "desc": ""
         },
         "bread": {
-            "name": "Bread",
+            "name": "Ψωμί",
             "desc": ""
         },
         "helmetLeather": {
-            "name": "Leather Cap",
+            "name": "Δερμάτινο Σκουφί",
             "desc": ""
         },
         "chestplateLeather": {
-            "name": "Leather Tunic",
+            "name": "Δερμάτινος Χιτώνας",
             "desc": ""
         },
         "leggingsLeather": {
-            "name": "Leather Pants",
+            "name": "Δερμάτινο Παντελόνι",
             "desc": ""
         },
         "bootsLeather": {
-            "name": "Leather Boots",
+            "name": "Δερμάτινες Μπότες",
             "desc": ""
         },
         "helmetChain": {
-            "name": "Chain Helmet",
+            "name": "Αλυσιδωτό Κράνος",
             "desc": ""
         },
         "chestplateChain": {
-            "name": "Chain Chestplate",
+            "name": "Αλυσιδωτός Θώρακας",
             "desc": ""
         },
         "leggingsChain": {
-            "name": "Chain Leggings",
+            "name": "Αλυσιδωτό Περικνημίδιο",
             "desc": ""
         },
         "bootsChain": {
-            "name": "Chain Boots",
+            "name": "Αλυσιδωτές Μπότες",
             "desc": ""
         },
         "helmetIron": {
-            "name": "Iron Helmet",
+            "name": "Σιδερένιο Κράνος",
             "desc": ""
         },
         "chestplateIron": {
-            "name": "Iron Chestplate",
+            "name": "Σιδερένιος Θώρακας",
             "desc": ""
         },
         "leggingsIron": {
-            "name": "Iron Leggings",
+            "name": "Σιδερένιο Περικνημίδιο",
             "desc": ""
         },
         "bootsIron": {
-            "name": "Iron Boots",
+            "name": "Σιδερένιες Μπότες",
             "desc": ""
         },
         "helmetDiamond": {
-            "name": "Diamond Helmet",
+            "name": "Διαμαντένιο Κράνος",
             "desc": ""
         },
         "chestplateDiamond": {
-            "name": "Diamond Chestplate",
+            "name": "Διαμαντένιος Θώρακας",
             "desc": ""
         },
         "leggingsDiamond": {
-            "name": "Diamond Leggings",
+            "name": "Διαμαντένιο Περικνημίδιο",
             "desc": ""
         },
         "bootsDiamond": {
-            "name": "Diamond Boots",
+            "name": "Διαμαντένιες Μπότες",
             "desc": ""
         },
         "helmetGold": {
-            "name": "Golden Helmet",
+            "name": "Χρυσό Κράνος",
             "desc": ""
         },
         "chestplateGold": {
-            "name": "Golden Chestplate",
+            "name": "Χρυσός Θώρακας",
             "desc": ""
         },
         "leggingsGold": {
-            "name": "Golden Leggings",
+            "name": "Χρυσό Περικνημίδιο",
             "desc": ""
         },
         "bootsGold": {
-            "name": "Golden boots",
+            "name": "Χρυσές Μπότες",
             "desc": ""
         },
         "flint": {
-            "name": "Flint",
+            "name": "Πυριτόλιθος",
             "desc": ""
         },
         "porkchopRaw": {
-            "name": "Raw Porkchop",
+            "name": "Ωμή Χοιρινή Μπριζόλα",
             "desc": ""
         },
         "porkchopCooked": {
-            "name": "Cooked Porkchop",
+            "name": "Μαγειρεμένη Χοιρινή Μπριζόλα",
             "desc": ""
         },
         "painting": {
-            "name": "Painting",
+            "name": "Πίνακας",
             "desc": ""
         },
         "appleGold": {
-            "name": "Golden Apple",
+            "name": "Χρυσό Μήλο",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Πινακίδα",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Ξύλινη Πόρτα",
             "desc": ""
         },
         "bucket": {
-            "name": "Bucket",
+            "name": "Κουβάς",
             "desc": ""
         },
         "bucketWater": {
-            "name": "Water Bucket",
+            "name": "Κουβάς με Νερό",
             "desc": ""
         },
         "bucketLava": {
-            "name": "Lava bucket",
+            "name": "Κουβάς με Λάβα",
             "desc": ""
         },
         "minecart": {
-            "name": "Minecart",
+            "name": "Βαγονέτο",
             "desc": ""
         },
         "saddle": {
-            "name": "Saddle",
+            "name": "Σέλα",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Σιδερένια Πόρτα",
             "desc": ""
         },
         "redstone": {
-            "name": "Redstone",
+            "name": "Κοκκινόπετρα",
             "desc": ""
         },
         "snowball": {
-            "name": "Snowball",
+            "name": "Χιονόμπαλα",
             "desc": ""
         },
         "boat": {
-            "name": "Boat",
+            "name": "Βάρκα",
             "desc": ""
         },
         "leather": {
-            "name": "Leather",
+            "name": "Δέρμα",
             "desc": ""
         },
         "milk": {
-            "name": "Milk",
+            "name": "Γάλα",
             "desc": ""
         },
         "brick": {
-            "name": "Brick",
+            "name": "Τούβλο",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Πηλός",
             "desc": ""
         },
         "sugarCanes": {
-            "name": "Sugar Canes",
+            "name": "Ζαχαροκάλαμα",
             "desc": ""
         },
         "paper": {
-            "name": "Paper",
+            "name": "Χαρτί",
             "desc": ""
         },
         "book": {
-            "name": "Book",
+            "name": "Βιβλίο",
             "desc": ""
         },
         "slimeball": {
-            "name": "Slimeball",
+            "name": "Μπάλα Γλίτσας",
             "desc": ""
         },
         "minecartChest": {
-            "name": "Minecart with Chest",
+            "name": "Βαγονέτο με Σεντούκι",
             "desc": ""
         },
         "minecartFurnace": {
-            "name": "Minecart with Furnace",
+            "name": "Βαγονέτο με Φούρνο",
             "desc": ""
         },
         "egg": {
-            "name": "Egg",
+            "name": "Αυγό",
             "desc": ""
         },
         "compass": {
-            "name": "Compass",
+            "name": "Πυξίδα",
             "desc": ""
         },
         "fishingRod": {
-            "name": "Fishing Rod",
+            "name": "Καλάμι Ψαρέματος",
             "desc": ""
         },
         "clock": {
-            "name": "Clock",
+            "name": "Ρολόι",
             "desc": ""
         },
         "yellowDust": {
-            "name": "Glowstone Dust",
+            "name": "Σκόνη Φωτόπετρας",
             "desc": ""
         },
         "fishRaw": {
-            "name": "Raw Fish",
+            "name": "Ωμό Ψάρι",
             "desc": ""
         },
         "fishCooked": {
-            "name": "Cooked Fish",
+            "name": "Μαγειρεμένο Ψάρι",
             "desc": ""
         },
         "record": {
-            "name": "Music Disc",
+            "name": "Μουσικός Δίσκος",
             "desc": ""
         },
         "bone": {
-            "name": "Bone",
+            "name": "Κόκαλο",
             "desc": ""
         },
         "dyePowder": {
             "black": {
-                "name": "Ink Sac",
+                "name": "Σακούλι Μελάνι",
                 "desc": ""
             },
             "red": {
-                "name": "Rose Red",
+                "name": "Κόκκινη Βαφή",
                 "desc": ""
             },
             "green": {
-                "name": "Cactus Green",
+                "name": "Πράσινη Βαφή",
                 "desc": ""
             },
             "brown": {
-                "name": "Cocoa Beans",
+                "name": "Κόκκοι Κακάο",
                 "desc": ""
             },
             "blue": {
-                "name": "Lapis Lazuli",
+                "name": "Λάπις Λάζουλι",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Dye",
+                "name": "Μωβ Βαφή",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Dye",
+                "name": "Κυανή Βαφή",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Dye",
+                "name": "Ανοιχτή Γκρι Βαφή",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Dye",
+                "name": "Γκρι Βαφή",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Dye",
+                "name": "Ροζ Βαφή",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Dye",
+                "name": "Λαχανί Βαφή",
                 "desc": ""
             },
             "yellow": {
-                "name": "Dandelion Yellow",
+                "name": "Κίτρινη Βαφή",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Dye",
+                "name": "Ανοιχτή Μπλε Βαφή",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Dye",
+                "name": "Ματζέντα Βαφή",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Dye",
+                "name": "Πορτοκαλί Βαφή",
                 "desc": ""
             },
             "white": {
-                "name": "Bone Meal",
+                "name": "Αλεύρι από Κόκαλο",
                 "desc": ""
             }
         },
         "sugar": {
-            "name": "Sugar",
+            "name": "Ζάχαρη",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Κέικ",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Κρεβάτι",
             "desc": ""
         },
         "redstoneRepeater": {
-            "name": "Redstone Repeater",
+            "name": "Επαναλήπτης Κοκκινόπετρας",
             "desc": ""
         },
         "map": {
-            "name": "Map",
+            "name": "Χάρτης",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Φύλλα",
             "desc": ""
         },
         "shears": {
-            "name": "Shears",
+            "name": "Ψαλίδι",
             "desc": ""
         }
     },
     "stat": {
-        "generalButton": "General",
-        "blocksButton": "Blocks",
-        "itemsButton": "Items",
-        "used": "Times Used",
-        "mined": "Times Mined",
-        "depleted": "Times Depleted",
-        "crafted": "Times Crafted",
-        "startGame": "Times played",
-        "createWorld": "Worlds played",
-        "loadWorld": "Saves loaded",
-        "joinMultiplayer": "Multiplayer joins",
-        "leaveGame": "Games quit",
-        "playOneMinute": "Minutes Played",
-        "walkOneCm": "Distance Walked",
-        "fallOneCm": "Distance Fallen",
-        "swimOneCm": "Distance Swum",
-        "flyOneCm": "Distance Flown",
-        "climbOneCm": "Distance Climbed",
-        "diveOneCm": "Distance Dove",
-        "minecartOneCm": "Distance by Minecart",
-        "boatOneCm": "Distance by Boat",
-        "pigOneCm": "Distance by Pig",
-        "jump": "Jumps",
-        "drop": "Items Dropped",
-        "damageDealt": "Damage Dealt",
-        "damageTaken": "Damage Taken",
-        "deaths": "Number of Deaths",
-        "mobKills": "Mob Kills",
-        "playerKills": "Player Kills",
-        "fishCaught": "Fish Caught",
-        "mineBlock": "{0} Mined",
-        "craftItem": "{0} Crafted",
-        "useItem": "{0} Used",
-        "breakItem": "{0} Depleted"
+        "generalButton": "Γενικά",
+        "blocksButton": "Μπλοκ",
+        "itemsButton": "Αντικείμενα",
+        "used": "Φορές Χρήσης",
+        "mined": "Φορές Εξόρυξης",
+        "depleted": "Φορές Φθοράς",
+        "crafted": "Φορές Κατασκευής",
+        "startGame": "Φορές που έπαιξες",
+        "createWorld": "Κόσμοι που έπαιξες",
+        "loadWorld": "Αποθηκεύσεις που φορτώθηκαν",
+        "joinMultiplayer": "Συμμετοχές σε πολυπαίκτη",
+        "leaveGame": "Έξοδοι από το παιχνίδι",
+        "playOneMinute": "Λεπτά Παιχνιδιού",
+        "walkOneCm": "Απόσταση που Περπάτησες",
+        "fallOneCm": "Απόσταση που Έπεσες",
+        "swimOneCm": "Απόσταση που Κολύμπησες",
+        "flyOneCm": "Απόσταση που Πέταξες",
+        "climbOneCm": "Απόσταση που Σκαρφάλωσες",
+        "diveOneCm": "Απόσταση που Βούτηξες",
+        "minecartOneCm": "Απόσταση με Βαγονέτο",
+        "boatOneCm": "Απόσταση με Βάρκα",
+        "pigOneCm": "Απόσταση με Γουρούνι",
+        "jump": "Άλματα",
+        "drop": "Αντικείμενα που Πέταξες",
+        "damageDealt": "Ζημιά που Προκάλεσες",
+        "damageTaken": "Ζημιά που Δέχτηκες",
+        "deaths": "Αριθμός Θανάτων",
+        "mobKills": "Σκοτωμένα Τέρατα",
+        "playerKills": "Σκοτωμένοι Παίκτες",
+        "fishCaught": "Ψάρια που Έπιασες",
+        "mineBlock": "{0} Εξορύχθηκε",
+        "craftItem": "{0} Κατασκευάστηκε",
+        "useItem": "{0} Χρησιμοποιήθηκε",
+        "breakItem": "{0} Φθάρηκε"
     },
-    "achievements.title": "Achievements",
+    "achievements.title": "Επιτεύγματα",
     "achievement": {
-        "get": "Achievement get!",
-        "taken": "Taken!",
-        "challenge": "CHALLENGE",
-        "unlocked": "UNLOCKED",
-        "locked": "LOCKED",
-        "requires": "Requires '{0}'",
+        "get": "Επίτευγμα ξεκλειδώθηκε!",
+        "taken": "Ξεκλειδώθηκε!",
+        "challenge": "ΠΡΟΚΛΗΣΗ",
+        "unlocked": "ΞΕΚΛΕΙΔΩΘΗΚΕ",
+        "locked": "ΚΛΕΙΔΩΜΕΝΟ",
+        "requires": "Απαιτεί '{0}'",
         "openInventory": {
-            "title": "Taking Inventory",
-            "desc": "Open your inventory."
+            "title": "Κάνοντας Απογραφή",
+            "desc": "Άνοιξε τα αποθέματά σου."
         },
         "mineWood": {
-            "title": "Getting Wood",
-            "desc": "Attack a tree until a block of wood pops out"
+            "title": "Παίρνοντας Ξύλο",
+            "desc": "Χτύπησε ένα δέντρο μέχρι να πέσει ένα μπλοκ ξύλου"
         },
         "buildWorkBench": {
-            "title": "Benchmarking",
-            "desc": "Craft a workbench with four blocks of planks"
+            "title": "Κατασκευάζοντας Πάγκο",
+            "desc": "Κατασκεύασε ένα τραπέζι κατασκευών με τέσσερα μπλοκ σανίδων"
         },
         "buildPickaxe": {
-            "title": "Time to Mine!",
-            "desc": "Use planks and sticks to make a pickaxe"
+            "title": "Ώρα για Εξόρυξη!",
+            "desc": "Χρησιμοποίησε σανίδες και ραβδιά για να φτιάξεις μια αξίνα"
         },
         "buildFurnace": {
-            "title": "Hot Topic",
-            "desc": "Construct a furnace out of eight stone blocks"
+            "title": "Καυτό Θέμα",
+            "desc": "Κατασκεύασε έναν φούρνο από οκτώ μπλοκ πέτρας"
         },
         "acquireIron": {
-            "title": "Acquire Hardware",
-            "desc": "Smelt an iron ingot"
+            "title": "Απόκτηση Εξοπλισμού",
+            "desc": "Λιώσε μια ράβδο σιδήρου"
         },
         "buildHoe": {
-            "title": "Time to Farm!",
-            "desc": "Use planks and sticks to make a hoe"
+            "title": "Ώρα για Καλλιέργεια!",
+            "desc": "Χρησιμοποίησε σανίδες και ραβδιά για να φτιάξεις μια τσάπα"
         },
         "makeBread": {
-            "title": "Bake Bread",
-            "desc": "Turn wheat into bread"
+            "title": "Ψήσε Ψωμί",
+            "desc": "Μετέτρεψε το σιτάρι σε ψωμί"
         },
         "bakeCake": {
-            "title": "The Lie",
-            "desc": "Wheat, sugar, milk and eggs!"
+            "title": "Το Ψέμα",
+            "desc": "Σιτάρι, ζάχαρη, γάλα και αυγά!"
         },
         "buildBetterPickaxe": {
-            "title": "Getting an Upgrade",
-            "desc": "Construct a better pickaxe"
+            "title": "Αναβάθμιση",
+            "desc": "Κατασκεύασε μια καλύτερη αξίνα"
         },
         "cookFish": {
-            "title": "Delicious Fish",
-            "desc": "Catch and cook fish!"
+            "title": "Νόστιμο Ψάρι",
+            "desc": "Πιάσε και μαγείρεψε ψάρι!"
         },
         "onARail": {
-            "title": "On A Rail",
-            "desc": "Travel by minecart at least 1 km from where you started "
+            "title": "Πάνω σε Σιδηροτροχιά",
+            "desc": "Ταξίδεψε με βαγονέτο τουλάχιστον 1 χλμ από εκεί που ξεκίνησες"
         },
         "buildSword": {
-            "title": "Time to Strike!",
-            "desc": "Use planks and sticks to make a sword"
+            "title": "Ώρα για Επίθεση!",
+            "desc": "Χρησιμοποίησε σανίδες και ραβδιά για να φτιάξεις ένα σπαθί"
         },
         "killEnemy": {
-            "title": "Monster Hunter",
-            "desc": "Attack and destroy a monster"
+            "title": "Κυνηγός Τεράτων",
+            "desc": "Επιτέσου και κατέστρεψε ένα τέρας"
         },
         "killCow": {
-            "title": "Cow Tipper",
-            "desc": "Harvest some leather"
+            "title": "Αναποδογυριστής Αγελάδων",
+            "desc": "Μάζεψε λίγο δέρμα"
         },
         "flyPig": {
-            "title": "When Pigs Fly",
-            "desc": "Fly a pig off a cliff"
+            "title": "Όταν Πετάνε τα Γουρούνια",
+            "desc": "Πέταξε ένα γουρούνι από έναν γκρεμό"
         }
     },
     "credits": {
-        "version": "BetaSharp Version %1$s",
-        "description": "An enhanced of Minecraft Beta 1.7.3, written in C#.",
-        "github": "On GitHub",
-        "author": "Made by Fazin85",
-        "libs": "Libraries",
-        "slik": "Slik.NET - Graphics",
-        "imgui": "ImGui - Debug UI",
-        "sfml": "SFML.NET - Audio",
-        "sixlabors": "SixLabors - Fonts, image processing",
-        "translations": "Translations Credits"
+        "version": "Έκδοση BetaSharp %1$s",
+        "description": "Μια βελτιωμένη εκδοχή του Minecraft Beta 1.7.3, γραμμένη σε C#.",
+        "github": "Στο GitHub",
+        "author": "Δημιουργήθηκε από τον Fazin85",
+        "libs": "Βιβλιοθήκες",
+        "slik": "Slik.NET - Γραφικά",
+        "imgui": "ImGui - Διεπαφή Εντοπισμού Σφαλμάτων",
+        "sfml": "SFML.NET - Ήχος",
+        "sixlabors": "SixLabors - Γραμματοσειρές, επεξεργασία εικόνων",
+        "translations": "Συντελεστές Μεταφράσεων"
     }
 }
