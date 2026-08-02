@@ -18,7 +18,6 @@ using BetaSharp.Network;
 using BetaSharp.Network.Chunks;
 using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Network.Snapshots;
 using BetaSharp.Network.Transport;
@@ -403,6 +402,10 @@ public class ClientNetworkHandler : NetHandler
         MessageHandlers.On<TickStampMessage>(onTickStamp);
         MessageHandlers.On<ChunkDataMessage>(onChunkData);
         MessageHandlers.On<RegionDataMessage>(onRegionData);
+        MessageHandlers.On<PlayerMoveMessage>(onPlayerMove);
+        MessageHandlers.On<PlayerMovePositionMessage>(onPlayerMove);
+        MessageHandlers.On<PlayerMoveLookMessage>(onPlayerMove);
+        MessageHandlers.On<PlayerMoveFullMessage>(onPlayerMove);
         MessageHandlers.On<ChunkUnchangedMessage>(onChunkUnchanged);
         MessageHandlers.On<EntitySnapshotMessage>(onEntitySnapshot);
         MessageHandlers.On<EntityMoveMessage>(onEntityMove);
@@ -958,7 +961,7 @@ public class ClientNetworkHandler : NetHandler
         _worldClient.RemoveEntityFromWorld(packet.EntityId);
     }
 
-    public override void onPlayerMove(PacketPlayerMoveAbstract packet)
+    private void onPlayerMove(IPlayerMove packet)
     {
         // Previously this called ent.SetPositionAndAngles(x, y, z, yaw, pitch);
 
@@ -967,7 +970,7 @@ public class ClientNetworkHandler : NetHandler
 
         ent.CameraOffset = 0.0F;
 
-        if (packet is IPlayerMovePos packetMove)
+        if (packet is IPlayerMovePosition packetMove)
         {
             ent.PrevX = ent.X = packetMove.X;
             ent.PrevY = ent.Y = packetMove.Y;
@@ -987,7 +990,7 @@ public class ClientNetworkHandler : NetHandler
             ent.PrevPitch = ent.Pitch = packetLook.Pitch % 360.0F;
         }
 
-        SendPacket(packet);
+        SendMessage((Message)packet);
         if (!_terrainLoaded)
         {
             ent.PrevX = ent.X;

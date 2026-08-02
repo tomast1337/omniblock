@@ -59,8 +59,9 @@ public static class PacketPriorities
         }
 
         // Everything that was manually listed here — entity replication, spawns, keep-alive — has
-        // migrated to the message layer, where each type declares its own priority and the envelope
-        // carries the answer. The OmniMessagePacket branch above catches those before this switch.
+        // migrated to the message layer, so the switch that used to follow is gone. What is left to
+        // reach this line is the login handshake and the table advertisement, none of which competes
+        // with anything: they are the only packets that travel before the message layer exists.
         return SendPriority.Normal;
     }
 }

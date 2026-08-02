@@ -1,6 +1,5 @@
 using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using Microsoft.Extensions.Logging;
 
@@ -121,11 +120,6 @@ public abstract class NetHandler
     }
 
     public virtual void onHello(LoginHelloPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onPlayerMove(PacketPlayerMoveAbstract packet)
     {
         handle(packet);
     }

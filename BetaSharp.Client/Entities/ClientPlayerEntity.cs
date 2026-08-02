@@ -9,7 +9,6 @@ using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.NBT;
 using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets.Play;
 using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;

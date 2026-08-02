@@ -6,7 +6,6 @@ using BetaSharp.NBT;
 using BetaSharp.Network.Chunks;
 using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Network.Snapshots;
 using BetaSharp.Registries;

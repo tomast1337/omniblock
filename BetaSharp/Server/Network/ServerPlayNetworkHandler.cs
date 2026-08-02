@@ -6,7 +6,6 @@ using BetaSharp.Items;
 using BetaSharp.Network;
 using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Screens.Slots;
 using BetaSharp.Server.Command;
@@ -69,6 +68,14 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         MessageHandlers.On<ChatMessage>(onChatMessage);
         MessageHandlers.On<DisconnectMessage>(onDisconnect);
         MessageHandlers.On<PlayerRespawnMessage>(onPlayerRespawn);
+
+        // One handler, four registrations. Dispatch is keyed by concrete type, and the four variants
+        // differ only in which fields they carry — which onPlayerMove already reads through
+        // IPlayerMovePosition and IPlayerMoveLook rather than by asking what it was handed.
+        MessageHandlers.On<PlayerMoveMessage>(onPlayerMove);
+        MessageHandlers.On<PlayerMovePositionMessage>(onPlayerMove);
+        MessageHandlers.On<PlayerMoveLookMessage>(onPlayerMove);
+        MessageHandlers.On<PlayerMoveFullMessage>(onPlayerMove);
     }
 
     public void tick()
@@ -154,11 +161,9 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     /// <summary>
     ///     Whether it is worth encoding a payload smaller before sending it here.
     ///     <para>
-    ///         False on loopback, where the packet is handed over as an object and never serialised.
-    ///         Compressing a chunk for singleplayer costs the encode and the matching decode on the
-    ///         other side to save bytes that were never going to exist — which is exactly why
-    ///         <c>ChunkDataS2CPacket.ProcessForInternal</c> swaps the compressed payload back out for
-    ///         the raw one.
+    ///         False on loopback, where the message is handed over as an object and never serialised.
+    ///         Encoding a chunk smaller for singleplayer costs the encode and the matching decode on
+    ///         the other side to save bytes that were never going to exist.
     ///     </para>
     /// </summary>
     public bool WantsCompactPayloads => CanSendMessages && !connection.IsInternal;
@@ -179,7 +184,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         connection.sendMessage(registry, message);
     }
 
-    public override void onPlayerMove(PacketPlayerMoveAbstract packet)
+    private void onPlayerMove(IPlayerMove packet)
     {
         ServerWorld sWorld = server.getWorld(player.DimensionId);
         moved = true;
@@ -188,7 +193,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             double moveX = 0.0;
             double moveY = 0.0;
             double moveZ = 0.0;
-            if (packet is IPlayerMovePos packetMove)
+            if (packet is IPlayerMovePosition packetMove)
             {
                 moveX = packetMove.X;
                 moveY = packetMove.Y;
@@ -221,7 +226,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 double moveX = 0.0;
                 double moveZ = 0.0;
 
-                if (packet is IPlayerMovePos packetMove && packetMove.Y <= -999.0 && packetMove.EyeHeight <= -999.0)
+                if (packet is IPlayerMovePosition packetMove && packetMove.Y <= -999.0 && packetMove.EyeHeight <= -999.0)
                 {
                     moveX = packetMove.X;
                     moveZ = packetMove.Z;
@@ -267,7 +272,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             double targetY = player.Y;
             double targetZ = player.Z;
 
-            if (packet is IPlayerMovePos packetMove2)
+            if (packet is IPlayerMovePosition packetMove2)
             {
                 if (!(packetMove2.Y <= -999.0 && packetMove2.EyeHeight <= -999.0))
                 {
@@ -368,7 +373,16 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         teleportTargetY = y;
         teleportTargetZ = z;
         player.SetPositionAndAngles(x, y, z, yaw, pitch);
-        player.NetworkHandler.SendPacket(PlayerMoveFullPacket.Get(x, y + 1.62F, y, z, yaw, pitch, false));
+        player.NetworkHandler.SendMessage(new PlayerMoveFullMessage
+        {
+            X = x,
+            Y = y + 1.62F,
+            EyeHeight = y,
+            Z = z,
+            Yaw = yaw,
+            Pitch = pitch,
+            OnGround = false
+        });
     }
 
 

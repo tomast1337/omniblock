@@ -1,4 +1,3 @@
-using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Util;
 using Microsoft.Extensions.Logging;
@@ -120,10 +119,6 @@ public abstract class Packet
         Registry.Register([
             New(PacketId.LoginHello, true, true, () => new LoginHelloPacket()),
             New(PacketId.Handshake, true, true, () => new HandshakePacket()),
-            New(PacketId.PlayerMove, true, true, () => new PlayerMovePacket()),
-            New(PacketId.PlayerMovePositionAndOnGround, true, true, () => new PlayerMovePositionAndOnGroundPacket()),
-            New(PacketId.PlayerMoveLookAndOnGround, true, true, () => new PlayerMoveLookAndOnGroundPacket()),
-            New(PacketId.PlayerMoveFull, true, true, () => new PlayerMoveFullPacket()),
             New(PacketId.MessageRegistrySyncS2C, true, false, () => new MessageRegistrySyncS2CPacket()),
             New(PacketId.OmniMessage, true, true, () => new OmniMessagePacket())
         ]);
