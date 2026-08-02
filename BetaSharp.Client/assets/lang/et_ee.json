@@ -1,385 +1,385 @@
-﻿{
+{
     "gui": {
-        "joinServer": "Join Server",
-        "rename": "Rename",
-        "edit": "Edit",
-        "refresh": "Refresh",
-        "done": "Done",
-        "cancel": "Cancel",
-        "delete": "Delete",
-        "toMenu": "Back to title screen",
-        "up": "Up",
-        "down": "Down",
-        "yes": "Yes",
-        "no": "No",
-        "connect": "Connect",
-        "directConnect": "Direct Connect",
-        "addServer": "Add Server",
-        "create": "Create",
-        "customize": "Customize",
-        "achievements": "Achievements",
-        "stats": "Statistics",
+        "joinServer": "Liitu serveriga",
+        "rename": "Nimeta ümber",
+        "edit": "Muuda",
+        "refresh": "Värskenda",
+        "done": "Valmis",
+        "cancel": "Tühista",
+        "delete": "Kustuta",
+        "toMenu": "Tagasi peamenüüsse",
+        "up": "Üles",
+        "down": "Alla",
+        "yes": "Jah",
+        "no": "Ei",
+        "connect": "Ühendu",
+        "directConnect": "Otsene ühendus",
+        "addServer": "Lisa server",
+        "create": "Loo",
+        "customize": "Kohanda",
+        "achievements": "Saavutused",
+        "stats": "Statistika",
         "container": {
-            "crafting": "Crafting",
-            "inventory": "Inventory",
-            "dispenser": "Dispenser",
-            "furnace": "Furnace",
+            "crafting": "Meisterdamine",
+            "inventory": "Varud",
+            "dispenser": "Jaotur",
+            "furnace": "Ahi",
             "tip": {
-                "move": "Move",
-                "quickMove": "Quick Move",
-                "takeHalf": "Take Half",
-                "place": "Place",
-                "placeOne": "Place One"
+                "move": "Liiguta",
+                "quickMove": "Kiire liigutamine",
+                "takeHalf": "Võta pool",
+                "place": "Aseta",
+                "placeOne": "Aseta üks"
             }
         }
     },
     "menu": {
-        "singleplayer": "Singleplayer",
-        "multiplayer": "Multiplayer",
-        "texturePacks": "Texture Packs",
-        "options": "Options...",
-        "language": "Language",
-        "quit": "Quit Game",
-        "credits": "Credits",
-        "sendFeedback": "Send Feedback",
-        "reportBugs": "Report Bugs",
-        "saveAndQuitToTitle": "Save and quit to title",
-        "disconnect": "Disconnect"
+        "singleplayer": "Üksikmäng",
+        "multiplayer": "Mitmikmäng",
+        "texturePacks": "Tekstuuripakid",
+        "options": "Valikud...",
+        "language": "Keel",
+        "quit": "Välju mängust",
+        "credits": "Autorid",
+        "sendFeedback": "Saada tagasisidet",
+        "reportBugs": "Teata vigadest",
+        "saveAndQuitToTitle": "Salvesta ja välju peamenüüsse",
+        "disconnect": "Katkesta ühendus"
     },
     "selectWorld": {
-        "title": "Select World",
-        "empty": "empty",
-        "world": "World",
-        "select": "Play Selected World",
-        "create": "Create New World",
-        "createDemo": "Play New Demo World",
-        "deleteQuestion": "Are you sure you want to delete this world?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "renameTitle": "Rename World",
-        "conversion": "Must be converted!",
-        "newWorld": "New World",
-        "enterName": "World Name",
-        "resultFolder": "Will be saved in:",
-        "enterSeed": "Seed for the World Generator",
-        "seedInfo": "Leave blank for a random seed",
-        "selectWorldType": "Select World Type",
-        "worldType": "World Type",
-        "customize": "Customize",
-        "moreWorldOptions": "More World Options...",
+        "title": "Vali maailm",
+        "empty": "tühi",
+        "world": "Maailm",
+        "select": "Mängi valitud maailma",
+        "create": "Loo uus maailm",
+        "createDemo": "Mängi uut demomaailma",
+        "deleteQuestion": "Kas oled kindel, et tahad selle maailma kustutada?",
+        "deleteWarning": "kaob jäädavalt! (Väga pikaks ajaks!)",
+        "renameTitle": "Nimeta maailm ümber",
+        "conversion": "Tuleb konverteerida!",
+        "newWorld": "Uus maailm",
+        "enterName": "Maailma nimi",
+        "resultFolder": "Salvestatakse siia:",
+        "enterSeed": "Seeme maailmageneraatorile",
+        "seedInfo": "Jäta tühjaks juhusliku seemne jaoks",
+        "selectWorldType": "Vali maailma tüüp",
+        "worldType": "Maailma tüüp",
+        "customize": "Kohanda",
+        "moreWorldOptions": "Rohkem maailmavalikuid...",
         "type": {
             "default": {
-                "title": "Default",
-                "description": "The standard Minecraft world."
+                "title": "Tavaline",
+                "description": "Standardne Minecrafti maailm."
             },
             "flat": {
-                "title": "Flat",
-                "description": "A completely flat world."
+                "title": "Tasane",
+                "description": "Täiesti tasane maailm."
             },
             "sky": {
-                "title": "Sky",
-                "description": "A world floating in the sky."
+                "title": "Taevas",
+                "description": "Taevas hõljuv maailm."
             }
         }
     },
     "newWorld": {
         "customize": {
             "superflatWorld": {
-                "title": "Customize Superflat World"
+                "title": "Kohanda ülitasast maailma"
             },
-            "removeLayer": "Remove Layer",
-            "presets": "Presets",
-            "height": "Height",
+            "removeLayer": "Eemalda kiht",
+            "presets": "Eelseaded",
+            "height": "Kõrgus",
             "unknown": "???"
         }
     },
     "world": {
-        "world": "World",
-        "unsupportedFormat": "Unsupported Format!"
+        "world": "Maailm",
+        "unsupportedFormat": "Toetamata vorming!"
     },
     "multiplayer": {
-        "title": "Play Multiplayer",
+        "title": "Mängi mitmikmängu",
         "betasharpServer": "BetaSharp Server",
-        "info1": "Minecraft Multiplayer is currently not finished, but there",
-        "info2": "is some buggy early testing going on.",
-        "ipinfo": "Enter the IP of a server to connect to it:",
-        "deleteQuestion": "Are you sure you want to delete this server?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "downloadingTerrain": "Downloading terrain",
-        "stopSleeping": "Leave Bed",
-        "editServerTitle": "Edit Server Info",
-        "addServerTitle": "Add Server Info",
-        "serverName": "Server Name",
-        "serverAddress": "Server Address"
+        "info1": "Minecrafti mitmikmäng pole veel valmis, kuid seal",
+        "info2": "toimub mõningane vigane varajane testimine.",
+        "ipinfo": "Serveriga ühendumiseks sisesta serveri IP:",
+        "deleteQuestion": "Kas oled kindel, et tahad selle serveri kustutada?",
+        "deleteWarning": "kaob jäädavalt! (Väga pikaks ajaks!)",
+        "downloadingTerrain": "Maastiku allalaadimine",
+        "stopSleeping": "Tõuse voodist",
+        "editServerTitle": "Muuda serveri teavet",
+        "addServerTitle": "Lisa serveri teave",
+        "serverName": "Serveri nimi",
+        "serverAddress": "Serveri aadress"
     },
     "loading": {
-        "loadingLevel": "Loading level",
-        "startingServer": "Starting server...",
-        "preparingSpawnArea": "Preparing spawn area"
+        "loadingLevel": "Taseme laadimine",
+        "startingServer": "Serveri käivitamine...",
+        "preparingSpawnArea": "Sünnikoha ala ettevalmistamine"
     },
     "achievements": {
-        "title": "Achievements"
+        "title": "Saavutused"
     },
     "gameover": {
-        "title": "Game Over!",
-        "score": "Score",
-        "respawn": "Respawn",
-        "titleMenu": "Title menu"
+        "title": "Mäng läbi!",
+        "score": "Punktid",
+        "respawn": "Taassünd",
+        "titleMenu": "Peamenüü"
     },
     "gamemenu": {
-        "title": "Game Menu",
-        "backToGame": "Back to Game"
+        "title": "Mängumenüü",
+        "backToGame": "Tagasi mängu juurde"
     },
     "sign": {
-        "title": "Edit sign message:"
+        "title": "Muuda sildi sõnumit:"
     },
     "stats": {
-        "title": "Statistics",
-        "general": "General",
+        "title": "Statistika",
+        "general": "Üldine",
         "blocks": {
-            "name": "Blocks",
-            "mined": "Mined",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Plokid",
+            "mined": "Kaevandatud",
+            "crafted": "Meisterdatud",
+            "used": "Kasutatud"
         },
         "items": {
-            "name": "Items",
-            "broken": "Broken",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Esemed",
+            "broken": "Katkistud",
+            "crafted": "Meisterdatud",
+            "used": "Kasutatud"
         },
-        "item": "Item"
+        "item": "Ese"
     },
     "connect": {
-        "connecting": "Connecting to the server...",
-        "authorizing": "Logging in...",
-        "failed": "Failed to connect to the server"
+        "connecting": "Ühendumine serveriga...",
+        "authorizing": "Sisselogimine...",
+        "failed": "Serveriga ühendumine ebaõnnestus"
     },
     "disconnect": {
         "genericReason": "{0}",
-        "disconnected": "Disconnected by Server",
-        "lost": "Connection Lost",
-        "kicked": "Was kicked from the game",
-        "timeout": "Timed out",
-        "closed": "Connection closed",
-        "loginFailed": "Failed to login",
-        "quitting": "Quitting",
-        "endOfStream": "End of stream",
-        "overflow": "Buffer overflow"
+        "disconnected": "Server katkestas ühenduse",
+        "lost": "Ühendus katkes",
+        "kicked": "Mind visati mängust välja",
+        "timeout": "Ajalõpp",
+        "closed": "Ühendus suleti",
+        "loginFailed": "Sisselogimine ebaõnnestus",
+        "quitting": "Väljumine",
+        "endOfStream": "Voog lõppes",
+        "overflow": "Puhvri ületäitumine"
     },
     "options": {
-        "off": "OFF",
-        "on": "ON",
-        "disabled": "Disabled",
-        "title": "Options",
-        "controls": "Controls...",
-        "keyboardControls": "Keyboard Controls...",
-        "controllerSettings": "Controller Settings...",
-        "controllerType": "Controller Type",
+        "off": "VÄLJAS",
+        "on": "SEES",
+        "disabled": "Keelatud",
+        "title": "Valikud",
+        "controls": "Juhtnupud...",
+        "keyboardControls": "Klaviatuuri juhtnupud...",
+        "controllerSettings": "Kontrolleri seaded...",
+        "controllerType": "Kontrolleri tüüp",
         "video": {
-            "text": "Video Settings...",
-            "performance": "Performance",
-            "display": "Display"
+            "text": "Videoseaded...",
+            "performance": "Jõudlus",
+            "display": "Kuva"
         },
-        "uiSettings": "UI Settings...",
-        "audioSettings": "Audio Settings...",
-        "audioTitle": "Audio Settings",
-        "videoTitle": "Video Settings",
-        "language": "Language...",
-        "anisoLevel": "Aniso Level",
-        "music": "Music",
-        "sound": "Sound",
-        "invertMouse": "Invert Mouse",
-        "alternateBlocks": "Alternate Blocks",
-        "chunkFade": "Chunk Fade",
+        "uiSettings": "Kasutajaliidese seaded...",
+        "audioSettings": "Heliseaded...",
+        "audioTitle": "Heliseaded",
+        "videoTitle": "Videoseaded",
+        "language": "Keel...",
+        "anisoLevel": "Anisotroopia tase",
+        "music": "Muusika",
+        "sound": "Heli",
+        "invertMouse": "Pööra hiirt",
+        "alternateBlocks": "Vahelduvad plokid",
+        "chunkFade": "Chunkide hääbumine",
         "sensitivity": {
-            "text": "Sensitivity",
-            "controllerText": "Controller Sensitivity",
-            "min": "*yawn*",
-            "max": "HYPERSPEED!!!"
+            "text": "Tundlikkus",
+            "controllerText": "Kontrolleri tundlikkus",
+            "min": "*haigutus*",
+            "max": "ÜLIKIIRUS!!!"
         },
         "renderDistance": {
-            "text": "Render Distance",
-            "chunks": "Chunks",
-            "tiny": "Tiny",
-            "short": "Short",
-            "normal": "Normal",
-            "far": "Far"
+            "text": "Renderduskaugus",
+            "chunks": "Chunkid",
+            "tiny": "Pisike",
+            "short": "Lühike",
+            "normal": "Tavaline",
+            "far": "Kauge"
         },
-        "viewBobbing": "View Bobbing",
-        "ao": "Smooth Lighting",
-        "anaglyph": "3D Anaglyph",
-        "framerateLimit": "Performance",
+        "viewBobbing": "Vaate kõikumine",
+        "ao": "Sile valgustus",
+        "anaglyph": "3D anaglüüf",
+        "framerateLimit": "Jõudlus",
         "difficulty": {
-            "text": "Difficulty",
-            "peaceful": "Peaceful",
-            "easy": "Easy",
-            "normal": "Normal",
-            "hard": "Hard"
+            "text": "Raskusaste",
+            "peaceful": "Rahulik",
+            "easy": "Lihtne",
+            "normal": "Tavaline",
+            "hard": "Raske"
         },
         "graphics": {
-            "text": "Graphics",
-            "fancy": "Fancy",
-            "fast": "Fast"
+            "text": "Graafika",
+            "fancy": "Uhke",
+            "fast": "Kiire"
         },
         "cloudsQuality": {
-            "text": "Clouds Quality",
-            "off": "No Clouds",
-            "legacy": "Old Clouds",
+            "text": "Pilvede kvaliteet",
+            "off": "Pilvi pole",
+            "legacy": "Vanad pilved",
             "shader": "Shader"
         },
         "softClouds": {
-            "text": "Soft Clouds"
+            "text": "Pehmed pilved"
         },
         "guiScale": {
-            "text": "GUI Scale",
+            "text": "Liidese suurus",
             "auto": "Auto",
-            "small": "Small",
-            "normal": "Normal",
-            "large": "Large"
+            "small": "Väike",
+            "normal": "Tavaline",
+            "large": "Suur"
         },
         "chatScale": {
-            "text": "Chat Scale"
+            "text": "Vestluse suurus"
         },
         "chatWidth": {
-            "text": "Chat Width"
+            "text": "Vestluse laius"
         },
-        "advancedOpengl": "Advanced OpenGL",
+        "advancedOpengl": "Täiustatud OpenGL",
         "fps": {
             "text": "FPS",
-            "maxFps": "Max FPS",
-            "unlimited": "Unlimited"
+            "maxFps": "Maksimaalne FPS",
+            "unlimited": "Piiramatu"
         },
-        "showCoordinates": "Show Coordinates",
-        "uiCursors": "UI Cursors",
+        "showCoordinates": "Näita koordinaate",
+        "uiCursors": "UI kursorid",
         "gamma": "Gamma",
         "vSync": "VSync",
-        "mipmaps": "Mipmaps",
-        "menuMusic": "Menu Music",
+        "mipmaps": "Mipmapid",
+        "menuMusic": "Menüümuusika",
         "msaa": "MSAA",
-        "fov": "FOV",
+        "fov": "Vaateväli",
         "movement": {
-            "text": "Movement"
+            "text": "Liikumine"
         },
         "view": {
-            "text": "View"
+            "text": "Vaade"
         },
         "other": {
-            "text": "Other"
+            "text": "Muu"
         },
-        "editBindings": "Edit Bindings...",
-        "resetBindings": "Reset Bindings...",
-        "controllerBindings": "Controller Bindings",
+        "editBindings": "Muuda nuppe...",
+        "resetBindings": "Lähtesta nupud...",
+        "controllerBindings": "Kontrolleri nupud",
         "shader": {
-            "text": "Shader Options",
+            "text": "Shaderi valikud",
             "chunkVert": {
-                "text": "World",
-                "WavyLeavesStrength": "Wavy Leaves Strength",
-                "WavyLeavesSpeed": "Wavy Leaves Speed",
-                "WavyPlantStrength": "Wavy Plant Strength",
-                "WavyPlantSpeed": "Wavy Plant Speed",
-                "WavyPlantMode": "Wavy Plant Mode"
+                "text": "Maailm",
+                "WavyLeavesStrength": "Laineliste lehtede tugevus",
+                "WavyLeavesSpeed": "Laineliste lehtede kiirus",
+                "WavyPlantStrength": "Laineliste taimede tugevus",
+                "WavyPlantSpeed": "Laineliste taimede kiirus",
+                "WavyPlantMode": "Laineliste taimede režiim"
             },
             "cloud": {
-                "text": "Clouds",
-                "minParallax": "Min Parallax",
-                "maxParallax": "Max Parallax",
-                "minGradient": "Min Gradient",
-                "maxGradient": "Max Gradient",
-                "cloudHeight": "Cloud Height",
-                "shadow": "Shadow Color",
-                "smoothWidth": "Smooth Width",
-                "smoothSamples": "Smooth Samples",
-                "closeFade": "Close Fade",
-                "smoothTop": "Smooth Top",
-                "smoothEdge": "Smooth Edge",
-                "smoothBottom": "Smooth Bottom",
-                "smoothBottomTopDown": "Smooth Bottom Top Down"
+                "text": "Pilved",
+                "minParallax": "Minimaalne parallaks",
+                "maxParallax": "Maksimaalne parallaks",
+                "minGradient": "Minimaalne gradient",
+                "maxGradient": "Maksimaalne gradient",
+                "cloudHeight": "Pilvede kõrgus",
+                "shadow": "Varju värv",
+                "smoothWidth": "Sujuva serva laius",
+                "smoothSamples": "Sujuvad näidised",
+                "closeFade": "Lähedane hääbumine",
+                "smoothTop": "Sile ülaosa",
+                "smoothEdge": "Sile serv",
+                "smoothBottom": "Sile alaosa",
+                "smoothBottomTopDown": "Sile alaosa ülevalt alla"
             },
             "ui": {
                 "text": "UI",
-                "darkMode": "Dark Mode"
+                "darkMode": "Tume režiim"
             },
             "preset": {
-                "text": "Preset",
-                "disabled": "Disabled",
-                "default": "Default",
-                "custom": "Custom",
+                "text": "Eelseadistus",
+                "disabled": "Keelatud",
+                "default": "Tavaline",
+                "custom": "Kohandatud",
                 "2d": "2D",
                 "3d": "3D",
-                "low": "Low",
-                "medium": "Medium",
-                "high": "High",
+                "low": "Madal",
+                "medium": "Keskmine",
+                "high": "Kõrge",
                 "ultra": "Ultra"
             }
         }
     },
     "performance": {
-        "max": "Max FPS",
-        "balanced": "Balanced",
-        "powersaver": "Power saver"
+        "max": "Maksimaalne FPS",
+        "balanced": "Tasakaalustatud",
+        "powersaver": "Energiasääst"
     },
     "controls": {
-        "title": "Controls"
+        "title": "Juhtnupud"
     },
     "key": {
-        "forward": "Forward",
-        "left": "Left",
-        "back": "Back",
-        "right": "Right",
-        "jump": "Jump",
-        "inventory": "Inventory",
-        "drop": "Drop",
-        "chat": "Chat",
-        "fog": "Toggle Fog",
-        "sneak": "Sneak",
-        "playerlist": "List players",
-        "zoom": "Zoom",
-        "hotbarLeft": "Hotbar Left",
-        "hotbarRight": "Hotbar Right",
-        "pickBlock": "Pick Block",
-        "camera": "Camera Mode",
-        "pause": "Pause"
+        "forward": "Edasi",
+        "left": "Vasakule",
+        "back": "Tagasi",
+        "right": "Paremale",
+        "jump": "Hüppa",
+        "inventory": "Varud",
+        "drop": "Viska",
+        "chat": "Vestlus",
+        "fog": "Lülita udu",
+        "sneak": "Hiili",
+        "playerlist": "Mängijate loend",
+        "zoom": "Suumi",
+        "hotbarLeft": "Kiirauad vasakule",
+        "hotbarRight": "Kiirauad paremale",
+        "pickBlock": "Vali plokk",
+        "camera": "Kaamera režiim",
+        "pause": "Paus"
     },
     "texturePack": {
-        "openFolder": "Open texture pack folder",
-        "title": "Select Texture Pack",
-        "folderInfo": "(Place texture pack files here)"
+        "openFolder": "Ava tekstuuripaketi kaust",
+        "title": "Vali tekstuuripakett",
+        "folderInfo": "(Aseta tekstuuripaketi failid siia)"
     },
     "tile": {
         "tallgrass": {
-            "name": "Tallgrass",
+            "name": "Kõrgerohi",
             "desc": ""
         },
         "stone": {
-            "name": "Stone",
+            "name": "Kivi",
             "desc": ""
         },
         "grass": {
-            "name": "Grass",
+            "name": "Muruplokk",
             "desc": ""
         },
         "dirt": {
-            "name": "Dirt",
+            "name": "Muld",
             "desc": ""
         },
         "stonebrick": {
-            "name": "Cobblestone",
+            "name": "Munakivi",
             "desc": ""
         },
         "wood": {
-            "name": "Wooden Planks",
+            "name": "Puidust lauad",
             "desc": ""
         },
         "sapling": {
-            "name": "Sapling",
+            "name": "Istik",
             "desc": ""
         },
         "bedrock": {
-            "name": "Bedrock",
+            "name": "Aluspõhi",
             "desc": ""
         },
         "water": {
-            "name": "Water",
+            "name": "Vesi",
             "desc": ""
         },
         "lava": {
@@ -387,150 +387,150 @@
             "desc": ""
         },
         "sand": {
-            "name": "Sand",
+            "name": "Liiv",
             "desc": ""
         },
-        "sandStone": { "name": "Sandstone" },
+        "sandStone": { "name": "Liivakivi" },
         "gravel": {
-            "name": "Gravel",
+            "name": "Kruus",
             "desc": ""
         },
         "oreGold": {
-            "name": "Gold Ore",
+            "name": "Kullamaak",
             "desc": ""
         },
         "oreIron": {
-            "name": "Iron Ore",
+            "name": "Raudamaak",
             "desc": ""
         },
         "oreCoal": {
-            "name": "Coal Ore",
+            "name": "Söemaak",
             "desc": ""
         },
         "log": {
-            "name": "Wood",
+            "name": "Palk",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Lehed",
             "desc": ""
         },
         "sponge": {
-            "name": "Sponge",
+            "name": "Käsn",
             "desc": ""
         },
         "glass": {
-            "name": "Glass",
+            "name": "Klaas",
             "desc": ""
         },
         "cloth": {
-            "name": "Wool",
+            "name": "Vill",
             "desc": "",
             "black": {
-                "name": "Black Wool",
+                "name": "Must vill",
                 "desc": ""
             },
             "red": {
-                "name": "Red Wool",
+                "name": "Punane vill",
                 "desc": ""
             },
             "green": {
-                "name": "Green Wool",
+                "name": "Roheline vill",
                 "desc": ""
             },
             "brown": {
-                "name": "Brown Wool",
+                "name": "Pruun vill",
                 "desc": ""
             },
             "blue": {
-                "name": "Blue Wool",
+                "name": "Sinine vill",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Wool",
+                "name": "Lilla vill",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Wool",
+                "name": "Tsüaansinine vill",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Wool",
+                "name": "Helehall vill",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Wool",
+                "name": "Hall vill",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Wool",
+                "name": "Roosa vill",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Wool",
+                "name": "Laimiroheline vill",
                 "desc": ""
             },
             "yellow": {
-                "name": "Yellow Wool",
+                "name": "Kollane vill",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Wool",
+                "name": "Helesinine vill",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Wool",
+                "name": "Magenta vill",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Wool",
+                "name": "Oranž vill",
                 "desc": ""
             },
             "white": {
-                "name": "Wool",
+                "name": "Vill",
                 "desc": ""
             }
         },
         "flower": {
-            "name": "Flower",
+            "name": "Lill",
             "desc": ""
         },
         "rose": {
-            "name": "Rose",
+            "name": "Roos",
             "desc": ""
         },
         "mushroom": {
-            "name": "Mushroom",
+            "name": "Seen",
             "desc": ""
         },
         "blockGold": {
-            "name": "Block of Gold",
+            "name": "Kullaklots",
             "desc": ""
         },
         "blockIron": {
-            "name": "Block of Iron",
+            "name": "Rauaklots",
             "desc": ""
         },
         "stoneSlab": {
             "stone": {
-                "name": "Stone Slab",
+                "name": "Kiviplaat",
                 "desc": ""
             },
             "sand": {
-                "name": "Sandstone Slab",
+                "name": "Liivakiviplaat",
                 "desc": ""
             },
             "wood": {
-                "name": "Wooden Slab",
+                "name": "Puidust plaat",
                 "desc": ""
             },
             "cobble": {
-                "name": "Stone Slab",
+                "name": "Kiviplaat",
                 "desc": ""
             }
         },
         "brick": {
-            "name": "Bricks",
+            "name": "Tellised",
             "desc": ""
         },
         "tnt": {
@@ -538,151 +538,151 @@
             "desc": ""
         },
         "bookshelf": {
-            "name": "Bookshelf",
+            "name": "Raamaturiiul",
             "desc": ""
         },
         "stoneMoss": {
-            "name": "Moss Stone",
+            "name": "Samblaga kivi",
             "desc": ""
         },
         "obsidian": {
-            "name": "Obsidian",
+            "name": "Obsidiaan",
             "desc": ""
         },
         "torch": {
-            "name": "Torch",
+            "name": "Tõrvik",
             "desc": ""
         },
         "fire": {
-            "name": "Fire",
+            "name": "Tuli",
             "desc": ""
         },
         "mobSpawner": {
-            "name": "Monster Spawner",
+            "name": "Koletise tekitaja",
             "desc": ""
         },
         "stairsWood": {
-            "name": "Wooden Stairs",
+            "name": "Puidust trepp",
             "desc": ""
         },
         "chest": {
-            "name": "Chest",
+            "name": "Kirst",
             "desc": ""
         },
         "redstoneDust": {
-            "name": "Redstone Dust",
+            "name": "Redstone-tolm",
             "desc": ""
         },
         "oreDiamond": {
-            "name": "Diamond Ore",
+            "name": "Teemantimaak",
             "desc": ""
         },
         "blockDiamond": {
-            "name": "Block of Diamond",
+            "name": "Teemantklots",
             "desc": ""
         },
         "workbench": {
-            "name": "Crafting Table",
+            "name": "Töölaud",
             "desc": ""
         },
         "crops": {
-            "name": "Crops",
+            "name": "Saak",
             "desc": ""
         },
         "farmland": {
-            "name": "Farmland",
+            "name": "Põllumaa",
             "desc": ""
         },
         "furnace": {
-            "name": "Furnace",
+            "name": "Ahi",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Silt",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Puidust uks",
             "desc": ""
         },
         "ladder": {
-            "name": "Ladder",
+            "name": "Redel",
             "desc": ""
         },
         "rail": {
-            "name": "Rail",
+            "name": "Rööbas",
             "desc": ""
         },
         "goldenRail": {
-            "name": "Powered Rail",
+            "name": "Jõurööbas",
             "desc": ""
         },
         "detectorRail": {
-            "name": "Detector Rail",
+            "name": "Detektorrööbas",
             "desc": ""
         },
         "stairsStone": {
-            "name": "Stone Stairs",
+            "name": "Kivitrepp",
             "desc": ""
         },
         "lever": {
-            "name": "Lever",
+            "name": "Kang",
             "desc": ""
         },
         "pressurePlate": {
-            "name": "Pressure Plate",
+            "name": "Surveplaat",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Rauauks",
             "desc": ""
         },
         "oreRedstone": {
-            "name": "Redstone Ore",
+            "name": "Redstone-maak",
             "desc": ""
         },
         "notGate": {
-            "name": "Redstone Torch",
+            "name": "Redstone-tõrvik",
             "desc": ""
         },
         "button": {
-            "name": "Button",
+            "name": "Nupp",
             "desc": ""
         },
         "snow": {
-            "name": "Snow",
+            "name": "Lumi",
             "desc": ""
         },
         "ice": {
-            "name": "Ice",
+            "name": "Jää",
             "desc": ""
         },
         "cactus": {
-            "name": "Cactus",
+            "name": "Kaktus",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Savi",
             "desc": ""
         },
         "reeds": {
-            "name": "Sugar cane",
+            "name": "Suhkruroog",
             "desc": ""
         },
         "jukebox": {
-            "name": "Jukebox",
+            "name": "Plaadimängija",
             "desc": ""
         },
         "fence": {
-            "name": "Fence",
+            "name": "Aed",
             "desc": ""
         },
         "pumpkin": {
-            "name": "Pumpkin",
+            "name": "Kõrvits",
             "desc": ""
         },
         "litpumpkin": {
-            "name": "Jack 'o' Lantern",
+            "name": "Kõrvitsalatern",
             "desc": ""
         },
         "hellrock": {
@@ -690,376 +690,376 @@
             "desc": ""
         },
         "hellsand": {
-            "name": "Soul Sand",
+            "name": "Hingeliiv",
             "desc": ""
         },
         "lightgem": {
-            "name": "Glowstone",
+            "name": "Hõõguskivi",
             "desc": ""
         },
         "portal": {
-            "name": "Portal",
+            "name": "Portaal",
             "desc": ""
         },
         "oreLapis": {
-            "name": "Lapis Lazuli Ore",
+            "name": "Lapislatsi maak",
             "desc": ""
         },
         "blockLapis": {
-            "name": "Lapis Lazuli Block",
+            "name": "Lapislatsi klots",
             "desc": ""
         },
         "dispenser": {
-            "name": "Dispenser",
+            "name": "Jaotur",
             "desc": ""
         },
         "musicBlock": {
-            "name": "Note Block",
+            "name": "Nootplokk",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Kook",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Voodi",
             "desc": "",
-            "occupied": "This bed is occupied",
-            "noSleep": "You can only sleep at night",
-            "notValid": "Your home bed was missing or obstructed"
+            "occupied": "See voodi on hõivatud",
+            "noSleep": "Saad magada ainult öösel",
+            "notValid": "Sinu koduvoodi puudub või on takistatud"
         },
         "lockedchest": {
-            "name": "Locked chest",
+            "name": "Lukustatud kirst",
             "desc": ""
         },
         "trapdoor": {
-            "name": "Trapdoor",
+            "name": "Luuk",
             "desc": ""
         },
         "web": {
-            "name": "Cobweb",
+            "name": "Ämblikuvõrk",
             "desc": ""
         },
         "stonebricksmooth": {
-            "name": "Stone Bricks",
+            "name": "Kivitellised",
             "desc": ""
         },
         "pistonBase": {
-            "name": "Piston",
+            "name": "Kolb",
             "desc": ""
         },
         "pistonStickyBase": {
-            "name": "Sticky Piston",
+            "name": "Kleepuv kolb",
             "desc": ""
         }
     },
     "item": {
         "shovelIron": {
-            "name": "Iron Shovel",
+            "name": "Raudlabidas",
             "desc": ""
         },
         "pickaxeIron": {
-            "name": "Iron Pickaxe",
+            "name": "Raudkirka",
             "desc": ""
         },
         "hatchetIron": {
-            "name": "Iron Axe",
+            "name": "Raudkirves",
             "desc": ""
         },
         "flintAndSteel": {
-            "name": "Flint and Steel",
+            "name": "Tulekivi ja teras",
             "desc": ""
         },
         "apple": {
-            "name": "Apple",
+            "name": "Õun",
             "desc": ""
         },
         "cookie": {
-            "name": "Cookie",
+            "name": "Küpsis",
             "desc": ""
         },
         "bow": {
-            "name": "Bow",
+            "name": "Vibu",
             "desc": ""
         },
         "arrow": {
-            "name": "Arrow",
+            "name": "Nool",
             "desc": ""
         },
         "coal": {
-            "name": "Coal",
+            "name": "Süsi",
             "desc": ""
         },
         "charcoal": {
-            "name": "Charcoal",
+            "name": "Puusüsi",
             "desc": ""
         },
         "diamond": {
-            "name": "Diamond",
+            "name": "Teemant",
             "desc": ""
         },
         "ingotIron": {
-            "name": "Iron Ingot",
+            "name": "Rauakang",
             "desc": ""
         },
         "ingotGold": {
-            "name": "Gold Ingot",
+            "name": "Kullakang",
             "desc": ""
         },
         "swordIron": {
-            "name": "Iron Sword",
+            "name": "Raudmõõk",
             "desc": ""
         },
         "swordWood": {
-            "name": "Wooden Sword",
+            "name": "Puidust mõõk",
             "desc": ""
         },
         "shovelWood": {
-            "name": "Wooden Shovel",
+            "name": "Puidust labidas",
             "desc": ""
         },
         "pickaxeWood": {
-            "name": "Wooden Pickaxe",
+            "name": "Puidust kirka",
             "desc": ""
         },
         "hatchetWood": {
-            "name": "Wooden Axe",
+            "name": "Puidust kirves",
             "desc": ""
         },
         "swordStone": {
-            "name": "Stone Sword",
+            "name": "Kivimõõk",
             "desc": ""
         },
         "shovelStone": {
-            "name": "Stone Shovel",
+            "name": "Kivilabidas",
             "desc": ""
         },
         "pickaxeStone": {
-            "name": "Stone Pickaxe",
+            "name": "Kivikirka",
             "desc": ""
         },
         "hatchetStone": {
-            "name": "Stone Axe",
+            "name": "Kivikirves",
             "desc": ""
         },
         "swordDiamond": {
-            "name": "Diamond Sword",
+            "name": "Teemantmõõk",
             "desc": ""
         },
         "shovelDiamond": {
-            "name": "Diamond Shovel",
+            "name": "Teemantlabidas",
             "desc": ""
         },
         "pickaxeDiamond": {
-            "name": "Diamond Pickaxe",
+            "name": "Teemantkirka",
             "desc": ""
         },
         "hatchetDiamond": {
-            "name": "Diamond Axe",
+            "name": "Teemantkirves",
             "desc": ""
         },
         "stick": {
-            "name": "Stick",
+            "name": "Kepp",
             "desc": ""
         },
         "bowl": {
-            "name": "Bowl",
+            "name": "Kauss",
             "desc": ""
         },
         "mushroomStew": {
-            "name": "Mushroom Stew",
+            "name": "Seenesupp",
             "desc": ""
         },
         "swordGold": {
-            "name": "Golden Sword",
+            "name": "Kuldmõõk",
             "desc": ""
         },
         "shovelGold": {
-            "name": "Golden Shovel",
+            "name": "Kuldlabidas",
             "desc": ""
         },
         "pickaxeGold": {
-            "name": "Golden Pickaxe",
+            "name": "Kuldkirka",
             "desc": ""
         },
         "hatchetGold": {
-            "name": "Golden Axe",
+            "name": "Kuldkirves",
             "desc": ""
         },
         "string": {
-            "name": "String",
+            "name": "Nöör",
             "desc": ""
         },
         "feather": {
-            "name": "Feather",
+            "name": "Sulg",
             "desc": ""
         },
         "gunpowder": {
-            "name": "Gunpowder",
+            "name": "Püssirohi",
             "desc": ""
         },
         "hoeWood": {
-            "name": "Wooden Hoe",
+            "name": "Puidust kõblas",
             "desc": ""
         },
         "hoeStone": {
-            "name": "Stone Hoe",
+            "name": "Kivikõblas",
             "desc": ""
         },
         "hoeIron": {
-            "name": "Iron Hoe",
+            "name": "Raudkõblas",
             "desc": ""
         },
         "hoeDiamond": {
-            "name": "Diamond Hoe",
+            "name": "Teemantkõblas",
             "desc": ""
         },
         "hoeGold": {
-            "name": "Golden Hoe",
+            "name": "Kuldkõblas",
             "desc": ""
         },
         "seeds": {
-            "name": "Seeds",
+            "name": "Seemned",
             "desc": ""
         },
         "wheat": {
-            "name": "Wheat",
+            "name": "Nisu",
             "desc": ""
         },
         "bread": {
-            "name": "Bread",
+            "name": "Leib",
             "desc": ""
         },
         "helmetLeather": {
-            "name": "Leather Cap",
+            "name": "Nahkmüts",
             "desc": ""
         },
         "chestplateLeather": {
-            "name": "Leather Tunic",
+            "name": "Nahast tuunika",
             "desc": ""
         },
         "leggingsLeather": {
-            "name": "Leather Pants",
+            "name": "Nahast püksid",
             "desc": ""
         },
         "bootsLeather": {
-            "name": "Leather Boots",
+            "name": "Nahast saapad",
             "desc": ""
         },
         "helmetChain": {
-            "name": "Chain Helmet",
+            "name": "Kettkiiver",
             "desc": ""
         },
         "chestplateChain": {
-            "name": "Chain Chestplate",
+            "name": "Ketirinnak",
             "desc": ""
         },
         "leggingsChain": {
-            "name": "Chain Leggings",
+            "name": "Kettpüksid",
             "desc": ""
         },
         "bootsChain": {
-            "name": "Chain Boots",
+            "name": "Ketsaapad",
             "desc": ""
         },
         "helmetIron": {
-            "name": "Iron Helmet",
+            "name": "Raudkiiver",
             "desc": ""
         },
         "chestplateIron": {
-            "name": "Iron Chestplate",
+            "name": "Raudrinnak",
             "desc": ""
         },
         "leggingsIron": {
-            "name": "Iron Leggings",
+            "name": "Raudpüksid",
             "desc": ""
         },
         "bootsIron": {
-            "name": "Iron Boots",
+            "name": "Raudsaapad",
             "desc": ""
         },
         "helmetDiamond": {
-            "name": "Diamond Helmet",
+            "name": "Teemantkiiver",
             "desc": ""
         },
         "chestplateDiamond": {
-            "name": "Diamond Chestplate",
+            "name": "Teemantrinnak",
             "desc": ""
         },
         "leggingsDiamond": {
-            "name": "Diamond Leggings",
+            "name": "Teemantpüksid",
             "desc": ""
         },
         "bootsDiamond": {
-            "name": "Diamond Boots",
+            "name": "Teemantsaapad",
             "desc": ""
         },
         "helmetGold": {
-            "name": "Golden Helmet",
+            "name": "Kuldkiiver",
             "desc": ""
         },
         "chestplateGold": {
-            "name": "Golden Chestplate",
+            "name": "Kuldrinnak",
             "desc": ""
         },
         "leggingsGold": {
-            "name": "Golden Leggings",
+            "name": "Kuldpüksid",
             "desc": ""
         },
         "bootsGold": {
-            "name": "Golden boots",
+            "name": "Kuldsaapad",
             "desc": ""
         },
         "flint": {
-            "name": "Flint",
+            "name": "Tulekivi",
             "desc": ""
         },
         "porkchopRaw": {
-            "name": "Raw Porkchop",
+            "name": "Toores sealiha",
             "desc": ""
         },
         "porkchopCooked": {
-            "name": "Cooked Porkchop",
+            "name": "Küpsetatud sealiha",
             "desc": ""
         },
         "painting": {
-            "name": "Painting",
+            "name": "Maal",
             "desc": ""
         },
         "appleGold": {
-            "name": "Golden Apple",
+            "name": "Kuldõun",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Silt",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Puidust uks",
             "desc": ""
         },
         "bucket": {
-            "name": "Bucket",
+            "name": "Ämber",
             "desc": ""
         },
         "bucketWater": {
-            "name": "Water Bucket",
+            "name": "Veeämber",
             "desc": ""
         },
         "bucketLava": {
-            "name": "Lava bucket",
+            "name": "Lavaämber",
             "desc": ""
         },
         "minecart": {
-            "name": "Minecart",
+            "name": "Kaevanduskäru",
             "desc": ""
         },
         "saddle": {
-            "name": "Saddle",
+            "name": "Sadul",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Rauauks",
             "desc": ""
         },
         "redstone": {
@@ -1067,303 +1067,303 @@
             "desc": ""
         },
         "snowball": {
-            "name": "Snowball",
+            "name": "Lumepall",
             "desc": ""
         },
         "boat": {
-            "name": "Boat",
+            "name": "Paat",
             "desc": ""
         },
         "leather": {
-            "name": "Leather",
+            "name": "Nahk",
             "desc": ""
         },
         "milk": {
-            "name": "Milk",
+            "name": "Piim",
             "desc": ""
         },
         "brick": {
-            "name": "Brick",
+            "name": "Tellis",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Savi",
             "desc": ""
         },
         "sugarCanes": {
-            "name": "Sugar Canes",
+            "name": "Suhkruroog",
             "desc": ""
         },
         "paper": {
-            "name": "Paper",
+            "name": "Paber",
             "desc": ""
         },
         "book": {
-            "name": "Book",
+            "name": "Raamat",
             "desc": ""
         },
         "slimeball": {
-            "name": "Slimeball",
+            "name": "Limapall",
             "desc": ""
         },
         "minecartChest": {
-            "name": "Minecart with Chest",
+            "name": "Kirstuga kaevanduskäru",
             "desc": ""
         },
         "minecartFurnace": {
-            "name": "Minecart with Furnace",
+            "name": "Ahjuga kaevanduskäru",
             "desc": ""
         },
         "egg": {
-            "name": "Egg",
+            "name": "Muna",
             "desc": ""
         },
         "compass": {
-            "name": "Compass",
+            "name": "Kompass",
             "desc": ""
         },
         "fishingRod": {
-            "name": "Fishing Rod",
+            "name": "Õngeritv",
             "desc": ""
         },
         "clock": {
-            "name": "Clock",
+            "name": "Kell",
             "desc": ""
         },
         "yellowDust": {
-            "name": "Glowstone Dust",
+            "name": "Hõõgustolm",
             "desc": ""
         },
         "fishRaw": {
-            "name": "Raw Fish",
+            "name": "Toores kala",
             "desc": ""
         },
         "fishCooked": {
-            "name": "Cooked Fish",
+            "name": "Küpsetatud kala",
             "desc": ""
         },
         "record": {
-            "name": "Music Disc",
+            "name": "Muusikaplaat",
             "desc": ""
         },
         "bone": {
-            "name": "Bone",
+            "name": "Luu",
             "desc": ""
         },
         "dyePowder": {
             "black": {
-                "name": "Ink Sac",
+                "name": "Tindikott",
                 "desc": ""
             },
             "red": {
-                "name": "Rose Red",
+                "name": "Roosipunane",
                 "desc": ""
             },
             "green": {
-                "name": "Cactus Green",
+                "name": "Kaktusroheline",
                 "desc": ""
             },
             "brown": {
-                "name": "Cocoa Beans",
+                "name": "Kakaoad",
                 "desc": ""
             },
             "blue": {
-                "name": "Lapis Lazuli",
+                "name": "Lapislatsi",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Dye",
+                "name": "Lilla värv",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Dye",
+                "name": "Tsüaansinine värv",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Dye",
+                "name": "Helehall värv",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Dye",
+                "name": "Hall värv",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Dye",
+                "name": "Roosa värv",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Dye",
+                "name": "Laimiroheline värv",
                 "desc": ""
             },
             "yellow": {
-                "name": "Dandelion Yellow",
+                "name": "Võilillekollane",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Dye",
+                "name": "Helesinine värv",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Dye",
+                "name": "Magenta värv",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Dye",
+                "name": "Oranž värv",
                 "desc": ""
             },
             "white": {
-                "name": "Bone Meal",
+                "name": "Kondijahu",
                 "desc": ""
             }
         },
         "sugar": {
-            "name": "Sugar",
+            "name": "Suhkur",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Kook",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Voodi",
             "desc": ""
         },
         "redstoneRepeater": {
-            "name": "Redstone Repeater",
+            "name": "Redstone-relee",
             "desc": ""
         },
         "map": {
-            "name": "Map",
+            "name": "Kaart",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Lehed",
             "desc": ""
         },
         "shears": {
-            "name": "Shears",
+            "name": "Käärid",
             "desc": ""
         }
     },
     "stat": {
-        "generalButton": "General",
-        "blocksButton": "Blocks",
-        "itemsButton": "Items",
-        "used": "Times Used",
-        "mined": "Times Mined",
-        "depleted": "Times Depleted",
-        "crafted": "Times Crafted",
-        "startGame": "Times played",
-        "createWorld": "Worlds played",
-        "loadWorld": "Saves loaded",
-        "joinMultiplayer": "Multiplayer joins",
-        "leaveGame": "Games quit",
-        "playOneMinute": "Minutes Played",
-        "walkOneCm": "Distance Walked",
-        "fallOneCm": "Distance Fallen",
-        "swimOneCm": "Distance Swum",
-        "flyOneCm": "Distance Flown",
-        "climbOneCm": "Distance Climbed",
-        "diveOneCm": "Distance Dove",
-        "minecartOneCm": "Distance by Minecart",
-        "boatOneCm": "Distance by Boat",
-        "pigOneCm": "Distance by Pig",
-        "jump": "Jumps",
-        "drop": "Items Dropped",
-        "damageDealt": "Damage Dealt",
-        "damageTaken": "Damage Taken",
-        "deaths": "Number of Deaths",
-        "mobKills": "Mob Kills",
-        "playerKills": "Player Kills",
-        "fishCaught": "Fish Caught",
-        "mineBlock": "{0} Mined",
-        "craftItem": "{0} Crafted",
-        "useItem": "{0} Used",
-        "breakItem": "{0} Depleted"
+        "generalButton": "Üldine",
+        "blocksButton": "Plokid",
+        "itemsButton": "Esemed",
+        "used": "Kasutuskordi",
+        "mined": "Kaevanduskordi",
+        "depleted": "Kulutuskordi",
+        "crafted": "Meisterduskordi",
+        "startGame": "Mängitud kordi",
+        "createWorld": "Mängitud maailmu",
+        "loadWorld": "Laaditud salvestusi",
+        "joinMultiplayer": "Mitmikmängu liitumisi",
+        "leaveGame": "Väljutud mänge",
+        "playOneMinute": "Mängitud minuteid",
+        "walkOneCm": "Kõndimiskaugus",
+        "fallOneCm": "Kukkumiskaugus",
+        "swimOneCm": "Ujumiskaugus",
+        "flyOneCm": "Lendamiskaugus",
+        "climbOneCm": "Ronimiskaugus",
+        "diveOneCm": "Sukeldumiskaugus",
+        "minecartOneCm": "Kaevanduskäruga vahemaa",
+        "boatOneCm": "Paadiga vahemaa",
+        "pigOneCm": "Seaga vahemaa",
+        "jump": "Hüpped",
+        "drop": "Maha visatud esemeid",
+        "damageDealt": "Tekitatud kahju",
+        "damageTaken": "Saadud kahju",
+        "deaths": "Surmade arv",
+        "mobKills": "Koletiste tapmised",
+        "playerKills": "Mängijate tapmised",
+        "fishCaught": "Püütud kala",
+        "mineBlock": "{0} kaevandatud",
+        "craftItem": "{0} meisterdatud",
+        "useItem": "{0} kasutatud",
+        "breakItem": "{0} kulutatud"
     },
-    "achievements.title": "Achievements",
+    "achievements.title": "Saavutused",
     "achievement": {
-        "get": "Achievement get!",
-        "taken": "Taken!",
-        "challenge": "CHALLENGE",
-        "unlocked": "UNLOCKED",
-        "locked": "LOCKED",
-        "requires": "Requires '{0}'",
+        "get": "Saavutus saadud!",
+        "taken": "Kätte saadud!",
+        "challenge": "VÄLJAKUTSE",
+        "unlocked": "AVATUD",
+        "locked": "SULETUD",
+        "requires": "Nõuab '{0}'",
         "openInventory": {
-            "title": "Taking Inventory",
-            "desc": "Open your inventory."
+            "title": "Varude ülevaatamine",
+            "desc": "Ava oma varud."
         },
         "mineWood": {
-            "title": "Getting Wood",
-            "desc": "Attack a tree until a block of wood pops out"
+            "title": "Puidu hankimine",
+            "desc": "Ründa puud, kuni sealt tuleb välja puuplokk"
         },
         "buildWorkBench": {
-            "title": "Benchmarking",
-            "desc": "Craft a workbench with four blocks of planks"
+            "title": "Töölaua meisterdamine",
+            "desc": "Meisterda töölaud neljast plangiplokist"
         },
         "buildPickaxe": {
-            "title": "Time to Mine!",
-            "desc": "Use planks and sticks to make a pickaxe"
+            "title": "Aeg kaevandada!",
+            "desc": "Kasuta laudu ja keppe kirka tegemiseks"
         },
         "buildFurnace": {
-            "title": "Hot Topic",
-            "desc": "Construct a furnace out of eight stone blocks"
+            "title": "Kuum teema",
+            "desc": "Ehita ahi kaheksast kiviplokist"
         },
         "acquireIron": {
-            "title": "Acquire Hardware",
-            "desc": "Smelt an iron ingot"
+            "title": "Hangi riistvara",
+            "desc": "Sulata rauakang"
         },
         "buildHoe": {
-            "title": "Time to Farm!",
-            "desc": "Use planks and sticks to make a hoe"
+            "title": "Aeg põllutada!",
+            "desc": "Kasuta laudu ja keppe kõbla tegemiseks"
         },
         "makeBread": {
-            "title": "Bake Bread",
-            "desc": "Turn wheat into bread"
+            "title": "Küpseta leiba",
+            "desc": "Muuda nisu leivaks"
         },
         "bakeCake": {
-            "title": "The Lie",
-            "desc": "Wheat, sugar, milk and eggs!"
+            "title": "Vale",
+            "desc": "Nisu, suhkur, piim ja munad!"
         },
         "buildBetterPickaxe": {
-            "title": "Getting an Upgrade",
-            "desc": "Construct a better pickaxe"
+            "title": "Uuenduse hankimine",
+            "desc": "Valmista parem kirka"
         },
         "cookFish": {
-            "title": "Delicious Fish",
-            "desc": "Catch and cook fish!"
+            "title": "Maitsev kala",
+            "desc": "Püüa ja küpseta kala!"
         },
         "onARail": {
-            "title": "On A Rail",
-            "desc": "Travel by minecart at least 1 km from where you started "
+            "title": "Rööbastel",
+            "desc": "Sõida kaevanduskäruga vähemalt 1 km sellest kohast, kus alustasid"
         },
         "buildSword": {
-            "title": "Time to Strike!",
-            "desc": "Use planks and sticks to make a sword"
+            "title": "Aeg lüüa!",
+            "desc": "Kasuta laudu ja keppe mõõga tegemiseks"
         },
         "killEnemy": {
-            "title": "Monster Hunter",
-            "desc": "Attack and destroy a monster"
+            "title": "Koletisekütt",
+            "desc": "Ründa ja hävita koletis"
         },
         "killCow": {
-            "title": "Cow Tipper",
-            "desc": "Harvest some leather"
+            "title": "Lehmakükataja",
+            "desc": "Kogu natuke nahka"
         },
         "flyPig": {
-            "title": "When Pigs Fly",
-            "desc": "Fly a pig off a cliff"
+            "title": "Kui sead lendavad",
+            "desc": "Lenda seaga üle kalju serva"
         }
     },
     "credits": {
-        "version": "BetaSharp Version %1$s",
-        "description": "An enhanced of Minecraft Beta 1.7.3, written in C#.",
-        "github": "On GitHub",
-        "author": "Made by Fazin85",
-        "libs": "Libraries",
-        "slik": "Slik.NET - Graphics",
-        "imgui": "ImGui - Debug UI",
-        "sfml": "SFML.NET - Audio",
-        "sixlabors": "SixLabors - Fonts, image processing",
-        "translations": "Translations Credits"
+        "version": "BetaSharp versioon %1$s",
+        "description": "Minecraft Beta 1.7.3 täiustatud versioon, kirjutatud C# keeles.",
+        "github": "GitHubis",
+        "author": "Autor: Fazin85",
+        "libs": "Teegid",
+        "slik": "Slik.NET – Graafika",
+        "imgui": "ImGui – Silumise UI",
+        "sfml": "SFML.NET – Heli",
+        "sixlabors": "SixLabors – Fondid, pilditöötlus",
+        "translations": "Tõlgete autorid"
     }
 }
