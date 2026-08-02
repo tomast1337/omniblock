@@ -1,536 +1,536 @@
-﻿{
+{
     "gui": {
-        "joinServer": "Join Server",
-        "rename": "Rename",
-        "edit": "Edit",
-        "refresh": "Refresh",
-        "done": "Done",
-        "cancel": "Cancel",
-        "delete": "Delete",
-        "toMenu": "Back to title screen",
-        "up": "Up",
-        "down": "Down",
-        "yes": "Yes",
-        "no": "No",
-        "connect": "Connect",
-        "directConnect": "Direct Connect",
-        "addServer": "Add Server",
-        "create": "Create",
-        "customize": "Customize",
-        "achievements": "Achievements",
-        "stats": "Statistics",
+        "joinServer": "Iontráil Freastalaí",
+        "rename": "Athainmnigh",
+        "edit": "Cuir in Eagar",
+        "refresh": "Athnuaigh",
+        "done": "Déanta",
+        "cancel": "Cealaigh",
+        "delete": "Scrios",
+        "toMenu": "Ar ais go dtí an scáileán teidil",
+        "up": "Suas",
+        "down": "Síos",
+        "yes": "Tá",
+        "no": "Níl",
+        "connect": "Ceangail",
+        "directConnect": "Ceangail Díreach",
+        "addServer": "Cuir Freastalaí Leis",
+        "create": "Cruthaigh",
+        "customize": "Saincheap",
+        "achievements": "Éachtaí",
+        "stats": "Staitisticí",
         "container": {
-            "crafting": "Crafting",
-            "inventory": "Inventory",
-            "dispenser": "Dispenser",
-            "furnace": "Furnace",
+            "crafting": "Ceardaíocht",
+            "inventory": "Fardal",
+            "dispenser": "Dáileoir",
+            "furnace": "Foirnéis",
             "tip": {
-                "move": "Move",
-                "quickMove": "Quick Move",
-                "takeHalf": "Take Half",
-                "place": "Place",
-                "placeOne": "Place One"
+                "move": "Bog",
+                "quickMove": "Bog Tapa",
+                "takeHalf": "Tóg Leath",
+                "place": "Cuir",
+                "placeOne": "Cuir Ceann Amháin"
             }
         }
     },
     "menu": {
-        "singleplayer": "Singleplayer",
-        "multiplayer": "Multiplayer",
-        "texturePacks": "Texture Packs",
-        "options": "Options...",
-        "language": "Language",
-        "quit": "Quit Game",
-        "credits": "Credits",
-        "sendFeedback": "Send Feedback",
-        "reportBugs": "Report Bugs",
-        "saveAndQuitToTitle": "Save and quit to title",
-        "disconnect": "Disconnect"
+        "singleplayer": "Imreoir Aonair",
+        "multiplayer": "Il-imreoir",
+        "texturePacks": "Pacáistí Uigeachta",
+        "options": "Roghanna...",
+        "language": "Teanga",
+        "quit": "Scoir an Cluiche",
+        "credits": "Creidiúintí",
+        "sendFeedback": "Seol Aiseolas",
+        "reportBugs": "Tuairiscigh Fabhtanna",
+        "saveAndQuitToTitle": "Sábháil agus scoir go dtí an teideal",
+        "disconnect": "Dícheangail"
     },
     "selectWorld": {
-        "title": "Select World",
-        "empty": "empty",
-        "world": "World",
-        "select": "Play Selected World",
-        "create": "Create New World",
-        "createDemo": "Play New Demo World",
-        "deleteQuestion": "Are you sure you want to delete this world?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "renameTitle": "Rename World",
-        "conversion": "Must be converted!",
-        "newWorld": "New World",
-        "enterName": "World Name",
-        "resultFolder": "Will be saved in:",
-        "enterSeed": "Seed for the World Generator",
-        "seedInfo": "Leave blank for a random seed",
-        "selectWorldType": "Select World Type",
-        "worldType": "World Type",
-        "customize": "Customize",
-        "moreWorldOptions": "More World Options...",
+        "title": "Roghnaigh Domhan",
+        "empty": "folamh",
+        "world": "Domhan",
+        "select": "Seinn Domhan Roghnaithe",
+        "create": "Cruthaigh Domhan Nua",
+        "createDemo": "Seinn Domhan Taispeána Nua",
+        "deleteQuestion": "An bhfuil tú cinnte gur mhaith leat an domhan seo a scriosadh?",
+        "deleteWarning": "caillfear go deo é! (Ar feadh i bhfad!)",
+        "renameTitle": "Athainmnigh Domhan",
+        "conversion": "Caithfear é a thiontú!",
+        "newWorld": "Domhan Nua",
+        "enterName": "Ainm an Domhain",
+        "resultFolder": "Sábhálfar in:",
+        "enterSeed": "Síol don Ghineadóir Domhain",
+        "seedInfo": "Fág bán le haghaidh síol randamach",
+        "selectWorldType": "Roghnaigh Cineál Domhain",
+        "worldType": "Cineál Domhain",
+        "customize": "Saincheap",
+        "moreWorldOptions": "Tuilleadh Roghanna Domhain...",
         "type": {
             "default": {
-                "title": "Default",
-                "description": "The standard Minecraft world."
+                "title": "Réamhshocrú",
+                "description": "Gnáthdhomhan Minecraft."
             },
             "flat": {
-                "title": "Flat",
-                "description": "A completely flat world."
+                "title": "Comhréidh",
+                "description": "Domhan go hiomlán comhréidh."
             },
             "sky": {
-                "title": "Sky",
-                "description": "A world floating in the sky."
+                "title": "Spéir",
+                "description": "Domhan ag snámh sa spéir."
             }
         }
     },
     "newWorld": {
         "customize": {
             "superflatWorld": {
-                "title": "Customize Superflat World"
+                "title": "Saincheap Domhan Superchomhréidh"
             },
-            "removeLayer": "Remove Layer",
-            "presets": "Presets",
-            "height": "Height",
+            "removeLayer": "Bain Ciseal",
+            "presets": "Réamhshocruithe",
+            "height": "Airde",
             "unknown": "???"
         }
     },
     "world": {
-        "world": "World",
-        "unsupportedFormat": "Unsupported Format!"
+        "world": "Domhan",
+        "unsupportedFormat": "Formáid Neamhthacaithe!"
     },
     "multiplayer": {
-        "title": "Play Multiplayer",
-        "betasharpServer": "BetaSharp Server",
-        "info1": "Minecraft Multiplayer is currently not finished, but there",
-        "info2": "is some buggy early testing going on.",
-        "ipinfo": "Enter the IP of a server to connect to it:",
-        "deleteQuestion": "Are you sure you want to delete this server?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "downloadingTerrain": "Downloading terrain",
-        "stopSleeping": "Leave Bed",
-        "editServerTitle": "Edit Server Info",
-        "addServerTitle": "Add Server Info",
-        "serverName": "Server Name",
-        "serverAddress": "Server Address"
+        "title": "Seinn Il-imreoir",
+        "betasharpServer": "Freastalaí BetaSharp",
+        "info1": "Níl Il-imreoir Minecraft críochnaithe fós, ach",
+        "info2": "tá roinnt tástála luatha lochtach ar siúl.",
+        "ipinfo": "Cuir isteach IP an fhreastalaí le ceangal leis:",
+        "deleteQuestion": "An bhfuil tú cinnte gur mhaith leat an freastalaí seo a scriosadh?",
+        "deleteWarning": "caillfear go deo é! (Ar feadh i bhfad!)",
+        "downloadingTerrain": "Ag íoslódáil na tíre",
+        "stopSleeping": "Fág an Leaba",
+        "editServerTitle": "Cuir Eolas Freastalaí in Eagar",
+        "addServerTitle": "Cuir Eolas Freastalaí Leis",
+        "serverName": "Ainm an Fhreastalaí",
+        "serverAddress": "Seoladh an Fhreastalaí"
     },
     "loading": {
-        "loadingLevel": "Loading level",
-        "startingServer": "Starting server...",
-        "preparingSpawnArea": "Preparing spawn area"
+        "loadingLevel": "Ag lódáil an leibhéil",
+        "startingServer": "Ag tosú an fhreastalaí...",
+        "preparingSpawnArea": "Ag ullmhú limistéar sceite"
     },
     "achievements": {
-        "title": "Achievements"
+        "title": "Éachtaí"
     },
     "gameover": {
-        "title": "Game Over!",
-        "score": "Score",
-        "respawn": "Respawn",
-        "titleMenu": "Title menu"
+        "title": "Deireadh an Chluiche!",
+        "score": "Scór",
+        "respawn": "Athbheochan",
+        "titleMenu": "Roghchlár Teidil"
     },
     "gamemenu": {
-        "title": "Game Menu",
-        "backToGame": "Back to Game"
+        "title": "Roghchlár an Chluiche",
+        "backToGame": "Ar ais go dtí an Cluiche"
     },
     "sign": {
-        "title": "Edit sign message:"
+        "title": "Cuir teachtaireacht an chomhartha in eagar:"
     },
     "stats": {
-        "title": "Statistics",
-        "general": "General",
+        "title": "Staitisticí",
+        "general": "Ginearálta",
         "blocks": {
-            "name": "Blocks",
-            "mined": "Mined",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Blocanna",
+            "mined": "Mianraithe",
+            "crafted": "Ceardaithe",
+            "used": "Úsáidte"
         },
         "items": {
-            "name": "Items",
-            "broken": "Broken",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Míreanna",
+            "broken": "Briste",
+            "crafted": "Ceardaithe",
+            "used": "Úsáidte"
         },
-        "item": "Item"
+        "item": "Mír"
     },
     "connect": {
-        "connecting": "Connecting to the server...",
-        "authorizing": "Logging in...",
-        "failed": "Failed to connect to the server"
+        "connecting": "Ag ceangal leis an bhfreastalaí...",
+        "authorizing": "Ag logáil isteach...",
+        "failed": "Theip ar cheangal leis an bhfreastalaí"
     },
     "disconnect": {
         "genericReason": "{0}",
-        "disconnected": "Disconnected by Server",
-        "lost": "Connection Lost",
-        "kicked": "Was kicked from the game",
-        "timeout": "Timed out",
-        "closed": "Connection closed",
-        "loginFailed": "Failed to login",
-        "quitting": "Quitting",
-        "endOfStream": "End of stream",
-        "overflow": "Buffer overflow"
+        "disconnected": "Dícheangail an freastalaí thú",
+        "lost": "Caillte an Ceangal",
+        "kicked": "Ciceáileadh thú as an gcluiche",
+        "timeout": "Chuaigh an t-am thart",
+        "closed": "Dúnadh an ceangal",
+        "loginFailed": "Theip ar logáil isteach",
+        "quitting": "Ag scoireadh",
+        "endOfStream": "Deireadh an tsrutha",
+        "overflow": "Rith thar maoil an mhaoláin"
     },
     "options": {
-        "off": "OFF",
-        "on": "ON",
-        "disabled": "Disabled",
-        "title": "Options",
-        "controls": "Controls...",
-        "keyboardControls": "Keyboard Controls...",
-        "controllerSettings": "Controller Settings...",
-        "controllerType": "Controller Type",
+        "off": "AS",
+        "on": "AR",
+        "disabled": "Díchumasaithe",
+        "title": "Roghanna",
+        "controls": "Rialuithe...",
+        "keyboardControls": "Rialuithe Méarchláir...",
+        "controllerSettings": "Socruithe Rialtáin...",
+        "controllerType": "Cineál Rialtáin",
         "video": {
-            "text": "Video Settings...",
-            "performance": "Performance",
-            "display": "Display"
+            "text": "Socruithe Físeáin...",
+            "performance": "Feidhmíocht",
+            "display": "Taispeáint"
         },
-        "uiSettings": "UI Settings...",
-        "audioSettings": "Audio Settings...",
-        "audioTitle": "Audio Settings",
-        "videoTitle": "Video Settings",
-        "language": "Language...",
-        "anisoLevel": "Aniso Level",
-        "music": "Music",
-        "sound": "Sound",
-        "invertMouse": "Invert Mouse",
-        "alternateBlocks": "Alternate Blocks",
-        "chunkFade": "Chunk Fade",
+        "uiSettings": "Socruithe Comhéadain...",
+        "audioSettings": "Socruithe Fuaime...",
+        "audioTitle": "Socruithe Fuaime",
+        "videoTitle": "Socruithe Físeáin",
+        "language": "Teanga...",
+        "anisoLevel": "Leibhéal Aniseatrópach",
+        "music": "Ceol",
+        "sound": "Fuaim",
+        "invertMouse": "Inbhéartaigh an Luch",
+        "alternateBlocks": "Blocanna Malartacha",
+        "chunkFade": "Céimniú Smután",
         "sensitivity": {
-            "text": "Sensitivity",
-            "controllerText": "Controller Sensitivity",
-            "min": "*yawn*",
-            "max": "HYPERSPEED!!!"
+            "text": "Íogaireacht",
+            "controllerText": "Íogaireacht Rialtáin",
+            "min": "*méanfach*",
+            "max": "ARD-LUAS!!!"
         },
         "renderDistance": {
-            "text": "Render Distance",
-            "chunks": "Chunks",
-            "tiny": "Tiny",
-            "short": "Short",
-            "normal": "Normal",
-            "far": "Far"
+            "text": "Fad Rindreála",
+            "chunks": "Smutáin",
+            "tiny": "Bídeach",
+            "short": "Gearr",
+            "normal": "Gnáth",
+            "far": "Fada"
         },
-        "viewBobbing": "View Bobbing",
-        "ao": "Smooth Lighting",
-        "anaglyph": "3D Anaglyph",
-        "framerateLimit": "Performance",
+        "viewBobbing": "Luascadh Radhairc",
+        "ao": "Soilsiú Réidh",
+        "anaglyph": "Anaglaif 3D",
+        "framerateLimit": "Feidhmíocht",
         "difficulty": {
-            "text": "Difficulty",
-            "peaceful": "Peaceful",
-            "easy": "Easy",
-            "normal": "Normal",
-            "hard": "Hard"
+            "text": "Deacracht",
+            "peaceful": "Síochánta",
+            "easy": "Éasca",
+            "normal": "Gnáth",
+            "hard": "Crua"
         },
         "graphics": {
-            "text": "Graphics",
-            "fancy": "Fancy",
-            "fast": "Fast"
+            "text": "Grafaicí",
+            "fancy": "Maisiúil",
+            "fast": "Tapa"
         },
         "cloudsQuality": {
-            "text": "Clouds Quality",
-            "off": "No Clouds",
-            "legacy": "Old Clouds",
-            "shader": "Shader"
+            "text": "Cáilíocht na Scamaill",
+            "off": "Gan Scamaill",
+            "legacy": "Seanscamaill",
+            "shader": "Scáthóir"
         },
         "softClouds": {
-            "text": "Soft Clouds"
+            "text": "Scamaill Boga"
         },
         "guiScale": {
-            "text": "GUI Scale",
-            "auto": "Auto",
-            "small": "Small",
-            "normal": "Normal",
-            "large": "Large"
+            "text": "Scála Comhéadain",
+            "auto": "Uathoibríoch",
+            "small": "Beag",
+            "normal": "Gnáth",
+            "large": "Mór"
         },
         "chatScale": {
-            "text": "Chat Scale"
+            "text": "Scála Comhrá"
         },
         "chatWidth": {
-            "text": "Chat Width"
+            "text": "Leithead Comhrá"
         },
-        "advancedOpengl": "Advanced OpenGL",
+        "advancedOpengl": "OpenGL Casta",
         "fps": {
             "text": "FPS",
-            "maxFps": "Max FPS",
-            "unlimited": "Unlimited"
+            "maxFps": "Uasmhéid FPS",
+            "unlimited": "Gan Teorainn"
         },
-        "showCoordinates": "Show Coordinates",
-        "uiCursors": "UI Cursors",
-        "gamma": "Gamma",
+        "showCoordinates": "Taispeáin Comhordanáidí",
+        "uiCursors": "Cúrsóirí Comhéadain",
+        "gamma": "Gáma",
         "vSync": "VSync",
-        "mipmaps": "Mipmaps",
-        "menuMusic": "Menu Music",
+        "mipmaps": "Léarscáileanna Mip",
+        "menuMusic": "Ceol an Roghchláir",
         "msaa": "MSAA",
         "fov": "FOV",
         "movement": {
-            "text": "Movement"
+            "text": "Gluaiseacht"
         },
         "view": {
-            "text": "View"
+            "text": "Radharc"
         },
         "other": {
-            "text": "Other"
+            "text": "Eile"
         },
-        "editBindings": "Edit Bindings...",
-        "resetBindings": "Reset Bindings...",
-        "controllerBindings": "Controller Bindings",
+        "editBindings": "Cuir Ceangail in Eagar...",
+        "resetBindings": "Athshocraigh Ceangail...",
+        "controllerBindings": "Ceangail Rialtáin",
         "shader": {
-            "text": "Shader Options",
+            "text": "Roghanna Scáthóra",
             "chunkVert": {
-                "text": "World",
-                "WavyLeavesStrength": "Wavy Leaves Strength",
-                "WavyLeavesSpeed": "Wavy Leaves Speed",
-                "WavyPlantStrength": "Wavy Plant Strength",
-                "WavyPlantSpeed": "Wavy Plant Speed",
-                "WavyPlantMode": "Wavy Plant Mode"
+                "text": "Domhan",
+                "WavyLeavesStrength": "Neart Duilleoga Tonnacha",
+                "WavyLeavesSpeed": "Luas Duilleoga Tonnacha",
+                "WavyPlantStrength": "Neart Plandaí Tonnacha",
+                "WavyPlantSpeed": "Luas Plandaí Tonnacha",
+                "WavyPlantMode": "Mód Plandaí Tonnacha"
             },
             "cloud": {
-                "text": "Clouds",
-                "minParallax": "Min Parallax",
-                "maxParallax": "Max Parallax",
-                "minGradient": "Min Gradient",
-                "maxGradient": "Max Gradient",
-                "cloudHeight": "Cloud Height",
-                "shadow": "Shadow Color",
-                "smoothWidth": "Smooth Width",
-                "smoothSamples": "Smooth Samples",
-                "closeFade": "Close Fade",
-                "smoothTop": "Smooth Top",
-                "smoothEdge": "Smooth Edge",
-                "smoothBottom": "Smooth Bottom",
-                "smoothBottomTopDown": "Smooth Bottom Top Down"
+                "text": "Scamaill",
+                "minParallax": "Paralacs Íosta",
+                "maxParallax": "Paralacs Uasta",
+                "minGradient": "Grádán Íosta",
+                "maxGradient": "Grádán Uasta",
+                "cloudHeight": "Airde na Scamaill",
+                "shadow": "Dath an Scátha",
+                "smoothWidth": "Leithead Réidh",
+                "smoothSamples": "Samplaí Réidh",
+                "closeFade": "Céimniú Cóngarach",
+                "smoothTop": "Barr Réidh",
+                "smoothEdge": "Imeall Réidh",
+                "smoothBottom": "Bun Réidh",
+                "smoothBottomTopDown": "Bun Réidh Ó Bharr Anuas"
             },
             "ui": {
-                "text": "UI",
-                "darkMode": "Dark Mode"
+                "text": "Comhéadan",
+                "darkMode": "Mód Dorcha"
             },
             "preset": {
-                "text": "Preset",
-                "disabled": "Disabled",
-                "default": "Default",
-                "custom": "Custom",
+                "text": "Réamhshocrú",
+                "disabled": "Díchumasaithe",
+                "default": "Réamhshocrú",
+                "custom": "Saincheaptha",
                 "2d": "2D",
                 "3d": "3D",
-                "low": "Low",
-                "medium": "Medium",
-                "high": "High",
+                "low": "Íseal",
+                "medium": "Meánach",
+                "high": "Ard",
                 "ultra": "Ultra"
             }
         }
     },
     "performance": {
-        "max": "Max FPS",
-        "balanced": "Balanced",
-        "powersaver": "Power saver"
+        "max": "Uasmhéid FPS",
+        "balanced": "Cothromaithe",
+        "powersaver": "Coigilteoir Cumhachta"
     },
     "controls": {
-        "title": "Controls"
+        "title": "Rialuithe"
     },
     "key": {
-        "forward": "Forward",
-        "left": "Left",
-        "back": "Back",
-        "right": "Right",
-        "jump": "Jump",
-        "inventory": "Inventory",
-        "drop": "Drop",
-        "chat": "Chat",
-        "fog": "Toggle Fog",
-        "sneak": "Sneak",
-        "playerlist": "List players",
-        "zoom": "Zoom",
-        "hotbarLeft": "Hotbar Left",
-        "hotbarRight": "Hotbar Right",
-        "pickBlock": "Pick Block",
-        "camera": "Camera Mode",
-        "pause": "Pause"
+        "forward": "Ar Aghaidh",
+        "left": "Clé",
+        "back": "Siar",
+        "right": "Deas",
+        "jump": "Léim",
+        "inventory": "Fardal",
+        "drop": "Caith",
+        "chat": "Comhrá",
+        "fog": "Scoránaigh Ceo",
+        "sneak": "Cúléis",
+        "playerlist": "Liosta Imreoirí",
+        "zoom": "Zúmáil",
+        "hotbarLeft": "Barra Te Clé",
+        "hotbarRight": "Barra Te Deas",
+        "pickBlock": "Pioc Bloc",
+        "camera": "Mód Ceamara",
+        "pause": "Sos"
     },
     "texturePack": {
-        "openFolder": "Open texture pack folder",
-        "title": "Select Texture Pack",
-        "folderInfo": "(Place texture pack files here)"
+        "openFolder": "Oscail fillteán pacáiste uigeachta",
+        "title": "Roghnaigh Pacáiste Uigeachta",
+        "folderInfo": "(Cuir comhaid pacáiste uigeachta anseo)"
     },
     "tile": {
         "tallgrass": {
-            "name": "Tallgrass",
+            "name": "Féar Ard",
             "desc": ""
         },
         "stone": {
-            "name": "Stone",
+            "name": "Cloch",
             "desc": ""
         },
         "grass": {
-            "name": "Grass",
+            "name": "Féar",
             "desc": ""
         },
         "dirt": {
-            "name": "Dirt",
+            "name": "Cré",
             "desc": ""
         },
         "stonebrick": {
-            "name": "Cobblestone",
+            "name": "Cobhchloch",
             "desc": ""
         },
         "wood": {
-            "name": "Wooden Planks",
+            "name": "Cláir Adhmaid",
             "desc": ""
         },
         "sapling": {
-            "name": "Sapling",
+            "name": "Síológ",
             "desc": ""
         },
         "bedrock": {
-            "name": "Bedrock",
+            "name": "Buncharraig",
             "desc": ""
         },
         "water": {
-            "name": "Water",
+            "name": "Uisce",
             "desc": ""
         },
         "lava": {
-            "name": "Lava",
+            "name": "Laibhe",
             "desc": ""
         },
         "sand": {
-            "name": "Sand",
+            "name": "Gaineamh",
             "desc": ""
         },
-        "sandStone": { "name": "Sandstone" },
+        "sandStone": { "name": "Cloch Ghainimh" },
         "gravel": {
-            "name": "Gravel",
+            "name": "Gairbhéal",
             "desc": ""
         },
         "oreGold": {
-            "name": "Gold Ore",
+            "name": "Mianach Óir",
             "desc": ""
         },
         "oreIron": {
-            "name": "Iron Ore",
+            "name": "Mianach Iarainn",
             "desc": ""
         },
         "oreCoal": {
-            "name": "Coal Ore",
+            "name": "Mianach Guail",
             "desc": ""
         },
         "log": {
-            "name": "Wood",
+            "name": "Adhmad",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Duilleoga",
             "desc": ""
         },
         "sponge": {
-            "name": "Sponge",
+            "name": "Spúinse",
             "desc": ""
         },
         "glass": {
-            "name": "Glass",
+            "name": "Gloine",
             "desc": ""
         },
         "cloth": {
-            "name": "Wool",
+            "name": "Olann",
             "desc": "",
             "black": {
-                "name": "Black Wool",
+                "name": "Olann Dhubh",
                 "desc": ""
             },
             "red": {
-                "name": "Red Wool",
+                "name": "Olann Dhearg",
                 "desc": ""
             },
             "green": {
-                "name": "Green Wool",
+                "name": "Olann Ghlas",
                 "desc": ""
             },
             "brown": {
-                "name": "Brown Wool",
+                "name": "Olann Dhonn",
                 "desc": ""
             },
             "blue": {
-                "name": "Blue Wool",
+                "name": "Olann Ghorm",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Wool",
+                "name": "Olann Chorcra",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Wool",
+                "name": "Olann Chian",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Wool",
+                "name": "Olann Liath Éadrom",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Wool",
+                "name": "Olann Liath",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Wool",
+                "name": "Olann Bhándearg",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Wool",
+                "name": "Olann Líoma",
                 "desc": ""
             },
             "yellow": {
-                "name": "Yellow Wool",
+                "name": "Olann Bhuí",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Wool",
+                "name": "Olann Ghorm Éadrom",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Wool",
+                "name": "Olann Mhagaenta",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Wool",
+                "name": "Olann Oráiste",
                 "desc": ""
             },
             "white": {
-                "name": "Wool",
+                "name": "Olann",
                 "desc": ""
             }
         },
         "flower": {
-            "name": "Flower",
+            "name": "Bláth",
             "desc": ""
         },
         "rose": {
-            "name": "Rose",
+            "name": "Rós",
             "desc": ""
         },
         "mushroom": {
-            "name": "Mushroom",
+            "name": "Beacán",
             "desc": ""
         },
         "blockGold": {
-            "name": "Block of Gold",
+            "name": "Bloc Óir",
             "desc": ""
         },
         "blockIron": {
-            "name": "Block of Iron",
+            "name": "Bloc Iarainn",
             "desc": ""
         },
         "stoneSlab": {
             "stone": {
-                "name": "Stone Slab",
+                "name": "Leac Chloiche",
                 "desc": ""
             },
             "sand": {
-                "name": "Sandstone Slab",
+                "name": "Leac Chloiche Ghainimh",
                 "desc": ""
             },
             "wood": {
-                "name": "Wooden Slab",
+                "name": "Leac Adhmaid",
                 "desc": ""
             },
             "cobble": {
-                "name": "Stone Slab",
+                "name": "Leac Chobhchloiche",
                 "desc": ""
             }
         },
         "brick": {
-            "name": "Bricks",
+            "name": "Brící",
             "desc": ""
         },
         "tnt": {
@@ -538,633 +538,633 @@
             "desc": ""
         },
         "bookshelf": {
-            "name": "Bookshelf",
+            "name": "Seilf Leabhar",
             "desc": ""
         },
         "stoneMoss": {
-            "name": "Moss Stone",
+            "name": "Cloch Chaonaigh",
             "desc": ""
         },
         "obsidian": {
-            "name": "Obsidian",
+            "name": "Oibiaidiach",
             "desc": ""
         },
         "torch": {
-            "name": "Torch",
+            "name": "Tóirse",
             "desc": ""
         },
         "fire": {
-            "name": "Fire",
+            "name": "Tine",
             "desc": ""
         },
         "mobSpawner": {
-            "name": "Monster Spawner",
+            "name": "Sceiteoir Arrachtaigh",
             "desc": ""
         },
         "stairsWood": {
-            "name": "Wooden Stairs",
+            "name": "Staighre Adhmaid",
             "desc": ""
         },
         "chest": {
-            "name": "Chest",
+            "name": "Cófra",
             "desc": ""
         },
         "redstoneDust": {
-            "name": "Redstone Dust",
+            "name": "Deannach na Cloiche Rua",
             "desc": ""
         },
         "oreDiamond": {
-            "name": "Diamond Ore",
+            "name": "Mianach Diamaint",
             "desc": ""
         },
         "blockDiamond": {
-            "name": "Block of Diamond",
+            "name": "Bloc Diamaint",
             "desc": ""
         },
         "workbench": {
-            "name": "Crafting Table",
+            "name": "Bord Ceardaíochta",
             "desc": ""
         },
         "crops": {
-            "name": "Crops",
+            "name": "Barraí",
             "desc": ""
         },
         "farmland": {
-            "name": "Farmland",
+            "name": "Talamh Feirme",
             "desc": ""
         },
         "furnace": {
-            "name": "Furnace",
+            "name": "Foirnéis",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Comhartha",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Doras Adhmaid",
             "desc": ""
         },
         "ladder": {
-            "name": "Ladder",
+            "name": "Dréimire",
             "desc": ""
         },
         "rail": {
-            "name": "Rail",
+            "name": "Ráille",
             "desc": ""
         },
         "goldenRail": {
-            "name": "Powered Rail",
+            "name": "Ráille Cumhachtaithe",
             "desc": ""
         },
         "detectorRail": {
-            "name": "Detector Rail",
+            "name": "Ráille Braiteora",
             "desc": ""
         },
         "stairsStone": {
-            "name": "Stone Stairs",
+            "name": "Staighre Cloiche",
             "desc": ""
         },
         "lever": {
-            "name": "Lever",
+            "name": "Luamhán",
             "desc": ""
         },
         "pressurePlate": {
-            "name": "Pressure Plate",
+            "name": "Pláta Brú",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Doras Iarainn",
             "desc": ""
         },
         "oreRedstone": {
-            "name": "Redstone Ore",
+            "name": "Mianach na Cloiche Rua",
             "desc": ""
         },
         "notGate": {
-            "name": "Redstone Torch",
+            "name": "Tóirse na Cloiche Rua",
             "desc": ""
         },
         "button": {
-            "name": "Button",
+            "name": "Cnaipe",
             "desc": ""
         },
         "snow": {
-            "name": "Snow",
+            "name": "Sneachta",
             "desc": ""
         },
         "ice": {
-            "name": "Ice",
+            "name": "Oighear",
             "desc": ""
         },
         "cactus": {
-            "name": "Cactus",
+            "name": "Cachtas",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Créafóig",
             "desc": ""
         },
         "reeds": {
-            "name": "Sugar cane",
+            "name": "Cána Siúcra",
             "desc": ""
         },
         "jukebox": {
-            "name": "Jukebox",
+            "name": "Bosca Ceoil",
             "desc": ""
         },
         "fence": {
-            "name": "Fence",
+            "name": "Fál",
             "desc": ""
         },
         "pumpkin": {
-            "name": "Pumpkin",
+            "name": "Puimcín",
             "desc": ""
         },
         "litpumpkin": {
-            "name": "Jack 'o' Lantern",
+            "name": "Laindéar Puimcín",
             "desc": ""
         },
         "hellrock": {
-            "name": "Netherrack",
+            "name": "Carraig Ifrinn",
             "desc": ""
         },
         "hellsand": {
-            "name": "Soul Sand",
+            "name": "Gaineamh Anam",
             "desc": ""
         },
         "lightgem": {
-            "name": "Glowstone",
+            "name": "Cloch Lonrach",
             "desc": ""
         },
         "portal": {
-            "name": "Portal",
+            "name": "Tairseach",
             "desc": ""
         },
         "oreLapis": {
-            "name": "Lapis Lazuli Ore",
+            "name": "Mianach Lapis Lazuli",
             "desc": ""
         },
         "blockLapis": {
-            "name": "Lapis Lazuli Block",
+            "name": "Bloc Lapis Lazuli",
             "desc": ""
         },
         "dispenser": {
-            "name": "Dispenser",
+            "name": "Dáileoir",
             "desc": ""
         },
         "musicBlock": {
-            "name": "Note Block",
+            "name": "Bloc Nótaí",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Císte",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Leaba",
             "desc": "",
-            "occupied": "This bed is occupied",
-            "noSleep": "You can only sleep at night",
-            "notValid": "Your home bed was missing or obstructed"
+            "occupied": "Tá an leaba seo á húsáid",
+            "noSleep": "Ní féidir leat codladh ach san oíche",
+            "notValid": "Bhí do leaba bhaile ar iarraidh nó bac uirthi"
         },
         "lockedchest": {
-            "name": "Locked chest",
+            "name": "Cófra Faoi Ghlas",
             "desc": ""
         },
         "trapdoor": {
-            "name": "Trapdoor",
+            "name": "Doras Leacaithe",
             "desc": ""
         },
         "web": {
-            "name": "Cobweb",
+            "name": "Líon Damháin Alla",
             "desc": ""
         },
         "stonebricksmooth": {
-            "name": "Stone Bricks",
+            "name": "Brící Cloch",
             "desc": ""
         },
         "pistonBase": {
-            "name": "Piston",
+            "name": "Loineán",
             "desc": ""
         },
         "pistonStickyBase": {
-            "name": "Sticky Piston",
+            "name": "Loineán Greamaitheach",
             "desc": ""
         }
     },
     "item": {
         "shovelIron": {
-            "name": "Iron Shovel",
+            "name": "Sluaiste Iarainn",
             "desc": ""
         },
         "pickaxeIron": {
-            "name": "Iron Pickaxe",
+            "name": "Piocóid Iarainn",
             "desc": ""
         },
         "hatchetIron": {
-            "name": "Iron Axe",
+            "name": "Tua Iarainn",
             "desc": ""
         },
         "flintAndSteel": {
-            "name": "Flint and Steel",
+            "name": "Breochloch agus Cruach",
             "desc": ""
         },
         "apple": {
-            "name": "Apple",
+            "name": "Úll",
             "desc": ""
         },
         "cookie": {
-            "name": "Cookie",
+            "name": "Briosca",
             "desc": ""
         },
         "bow": {
-            "name": "Bow",
+            "name": "Bogha",
             "desc": ""
         },
         "arrow": {
-            "name": "Arrow",
+            "name": "Saighead",
             "desc": ""
         },
         "coal": {
-            "name": "Coal",
+            "name": "Gual",
             "desc": ""
         },
         "charcoal": {
-            "name": "Charcoal",
+            "name": "Gualach",
             "desc": ""
         },
         "diamond": {
-            "name": "Diamond",
+            "name": "Diamant",
             "desc": ""
         },
         "ingotIron": {
-            "name": "Iron Ingot",
+            "name": "Tinne Iarainn",
             "desc": ""
         },
         "ingotGold": {
-            "name": "Gold Ingot",
+            "name": "Tinne Óir",
             "desc": ""
         },
         "swordIron": {
-            "name": "Iron Sword",
+            "name": "Claíomh Iarainn",
             "desc": ""
         },
         "swordWood": {
-            "name": "Wooden Sword",
+            "name": "Claíomh Adhmaid",
             "desc": ""
         },
         "shovelWood": {
-            "name": "Wooden Shovel",
+            "name": "Sluaiste Adhmaid",
             "desc": ""
         },
         "pickaxeWood": {
-            "name": "Wooden Pickaxe",
+            "name": "Piocóid Adhmaid",
             "desc": ""
         },
         "hatchetWood": {
-            "name": "Wooden Axe",
+            "name": "Tua Adhmaid",
             "desc": ""
         },
         "swordStone": {
-            "name": "Stone Sword",
+            "name": "Claíomh Cloiche",
             "desc": ""
         },
         "shovelStone": {
-            "name": "Stone Shovel",
+            "name": "Sluaiste Cloiche",
             "desc": ""
         },
         "pickaxeStone": {
-            "name": "Stone Pickaxe",
+            "name": "Piocóid Cloiche",
             "desc": ""
         },
         "hatchetStone": {
-            "name": "Stone Axe",
+            "name": "Tua Cloiche",
             "desc": ""
         },
         "swordDiamond": {
-            "name": "Diamond Sword",
+            "name": "Claíomh Diamaint",
             "desc": ""
         },
         "shovelDiamond": {
-            "name": "Diamond Shovel",
+            "name": "Sluaiste Diamaint",
             "desc": ""
         },
         "pickaxeDiamond": {
-            "name": "Diamond Pickaxe",
+            "name": "Piocóid Diamaint",
             "desc": ""
         },
         "hatchetDiamond": {
-            "name": "Diamond Axe",
+            "name": "Tua Diamaint",
             "desc": ""
         },
         "stick": {
-            "name": "Stick",
+            "name": "Bata",
             "desc": ""
         },
         "bowl": {
-            "name": "Bowl",
+            "name": "Babhla",
             "desc": ""
         },
         "mushroomStew": {
-            "name": "Mushroom Stew",
+            "name": "Stobhach Beacán",
             "desc": ""
         },
         "swordGold": {
-            "name": "Golden Sword",
+            "name": "Claíomh Óir",
             "desc": ""
         },
         "shovelGold": {
-            "name": "Golden Shovel",
+            "name": "Sluaiste Óir",
             "desc": ""
         },
         "pickaxeGold": {
-            "name": "Golden Pickaxe",
+            "name": "Piocóid Óir",
             "desc": ""
         },
         "hatchetGold": {
-            "name": "Golden Axe",
+            "name": "Tua Óir",
             "desc": ""
         },
         "string": {
-            "name": "String",
+            "name": "Sreangán",
             "desc": ""
         },
         "feather": {
-            "name": "Feather",
+            "name": "Cleite",
             "desc": ""
         },
         "gunpowder": {
-            "name": "Gunpowder",
+            "name": "Púdar Gunna",
             "desc": ""
         },
         "hoeWood": {
-            "name": "Wooden Hoe",
+            "name": "Grafa Adhmaid",
             "desc": ""
         },
         "hoeStone": {
-            "name": "Stone Hoe",
+            "name": "Grafa Cloiche",
             "desc": ""
         },
         "hoeIron": {
-            "name": "Iron Hoe",
+            "name": "Grafa Iarainn",
             "desc": ""
         },
         "hoeDiamond": {
-            "name": "Diamond Hoe",
+            "name": "Grafa Diamaint",
             "desc": ""
         },
         "hoeGold": {
-            "name": "Golden Hoe",
+            "name": "Grafa Óir",
             "desc": ""
         },
         "seeds": {
-            "name": "Seeds",
+            "name": "Síolta",
             "desc": ""
         },
         "wheat": {
-            "name": "Wheat",
+            "name": "Cruithneacht",
             "desc": ""
         },
         "bread": {
-            "name": "Bread",
+            "name": "Arán",
             "desc": ""
         },
         "helmetLeather": {
-            "name": "Leather Cap",
+            "name": "Caipín Leathair",
             "desc": ""
         },
         "chestplateLeather": {
-            "name": "Leather Tunic",
+            "name": "Túin Leathair",
             "desc": ""
         },
         "leggingsLeather": {
-            "name": "Leather Pants",
+            "name": "Bríste Leathair",
             "desc": ""
         },
         "bootsLeather": {
-            "name": "Leather Boots",
+            "name": "Buataisí Leathair",
             "desc": ""
         },
         "helmetChain": {
-            "name": "Chain Helmet",
+            "name": "Clogad Slabhra",
             "desc": ""
         },
         "chestplateChain": {
-            "name": "Chain Chestplate",
+            "name": "Uchtphláta Slabhra",
             "desc": ""
         },
         "leggingsChain": {
-            "name": "Chain Leggings",
+            "name": "Bríste Slabhra",
             "desc": ""
         },
         "bootsChain": {
-            "name": "Chain Boots",
+            "name": "Buataisí Slabhra",
             "desc": ""
         },
         "helmetIron": {
-            "name": "Iron Helmet",
+            "name": "Clogad Iarainn",
             "desc": ""
         },
         "chestplateIron": {
-            "name": "Iron Chestplate",
+            "name": "Uchtphláta Iarainn",
             "desc": ""
         },
         "leggingsIron": {
-            "name": "Iron Leggings",
+            "name": "Bríste Iarainn",
             "desc": ""
         },
         "bootsIron": {
-            "name": "Iron Boots",
+            "name": "Buataisí Iarainn",
             "desc": ""
         },
         "helmetDiamond": {
-            "name": "Diamond Helmet",
+            "name": "Clogad Diamaint",
             "desc": ""
         },
         "chestplateDiamond": {
-            "name": "Diamond Chestplate",
+            "name": "Uchtphláta Diamaint",
             "desc": ""
         },
         "leggingsDiamond": {
-            "name": "Diamond Leggings",
+            "name": "Bríste Diamaint",
             "desc": ""
         },
         "bootsDiamond": {
-            "name": "Diamond Boots",
+            "name": "Buataisí Diamaint",
             "desc": ""
         },
         "helmetGold": {
-            "name": "Golden Helmet",
+            "name": "Clogad Óir",
             "desc": ""
         },
         "chestplateGold": {
-            "name": "Golden Chestplate",
+            "name": "Uchtphláta Óir",
             "desc": ""
         },
         "leggingsGold": {
-            "name": "Golden Leggings",
+            "name": "Bríste Óir",
             "desc": ""
         },
         "bootsGold": {
-            "name": "Golden boots",
+            "name": "Buataisí Óir",
             "desc": ""
         },
         "flint": {
-            "name": "Flint",
+            "name": "Breochloch",
             "desc": ""
         },
         "porkchopRaw": {
-            "name": "Raw Porkchop",
+            "name": "Gearrmhuiceoil Amh",
             "desc": ""
         },
         "porkchopCooked": {
-            "name": "Cooked Porkchop",
+            "name": "Gearrmhuiceoil Chócaráilte",
             "desc": ""
         },
         "painting": {
-            "name": "Painting",
+            "name": "Péintéireacht",
             "desc": ""
         },
         "appleGold": {
-            "name": "Golden Apple",
+            "name": "Úll Óir",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Comhartha",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Doras Adhmaid",
             "desc": ""
         },
         "bucket": {
-            "name": "Bucket",
+            "name": "Bucaid",
             "desc": ""
         },
         "bucketWater": {
-            "name": "Water Bucket",
+            "name": "Bucaid Uisce",
             "desc": ""
         },
         "bucketLava": {
-            "name": "Lava bucket",
+            "name": "Bucaid Laibhe",
             "desc": ""
         },
         "minecart": {
-            "name": "Minecart",
+            "name": "Cairt Mianaigh",
             "desc": ""
         },
         "saddle": {
-            "name": "Saddle",
+            "name": "Diallait",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Doras Iarainn",
             "desc": ""
         },
         "redstone": {
-            "name": "Redstone",
+            "name": "Cloch Rua",
             "desc": ""
         },
         "snowball": {
-            "name": "Snowball",
+            "name": "Liathróid Shneachta",
             "desc": ""
         },
         "boat": {
-            "name": "Boat",
+            "name": "Bád",
             "desc": ""
         },
         "leather": {
-            "name": "Leather",
+            "name": "Leathar",
             "desc": ""
         },
         "milk": {
-            "name": "Milk",
+            "name": "Bainne",
             "desc": ""
         },
         "brick": {
-            "name": "Brick",
+            "name": "Bríce",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Créafóig",
             "desc": ""
         },
         "sugarCanes": {
-            "name": "Sugar Canes",
+            "name": "Cána Siúcra",
             "desc": ""
         },
         "paper": {
-            "name": "Paper",
+            "name": "Páipéar",
             "desc": ""
         },
         "book": {
-            "name": "Book",
+            "name": "Leabhar",
             "desc": ""
         },
         "slimeball": {
-            "name": "Slimeball",
+            "name": "Liathróid Shlaoda",
             "desc": ""
         },
         "minecartChest": {
-            "name": "Minecart with Chest",
+            "name": "Cairt Mianaigh le Cófra",
             "desc": ""
         },
         "minecartFurnace": {
-            "name": "Minecart with Furnace",
+            "name": "Cairt Mianaigh le Foirnéis",
             "desc": ""
         },
         "egg": {
-            "name": "Egg",
+            "name": "Ubh",
             "desc": ""
         },
         "compass": {
-            "name": "Compass",
+            "name": "Compás",
             "desc": ""
         },
         "fishingRod": {
-            "name": "Fishing Rod",
+            "name": "Slat Iascaireachta",
             "desc": ""
         },
         "clock": {
-            "name": "Clock",
+            "name": "Clog",
             "desc": ""
         },
         "yellowDust": {
-            "name": "Glowstone Dust",
+            "name": "Deannach na Cloiche Lonraí",
             "desc": ""
         },
         "fishRaw": {
-            "name": "Raw Fish",
+            "name": "Iasc Amh",
             "desc": ""
         },
         "fishCooked": {
-            "name": "Cooked Fish",
+            "name": "Iasc Cócaráilte",
             "desc": ""
         },
         "record": {
-            "name": "Music Disc",
+            "name": "Diosca Ceoil",
             "desc": ""
         },
         "bone": {
-            "name": "Bone",
+            "name": "Cnámh",
             "desc": ""
         },
         "dyePowder": {
             "black": {
-                "name": "Ink Sac",
+                "name": "Mála Dúigh",
                 "desc": ""
             },
             "red": {
-                "name": "Rose Red",
+                "name": "Dearg an Róis",
                 "desc": ""
             },
             "green": {
-                "name": "Cactus Green",
+                "name": "Glas an Chachtais",
                 "desc": ""
             },
             "brown": {
-                "name": "Cocoa Beans",
+                "name": "Pónairí Cócó",
                 "desc": ""
             },
             "blue": {
@@ -1172,198 +1172,198 @@
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Dye",
+                "name": "Ruaim Chorcra",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Dye",
+                "name": "Ruaim Chian",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Dye",
+                "name": "Ruaim Liath Éadrom",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Dye",
+                "name": "Ruaim Liath",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Dye",
+                "name": "Ruaim Bhándearg",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Dye",
+                "name": "Ruaim Líoma",
                 "desc": ""
             },
             "yellow": {
-                "name": "Dandelion Yellow",
+                "name": "Buí an Chaisearbháin",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Dye",
+                "name": "Ruaim Ghorm Éadrom",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Dye",
+                "name": "Ruaim Mhagaenta",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Dye",
+                "name": "Ruaim Oráiste",
                 "desc": ""
             },
             "white": {
-                "name": "Bone Meal",
+                "name": "Plúr Cnámh",
                 "desc": ""
             }
         },
         "sugar": {
-            "name": "Sugar",
+            "name": "Siúcra",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Císte",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Leaba",
             "desc": ""
         },
         "redstoneRepeater": {
-            "name": "Redstone Repeater",
+            "name": "Athsheoltóir na Cloiche Rua",
             "desc": ""
         },
         "map": {
-            "name": "Map",
+            "name": "Léarscáil",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Duilleoga",
             "desc": ""
         },
         "shears": {
-            "name": "Shears",
+            "name": "Deimheas",
             "desc": ""
         }
     },
     "stat": {
-        "generalButton": "General",
-        "blocksButton": "Blocks",
-        "itemsButton": "Items",
-        "used": "Times Used",
-        "mined": "Times Mined",
-        "depleted": "Times Depleted",
-        "crafted": "Times Crafted",
-        "startGame": "Times played",
-        "createWorld": "Worlds played",
-        "loadWorld": "Saves loaded",
-        "joinMultiplayer": "Multiplayer joins",
-        "leaveGame": "Games quit",
-        "playOneMinute": "Minutes Played",
-        "walkOneCm": "Distance Walked",
-        "fallOneCm": "Distance Fallen",
-        "swimOneCm": "Distance Swum",
-        "flyOneCm": "Distance Flown",
-        "climbOneCm": "Distance Climbed",
-        "diveOneCm": "Distance Dove",
-        "minecartOneCm": "Distance by Minecart",
-        "boatOneCm": "Distance by Boat",
-        "pigOneCm": "Distance by Pig",
-        "jump": "Jumps",
-        "drop": "Items Dropped",
-        "damageDealt": "Damage Dealt",
-        "damageTaken": "Damage Taken",
-        "deaths": "Number of Deaths",
-        "mobKills": "Mob Kills",
-        "playerKills": "Player Kills",
-        "fishCaught": "Fish Caught",
-        "mineBlock": "{0} Mined",
-        "craftItem": "{0} Crafted",
-        "useItem": "{0} Used",
-        "breakItem": "{0} Depleted"
+        "generalButton": "Ginearálta",
+        "blocksButton": "Blocanna",
+        "itemsButton": "Míreanna",
+        "used": "Uaireanta Úsáidte",
+        "mined": "Uaireanta Mianraithe",
+        "depleted": "Uaireanta Ídithe",
+        "crafted": "Uaireanta Ceardaithe",
+        "startGame": "Uaireanta Seinnte",
+        "createWorld": "Domhain Seinnte",
+        "loadWorld": "Sábhálacha Lódáilte",
+        "joinMultiplayer": "Iontrálacha Il-imreora",
+        "leaveGame": "Cluichí Scoirte",
+        "playOneMinute": "Nóiméid Seinnte",
+        "walkOneCm": "Fad Siúlta",
+        "fallOneCm": "Fad Tite",
+        "swimOneCm": "Fad Snámhtha",
+        "flyOneCm": "Fad Eitilte",
+        "climbOneCm": "Fad Dreaptha",
+        "diveOneCm": "Fad Tumtha",
+        "minecartOneCm": "Fad le Cairt Mianaigh",
+        "boatOneCm": "Fad le Bád",
+        "pigOneCm": "Fad le Muc",
+        "jump": "Léimeanna",
+        "drop": "Míreanna Caite",
+        "damageDealt": "Damáiste Déanta",
+        "damageTaken": "Damáiste Glactha",
+        "deaths": "Líon na mBásanna",
+        "mobKills": "Arrachtaigh Maraíthe",
+        "playerKills": "Imreoirí Maraíthe",
+        "fishCaught": "Iasc Gabhálta",
+        "mineBlock": "{0} Mianraithe",
+        "craftItem": "{0} Ceardaithe",
+        "useItem": "{0} Úsáidte",
+        "breakItem": "{0} Ídithe"
     },
-    "achievements.title": "Achievements",
+    "achievements.title": "Éachtaí",
     "achievement": {
-        "get": "Achievement get!",
-        "taken": "Taken!",
-        "challenge": "CHALLENGE",
-        "unlocked": "UNLOCKED",
-        "locked": "LOCKED",
-        "requires": "Requires '{0}'",
+        "get": "Éacht faighte!",
+        "taken": "Tógtha!",
+        "challenge": "DÚSHLÁN",
+        "unlocked": "DÍGHLASÁILTE",
+        "locked": "FAOI GHLASTA",
+        "requires": "Éilíonn '{0}'",
         "openInventory": {
-            "title": "Taking Inventory",
-            "desc": "Open your inventory."
+            "title": "Ag Tógáil Fardail",
+            "desc": "Oscail do fhardal."
         },
         "mineWood": {
-            "title": "Getting Wood",
-            "desc": "Attack a tree until a block of wood pops out"
+            "title": "Ag Fáil Adhmaid",
+            "desc": "Bhuail crann go dtí go dtagann bloc adhmaid amach"
         },
         "buildWorkBench": {
-            "title": "Benchmarking",
-            "desc": "Craft a workbench with four blocks of planks"
+            "title": "Ag Obair Bhoird",
+            "desc": "Ceardaigh bord ceardaíochta le ceithre bhloc de chláir"
         },
         "buildPickaxe": {
-            "title": "Time to Mine!",
-            "desc": "Use planks and sticks to make a pickaxe"
+            "title": "Am le Mianadóireacht!",
+            "desc": "Úsáid cláir agus bataí chun piocóid a dhéanamh"
         },
         "buildFurnace": {
-            "title": "Hot Topic",
-            "desc": "Construct a furnace out of eight stone blocks"
+            "title": "Ábhar Te",
+            "desc": "Tóg foirnéis as ocht mbloc cloiche"
         },
         "acquireIron": {
-            "title": "Acquire Hardware",
-            "desc": "Smelt an iron ingot"
+            "title": "Faigh Crua-earraí",
+            "desc": "Leáigh tinne iarainn"
         },
         "buildHoe": {
-            "title": "Time to Farm!",
-            "desc": "Use planks and sticks to make a hoe"
+            "title": "Am le Feirmeoireacht!",
+            "desc": "Úsáid cláir agus bataí chun grafa a dhéanamh"
         },
         "makeBread": {
-            "title": "Bake Bread",
-            "desc": "Turn wheat into bread"
+            "title": "Bácáil Arán",
+            "desc": "Déan arán as cruithneacht"
         },
         "bakeCake": {
-            "title": "The Lie",
-            "desc": "Wheat, sugar, milk and eggs!"
+            "title": "An Bréag",
+            "desc": "Cruithneacht, siúcra, bainne agus uibheacha!"
         },
         "buildBetterPickaxe": {
-            "title": "Getting an Upgrade",
-            "desc": "Construct a better pickaxe"
+            "title": "Ag Fáil Uasghrádú",
+            "desc": "Tóg piocóid níos fearr"
         },
         "cookFish": {
-            "title": "Delicious Fish",
-            "desc": "Catch and cook fish!"
+            "title": "Iasc Blasta",
+            "desc": "Beir ar iasc agus cócaráil é!"
         },
         "onARail": {
-            "title": "On A Rail",
-            "desc": "Travel by minecart at least 1 km from where you started "
+            "title": "Ar Iarnród",
+            "desc": "Taistil le cairt mianaigh 1 km ar a laghad ón áit ar thosaigh tú"
         },
         "buildSword": {
-            "title": "Time to Strike!",
-            "desc": "Use planks and sticks to make a sword"
+            "title": "Am le Bualadh!",
+            "desc": "Úsáid cláir agus bataí chun claíomh a dhéanamh"
         },
         "killEnemy": {
-            "title": "Monster Hunter",
-            "desc": "Attack and destroy a monster"
+            "title": "Sealgair Arrachtaigh",
+            "desc": "Bhuail agus scrios arracht"
         },
         "killCow": {
-            "title": "Cow Tipper",
-            "desc": "Harvest some leather"
+            "title": "Leagaire Bó",
+            "desc": "Fómhair roinnt leathair"
         },
         "flyPig": {
-            "title": "When Pigs Fly",
-            "desc": "Fly a pig off a cliff"
+            "title": "Nuair a Eitleoidh Muca",
+            "desc": "Eitil muc le haill"
         }
     },
     "credits": {
-        "version": "BetaSharp Version %1$s",
-        "description": "An enhanced of Minecraft Beta 1.7.3, written in C#.",
-        "github": "On GitHub",
-        "author": "Made by Fazin85",
-        "libs": "Libraries",
-        "slik": "Slik.NET - Graphics",
-        "imgui": "ImGui - Debug UI",
-        "sfml": "SFML.NET - Audio",
-        "sixlabors": "SixLabors - Fonts, image processing",
-        "translations": "Translations Credits"
+        "version": "BetaSharp Leagan %1$s",
+        "description": "Leagan feabhsaithe de Minecraft Beta 1.7.3, scríofa in C#.",
+        "github": "Ar GitHub",
+        "author": "Arna dhéanamh ag Fazin85",
+        "libs": "Leabharlanna",
+        "slik": "Slik.NET - Grafaicí",
+        "imgui": "ImGui - Comhéadan Dífhabhtaithe",
+        "sfml": "SFML.NET - Fuaim",
+        "sixlabors": "SixLabors - Clónna, próiseáil íomhánna",
+        "translations": "Creidiúintí Aistriúcháin"
     }
 }
