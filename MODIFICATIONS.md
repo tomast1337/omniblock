@@ -57,3 +57,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-02 — refactor(rendering): separate the fixed-function calls from the rest of IGL (Nicolas Vyčas Nery; `87ea458e197af0d2ca55edc7ef9911f272af4856`)
 - 2026-08-02 — refactor(rendering): replace display lists with buffers that outlive the frame (Nicolas Vyčas Nery; `365741daa0ce8df528b81775e0ec8d2eefcf3acf`)
 - 2026-08-02 — refactor(rendering): let the transform stacks be held rather than steered (Nicolas Vyčas Nery; `e0fa8677f558cd9237814fa7ed04936d37aa0253`)
+- 2026-08-02 — fix(rendering): scroll the charge overlay's texture, not the model (Nicolas Vyčas Nery; `cf7c83f148ab091351f5d084dfab78ba422da588`)
