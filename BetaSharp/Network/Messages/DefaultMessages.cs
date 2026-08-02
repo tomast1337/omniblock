@@ -30,5 +30,6 @@ public static class DefaultMessages
         // are registered here; everything above this line is derived from the declarations.
         registry.Register(ChunkCacheOfferMessage.Id, 1, static () => new ChunkCacheOfferMessage());
         registry.Register(EntitySnapshotMessage.Id, 1, static () => new EntitySnapshotMessage());
+        registry.Register(RegistryDataMessage.Id, 1, static () => new RegistryDataMessage());
     }
 }

@@ -1,6 +1,7 @@
 using BetaSharp.Entities;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.S2CPlay;
+using BetaSharp.Server;
 
 namespace BetaSharp.Registries;
 
@@ -10,44 +11,38 @@ namespace BetaSharp.Registries;
 public static class RegistryReloadPipeline
 {
     /// <summary>
-    /// Bundles all registry sync packets and listener migration packets into atomic
-    /// <see cref="BundleS2CPacket"/>s and sends one to each connected player.
+    /// Sends all reloadable registry data messages and listener migration packets to
+    /// each connected player.
     /// </summary>
     public static void SyncToPlayers(
         RegistryAccess registries,
         IReadOnlyList<IRegistryReloadListener> listeners,
         IEnumerable<ServerPlayerEntity> players)
     {
-        Dictionary<ServerPlayerEntity, BundleS2CPacket> bundles = players.ToDictionary(
-            p => p,
-            _ => Packet.Get<BundleS2CPacket>(PacketId.BundleS2C));
+        List<RegistryDataMessage> syncMessages = [.. registries.BuildSyncMessages()];
 
-        List<RegistryDataS2CPacket> syncPackets = [.. registries.BuildSyncPackets()];
-
-        // Pack registry data into every player's bundle
-        foreach (RegistryDataS2CPacket rp in syncPackets)
+        foreach (ServerPlayerEntity player in players)
         {
-            foreach (BundleS2CPacket bundle in bundles.Values)
+            // Send registry data messages directly — no bundling needed since messages
+            // are individually framed and the stream alignment guarantee comes from the
+            // length prefix, not from a wrapper.
+            foreach (RegistryDataMessage message in syncMessages)
             {
-                bundle.Packets.Add(rp);
+                player.NetworkHandler.SendMessage(message);
             }
-        }
 
-        // Collect per-player migration packets from each listener
-        foreach ((ServerPlayerEntity player, BundleS2CPacket bundle) in bundles)
-        {
+            // Collect per-player migration packets from each listener
             foreach (IRegistryReloadListener listener in listeners)
             {
                 Packet[] packets = listener.GetSyncPackets(registries, player);
 
                 foreach (Packet packet in packets)
                 {
-                    bundle.Packets.Add(packet);
+                    player.NetworkHandler.SendPacket(packet);
                 }
             }
 
-            bundle.Packets.Add(Packet.Get<FinishConfigurationS2CPacket>(PacketId.FinishConfigurationS2C));
-            player.NetworkHandler.SendPacket(bundle);
+            player.NetworkHandler.SendMessage(new FinishConfigurationMessage());
         }
     }
 }

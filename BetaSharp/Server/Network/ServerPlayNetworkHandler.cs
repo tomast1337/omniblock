@@ -66,6 +66,8 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         MessageHandlers.On<CloseScreenMessage>(_ => player.onHandledScreenClosed());
         MessageHandlers.On<ScreenHandlerAckMessage>(onScreenHandlerAck);
         MessageHandlers.On<UpdateSignMessage>(onUpdateSign);
+        MessageHandlers.On<ChatMessage>(onChatMessage);
+        MessageHandlers.On<DisconnectMessage>(onDisconnect);
     }
 
     public void tick()
@@ -75,13 +77,13 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
         if (!moved) player.IdleTick();
 
-        if (ticks++ - lastKeepAliveTime > 20) SendPacket(KeepAlivePacket.Get());
+        if (ticks++ - lastKeepAliveTime > 20) SendMessage(new KeepAliveMessage());
     }
 
     public void disconnect(string reason)
     {
         player.onDisconnect();
-        SendPacket(DisconnectPacket.Get(reason));
+        SendMessage(new DisconnectMessage { Reason = reason });
         connection.disconnect();
         server.playerManager.disconnect(player);
         server.playerManager.sendToAll(PlayerConnectionUpdateS2CPacket.Get(
@@ -89,7 +91,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Leave,
             player.Name
         ));
-        server.playerManager.sendToAll(ChatMessagePacket.Get("§e" + player.Name + " left the game."));
+        server.playerManager.sendToAll(new ChatMessage { Text = "§e" + player.Name + " left the game." });
         disconnected = true;
     }
 
@@ -514,7 +516,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Leave,
             player.Name
         ));
-        server.playerManager.sendToAll(ChatMessagePacket.Get("§e" + player.Name + " left the game."));
+        server.playerManager.sendToAll(new ChatMessage { Text = "§e" + player.Name + " left the game." });
         disconnected = true;
     }
 
@@ -543,9 +545,9 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         }
     }
 
-    public override void onChatMessage(ChatMessagePacket packet)
+    private void onChatMessage(ChatMessage packet)
     {
-        string msg = packet.ChatMessage;
+        string msg = packet.Text;
         if (msg.Length > 100)
         {
             disconnect("Chat message too long");
@@ -577,7 +579,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             {
                 msg = "<" + player.Name + "> " + msg;
                 _logger.LogInformation(msg);
-                server.playerManager.sendToAll(ChatMessagePacket.Get(msg));
+                server.playerManager.sendToAll(new ChatMessage { Text = msg });
             }
         }
     }
@@ -588,7 +590,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         {
             string emote = "* " + player.Name + " " + message[message.IndexOf(" ")..].Trim();
             _logger.LogInformation(emote);
-            server.playerManager.sendToAll(ChatMessagePacket.Get(emote));
+            server.playerManager.sendToAll(new ChatMessage { Text = emote });
         }
         else if (server is InternalServer || server.playerManager.isOperator(player.Name))
         {
@@ -600,7 +602,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         {
             string commandText = message[1..];
             _logger.LogInformation($"{player.Name} tried command: {commandText}");
-            SendPacket(ChatMessagePacket.Get("§cYou do not have permission to use this command."));
+            SendMessage(new ChatMessage { Text = "§cYou do not have permission to use this command." });
         }
     }
 
@@ -629,7 +631,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         }
     }
 
-    public override void onDisconnect(DisconnectPacket packet)
+    private void onDisconnect(DisconnectMessage packet)
     {
         connection.disconnect("disconnect.quitting");
     }
@@ -646,7 +648,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
     public void SendMessage(string message)
     {
-        SendPacket(ChatMessagePacket.Get("§7" + message));
+        SendMessage(new ChatMessage { Text = "§7" + message });
     }
 
     public string Name => player.Name;

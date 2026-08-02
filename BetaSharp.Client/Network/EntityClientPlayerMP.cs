@@ -146,7 +146,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
 
     public override void SendChatMessage(string message)
     {
-        sendQueue.AddToSendQueue(ChatMessagePacket.Get(message));
+        sendQueue.SendMessage(new ChatMessage { Text = message });
     }
 
     public override void SwingHand()

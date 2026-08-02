@@ -1,5 +1,6 @@
 using BetaSharp.Entities;
 using BetaSharp.Network;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
@@ -54,7 +55,6 @@ public class ServerLoginNetworkHandler : NetHandler
         try
         {
             _logger.LogInformation($"Disconnecting {getConnectionInfo()}: {reason}");
-            connection.sendPacket(DisconnectPacket.Get(reason));
             connection.disconnect();
             closed = true;
         }
@@ -145,7 +145,7 @@ public class ServerLoginNetworkHandler : NetHandler
             handler.SendPacket(PlayerSpawnPositionS2CPacket.Get(spawnPos.X, spawnPos.Y, spawnPos.Z));
             PlayerManager.sendWorldInfo(ent, playerWorld);
             server.playerManager.sendToAll(PlayerConnectionUpdateS2CPacket.Get(ent.ID, PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Join, ent.Name));
-            server.playerManager.sendToAll(ChatMessagePacket.Get("§e" + ent.Name + " joined the game."));
+            server.playerManager.sendToAll(new ChatMessage { Text = "§e" + ent.Name + " joined the game." });
             server.playerManager.addPlayer(ent);
             handler.teleport(ent.X, ent.Y, ent.Z, ent.Yaw, ent.Pitch);
             server.connections.AddConnection(handler);

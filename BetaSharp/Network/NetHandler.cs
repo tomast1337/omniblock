@@ -124,11 +124,6 @@ public abstract class NetHandler
     {
     }
 
-    public virtual void onDisconnect(DisconnectPacket packet)
-    {
-        handle(packet);
-    }
-
     public virtual void onHello(LoginHelloPacket packet)
     {
         handle(packet);
@@ -150,11 +145,6 @@ public abstract class NetHandler
     }
 
     public virtual void onChunkStatusUpdate(ChunkStatusUpdateS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onChatMessage(ChatMessagePacket packet)
     {
         handle(packet);
     }
@@ -200,16 +190,6 @@ public abstract class NetHandler
     }
 
     public virtual void onPlayerGameModeUpdate(PlayerGameModeUpdateS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onRegistryData(RegistryDataS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onFinishConfiguration(FinishConfigurationS2CPacket packet)
     {
         handle(packet);
     }

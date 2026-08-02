@@ -1,6 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using BetaSharp.Network.Packets.S2CPlay;
+using BetaSharp.Network.Messages;
 using BetaSharp.Registries;
 using BetaSharp.Registries.Data;
 using Microsoft.Extensions.Logging;
@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace BetaSharp.Client.Network;
 
 /// <summary>
-/// Accumulates <see cref="RegistryDataS2CPacket"/>s received during the login configuration
+/// Accumulates <see cref="RegistryDataMessage"/>s received during the login configuration
 /// phase and provides typed, holder-based access to the deserialized data.
 /// </summary>
 internal sealed class ClientRegistryAccess
@@ -27,25 +27,25 @@ internal sealed class ClientRegistryAccess
     private readonly Dictionary<ResourceLocation, object> _cache = [];
 
     /// <summary>
-    /// Stores the entries from a <see cref="RegistryDataS2CPacket"/>.
+    /// Stores the entries from a <see cref="RegistryDataMessage"/>.
     /// </summary>
-    public void Accumulate(RegistryDataS2CPacket packet)
+    public void Accumulate(RegistryDataMessage packet)
     {
         var entries = new Dictionary<ResourceLocation, string?>(packet.Entries.Count);
-        foreach (RegistryDataS2CPacket.Entry entry in packet.Entries)
+        foreach (RegistryDataMessage.Entry entry in packet.Entries)
         {
-            entries[entry.key] = entry.JsonData;
+            entries[entry.Key] = entry.JsonData;
         }
 
-        _raw[packet.RegistryId!] = entries;
+        _raw[packet.RegistryId] = entries;
 
         _logger.LogDebug($"Received {packet.Entries.Count} entries for {packet.RegistryId}");
 
         // TODO: this is a hack to force the recipe manager to rebuild.
         //       this should be done using listeners instead.
-        if (packet.RegistryId!.IsVanilla && packet.RegistryId!.Path == "recipe")
+        if (packet.RegistryId.IsVanilla && packet.RegistryId.Path == "recipe")
         {
-            Recipes.RecipeManager.Rebuild(GetAll<Recipes.RecipeDefinition>(packet.RegistryId!).Values);
+            Recipes.RecipeManager.Rebuild(GetAll<Recipes.RecipeDefinition>(packet.RegistryId).Values);
         }
     }
 

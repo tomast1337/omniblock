@@ -58,17 +58,9 @@ public static class PacketPriorities
             return envelope.Priority;
         }
 
-        return (PacketId)packet.Id switch
-        {
-            PacketId.KeepAlive => SendPriority.High,
-
-            // Entity replication and the spawns used to be listed here, packet by packet. It has migrated to the
-            // message layer, where each type declares its own priority and the envelope carries the
-            // answer — handled above, before this switch is reached. That is the extensibility the
-            // list could not offer: a mod's message says it is latency-sensitive instead of hoping
-            // somebody adds its packet ID to a table in the engine.
-
-            _ => SendPriority.Normal,
-        };
+        // Everything that was manually listed here — entity replication, spawns, keep-alive — has
+        // migrated to the message layer, where each type declares its own priority and the envelope
+        // carries the answer. The OmniMessagePacket branch above catches those before this switch.
+        return SendPriority.Normal;
     }
 }

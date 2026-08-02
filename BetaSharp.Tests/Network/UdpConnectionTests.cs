@@ -2,7 +2,6 @@ using System.Net;
 using BetaSharp.Network;
 using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Transport;
 using BetaSharp.Util;
 
@@ -52,11 +51,11 @@ public sealed class UdpConnectionTests
     {
         (UdpConnection connection, FakeTransportConnection transport, _) = Fixture();
 
-        connection.sendPacket(KeepAlivePacket.Get());
+        connection.sendPacket(Packet.Get(PacketId.Handshake));
 
         // One datagram, and its first byte is the packet id: the datagram boundary is the framing.
         Assert.Single(transport.Sent);
-        Assert.Equal((byte)PacketId.KeepAlive, transport.Sent[0].Payload[0]);
+        Assert.Equal((byte)PacketId.Handshake, transport.Sent[0].Payload[0]);
     }
 
     [Fact]
@@ -167,7 +166,7 @@ public sealed class UdpConnectionTests
         transport.IsConnected = false;
         connection.tick();
 
-        connection.sendPacket(KeepAlivePacket.Get());
+        connection.sendPacket(Packet.Get(PacketId.Handshake));
         Assert.Empty(transport.Sent);
     }
 

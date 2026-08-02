@@ -328,6 +328,15 @@ public class PlayerManager
         }
     }
 
+    public void sendToAll(Message message)
+    {
+        for (int playerIndex = 0; playerIndex < players.Count; playerIndex++)
+        {
+            ServerPlayerEntity playerEntity = players[playerIndex];
+            playerEntity.NetworkHandler.SendMessage(message);
+        }
+    }
+
     public void sendToDimension(Packet packet, int dimensionId)
     {
         for (int playerIndex = 0; playerIndex < players.Count; playerIndex++)
@@ -544,7 +553,7 @@ public class PlayerManager
         ServerPlayerEntity playerEntity = getPlayer(name);
         if (playerEntity != null)
         {
-            playerEntity.NetworkHandler.SendPacket(ChatMessagePacket.Get(message));
+            playerEntity.NetworkHandler.SendMessage(new ChatMessage { Text = message });
         }
     }
 
@@ -596,18 +605,18 @@ public class PlayerManager
     }
 
     /// <summary>
-    /// Send <see cref="ChatMessagePacket"/> to all operators.
+    /// Send <see cref="ChatMessage"/> to all operators.
     /// </summary>
     /// <param name="message">message to log</param>
     public void BroadcastOp(string message)
     {
-        var chatMessagePacket = ChatMessagePacket.Get(message);
+        var chatMessage = new ChatMessage { Text = message };
 
         foreach (var player in players)
         {
             if (isOperator(player.Name))
             {
-                player.NetworkHandler.SendPacket(chatMessagePacket);
+                player.NetworkHandler.SendMessage(chatMessage);
             }
         }
     }

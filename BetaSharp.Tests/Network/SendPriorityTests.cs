@@ -37,7 +37,8 @@ public sealed class SendPriorityTests
     [Fact]
     public void Entity_and_timing_packets_are_high_priority()
     {
-        Assert.Equal(SendPriority.High, PacketPriorities.Of(Packet.Get(PacketId.KeepAlive)));
+        // KeepAlive migrated to the message layer; its priority now comes from the message declaring it.
+        Assert.Equal(SendPriority.High, PacketPriorities.Of(Envelope(new KeepAliveMessage())));
 
         // Entity replication and the spawns left the allowlist when they left PacketId. Their priority now
         // comes from the message declaring it, which is the extensibility the table could not give:
@@ -64,7 +65,8 @@ public sealed class SendPriorityTests
         Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Packet.Get(PacketId.ChunkStatusUpdateS2C)));
         Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Packet.Get(PacketId.PlayerMoveFull)));
         Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Packet.Get(PacketId.MapUpdateS2C)));
-        Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Packet.Get(PacketId.ChatMessage)));
+        // ChatMessage migrated; its priority is Normal by default on the message.
+        Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Envelope(new ChatMessage())));
     }
 
     /// <summary>
@@ -98,7 +100,8 @@ public sealed class SendPriorityTests
     {
         Assert.Equal(UdpConnection.StateChannel, UdpConnection.ChannelFor(Envelope(new EntityMoveMessage())));
         Assert.Equal(UdpConnection.StateChannel, UdpConnection.ChannelFor(Envelope(new LivingEntitySpawnMessage())));
-        Assert.Equal(UdpConnection.StateChannel, UdpConnection.ChannelFor(Packet.Get(PacketId.KeepAlive)));
+        // KeepAlive migrated to messages, travels through the envelope.
+        Assert.Equal(UdpConnection.StateChannel, UdpConnection.ChannelFor(Envelope(new KeepAliveMessage())));
     }
 
     /// <summary>
@@ -110,7 +113,8 @@ public sealed class SendPriorityTests
     {
         Assert.Equal(UdpConnection.OrderedChannel, UdpConnection.ChannelFor(Packet.Get(PacketId.ChunkDataS2C)));
         Assert.Equal(UdpConnection.OrderedChannel, UdpConnection.ChannelFor(Packet.Get(PacketId.BlockUpdateS2C)));
-        Assert.Equal(UdpConnection.OrderedChannel, UdpConnection.ChannelFor(Packet.Get(PacketId.ChatMessage)));
+        // ChatMessage migrated; travels through the envelope on the ordered channel.
+        Assert.Equal(UdpConnection.OrderedChannel, UdpConnection.ChannelFor(Envelope(new ChatMessage())));
     }
 
     [Fact]
@@ -155,17 +159,16 @@ public sealed class SendPriorityTests
         FakeTransportConnection transport = new();
         UdpConnection connection = Connected(transport);
 
-        connection.sendPacket(Packet.Get(PacketId.KeepAlive));
+        connection.sendPacket(Envelope(new KeepAliveMessage()));
         connection.sendPacket(Packet.Get(PacketId.ChunkDataS2C));
         connection.sendPacket(Envelope(new LivingEntitySpawnMessage()));
         connection.sendPacket(Envelope(new EntityMoveMessage()));
 
-        // The two messages share the envelope's packet ID, so the assertion is on how many landed
-        // on the state channel and in what order relative to the keep-alive, not on bytes that
-        // distinguish them. Spawn before move is the property: a move that overtakes its own spawn
-        // names an entity the client has never heard of, and is dropped.
+        // All three messages on the state channel share the envelope's packet ID. Spawn before move
+        // is the property: a move that overtakes its own spawn names an entity the client has never
+        // heard of, and is dropped.
         Assert.Equal(
-            [(byte)PacketId.KeepAlive, (byte)PacketId.OmniMessage, (byte)PacketId.OmniMessage],
+            [(byte)PacketId.OmniMessage, (byte)PacketId.OmniMessage, (byte)PacketId.OmniMessage],
             transport.Sent.Where(s => s.Channel == UdpConnection.StateChannel).Select(s => s.Payload[0]));
     }
 }

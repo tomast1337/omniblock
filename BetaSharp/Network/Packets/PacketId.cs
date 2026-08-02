@@ -2,10 +2,8 @@ namespace BetaSharp.Network.Packets;
 
 public enum PacketId : byte
 {
-    KeepAlive = 0,
     LoginHello = 1,
     Handshake = 2,
-    ChatMessage = 3,
     WorldTimeUpdateS2C = 4,
     PlayerSpawnPositionS2C = 6,
     HealthUpdateS2C = 8,
@@ -26,8 +24,6 @@ public enum PacketId : byte
     MapUpdateS2C = 131,
     PlayerConnectionUpdateS2C = 132,
     PlayerGameModeUpdateS2C = 133,
-    RegistryDataS2C = 134,
-    FinishConfigurationS2C = 135,
     BundleS2C = 150,
     IncreaseStatS2C = 200,
 
@@ -35,7 +31,5 @@ public enum PacketId : byte
     // everything else it carries travels inside OmniMessage, keyed by name rather than by number,
     // so adding messages never consumes another slot here. See Network/Messages/.
     MessageRegistrySyncS2C = 240,
-    OmniMessage = 241,
-
-    Disconnect = 255
+    OmniMessage = 241
 }

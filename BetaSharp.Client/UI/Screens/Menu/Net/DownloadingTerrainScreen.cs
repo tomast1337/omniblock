@@ -3,7 +3,7 @@ using BetaSharp.Client.Network;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
-using BetaSharp.Network.Packets.Play;
+using BetaSharp.Network.Messages;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Net;
 
@@ -36,7 +36,7 @@ public class DownloadingTerrainScreen(UIContext context, ClientNetworkHandler ne
         ++_tickCounter;
         if (_tickCounter % 20 == 0)
         {
-            _networkHandler.AddToSendQueue(KeepAlivePacket.Get());
+            _networkHandler.SendMessage(new KeepAliveMessage());
         }
 
         _networkHandler?.Tick();

@@ -1,7 +1,6 @@
 using BetaSharp.NBT;
 using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.Play;
 
 namespace BetaSharp.Blocks.Entities;
 
