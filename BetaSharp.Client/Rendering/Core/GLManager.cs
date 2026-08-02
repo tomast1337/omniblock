@@ -18,8 +18,25 @@ public class GLManager
     /// </remarks>
     public static IFixedFunctionGL Legacy => GL;
 
+    /// <summary>The model-view transform stack.</summary>
+    /// <remarks>
+    ///     Held directly rather than driven through <c>MatrixMode</c> and the fixed-function entry
+    ///     points. Both reach the same stack, so a renderer can move to this one at a time and
+    ///     everything keeps drawing.
+    /// </remarks>
+    public static MatrixStack ModelView => _emulated.ModelView;
+
+    /// <inheritdoc cref="ModelView" />
+    public static MatrixStack Projection => _emulated.Projection;
+
+    /// <inheritdoc cref="ModelView" />
+    public static MatrixStack TextureMatrix => _emulated.TextureMatrix;
+
+    private static EmulatedGL _emulated = null!;
+
     public static void Init(GL silkGl)
     {
-        GL = new EmulatedGL(silkGl);
+        _emulated = new EmulatedGL(silkGl);
+        GL = _emulated;
     }
 }
