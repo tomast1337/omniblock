@@ -17,9 +17,8 @@ namespace BetaSharp.Tests.Determinism;
 ///         which is the safe direction: a purity proof wants false positives, not false negatives.
 ///     </para>
 ///     <para>
-///         What it cannot see is listed in <c>docs/deterministic-movement-extraction.md</c> §1.3 —
-///         delegates stored in fields, reflection, and behavior selected from JSON at load time. The
-///         <c>DeterminismGuard</c> runtime tripwire covers those.
+///         What it cannot see: delegates stored in fields, reflection, and behavior selected from
+///         JSON at load time. The <c>DeterminismGuard</c> runtime tripwire covers those.
 ///     </para>
 /// </summary>
 internal sealed class CallGraph

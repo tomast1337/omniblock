@@ -7,8 +7,7 @@ namespace BetaSharp.Network.Messages;
 ///         <b>Length-prefixed rather than terminated.</b> The packet wrote the properties and then a
 ///         127 byte, and the reader consumed until it saw one. That works only while no property can
 ///         encode a 127 in a position the scanner will read as a terminator, which is a property of
-///         the payload rather than of the framing — exactly the kind of coupling
-///         <c>docs/network-rewrite.md</c> §6 is about. A length says the same thing and cannot be
+///         the payload rather than of the framing. A length says the same thing and cannot be
 ///         confused by its own contents.
 ///     </para>
 /// </summary>

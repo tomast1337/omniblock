@@ -7,9 +7,8 @@ namespace BetaSharp.Client.Network;
 ///     NTP-style clock synchronisation over TCP, so the client and server agree on what "now" is
 ///     and remote entities can be interpolated on that shared timeline.
 ///     <para>
-///         Phase 2 of <c>docs/time-sync-and-interpolation.md</c>. Ships with no visible change —
-///         RTT, offset and jitter are exposed on the F3 overlay so they can be watched for a
-///         session before anything depends on them.
+///         RTT, offset and jitter are all exposed on the F3 overlay, so a link can be watched for a
+///         session before trusting what interpolation derives from them.
 ///     </para>
 ///     <para>
 ///         <b>Login burst.</b> Eight probes ~100 ms apart. The lowest-RTT sample's offset is taken
@@ -99,8 +98,8 @@ public sealed class ServerClock
     public long RttMedianMs => _rttMedianMs;
 
     /// <summary>
-    ///     Mean absolute deviation of RTT from its median. Feeds the interpolation-delay
-    ///     calculation in <c>docs/time-sync-and-interpolation.md</c> §3.4.
+    ///     Mean absolute deviation of RTT from its median. Feeds
+    ///     <see cref="EntityInterpolator.NetworkJitterMs" />.
     /// </summary>
     public long JitterMs => _jitterMs;
 
@@ -278,9 +277,9 @@ public sealed class ServerClock
             return;
         }
 
-        // Median RTT from the full window, not just the best N. The rejection threshold (§2.2 step
-        // 1) needs the uncontaminated median, and computing it from the same set it rejects against
-        // would create a feedback loop.
+        // Median RTT from the full window, not just the best N. The rejection threshold below needs
+        // an uncontaminated median, and computing it from the same set it rejects against would
+        // create a feedback loop.
         _rttMedianMs = MedianRtt();
 
         // Best BestCount non-outlier samples by RTT.
@@ -308,7 +307,7 @@ public sealed class ServerClock
 
         _jitterMs = (long)acceptedRtts.Average(r => Math.Abs(r - _rttMedianMs));
 
-        // Apply: step or slew (§2.3).
+        // Apply: step on the first reading, slew afterwards.
         if (!_synchronised)
         {
             // First offset ever: set directly. No terrain is visible yet.

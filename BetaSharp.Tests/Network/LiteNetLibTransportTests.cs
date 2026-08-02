@@ -216,9 +216,9 @@ public sealed class LiteNetLibTransportTests
 
     /// <summary>
     ///     A Beta chunk is 81,920 bytes raw and the payload MTU is around 1,200, so this is roughly
-    ///     seventy fragments. It working is the reason phase 2 can ship before the chunk transfer
-    ///     protocol of §5.2 exists; it being a single reliable-ordered blob is the reason that
-    ///     protocol is still needed.
+    ///     seventy fragments. It working at all is why chunks can ship over this transport before a
+    ///     dedicated chunk transfer protocol exists; it being a single reliable-ordered blob, where
+    ///     one lost fragment stalls the rest, is why that protocol is still wanted.
     /// </summary>
     [Fact]
     public async Task A_chunk_sized_payload_is_fragmented_and_reassembled()

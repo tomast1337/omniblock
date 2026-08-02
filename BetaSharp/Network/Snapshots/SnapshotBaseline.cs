@@ -4,8 +4,8 @@ namespace BetaSharp.Network.Snapshots;
 ///     The state a delta-compressed snapshot is measured against, and the bookkeeping that keeps
 ///     both peers pointing at the same one.
 ///     <para>
-///         Phase 6 of <c>docs/network-rewrite.md</c> §4.4. The server encodes each snapshot as the
-///         difference from a specific earlier one, so both ends must be able to name and reconstruct
+///         The server encodes each snapshot as the difference from a specific earlier one, so both
+///         ends must be able to name and reconstruct
 ///         that earlier state. This class is that mechanism, and it is deliberately identical on both
 ///         sides: the sender advances its baseline when an acknowledgement arrives, the receiver
 ///         advances its own to whatever baseline the incoming snapshot names, and if the two ever

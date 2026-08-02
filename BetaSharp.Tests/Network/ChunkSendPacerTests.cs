@@ -7,14 +7,14 @@ namespace BetaSharp.Tests.Network;
 /// <summary>
 ///     <see cref="ChunkSendPacer" />: how much chunk data one player is handed per tick.
 ///     <para>
-///         <c>docs/network-rewrite.md</c> §5.3. The controller closes on the transport's own queue
-///         depth rather than on a bandwidth estimate, so these are about the two bounds and about
+///         The controller closes on the transport's own queue depth rather than on a bandwidth
+///         estimate, so these are about the two bounds and about
 ///         what happens when a chunk is refused — not about throughput, which is the link's business.
 ///     </para>
 /// </summary>
 public sealed class ChunkSendPacerTests
 {
-    /// <summary>A typical compressed chunk, from the measurement in §5.4.</summary>
+    /// <summary>A typical compressed chunk, from the 200-chunk measurement.</summary>
     private const int ChunkBytes = 1966;
 
     [Fact]

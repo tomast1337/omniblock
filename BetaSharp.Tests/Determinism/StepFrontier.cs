@@ -4,7 +4,6 @@ namespace BetaSharp.Tests.Determinism;
 ///     The machine-readable definition of "in the <c>Step()</c> path", and of what may not appear
 ///     there. Kept as data, separate from the analysis in <see cref="CallGraph" />, so that moving
 ///     the frontier is a one-line edit rather than a change to the engine.
-///     <para>See <c>docs/deterministic-movement-extraction.md</c> §1.</para>
 /// </summary>
 internal static class StepFrontier
 {
@@ -38,7 +37,7 @@ internal static class StepFrontier
     ///     The effect tail: everything the movement tick currently does <em>besides</em> physics —
     ///     block callbacks, footsteps, fire and water, and the AI invoked mid-tick from
     ///     <c>TickMovement</c>. Known impure, measured rather than asserted, and expected to shrink
-    ///     to nothing across phases 4–6 as Cuts 1–3 land.
+    ///     to nothing as each of those is hoisted out of the movement tick.
     ///     <para>
     ///         Kept under test because its <em>size</em> is the progress metric:
     ///         <see cref="StepPurityTests.Effect_tail_only_shrinks" /> ratchets it downward.
@@ -73,19 +72,19 @@ internal static class StepFrontier
     public static readonly CutPoint[] CutPoints =
     [
         new("BetaSharp.Blocks.Block.onEntityCollision",
-            "§3 risk #7 — block callbacks become StepEffects entries in phase 5"),
+            "block callbacks; need to become StepEffects entries"),
         new("BetaSharp.Worlds.Core.Systems.WorldEventBroadcaster.",
             "already banned at the call site; its internals are not movement's concern"),
         new("BetaSharp.Entities.EntityLiving.TickLiving",
-            "§3 risk #8 — the AI, invoked mid-tick; hoisted out of the movement phase in Cut 1"),
+            "the AI, invoked mid-tick; belongs outside the movement step entirely"),
         new("BetaSharp.Entities.EntityPlayer.PickupAndInventorySubtick",
-            "§3 risk #9 — inventory mutation; leaves the movement phase in Cut 1"),
+            "mutates the inventory; belongs outside the movement step entirely"),
         new("BetaSharp.Entities.EntityPlayer.CollideWithPickupEntities",
-            "§3 risk #9 — inventory mutation; leaves the movement phase in Cut 1"),
+            "mutates the inventory; belongs outside the movement step entirely"),
         new("BetaSharp.Entities.EntityPlayer.IncreaseStat",
-            "§3 risk #10 — stat counters become StepEffects entries in phase 5"),
+            "mutates stat counters; needs to become a StepEffects entry"),
         new("BetaSharp.Entities.ServerPlayerEntity.IncreaseStat",
-            "§3 risk #10 — stat counters become StepEffects entries in phase 5"),
+            "mutates stat counters; needs to become a StepEffects entry"),
     ];
 
     /// <summary>
@@ -97,11 +96,11 @@ internal static class StepFrontier
         // Transcendentals: platform libm, not bit-guaranteed across OS or runtime version.
         new("System.Math.Sin", "libm — not bit-identical across platforms; use MathHelper's table"),
         new("System.Math.Cos", "libm — use MathHelper.Cos (table lookup)"),
-        new("System.Math.Tan", "libm — no deterministic equivalent yet; see §5.2"),
+        new("System.Math.Tan", "libm — no deterministic equivalent written yet"),
         new("System.Math.Asin", "libm"),
         new("System.Math.Acos", "libm"),
         new("System.Math.Atan", "libm"),
-        new("System.Math.Atan2", "libm — see §5.2 before replacing; facing feeds MoveNonSolid"),
+        new("System.Math.Atan2", "libm — replacing it changes facing, which feeds MoveNonSolid"),
         new("System.Math.Pow", "libm"),
         new("System.Math.Exp", "libm"),
         new("System.Math.Log", "libm"),
@@ -140,10 +139,9 @@ internal static class StepFrontier
     ];
 
     /// <summary>
-    ///     Reachable-and-known-impure sites that have not been fixed yet, each pinned to the
-    ///     document section that tracks it. Every entry is a bug the plan has already identified;
-    ///     the list exists so the test fails on <em>new</em> violations while the known ones are
-    ///     being worked through in phases 5–6.
+    ///     Reachable-and-known-impure sites that have not been fixed yet, each with what makes it
+    ///     impure and what fixing it takes. The list exists so the test fails on <em>new</em>
+    ///     violations while these are worked through.
     ///     <para>
     ///         This list must only ever shrink. <see cref="StepPurityTests.Waivers_do_not_rot" />
     ///         fails when an entry stops matching anything, so a fixed site cannot be quietly left
@@ -153,13 +151,13 @@ internal static class StepFrontier
     public static readonly Waiver[] Waivers =
     [
         new("BetaSharp.Entities.Entity.PushOutOfBlocks", "BetaSharp.Util.Maths.JavaRandom.",
-            "§3 risk #1 — affects returned velocity; fixed in phase 6 by RNG injection"),
+            "draws from ambient RNG and the draw affects returned velocity; needs an injected generator"),
         new("BetaSharp.Entities.Entity.ApplyFireAndWater", "BetaSharp.Util.Maths.JavaRandom.",
-            "§3 risk #4 — fizz sound pitch; fixed in phase 5 by StepEffects"),
+            "draws from ambient RNG for the fizz sound's pitch; needs the sound routed through StepEffects"),
         new("BetaSharp.Entities.Entity.ApplyFireAndWater", "BetaSharp.Worlds.Core.Systems.WorldEventBroadcaster.",
-            "§3 risk #4 — fizz sound; fixed in phase 5 by StepEffects"),
+            "emits the fizz sound directly; needs it routed through StepEffects"),
         new("BetaSharp.Entities.Entity.AccumulateWalkDistance", "BetaSharp.Worlds.Core.Systems.WorldEventBroadcaster.",
-            "§3 risk #5 — footstep sounds; fixed in phase 5 by StepEffects"),
+            "emits footstep sounds directly; needs them routed through StepEffects"),
     ];
 
     /// <summary>

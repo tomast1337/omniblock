@@ -9,7 +9,6 @@ namespace BetaSharp.Network.Messages;
 ///         packet is queued, because the handler runs on the game thread up to a tick later and
 ///         would measure the tick phase rather than the network.
 ///     </para>
-///     <para>See <c>docs/time-sync-and-interpolation.md</c> §1.</para>
 /// </summary>
 [WireMessage("betasharp:time_sync_request")]
 public sealed partial class TimeSyncRequestMessage : Message

@@ -15,9 +15,9 @@ internal static class ClientMetrics
     public static readonly MetricHandle<string> ServerAddress = MetricRegistry.Register<string>("client:server_address");
     public static readonly MetricHandle<long> PeerProtocolVersion = MetricRegistry.Register<long>("client:peer_protocol_version");
 
-    // Packet arrival distribution. These size the interpolation delay in
-    // docs/time-sync-and-interpolation.md §3.4, which is why p95 is here and not just the mean:
-    // the delay is chosen against the typical stall, and the tail is handled by extrapolation.
+    // Packet arrival distribution. These size the interpolation delay, which is why p95 is here and
+    // not just the mean: the delay is chosen against the typical stall, and the tail is handled by
+    // extrapolation.
     public static readonly MetricHandle<double> ReadIntervalMeanMs = MetricRegistry.Register<double>("client:read_interval_mean_ms");
     public static readonly MetricHandle<double> ReadIntervalP50Ms = MetricRegistry.Register<double>("client:read_interval_p50_ms");
     public static readonly MetricHandle<double> ReadIntervalP95Ms = MetricRegistry.Register<double>("client:read_interval_p95_ms");
@@ -46,7 +46,7 @@ internal static class ClientMetrics
     public static readonly MetricHandle<long> PacketsProcessed = MetricRegistry.Register<long>("client:packets_processed");
     public static readonly MetricHandle<long> DrainBudgetHits = MetricRegistry.Register<long>("client:drain_budget_hits");
 
-    // Server clock sync (docs/time-sync-and-interpolation.md phase 2).
+    // Server clock sync.
     public static readonly MetricHandle<long> ClockOffsetMs = MetricRegistry.Register<long>("client:clock_offset_ms");
     public static readonly MetricHandle<long> ClockRttMs = MetricRegistry.Register<long>("client:clock_rtt_ms");
     public static readonly MetricHandle<long> ClockJitterMs = MetricRegistry.Register<long>("client:clock_jitter_ms");
@@ -57,7 +57,7 @@ internal static class ClientMetrics
 
     /// <summary>
     ///     Age of the newest snapshot stamp, measured against the client's estimate of server time.
-    ///     This is the quantity phase 4's interpolation delay has to cover: render at
+    ///     This is the quantity the interpolation delay has to cover: render at
     ///     <c>ServerTime - delay</c> and a delay smaller than this age starves the buffer.
     /// </summary>
     public static readonly MetricHandle<long> TickStampAgeMs = MetricRegistry.Register<long>("client:tick_stamp_age_ms");
@@ -76,9 +76,9 @@ internal static class ClientMetrics
     public static readonly MetricHandle<long> InterpolationAdjusting = MetricRegistry.Register<long>("client:interp_adjusting");
 
     /// <summary>
-    ///     Cumulative entries into starvation, not entities currently in it. The rising-count metric
-    ///     from <c>docs/time-sync-and-interpolation.md</c> §3.5 — a standing Frozen count says some
-    ///     entities are idle, whereas this climbing says the buffer is undersized for this link.
+    ///     Cumulative entries into starvation, not entities currently in it. A standing Frozen count
+    ///     says some entities are idle; this one climbing says the buffer is undersized for the
+    ///     link.
     /// </summary>
     public static readonly MetricHandle<long> InterpolationStarvations = MetricRegistry.Register<long>("client:interp_starvations");
 

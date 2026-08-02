@@ -28,7 +28,7 @@ internal class PortalForcer
         int entityX = MathHelper.Floor(entity.X);
         int entityZ = MathHelper.Floor(entity.Z);
 
-        // Phase 1: Search for an existing portal
+        // An existing portal wins outright; only build one if the search comes back empty.
         for (int x = entityX - searchRadius; x <= entityX + searchRadius; ++x)
         {
             double dx = x + 0.5D - entity.X;
@@ -114,7 +114,7 @@ internal class PortalForcer
         int randomDirection = Random.Shared.Next(4);
         int h1 = ChuckFormat.WorldHeight - 1;
 
-        // Phase 1: Search for an optimal flat 3x4 area of solid ground
+        // First choice: a flat 3x4 area of solid ground.
         for (int x = entityX - searchRadius; x <= entityX + searchRadius; ++x)
         {
             double dx = x + 0.5D - entity.X;
@@ -180,7 +180,7 @@ internal class PortalForcer
             }
         }
 
-        // Phase 2: If optimal location fails, settle for a tighter 1x4 area
+        // Nothing flat enough, so settle for a tighter 1x4 area.
         if (closestDistance < 0.0D)
         {
             for (int x = entityX - searchRadius; x <= entityX + searchRadius; ++x)
@@ -241,7 +241,7 @@ internal class PortalForcer
             }
         }
 
-        // Phase 3: Force generation
+        // Nowhere suitable at all, so build where the entity is and force the terrain to accept it.
         int finalX = bestX;
         int finalY = bestY;
         int finalZ = bestZ;
@@ -277,7 +277,7 @@ internal class PortalForcer
             }
         }
 
-        // Phase 4: Construct the Obsidian Frame and spawn portal blocks
+        // Frame first, then the portal blocks inside it.
         for (int pass = 0; pass < 4; ++pass)
         {
             for (int wDepth = 0; wDepth < 4; ++wDepth)

@@ -11,8 +11,8 @@ namespace BetaSharp.Network.Messages;
 ///         The two handlers that consume them — one per side — branch on
 ///         <see cref="IPlayerMovePosition" /> and <see cref="IPlayerMoveLook" /> rather than on the
 ///         concrete type, so the four variants are a wire-encoding concern and not a behavioural
-///         one. Collapsing them into a single message with a presence mask is phase 5's call, in the
-///         movement rewrite that has to revisit what is sent at all.
+///         one. Collapsing them into a single message with a presence mask belongs to the movement
+///         rewrite, which has to revisit what is sent at all.
 ///     </para>
 /// </summary>
 public interface IPlayerMove

@@ -9,12 +9,12 @@ namespace BetaSharp.PathFinding;
 /// get pushed onto the entity (via setPathToEntity) once a batch completes, rather than requiring
 /// the caller to poll for them — a caller that only requests occasionally (e.g. the ~1/80-chance
 /// wander target) would otherwise rarely be the one to collect its own result. RunBatch processes
-/// everything queued since the last call. See docs/parallel-pathfinding.md.
+/// everything queued since the last call.
 /// </summary>
 internal sealed class PathingCoordinator(IWorldContext world)
 {
     // One PathFinder per worker thread: PathFinder's open-list/point-pool state is mutable
-    // and not reentrant, so threads can't share a single instance (see docs/parallel-pathfinding.md).
+    // and not reentrant, so threads can't share a single instance.
     private readonly ThreadLocal<PathFinder> _threadFinder = new(() => new PathFinder(world));
     private readonly List<PathRequest> _pendingRequests = [];
 

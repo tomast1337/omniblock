@@ -11,15 +11,15 @@ namespace BetaSharp.Network.Transport;
 ///     <see cref="ITransport" /> over LiteNetLib.
 ///     <para>
 ///         Chosen to get the protocol onto UDP without first writing ack bitfields and a
-///         retransmit timer, which are solved problems and not where this fork's difficulty lies —
-///         see <c>docs/network-rewrite.md</c> §3.1. The parts that are genuinely novel are chunk
-///         streaming and prediction, and every hour spent on sequence numbers is an hour not spent
-///         on those.
+///         retransmit timer, which are solved problems and not where this fork's difficulty lies.
+///         The parts that are genuinely novel are chunk streaming and prediction, and every hour
+///         spent on sequence numbers is an hour not spent on those.
 ///     </para>
 ///     <para>
-///         <b>Expected to be replaced, and cheap to replace.</b> §5.2 wants selective repeat over
-///         independent chunk transfers, which this channel model cannot express: a lost fragment
-///         head-of-line blocks its whole channel, so one stalled chunk delays every chunk behind it.
+///         <b>Expected to be replaced, and cheap to replace.</b> Chunk transfer wants selective
+///         repeat over independent transfers, which this channel model cannot express: a lost
+///         fragment head-of-line blocks its whole channel, so one stalled chunk delays every chunk
+///         behind it.
 ///         When that becomes the limit, a different implementation of this same interface takes over
 ///         and nothing above the seam changes.
 ///     </para>
@@ -31,10 +31,9 @@ namespace BetaSharp.Network.Transport;
 public sealed class LiteNetLibTransport : ITransport
 {
     /// <summary>
-    ///     Independent ordering domains. Sixteen rather than the five
-    ///     <c>docs/network-rewrite.md</c> §6 names, because that map ends with "5+ — Mod" and a mod
-    ///     shipping a bulk asset transfer should not have to squeeze it through the chat channel.
-    ///     LiteNetLib keeps per-peer state per channel, so this is not free and not unbounded.
+    ///     Independent ordering domains. More than the base game needs, because a mod shipping a
+    ///     bulk asset transfer should not have to squeeze it through the chat channel. LiteNetLib
+    ///     keeps per-peer state per channel, so this is not free and not unbounded either.
     /// </summary>
     public const byte Channels = 16;
 

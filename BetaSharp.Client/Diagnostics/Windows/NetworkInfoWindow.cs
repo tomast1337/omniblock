@@ -246,8 +246,8 @@ internal sealed class NetworkInfoWindow : DebugWindow
     }
 
     /// <summary>
-    ///     The delay formula from <c>docs/time-sync-and-interpolation.md</c> §3.4, and the one
-    ///     comparison that decides whether its answer is usable on this connection.
+    ///     The interpolation delay formula, and the one comparison that decides whether its answer
+    ///     is usable on this connection.
     ///     <para>
     ///         Falls back to the arrival p95 as a stand-in for the jitter term before the clock has
     ///         synchronised, which is the only estimate available during the login burst.
@@ -402,7 +402,7 @@ internal sealed class NetworkInfoWindow : DebugWindow
         // number that stays high says the observed update spacing is unstable rather than that
         // anything is wrong with a particular entity.
         //
-        // Starvations: entries into starvation over the session, the number §3.5 says to watch.
+        // Starvations: entries into starvation over the session, and the number worth watching.
         // Counted only while the stream as a whole is stale, so it means "the network broke down"
         // and not "some mobs stood still" — the two produce identical per-entity buffers, and an
         // earlier cut of this counted both and read 1180 on a healthy connection.
@@ -441,7 +441,7 @@ internal sealed class NetworkInfoWindow : DebugWindow
         }
 
         // A fully-cached rejoin sends nothing to average, so fall back to the figure measured over
-        // 200 chunks of a real save while sizing the encoding — see docs/network-rewrite.md §5.4.
+        // 200 chunks of a real save while sizing the encoding.
         return 1966;
     }
 

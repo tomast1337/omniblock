@@ -18,10 +18,9 @@ public static class ChunkHash
     ///         is not much of an attack, but paying nothing to rule it out is the easy call.
     ///     </para>
     ///     <para>
-    ///         Sixty-four bits after truncation, as <c>docs/network-rewrite.md</c> §5.2 specifies.
-    ///         Against a cache of a hundred thousand chunks the odds of any accidental collision are
-    ///         about one in two billion, and the consequence is one stale chunk until it next
-    ///         changes.
+    ///         Sixty-four bits after truncation. Against a cache of a hundred thousand chunks the
+    ///         odds of any accidental collision are about one in two billion, and the consequence is
+    ///         one stale chunk until it next changes.
     ///     </para>
     /// </summary>
     public static ulong Of(ReadOnlySpan<byte> blob)

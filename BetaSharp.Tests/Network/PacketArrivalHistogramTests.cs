@@ -3,8 +3,8 @@ using BetaSharp.Network;
 namespace BetaSharp.Tests.Network;
 
 /// <summary>
-///     Phase 1 of <c>docs/time-sync-and-interpolation.md</c>. These numbers choose the interpolation
-///     delay, so an off-by-one in the percentile walk would quietly mis-size it.
+///     These numbers choose the interpolation delay, so an off-by-one in the percentile walk would
+///     quietly mis-size it.
 /// </summary>
 public sealed class PacketArrivalHistogramTests
 {

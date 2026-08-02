@@ -5,7 +5,7 @@ using BetaSharp.Network.Packets;
 namespace BetaSharp.Tests.Network;
 
 /// <summary>
-///     Phase 1 of the message layer: length-prefixed envelopes and registry-negotiated IDs.
+///     The message layer's foundation: length-prefixed envelopes and registry-negotiated IDs.
 ///     <para>
 ///         The properties under test are the two the legacy <c>PacketId : byte</c> framing cannot
 ///         provide — that an unknown message is survivable, and that two peers derive the same ID
@@ -164,8 +164,8 @@ public sealed class MessageLayerTests
     [Fact]
     public void An_empty_table_negotiates_cleanly()
     {
-        // Phase 1 ships with no messages registered. The wiring must still work end to end rather
-        // than only becoming correct once content arrives.
+        // A server with no messages registered at all is a legitimate configuration. The wiring has
+        // to work end to end rather than only becoming correct once content arrives.
         MessageRegistry server = new();
         MessageRegistry client = new();
 

@@ -32,9 +32,9 @@ public sealed class UdpConnection : Connection
     ///         Chunks share this channel with block updates deliberately. A block update that
     ///         overtakes the chunk it edits is applied to a chunk the client does not have and is
     ///         silently lost, so the two must stay in one ordering domain — the same constraint that
-    ///         kept them in one queue on the stream transport. Splitting them is what
-    ///         <c>docs/network-rewrite.md</c> §5.5 solves, by tagging block updates with the chunk
-    ///         revision they apply to.
+    ///         kept them in one queue on the stream transport. Splitting them needs block updates
+    ///         tagged with the chunk revision they apply to, so a client can tell an update meant
+    ///         for a chunk it has from one meant for a chunk still in flight.
     ///     </para>
     /// </summary>
     public const byte OrderedChannel = 0;
@@ -79,15 +79,15 @@ public sealed class UdpConnection : Connection
         PacketPriorities.Of(packet) == SendPriority.High ? StateChannel : OrderedChannel;
 
     /// <summary>
-    ///     Everything is <see cref="DeliveryMode.ReliableOrdered" /> for now, which is the phase 2
-    ///     position in <c>docs/network-rewrite.md</c> §7 and not the end state.
+    ///     Everything is <see cref="DeliveryMode.ReliableOrdered" />, which is a starting position
+    ///     and not the end state.
     ///     <para>
     ///         The tempting move is to send entity updates <see cref="DeliveryMode.UnreliableSequenced" />,
     ///         since a superseded position is worthless. It would be wrong today: sequenced means
     ///         only the newest payload <em>on that channel</em> survives, so one entity's update
     ///         would discard another's, and spawns and destroys would be dropped outright. That mode
-    ///         becomes correct once snapshots are per-entity delta-compressed against a client ack —
-    ///         §4.4 — and not before.
+    ///         becomes correct once snapshots are per-entity delta-compressed against a client ack,
+    ///         and not before.
     ///     </para>
     /// </summary>
     private const DeliveryMode Mode = DeliveryMode.ReliableOrdered;

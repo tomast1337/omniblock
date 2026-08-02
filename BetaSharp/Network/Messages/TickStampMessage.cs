@@ -3,9 +3,8 @@ namespace BetaSharp.Network.Messages;
 /// <summary>
 ///     Announces the server-clock instant that the entity updates following it describe.
 ///     <para>
-///         Phase 3 of <c>docs/time-sync-and-interpolation.md</c>. This is the one protocol change
-///         the whole interpolation fix depends on: without a server timestamp the client can only
-///         guess an update's age from its arrival time, which is exactly the quantity a
+///         The one protocol change interpolation depends on: without a server timestamp the client
+///         can only guess an update's age from its arrival time, which is exactly the quantity a
 ///         head-of-line stall corrupts.
 ///     </para>
 ///     <para>

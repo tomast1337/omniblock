@@ -199,7 +199,7 @@ public class ClientNetworkHandler : NetHandler
                 MetricRegistry.Set(ClientMetrics.ClockJitterMs, Clock.JitterMs);
                 MetricRegistry.Set(ClientMetrics.ClockSynchronised, true);
 
-                // §3.4's jitter term. Fed from here rather than read by the interpolator because the
+                // The jitter term. Fed from here rather than read by the interpolator because the
                 // clock is per-connection and the interpolator is handed one number per tick, which
                 // keeps it testable without a synchronised clock to stand up.
                 Interpolation.NetworkJitterMs = Clock.JitterMs;
@@ -605,9 +605,9 @@ public class ClientNetworkHandler : NetHandler
     /// <summary>
     ///     Server-clock instant of the most recent <see cref="TickStampMessage" />, or 0 if the
     ///     stream has never been stamped. Zero is the signal that this server does not stamp — an
-    ///     older OmniBlock build, or the loopback path — and that phase 4's interpolation must fall
-    ///     back to the legacy move-toward-target behaviour rather than interpolate against a
-    ///     timeline that does not exist.
+    ///     older OmniBlock build, or the loopback path — and that interpolation must fall back to
+    ///     the move-toward-target behaviour rather than interpolate against a timeline that does
+    ///     not exist.
     /// </summary>
     public long CurrentBatchServerTimeMs { get; private set; }
 

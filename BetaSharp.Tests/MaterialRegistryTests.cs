@@ -23,8 +23,7 @@ public class MaterialRegistryTests
         bool IsTransparent = false,
         PistonBehavior PistonBehavior = PistonBehavior.Normal);
 
-    // Source of truth: the static singletons deleted by the migration
-    // (docs/dependencies-migration-plan.md §1.3).
+    // Source of truth: the static singletons the data-driven migration deleted.
     private static readonly Dictionary<string, ExpectedMaterial> s_expected = new()
     {
         ["air"] = new(MapColor.Air, IsSolid: false, BlocksVision: false, BlocksMovement: false, IsReplaceable: true),

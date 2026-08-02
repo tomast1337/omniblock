@@ -136,8 +136,8 @@ public class EntityTracker
     /// <summary>
     ///     Turns this pass into one delta-compressed snapshot per protocol-speaking listener.
     ///     <para>
-    ///         Phase 6 of <c>docs/network-rewrite.md</c> §4.4. Runs after the entries have decided
-    ///         what they have to say, and after listener sets have settled for the tick, so a player
+    ///         Runs after the entries have decided what they have to say, and after listener sets
+    ///         have settled for the tick, so a player
     ///         who came into range of an entity during this pass gets it in the same snapshot as
     ///         everything else rather than a tick later.
     ///     </para>

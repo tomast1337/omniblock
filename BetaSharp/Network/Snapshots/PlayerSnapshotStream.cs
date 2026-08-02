@@ -6,8 +6,8 @@ namespace BetaSharp.Network.Snapshots;
 ///     The sending half of delta-compressed entity replication: one per recipient, holding what that
 ///     recipient has confirmed and turning each tracking pass into the difference from it.
 ///     <para>
-///         Phase 6 of <c>docs/network-rewrite.md</c> §4.4. Per recipient rather than per entity,
-///         because a delta is only meaningful against a state a particular peer is known to hold —
+///         Per recipient rather than per entity, because a delta is only meaningful against a state
+///         a particular peer is known to hold —
 ///         two players who joined a minute apart have confirmed different things about the same cow.
 ///     </para>
 /// </summary>

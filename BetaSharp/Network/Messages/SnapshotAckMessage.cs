@@ -4,8 +4,8 @@ namespace BetaSharp.Network.Messages;
 ///     The newest snapshot this peer has actually applied, so the server knows which state its next
 ///     delta may be measured against.
 ///     <para>
-///         Phase 6 of <c>docs/network-rewrite.md</c> §4.4. Four bytes a tick, which buys the whole
-///         delta scheme: without it the server can only measure against the snapshot it sent last,
+///         Four bytes a tick, which buys the whole delta scheme: without it the server can only
+///         measure against the snapshot it sent last,
 ///         and that is only sound on a channel that guarantees the client received it.
 ///     </para>
 ///     <para>

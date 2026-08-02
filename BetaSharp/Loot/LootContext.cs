@@ -5,8 +5,8 @@ namespace BetaSharp.Loot;
 /// <summary>
 ///     Everything a loot pool's condition or entry may consult while rolling.
 ///     <para>
-///         Blocks are not on this model yet (see docs/mob-data-driven-migration.md) — <see cref="BlockMeta" />
-///         is here so the shape is ready for them, and reads 0 for mob drops.
+///         Blocks are not on this model yet. <see cref="BlockMeta" /> is here so the shape is ready
+///         for them, and reads 0 for mob drops.
 ///     </para>
 /// </summary>
 /// <param name="Self">The entity dropping the loot, or <c>null</c> for a block drop.</param>

@@ -3,10 +3,9 @@ namespace BetaSharp.Network;
 /// <summary>
 ///     Distribution of the gap between successive packet arrivals on one connection.
 ///     <para>
-///         Phase 1 of <c>docs/time-sync-and-interpolation.md</c>: the interpolation delay must
-///         exceed the typical TCP head-of-line stall or the snapshot buffer starves, and sizing it
-///         at the worst case is a permanent latency tax paid on every frame to hide a rare event.
-///         Both numbers have to be measured. This is the instrument.
+///         The interpolation delay must exceed the typical head-of-line stall or the snapshot
+///         buffer starves, and sizing it at the worst case is a permanent latency tax paid on every
+///         frame to hide a rare event. Both numbers have to be measured. This is the instrument.
 ///     </para>
 ///     <para>
 ///         Fixed logarithmic buckets rather than stored samples: recording is one array increment

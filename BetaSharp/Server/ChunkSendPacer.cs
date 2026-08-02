@@ -3,15 +3,15 @@ namespace BetaSharp.Server;
 /// <summary>
 ///     Decides how much chunk data one player may be sent this tick.
 ///     <para>
-///         <c>docs/network-rewrite.md</c> §5.3. Chunk traffic is elastic and movement traffic is not,
-///         so the only question that matters is whether we are ahead of the link — and if we are, to
-///         stop, because everything queued behind a chunk waits for it.
+///         Chunk traffic is elastic and movement traffic is not, so the only question that matters
+///         is whether we are ahead of the link — and if we are, to stop, because everything queued
+///         behind a chunk waits for it.
 ///     </para>
 ///     <para>
-///         <b>Closed on queue depth, not on an estimate.</b> §5.3 asks for a delay-based controller,
-///         and the transport's own outgoing queue <em>is</em> the delay, before it has been converted
-///         into one. A bandwidth estimate and a round-trip inflation threshold are both proxies for
-///         this number, both need constants tuned per link, and both are wrong during the ramp. The
+///         <b>Closed on queue depth, not on an estimate.</b> The transport's own outgoing queue
+///         <em>is</em> the delay a controller would otherwise have to estimate. A bandwidth estimate
+///         and a round-trip inflation threshold are both proxies for this number, both need
+///         constants tuned per link, and both are wrong during the ramp. The
 ///         queue is exact, needs no estimator, and self-tunes to any link because a slow one drains
 ///         slowly and a fast one drains fast.
 ///     </para>

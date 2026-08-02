@@ -8,8 +8,8 @@ namespace BetaSharp.Network.Transport;
 ///         Per-payload rather than per-connection, because the two kinds of traffic this protocol
 ///         carries want opposite things. A movement update is worthless once superseded, so
 ///         retransmitting it costs latency to deliver something already stale; a block change is
-///         worthless if lost. One connection has to serve both without one starving the other, which
-///         a single stream cannot express — see <c>docs/network-rewrite.md</c> §5.1.
+///         worthless if lost. One connection has to serve both without one starving the other,
+///         which a single stream cannot express.
 ///     </para>
 /// </summary>
 public enum DeliveryMode
@@ -46,11 +46,11 @@ public enum DisconnectReason
 /// <summary>
 ///     What the transport knows about a live connection.
 ///     <para>
-///         Deliberately only what is genuinely measured. The design sketch in
-///         <c>docs/network-rewrite.md</c> §3.2 also lists jitter, loss and estimated bandwidth;
-///         LiteNetLib exposes those per <em>manager</em> rather than per peer, so filling them here
-///         would mean reporting a number that does not describe this connection. A missing field is
-///         honest, a zero is a measurement. They arrive when there is a per-peer source for them.
+///         Deliberately only what is genuinely measured. Jitter, loss and estimated bandwidth all
+///         belong here and none is present, because LiteNetLib exposes them per <em>manager</em>
+///         rather than per peer, so filling them in would mean reporting a number that does not
+///         describe this connection. A missing field is honest, a zero is a measurement. They
+///         arrive when there is a per-peer source for them.
 ///     </para>
 /// </summary>
 /// <param name="RoundTripMs">Smoothed round trip, as the transport measures it.</param>
@@ -136,18 +136,17 @@ public interface ITransportConnection : IDisposable
 ///     Opens and accepts <see cref="ITransportConnection" />s. The seam the rest of the protocol is
 ///     written against.
 ///     <para>
-///         The interface is the architectural commitment; the library behind it is not. Per
-///         <c>docs/network-rewrite.md</c> §3.2, the chunk requirements in §5 are unusual enough that
-///         the backing may well need replacing with something that can express selective repeat, and
-///         the point of writing this down first is that doing so touches nothing above it.
+///         The interface is the architectural commitment; the library behind it is not. Chunk
+///         transfer wants selective repeat, which the current backing cannot express, so replacing
+///         it is expected — and the point of the seam is that doing so touches nothing above it.
 ///     </para>
 /// </summary>
 public interface ITransport : IAsyncDisposable
 {
     /// <summary>
-    ///     Independent ordering domains available, so callers can validate before sending. See
-    ///     <c>docs/network-rewrite.md</c> §6 for the intended map; assigning meaning to a particular
-    ///     number is a session-layer decision and deliberately not made here.
+    ///     Independent ordering domains available, so callers can validate before sending. Which
+    ///     traffic belongs on which number is a session-layer decision and deliberately not made
+    ///     here.
     /// </summary>
     byte ChannelCount { get; }
 

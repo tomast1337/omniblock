@@ -24,10 +24,10 @@ public static class ProtocolHandshake
     /// <summary>
     ///     This build's protocol revision.
     ///     <para>
-    ///         Deliberately coarse and deliberately not a gate. Per <c>docs/network-rewrite.md</c>
-    ///         §6 the fine-grained compatibility unit is the per-message schema version, so a peer
-    ///         one revision ahead loses the features that changed rather than the connection. This
-    ///         number exists to make that degradation diagnosable, not to refuse anyone.
+    ///         Deliberately coarse and deliberately not a gate. The fine-grained compatibility unit
+    ///         is <see cref="Messages.Message.SchemaVersion" />, per message, so a peer one revision
+    ///         ahead loses the features that changed rather than the connection. This number exists
+    ///         to make that degradation diagnosable, not to refuse anyone.
     ///     </para>
     /// </summary>
     public const int Version = 1;

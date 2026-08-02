@@ -5,7 +5,7 @@ namespace BetaSharp.Network.Chunks;
 /// <summary>
 ///     Encodes a chunk's block and light arrays into a compact wire blob, and back.
 ///     <para>
-///         Phase 3 of <c>docs/network-rewrite.md</c> §5.4. The inherited format sends a chunk as
+///         The inherited format sends a chunk as
 ///         81,920 raw bytes — 32,768 block ids, then three nibble arrays of 16,384 each for metadata,
 ///         block light and sky light — zlib'd whole. Every one of those bytes is paid for even where
 ///         the chunk is nothing but air with full sky above it, which is most of a chunk.
@@ -13,8 +13,9 @@ namespace BetaSharp.Network.Chunks;
 ///     <para>
 ///         <b>Hard invariant.</b> This is a <em>wire</em> encoding and nothing else. It takes and
 ///         returns plain arrays in the in-memory layout and has no reference to
-///         <c>Worlds/Storage/RegionFormat/</c>, which is how the boundary in §5.4's invariant note is
-///         enforced structurally rather than by discipline: there is no type here that could
+///         <c>Worlds/Storage/RegionFormat/</c>. The save format and the wire format must never
+///         become the same type, and keeping them in separate namespaces with no shared type
+///         enforces that structurally rather than by discipline: there is nothing here that could
 ///         accidentally be written to disk.
 ///     </para>
 ///     <para>

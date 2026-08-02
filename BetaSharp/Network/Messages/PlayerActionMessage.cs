@@ -4,9 +4,8 @@ namespace BetaSharp.Network.Messages;
 ///     A player's action against a block, or a drop.
 ///     <para>
 ///         Replaces <c>PlayerActionC2SPacket</c>. The payload is unchanged byte for byte; what
-///         changes is that it no longer occupies one of the 256 slots in <c>PacketId</c>, which is
-///         the whole reason <c>docs/network-rewrite.md</c> §6 exists — a mod adding an action today
-///         has to pick a number and hope.
+///         changes is that it no longer occupies one of the 256 slots in <c>PacketId</c>, where a
+///         mod adding an action would have to pick a number and hope.
 ///     </para>
 ///     <para>
 ///         <b>Y is a byte and X and Z are not.</b> That asymmetry is the world's: it is 128 blocks

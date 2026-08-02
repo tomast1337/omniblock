@@ -4,7 +4,7 @@ using BetaSharp.Util.Maths;
 namespace BetaSharp.Tests.Network;
 
 /// <summary>
-///     <see cref="ChunkBlobCache" />: the client's on-disk store behind §5.4 item 4.
+///     <see cref="ChunkBlobCache" />: the client's on-disk store of chunks it already holds.
 ///     <para>
 ///         Two properties matter and they pull against each other. It must survive being interrupted
 ///         — a crash mid-append is the normal way a game exits — and it must never be the reason a

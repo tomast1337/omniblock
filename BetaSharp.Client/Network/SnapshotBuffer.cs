@@ -45,9 +45,9 @@ public enum SampleKind
 ///     A short history of one remote entity's positions, sampled at render time against the
 ///     synchronised server clock rather than advanced by packet arrivals.
 ///     <para>
-///         Phase 4 of <c>docs/time-sync-and-interpolation.md</c>. This is what actually fixes the
-///         stutter, and the reason it works is worth stating baldly: <b>arrival time does not appear
-///         anywhere in <see cref="Sample" />.</b> Only server timestamps do.
+///         This is what actually fixes the stutter, and the reason it works is worth stating
+///         baldly: <b>arrival time does not appear anywhere in <see cref="Sample" />.</b> Only
+///         server timestamps do.
 ///     </para>
 ///     <para>
 ///         The legacy scheme it replaces is a <em>rate</em>, not a schedule — the entity moves 1/N

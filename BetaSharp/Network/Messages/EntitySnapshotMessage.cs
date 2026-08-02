@@ -6,9 +6,9 @@ namespace BetaSharp.Network.Messages;
 ///     Every entity update one tracking pass produced for one player, as differences from an earlier
 ///     snapshot that player confirmed receiving.
 ///     <para>
-///         Phase 6 of <c>docs/network-rewrite.md</c> §4.4, replacing the four position packets
-///         (<c>EntityPosition</c>, <c>EntityMoveRelative</c>, <c>EntityRotate</c>,
-///         <c>EntityRotateAndMoveRelative</c>) for peers that speak the protocol.
+///         Replaces the four position packets (<c>EntityPosition</c>, <c>EntityMoveRelative</c>,
+///         <c>EntityRotate</c>, <c>EntityRotateAndMoveRelative</c>) for peers that speak the
+///         protocol.
 ///     </para>
 ///     <para>
 ///         <b>Batched, and that is most of the win.</b> The packets it replaces are per-entity, and
@@ -23,8 +23,8 @@ namespace BetaSharp.Network.Messages;
 ///         every position after it and the channel has to be reliable and ordered — one lost entity
 ///         update stalls all of them until it is retransmitted. A snapshot names the state it was
 ///         measured against, so a peer that missed one simply keeps acknowledging what it has and the
-///         next snapshot is measured against that instead. That is what <c>§7</c> phase 2 recorded as
-///         blocking sequenced delivery for entity data.
+///         next snapshot is measured against that instead. That is the property that makes
+///         sequenced delivery viable for entity data at all.
 ///     </para>
 /// </summary>
 public sealed class EntitySnapshotMessage : Message

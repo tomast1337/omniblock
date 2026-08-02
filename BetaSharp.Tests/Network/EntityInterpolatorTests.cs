@@ -135,10 +135,9 @@ public sealed class EntityInterpolatorTests
     }
 
     /// <summary>
-    ///     §3.4's jitter term, which was measured from phase 2 onward and never applied. It reads 4 ms
-    ///     on loopback UDP and 0 on loopback TCP, which is why it could not be sized from a local
-    ///     session and why it is added rather than tuned: twice the mean absolute deviation is what
-    ///     the design asks for, and there is nothing local to calibrate against.
+    ///     The jitter term. It reads 4 ms on loopback UDP and 0 on loopback TCP, which is why it
+    ///     cannot be sized from a local session and why it is added rather than tuned: twice the
+    ///     mean absolute deviation is the figure, and there is nothing local to calibrate against.
     /// </summary>
     [Theory]
     [InlineData(0, 300)]

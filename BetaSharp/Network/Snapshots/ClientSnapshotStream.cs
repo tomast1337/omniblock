@@ -6,9 +6,9 @@ namespace BetaSharp.Network.Snapshots;
 ///     The receiving half of delta-compressed entity replication: reconstructs absolute positions
 ///     from a snapshot and the baseline it names, and tracks what to acknowledge.
 ///     <para>
-///         Phase 6 of <c>docs/network-rewrite.md</c> §4.4. The mirror of
-///         <see cref="PlayerSnapshotStream" />, sharing its <see cref="SnapshotBaseline" /> so that
-///         "the state at sequence N" means the same thing at both ends.
+///         The mirror of <see cref="PlayerSnapshotStream" />, sharing its
+///         <see cref="SnapshotBaseline" /> so that "the state at sequence N" means the same thing
+///         at both ends.
 ///     </para>
 /// </summary>
 public sealed class ClientSnapshotStream
