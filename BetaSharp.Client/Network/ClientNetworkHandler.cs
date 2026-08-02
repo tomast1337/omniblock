@@ -431,6 +431,14 @@ public class ClientNetworkHandler : NetHandler
         MessageHandlers.On<DisconnectMessage>(onDisconnect);
         MessageHandlers.On<RegistryDataMessage>(onRegistryData);
         MessageHandlers.On<FinishConfigurationMessage>(onFinishConfiguration);
+        MessageHandlers.On<HealthUpdateMessage>(onHealthUpdate);
+        MessageHandlers.On<PlayerSleepUpdateMessage>(onPlayerSleepUpdate);
+        MessageHandlers.On<PlayerSpawnPositionMessage>(onPlayerSpawnPosition);
+        MessageHandlers.On<PlayerGameModeUpdateMessage>(onPlayerGameModeUpdate);
+        MessageHandlers.On<PlayerConnectionUpdateMessage>(onPlayerConnectionUpdate);
+        MessageHandlers.On<GameStateChangeMessage>(onGameStateChange);
+        MessageHandlers.On<IncreaseStatMessage>(onIncreaseStat);
+        MessageHandlers.On<PlayerRespawnMessage>(onPlayerRespawn);
     }
 
     /// <summary>
@@ -1105,7 +1113,7 @@ public class ClientNetworkHandler : NetHandler
         }
     }
 
-    public override void onPlayerSleepUpdate(PlayerSleepUpdateS2CPacket packet)
+    private void onPlayerSleepUpdate(PlayerSleepUpdateMessage packet)
     {
         Entity? ent = GetEntityById(packet.PlayerId);
         if (ent is EntityPlayer player)
@@ -1183,7 +1191,7 @@ public class ClientNetworkHandler : NetHandler
         _context.WorldHost.World?.SetTime(packet.Time);
     }
 
-    public override void onPlayerSpawnPosition(PlayerSpawnPositionS2CPacket packet)
+    private void onPlayerSpawnPosition(PlayerSpawnPositionMessage packet)
     {
         _context.PlayerHost.Player.SetSpawnPos(new Vec3i(packet.X, packet.Y, packet.Z));
         _context.WorldHost.World?.Properties.SetSpawn(packet.X, packet.Y, packet.Z);
@@ -1221,12 +1229,12 @@ public class ClientNetworkHandler : NetHandler
         return entityId == _context.PlayerHost.Player.ID ? _context.PlayerHost.Player : _worldClient.GetEntity(entityId);
     }
 
-    public override void onHealthUpdate(HealthUpdateS2CPacket packet)
+    private void onHealthUpdate(HealthUpdateMessage packet)
     {
         _context.PlayerHost.Player.setHealth(packet.HealthMp);
     }
 
-    public override void onPlayerRespawn(PlayerRespawnPacket packet)
+    private void onPlayerRespawn(PlayerRespawnMessage packet)
     {
         if (packet.DimensionId != _context.PlayerHost.Player.DimensionId)
         {
@@ -1399,12 +1407,12 @@ public class ClientNetworkHandler : NetHandler
         _context.WorldHost.World?.Broadcaster.PlayNote(packet.XLocation, packet.YLocation, packet.ZLocation, packet.InstrumentType, packet.Pitch);
     }
 
-    public override void onGameStateChange(GameStateChangeS2CPacket packet)
+    private void onGameStateChange(GameStateChangeMessage packet)
     {
         int reason = packet.Reason;
-        if (reason >= 0 && reason < GameStateChangeS2CPacket.Reasons.Length && GameStateChangeS2CPacket.Reasons[reason] != null)
+        if (reason >= 0 && reason < GameStateChangeMessage.Reasons.Length && GameStateChangeMessage.Reasons[reason] != null)
         {
-            _context.PlayerHost.Player.SendMessage(GameStateChangeS2CPacket.Reasons[reason]);
+            _context.PlayerHost.Player.SendMessage(GameStateChangeMessage.Reasons[reason]);
         }
 
         if (reason == 1)
@@ -1447,7 +1455,7 @@ public class ClientNetworkHandler : NetHandler
         _context.WorldHost.World?.Broadcaster.WorldEvent(packet.EventId, packet.X, packet.Y, packet.Z, packet.Data);
     }
 
-    public override void onIncreaseStat(IncreaseStatS2CPacket packet)
+    private void onIncreaseStat(IncreaseStatMessage packet)
     {
         try
         {
@@ -1456,13 +1464,13 @@ public class ClientNetworkHandler : NetHandler
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Unknown stat id in IncreaseStatS2CPacket: {StatId}", packet.StatId);
+            _logger.LogWarning(ex, "Unknown stat id in IncreaseStatMessage: {StatId}", packet.StatId);
         }
     }
 
-    public override void onPlayerConnectionUpdate(PlayerConnectionUpdateS2CPacket packet)
+    private void onPlayerConnectionUpdate(PlayerConnectionUpdateMessage packet)
     {
-        if (packet.Type == PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Leave)
+        if (packet.Type == PlayerConnectionUpdateMessage.UpdateType.Leave)
         {
             Entity? ent = _worldClient.GetEntity(packet.EntityId);
             EntityRenderDispatcher.Instance.SkinManager?.Release(packet.Name);
@@ -1482,9 +1490,10 @@ public class ClientNetworkHandler : NetHandler
         OfferChunkCache();
     }
 
-    public override void onPlayerGameModeUpdate(PlayerGameModeUpdateS2CPacket packet)
+    private void onPlayerGameModeUpdate(PlayerGameModeUpdateMessage packet)
     {
-        Holder<GameMode>? gameMode = _clientRegistries.Get(RegistryKeys.GameModes, new ResourceLocation(packet.Namespace, packet.GameModeName));
+        Holder<GameMode>? gameMode = _clientRegistries.Get(RegistryKeys.GameModes,
+            new ResourceLocation(packet.GameModeNamespace, packet.GameModeName));
         if (gameMode is not null && _context.PlayerHost.Player is { } player)
         {
             player.GameModeHolder = gameMode;

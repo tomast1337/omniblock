@@ -1,6 +1,6 @@
 using BetaSharp.Entities;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Registries;
 using BetaSharp.Registries.Data;
 using BetaSharp.Server;
@@ -41,7 +41,13 @@ internal sealed class DefaultGameModeListener(BetaSharpServer server) : IRegistr
             player.GameModeHolder = server.DefaultGameMode;
         }
 
-        return [PlayerGameModeUpdateS2CPacket.Get(player.GameMode)];
+        player.NetworkHandler.SendMessage(new PlayerGameModeUpdateMessage
+        {
+            GameModeNamespace = player.GameMode.Namespace.ToString(),
+            GameModeName = player.GameMode.Name
+        });
+
+        return [];
     }
 
     /// <summary>

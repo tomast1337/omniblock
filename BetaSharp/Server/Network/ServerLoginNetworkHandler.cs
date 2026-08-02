@@ -141,10 +141,24 @@ public class ServerLoginNetworkHandler : NetHandler
             ServerPlayNetworkHandler handler = new ServerPlayNetworkHandler(server, connection, ent);
             handler.SendPacket(LoginHelloPacket.Get("", ent.ID, playerWorld.Seed, (sbyte)playerWorld.Dimension.Id));
             server.SendConfigurationTo(handler.SendPacket);
-            handler.SendPacket(PlayerGameModeUpdateS2CPacket.Get(ent.GameMode));
-            handler.SendPacket(PlayerSpawnPositionS2CPacket.Get(spawnPos.X, spawnPos.Y, spawnPos.Z));
+            handler.SendMessage(new PlayerGameModeUpdateMessage
+            {
+                GameModeNamespace = ent.GameMode.Namespace.ToString(),
+                GameModeName = ent.GameMode.Name
+            });
+            handler.SendMessage(new PlayerSpawnPositionMessage
+            {
+                X = spawnPos.X,
+                Y = spawnPos.Y,
+                Z = spawnPos.Z
+            });
             PlayerManager.sendWorldInfo(ent, playerWorld);
-            server.playerManager.sendToAll(PlayerConnectionUpdateS2CPacket.Get(ent.ID, PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Join, ent.Name));
+            server.playerManager.sendToAll(new PlayerConnectionUpdateMessage
+            {
+                EntityId = ent.ID,
+                Type = PlayerConnectionUpdateMessage.UpdateType.Join,
+                Name = ent.Name
+            });
             server.playerManager.sendToAll(new ChatMessage { Text = "§e" + ent.Name + " joined the game." });
             server.playerManager.addPlayer(ent);
             handler.teleport(ent.X, ent.Y, ent.Z, ent.Yaw, ent.Pitch);

@@ -121,10 +121,10 @@ public class ServerWorld : World
     private void HandleWeatherChanged(bool isRaining)
     {
         server.playerManager.sendToAll(
-            isRaining ? GameStateChangeS2CPacket.Get(1) : GameStateChangeS2CPacket.Get(2)
+            new GameStateChangeMessage { Reason = isRaining ? (sbyte)1 : (sbyte)2 }
         );
 
         bool isThundering = Properties.IsThundering;
-        server.playerManager.sendToAll(GameStateChangeS2CPacket.Get(isThundering ? 7 : 8));
+        server.playerManager.sendToAll(new GameStateChangeMessage { Reason = (sbyte)(isThundering ? 7 : 8) });
     }
 }

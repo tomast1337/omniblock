@@ -68,6 +68,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         MessageHandlers.On<UpdateSignMessage>(onUpdateSign);
         MessageHandlers.On<ChatMessage>(onChatMessage);
         MessageHandlers.On<DisconnectMessage>(onDisconnect);
+        MessageHandlers.On<PlayerRespawnMessage>(onPlayerRespawn);
     }
 
     public void tick()
@@ -86,11 +87,12 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         SendMessage(new DisconnectMessage { Reason = reason });
         connection.disconnect();
         server.playerManager.disconnect(player);
-        server.playerManager.sendToAll(PlayerConnectionUpdateS2CPacket.Get(
-            player.ID,
-            PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Leave,
-            player.Name
-        ));
+        server.playerManager.sendToAll(new PlayerConnectionUpdateMessage
+        {
+            EntityId = player.ID,
+            Type = PlayerConnectionUpdateMessage.UpdateType.Leave,
+            Name = player.Name
+        });
         server.playerManager.sendToAll(new ChatMessage { Text = "§e" + player.Name + " left the game." });
         disconnected = true;
     }
@@ -511,11 +513,12 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     {
         _logger.LogInformation($"{player.Name} lost connection: {reason}");
         server.playerManager.disconnect(player);
-        server.playerManager.sendToAll(PlayerConnectionUpdateS2CPacket.Get(
-            player.ID,
-            PlayerConnectionUpdateS2CPacket.ConnectionUpdateType.Leave,
-            player.Name
-        ));
+        server.playerManager.sendToAll(new PlayerConnectionUpdateMessage
+        {
+            EntityId = player.ID,
+            Type = PlayerConnectionUpdateMessage.UpdateType.Leave,
+            Name = player.Name
+        });
         server.playerManager.sendToAll(new ChatMessage { Text = "§e" + player.Name + " left the game." });
         disconnected = true;
     }
@@ -708,11 +711,11 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         }
     }
 
-    public override void onPlayerRespawn(PlayerRespawnPacket packet)
+    private void onPlayerRespawn(PlayerRespawnMessage packet)
     {
         if (player.Health <= 0)
         {
-            player = server.playerManager.respawnPlayer(player, 0);
+            player = server.playerManager.respawnPlayer(player, packet.DimensionId);
         }
     }
 

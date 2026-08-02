@@ -26,3 +26,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-01 — feat(network): move the spawn packets onto the message layer (Nicolas Vyčas Nery; `858103fd6061014b64de0e98c8c447cbbbf94e5b`)
 - 2026-08-01 — feat(network): move the inventory and screen packets onto the message layer (Nicolas Vyčas Nery; `73bcf1aeb08e638e53e127286c144fcfc54073e6`)
 - 2026-08-01 — feat(network): move chat, disconnect, keep-alive, registry data, and configuration finish onto the message layer (Nicolas Vyčas Nery; `456c6cad81b1a96ba026c5808bdd0eb12a9a3712`)
+- 2026-08-01 — feat(network): move the player state packets onto the message layer (Nicolas Vyčas Nery; `8427bd3c722445b6a29d79d84e7f440b8314a15d`)

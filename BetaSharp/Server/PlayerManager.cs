@@ -189,7 +189,7 @@ public class PlayerManager
             }
             else
             {
-                serverPlayer.NetworkHandler.SendPacket(GameStateChangeS2CPacket.Get(0));
+                serverPlayer.NetworkHandler.SendMessage(new GameStateChangeMessage { Reason = 0 });
             }
         }
 
@@ -200,7 +200,7 @@ public class PlayerManager
             serverPlayer.SetPosition(serverPlayer.X, serverPlayer.Y + 1.0, serverPlayer.Z);
         }
 
-        serverPlayer.NetworkHandler.SendPacket(PlayerRespawnPacket.Get((sbyte)serverPlayer.DimensionId));
+        serverPlayer.NetworkHandler.SendMessage(new PlayerRespawnMessage { DimensionId = (sbyte)serverPlayer.DimensionId });
         serverPlayer.NetworkHandler.teleport(serverPlayer.X, serverPlayer.Y, serverPlayer.Z, serverPlayer.Yaw, serverPlayer.Pitch);
         sendWorldInfo(serverPlayer, targetWorld);
         GetChunkMap(serverPlayer.DimensionId).addPlayer(serverPlayer);
@@ -241,7 +241,7 @@ public class PlayerManager
         GetChunkMap(sourceDim).removePlayer(player);
 
         player.DimensionId = targetDim;
-        player.NetworkHandler.SendPacket(PlayerRespawnPacket.Get((sbyte)player.DimensionId));
+        player.NetworkHandler.SendMessage(new PlayerRespawnMessage { DimensionId = (sbyte)player.DimensionId });
         currentWorld.Entities.ServerRemove(player);
         player.Dead = false;
         double x = player.X;
@@ -676,7 +676,7 @@ public class PlayerManager
         player.NetworkHandler.SendPacket(WorldTimeUpdateS2CPacket.Get(world.GetTime()));
         if (world.Properties.IsRaining)
         {
-            player.NetworkHandler.SendPacket(GameStateChangeS2CPacket.Get(1));
+            player.NetworkHandler.SendMessage(new GameStateChangeMessage { Reason = 1 });
         }
     }
 

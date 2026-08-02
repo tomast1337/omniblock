@@ -379,16 +379,14 @@ internal class EntityTrackerEntry
                     {
                         if (trackedPlayer.IsSleeping)
                         {
-                            player.NetworkHandler
-                                .SendPacket(
-                                    PlayerSleepUpdateS2CPacket.Get(
-                                        currentTrackedEntity,
-                                        0,
-                                        MathHelper.Floor(currentTrackedEntity.X),
-                                        MathHelper.Floor(currentTrackedEntity.Y),
-                                        MathHelper.Floor(currentTrackedEntity.Z)
-                                    )
-                                );
+                            player.NetworkHandler.SendMessage(new PlayerSleepUpdateMessage
+                            {
+                                PlayerId = currentTrackedEntity.ID,
+                                Status = 0,
+                                X = MathHelper.Floor(currentTrackedEntity.X),
+                                Y = (sbyte)MathHelper.Floor(currentTrackedEntity.Y),
+                                Z = MathHelper.Floor(currentTrackedEntity.Z)
+                            });
                         }
                     }
                 }

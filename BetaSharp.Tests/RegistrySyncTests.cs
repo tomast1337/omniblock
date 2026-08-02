@@ -292,28 +292,23 @@ public sealed class PacketSerializationTests
         }
     }
 
-    // ---- PlayerGameModeUpdateS2CPacket ----
+    // ---- PlayerGameModeUpdateMessage ----
 
     [Fact]
-    public void PlayerGameModeUpdateS2CPacket_Get_sets_game_mode_name()
+    public void PlayerGameModeUpdateMessage_roundtrip_preserves_name()
     {
-        var mode = new GameMode { Name = "creative" };
-        PlayerGameModeUpdateS2CPacket packet = PlayerGameModeUpdateS2CPacket.Get(mode);
-        Assert.Equal("creative", packet.GameModeName);
-    }
-
-    [Fact]
-    public void PlayerGameModeUpdateS2CPacket_roundtrip_preserves_name()
-    {
-        var mode = new GameMode { Name = "survival" };
-        PlayerGameModeUpdateS2CPacket sent = PlayerGameModeUpdateS2CPacket.Get(mode);
+        var sent = new PlayerGameModeUpdateMessage
+        {
+            GameModeNamespace = Namespace.BetaSharp.ToString(),
+            GameModeName = "survival"
+        };
 
         (NetworkStream? writeStream, NetworkStream? readStream, Action? cleanup) = MakeLoopbackPair();
         try
         {
             sent.Write(writeStream);
 
-            var received = new PlayerGameModeUpdateS2CPacket();
+            var received = new PlayerGameModeUpdateMessage();
             received.Read(readStream);
 
             Assert.Equal("survival", received.GameModeName);
