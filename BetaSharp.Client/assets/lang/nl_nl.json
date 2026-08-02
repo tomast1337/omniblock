@@ -1,381 +1,381 @@
-﻿{
+{
     "gui": {
-        "joinServer": "Join Server",
-        "rename": "Rename",
-        "edit": "Edit",
-        "refresh": "Refresh",
-        "done": "Done",
-        "cancel": "Cancel",
-        "delete": "Delete",
-        "toMenu": "Back to title screen",
-        "up": "Up",
-        "down": "Down",
-        "yes": "Yes",
-        "no": "No",
-        "connect": "Connect",
-        "directConnect": "Direct Connect",
-        "addServer": "Add Server",
-        "create": "Create",
-        "customize": "Customize",
-        "achievements": "Achievements",
-        "stats": "Statistics",
+        "joinServer": "Server betreden",
+        "rename": "Hernoemen",
+        "edit": "Bewerken",
+        "refresh": "Vernieuwen",
+        "done": "Klaar",
+        "cancel": "Annuleren",
+        "delete": "Verwijderen",
+        "toMenu": "Terug naar titelscherm",
+        "up": "Omhoog",
+        "down": "Omlaag",
+        "yes": "Ja",
+        "no": "Nee",
+        "connect": "Verbinden",
+        "directConnect": "Direct verbinden",
+        "addServer": "Server toevoegen",
+        "create": "Maken",
+        "customize": "Aanpassen",
+        "achievements": "Prestaties",
+        "stats": "Statistieken",
         "container": {
-            "crafting": "Crafting",
-            "inventory": "Inventory",
+            "crafting": "Vervaardigen",
+            "inventory": "Inventaris",
             "dispenser": "Dispenser",
-            "furnace": "Furnace",
+            "furnace": "Oven",
             "tip": {
-                "move": "Move",
-                "quickMove": "Quick Move",
-                "takeHalf": "Take Half",
-                "place": "Place",
-                "placeOne": "Place One"
+                "move": "Verplaatsen",
+                "quickMove": "Snel verplaatsen",
+                "takeHalf": "Helft nemen",
+                "place": "Plaatsen",
+                "placeOne": "Eén plaatsen"
             }
         }
     },
     "menu": {
         "singleplayer": "Singleplayer",
         "multiplayer": "Multiplayer",
-        "texturePacks": "Texture Packs",
-        "options": "Options...",
-        "language": "Language",
-        "quit": "Quit Game",
+        "texturePacks": "Textuurpakketten",
+        "options": "Opties...",
+        "language": "Taal",
+        "quit": "Spel afsluiten",
         "credits": "Credits",
-        "sendFeedback": "Send Feedback",
-        "reportBugs": "Report Bugs",
-        "saveAndQuitToTitle": "Save and quit to title",
-        "disconnect": "Disconnect"
+        "sendFeedback": "Feedback sturen",
+        "reportBugs": "Bugs melden",
+        "saveAndQuitToTitle": "Opslaan en stoppen naar titel",
+        "disconnect": "Verbinding verbreken"
     },
     "selectWorld": {
-        "title": "Select World",
-        "empty": "empty",
-        "world": "World",
-        "select": "Play Selected World",
-        "create": "Create New World",
-        "createDemo": "Play New Demo World",
-        "deleteQuestion": "Are you sure you want to delete this world?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "renameTitle": "Rename World",
-        "conversion": "Must be converted!",
-        "newWorld": "New World",
-        "enterName": "World Name",
-        "resultFolder": "Will be saved in:",
-        "enterSeed": "Seed for the World Generator",
-        "seedInfo": "Leave blank for a random seed",
-        "selectWorldType": "Select World Type",
-        "worldType": "World Type",
-        "customize": "Customize",
-        "moreWorldOptions": "More World Options...",
+        "title": "Selecteer wereld",
+        "empty": "leeg",
+        "world": "Wereld",
+        "select": "Speel geselecteerde wereld",
+        "create": "Nieuwe wereld maken",
+        "createDemo": "Speel nieuwe demowereld",
+        "deleteQuestion": "Weet je zeker dat je deze wereld wilt verwijderen?",
+        "deleteWarning": "zal voor altijd verloren gaan! (Heel lang!)",
+        "renameTitle": "Wereld hernoemen",
+        "conversion": "Moet worden geconverteerd!",
+        "newWorld": "Nieuwe wereld",
+        "enterName": "Wereldnaam",
+        "resultFolder": "Wordt opgeslagen in:",
+        "enterSeed": "Seed voor de wereldgenerator",
+        "seedInfo": "Leeg laten voor een willekeurige seed",
+        "selectWorldType": "Selecteer wereldtype",
+        "worldType": "Wereldtype",
+        "customize": "Aanpassen",
+        "moreWorldOptions": "Meer wereldopties...",
         "type": {
             "default": {
-                "title": "Default",
-                "description": "The standard Minecraft world."
+                "title": "Standaard",
+                "description": "De standaard Minecraft-wereld."
             },
             "flat": {
-                "title": "Flat",
-                "description": "A completely flat world."
+                "title": "Plat",
+                "description": "Een volledig platte wereld."
             },
             "sky": {
-                "title": "Sky",
-                "description": "A world floating in the sky."
+                "title": "Lucht",
+                "description": "Een wereld die in de lucht zweeft."
             }
         }
     },
     "newWorld": {
         "customize": {
             "superflatWorld": {
-                "title": "Customize Superflat World"
+                "title": "Superplatte wereld aanpassen"
             },
-            "removeLayer": "Remove Layer",
-            "presets": "Presets",
-            "height": "Height",
+            "removeLayer": "Laag verwijderen",
+            "presets": "Voorinstellingen",
+            "height": "Hoogte",
             "unknown": "???"
         }
     },
     "world": {
-        "world": "World",
-        "unsupportedFormat": "Unsupported Format!"
+        "world": "Wereld",
+        "unsupportedFormat": "Niet-ondersteund formaat!"
     },
     "multiplayer": {
-        "title": "Play Multiplayer",
-        "betasharpServer": "BetaSharp Server",
-        "info1": "Minecraft Multiplayer is currently not finished, but there",
-        "info2": "is some buggy early testing going on.",
-        "ipinfo": "Enter the IP of a server to connect to it:",
-        "deleteQuestion": "Are you sure you want to delete this server?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "downloadingTerrain": "Downloading terrain",
-        "stopSleeping": "Leave Bed",
-        "editServerTitle": "Edit Server Info",
-        "addServerTitle": "Add Server Info",
-        "serverName": "Server Name",
-        "serverAddress": "Server Address"
+        "title": "Speel multiplayer",
+        "betasharpServer": "BetaSharp-server",
+        "info1": "Minecraft-multiplayer is nog niet af, maar er",
+        "info2": "wordt wat aan vroege testen gedaan.",
+        "ipinfo": "Voer het IP-adres van een server in om ermee te verbinden:",
+        "deleteQuestion": "Weet je zeker dat je deze server wilt verwijderen?",
+        "deleteWarning": "zal voor altijd verloren gaan! (Heel lang!)",
+        "downloadingTerrain": "Terrein aan het downloaden",
+        "stopSleeping": "Verlaat bed",
+        "editServerTitle": "Serverinfo bewerken",
+        "addServerTitle": "Serverinfo toevoegen",
+        "serverName": "Servernaam",
+        "serverAddress": "Serveradres"
     },
     "loading": {
-        "loadingLevel": "Loading level",
-        "startingServer": "Starting server...",
-        "preparingSpawnArea": "Preparing spawn area"
+        "loadingLevel": "Wereld aan het laden",
+        "startingServer": "Server aan het starten...",
+        "preparingSpawnArea": "Spawngebied aan het voorbereiden"
     },
     "achievements": {
-        "title": "Achievements"
+        "title": "Prestaties"
     },
     "gameover": {
         "title": "Game Over!",
         "score": "Score",
-        "respawn": "Respawn",
-        "titleMenu": "Title menu"
+        "respawn": "Respawnen",
+        "titleMenu": "Titelmenu"
     },
     "gamemenu": {
-        "title": "Game Menu",
-        "backToGame": "Back to Game"
+        "title": "Spelmenu",
+        "backToGame": "Terug naar spel"
     },
     "sign": {
-        "title": "Edit sign message:"
+        "title": "Bordbericht bewerken:"
     },
     "stats": {
-        "title": "Statistics",
-        "general": "General",
+        "title": "Statistieken",
+        "general": "Algemeen",
         "blocks": {
-            "name": "Blocks",
-            "mined": "Mined",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Blokken",
+            "mined": "Gedolven",
+            "crafted": "Vervaardigd",
+            "used": "Gebruikt"
         },
         "items": {
-            "name": "Items",
-            "broken": "Broken",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Voorwerpen",
+            "broken": "Verbroken",
+            "crafted": "Vervaardigd",
+            "used": "Gebruikt"
         },
-        "item": "Item"
+        "item": "Voorwerp"
     },
     "connect": {
-        "connecting": "Connecting to the server...",
-        "authorizing": "Logging in...",
-        "failed": "Failed to connect to the server"
+        "connecting": "Verbinden met de server...",
+        "authorizing": "Inloggen...",
+        "failed": "Kan geen verbinding met de server maken"
     },
     "disconnect": {
         "genericReason": "{0}",
-        "disconnected": "Disconnected by Server",
-        "lost": "Connection Lost",
-        "kicked": "Was kicked from the game",
-        "timeout": "Timed out",
-        "closed": "Connection closed",
-        "loginFailed": "Failed to login",
-        "quitting": "Quitting",
-        "endOfStream": "End of stream",
-        "overflow": "Buffer overflow"
+        "disconnected": "Verbinding verbroken door server",
+        "lost": "Verbinding verbroken",
+        "kicked": "Werd uit het spel geschopt",
+        "timeout": "Time-out",
+        "closed": "Verbinding gesloten",
+        "loginFailed": "Inloggen mislukt",
+        "quitting": "Stoppen",
+        "endOfStream": "Einde van de stream",
+        "overflow": "Bufferoverloop"
     },
     "options": {
-        "off": "OFF",
-        "on": "ON",
-        "disabled": "Disabled",
-        "title": "Options",
-        "controls": "Controls...",
-        "keyboardControls": "Keyboard Controls...",
-        "controllerSettings": "Controller Settings...",
-        "controllerType": "Controller Type",
+        "off": "UIT",
+        "on": "AAN",
+        "disabled": "Uitgeschakeld",
+        "title": "Opties",
+        "controls": "Bediening...",
+        "keyboardControls": "Toetsenbordbediening...",
+        "controllerSettings": "Controllerinstellingen...",
+        "controllerType": "Controllertype",
         "video": {
-            "text": "Video Settings...",
-            "performance": "Performance",
-            "display": "Display"
+            "text": "Video-instellingen...",
+            "performance": "Prestaties",
+            "display": "Weergave"
         },
-        "uiSettings": "UI Settings...",
-        "audioSettings": "Audio Settings...",
-        "audioTitle": "Audio Settings",
-        "videoTitle": "Video Settings",
-        "language": "Language...",
-        "anisoLevel": "Aniso Level",
-        "music": "Music",
-        "sound": "Sound",
-        "invertMouse": "Invert Mouse",
-        "alternateBlocks": "Alternate Blocks",
-        "chunkFade": "Chunk Fade",
+        "uiSettings": "UI-instellingen...",
+        "audioSettings": "Audio-instellingen...",
+        "audioTitle": "Audio-instellingen",
+        "videoTitle": "Video-instellingen",
+        "language": "Taal...",
+        "anisoLevel": "Aniso-niveau",
+        "music": "Muziek",
+        "sound": "Geluid",
+        "invertMouse": "Muis omkeren",
+        "alternateBlocks": "Afwisselende blokken",
+        "chunkFade": "Chunkfade",
         "sensitivity": {
-            "text": "Sensitivity",
-            "controllerText": "Controller Sensitivity",
-            "min": "*yawn*",
-            "max": "HYPERSPEED!!!"
+            "text": "Gevoeligheid",
+            "controllerText": "Controllergevoeligheid",
+            "min": "*gaap*",
+            "max": "HYPERNELHEID!!!"
         },
         "renderDistance": {
-            "text": "Render Distance",
+            "text": "Renderafstand",
             "chunks": "Chunks",
-            "tiny": "Tiny",
-            "short": "Short",
-            "normal": "Normal",
-            "far": "Far"
+            "tiny": "Minuscuul",
+            "short": "Kort",
+            "normal": "Normaal",
+            "far": "Ver"
         },
-        "viewBobbing": "View Bobbing",
-        "ao": "Smooth Lighting",
-        "anaglyph": "3D Anaglyph",
-        "framerateLimit": "Performance",
+        "viewBobbing": "Weergave-bobbelen",
+        "ao": "Vloeiende belichting",
+        "anaglyph": "3D-anaglyph",
+        "framerateLimit": "Prestaties",
         "difficulty": {
-            "text": "Difficulty",
-            "peaceful": "Peaceful",
-            "easy": "Easy",
-            "normal": "Normal",
-            "hard": "Hard"
+            "text": "Moeilijkheidsgraad",
+            "peaceful": "Vreedzaam",
+            "easy": "Makkelijk",
+            "normal": "Normaal",
+            "hard": "Moeilijk"
         },
         "graphics": {
             "text": "Graphics",
-            "fancy": "Fancy",
-            "fast": "Fast"
+            "fancy": "Luxe",
+            "fast": "Snel"
         },
         "cloudsQuality": {
-            "text": "Clouds Quality",
-            "off": "No Clouds",
-            "legacy": "Old Clouds",
+            "text": "Wolkenkwaliteit",
+            "off": "Geen wolken",
+            "legacy": "Oude wolken",
             "shader": "Shader"
         },
         "softClouds": {
-            "text": "Soft Clouds"
+            "text": "Zachte wolken"
         },
         "guiScale": {
-            "text": "GUI Scale",
-            "auto": "Auto",
-            "small": "Small",
-            "normal": "Normal",
-            "large": "Large"
+            "text": "GUI-schaal",
+            "auto": "Automatisch",
+            "small": "Klein",
+            "normal": "Normaal",
+            "large": "Groot"
         },
         "chatScale": {
-            "text": "Chat Scale"
+            "text": "Chatschaal"
         },
         "chatWidth": {
-            "text": "Chat Width"
+            "text": "Chatbreedte"
         },
-        "advancedOpengl": "Advanced OpenGL",
+        "advancedOpengl": "Geavanceerde OpenGL",
         "fps": {
             "text": "FPS",
             "maxFps": "Max FPS",
-            "unlimited": "Unlimited"
+            "unlimited": "Onbeperkt"
         },
-        "showCoordinates": "Show Coordinates",
-        "uiCursors": "UI Cursors",
+        "showCoordinates": "Coördinaten tonen",
+        "uiCursors": "UI-cursors",
         "gamma": "Gamma",
         "vSync": "VSync",
         "mipmaps": "Mipmaps",
-        "menuMusic": "Menu Music",
+        "menuMusic": "Menumuziek",
         "msaa": "MSAA",
         "fov": "FOV",
         "movement": {
-            "text": "Movement"
+            "text": "Beweging"
         },
         "view": {
-            "text": "View"
+            "text": "Weergave"
         },
         "other": {
-            "text": "Other"
+            "text": "Overig"
         },
-        "editBindings": "Edit Bindings...",
-        "resetBindings": "Reset Bindings...",
-        "controllerBindings": "Controller Bindings",
+        "editBindings": "Toetsen bewerken...",
+        "resetBindings": "Toetsen resetten...",
+        "controllerBindings": "Controllerbindingen",
         "shader": {
-            "text": "Shader Options",
+            "text": "Shaderopties",
             "chunkVert": {
-                "text": "World",
-                "WavyLeavesStrength": "Wavy Leaves Strength",
-                "WavyLeavesSpeed": "Wavy Leaves Speed",
-                "WavyPlantStrength": "Wavy Plant Strength",
-                "WavyPlantSpeed": "Wavy Plant Speed",
-                "WavyPlantMode": "Wavy Plant Mode"
+                "text": "Wereld",
+                "WavyLeavesStrength": "Golvende bladerensterkte",
+                "WavyLeavesSpeed": "Golvende bladerensnelheid",
+                "WavyPlantStrength": "Golvende plantsterkte",
+                "WavyPlantSpeed": "Golvende plantsnelheid",
+                "WavyPlantMode": "Golvende plantmodus"
             },
             "cloud": {
-                "text": "Clouds",
-                "minParallax": "Min Parallax",
-                "maxParallax": "Max Parallax",
-                "minGradient": "Min Gradient",
-                "maxGradient": "Max Gradient",
-                "cloudHeight": "Cloud Height",
-                "shadow": "Shadow Color",
-                "smoothWidth": "Smooth Width",
-                "smoothSamples": "Smooth Samples",
-                "closeFade": "Close Fade",
-                "smoothTop": "Smooth Top",
-                "smoothEdge": "Smooth Edge",
-                "smoothBottom": "Smooth Bottom",
-                "smoothBottomTopDown": "Smooth Bottom Top Down"
+                "text": "Wolken",
+                "minParallax": "Minimale parallax",
+                "maxParallax": "Maximale parallax",
+                "minGradient": "Minimale gradient",
+                "maxGradient": "Maximale gradient",
+                "cloudHeight": "Wolkhoogte",
+                "shadow": "Schaduwkleur",
+                "smoothWidth": "Vloeiende breedte",
+                "smoothSamples": "Vloeiende samples",
+                "closeFade": "Nabije fade",
+                "smoothTop": "Vloeiende bovenkant",
+                "smoothEdge": "Vloeiende rand",
+                "smoothBottom": "Vloeiende onderkant",
+                "smoothBottomTopDown": "Vloeiende onderkant van boven naar beneden"
             },
             "ui": {
                 "text": "UI",
-                "darkMode": "Dark Mode"
+                "darkMode": "Donkere modus"
             },
             "preset": {
-                "text": "Preset",
-                "disabled": "Disabled",
-                "default": "Default",
-                "custom": "Custom",
+                "text": "Voorinstelling",
+                "disabled": "Uitgeschakeld",
+                "default": "Standaard",
+                "custom": "Aangepast",
                 "2d": "2D",
                 "3d": "3D",
-                "low": "Low",
-                "medium": "Medium",
-                "high": "High",
+                "low": "Laag",
+                "medium": "Gemiddeld",
+                "high": "Hoog",
                 "ultra": "Ultra"
             }
         }
     },
     "performance": {
         "max": "Max FPS",
-        "balanced": "Balanced",
-        "powersaver": "Power saver"
+        "balanced": "Gebalanceerd",
+        "powersaver": "Energiebesparing"
     },
     "controls": {
-        "title": "Controls"
+        "title": "Bediening"
     },
     "key": {
-        "forward": "Forward",
-        "left": "Left",
-        "back": "Back",
-        "right": "Right",
-        "jump": "Jump",
-        "inventory": "Inventory",
-        "drop": "Drop",
+        "forward": "Vooruit",
+        "left": "Links",
+        "back": "Achteruit",
+        "right": "Rechts",
+        "jump": "Springen",
+        "inventory": "Inventaris",
+        "drop": "Laten vallen",
         "chat": "Chat",
-        "fog": "Toggle Fog",
-        "sneak": "Sneak",
-        "playerlist": "List players",
-        "zoom": "Zoom",
-        "hotbarLeft": "Hotbar Left",
-        "hotbarRight": "Hotbar Right",
-        "pickBlock": "Pick Block",
-        "camera": "Camera Mode",
-        "pause": "Pause"
+        "fog": "Mist aan/uit",
+        "sneak": "Sluipen",
+        "playerlist": "Spelerslijst",
+        "zoom": "Zoomen",
+        "hotbarLeft": "Hotbar links",
+        "hotbarRight": "Hotbar rechts",
+        "pickBlock": "Blok oppakken",
+        "camera": "Cameramodus",
+        "pause": "Pauze"
     },
     "texturePack": {
-        "openFolder": "Open texture pack folder",
-        "title": "Select Texture Pack",
-        "folderInfo": "(Place texture pack files here)"
+        "openFolder": "Open de textuurpakketmap",
+        "title": "Selecteer textuurpakket",
+        "folderInfo": "(Plaats textuurpakketbestanden hier)"
     },
     "tile": {
         "tallgrass": {
-            "name": "Tallgrass",
+            "name": "Hoog gras",
             "desc": ""
         },
         "stone": {
-            "name": "Stone",
+            "name": "Steen",
             "desc": ""
         },
         "grass": {
-            "name": "Grass",
+            "name": "Gras",
             "desc": ""
         },
         "dirt": {
-            "name": "Dirt",
+            "name": "Aarde",
             "desc": ""
         },
         "stonebrick": {
-            "name": "Cobblestone",
+            "name": "Keisteen",
             "desc": ""
         },
         "wood": {
-            "name": "Wooden Planks",
+            "name": "Houten planken",
             "desc": ""
         },
         "sapling": {
-            "name": "Sapling",
+            "name": "Jonge boompje",
             "desc": ""
         },
         "bedrock": {
-            "name": "Bedrock",
+            "name": "Bodemgesteente",
             "desc": ""
         },
         "water": {
@@ -387,150 +387,150 @@
             "desc": ""
         },
         "sand": {
-            "name": "Sand",
+            "name": "Zand",
             "desc": ""
         },
-        "sandStone": { "name": "Sandstone" },
+        "sandStone": { "name": "Zandsteen" },
         "gravel": {
-            "name": "Gravel",
+            "name": "Grind",
             "desc": ""
         },
         "oreGold": {
-            "name": "Gold Ore",
+            "name": "Gouderts",
             "desc": ""
         },
         "oreIron": {
-            "name": "Iron Ore",
+            "name": "IJzererts",
             "desc": ""
         },
         "oreCoal": {
-            "name": "Coal Ore",
+            "name": "Steenkoolerts",
             "desc": ""
         },
         "log": {
-            "name": "Wood",
+            "name": "Houtblok",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Bladeren",
             "desc": ""
         },
         "sponge": {
-            "name": "Sponge",
+            "name": "Spons",
             "desc": ""
         },
         "glass": {
-            "name": "Glass",
+            "name": "Glas",
             "desc": ""
         },
         "cloth": {
-            "name": "Wool",
+            "name": "Wol",
             "desc": "",
             "black": {
-                "name": "Black Wool",
+                "name": "Zwarte wol",
                 "desc": ""
             },
             "red": {
-                "name": "Red Wool",
+                "name": "Rode wol",
                 "desc": ""
             },
             "green": {
-                "name": "Green Wool",
+                "name": "Groene wol",
                 "desc": ""
             },
             "brown": {
-                "name": "Brown Wool",
+                "name": "Bruine wol",
                 "desc": ""
             },
             "blue": {
-                "name": "Blue Wool",
+                "name": "Blauwe wol",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Wool",
+                "name": "Paarse wol",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Wool",
+                "name": "Cyaan wol",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Wool",
+                "name": "Lichtgrijze wol",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Wool",
+                "name": "Grijze wol",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Wool",
+                "name": "Roze wol",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Wool",
+                "name": "Lichtgroene wol",
                 "desc": ""
             },
             "yellow": {
-                "name": "Yellow Wool",
+                "name": "Gele wol",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Wool",
+                "name": "Lichtblauwe wol",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Wool",
+                "name": "Magenta wol",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Wool",
+                "name": "Oranje wol",
                 "desc": ""
             },
             "white": {
-                "name": "Wool",
+                "name": "Wol",
                 "desc": ""
             }
         },
         "flower": {
-            "name": "Flower",
+            "name": "Bloem",
             "desc": ""
         },
         "rose": {
-            "name": "Rose",
+            "name": "Roos",
             "desc": ""
         },
         "mushroom": {
-            "name": "Mushroom",
+            "name": "Paddenstoel",
             "desc": ""
         },
         "blockGold": {
-            "name": "Block of Gold",
+            "name": "Goudblok",
             "desc": ""
         },
         "blockIron": {
-            "name": "Block of Iron",
+            "name": "IJzerblok",
             "desc": ""
         },
         "stoneSlab": {
             "stone": {
-                "name": "Stone Slab",
+                "name": "Stenen plaat",
                 "desc": ""
             },
             "sand": {
-                "name": "Sandstone Slab",
+                "name": "Zandsteenplaat",
                 "desc": ""
             },
             "wood": {
-                "name": "Wooden Slab",
+                "name": "Houten plaat",
                 "desc": ""
             },
             "cobble": {
-                "name": "Stone Slab",
+                "name": "Keisteenplaat",
                 "desc": ""
             }
         },
         "brick": {
-            "name": "Bricks",
+            "name": "Bakstenen",
             "desc": ""
         },
         "tnt": {
@@ -538,71 +538,71 @@
             "desc": ""
         },
         "bookshelf": {
-            "name": "Bookshelf",
+            "name": "Boekenkast",
             "desc": ""
         },
         "stoneMoss": {
-            "name": "Moss Stone",
+            "name": "Met mos begroeide keisteen",
             "desc": ""
         },
         "obsidian": {
-            "name": "Obsidian",
+            "name": "Obsidiaan",
             "desc": ""
         },
         "torch": {
-            "name": "Torch",
+            "name": "Fakkel",
             "desc": ""
         },
         "fire": {
-            "name": "Fire",
+            "name": "Vuur",
             "desc": ""
         },
         "mobSpawner": {
-            "name": "Monster Spawner",
+            "name": "Monsterspawner",
             "desc": ""
         },
         "stairsWood": {
-            "name": "Wooden Stairs",
+            "name": "Houten trap",
             "desc": ""
         },
         "chest": {
-            "name": "Chest",
+            "name": "Kist",
             "desc": ""
         },
         "redstoneDust": {
-            "name": "Redstone Dust",
+            "name": "Redstonestof",
             "desc": ""
         },
         "oreDiamond": {
-            "name": "Diamond Ore",
+            "name": "Diamanterts",
             "desc": ""
         },
         "blockDiamond": {
-            "name": "Block of Diamond",
+            "name": "Diamantblok",
             "desc": ""
         },
         "workbench": {
-            "name": "Crafting Table",
+            "name": "Werkbank",
             "desc": ""
         },
         "crops": {
-            "name": "Crops",
+            "name": "Gewassen",
             "desc": ""
         },
         "farmland": {
-            "name": "Farmland",
+            "name": "Bouwland",
             "desc": ""
         },
         "furnace": {
-            "name": "Furnace",
+            "name": "Oven",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Bord",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Houten deur",
             "desc": ""
         },
         "ladder": {
@@ -614,47 +614,47 @@
             "desc": ""
         },
         "goldenRail": {
-            "name": "Powered Rail",
+            "name": "Aangedreven rail",
             "desc": ""
         },
         "detectorRail": {
-            "name": "Detector Rail",
+            "name": "Detectorrail",
             "desc": ""
         },
         "stairsStone": {
-            "name": "Stone Stairs",
+            "name": "Stenen trap",
             "desc": ""
         },
         "lever": {
-            "name": "Lever",
+            "name": "Hendel",
             "desc": ""
         },
         "pressurePlate": {
-            "name": "Pressure Plate",
+            "name": "Drukplaat",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "IJzeren deur",
             "desc": ""
         },
         "oreRedstone": {
-            "name": "Redstone Ore",
+            "name": "Redstone-erts",
             "desc": ""
         },
         "notGate": {
-            "name": "Redstone Torch",
+            "name": "Redstonefakkel",
             "desc": ""
         },
         "button": {
-            "name": "Button",
+            "name": "Knop",
             "desc": ""
         },
         "snow": {
-            "name": "Snow",
+            "name": "Sneeuw",
             "desc": ""
         },
         "ice": {
-            "name": "Ice",
+            "name": "IJs",
             "desc": ""
         },
         "cactus": {
@@ -662,11 +662,11 @@
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Klei",
             "desc": ""
         },
         "reeds": {
-            "name": "Sugar cane",
+            "name": "Suikerriet",
             "desc": ""
         },
         "jukebox": {
@@ -674,15 +674,15 @@
             "desc": ""
         },
         "fence": {
-            "name": "Fence",
+            "name": "Hek",
             "desc": ""
         },
         "pumpkin": {
-            "name": "Pumpkin",
+            "name": "Pompoen",
             "desc": ""
         },
         "litpumpkin": {
-            "name": "Jack 'o' Lantern",
+            "name": "Jack-o'-lantern",
             "desc": ""
         },
         "hellrock": {
@@ -690,23 +690,23 @@
             "desc": ""
         },
         "hellsand": {
-            "name": "Soul Sand",
+            "name": "Zielenzand",
             "desc": ""
         },
         "lightgem": {
-            "name": "Glowstone",
+            "name": "Gloeisteen",
             "desc": ""
         },
         "portal": {
-            "name": "Portal",
+            "name": "Portaal",
             "desc": ""
         },
         "oreLapis": {
-            "name": "Lapis Lazuli Ore",
+            "name": "Lapis lazuli-erts",
             "desc": ""
         },
         "blockLapis": {
-            "name": "Lapis Lazuli Block",
+            "name": "Lapis lazuliblok",
             "desc": ""
         },
         "dispenser": {
@@ -714,352 +714,352 @@
             "desc": ""
         },
         "musicBlock": {
-            "name": "Note Block",
+            "name": "Nootblok",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Taart",
             "desc": ""
         },
         "bed": {
             "name": "Bed",
             "desc": "",
-            "occupied": "This bed is occupied",
-            "noSleep": "You can only sleep at night",
-            "notValid": "Your home bed was missing or obstructed"
+            "occupied": "Dit bed is bezet",
+            "noSleep": "Je kunt alleen 's nachts slapen",
+            "notValid": "Je thuisbed ontbreekt of is geblokkeerd"
         },
         "lockedchest": {
-            "name": "Locked chest",
+            "name": "Gesloten kist",
             "desc": ""
         },
         "trapdoor": {
-            "name": "Trapdoor",
+            "name": "Valluik",
             "desc": ""
         },
         "web": {
-            "name": "Cobweb",
+            "name": "Spinnenweb",
             "desc": ""
         },
         "stonebricksmooth": {
-            "name": "Stone Bricks",
+            "name": "Stenen bakstenen",
             "desc": ""
         },
         "pistonBase": {
-            "name": "Piston",
+            "name": "Zuiger",
             "desc": ""
         },
         "pistonStickyBase": {
-            "name": "Sticky Piston",
+            "name": "Plakzuiger",
             "desc": ""
         }
     },
     "item": {
         "shovelIron": {
-            "name": "Iron Shovel",
+            "name": "IJzeren schop",
             "desc": ""
         },
         "pickaxeIron": {
-            "name": "Iron Pickaxe",
+            "name": "IJzeren houweel",
             "desc": ""
         },
         "hatchetIron": {
-            "name": "Iron Axe",
+            "name": "IJzeren bijl",
             "desc": ""
         },
         "flintAndSteel": {
-            "name": "Flint and Steel",
+            "name": "Vuursteen en staal",
             "desc": ""
         },
         "apple": {
-            "name": "Apple",
+            "name": "Appel",
             "desc": ""
         },
         "cookie": {
-            "name": "Cookie",
+            "name": "Koekje",
             "desc": ""
         },
         "bow": {
-            "name": "Bow",
+            "name": "Boog",
             "desc": ""
         },
         "arrow": {
-            "name": "Arrow",
+            "name": "Pijl",
             "desc": ""
         },
         "coal": {
-            "name": "Coal",
+            "name": "Steenkool",
             "desc": ""
         },
         "charcoal": {
-            "name": "Charcoal",
+            "name": "Houtskool",
             "desc": ""
         },
         "diamond": {
-            "name": "Diamond",
+            "name": "Diamant",
             "desc": ""
         },
         "ingotIron": {
-            "name": "Iron Ingot",
+            "name": "IJzerstaaf",
             "desc": ""
         },
         "ingotGold": {
-            "name": "Gold Ingot",
+            "name": "Goudstaaf",
             "desc": ""
         },
         "swordIron": {
-            "name": "Iron Sword",
+            "name": "IJzeren zwaard",
             "desc": ""
         },
         "swordWood": {
-            "name": "Wooden Sword",
+            "name": "Houten zwaard",
             "desc": ""
         },
         "shovelWood": {
-            "name": "Wooden Shovel",
+            "name": "Houten schop",
             "desc": ""
         },
         "pickaxeWood": {
-            "name": "Wooden Pickaxe",
+            "name": "Houten houweel",
             "desc": ""
         },
         "hatchetWood": {
-            "name": "Wooden Axe",
+            "name": "Houten bijl",
             "desc": ""
         },
         "swordStone": {
-            "name": "Stone Sword",
+            "name": "Stenen zwaard",
             "desc": ""
         },
         "shovelStone": {
-            "name": "Stone Shovel",
+            "name": "Stenen schop",
             "desc": ""
         },
         "pickaxeStone": {
-            "name": "Stone Pickaxe",
+            "name": "Stenen houweel",
             "desc": ""
         },
         "hatchetStone": {
-            "name": "Stone Axe",
+            "name": "Stenen bijl",
             "desc": ""
         },
         "swordDiamond": {
-            "name": "Diamond Sword",
+            "name": "Diamanten zwaard",
             "desc": ""
         },
         "shovelDiamond": {
-            "name": "Diamond Shovel",
+            "name": "Diamanten schop",
             "desc": ""
         },
         "pickaxeDiamond": {
-            "name": "Diamond Pickaxe",
+            "name": "Diamanten houweel",
             "desc": ""
         },
         "hatchetDiamond": {
-            "name": "Diamond Axe",
+            "name": "Diamanten bijl",
             "desc": ""
         },
         "stick": {
-            "name": "Stick",
+            "name": "Stok",
             "desc": ""
         },
         "bowl": {
-            "name": "Bowl",
+            "name": "Kom",
             "desc": ""
         },
         "mushroomStew": {
-            "name": "Mushroom Stew",
+            "name": "Paddenstoelenstoofpot",
             "desc": ""
         },
         "swordGold": {
-            "name": "Golden Sword",
+            "name": "Gouden zwaard",
             "desc": ""
         },
         "shovelGold": {
-            "name": "Golden Shovel",
+            "name": "Gouden schop",
             "desc": ""
         },
         "pickaxeGold": {
-            "name": "Golden Pickaxe",
+            "name": "Gouden houweel",
             "desc": ""
         },
         "hatchetGold": {
-            "name": "Golden Axe",
+            "name": "Gouden bijl",
             "desc": ""
         },
         "string": {
-            "name": "String",
+            "name": "Draad",
             "desc": ""
         },
         "feather": {
-            "name": "Feather",
+            "name": "Veer",
             "desc": ""
         },
         "gunpowder": {
-            "name": "Gunpowder",
+            "name": "Buskruit",
             "desc": ""
         },
         "hoeWood": {
-            "name": "Wooden Hoe",
+            "name": "Houten schoffel",
             "desc": ""
         },
         "hoeStone": {
-            "name": "Stone Hoe",
+            "name": "Stenen schoffel",
             "desc": ""
         },
         "hoeIron": {
-            "name": "Iron Hoe",
+            "name": "IJzeren schoffel",
             "desc": ""
         },
         "hoeDiamond": {
-            "name": "Diamond Hoe",
+            "name": "Diamanten schoffel",
             "desc": ""
         },
         "hoeGold": {
-            "name": "Golden Hoe",
+            "name": "Gouden schoffel",
             "desc": ""
         },
         "seeds": {
-            "name": "Seeds",
+            "name": "Zaden",
             "desc": ""
         },
         "wheat": {
-            "name": "Wheat",
+            "name": "Tarwe",
             "desc": ""
         },
         "bread": {
-            "name": "Bread",
+            "name": "Brood",
             "desc": ""
         },
         "helmetLeather": {
-            "name": "Leather Cap",
+            "name": "Leren kap",
             "desc": ""
         },
         "chestplateLeather": {
-            "name": "Leather Tunic",
+            "name": "Leren tuniek",
             "desc": ""
         },
         "leggingsLeather": {
-            "name": "Leather Pants",
+            "name": "Leren broek",
             "desc": ""
         },
         "bootsLeather": {
-            "name": "Leather Boots",
+            "name": "Leren laarzen",
             "desc": ""
         },
         "helmetChain": {
-            "name": "Chain Helmet",
+            "name": "Maliënhelm",
             "desc": ""
         },
         "chestplateChain": {
-            "name": "Chain Chestplate",
+            "name": "Maliënkolder",
             "desc": ""
         },
         "leggingsChain": {
-            "name": "Chain Leggings",
+            "name": "Maliënbroek",
             "desc": ""
         },
         "bootsChain": {
-            "name": "Chain Boots",
+            "name": "Maliënlaarzen",
             "desc": ""
         },
         "helmetIron": {
-            "name": "Iron Helmet",
+            "name": "IJzeren helm",
             "desc": ""
         },
         "chestplateIron": {
-            "name": "Iron Chestplate",
+            "name": "IJzeren borstplaat",
             "desc": ""
         },
         "leggingsIron": {
-            "name": "Iron Leggings",
+            "name": "IJzeren beenbeschermers",
             "desc": ""
         },
         "bootsIron": {
-            "name": "Iron Boots",
+            "name": "IJzeren laarzen",
             "desc": ""
         },
         "helmetDiamond": {
-            "name": "Diamond Helmet",
+            "name": "Diamanten helm",
             "desc": ""
         },
         "chestplateDiamond": {
-            "name": "Diamond Chestplate",
+            "name": "Diamanten borstplaat",
             "desc": ""
         },
         "leggingsDiamond": {
-            "name": "Diamond Leggings",
+            "name": "Diamanten beenbeschermers",
             "desc": ""
         },
         "bootsDiamond": {
-            "name": "Diamond Boots",
+            "name": "Diamanten laarzen",
             "desc": ""
         },
         "helmetGold": {
-            "name": "Golden Helmet",
+            "name": "Gouden helm",
             "desc": ""
         },
         "chestplateGold": {
-            "name": "Golden Chestplate",
+            "name": "Gouden borstplaat",
             "desc": ""
         },
         "leggingsGold": {
-            "name": "Golden Leggings",
+            "name": "Gouden beenbeschermers",
             "desc": ""
         },
         "bootsGold": {
-            "name": "Golden boots",
+            "name": "Gouden laarzen",
             "desc": ""
         },
         "flint": {
-            "name": "Flint",
+            "name": "Vuursteen",
             "desc": ""
         },
         "porkchopRaw": {
-            "name": "Raw Porkchop",
+            "name": "Rauw varkensvlees",
             "desc": ""
         },
         "porkchopCooked": {
-            "name": "Cooked Porkchop",
+            "name": "Gegaard varkensvlees",
             "desc": ""
         },
         "painting": {
-            "name": "Painting",
+            "name": "Schilderij",
             "desc": ""
         },
         "appleGold": {
-            "name": "Golden Apple",
+            "name": "Gouden appel",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Bord",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Houten deur",
             "desc": ""
         },
         "bucket": {
-            "name": "Bucket",
+            "name": "Emmer",
             "desc": ""
         },
         "bucketWater": {
-            "name": "Water Bucket",
+            "name": "Wateremmer",
             "desc": ""
         },
         "bucketLava": {
-            "name": "Lava bucket",
+            "name": "Lava-emmer",
             "desc": ""
         },
         "minecart": {
-            "name": "Minecart",
+            "name": "Mijnkar",
             "desc": ""
         },
         "saddle": {
-            "name": "Saddle",
+            "name": "Zadel",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "IJzeren deur",
             "desc": ""
         },
         "redstone": {
@@ -1067,161 +1067,161 @@
             "desc": ""
         },
         "snowball": {
-            "name": "Snowball",
+            "name": "Sneeuwbal",
             "desc": ""
         },
         "boat": {
-            "name": "Boat",
+            "name": "Boot",
             "desc": ""
         },
         "leather": {
-            "name": "Leather",
+            "name": "Leer",
             "desc": ""
         },
         "milk": {
-            "name": "Milk",
+            "name": "Melk",
             "desc": ""
         },
         "brick": {
-            "name": "Brick",
+            "name": "Baksteen",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Klei",
             "desc": ""
         },
         "sugarCanes": {
-            "name": "Sugar Canes",
+            "name": "Suikerriet",
             "desc": ""
         },
         "paper": {
-            "name": "Paper",
+            "name": "Papier",
             "desc": ""
         },
         "book": {
-            "name": "Book",
+            "name": "Boek",
             "desc": ""
         },
         "slimeball": {
-            "name": "Slimeball",
+            "name": "Slijmbal",
             "desc": ""
         },
         "minecartChest": {
-            "name": "Minecart with Chest",
+            "name": "Mijnkar met kist",
             "desc": ""
         },
         "minecartFurnace": {
-            "name": "Minecart with Furnace",
+            "name": "Mijnkar met oven",
             "desc": ""
         },
         "egg": {
-            "name": "Egg",
+            "name": "Ei",
             "desc": ""
         },
         "compass": {
-            "name": "Compass",
+            "name": "Kompas",
             "desc": ""
         },
         "fishingRod": {
-            "name": "Fishing Rod",
+            "name": "Hengel",
             "desc": ""
         },
         "clock": {
-            "name": "Clock",
+            "name": "Klok",
             "desc": ""
         },
         "yellowDust": {
-            "name": "Glowstone Dust",
+            "name": "Gloeisteenstof",
             "desc": ""
         },
         "fishRaw": {
-            "name": "Raw Fish",
+            "name": "Rauwe vis",
             "desc": ""
         },
         "fishCooked": {
-            "name": "Cooked Fish",
+            "name": "Gegaarde vis",
             "desc": ""
         },
         "record": {
-            "name": "Music Disc",
+            "name": "Muziekschijf",
             "desc": ""
         },
         "bone": {
-            "name": "Bone",
+            "name": "Bot",
             "desc": ""
         },
         "dyePowder": {
             "black": {
-                "name": "Ink Sac",
+                "name": "Inktzak",
                 "desc": ""
             },
             "red": {
-                "name": "Rose Red",
+                "name": "Rozenrood",
                 "desc": ""
             },
             "green": {
-                "name": "Cactus Green",
+                "name": "Cactusgroen",
                 "desc": ""
             },
             "brown": {
-                "name": "Cocoa Beans",
+                "name": "Cacaobonen",
                 "desc": ""
             },
             "blue": {
-                "name": "Lapis Lazuli",
+                "name": "Lapis lazuli",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Dye",
+                "name": "Paarse kleurstof",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Dye",
+                "name": "Cyaan kleurstof",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Dye",
+                "name": "Lichtgrijze kleurstof",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Dye",
+                "name": "Grijze kleurstof",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Dye",
+                "name": "Roze kleurstof",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Dye",
+                "name": "Lichtgroene kleurstof",
                 "desc": ""
             },
             "yellow": {
-                "name": "Dandelion Yellow",
+                "name": "Paardenbloemgeel",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Dye",
+                "name": "Lichtblauwe kleurstof",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Dye",
+                "name": "Magenta kleurstof",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Dye",
+                "name": "Oranje kleurstof",
                 "desc": ""
             },
             "white": {
-                "name": "Bone Meal",
+                "name": "Beendermeel",
                 "desc": ""
             }
         },
         "sugar": {
-            "name": "Sugar",
+            "name": "Suiker",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Taart",
             "desc": ""
         },
         "bed": {
@@ -1229,141 +1229,141 @@
             "desc": ""
         },
         "redstoneRepeater": {
-            "name": "Redstone Repeater",
+            "name": "Redstone-repeater",
             "desc": ""
         },
         "map": {
-            "name": "Map",
+            "name": "Kaart",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Bladeren",
             "desc": ""
         },
         "shears": {
-            "name": "Shears",
+            "name": "Scharen",
             "desc": ""
         }
     },
     "stat": {
-        "generalButton": "General",
-        "blocksButton": "Blocks",
-        "itemsButton": "Items",
-        "used": "Times Used",
-        "mined": "Times Mined",
-        "depleted": "Times Depleted",
-        "crafted": "Times Crafted",
-        "startGame": "Times played",
-        "createWorld": "Worlds played",
-        "loadWorld": "Saves loaded",
-        "joinMultiplayer": "Multiplayer joins",
-        "leaveGame": "Games quit",
-        "playOneMinute": "Minutes Played",
-        "walkOneCm": "Distance Walked",
-        "fallOneCm": "Distance Fallen",
-        "swimOneCm": "Distance Swum",
-        "flyOneCm": "Distance Flown",
-        "climbOneCm": "Distance Climbed",
-        "diveOneCm": "Distance Dove",
-        "minecartOneCm": "Distance by Minecart",
-        "boatOneCm": "Distance by Boat",
-        "pigOneCm": "Distance by Pig",
-        "jump": "Jumps",
-        "drop": "Items Dropped",
-        "damageDealt": "Damage Dealt",
-        "damageTaken": "Damage Taken",
-        "deaths": "Number of Deaths",
-        "mobKills": "Mob Kills",
-        "playerKills": "Player Kills",
-        "fishCaught": "Fish Caught",
-        "mineBlock": "{0} Mined",
-        "craftItem": "{0} Crafted",
-        "useItem": "{0} Used",
-        "breakItem": "{0} Depleted"
+        "generalButton": "Algemeen",
+        "blocksButton": "Blokken",
+        "itemsButton": "Voorwerpen",
+        "used": "Keer gebruikt",
+        "mined": "Keer gedolven",
+        "depleted": "Keer versleten",
+        "crafted": "Keer vervaardigd",
+        "startGame": "Keer gespeeld",
+        "createWorld": "Gespeelde werelden",
+        "loadWorld": "Geladen saves",
+        "joinMultiplayer": "Multiplayer-bezoeken",
+        "leaveGame": "Gestopte spellen",
+        "playOneMinute": "Gespeelde minuten",
+        "walkOneCm": "Gelopen afstand",
+        "fallOneCm": "Gevallen afstand",
+        "swimOneCm": "Gezwommen afstand",
+        "flyOneCm": "Gevlogen afstand",
+        "climbOneCm": "Geklommen afstand",
+        "diveOneCm": "Geduikte afstand",
+        "minecartOneCm": "Afstand met mijnkar",
+        "boatOneCm": "Afstand met boot",
+        "pigOneCm": "Afstand met varken",
+        "jump": "Sprongen",
+        "drop": "Voorwerpen laten vallen",
+        "damageDealt": "Aangerichte schade",
+        "damageTaken": "Opgelopen schade",
+        "deaths": "Aantal sterfgevallen",
+        "mobKills": "Monsters gedood",
+        "playerKills": "Spelers gedood",
+        "fishCaught": "Gevangen vissen",
+        "mineBlock": "{0} gedolven",
+        "craftItem": "{0} vervaardigd",
+        "useItem": "{0} gebruikt",
+        "breakItem": "{0} versleten"
     },
-    "achievements.title": "Achievements",
+    "achievements.title": "Prestaties",
     "achievement": {
-        "get": "Achievement get!",
-        "taken": "Taken!",
-        "challenge": "CHALLENGE",
-        "unlocked": "UNLOCKED",
-        "locked": "LOCKED",
-        "requires": "Requires '{0}'",
+        "get": "Prestatie behaald!",
+        "taken": "Behaald!",
+        "challenge": "UITDAGING",
+        "unlocked": "VRIJGESCHAKELD",
+        "locked": "VERGRENDELD",
+        "requires": "Vereist '{0}'",
         "openInventory": {
-            "title": "Taking Inventory",
-            "desc": "Open your inventory."
+            "title": "Inventaris opnemen",
+            "desc": "Open je inventaris."
         },
         "mineWood": {
-            "title": "Getting Wood",
-            "desc": "Attack a tree until a block of wood pops out"
+            "title": "Hout bemachtigen",
+            "desc": "Val een boom aan tot er een houtblok uitkomt"
         },
         "buildWorkBench": {
-            "title": "Benchmarking",
-            "desc": "Craft a workbench with four blocks of planks"
+            "title": "De toets doorstaan",
+            "desc": "Vervaardig een werkbank met vier blokken planken"
         },
         "buildPickaxe": {
-            "title": "Time to Mine!",
-            "desc": "Use planks and sticks to make a pickaxe"
+            "title": "Tijd om te delven!",
+            "desc": "Gebruik planken en stokken om een houweel te maken"
         },
         "buildFurnace": {
-            "title": "Hot Topic",
-            "desc": "Construct a furnace out of eight stone blocks"
+            "title": "Heet hangijzer",
+            "desc": "Bouw een oven van acht stenen blokken"
         },
         "acquireIron": {
-            "title": "Acquire Hardware",
-            "desc": "Smelt an iron ingot"
+            "title": "IJzer aanschaffen",
+            "desc": "Smelt een ijzerstaaf"
         },
         "buildHoe": {
-            "title": "Time to Farm!",
-            "desc": "Use planks and sticks to make a hoe"
+            "title": "Tijd om te boeren!",
+            "desc": "Gebruik planken en stokken om een schoffel te maken"
         },
         "makeBread": {
-            "title": "Bake Bread",
-            "desc": "Turn wheat into bread"
+            "title": "Brood bakken",
+            "desc": "Maak brood van tarwe"
         },
         "bakeCake": {
-            "title": "The Lie",
-            "desc": "Wheat, sugar, milk and eggs!"
+            "title": "De leugen",
+            "desc": "Tarwe, suiker, melk en eieren!"
         },
         "buildBetterPickaxe": {
-            "title": "Getting an Upgrade",
-            "desc": "Construct a better pickaxe"
+            "title": "Een upgrade krijgen",
+            "desc": "Bouw een beter houweel"
         },
         "cookFish": {
-            "title": "Delicious Fish",
-            "desc": "Catch and cook fish!"
+            "title": "Heerlijke vis",
+            "desc": "Vang en kook vis!"
         },
         "onARail": {
-            "title": "On A Rail",
-            "desc": "Travel by minecart at least 1 km from where you started "
+            "title": "Op het spoor",
+            "desc": "Reis minstens 1 km met een mijnkar vanaf waar je begon"
         },
         "buildSword": {
-            "title": "Time to Strike!",
-            "desc": "Use planks and sticks to make a sword"
+            "title": "Tijd om te slaan!",
+            "desc": "Gebruik planken en stokken om een zwaard te maken"
         },
         "killEnemy": {
-            "title": "Monster Hunter",
-            "desc": "Attack and destroy a monster"
+            "title": "Monsterjager",
+            "desc": "Val een monster aan en versla het"
         },
         "killCow": {
-            "title": "Cow Tipper",
-            "desc": "Harvest some leather"
+            "title": "Koeientip",
+            "desc": "Oogst wat leer"
         },
         "flyPig": {
-            "title": "When Pigs Fly",
-            "desc": "Fly a pig off a cliff"
+            "title": "Wanneer varkens vliegen",
+            "desc": "Laat een varken van een klif vliegen"
         }
     },
     "credits": {
-        "version": "BetaSharp Version %1$s",
-        "description": "An enhanced of Minecraft Beta 1.7.3, written in C#.",
-        "github": "On GitHub",
-        "author": "Made by Fazin85",
-        "libs": "Libraries",
+        "version": "BetaSharp-versie %1$s",
+        "description": "Een verbeterde versie van Minecraft Beta 1.7.3, geschreven in C#.",
+        "github": "Op GitHub",
+        "author": "Gemaakt door Fazin85",
+        "libs": "Bibliotheken",
         "slik": "Slik.NET - Graphics",
-        "imgui": "ImGui - Debug UI",
+        "imgui": "ImGui - Debug-UI",
         "sfml": "SFML.NET - Audio",
-        "sixlabors": "SixLabors - Fonts, image processing",
-        "translations": "Translations Credits"
+        "sixlabors": "SixLabors - Lettertypen, beeldverwerking",
+        "translations": "Vertalingscredits"
     }
 }

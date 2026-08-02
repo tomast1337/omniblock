@@ -1,385 +1,385 @@
-﻿{
+{
     "gui": {
-        "joinServer": "Join Server",
-        "rename": "Rename",
-        "edit": "Edit",
-        "refresh": "Refresh",
-        "done": "Done",
-        "cancel": "Cancel",
-        "delete": "Delete",
-        "toMenu": "Back to title screen",
-        "up": "Up",
-        "down": "Down",
-        "yes": "Yes",
-        "no": "No",
-        "connect": "Connect",
-        "directConnect": "Direct Connect",
-        "addServer": "Add Server",
-        "create": "Create",
-        "customize": "Customize",
-        "achievements": "Achievements",
-        "stats": "Statistics",
+        "joinServer": "Gå med på server",
+        "rename": "Byt namn",
+        "edit": "Redigera",
+        "refresh": "Uppdatera",
+        "done": "Klar",
+        "cancel": "Avbryt",
+        "delete": "Ta bort",
+        "toMenu": "Tillbaka till titelskärmen",
+        "up": "Upp",
+        "down": "Ner",
+        "yes": "Ja",
+        "no": "Nej",
+        "connect": "Anslut",
+        "directConnect": "Direktanslutning",
+        "addServer": "Lägg till server",
+        "create": "Skapa",
+        "customize": "Anpassa",
+        "achievements": "Bedrifter",
+        "stats": "Statistik",
         "container": {
-            "crafting": "Crafting",
-            "inventory": "Inventory",
-            "dispenser": "Dispenser",
-            "furnace": "Furnace",
+            "crafting": "Tillverkning",
+            "inventory": "Förråd",
+            "dispenser": "Distributör",
+            "furnace": "Ugn",
             "tip": {
-                "move": "Move",
-                "quickMove": "Quick Move",
-                "takeHalf": "Take Half",
-                "place": "Place",
-                "placeOne": "Place One"
+                "move": "Flytta",
+                "quickMove": "Snabbflytta",
+                "takeHalf": "Ta hälften",
+                "place": "Placera",
+                "placeOne": "Placera en"
             }
         }
     },
     "menu": {
-        "singleplayer": "Singleplayer",
-        "multiplayer": "Multiplayer",
-        "texturePacks": "Texture Packs",
-        "options": "Options...",
-        "language": "Language",
-        "quit": "Quit Game",
-        "credits": "Credits",
-        "sendFeedback": "Send Feedback",
-        "reportBugs": "Report Bugs",
-        "saveAndQuitToTitle": "Save and quit to title",
-        "disconnect": "Disconnect"
+        "singleplayer": "Enspelarläge",
+        "multiplayer": "Flerspelarläge",
+        "texturePacks": "Texturpaket",
+        "options": "Alternativ...",
+        "language": "Språk",
+        "quit": "Avsluta spelet",
+        "credits": "Eftertexter",
+        "sendFeedback": "Skicka feedback",
+        "reportBugs": "Rapportera buggar",
+        "saveAndQuitToTitle": "Spara och avsluta till titelskärmen",
+        "disconnect": "Koppla från"
     },
     "selectWorld": {
-        "title": "Select World",
-        "empty": "empty",
-        "world": "World",
-        "select": "Play Selected World",
-        "create": "Create New World",
-        "createDemo": "Play New Demo World",
-        "deleteQuestion": "Are you sure you want to delete this world?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "renameTitle": "Rename World",
-        "conversion": "Must be converted!",
-        "newWorld": "New World",
-        "enterName": "World Name",
-        "resultFolder": "Will be saved in:",
-        "enterSeed": "Seed for the World Generator",
-        "seedInfo": "Leave blank for a random seed",
-        "selectWorldType": "Select World Type",
-        "worldType": "World Type",
-        "customize": "Customize",
-        "moreWorldOptions": "More World Options...",
+        "title": "Välj värld",
+        "empty": "tomt",
+        "world": "Värld",
+        "select": "Spela vald värld",
+        "create": "Skapa ny värld",
+        "createDemo": "Spela ny demovärld",
+        "deleteQuestion": "Är du säker på att du vill ta bort den här världen?",
+        "deleteWarning": "kommer att förloras för alltid! (En lång tid!)",
+        "renameTitle": "Byt namn på värld",
+        "conversion": "Måste konverteras!",
+        "newWorld": "Ny värld",
+        "enterName": "Världsnamn",
+        "resultFolder": "Kommer att sparas i:",
+        "enterSeed": "Frö för världsgeneratorn",
+        "seedInfo": "Lämna tomt för ett slumpmässigt frö",
+        "selectWorldType": "Välj världstyp",
+        "worldType": "Världstyp",
+        "customize": "Anpassa",
+        "moreWorldOptions": "Fler världsalternativ...",
         "type": {
             "default": {
-                "title": "Default",
-                "description": "The standard Minecraft world."
+                "title": "Standard",
+                "description": "Den vanliga Minecraftvärlden."
             },
             "flat": {
-                "title": "Flat",
-                "description": "A completely flat world."
+                "title": "Platt",
+                "description": "En helt platt värld."
             },
             "sky": {
-                "title": "Sky",
-                "description": "A world floating in the sky."
+                "title": "Himmel",
+                "description": "En värld som svävar i himlen."
             }
         }
     },
     "newWorld": {
         "customize": {
             "superflatWorld": {
-                "title": "Customize Superflat World"
+                "title": "Anpassa superplatt värld"
             },
-            "removeLayer": "Remove Layer",
-            "presets": "Presets",
-            "height": "Height",
+            "removeLayer": "Ta bort lager",
+            "presets": "Förinställningar",
+            "height": "Höjd",
             "unknown": "???"
         }
     },
     "world": {
-        "world": "World",
-        "unsupportedFormat": "Unsupported Format!"
+        "world": "Värld",
+        "unsupportedFormat": "Format som inte stöds!"
     },
     "multiplayer": {
-        "title": "Play Multiplayer",
-        "betasharpServer": "BetaSharp Server",
-        "info1": "Minecraft Multiplayer is currently not finished, but there",
-        "info2": "is some buggy early testing going on.",
-        "ipinfo": "Enter the IP of a server to connect to it:",
-        "deleteQuestion": "Are you sure you want to delete this server?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "downloadingTerrain": "Downloading terrain",
-        "stopSleeping": "Leave Bed",
-        "editServerTitle": "Edit Server Info",
-        "addServerTitle": "Add Server Info",
-        "serverName": "Server Name",
-        "serverAddress": "Server Address"
+        "title": "Spela flerspelarläge",
+        "betasharpServer": "BetaSharp-server",
+        "info1": "Minecrafts flerspelarläge är inte klart än, men det",
+        "info2": "pågår lite buggiga tidiga tester.",
+        "ipinfo": "Ange IP-adressen för en server att ansluta till:",
+        "deleteQuestion": "Är du säker på att du vill ta bort den här servern?",
+        "deleteWarning": "kommer att förloras för alltid! (En lång tid!)",
+        "downloadingTerrain": "Laddar ner terräng",
+        "stopSleeping": "Lämna sängen",
+        "editServerTitle": "Redigera serverinfo",
+        "addServerTitle": "Lägg till serverinfo",
+        "serverName": "Servernamn",
+        "serverAddress": "Serveradress"
     },
     "loading": {
-        "loadingLevel": "Loading level",
-        "startingServer": "Starting server...",
-        "preparingSpawnArea": "Preparing spawn area"
+        "loadingLevel": "Laddar nivå",
+        "startingServer": "Startar server...",
+        "preparingSpawnArea": "Förbereder spawnområde"
     },
     "achievements": {
-        "title": "Achievements"
+        "title": "Bedrifter"
     },
     "gameover": {
         "title": "Game Over!",
-        "score": "Score",
-        "respawn": "Respawn",
-        "titleMenu": "Title menu"
+        "score": "Poäng",
+        "respawn": "Återuppstå",
+        "titleMenu": "Titelmeny"
     },
     "gamemenu": {
-        "title": "Game Menu",
-        "backToGame": "Back to Game"
+        "title": "Spelmeny",
+        "backToGame": "Tillbaka till spelet"
     },
     "sign": {
-        "title": "Edit sign message:"
+        "title": "Redigera skyltmeddelande:"
     },
     "stats": {
-        "title": "Statistics",
-        "general": "General",
+        "title": "Statistik",
+        "general": "Allmänt",
         "blocks": {
-            "name": "Blocks",
-            "mined": "Mined",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Block",
+            "mined": "Brutna",
+            "crafted": "Tillverkade",
+            "used": "Använda"
         },
         "items": {
-            "name": "Items",
-            "broken": "Broken",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Föremål",
+            "broken": "Trasiga",
+            "crafted": "Tillverkade",
+            "used": "Använda"
         },
-        "item": "Item"
+        "item": "Föremål"
     },
     "connect": {
-        "connecting": "Connecting to the server...",
-        "authorizing": "Logging in...",
-        "failed": "Failed to connect to the server"
+        "connecting": "Ansluter till servern...",
+        "authorizing": "Loggar in...",
+        "failed": "Kunde inte ansluta till servern"
     },
     "disconnect": {
         "genericReason": "{0}",
-        "disconnected": "Disconnected by Server",
-        "lost": "Connection Lost",
-        "kicked": "Was kicked from the game",
-        "timeout": "Timed out",
-        "closed": "Connection closed",
-        "loginFailed": "Failed to login",
-        "quitting": "Quitting",
-        "endOfStream": "End of stream",
-        "overflow": "Buffer overflow"
+        "disconnected": "Frånkopplad av servern",
+        "lost": "Anslutning förlorad",
+        "kicked": "Sparkades från spelet",
+        "timeout": "Tidsgräns överskriden",
+        "closed": "Anslutningen stängdes",
+        "loginFailed": "Inloggningen misslyckades",
+        "quitting": "Avslutar",
+        "endOfStream": "Slut på ström",
+        "overflow": "Buffertspill"
     },
     "options": {
-        "off": "OFF",
-        "on": "ON",
-        "disabled": "Disabled",
-        "title": "Options",
-        "controls": "Controls...",
-        "keyboardControls": "Keyboard Controls...",
-        "controllerSettings": "Controller Settings...",
-        "controllerType": "Controller Type",
+        "off": "AV",
+        "on": "PÅ",
+        "disabled": "Avaktiverad",
+        "title": "Alternativ",
+        "controls": "Kontroller...",
+        "keyboardControls": "Tangentbordskontroller...",
+        "controllerSettings": "Kontrollinställningar...",
+        "controllerType": "Kontrolltyp",
         "video": {
-            "text": "Video Settings...",
-            "performance": "Performance",
-            "display": "Display"
+            "text": "Videoinställningar...",
+            "performance": "Prestanda",
+            "display": "Visning"
         },
-        "uiSettings": "UI Settings...",
-        "audioSettings": "Audio Settings...",
-        "audioTitle": "Audio Settings",
-        "videoTitle": "Video Settings",
-        "language": "Language...",
-        "anisoLevel": "Aniso Level",
-        "music": "Music",
-        "sound": "Sound",
-        "invertMouse": "Invert Mouse",
-        "alternateBlocks": "Alternate Blocks",
-        "chunkFade": "Chunk Fade",
+        "uiSettings": "UI-inställningar...",
+        "audioSettings": "Ljudinställningar...",
+        "audioTitle": "Ljudinställningar",
+        "videoTitle": "Videoinställningar",
+        "language": "Språk...",
+        "anisoLevel": "Anisonivå",
+        "music": "Musik",
+        "sound": "Ljud",
+        "invertMouse": "Invertera mus",
+        "alternateBlocks": "Alternativa block",
+        "chunkFade": "Chunktoning",
         "sensitivity": {
-            "text": "Sensitivity",
-            "controllerText": "Controller Sensitivity",
-            "min": "*yawn*",
-            "max": "HYPERSPEED!!!"
+            "text": "Känslighet",
+            "controllerText": "Kontrollkänslighet",
+            "min": "*gäsp*",
+            "max": "HYPERFART!!!"
         },
         "renderDistance": {
-            "text": "Render Distance",
-            "chunks": "Chunks",
-            "tiny": "Tiny",
-            "short": "Short",
+            "text": "Renderingsavstånd",
+            "chunks": "Chunkar",
+            "tiny": "Liten",
+            "short": "Kort",
             "normal": "Normal",
-            "far": "Far"
+            "far": "Långt"
         },
-        "viewBobbing": "View Bobbing",
-        "ao": "Smooth Lighting",
-        "anaglyph": "3D Anaglyph",
-        "framerateLimit": "Performance",
+        "viewBobbing": "Vykrängning",
+        "ao": "Mjuk belysning",
+        "anaglyph": "3D-anaglyf",
+        "framerateLimit": "Prestanda",
         "difficulty": {
-            "text": "Difficulty",
-            "peaceful": "Peaceful",
-            "easy": "Easy",
+            "text": "Svårighetsgrad",
+            "peaceful": "Fredlig",
+            "easy": "Lätt",
             "normal": "Normal",
-            "hard": "Hard"
+            "hard": "Svår"
         },
         "graphics": {
-            "text": "Graphics",
-            "fancy": "Fancy",
-            "fast": "Fast"
+            "text": "Grafik",
+            "fancy": "Tjusig",
+            "fast": "Snabb"
         },
         "cloudsQuality": {
-            "text": "Clouds Quality",
-            "off": "No Clouds",
-            "legacy": "Old Clouds",
+            "text": "Molnkvalitet",
+            "off": "Inga moln",
+            "legacy": "Gamla moln",
             "shader": "Shader"
         },
         "softClouds": {
-            "text": "Soft Clouds"
+            "text": "Mjuka moln"
         },
         "guiScale": {
-            "text": "GUI Scale",
+            "text": "GUI-skala",
             "auto": "Auto",
-            "small": "Small",
+            "small": "Liten",
             "normal": "Normal",
-            "large": "Large"
+            "large": "Stor"
         },
         "chatScale": {
-            "text": "Chat Scale"
+            "text": "Chattskala"
         },
         "chatWidth": {
-            "text": "Chat Width"
+            "text": "Chattbredd"
         },
-        "advancedOpengl": "Advanced OpenGL",
+        "advancedOpengl": "Avancerad OpenGL",
         "fps": {
             "text": "FPS",
             "maxFps": "Max FPS",
-            "unlimited": "Unlimited"
+            "unlimited": "Obegränsad"
         },
-        "showCoordinates": "Show Coordinates",
-        "uiCursors": "UI Cursors",
+        "showCoordinates": "Visa koordinater",
+        "uiCursors": "UI-markörer",
         "gamma": "Gamma",
         "vSync": "VSync",
         "mipmaps": "Mipmaps",
-        "menuMusic": "Menu Music",
+        "menuMusic": "Menymusik",
         "msaa": "MSAA",
         "fov": "FOV",
         "movement": {
-            "text": "Movement"
+            "text": "Rörelse"
         },
         "view": {
-            "text": "View"
+            "text": "Vy"
         },
         "other": {
-            "text": "Other"
+            "text": "Annat"
         },
-        "editBindings": "Edit Bindings...",
-        "resetBindings": "Reset Bindings...",
-        "controllerBindings": "Controller Bindings",
+        "editBindings": "Redigera bindningar...",
+        "resetBindings": "Återställ bindningar...",
+        "controllerBindings": "Kontrollbindningar",
         "shader": {
-            "text": "Shader Options",
+            "text": "Shaderalternativ",
             "chunkVert": {
-                "text": "World",
-                "WavyLeavesStrength": "Wavy Leaves Strength",
-                "WavyLeavesSpeed": "Wavy Leaves Speed",
-                "WavyPlantStrength": "Wavy Plant Strength",
-                "WavyPlantSpeed": "Wavy Plant Speed",
-                "WavyPlantMode": "Wavy Plant Mode"
+                "text": "Värld",
+                "WavyLeavesStrength": "Böljande lövs styrka",
+                "WavyLeavesSpeed": "Böljande lövs hastighet",
+                "WavyPlantStrength": "Böljande växters styrka",
+                "WavyPlantSpeed": "Böljande växters hastighet",
+                "WavyPlantMode": "Böljande växters läge"
             },
             "cloud": {
-                "text": "Clouds",
-                "minParallax": "Min Parallax",
-                "maxParallax": "Max Parallax",
-                "minGradient": "Min Gradient",
-                "maxGradient": "Max Gradient",
-                "cloudHeight": "Cloud Height",
-                "shadow": "Shadow Color",
-                "smoothWidth": "Smooth Width",
-                "smoothSamples": "Smooth Samples",
-                "closeFade": "Close Fade",
-                "smoothTop": "Smooth Top",
-                "smoothEdge": "Smooth Edge",
-                "smoothBottom": "Smooth Bottom",
-                "smoothBottomTopDown": "Smooth Bottom Top Down"
+                "text": "Moln",
+                "minParallax": "Min parallax",
+                "maxParallax": "Max parallax",
+                "minGradient": "Min gradient",
+                "maxGradient": "Max gradient",
+                "cloudHeight": "Molnhöjd",
+                "shadow": "Skuggfärg",
+                "smoothWidth": "Mjuk bredd",
+                "smoothSamples": "Mjuka prover",
+                "closeFade": "Nära toning",
+                "smoothTop": "Mjuk topp",
+                "smoothEdge": "Mjuk kant",
+                "smoothBottom": "Mjuk botten",
+                "smoothBottomTopDown": "Mjuk botten uppifrån och ned"
             },
             "ui": {
                 "text": "UI",
-                "darkMode": "Dark Mode"
+                "darkMode": "Mörkt läge"
             },
             "preset": {
-                "text": "Preset",
-                "disabled": "Disabled",
-                "default": "Default",
-                "custom": "Custom",
+                "text": "Förinställning",
+                "disabled": "Avaktiverad",
+                "default": "Standard",
+                "custom": "Anpassad",
                 "2d": "2D",
                 "3d": "3D",
-                "low": "Low",
-                "medium": "Medium",
-                "high": "High",
+                "low": "Låg",
+                "medium": "Medel",
+                "high": "Hög",
                 "ultra": "Ultra"
             }
         }
     },
     "performance": {
         "max": "Max FPS",
-        "balanced": "Balanced",
-        "powersaver": "Power saver"
+        "balanced": "Balanserad",
+        "powersaver": "Strömsparläge"
     },
     "controls": {
-        "title": "Controls"
+        "title": "Kontroller"
     },
     "key": {
-        "forward": "Forward",
-        "left": "Left",
-        "back": "Back",
-        "right": "Right",
-        "jump": "Jump",
-        "inventory": "Inventory",
-        "drop": "Drop",
-        "chat": "Chat",
-        "fog": "Toggle Fog",
-        "sneak": "Sneak",
-        "playerlist": "List players",
-        "zoom": "Zoom",
-        "hotbarLeft": "Hotbar Left",
-        "hotbarRight": "Hotbar Right",
-        "pickBlock": "Pick Block",
-        "camera": "Camera Mode",
-        "pause": "Pause"
+        "forward": "Framåt",
+        "left": "Vänster",
+        "back": "Bakåt",
+        "right": "Höger",
+        "jump": "Hoppa",
+        "inventory": "Förråd",
+        "drop": "Släpp",
+        "chat": "Chatt",
+        "fog": "Växla dimma",
+        "sneak": "Smyga",
+        "playerlist": "Lista spelare",
+        "zoom": "Zooma",
+        "hotbarLeft": "Snabbmeny vänster",
+        "hotbarRight": "Snabbmeny höger",
+        "pickBlock": "Plocka block",
+        "camera": "Kamerläge",
+        "pause": "Paus"
     },
     "texturePack": {
-        "openFolder": "Open texture pack folder",
-        "title": "Select Texture Pack",
-        "folderInfo": "(Place texture pack files here)"
+        "openFolder": "Öppna texturpaketsmapp",
+        "title": "Välj texturpaket",
+        "folderInfo": "(Placera texturpaketsfiler här)"
     },
     "tile": {
         "tallgrass": {
-            "name": "Tallgrass",
+            "name": "Högt gräs",
             "desc": ""
         },
         "stone": {
-            "name": "Stone",
+            "name": "Sten",
             "desc": ""
         },
         "grass": {
-            "name": "Grass",
+            "name": "Gräs",
             "desc": ""
         },
         "dirt": {
-            "name": "Dirt",
+            "name": "Jord",
             "desc": ""
         },
         "stonebrick": {
-            "name": "Cobblestone",
+            "name": "Kullersten",
             "desc": ""
         },
         "wood": {
-            "name": "Wooden Planks",
+            "name": "Träplankor",
             "desc": ""
         },
         "sapling": {
-            "name": "Sapling",
+            "name": "Stickling",
             "desc": ""
         },
         "bedrock": {
-            "name": "Bedrock",
+            "name": "Berggrund",
             "desc": ""
         },
         "water": {
-            "name": "Water",
+            "name": "Vatten",
             "desc": ""
         },
         "lava": {
@@ -390,147 +390,147 @@
             "name": "Sand",
             "desc": ""
         },
-        "sandStone": { "name": "Sandstone" },
+        "sandStone": { "name": "Sandsten" },
         "gravel": {
-            "name": "Gravel",
+            "name": "Grus",
             "desc": ""
         },
         "oreGold": {
-            "name": "Gold Ore",
+            "name": "Guldmalm",
             "desc": ""
         },
         "oreIron": {
-            "name": "Iron Ore",
+            "name": "Järnmalm",
             "desc": ""
         },
         "oreCoal": {
-            "name": "Coal Ore",
+            "name": "Kolmalm",
             "desc": ""
         },
         "log": {
-            "name": "Wood",
+            "name": "Stock",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Blad",
             "desc": ""
         },
         "sponge": {
-            "name": "Sponge",
+            "name": "Svamp",
             "desc": ""
         },
         "glass": {
-            "name": "Glass",
+            "name": "Glas",
             "desc": ""
         },
         "cloth": {
-            "name": "Wool",
+            "name": "Ull",
             "desc": "",
             "black": {
-                "name": "Black Wool",
+                "name": "Svart ull",
                 "desc": ""
             },
             "red": {
-                "name": "Red Wool",
+                "name": "Röd ull",
                 "desc": ""
             },
             "green": {
-                "name": "Green Wool",
+                "name": "Grön ull",
                 "desc": ""
             },
             "brown": {
-                "name": "Brown Wool",
+                "name": "Brun ull",
                 "desc": ""
             },
             "blue": {
-                "name": "Blue Wool",
+                "name": "Blå ull",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Wool",
+                "name": "Lila ull",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Wool",
+                "name": "Cyan ull",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Wool",
+                "name": "Ljusgrå ull",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Wool",
+                "name": "Grå ull",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Wool",
+                "name": "Rosa ull",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Wool",
+                "name": "Limegrön ull",
                 "desc": ""
             },
             "yellow": {
-                "name": "Yellow Wool",
+                "name": "Gul ull",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Wool",
+                "name": "Ljusblå ull",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Wool",
+                "name": "Magenta ull",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Wool",
+                "name": "Orange ull",
                 "desc": ""
             },
             "white": {
-                "name": "Wool",
+                "name": "Ull",
                 "desc": ""
             }
         },
         "flower": {
-            "name": "Flower",
+            "name": "Blomma",
             "desc": ""
         },
         "rose": {
-            "name": "Rose",
+            "name": "Ros",
             "desc": ""
         },
         "mushroom": {
-            "name": "Mushroom",
+            "name": "Svamp",
             "desc": ""
         },
         "blockGold": {
-            "name": "Block of Gold",
+            "name": "Guldblock",
             "desc": ""
         },
         "blockIron": {
-            "name": "Block of Iron",
+            "name": "Järnblock",
             "desc": ""
         },
         "stoneSlab": {
             "stone": {
-                "name": "Stone Slab",
+                "name": "Stenplatta",
                 "desc": ""
             },
             "sand": {
-                "name": "Sandstone Slab",
+                "name": "Sandstensplatta",
                 "desc": ""
             },
             "wood": {
-                "name": "Wooden Slab",
+                "name": "Träplatta",
                 "desc": ""
             },
             "cobble": {
-                "name": "Stone Slab",
+                "name": "Stenplatta",
                 "desc": ""
             }
         },
         "brick": {
-            "name": "Bricks",
+            "name": "Tegelstenar",
             "desc": ""
         },
         "tnt": {
@@ -538,11 +538,11 @@
             "desc": ""
         },
         "bookshelf": {
-            "name": "Bookshelf",
+            "name": "Bokhylla",
             "desc": ""
         },
         "stoneMoss": {
-            "name": "Moss Stone",
+            "name": "Mossig sten",
             "desc": ""
         },
         "obsidian": {
@@ -550,123 +550,123 @@
             "desc": ""
         },
         "torch": {
-            "name": "Torch",
+            "name": "Fackla",
             "desc": ""
         },
         "fire": {
-            "name": "Fire",
+            "name": "Eld",
             "desc": ""
         },
         "mobSpawner": {
-            "name": "Monster Spawner",
+            "name": "Monsterspawnare",
             "desc": ""
         },
         "stairsWood": {
-            "name": "Wooden Stairs",
+            "name": "Trätrappa",
             "desc": ""
         },
         "chest": {
-            "name": "Chest",
+            "name": "Kista",
             "desc": ""
         },
         "redstoneDust": {
-            "name": "Redstone Dust",
+            "name": "Redstonedamm",
             "desc": ""
         },
         "oreDiamond": {
-            "name": "Diamond Ore",
+            "name": "Diamantmalm",
             "desc": ""
         },
         "blockDiamond": {
-            "name": "Block of Diamond",
+            "name": "Diamantblock",
             "desc": ""
         },
         "workbench": {
-            "name": "Crafting Table",
+            "name": "Arbetsbänk",
             "desc": ""
         },
         "crops": {
-            "name": "Crops",
+            "name": "Grödor",
             "desc": ""
         },
         "farmland": {
-            "name": "Farmland",
+            "name": "Åkermark",
             "desc": ""
         },
         "furnace": {
-            "name": "Furnace",
+            "name": "Ugn",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Skylt",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Trädörr",
             "desc": ""
         },
         "ladder": {
-            "name": "Ladder",
+            "name": "Stege",
             "desc": ""
         },
         "rail": {
-            "name": "Rail",
+            "name": "Räls",
             "desc": ""
         },
         "goldenRail": {
-            "name": "Powered Rail",
+            "name": "Driven räls",
             "desc": ""
         },
         "detectorRail": {
-            "name": "Detector Rail",
+            "name": "Detekteringsräls",
             "desc": ""
         },
         "stairsStone": {
-            "name": "Stone Stairs",
+            "name": "Stentrappa",
             "desc": ""
         },
         "lever": {
-            "name": "Lever",
+            "name": "Spak",
             "desc": ""
         },
         "pressurePlate": {
-            "name": "Pressure Plate",
+            "name": "Tryckplatta",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Järndörr",
             "desc": ""
         },
         "oreRedstone": {
-            "name": "Redstone Ore",
+            "name": "Redstonemalm",
             "desc": ""
         },
         "notGate": {
-            "name": "Redstone Torch",
+            "name": "Redstonefackla",
             "desc": ""
         },
         "button": {
-            "name": "Button",
+            "name": "Knapp",
             "desc": ""
         },
         "snow": {
-            "name": "Snow",
+            "name": "Snö",
             "desc": ""
         },
         "ice": {
-            "name": "Ice",
+            "name": "Is",
             "desc": ""
         },
         "cactus": {
-            "name": "Cactus",
+            "name": "Kaktus",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Lera",
             "desc": ""
         },
         "reeds": {
-            "name": "Sugar cane",
+            "name": "Sockerrör",
             "desc": ""
         },
         "jukebox": {
@@ -674,15 +674,15 @@
             "desc": ""
         },
         "fence": {
-            "name": "Fence",
+            "name": "Staket",
             "desc": ""
         },
         "pumpkin": {
-            "name": "Pumpkin",
+            "name": "Pumpa",
             "desc": ""
         },
         "litpumpkin": {
-            "name": "Jack 'o' Lantern",
+            "name": "Lyktpumpa",
             "desc": ""
         },
         "hellrock": {
@@ -690,11 +690,11 @@
             "desc": ""
         },
         "hellsand": {
-            "name": "Soul Sand",
+            "name": "Själarsand",
             "desc": ""
         },
         "lightgem": {
-            "name": "Glowstone",
+            "name": "Glödsten",
             "desc": ""
         },
         "portal": {
@@ -702,364 +702,364 @@
             "desc": ""
         },
         "oreLapis": {
-            "name": "Lapis Lazuli Ore",
+            "name": "Lapis lazulimalm",
             "desc": ""
         },
         "blockLapis": {
-            "name": "Lapis Lazuli Block",
+            "name": "Lapis lazuliblock",
             "desc": ""
         },
         "dispenser": {
-            "name": "Dispenser",
+            "name": "Distributör",
             "desc": ""
         },
         "musicBlock": {
-            "name": "Note Block",
+            "name": "Notblock",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Tårta",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Säng",
             "desc": "",
-            "occupied": "This bed is occupied",
-            "noSleep": "You can only sleep at night",
-            "notValid": "Your home bed was missing or obstructed"
+            "occupied": "Den här sängen är upptagen",
+            "noSleep": "Du kan bara sova på natten",
+            "notValid": "Din hemsäng saknades eller var blockerad"
         },
         "lockedchest": {
-            "name": "Locked chest",
+            "name": "Låst kista",
             "desc": ""
         },
         "trapdoor": {
-            "name": "Trapdoor",
+            "name": "Fallucka",
             "desc": ""
         },
         "web": {
-            "name": "Cobweb",
+            "name": "Spindelnät",
             "desc": ""
         },
         "stonebricksmooth": {
-            "name": "Stone Bricks",
+            "name": "Stentegel",
             "desc": ""
         },
         "pistonBase": {
-            "name": "Piston",
+            "name": "Kolv",
             "desc": ""
         },
         "pistonStickyBase": {
-            "name": "Sticky Piston",
+            "name": "Klibbig kolv",
             "desc": ""
         }
     },
     "item": {
         "shovelIron": {
-            "name": "Iron Shovel",
+            "name": "Järnspade",
             "desc": ""
         },
         "pickaxeIron": {
-            "name": "Iron Pickaxe",
+            "name": "Järnhacka",
             "desc": ""
         },
         "hatchetIron": {
-            "name": "Iron Axe",
+            "name": "Järnyxa",
             "desc": ""
         },
         "flintAndSteel": {
-            "name": "Flint and Steel",
+            "name": "Flinta och stål",
             "desc": ""
         },
         "apple": {
-            "name": "Apple",
+            "name": "Äpple",
             "desc": ""
         },
         "cookie": {
-            "name": "Cookie",
+            "name": "Kaka",
             "desc": ""
         },
         "bow": {
-            "name": "Bow",
+            "name": "Båge",
             "desc": ""
         },
         "arrow": {
-            "name": "Arrow",
+            "name": "Pil",
             "desc": ""
         },
         "coal": {
-            "name": "Coal",
+            "name": "Kol",
             "desc": ""
         },
         "charcoal": {
-            "name": "Charcoal",
+            "name": "Träkol",
             "desc": ""
         },
         "diamond": {
-            "name": "Diamond",
+            "name": "Diamant",
             "desc": ""
         },
         "ingotIron": {
-            "name": "Iron Ingot",
+            "name": "Järntacka",
             "desc": ""
         },
         "ingotGold": {
-            "name": "Gold Ingot",
+            "name": "Guldtacka",
             "desc": ""
         },
         "swordIron": {
-            "name": "Iron Sword",
+            "name": "Järnsvärd",
             "desc": ""
         },
         "swordWood": {
-            "name": "Wooden Sword",
+            "name": "Träsvärd",
             "desc": ""
         },
         "shovelWood": {
-            "name": "Wooden Shovel",
+            "name": "Träspade",
             "desc": ""
         },
         "pickaxeWood": {
-            "name": "Wooden Pickaxe",
+            "name": "Trähacka",
             "desc": ""
         },
         "hatchetWood": {
-            "name": "Wooden Axe",
+            "name": "Träyxa",
             "desc": ""
         },
         "swordStone": {
-            "name": "Stone Sword",
+            "name": "Stensvärd",
             "desc": ""
         },
         "shovelStone": {
-            "name": "Stone Shovel",
+            "name": "Stenspade",
             "desc": ""
         },
         "pickaxeStone": {
-            "name": "Stone Pickaxe",
+            "name": "Stenhacka",
             "desc": ""
         },
         "hatchetStone": {
-            "name": "Stone Axe",
+            "name": "Stenyxa",
             "desc": ""
         },
         "swordDiamond": {
-            "name": "Diamond Sword",
+            "name": "Diamantsvärd",
             "desc": ""
         },
         "shovelDiamond": {
-            "name": "Diamond Shovel",
+            "name": "Diamantspade",
             "desc": ""
         },
         "pickaxeDiamond": {
-            "name": "Diamond Pickaxe",
+            "name": "Diamanthacka",
             "desc": ""
         },
         "hatchetDiamond": {
-            "name": "Diamond Axe",
+            "name": "Diamantyxa",
             "desc": ""
         },
         "stick": {
-            "name": "Stick",
+            "name": "Pinne",
             "desc": ""
         },
         "bowl": {
-            "name": "Bowl",
+            "name": "Skål",
             "desc": ""
         },
         "mushroomStew": {
-            "name": "Mushroom Stew",
+            "name": "Svampstuvning",
             "desc": ""
         },
         "swordGold": {
-            "name": "Golden Sword",
+            "name": "Guldsvärd",
             "desc": ""
         },
         "shovelGold": {
-            "name": "Golden Shovel",
+            "name": "Guldspade",
             "desc": ""
         },
         "pickaxeGold": {
-            "name": "Golden Pickaxe",
+            "name": "Guldhacka",
             "desc": ""
         },
         "hatchetGold": {
-            "name": "Golden Axe",
+            "name": "Guldyxa",
             "desc": ""
         },
         "string": {
-            "name": "String",
+            "name": "Tråd",
             "desc": ""
         },
         "feather": {
-            "name": "Feather",
+            "name": "Fjäder",
             "desc": ""
         },
         "gunpowder": {
-            "name": "Gunpowder",
+            "name": "Krut",
             "desc": ""
         },
         "hoeWood": {
-            "name": "Wooden Hoe",
+            "name": "Trähacka",
             "desc": ""
         },
         "hoeStone": {
-            "name": "Stone Hoe",
+            "name": "Stenhacka",
             "desc": ""
         },
         "hoeIron": {
-            "name": "Iron Hoe",
+            "name": "Järnhacka",
             "desc": ""
         },
         "hoeDiamond": {
-            "name": "Diamond Hoe",
+            "name": "Diamanthacka",
             "desc": ""
         },
         "hoeGold": {
-            "name": "Golden Hoe",
+            "name": "Guldhacka",
             "desc": ""
         },
         "seeds": {
-            "name": "Seeds",
+            "name": "Frön",
             "desc": ""
         },
         "wheat": {
-            "name": "Wheat",
+            "name": "Vete",
             "desc": ""
         },
         "bread": {
-            "name": "Bread",
+            "name": "Bröd",
             "desc": ""
         },
         "helmetLeather": {
-            "name": "Leather Cap",
+            "name": "Läderhuva",
             "desc": ""
         },
         "chestplateLeather": {
-            "name": "Leather Tunic",
+            "name": "Lädertunika",
             "desc": ""
         },
         "leggingsLeather": {
-            "name": "Leather Pants",
+            "name": "Läderbyxor",
             "desc": ""
         },
         "bootsLeather": {
-            "name": "Leather Boots",
+            "name": "Läderstövlar",
             "desc": ""
         },
         "helmetChain": {
-            "name": "Chain Helmet",
+            "name": "Kedjehjälm",
             "desc": ""
         },
         "chestplateChain": {
-            "name": "Chain Chestplate",
+            "name": "Kedjebröstplåt",
             "desc": ""
         },
         "leggingsChain": {
-            "name": "Chain Leggings",
+            "name": "Kedjebyxor",
             "desc": ""
         },
         "bootsChain": {
-            "name": "Chain Boots",
+            "name": "Kedjestövlar",
             "desc": ""
         },
         "helmetIron": {
-            "name": "Iron Helmet",
+            "name": "Järnhjälm",
             "desc": ""
         },
         "chestplateIron": {
-            "name": "Iron Chestplate",
+            "name": "Järnbröstplåt",
             "desc": ""
         },
         "leggingsIron": {
-            "name": "Iron Leggings",
+            "name": "Järnbyxor",
             "desc": ""
         },
         "bootsIron": {
-            "name": "Iron Boots",
+            "name": "Järnstövlar",
             "desc": ""
         },
         "helmetDiamond": {
-            "name": "Diamond Helmet",
+            "name": "Diamanthjälm",
             "desc": ""
         },
         "chestplateDiamond": {
-            "name": "Diamond Chestplate",
+            "name": "Diamantbröstplåt",
             "desc": ""
         },
         "leggingsDiamond": {
-            "name": "Diamond Leggings",
+            "name": "Diamantbyxor",
             "desc": ""
         },
         "bootsDiamond": {
-            "name": "Diamond Boots",
+            "name": "Diamantstövlar",
             "desc": ""
         },
         "helmetGold": {
-            "name": "Golden Helmet",
+            "name": "Guldhjälm",
             "desc": ""
         },
         "chestplateGold": {
-            "name": "Golden Chestplate",
+            "name": "Guldbröstplåt",
             "desc": ""
         },
         "leggingsGold": {
-            "name": "Golden Leggings",
+            "name": "Guldbyxor",
             "desc": ""
         },
         "bootsGold": {
-            "name": "Golden boots",
+            "name": "Guldstövlar",
             "desc": ""
         },
         "flint": {
-            "name": "Flint",
+            "name": "Flinta",
             "desc": ""
         },
         "porkchopRaw": {
-            "name": "Raw Porkchop",
+            "name": "Rå fläskkotlett",
             "desc": ""
         },
         "porkchopCooked": {
-            "name": "Cooked Porkchop",
+            "name": "Stekt fläskkotlett",
             "desc": ""
         },
         "painting": {
-            "name": "Painting",
+            "name": "Tavla",
             "desc": ""
         },
         "appleGold": {
-            "name": "Golden Apple",
+            "name": "Gyllene äpple",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Skylt",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Trädörr",
             "desc": ""
         },
         "bucket": {
-            "name": "Bucket",
+            "name": "Hink",
             "desc": ""
         },
         "bucketWater": {
-            "name": "Water Bucket",
+            "name": "Vattenhink",
             "desc": ""
         },
         "bucketLava": {
-            "name": "Lava bucket",
+            "name": "Lavahink",
             "desc": ""
         },
         "minecart": {
-            "name": "Minecart",
+            "name": "Gruvvagn",
             "desc": ""
         },
         "saddle": {
-            "name": "Saddle",
+            "name": "Sadel",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Järndörr",
             "desc": ""
         },
         "redstone": {
@@ -1067,303 +1067,303 @@
             "desc": ""
         },
         "snowball": {
-            "name": "Snowball",
+            "name": "Snöboll",
             "desc": ""
         },
         "boat": {
-            "name": "Boat",
+            "name": "Båt",
             "desc": ""
         },
         "leather": {
-            "name": "Leather",
+            "name": "Läder",
             "desc": ""
         },
         "milk": {
-            "name": "Milk",
+            "name": "Mjölk",
             "desc": ""
         },
         "brick": {
-            "name": "Brick",
+            "name": "Tegelsten",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Lera",
             "desc": ""
         },
         "sugarCanes": {
-            "name": "Sugar Canes",
+            "name": "Sockerrör",
             "desc": ""
         },
         "paper": {
-            "name": "Paper",
+            "name": "Papper",
             "desc": ""
         },
         "book": {
-            "name": "Book",
+            "name": "Bok",
             "desc": ""
         },
         "slimeball": {
-            "name": "Slimeball",
+            "name": "Slemboll",
             "desc": ""
         },
         "minecartChest": {
-            "name": "Minecart with Chest",
+            "name": "Gruvvagn med kista",
             "desc": ""
         },
         "minecartFurnace": {
-            "name": "Minecart with Furnace",
+            "name": "Gruvvagn med ugn",
             "desc": ""
         },
         "egg": {
-            "name": "Egg",
+            "name": "Ägg",
             "desc": ""
         },
         "compass": {
-            "name": "Compass",
+            "name": "Kompass",
             "desc": ""
         },
         "fishingRod": {
-            "name": "Fishing Rod",
+            "name": "Fiskespö",
             "desc": ""
         },
         "clock": {
-            "name": "Clock",
+            "name": "Klocka",
             "desc": ""
         },
         "yellowDust": {
-            "name": "Glowstone Dust",
+            "name": "Glödstensdamm",
             "desc": ""
         },
         "fishRaw": {
-            "name": "Raw Fish",
+            "name": "Rå fisk",
             "desc": ""
         },
         "fishCooked": {
-            "name": "Cooked Fish",
+            "name": "Stekt fisk",
             "desc": ""
         },
         "record": {
-            "name": "Music Disc",
+            "name": "Musikskiva",
             "desc": ""
         },
         "bone": {
-            "name": "Bone",
+            "name": "Ben",
             "desc": ""
         },
         "dyePowder": {
             "black": {
-                "name": "Ink Sac",
+                "name": "Bläckpåse",
                 "desc": ""
             },
             "red": {
-                "name": "Rose Red",
+                "name": "Rosröd",
                 "desc": ""
             },
             "green": {
-                "name": "Cactus Green",
+                "name": "Kaktusgrön",
                 "desc": ""
             },
             "brown": {
-                "name": "Cocoa Beans",
+                "name": "Kakaobönor",
                 "desc": ""
             },
             "blue": {
-                "name": "Lapis Lazuli",
+                "name": "Lapis lazuli",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Dye",
+                "name": "Lila färg",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Dye",
+                "name": "Cyanfärg",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Dye",
+                "name": "Ljusgrå färg",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Dye",
+                "name": "Grå färg",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Dye",
+                "name": "Rosa färg",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Dye",
+                "name": "Limegrön färg",
                 "desc": ""
             },
             "yellow": {
-                "name": "Dandelion Yellow",
+                "name": "Maskrosgul",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Dye",
+                "name": "Ljusblå färg",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Dye",
+                "name": "Magenta färg",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Dye",
+                "name": "Orange färg",
                 "desc": ""
             },
             "white": {
-                "name": "Bone Meal",
+                "name": "Benmjöl",
                 "desc": ""
             }
         },
         "sugar": {
-            "name": "Sugar",
+            "name": "Socker",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Tårta",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Säng",
             "desc": ""
         },
         "redstoneRepeater": {
-            "name": "Redstone Repeater",
+            "name": "Redstoneförstärkare",
             "desc": ""
         },
         "map": {
-            "name": "Map",
+            "name": "Karta",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Blad",
             "desc": ""
         },
         "shears": {
-            "name": "Shears",
+            "name": "Sax",
             "desc": ""
         }
     },
     "stat": {
-        "generalButton": "General",
-        "blocksButton": "Blocks",
-        "itemsButton": "Items",
-        "used": "Times Used",
-        "mined": "Times Mined",
-        "depleted": "Times Depleted",
-        "crafted": "Times Crafted",
-        "startGame": "Times played",
-        "createWorld": "Worlds played",
-        "loadWorld": "Saves loaded",
-        "joinMultiplayer": "Multiplayer joins",
-        "leaveGame": "Games quit",
-        "playOneMinute": "Minutes Played",
-        "walkOneCm": "Distance Walked",
-        "fallOneCm": "Distance Fallen",
-        "swimOneCm": "Distance Swum",
-        "flyOneCm": "Distance Flown",
-        "climbOneCm": "Distance Climbed",
-        "diveOneCm": "Distance Dove",
-        "minecartOneCm": "Distance by Minecart",
-        "boatOneCm": "Distance by Boat",
-        "pigOneCm": "Distance by Pig",
-        "jump": "Jumps",
-        "drop": "Items Dropped",
-        "damageDealt": "Damage Dealt",
-        "damageTaken": "Damage Taken",
-        "deaths": "Number of Deaths",
-        "mobKills": "Mob Kills",
-        "playerKills": "Player Kills",
-        "fishCaught": "Fish Caught",
-        "mineBlock": "{0} Mined",
-        "craftItem": "{0} Crafted",
-        "useItem": "{0} Used",
-        "breakItem": "{0} Depleted"
+        "generalButton": "Allmänt",
+        "blocksButton": "Block",
+        "itemsButton": "Föremål",
+        "used": "Gånger använda",
+        "mined": "Gånger brutna",
+        "depleted": "Gånger uttömda",
+        "crafted": "Gånger tillverkade",
+        "startGame": "Gånger spelade",
+        "createWorld": "Världar spelade",
+        "loadWorld": "Sparfiler laddade",
+        "joinMultiplayer": "Flerspelaranslutningar",
+        "leaveGame": "Avslutade spel",
+        "playOneMinute": "Spelade minuter",
+        "walkOneCm": "Gången sträcka",
+        "fallOneCm": "Fallsträcka",
+        "swimOneCm": "Simsträcka",
+        "flyOneCm": "Flygsträcka",
+        "climbOneCm": "Klättrad sträcka",
+        "diveOneCm": "Dyksträcka",
+        "minecartOneCm": "Sträcka i gruvvagn",
+        "boatOneCm": "Sträcka i båt",
+        "pigOneCm": "Sträcka på gris",
+        "jump": "Hopp",
+        "drop": "Släppta föremål",
+        "damageDealt": "Utdelad skada",
+        "damageTaken": "Tagen skada",
+        "deaths": "Antal dödsfall",
+        "mobKills": "Mobbdödningar",
+        "playerKills": "Spelardödningar",
+        "fishCaught": "Fångad fisk",
+        "mineBlock": "{0} brutna",
+        "craftItem": "{0} tillverkade",
+        "useItem": "{0} använda",
+        "breakItem": "{0} uttömda"
     },
-    "achievements.title": "Achievements",
+    "achievements.title": "Bedrifter",
     "achievement": {
-        "get": "Achievement get!",
-        "taken": "Taken!",
-        "challenge": "CHALLENGE",
-        "unlocked": "UNLOCKED",
-        "locked": "LOCKED",
-        "requires": "Requires '{0}'",
+        "get": "Bedrift upplåst!",
+        "taken": "Upptagen!",
+        "challenge": "UTMANING",
+        "unlocked": "UPPLÅST",
+        "locked": "LÅST",
+        "requires": "Kräver '{0}'",
         "openInventory": {
-            "title": "Taking Inventory",
-            "desc": "Open your inventory."
+            "title": "Inventering",
+            "desc": "Öppna ditt förråd."
         },
         "mineWood": {
-            "title": "Getting Wood",
-            "desc": "Attack a tree until a block of wood pops out"
+            "title": "Skaffa trä",
+            "desc": "Hugg ett träd tills ett träblock trillar ut"
         },
         "buildWorkBench": {
-            "title": "Benchmarking",
-            "desc": "Craft a workbench with four blocks of planks"
+            "title": "Bänkmark",
+            "desc": "Tillverka en arbetsbänk med fyra plankblock"
         },
         "buildPickaxe": {
-            "title": "Time to Mine!",
-            "desc": "Use planks and sticks to make a pickaxe"
+            "title": "Dags att gräva!",
+            "desc": "Använd plankor och pinnar för att göra en hacka"
         },
         "buildFurnace": {
-            "title": "Hot Topic",
-            "desc": "Construct a furnace out of eight stone blocks"
+            "title": "Hett ämne",
+            "desc": "Bygg en ugn av åtta stenblock"
         },
         "acquireIron": {
-            "title": "Acquire Hardware",
-            "desc": "Smelt an iron ingot"
+            "title": "Skaffa hårdvara",
+            "desc": "Smält en järntacka"
         },
         "buildHoe": {
-            "title": "Time to Farm!",
-            "desc": "Use planks and sticks to make a hoe"
+            "title": "Dags att odla!",
+            "desc": "Använd plankor och pinnar för att göra en hacka"
         },
         "makeBread": {
-            "title": "Bake Bread",
-            "desc": "Turn wheat into bread"
+            "title": "Baka bröd",
+            "desc": "Förvandla vete till bröd"
         },
         "bakeCake": {
-            "title": "The Lie",
-            "desc": "Wheat, sugar, milk and eggs!"
+            "title": "Lögnen",
+            "desc": "Vete, socker, mjölk och ägg!"
         },
         "buildBetterPickaxe": {
-            "title": "Getting an Upgrade",
-            "desc": "Construct a better pickaxe"
+            "title": "Skaffa en uppgradering",
+            "desc": "Bygg en bättre hacka"
         },
         "cookFish": {
-            "title": "Delicious Fish",
-            "desc": "Catch and cook fish!"
+            "title": "Läcker fisk",
+            "desc": "Fånga och tillaga fisk!"
         },
         "onARail": {
-            "title": "On A Rail",
-            "desc": "Travel by minecart at least 1 km from where you started "
+            "title": "På räls",
+            "desc": "Färdas med gruvvagn minst 1 km från där du började"
         },
         "buildSword": {
-            "title": "Time to Strike!",
-            "desc": "Use planks and sticks to make a sword"
+            "title": "Dags att slå!",
+            "desc": "Använd plankor och pinnar för att göra ett svärd"
         },
         "killEnemy": {
-            "title": "Monster Hunter",
-            "desc": "Attack and destroy a monster"
+            "title": "Monsterjägare",
+            "desc": "Attackera och förstör ett monster"
         },
         "killCow": {
-            "title": "Cow Tipper",
-            "desc": "Harvest some leather"
+            "title": "Kotippare",
+            "desc": "Skörda lite läder"
         },
         "flyPig": {
-            "title": "When Pigs Fly",
-            "desc": "Fly a pig off a cliff"
+            "title": "När grisar flyger",
+            "desc": "Flyg en gris från en klippa"
         }
     },
     "credits": {
-        "version": "BetaSharp Version %1$s",
-        "description": "An enhanced of Minecraft Beta 1.7.3, written in C#.",
-        "github": "On GitHub",
-        "author": "Made by Fazin85",
-        "libs": "Libraries",
-        "slik": "Slik.NET - Graphics",
-        "imgui": "ImGui - Debug UI",
-        "sfml": "SFML.NET - Audio",
-        "sixlabors": "SixLabors - Fonts, image processing",
-        "translations": "Translations Credits"
+        "version": "BetaSharp version %1$s",
+        "description": "En förbättrad version av Minecraft Beta 1.7.3, skriven i C#.",
+        "github": "På GitHub",
+        "author": "Gjord av Fazin85",
+        "libs": "Bibliotek",
+        "slik": "Slik.NET - Grafik",
+        "imgui": "ImGui - Felsökningsgränssnitt",
+        "sfml": "SFML.NET - Ljud",
+        "sixlabors": "SixLabors - Typsnitt, bildbehandling",
+        "translations": "Översättningskrediter"
     }
 }

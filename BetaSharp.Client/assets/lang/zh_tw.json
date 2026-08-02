@@ -1,536 +1,536 @@
-﻿{
+{
     "gui": {
-        "joinServer": "Join Server",
-        "rename": "Rename",
-        "edit": "Edit",
-        "refresh": "Refresh",
-        "done": "Done",
-        "cancel": "Cancel",
-        "delete": "Delete",
-        "toMenu": "Back to title screen",
-        "up": "Up",
-        "down": "Down",
-        "yes": "Yes",
-        "no": "No",
-        "connect": "Connect",
-        "directConnect": "Direct Connect",
-        "addServer": "Add Server",
-        "create": "Create",
-        "customize": "Customize",
-        "achievements": "Achievements",
-        "stats": "Statistics",
+        "joinServer": "加入伺服器",
+        "rename": "重新命名",
+        "edit": "編輯",
+        "refresh": "重新整理",
+        "done": "完成",
+        "cancel": "取消",
+        "delete": "刪除",
+        "toMenu": "回到標題畫面",
+        "up": "上",
+        "down": "下",
+        "yes": "是",
+        "no": "否",
+        "connect": "連線",
+        "directConnect": "直接連線",
+        "addServer": "新增伺服器",
+        "create": "建立",
+        "customize": "自訂",
+        "achievements": "成就",
+        "stats": "統計",
         "container": {
-            "crafting": "Crafting",
-            "inventory": "Inventory",
-            "dispenser": "Dispenser",
-            "furnace": "Furnace",
+            "crafting": "合成",
+            "inventory": "物品欄",
+            "dispenser": "發射器",
+            "furnace": "熔爐",
             "tip": {
-                "move": "Move",
-                "quickMove": "Quick Move",
-                "takeHalf": "Take Half",
-                "place": "Place",
-                "placeOne": "Place One"
+                "move": "移動",
+                "quickMove": "快速移動",
+                "takeHalf": "拿一半",
+                "place": "放置",
+                "placeOne": "放置一個"
             }
         }
     },
     "menu": {
-        "singleplayer": "Singleplayer",
-        "multiplayer": "Multiplayer",
-        "texturePacks": "Texture Packs",
-        "options": "Options...",
-        "language": "Language",
-        "quit": "Quit Game",
-        "credits": "Credits",
-        "sendFeedback": "Send Feedback",
-        "reportBugs": "Report Bugs",
-        "saveAndQuitToTitle": "Save and quit to title",
-        "disconnect": "Disconnect"
+        "singleplayer": "單人遊戲",
+        "multiplayer": "多人遊戲",
+        "texturePacks": "材質包",
+        "options": "選項...",
+        "language": "語言",
+        "quit": "離開遊戲",
+        "credits": "製作名單",
+        "sendFeedback": "傳送意見回饋",
+        "reportBugs": "回報錯誤",
+        "saveAndQuitToTitle": "儲存並返回標題畫面",
+        "disconnect": "中斷連線"
     },
     "selectWorld": {
-        "title": "Select World",
-        "empty": "empty",
-        "world": "World",
-        "select": "Play Selected World",
-        "create": "Create New World",
-        "createDemo": "Play New Demo World",
-        "deleteQuestion": "Are you sure you want to delete this world?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "renameTitle": "Rename World",
-        "conversion": "Must be converted!",
-        "newWorld": "New World",
-        "enterName": "World Name",
-        "resultFolder": "Will be saved in:",
-        "enterSeed": "Seed for the World Generator",
-        "seedInfo": "Leave blank for a random seed",
-        "selectWorldType": "Select World Type",
-        "worldType": "World Type",
-        "customize": "Customize",
-        "moreWorldOptions": "More World Options...",
+        "title": "選擇世界",
+        "empty": "空的",
+        "world": "世界",
+        "select": "遊玩選取的世界",
+        "create": "建立新世界",
+        "createDemo": "遊玩新的示範世界",
+        "deleteQuestion": "你確定要刪除這個世界嗎？",
+        "deleteWarning": "將會永遠遺失！(很長的時間！)",
+        "renameTitle": "重新命名世界",
+        "conversion": "必須轉換！",
+        "newWorld": "新世界",
+        "enterName": "世界名稱",
+        "resultFolder": "將儲存在：",
+        "enterSeed": "用於世界生成器的種子碼",
+        "seedInfo": "留空白以使用隨機種子碼",
+        "selectWorldType": "選擇世界類型",
+        "worldType": "世界類型",
+        "customize": "自訂",
+        "moreWorldOptions": "更多世界選項...",
         "type": {
             "default": {
-                "title": "Default",
-                "description": "The standard Minecraft world."
+                "title": "預設",
+                "description": "標準的 Minecraft 世界。"
             },
             "flat": {
-                "title": "Flat",
-                "description": "A completely flat world."
+                "title": "平坦",
+                "description": "一個完全平坦的世界。"
             },
             "sky": {
-                "title": "Sky",
-                "description": "A world floating in the sky."
+                "title": "天空",
+                "description": "一個漂浮在天空中的世界。"
             }
         }
     },
     "newWorld": {
         "customize": {
             "superflatWorld": {
-                "title": "Customize Superflat World"
+                "title": "自訂超平坦世界"
             },
-            "removeLayer": "Remove Layer",
-            "presets": "Presets",
-            "height": "Height",
+            "removeLayer": "移除圖層",
+            "presets": "預設",
+            "height": "高度",
             "unknown": "???"
         }
     },
     "world": {
-        "world": "World",
-        "unsupportedFormat": "Unsupported Format!"
+        "world": "世界",
+        "unsupportedFormat": "不支援的格式！"
     },
     "multiplayer": {
-        "title": "Play Multiplayer",
-        "betasharpServer": "BetaSharp Server",
-        "info1": "Minecraft Multiplayer is currently not finished, but there",
-        "info2": "is some buggy early testing going on.",
-        "ipinfo": "Enter the IP of a server to connect to it:",
-        "deleteQuestion": "Are you sure you want to delete this server?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "downloadingTerrain": "Downloading terrain",
-        "stopSleeping": "Leave Bed",
-        "editServerTitle": "Edit Server Info",
-        "addServerTitle": "Add Server Info",
-        "serverName": "Server Name",
-        "serverAddress": "Server Address"
+        "title": "遊玩多人遊戲",
+        "betasharpServer": "BetaSharp 伺服器",
+        "info1": "Minecraft 多人遊戲目前尚未完成，但已開始",
+        "info2": "進行一些有問題的早期測試。",
+        "ipinfo": "輸入要連線的伺服器 IP：",
+        "deleteQuestion": "你確定要刪除這個伺服器嗎？",
+        "deleteWarning": "將會永遠遺失！(很長的時間！)",
+        "downloadingTerrain": "正在下載地形",
+        "stopSleeping": "起床",
+        "editServerTitle": "編輯伺服器資訊",
+        "addServerTitle": "新增伺服器資訊",
+        "serverName": "伺服器名稱",
+        "serverAddress": "伺服器位址"
     },
     "loading": {
-        "loadingLevel": "Loading level",
-        "startingServer": "Starting server...",
-        "preparingSpawnArea": "Preparing spawn area"
+        "loadingLevel": "正在載入世界",
+        "startingServer": "正在啟動伺服器...",
+        "preparingSpawnArea": "正在準備重生點區域"
     },
     "achievements": {
-        "title": "Achievements"
+        "title": "成就"
     },
     "gameover": {
-        "title": "Game Over!",
-        "score": "Score",
-        "respawn": "Respawn",
-        "titleMenu": "Title menu"
+        "title": "遊戲結束！",
+        "score": "分數",
+        "respawn": "重生",
+        "titleMenu": "標題選單"
     },
     "gamemenu": {
-        "title": "Game Menu",
-        "backToGame": "Back to Game"
+        "title": "遊戲選單",
+        "backToGame": "回到遊戲"
     },
     "sign": {
-        "title": "Edit sign message:"
+        "title": "編輯告示牌訊息："
     },
     "stats": {
-        "title": "Statistics",
-        "general": "General",
+        "title": "統計資料",
+        "general": "一般",
         "blocks": {
-            "name": "Blocks",
-            "mined": "Mined",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "方塊",
+            "mined": "挖掘",
+            "crafted": "合成",
+            "used": "使用"
         },
         "items": {
-            "name": "Items",
-            "broken": "Broken",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "物品",
+            "broken": "損壞",
+            "crafted": "合成",
+            "used": "使用"
         },
-        "item": "Item"
+        "item": "物品"
     },
     "connect": {
-        "connecting": "Connecting to the server...",
-        "authorizing": "Logging in...",
-        "failed": "Failed to connect to the server"
+        "connecting": "正在連線至伺服器...",
+        "authorizing": "正在登入...",
+        "failed": "無法連線至伺服器"
     },
     "disconnect": {
         "genericReason": "{0}",
-        "disconnected": "Disconnected by Server",
-        "lost": "Connection Lost",
-        "kicked": "Was kicked from the game",
-        "timeout": "Timed out",
-        "closed": "Connection closed",
-        "loginFailed": "Failed to login",
-        "quitting": "Quitting",
-        "endOfStream": "End of stream",
-        "overflow": "Buffer overflow"
+        "disconnected": "已被伺服器中斷連線",
+        "lost": "連線已中斷",
+        "kicked": "已被踢出遊戲",
+        "timeout": "連線逾時",
+        "closed": "連線已關閉",
+        "loginFailed": "登入失敗",
+        "quitting": "正在離開",
+        "endOfStream": "資料流結束",
+        "overflow": "緩衝區溢位"
     },
     "options": {
-        "off": "OFF",
-        "on": "ON",
-        "disabled": "Disabled",
-        "title": "Options",
-        "controls": "Controls...",
-        "keyboardControls": "Keyboard Controls...",
-        "controllerSettings": "Controller Settings...",
-        "controllerType": "Controller Type",
+        "off": "關閉",
+        "on": "開啟",
+        "disabled": "停用",
+        "title": "選項",
+        "controls": "控制...",
+        "keyboardControls": "鍵盤控制...",
+        "controllerSettings": "控制器設定...",
+        "controllerType": "控制器類型",
         "video": {
-            "text": "Video Settings...",
-            "performance": "Performance",
-            "display": "Display"
+            "text": "影像設定...",
+            "performance": "效能",
+            "display": "顯示"
         },
-        "uiSettings": "UI Settings...",
-        "audioSettings": "Audio Settings...",
-        "audioTitle": "Audio Settings",
-        "videoTitle": "Video Settings",
-        "language": "Language...",
-        "anisoLevel": "Aniso Level",
-        "music": "Music",
-        "sound": "Sound",
-        "invertMouse": "Invert Mouse",
-        "alternateBlocks": "Alternate Blocks",
-        "chunkFade": "Chunk Fade",
+        "uiSettings": "使用者介面設定...",
+        "audioSettings": "音效設定...",
+        "audioTitle": "音效設定",
+        "videoTitle": "影像設定",
+        "language": "語言...",
+        "anisoLevel": "各向異性等級",
+        "music": "音樂",
+        "sound": "音效",
+        "invertMouse": "反轉滑鼠",
+        "alternateBlocks": "交替方塊",
+        "chunkFade": "區塊淡入",
         "sensitivity": {
-            "text": "Sensitivity",
-            "controllerText": "Controller Sensitivity",
-            "min": "*yawn*",
-            "max": "HYPERSPEED!!!"
+            "text": "靈敏度",
+            "controllerText": "控制器靈敏度",
+            "min": "*打哈欠*",
+            "max": "極速!!!"
         },
         "renderDistance": {
-            "text": "Render Distance",
-            "chunks": "Chunks",
-            "tiny": "Tiny",
-            "short": "Short",
-            "normal": "Normal",
-            "far": "Far"
+            "text": "顯示距離",
+            "chunks": "區塊",
+            "tiny": "極短",
+            "short": "短",
+            "normal": "普通",
+            "far": "遠"
         },
-        "viewBobbing": "View Bobbing",
-        "ao": "Smooth Lighting",
-        "anaglyph": "3D Anaglyph",
-        "framerateLimit": "Performance",
+        "viewBobbing": "視角搖晃",
+        "ao": "柔化光影",
+        "anaglyph": "3D 立體",
+        "framerateLimit": "效能",
         "difficulty": {
-            "text": "Difficulty",
-            "peaceful": "Peaceful",
-            "easy": "Easy",
-            "normal": "Normal",
-            "hard": "Hard"
+            "text": "難易度",
+            "peaceful": "和平",
+            "easy": "簡單",
+            "normal": "普通",
+            "hard": "困難"
         },
         "graphics": {
-            "text": "Graphics",
-            "fancy": "Fancy",
-            "fast": "Fast"
+            "text": "畫質",
+            "fancy": "華麗",
+            "fast": "快速"
         },
         "cloudsQuality": {
-            "text": "Clouds Quality",
-            "off": "No Clouds",
-            "legacy": "Old Clouds",
-            "shader": "Shader"
+            "text": "雲朵品質",
+            "off": "無雲",
+            "legacy": "舊雲朵",
+            "shader": "著色器"
         },
         "softClouds": {
-            "text": "Soft Clouds"
+            "text": "柔和雲朵"
         },
         "guiScale": {
-            "text": "GUI Scale",
-            "auto": "Auto",
-            "small": "Small",
-            "normal": "Normal",
-            "large": "Large"
+            "text": "GUI 大小",
+            "auto": "自動",
+            "small": "小",
+            "normal": "普通",
+            "large": "大"
         },
         "chatScale": {
-            "text": "Chat Scale"
+            "text": "聊天文字大小"
         },
         "chatWidth": {
-            "text": "Chat Width"
+            "text": "聊天欄寬度"
         },
-        "advancedOpengl": "Advanced OpenGL",
+        "advancedOpengl": "進階 OpenGL",
         "fps": {
             "text": "FPS",
-            "maxFps": "Max FPS",
-            "unlimited": "Unlimited"
+            "maxFps": "最大 FPS",
+            "unlimited": "無限制"
         },
-        "showCoordinates": "Show Coordinates",
-        "uiCursors": "UI Cursors",
-        "gamma": "Gamma",
-        "vSync": "VSync",
-        "mipmaps": "Mipmaps",
-        "menuMusic": "Menu Music",
+        "showCoordinates": "顯示座標",
+        "uiCursors": "使用者介面游標",
+        "gamma": "亮度",
+        "vSync": "垂直同步",
+        "mipmaps": "Mipmap",
+        "menuMusic": "選單音樂",
         "msaa": "MSAA",
-        "fov": "FOV",
+        "fov": "視角",
         "movement": {
-            "text": "Movement"
+            "text": "移動"
         },
         "view": {
-            "text": "View"
+            "text": "視角"
         },
         "other": {
-            "text": "Other"
+            "text": "其他"
         },
-        "editBindings": "Edit Bindings...",
-        "resetBindings": "Reset Bindings...",
-        "controllerBindings": "Controller Bindings",
+        "editBindings": "編輯按鍵設定...",
+        "resetBindings": "重設按鍵設定...",
+        "controllerBindings": "控制器按鍵設定",
         "shader": {
-            "text": "Shader Options",
+            "text": "著色器選項",
             "chunkVert": {
-                "text": "World",
-                "WavyLeavesStrength": "Wavy Leaves Strength",
-                "WavyLeavesSpeed": "Wavy Leaves Speed",
-                "WavyPlantStrength": "Wavy Plant Strength",
-                "WavyPlantSpeed": "Wavy Plant Speed",
-                "WavyPlantMode": "Wavy Plant Mode"
+                "text": "世界",
+                "WavyLeavesStrength": "樹葉搖擺強度",
+                "WavyLeavesSpeed": "樹葉搖擺速度",
+                "WavyPlantStrength": "植物搖擺強度",
+                "WavyPlantSpeed": "植物搖擺速度",
+                "WavyPlantMode": "植物搖擺模式"
             },
             "cloud": {
-                "text": "Clouds",
-                "minParallax": "Min Parallax",
-                "maxParallax": "Max Parallax",
-                "minGradient": "Min Gradient",
-                "maxGradient": "Max Gradient",
-                "cloudHeight": "Cloud Height",
-                "shadow": "Shadow Color",
-                "smoothWidth": "Smooth Width",
-                "smoothSamples": "Smooth Samples",
-                "closeFade": "Close Fade",
-                "smoothTop": "Smooth Top",
-                "smoothEdge": "Smooth Edge",
-                "smoothBottom": "Smooth Bottom",
-                "smoothBottomTopDown": "Smooth Bottom Top Down"
+                "text": "雲朵",
+                "minParallax": "最小視差",
+                "maxParallax": "最大視差",
+                "minGradient": "最小漸層",
+                "maxGradient": "最大漸層",
+                "cloudHeight": "雲朵高度",
+                "shadow": "陰影顏色",
+                "smoothWidth": "平滑寬度",
+                "smoothSamples": "平滑取樣",
+                "closeFade": "近處淡出",
+                "smoothTop": "平滑頂部",
+                "smoothEdge": "平滑邊緣",
+                "smoothBottom": "平滑底部",
+                "smoothBottomTopDown": "平滑底部由上而下"
             },
             "ui": {
-                "text": "UI",
-                "darkMode": "Dark Mode"
+                "text": "使用者介面",
+                "darkMode": "深色模式"
             },
             "preset": {
-                "text": "Preset",
-                "disabled": "Disabled",
-                "default": "Default",
-                "custom": "Custom",
+                "text": "預設",
+                "disabled": "停用",
+                "default": "預設",
+                "custom": "自訂",
                 "2d": "2D",
                 "3d": "3D",
-                "low": "Low",
-                "medium": "Medium",
-                "high": "High",
-                "ultra": "Ultra"
+                "low": "低",
+                "medium": "中",
+                "high": "高",
+                "ultra": "極高"
             }
         }
     },
     "performance": {
-        "max": "Max FPS",
-        "balanced": "Balanced",
-        "powersaver": "Power saver"
+        "max": "最大 FPS",
+        "balanced": "平衡",
+        "powersaver": "省電"
     },
     "controls": {
-        "title": "Controls"
+        "title": "控制"
     },
     "key": {
-        "forward": "Forward",
-        "left": "Left",
-        "back": "Back",
-        "right": "Right",
-        "jump": "Jump",
-        "inventory": "Inventory",
-        "drop": "Drop",
-        "chat": "Chat",
-        "fog": "Toggle Fog",
-        "sneak": "Sneak",
-        "playerlist": "List players",
-        "zoom": "Zoom",
-        "hotbarLeft": "Hotbar Left",
-        "hotbarRight": "Hotbar Right",
-        "pickBlock": "Pick Block",
-        "camera": "Camera Mode",
-        "pause": "Pause"
+        "forward": "前進",
+        "left": "向左",
+        "back": "後退",
+        "right": "向右",
+        "jump": "跳躍",
+        "inventory": "物品欄",
+        "drop": "丟棄",
+        "chat": "聊天",
+        "fog": "切換迷霧",
+        "sneak": "潛行",
+        "playerlist": "玩家列表",
+        "zoom": "縮放",
+        "hotbarLeft": "快捷欄向左",
+        "hotbarRight": "快捷欄向右",
+        "pickBlock": "選取方塊",
+        "camera": "攝影機模式",
+        "pause": "暫停"
     },
     "texturePack": {
-        "openFolder": "Open texture pack folder",
-        "title": "Select Texture Pack",
-        "folderInfo": "(Place texture pack files here)"
+        "openFolder": "開啟材質包資料夾",
+        "title": "選擇材質包",
+        "folderInfo": "(將材質包檔案放在這裡)"
     },
     "tile": {
         "tallgrass": {
-            "name": "Tallgrass",
+            "name": "高草叢",
             "desc": ""
         },
         "stone": {
-            "name": "Stone",
+            "name": "石頭",
             "desc": ""
         },
         "grass": {
-            "name": "Grass",
+            "name": "草地",
             "desc": ""
         },
         "dirt": {
-            "name": "Dirt",
+            "name": "泥土",
             "desc": ""
         },
         "stonebrick": {
-            "name": "Cobblestone",
+            "name": "鵝卵石",
             "desc": ""
         },
         "wood": {
-            "name": "Wooden Planks",
+            "name": "木材",
             "desc": ""
         },
         "sapling": {
-            "name": "Sapling",
+            "name": "樹苗",
             "desc": ""
         },
         "bedrock": {
-            "name": "Bedrock",
+            "name": "基岩",
             "desc": ""
         },
         "water": {
-            "name": "Water",
+            "name": "水",
             "desc": ""
         },
         "lava": {
-            "name": "Lava",
+            "name": "岩漿",
             "desc": ""
         },
         "sand": {
-            "name": "Sand",
+            "name": "沙子",
             "desc": ""
         },
-        "sandStone": { "name": "Sandstone" },
+        "sandStone": { "name": "砂岩" },
         "gravel": {
-            "name": "Gravel",
+            "name": "礫石",
             "desc": ""
         },
         "oreGold": {
-            "name": "Gold Ore",
+            "name": "金礦",
             "desc": ""
         },
         "oreIron": {
-            "name": "Iron Ore",
+            "name": "鐵礦",
             "desc": ""
         },
         "oreCoal": {
-            "name": "Coal Ore",
+            "name": "煤礦",
             "desc": ""
         },
         "log": {
-            "name": "Wood",
+            "name": "木頭",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "樹葉",
             "desc": ""
         },
         "sponge": {
-            "name": "Sponge",
+            "name": "海綿",
             "desc": ""
         },
         "glass": {
-            "name": "Glass",
+            "name": "玻璃",
             "desc": ""
         },
         "cloth": {
-            "name": "Wool",
+            "name": "羊毛",
             "desc": "",
             "black": {
-                "name": "Black Wool",
+                "name": "黑色羊毛",
                 "desc": ""
             },
             "red": {
-                "name": "Red Wool",
+                "name": "紅色羊毛",
                 "desc": ""
             },
             "green": {
-                "name": "Green Wool",
+                "name": "綠色羊毛",
                 "desc": ""
             },
             "brown": {
-                "name": "Brown Wool",
+                "name": "棕色羊毛",
                 "desc": ""
             },
             "blue": {
-                "name": "Blue Wool",
+                "name": "藍色羊毛",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Wool",
+                "name": "紫色羊毛",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Wool",
+                "name": "青色羊毛",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Wool",
+                "name": "淺灰色羊毛",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Wool",
+                "name": "灰色羊毛",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Wool",
+                "name": "粉紅色羊毛",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Wool",
+                "name": "淺綠色羊毛",
                 "desc": ""
             },
             "yellow": {
-                "name": "Yellow Wool",
+                "name": "黃色羊毛",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Wool",
+                "name": "淺藍色羊毛",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Wool",
+                "name": "洋紅色羊毛",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Wool",
+                "name": "橘色羊毛",
                 "desc": ""
             },
             "white": {
-                "name": "Wool",
+                "name": "羊毛",
                 "desc": ""
             }
         },
         "flower": {
-            "name": "Flower",
+            "name": "花",
             "desc": ""
         },
         "rose": {
-            "name": "Rose",
+            "name": "玫瑰",
             "desc": ""
         },
         "mushroom": {
-            "name": "Mushroom",
+            "name": "蘑菇",
             "desc": ""
         },
         "blockGold": {
-            "name": "Block of Gold",
+            "name": "金磚",
             "desc": ""
         },
         "blockIron": {
-            "name": "Block of Iron",
+            "name": "鐵磚",
             "desc": ""
         },
         "stoneSlab": {
             "stone": {
-                "name": "Stone Slab",
+                "name": "石頭半磚",
                 "desc": ""
             },
             "sand": {
-                "name": "Sandstone Slab",
+                "name": "砂岩半磚",
                 "desc": ""
             },
             "wood": {
-                "name": "Wooden Slab",
+                "name": "木材半磚",
                 "desc": ""
             },
             "cobble": {
-                "name": "Stone Slab",
+                "name": "石頭半磚",
                 "desc": ""
             }
         },
         "brick": {
-            "name": "Bricks",
+            "name": "紅磚",
             "desc": ""
         },
         "tnt": {
@@ -538,832 +538,832 @@
             "desc": ""
         },
         "bookshelf": {
-            "name": "Bookshelf",
+            "name": "書櫃",
             "desc": ""
         },
         "stoneMoss": {
-            "name": "Moss Stone",
+            "name": "青苔石",
             "desc": ""
         },
         "obsidian": {
-            "name": "Obsidian",
+            "name": "黑曜石",
             "desc": ""
         },
         "torch": {
-            "name": "Torch",
+            "name": "火把",
             "desc": ""
         },
         "fire": {
-            "name": "Fire",
+            "name": "火",
             "desc": ""
         },
         "mobSpawner": {
-            "name": "Monster Spawner",
+            "name": "生怪磚",
             "desc": ""
         },
         "stairsWood": {
-            "name": "Wooden Stairs",
+            "name": "木樓梯",
             "desc": ""
         },
         "chest": {
-            "name": "Chest",
+            "name": "箱子",
             "desc": ""
         },
         "redstoneDust": {
-            "name": "Redstone Dust",
+            "name": "紅石粉",
             "desc": ""
         },
         "oreDiamond": {
-            "name": "Diamond Ore",
+            "name": "鑽石礦",
             "desc": ""
         },
         "blockDiamond": {
-            "name": "Block of Diamond",
+            "name": "鑽石磚",
             "desc": ""
         },
         "workbench": {
-            "name": "Crafting Table",
+            "name": "工作臺",
             "desc": ""
         },
         "crops": {
-            "name": "Crops",
+            "name": "作物",
             "desc": ""
         },
         "farmland": {
-            "name": "Farmland",
+            "name": "耕地",
             "desc": ""
         },
         "furnace": {
-            "name": "Furnace",
+            "name": "熔爐",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "告示牌",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "木門",
             "desc": ""
         },
         "ladder": {
-            "name": "Ladder",
+            "name": "梯子",
             "desc": ""
         },
         "rail": {
-            "name": "Rail",
+            "name": "鐵軌",
             "desc": ""
         },
         "goldenRail": {
-            "name": "Powered Rail",
+            "name": "充能鐵軌",
             "desc": ""
         },
         "detectorRail": {
-            "name": "Detector Rail",
+            "name": "感測鐵軌",
             "desc": ""
         },
         "stairsStone": {
-            "name": "Stone Stairs",
+            "name": "石樓梯",
             "desc": ""
         },
         "lever": {
-            "name": "Lever",
+            "name": "控制桿",
             "desc": ""
         },
         "pressurePlate": {
-            "name": "Pressure Plate",
+            "name": "壓力板",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "鐵門",
             "desc": ""
         },
         "oreRedstone": {
-            "name": "Redstone Ore",
+            "name": "紅石礦",
             "desc": ""
         },
         "notGate": {
-            "name": "Redstone Torch",
+            "name": "紅石火把",
             "desc": ""
         },
         "button": {
-            "name": "Button",
+            "name": "按鈕",
             "desc": ""
         },
         "snow": {
-            "name": "Snow",
+            "name": "雪",
             "desc": ""
         },
         "ice": {
-            "name": "Ice",
+            "name": "冰",
             "desc": ""
         },
         "cactus": {
-            "name": "Cactus",
+            "name": "仙人掌",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "黏土",
             "desc": ""
         },
         "reeds": {
-            "name": "Sugar cane",
+            "name": "甘蔗",
             "desc": ""
         },
         "jukebox": {
-            "name": "Jukebox",
+            "name": "唱片機",
             "desc": ""
         },
         "fence": {
-            "name": "Fence",
+            "name": "柵欄",
             "desc": ""
         },
         "pumpkin": {
-            "name": "Pumpkin",
+            "name": "南瓜",
             "desc": ""
         },
         "litpumpkin": {
-            "name": "Jack 'o' Lantern",
+            "name": "南瓜燈",
             "desc": ""
         },
         "hellrock": {
-            "name": "Netherrack",
+            "name": "地獄石",
             "desc": ""
         },
         "hellsand": {
-            "name": "Soul Sand",
+            "name": "靈魂沙",
             "desc": ""
         },
         "lightgem": {
-            "name": "Glowstone",
+            "name": "螢光石",
             "desc": ""
         },
         "portal": {
-            "name": "Portal",
+            "name": "傳送門",
             "desc": ""
         },
         "oreLapis": {
-            "name": "Lapis Lazuli Ore",
+            "name": "青金石礦",
             "desc": ""
         },
         "blockLapis": {
-            "name": "Lapis Lazuli Block",
+            "name": "青金石磚",
             "desc": ""
         },
         "dispenser": {
-            "name": "Dispenser",
+            "name": "發射器",
             "desc": ""
         },
         "musicBlock": {
-            "name": "Note Block",
+            "name": "音階盒",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "蛋糕",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "床",
             "desc": "",
-            "occupied": "This bed is occupied",
-            "noSleep": "You can only sleep at night",
-            "notValid": "Your home bed was missing or obstructed"
+            "occupied": "這張床已被占用",
+            "noSleep": "你只能在夜間睡覺",
+            "notValid": "你的床已遺失或無法使用"
         },
         "lockedchest": {
-            "name": "Locked chest",
+            "name": "上鎖的箱子",
             "desc": ""
         },
         "trapdoor": {
-            "name": "Trapdoor",
+            "name": "地板門",
             "desc": ""
         },
         "web": {
-            "name": "Cobweb",
+            "name": "蜘蛛網",
             "desc": ""
         },
         "stonebricksmooth": {
-            "name": "Stone Bricks",
+            "name": "石磚",
             "desc": ""
         },
         "pistonBase": {
-            "name": "Piston",
+            "name": "活塞",
             "desc": ""
         },
         "pistonStickyBase": {
-            "name": "Sticky Piston",
+            "name": "黏性活塞",
             "desc": ""
         }
     },
     "item": {
         "shovelIron": {
-            "name": "Iron Shovel",
+            "name": "鐵鏟",
             "desc": ""
         },
         "pickaxeIron": {
-            "name": "Iron Pickaxe",
+            "name": "鐵鎬",
             "desc": ""
         },
         "hatchetIron": {
-            "name": "Iron Axe",
+            "name": "鐵斧",
             "desc": ""
         },
         "flintAndSteel": {
-            "name": "Flint and Steel",
+            "name": "打火石",
             "desc": ""
         },
         "apple": {
-            "name": "Apple",
+            "name": "蘋果",
             "desc": ""
         },
         "cookie": {
-            "name": "Cookie",
+            "name": "餅乾",
             "desc": ""
         },
         "bow": {
-            "name": "Bow",
+            "name": "弓",
             "desc": ""
         },
         "arrow": {
-            "name": "Arrow",
+            "name": "箭",
             "desc": ""
         },
         "coal": {
-            "name": "Coal",
+            "name": "煤炭",
             "desc": ""
         },
         "charcoal": {
-            "name": "Charcoal",
+            "name": "木炭",
             "desc": ""
         },
         "diamond": {
-            "name": "Diamond",
+            "name": "鑽石",
             "desc": ""
         },
         "ingotIron": {
-            "name": "Iron Ingot",
+            "name": "鐵錠",
             "desc": ""
         },
         "ingotGold": {
-            "name": "Gold Ingot",
+            "name": "金錠",
             "desc": ""
         },
         "swordIron": {
-            "name": "Iron Sword",
+            "name": "鐵劍",
             "desc": ""
         },
         "swordWood": {
-            "name": "Wooden Sword",
+            "name": "木劍",
             "desc": ""
         },
         "shovelWood": {
-            "name": "Wooden Shovel",
+            "name": "木鏟",
             "desc": ""
         },
         "pickaxeWood": {
-            "name": "Wooden Pickaxe",
+            "name": "木鎬",
             "desc": ""
         },
         "hatchetWood": {
-            "name": "Wooden Axe",
+            "name": "木斧",
             "desc": ""
         },
         "swordStone": {
-            "name": "Stone Sword",
+            "name": "石劍",
             "desc": ""
         },
         "shovelStone": {
-            "name": "Stone Shovel",
+            "name": "石鏟",
             "desc": ""
         },
         "pickaxeStone": {
-            "name": "Stone Pickaxe",
+            "name": "石鎬",
             "desc": ""
         },
         "hatchetStone": {
-            "name": "Stone Axe",
+            "name": "石斧",
             "desc": ""
         },
         "swordDiamond": {
-            "name": "Diamond Sword",
+            "name": "鑽石劍",
             "desc": ""
         },
         "shovelDiamond": {
-            "name": "Diamond Shovel",
+            "name": "鑽石鏟",
             "desc": ""
         },
         "pickaxeDiamond": {
-            "name": "Diamond Pickaxe",
+            "name": "鑽石鎬",
             "desc": ""
         },
         "hatchetDiamond": {
-            "name": "Diamond Axe",
+            "name": "鑽石斧",
             "desc": ""
         },
         "stick": {
-            "name": "Stick",
+            "name": "木棒",
             "desc": ""
         },
         "bowl": {
-            "name": "Bowl",
+            "name": "碗",
             "desc": ""
         },
         "mushroomStew": {
-            "name": "Mushroom Stew",
+            "name": "蘑菇湯",
             "desc": ""
         },
         "swordGold": {
-            "name": "Golden Sword",
+            "name": "金劍",
             "desc": ""
         },
         "shovelGold": {
-            "name": "Golden Shovel",
+            "name": "金鏟",
             "desc": ""
         },
         "pickaxeGold": {
-            "name": "Golden Pickaxe",
+            "name": "金鎬",
             "desc": ""
         },
         "hatchetGold": {
-            "name": "Golden Axe",
+            "name": "金斧",
             "desc": ""
         },
         "string": {
-            "name": "String",
+            "name": "線",
             "desc": ""
         },
         "feather": {
-            "name": "Feather",
+            "name": "羽毛",
             "desc": ""
         },
         "gunpowder": {
-            "name": "Gunpowder",
+            "name": "火藥",
             "desc": ""
         },
         "hoeWood": {
-            "name": "Wooden Hoe",
+            "name": "木鋤",
             "desc": ""
         },
         "hoeStone": {
-            "name": "Stone Hoe",
+            "name": "石鋤",
             "desc": ""
         },
         "hoeIron": {
-            "name": "Iron Hoe",
+            "name": "鐵鋤",
             "desc": ""
         },
         "hoeDiamond": {
-            "name": "Diamond Hoe",
+            "name": "鑽石鋤",
             "desc": ""
         },
         "hoeGold": {
-            "name": "Golden Hoe",
+            "name": "金鋤",
             "desc": ""
         },
         "seeds": {
-            "name": "Seeds",
+            "name": "種子",
             "desc": ""
         },
         "wheat": {
-            "name": "Wheat",
+            "name": "小麥",
             "desc": ""
         },
         "bread": {
-            "name": "Bread",
+            "name": "麵包",
             "desc": ""
         },
         "helmetLeather": {
-            "name": "Leather Cap",
+            "name": "皮帽",
             "desc": ""
         },
         "chestplateLeather": {
-            "name": "Leather Tunic",
+            "name": "皮上衣",
             "desc": ""
         },
         "leggingsLeather": {
-            "name": "Leather Pants",
+            "name": "皮褲",
             "desc": ""
         },
         "bootsLeather": {
-            "name": "Leather Boots",
+            "name": "皮靴",
             "desc": ""
         },
         "helmetChain": {
-            "name": "Chain Helmet",
+            "name": "鎖鏈頭盔",
             "desc": ""
         },
         "chestplateChain": {
-            "name": "Chain Chestplate",
+            "name": "鎖鏈胸甲",
             "desc": ""
         },
         "leggingsChain": {
-            "name": "Chain Leggings",
+            "name": "鎖鏈護腿",
             "desc": ""
         },
         "bootsChain": {
-            "name": "Chain Boots",
+            "name": "鎖鏈靴子",
             "desc": ""
         },
         "helmetIron": {
-            "name": "Iron Helmet",
+            "name": "鐵製頭盔",
             "desc": ""
         },
         "chestplateIron": {
-            "name": "Iron Chestplate",
+            "name": "鐵製胸甲",
             "desc": ""
         },
         "leggingsIron": {
-            "name": "Iron Leggings",
+            "name": "鐵製護腿",
             "desc": ""
         },
         "bootsIron": {
-            "name": "Iron Boots",
+            "name": "鐵製靴子",
             "desc": ""
         },
         "helmetDiamond": {
-            "name": "Diamond Helmet",
+            "name": "鑽石頭盔",
             "desc": ""
         },
         "chestplateDiamond": {
-            "name": "Diamond Chestplate",
+            "name": "鑽石胸甲",
             "desc": ""
         },
         "leggingsDiamond": {
-            "name": "Diamond Leggings",
+            "name": "鑽石護腿",
             "desc": ""
         },
         "bootsDiamond": {
-            "name": "Diamond Boots",
+            "name": "鑽石靴子",
             "desc": ""
         },
         "helmetGold": {
-            "name": "Golden Helmet",
+            "name": "金頭盔",
             "desc": ""
         },
         "chestplateGold": {
-            "name": "Golden Chestplate",
+            "name": "金胸甲",
             "desc": ""
         },
         "leggingsGold": {
-            "name": "Golden Leggings",
+            "name": "金護腿",
             "desc": ""
         },
         "bootsGold": {
-            "name": "Golden boots",
+            "name": "金靴子",
             "desc": ""
         },
         "flint": {
-            "name": "Flint",
+            "name": "燧石",
             "desc": ""
         },
         "porkchopRaw": {
-            "name": "Raw Porkchop",
+            "name": "生豬肉",
             "desc": ""
         },
         "porkchopCooked": {
-            "name": "Cooked Porkchop",
+            "name": "烤豬肉",
             "desc": ""
         },
         "painting": {
-            "name": "Painting",
+            "name": "畫",
             "desc": ""
         },
         "appleGold": {
-            "name": "Golden Apple",
+            "name": "金蘋果",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "告示牌",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "木門",
             "desc": ""
         },
         "bucket": {
-            "name": "Bucket",
+            "name": "鐵桶",
             "desc": ""
         },
         "bucketWater": {
-            "name": "Water Bucket",
+            "name": "水桶",
             "desc": ""
         },
         "bucketLava": {
-            "name": "Lava bucket",
+            "name": "岩漿桶",
             "desc": ""
         },
         "minecart": {
-            "name": "Minecart",
+            "name": "礦車",
             "desc": ""
         },
         "saddle": {
-            "name": "Saddle",
+            "name": "鞍",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "鐵門",
             "desc": ""
         },
         "redstone": {
-            "name": "Redstone",
+            "name": "紅石",
             "desc": ""
         },
         "snowball": {
-            "name": "Snowball",
+            "name": "雪球",
             "desc": ""
         },
         "boat": {
-            "name": "Boat",
+            "name": "船",
             "desc": ""
         },
         "leather": {
-            "name": "Leather",
+            "name": "皮革",
             "desc": ""
         },
         "milk": {
-            "name": "Milk",
+            "name": "牛奶",
             "desc": ""
         },
         "brick": {
-            "name": "Brick",
+            "name": "紅磚",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "黏土",
             "desc": ""
         },
         "sugarCanes": {
-            "name": "Sugar Canes",
+            "name": "甘蔗",
             "desc": ""
         },
         "paper": {
-            "name": "Paper",
+            "name": "紙",
             "desc": ""
         },
         "book": {
-            "name": "Book",
+            "name": "書",
             "desc": ""
         },
         "slimeball": {
-            "name": "Slimeball",
+            "name": "史萊姆球",
             "desc": ""
         },
         "minecartChest": {
-            "name": "Minecart with Chest",
+            "name": "儲物箱礦車",
             "desc": ""
         },
         "minecartFurnace": {
-            "name": "Minecart with Furnace",
+            "name": "熔爐礦車",
             "desc": ""
         },
         "egg": {
-            "name": "Egg",
+            "name": "雞蛋",
             "desc": ""
         },
         "compass": {
-            "name": "Compass",
+            "name": "羅盤",
             "desc": ""
         },
         "fishingRod": {
-            "name": "Fishing Rod",
+            "name": "釣竿",
             "desc": ""
         },
         "clock": {
-            "name": "Clock",
+            "name": "時鐘",
             "desc": ""
         },
         "yellowDust": {
-            "name": "Glowstone Dust",
+            "name": "螢石粉",
             "desc": ""
         },
         "fishRaw": {
-            "name": "Raw Fish",
+            "name": "生魚",
             "desc": ""
         },
         "fishCooked": {
-            "name": "Cooked Fish",
+            "name": "烤魚",
             "desc": ""
         },
         "record": {
-            "name": "Music Disc",
+            "name": "唱片",
             "desc": ""
         },
         "bone": {
-            "name": "Bone",
+            "name": "骨頭",
             "desc": ""
         },
         "dyePowder": {
             "black": {
-                "name": "Ink Sac",
+                "name": "墨囊",
                 "desc": ""
             },
             "red": {
-                "name": "Rose Red",
+                "name": "玫瑰紅",
                 "desc": ""
             },
             "green": {
-                "name": "Cactus Green",
+                "name": "仙人掌綠",
                 "desc": ""
             },
             "brown": {
-                "name": "Cocoa Beans",
+                "name": "可可豆",
                 "desc": ""
             },
             "blue": {
-                "name": "Lapis Lazuli",
+                "name": "青金石",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Dye",
+                "name": "紫色染料",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Dye",
+                "name": "青色染料",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Dye",
+                "name": "淺灰色染料",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Dye",
+                "name": "灰色染料",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Dye",
+                "name": "粉紅色染料",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Dye",
+                "name": "淺綠色染料",
                 "desc": ""
             },
             "yellow": {
-                "name": "Dandelion Yellow",
+                "name": "蒲公英黃",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Dye",
+                "name": "淺藍色染料",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Dye",
+                "name": "洋紅色染料",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Dye",
+                "name": "橘色染料",
                 "desc": ""
             },
             "white": {
-                "name": "Bone Meal",
+                "name": "骨粉",
                 "desc": ""
             }
         },
         "sugar": {
-            "name": "Sugar",
+            "name": "糖",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "蛋糕",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "床",
             "desc": ""
         },
         "redstoneRepeater": {
-            "name": "Redstone Repeater",
+            "name": "紅石中繼器",
             "desc": ""
         },
         "map": {
-            "name": "Map",
+            "name": "地圖",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "樹葉",
             "desc": ""
         },
         "shears": {
-            "name": "Shears",
+            "name": "剪刀",
             "desc": ""
         }
     },
     "stat": {
-        "generalButton": "General",
-        "blocksButton": "Blocks",
-        "itemsButton": "Items",
-        "used": "Times Used",
-        "mined": "Times Mined",
-        "depleted": "Times Depleted",
-        "crafted": "Times Crafted",
-        "startGame": "Times played",
-        "createWorld": "Worlds played",
-        "loadWorld": "Saves loaded",
-        "joinMultiplayer": "Multiplayer joins",
-        "leaveGame": "Games quit",
-        "playOneMinute": "Minutes Played",
-        "walkOneCm": "Distance Walked",
-        "fallOneCm": "Distance Fallen",
-        "swimOneCm": "Distance Swum",
-        "flyOneCm": "Distance Flown",
-        "climbOneCm": "Distance Climbed",
-        "diveOneCm": "Distance Dove",
-        "minecartOneCm": "Distance by Minecart",
-        "boatOneCm": "Distance by Boat",
-        "pigOneCm": "Distance by Pig",
-        "jump": "Jumps",
-        "drop": "Items Dropped",
-        "damageDealt": "Damage Dealt",
-        "damageTaken": "Damage Taken",
-        "deaths": "Number of Deaths",
-        "mobKills": "Mob Kills",
-        "playerKills": "Player Kills",
-        "fishCaught": "Fish Caught",
-        "mineBlock": "{0} Mined",
-        "craftItem": "{0} Crafted",
-        "useItem": "{0} Used",
-        "breakItem": "{0} Depleted"
+        "generalButton": "一般",
+        "blocksButton": "方塊",
+        "itemsButton": "物品",
+        "used": "使用次數",
+        "mined": "挖掘次數",
+        "depleted": "耗盡次數",
+        "crafted": "合成次數",
+        "startGame": "遊玩次數",
+        "createWorld": "建立世界數",
+        "loadWorld": "載入存檔數",
+        "joinMultiplayer": "加入多人遊戲次數",
+        "leaveGame": "離開遊戲次數",
+        "playOneMinute": "遊玩分鐘數",
+        "walkOneCm": "步行距離",
+        "fallOneCm": "墜落距離",
+        "swimOneCm": "游泳距離",
+        "flyOneCm": "飛行距離",
+        "climbOneCm": "攀爬距離",
+        "diveOneCm": "潛水距離",
+        "minecartOneCm": "乘坐礦車距離",
+        "boatOneCm": "乘船距離",
+        "pigOneCm": "騎豬距離",
+        "jump": "跳躍次數",
+        "drop": "丟棄物品數",
+        "damageDealt": "造成的傷害",
+        "damageTaken": "受到的傷害",
+        "deaths": "死亡次數",
+        "mobKills": "擊殺怪物數",
+        "playerKills": "擊殺玩家數",
+        "fishCaught": "釣到的魚",
+        "mineBlock": "挖掘 {0}",
+        "craftItem": "合成 {0}",
+        "useItem": "使用 {0}",
+        "breakItem": "耗盡 {0}"
     },
-    "achievements.title": "Achievements",
+    "achievements.title": "成就",
     "achievement": {
-        "get": "Achievement get!",
-        "taken": "Taken!",
-        "challenge": "CHALLENGE",
-        "unlocked": "UNLOCKED",
-        "locked": "LOCKED",
-        "requires": "Requires '{0}'",
+        "get": "獲得成就！",
+        "taken": "完成！",
+        "challenge": "挑戰",
+        "unlocked": "已解鎖",
+        "locked": "已鎖定",
+        "requires": "需要「{0}」",
         "openInventory": {
-            "title": "Taking Inventory",
-            "desc": "Open your inventory."
+            "title": "打開物品欄",
+            "desc": "打開你的物品欄。"
         },
         "mineWood": {
-            "title": "Getting Wood",
-            "desc": "Attack a tree until a block of wood pops out"
+            "title": "獲得木頭",
+            "desc": "攻擊樹木直到挖出一個木塊"
         },
         "buildWorkBench": {
-            "title": "Benchmarking",
-            "desc": "Craft a workbench with four blocks of planks"
+            "title": "打造工作臺",
+            "desc": "用四個木材方塊合成工作臺"
         },
         "buildPickaxe": {
-            "title": "Time to Mine!",
-            "desc": "Use planks and sticks to make a pickaxe"
+            "title": "開採時間！",
+            "desc": "使用木材和木棒來製作鎬"
         },
         "buildFurnace": {
-            "title": "Hot Topic",
-            "desc": "Construct a furnace out of eight stone blocks"
+            "title": "熱門話題",
+            "desc": "用八個石頭方塊建造熔爐"
         },
         "acquireIron": {
-            "title": "Acquire Hardware",
-            "desc": "Smelt an iron ingot"
+            "title": "獲得硬體",
+            "desc": "冶煉一個鐵錠"
         },
         "buildHoe": {
-            "title": "Time to Farm!",
-            "desc": "Use planks and sticks to make a hoe"
+            "title": "耕種時間！",
+            "desc": "使用木材和木棒來製作鋤"
         },
         "makeBread": {
-            "title": "Bake Bread",
-            "desc": "Turn wheat into bread"
+            "title": "烘烤麵包",
+            "desc": "將小麥做成麵包"
         },
         "bakeCake": {
-            "title": "The Lie",
-            "desc": "Wheat, sugar, milk and eggs!"
+            "title": "謊言",
+            "desc": "小麥、糖、牛奶和雞蛋！"
         },
         "buildBetterPickaxe": {
-            "title": "Getting an Upgrade",
-            "desc": "Construct a better pickaxe"
+            "title": "升級",
+            "desc": "製作一把更好的鎬"
         },
         "cookFish": {
-            "title": "Delicious Fish",
-            "desc": "Catch and cook fish!"
+            "title": "美味的魚",
+            "desc": "釣魚並烹煮！"
         },
         "onARail": {
-            "title": "On A Rail",
-            "desc": "Travel by minecart at least 1 km from where you started "
+            "title": "沿著鐵軌",
+            "desc": "乘坐礦車前進至少 1 公里"
         },
         "buildSword": {
-            "title": "Time to Strike!",
-            "desc": "Use planks and sticks to make a sword"
+            "title": "攻擊時間！",
+            "desc": "使用木材和木棒來製作劍"
         },
         "killEnemy": {
-            "title": "Monster Hunter",
-            "desc": "Attack and destroy a monster"
+            "title": "怪物獵人",
+            "desc": "攻擊並消滅一隻怪物"
         },
         "killCow": {
-            "title": "Cow Tipper",
-            "desc": "Harvest some leather"
+            "title": "搗蛋鬼",
+            "desc": "取得一些皮革"
         },
         "flyPig": {
-            "title": "When Pigs Fly",
-            "desc": "Fly a pig off a cliff"
+            "title": "豬會飛了",
+            "desc": "騎豬摔下懸崖"
         }
     },
     "credits": {
-        "version": "BetaSharp Version %1$s",
-        "description": "An enhanced of Minecraft Beta 1.7.3, written in C#.",
-        "github": "On GitHub",
-        "author": "Made by Fazin85",
-        "libs": "Libraries",
-        "slik": "Slik.NET - Graphics",
-        "imgui": "ImGui - Debug UI",
-        "sfml": "SFML.NET - Audio",
-        "sixlabors": "SixLabors - Fonts, image processing",
-        "translations": "Translations Credits"
+        "version": "BetaSharp 版本 %1$s",
+        "description": "以 C# 撰寫的 Minecraft Beta 1.7.3 強化版。",
+        "github": "在 GitHub 上",
+        "author": "由 Fazin85 製作",
+        "libs": "函式庫",
+        "slik": "Slik.NET - 圖形",
+        "imgui": "ImGui - 除錯使用者介面",
+        "sfml": "SFML.NET - 音效",
+        "sixlabors": "SixLabors - 字型、影像處理",
+        "translations": "翻譯製作名單"
     }
 }
