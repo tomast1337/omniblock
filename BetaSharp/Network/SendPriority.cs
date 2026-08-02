@@ -62,20 +62,11 @@ public static class PacketPriorities
         {
             PacketId.KeepAlive => SendPriority.High,
 
-            // Entity replication. The reason the queue exists.
-            PacketId.EntityS2C or
-            PacketId.EntityMoveRelativeS2C or
-            PacketId.EntityRotateS2C or
-            PacketId.EntityRotateAndMoveRelativeS2C or
-            PacketId.EntityPositionS2C or
-            PacketId.EntityVelocityUpdateS2C or
-            PacketId.EntityTrackerUpdateS2C or
-            PacketId.EntityStatusS2C or
-            PacketId.EntityAnimation or
-            PacketId.EntityEquipmentUpdateS2C or
-            PacketId.EntityVehicleSetS2C or
-            PacketId.EntityDestroyS2C or
-            PacketId.ItemPickupAnimationS2C => SendPriority.High,
+            // Entity replication used to be listed here, packet by packet. It has migrated to the
+            // message layer, where each type declares its own priority and the envelope carries the
+            // answer — handled above, before this switch is reached. That is the extensibility the
+            // list could not offer: a mod's message says it is latency-sensitive instead of hoping
+            // somebody adds its packet ID to a table in the engine.
 
             // Spawns travel with the updates that follow them, or a move can overtake the spawn it
             // describes and be dropped as referring to an unknown entity.

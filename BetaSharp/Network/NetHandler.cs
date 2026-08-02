@@ -53,6 +53,14 @@ public abstract class NetHandler
     /// </summary>
     public virtual void onOmniMessage(OmniMessagePacket packet)
     {
+        // Loopback: the sender handed the object over rather than bytes, so there is nothing to
+        // resolve and nothing to parse. Skipping both is the point — see OmniMessagePacket.Carried.
+        if (packet.Carried is { } carried)
+        {
+            onMessage(carried);
+            return;
+        }
+
         MessageRegistry? registry = Messages;
         if (registry is null || !registry.Negotiated)
         {
@@ -151,42 +159,7 @@ public abstract class NetHandler
         handle(packet);
     }
 
-    public virtual void onEntity(EntityS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onEntity(EntityRotateS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onEntity(EntityMoveRelativeS2CPacket s2CPacket)
-    {
-        handle(s2CPacket);
-    }
-
-    public virtual void onEntity(EntityRotateAndMoveRelativeS2CPacket s2CPacket)
-    {
-        handle(s2CPacket);
-    }
-
-    public virtual void onEntityPosition(EntityPositionS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onEntityDestroy(EntityDestroyS2CPacket packet)
-    {
-        handle(packet);
-    }
-
     public virtual void onItemEntitySpawn(ItemEntitySpawnS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onItemPickupAnimation(ItemPickupAnimationS2CPacket packet)
     {
         handle(packet);
     }
@@ -197,11 +170,6 @@ public abstract class NetHandler
     }
 
     public virtual void onEntitySpawn(EntitySpawnS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onEntityAnimation(EntityAnimationPacket packet)
     {
         handle(packet);
     }
@@ -222,26 +190,6 @@ public abstract class NetHandler
     }
 
     public virtual void onPlayerSpawnPosition(PlayerSpawnPositionS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onEntityVelocityUpdate(EntityVelocityUpdateS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onEntityTrackerUpdate(EntityTrackerUpdateS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onEntityVehicleSet(EntityVehicleSetS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onEntityStatus(EntityStatusS2CPacket packet)
     {
         handle(packet);
     }
@@ -287,11 +235,6 @@ public abstract class NetHandler
     }
 
     public virtual void onScreenHandlerPropertyUpdate(ScreenHandlerPropertyUpdateS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onEntityEquipmentUpdate(EntityEquipmentUpdateS2CPacket packet)
     {
         handle(packet);
     }

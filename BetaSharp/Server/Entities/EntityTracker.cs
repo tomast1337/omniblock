@@ -205,6 +205,22 @@ public class EntityTracker
         }
     }
 
+    public void sendToListeners(Entity entity, Message message)
+    {
+        if (entriesById.TryGetValue(entity.ID, out EntityTrackerEntry ent))
+        {
+            ent.sendToListeners(message);
+        }
+    }
+
+    public void sendToAround(Entity entity, Message message)
+    {
+        if (entriesById.TryGetValue(entity.ID, out EntityTrackerEntry ent))
+        {
+            ent.sendToAround(message);
+        }
+    }
+
     public void updateListenerForChunk(ServerPlayerEntity player, int chunkX, int chunkZ)
     {
         foreach (EntityTrackerEntry tracker in entries)

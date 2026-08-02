@@ -1,4 +1,5 @@
 using System.Net;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
 using Microsoft.Extensions.Logging;
 
@@ -40,6 +41,14 @@ public class InternalConnection : Connection
             }
         }
     }
+
+    /// <summary>
+    ///     Hands the message over as an object. No ID is assigned and no bytes are produced, which
+    ///     is the same deal loopback already gives every legacy packet — and the reason migrating
+    ///     entity replication to messages does not make singleplayer pay for a wire it does not have.
+    /// </summary>
+    public override void sendMessage(MessageRegistry registry, Message message) =>
+        sendPacket(OmniMessagePacket.Loopback(message));
 
     protected void ReceivePacket(Packet packet)
     {

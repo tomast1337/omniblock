@@ -1,5 +1,6 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Worlds.Core;
 
@@ -43,8 +44,8 @@ internal class ServerWorldEventListener : IWorldEventListener
 
     public void BroadcastEntityEvent(Entity entity, byte @event)
     {
-        EntityStatusS2CPacket packet = EntityStatusS2CPacket.Get(entity.ID, @event);
-        server.getEntityTracker(world.Dimension.Id).sendToAround(entity, packet);
+        server.getEntityTracker(world.Dimension.Id)
+            .sendToAround(entity, new EntityStatusMessage { EntityId = entity.ID, Status = (sbyte)@event });
     }
 
     public void PlayNote(int x, int y, int z, int soundType, int pitch)

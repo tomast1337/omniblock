@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Net;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
 using BetaSharp.Util;
 using Microsoft.Extensions.Logging;
@@ -89,6 +90,26 @@ public class Connection
     /// </summary>
     public virtual void sendPacket(Packet packet)
     {
+    }
+
+    /// <summary>
+    ///     Sends an extensible-layer message, or drops it when the peer never advertised the key.
+    ///     <para>
+    ///         Here rather than at each handler because the answer differs by transport, and only
+    ///         the transport knows: a real connection has to serialise, and loopback must not. That
+    ///         distinction was invisible while the layer carried nine low-rate messages and stops
+    ///         being invisible the moment entity replication travels through it.
+    ///     </para>
+    /// </summary>
+    public virtual void sendMessage(MessageRegistry registry, Message message)
+    {
+        ArgumentNullException.ThrowIfNull(registry);
+
+        OmniMessagePacket? envelope = OmniMessagePacket.For(registry, message);
+        if (envelope is not null)
+        {
+            sendPacket(envelope);
+        }
     }
 
     protected void disconnect(Exception e)

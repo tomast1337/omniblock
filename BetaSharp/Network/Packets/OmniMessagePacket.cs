@@ -66,6 +66,40 @@ public class OmniMessagePacket() : ExtendedProtocolPacket(PacketId.OmniMessage)
     /// </summary>
     public long ReceivedAtMs { get; internal set; }
 
+    /// <summary>
+    ///     The message itself, when this envelope never has to become bytes.
+    ///     <para>
+    ///         Loopback hands packets over as objects, which is the property that makes singleplayer
+    ///         free — and migrating a packet to a message would have taken it away, because
+    ///         <see cref="For" /> serialises unconditionally. At a few clicks a tick that is
+    ///         invisible; at one message per tracked entity per tick it is a serialise and a matching
+    ///         parse of the whole entity set, on a connection with no wire.
+    ///     </para>
+    ///     <para>
+    ///         Null on any real connection, where the payload is the only thing that exists.
+    ///     </para>
+    /// </summary>
+    public Message? Carried { get; private set; }
+
+    /// <summary>
+    ///     Wraps a message for a connection that will never serialise it. The registry is not
+    ///     consulted: there is no ID to assign because no ID is ever written.
+    /// </summary>
+    public static OmniMessagePacket Loopback(Message message)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+
+        OmniMessagePacket p = Get<OmniMessagePacket>(PacketId.OmniMessage);
+        p.MessageId = -1;
+        p.Payload = [];
+        p.CarriesSendTime = false;
+        p.Priority = message.Priority;
+        p.SentAtMs = 0;
+        p.ReceivedAtMs = 0;
+        p.Carried = message;
+        return p;
+    }
+
     public static OmniMessagePacket Get(
         int messageId,
         byte[] payload,
@@ -83,6 +117,7 @@ public class OmniMessagePacket() : ExtendedProtocolPacket(PacketId.OmniMessage)
         p.Priority = priority;
         p.SentAtMs = 0;
         p.ReceivedAtMs = 0;
+        p.Carried = null;
         return p;
     }
 
@@ -148,9 +183,11 @@ public class OmniMessagePacket() : ExtendedProtocolPacket(PacketId.OmniMessage)
     public override void Apply(NetHandler handler) => handler.onOmniMessage(this);
 
     public override int Size() =>
-        StreamExtensions.VarIntSize(MessageId)
-        + sizeof(byte)
-        + (CarriesSendTime ? sizeof(long) : 0)
-        + StreamExtensions.VarIntSize(Payload.Length)
-        + Payload.Length;
+        Carried is not null
+            ? Carried.Size()
+            : StreamExtensions.VarIntSize(MessageId)
+            + sizeof(byte)
+            + (CarriesSendTime ? sizeof(long) : 0)
+            + StreamExtensions.VarIntSize(Payload.Length)
+            + Payload.Length;
 }

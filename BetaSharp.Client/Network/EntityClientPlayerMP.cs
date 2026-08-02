@@ -152,7 +152,11 @@ public class EntityClientPlayerMP : ClientPlayerEntity
     public override void SwingHand()
     {
         base.SwingHand();
-        sendQueue.AddToSendQueue(EntityAnimationPacket.Get(this, EntityAnimationPacket.EntityAnimation.SwingHand));
+        sendQueue.SendMessage(new EntityAnimationMessage
+        {
+            EntityId = ID,
+            AnimationId = (byte)EntityAnimationMessage.EntityAnimation.SwingHand,
+        });
     }
 
     public override void Respawn()

@@ -18,6 +18,16 @@ namespace BetaSharp.Tests.Network;
 /// </summary>
 public sealed class SendPriorityTests
 {
+    /// <summary>Wraps a message the way the send path does, so its declared priority is what is read.</summary>
+    private static OmniMessagePacket Envelope(Message message)
+    {
+        MessageRegistry registry = new();
+        DefaultMessages.RegisterAll(registry);
+        registry.NegotiateAsServer();
+
+        return OmniMessagePacket.For(registry, message)!;
+    }
+
     private static UdpConnection Connected(FakeTransportConnection transport, bool capable = true)
     {
         UdpConnection connection = new(transport) { betaSharpClient = capable };
@@ -27,11 +37,15 @@ public sealed class SendPriorityTests
     [Fact]
     public void Entity_and_timing_packets_are_high_priority()
     {
-        Assert.Equal(SendPriority.High, PacketPriorities.Of(Packet.Get(PacketId.EntityMoveRelativeS2C)));
-        Assert.Equal(SendPriority.High, PacketPriorities.Of(Packet.Get(PacketId.EntityPositionS2C)));
-        Assert.Equal(SendPriority.High, PacketPriorities.Of(Packet.Get(PacketId.EntityDestroyS2C)));
         Assert.Equal(SendPriority.High, PacketPriorities.Of(Packet.Get(PacketId.LivingEntitySpawnS2C)));
         Assert.Equal(SendPriority.High, PacketPriorities.Of(Packet.Get(PacketId.KeepAlive)));
+
+        // The per-entity updates left the allowlist when they left PacketId. Their priority now
+        // comes from the message declaring it, which is the extensibility the table could not give:
+        // a mod says its message is latency-sensitive rather than hoping for a slot in this switch.
+        Assert.Equal(SendPriority.High, PacketPriorities.Of(Envelope(new EntityMoveMessage())));
+        Assert.Equal(SendPriority.High, PacketPriorities.Of(Envelope(new EntityDestroyMessage())));
+        Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Envelope(new ChunkDataMessage())));
     }
 
     /// <summary>
@@ -82,7 +96,7 @@ public sealed class SendPriorityTests
     [Fact]
     public void Entity_and_timing_packets_take_the_state_channel()
     {
-        Assert.Equal(UdpConnection.StateChannel, UdpConnection.ChannelFor(Packet.Get(PacketId.EntityMoveRelativeS2C)));
+        Assert.Equal(UdpConnection.StateChannel, UdpConnection.ChannelFor(Envelope(new EntityMoveMessage())));
         Assert.Equal(UdpConnection.StateChannel, UdpConnection.ChannelFor(Packet.Get(PacketId.LivingEntitySpawnS2C)));
         Assert.Equal(UdpConnection.StateChannel, UdpConnection.ChannelFor(Packet.Get(PacketId.KeepAlive)));
     }
@@ -106,7 +120,7 @@ public sealed class SendPriorityTests
         UdpConnection connection = Connected(transport);
 
         connection.sendPacket(Packet.Get(PacketId.ChunkDataS2C));
-        connection.sendPacket(Packet.Get(PacketId.EntityMoveRelativeS2C));
+        connection.sendPacket(Envelope(new EntityMoveMessage()));
 
         Assert.Equal(
             [UdpConnection.OrderedChannel, UdpConnection.StateChannel],
@@ -125,7 +139,7 @@ public sealed class SendPriorityTests
         FakeTransportConnection transport = new();
         UdpConnection connection = Connected(transport);
 
-        connection.sendPacket(Packet.Get(PacketId.EntityMoveRelativeS2C));
+        connection.sendPacket(Envelope(new EntityMoveMessage()));
         connection.sendPacket(Packet.Get(PacketId.ChunkDataS2C));
 
         Assert.All(transport.Sent, sent => Assert.Equal(DeliveryMode.ReliableOrdered, sent.Mode));
@@ -143,11 +157,13 @@ public sealed class SendPriorityTests
 
         connection.sendPacket(Packet.Get(PacketId.LivingEntitySpawnS2C));
         connection.sendPacket(Packet.Get(PacketId.ChunkDataS2C));
-        connection.sendPacket(Packet.Get(PacketId.EntityMoveRelativeS2C));
-        connection.sendPacket(Packet.Get(PacketId.EntityDestroyS2C));
+        connection.sendPacket(Envelope(new EntityMoveMessage()));
+        connection.sendPacket(Envelope(new EntityDestroyMessage()));
 
+        // Both messages share the envelope's packet ID, so the assertion is on how many landed on
+        // the state channel and in which order relative to the spawn, not on distinguishable bytes.
         Assert.Equal(
-            [(byte)PacketId.LivingEntitySpawnS2C, (byte)PacketId.EntityMoveRelativeS2C, (byte)PacketId.EntityDestroyS2C],
+            [(byte)PacketId.LivingEntitySpawnS2C, (byte)PacketId.OmniMessage, (byte)PacketId.OmniMessage],
             transport.Sent.Where(s => s.Channel == UdpConnection.StateChannel).Select(s => s.Payload[0]));
     }
 }
