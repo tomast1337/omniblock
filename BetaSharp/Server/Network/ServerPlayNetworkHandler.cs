@@ -6,7 +6,6 @@ using BetaSharp.Items;
 using BetaSharp.Network;
 using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Screens.Slots;
 using BetaSharp.Server.Command;
 using BetaSharp.Server.Entities;

@@ -2,7 +2,6 @@ using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Rules;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;

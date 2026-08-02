@@ -1,7 +1,6 @@
 using BetaSharp.Client.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;

@@ -4,7 +4,6 @@ using BetaSharp.Items;
 using BetaSharp.Items.Behaviors;
 using BetaSharp.NBT;
 using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Util;
 
 namespace BetaSharp.Entities.Behaviors;

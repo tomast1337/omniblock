@@ -1,6 +1,5 @@
 using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.S2CPlay;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Network;

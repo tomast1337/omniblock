@@ -3,7 +3,6 @@ using System.Net;
 using System.Net.Sockets;
 using BetaSharp.Client.Network;
 using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Registries;
 using BetaSharp.Registries.Data;
 

@@ -33,3 +33,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-02 — feat(network): move the chunk region packet onto the message layer (Nicolas Vyčas Nery; `e66e616e2c100675d5697b60010e1a5aa004dd30`)
 - 2026-08-02 — feat(network): move the player movement packets onto the message layer (Nicolas Vyčas Nery; `fd698c7c7cfdfe1613e6c5398aad494298ec3b0d`)
 - 2026-08-02 — chore: stop tracking docs/ (Nicolas Vyčas Nery; `5233145ecd65acff2707280f21f876fd2d75d903`)
+- 2026-08-02 — refactor(network): finish the packet migration (Nicolas Vyčas Nery; `6662da4a791a447bbdaf8f409e7a06cbe76ba48f`)

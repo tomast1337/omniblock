@@ -21,4 +21,25 @@ public class PacketDataTest : PacketTestBase
         Assert.StrictEqual(stream.Length, stream.Position);
         stream.Dispose();
     }
+
+    /// <summary>
+    ///     Every remaining packet reports the byte count it actually writes.
+    ///     <para>
+    ///         The check the message layer gets from its generator, which cannot produce a
+    ///         <c>Size()</c> that disagrees with its <c>Write()</c> because one table emits both.
+    ///         These four are hand-written and outside that guarantee, and the round-trip above does
+    ///         not catch a wrong size — it only proves the reader consumes what the writer produced,
+    ///         which stays true however far off <c>Size()</c> is.
+    ///     </para>
+    /// </summary>
+    [Theory, MemberData(nameof(PacketIds))]
+    public void VerifyPacketReportsTheSizeItWrites(PacketId value)
+    {
+        Packet p = Packet.Get(value);
+
+        using MemoryStream stream = new();
+        p.Write(stream);
+
+        Assert.Equal(stream.Length, p.Size());
+    }
 }

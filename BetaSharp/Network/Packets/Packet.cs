@@ -1,4 +1,3 @@
-using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Util;
 using Microsoft.Extensions.Logging;
 
@@ -8,8 +7,6 @@ public abstract class Packet
 {
     public static readonly ObjectFactory<Packet, PacketRegisterItem> Registry = new(256);
     private static readonly ILogger<Packet> s_logger = Log.Instance.For<Packet>();
-
-    private static readonly Dictionary<int, PacketTracker> s_trackers = new();
 
     public long CreationTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
@@ -89,14 +86,6 @@ public abstract class Packet
             s_logger.LogInformation("Reached end of stream : " + e.Message);
             return null;
         }
-
-        if (!s_trackers.TryGetValue(rawId, out PacketTracker? tracker))
-        {
-            tracker = new PacketTracker();
-            s_trackers.Add(rawId, tracker);
-        }
-
-        tracker.Update(packet.Size());
 
         return packet;
     }
