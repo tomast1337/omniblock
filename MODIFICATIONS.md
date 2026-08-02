@@ -22,3 +22,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-01 — fix(client): stop the network overlay reflowing when a warning appears (Nicolas Vyčas Nery; `d5253b2f82d7ab17d87b106c25a3f04cf365d3d6`)
 - 2026-08-01 — feat(network): generate message serialization from the declaration (Nicolas Vyčas Nery; `5cc8f0304542250c6849669ab46c493572ae0ed2`)
 - 2026-08-01 — feat(network): move the client-to-server play packets onto the message layer (Nicolas Vyčas Nery; `7366f043287b0ff9d395a60201f7ad62d394908d`)
+- 2026-08-01 — feat(network): move entity replication onto the message layer (Nicolas Vyčas Nery; `edd21570c2097a116d4b7dfe48221e7f0d5b7740`)

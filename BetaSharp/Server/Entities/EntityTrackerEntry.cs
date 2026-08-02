@@ -121,7 +121,7 @@ internal class EntityTrackerEntry
                 velocityX = currentTrackedEntity.VelocityX;
                 velocityY = currentTrackedEntity.VelocityY;
                 velocityZ = currentTrackedEntity.VelocityZ;
-                sendToListeners(EntityVelocityUpdateS2CPacket.Get(currentTrackedEntity.ID, velocityX, velocityY, velocityZ));
+                sendToListeners(Velocity(currentTrackedEntity.ID, velocityX, velocityY, velocityZ));
             }
         }
 
@@ -146,40 +146,46 @@ internal class EntityTrackerEntry
             SnapshotState = new EntitySnapshotState(posX, posY, posZ, (byte)rotYaw, (byte)rotPitch);
             bool hasMoved = Math.Abs(deltaX) >= 1 || Math.Abs(deltaY) >= 1 || Math.Abs(deltaZ) >= 1;
             bool hasRotated = Math.Abs(rotYaw - lastYaw) >= 8 || Math.Abs(rotPitch - lastPitch) >= 8;
-            object? positionPacket = null;
+            Message? positionMessage = null;
             if (deltaX < -128 || deltaX >= 128 || deltaY < -128 || deltaY >= 128 || deltaZ < -128 || deltaZ >= 128 || ticksSinceLastDismount > 400)
             {
                 ticksSinceLastDismount = 0;
                 currentTrackedEntity.X = posX / 32.0;
                 currentTrackedEntity.Y = posY / 32.0;
                 currentTrackedEntity.Z = posZ / 32.0;
-                positionPacket = EntityPositionS2CPacket.Get(currentTrackedEntity.ID, posX, posY, posZ, (byte)rotYaw, (byte)rotPitch);
+                positionMessage = new EntityTeleportMessage
+                {
+                    EntityId = currentTrackedEntity.ID,
+                    X = posX,
+                    Y = posY,
+                    Z = posZ,
+                    Yaw = (sbyte)rotYaw,
+                    Pitch = (sbyte)rotPitch,
+                };
             }
             else if (hasMoved || hasRotated)
             {
                 // Some entities want their angle on every step rather than only when they visibly
                 // turn — an arrow's flight is all arc and bounce, so it declares as much.
-                if (currentTrackedEntity.Type?.Definition is { AlwaysSyncsRotation: true })
+                bool sendsRotation =
+                    hasRotated || currentTrackedEntity.Type?.Definition is { AlwaysSyncsRotation: true };
+
+                positionMessage = new EntityMoveMessage
                 {
-                    positionPacket = EntityRotateAndMoveRelativeS2CPacket.Get(currentTrackedEntity.ID, (byte)deltaX, (byte)deltaY, (byte)deltaZ, (byte)rotYaw, (byte)rotPitch);
-                }
-                else if (hasMoved && hasRotated)
-                {
-                    positionPacket = EntityRotateAndMoveRelativeS2CPacket.Get(currentTrackedEntity.ID, (byte)deltaX, (byte)deltaY, (byte)deltaZ, (byte)rotYaw, (byte)rotPitch);
-                }
-                else if (hasMoved)
-                {
-                    positionPacket = EntityMoveRelativeS2CPacket.Get(currentTrackedEntity.ID, (byte)deltaX, (byte)deltaY, (byte)deltaZ);
-                }
-                else
-                {
-                    positionPacket = EntityRotateS2CPacket.Get(currentTrackedEntity.ID, (byte)rotYaw, (byte)rotPitch);
-                }
+                    EntityId = currentTrackedEntity.ID,
+                    Mask = (hasMoved ? EntityMoveMessage.Field.Moved : EntityMoveMessage.Field.None)
+                        | (sendsRotation ? EntityMoveMessage.Field.Rotated : EntityMoveMessage.Field.None),
+                    DeltaX = (sbyte)deltaX,
+                    DeltaY = (sbyte)deltaY,
+                    DeltaZ = (sbyte)deltaZ,
+                    Yaw = (sbyte)rotYaw,
+                    Pitch = (sbyte)rotPitch,
+                };
             }
 
-            if (positionPacket != null)
+            if (positionMessage is not null)
             {
-                sendPositionToLegacyListeners((Packet)positionPacket);
+                sendPositionToLegacyListeners(positionMessage);
             }
 
             DataSynchronizer dataSync = currentTrackedEntity.DataSynchronizer;
@@ -187,7 +193,7 @@ internal class EntityTrackerEntry
             {
                 var stream = new MemoryStream();
                 dataSync.WriteChanges(stream);
-                sendToAround(EntityTrackerUpdateS2CPacket.Get(currentTrackedEntity.ID, stream.ToArray()));
+                sendToAround(new EntityDataMessage { EntityId = currentTrackedEntity.ID, Data = stream.ToArray() });
             }
 
             if (hasMoved)
@@ -206,16 +212,58 @@ internal class EntityTrackerEntry
 
         if (currentTrackedEntity.VelocityModified)
         {
-            sendToAround(EntityVelocityUpdateS2CPacket.Get(currentTrackedEntity));
+            sendToAround(Velocity(
+                currentTrackedEntity.ID,
+                currentTrackedEntity.VelocityX,
+                currentTrackedEntity.VelocityY,
+                currentTrackedEntity.VelocityZ));
             currentTrackedEntity.VelocityModified = false;
         }
     }
+
+    /// <summary>
+    ///     Clamps to what a short can carry at 1/8000 of a block per tick, which is ±3.9.
+    ///     <para>
+    ///         The clamp lives with the sender rather than in the message. A message that truncated
+    ///         instead would turn a fast knockback into a slow one in the opposite direction, and it
+    ///         would do so silently — the receiver has no way to tell a wrapped value from a real one.
+    ///     </para>
+    /// </summary>
+    private static EntityVelocityMessage Velocity(int entityId, double x, double y, double z)
+    {
+        const double limit = 3.9;
+
+        return new EntityVelocityMessage
+        {
+            EntityId = entityId,
+            MotionX = (short)(Math.Clamp(x, -limit, limit) * 8000.0),
+            MotionY = (short)(Math.Clamp(y, -limit, limit) * 8000.0),
+            MotionZ = (short)(Math.Clamp(z, -limit, limit) * 8000.0),
+        };
+    }
+
+    /// <summary>An empty slot travels as item -1, which is what the renderer reads as "nothing".</summary>
+    internal static EntityEquipmentMessage Equipment(int entityId, int slot, ItemStack? stack) => new()
+    {
+        EntityId = entityId,
+        Slot = (short)slot,
+        ItemRawId = (short)(stack?.ItemId ?? -1),
+        ItemDamage = (short)(stack?.getDamage() ?? 0),
+    };
 
     public void sendToListeners(Packet packet)
     {
         foreach (var player in listeners)
         {
             player.NetworkHandler.SendPacket(packet);
+        }
+    }
+
+    public void sendToListeners(Message message)
+    {
+        foreach (var player in listeners)
+        {
+            player.NetworkHandler.SendMessage(message);
         }
     }
 
@@ -230,7 +278,7 @@ internal class EntityTrackerEntry
     ///         client no longer held.
     ///     </para>
     /// </summary>
-    private void sendPositionToLegacyListeners(Packet packet)
+    private void sendPositionToLegacyListeners(Message message)
     {
         foreach (var player in listeners)
         {
@@ -239,7 +287,7 @@ internal class EntityTrackerEntry
                 continue;
             }
 
-            player.NetworkHandler.SendPacket(packet);
+            player.NetworkHandler.SendMessage(message);
         }
     }
 
@@ -255,6 +303,18 @@ internal class EntityTrackerEntry
         }
     }
 
+    public void sendToAround(Message message)
+    {
+        foreach (var p in listeners)
+        {
+            p.NetworkHandler.SendMessage(message);
+        }
+        if (currentTrackedEntity is ServerPlayerEntity entity)
+        {
+            entity.NetworkHandler.SendMessage(message);
+        }
+    }
+
     public void notifyEntityRemoved()
     {
         foreach (var player in listeners)
@@ -262,7 +322,7 @@ internal class EntityTrackerEntry
             player.SnapshotStream.Forget(currentTrackedEntity.ID);
         }
 
-        sendToListeners(EntityDestroyS2CPacket.Get(currentTrackedEntity.ID));
+        sendToListeners(new EntityDestroyMessage { EntityId = currentTrackedEntity.ID });
     }
 
     public void notifyEntityRemoved(ServerPlayerEntity player)
@@ -299,15 +359,11 @@ internal class EntityTrackerEntry
                     player.NetworkHandler.SendPacket(createAddEntityPacket());
                     if (alwaysUpdateVelocity)
                     {
-                        player.NetworkHandler
-                            .SendPacket(
-                                EntityVelocityUpdateS2CPacket.Get(
-                                    currentTrackedEntity.ID,
-                                    currentTrackedEntity.VelocityX,
-                                    currentTrackedEntity.VelocityY,
-                                    currentTrackedEntity.VelocityZ
-                                )
-                            );
+                        player.NetworkHandler.SendMessage(Velocity(
+                            currentTrackedEntity.ID,
+                            currentTrackedEntity.VelocityX,
+                            currentTrackedEntity.VelocityY,
+                            currentTrackedEntity.VelocityZ));
                     }
 
                     ItemStack[] equipment = currentTrackedEntity.Equipment;
@@ -315,7 +371,7 @@ internal class EntityTrackerEntry
                     {
                         for (int slot = 0; slot < equipment.Length; slot++)
                         {
-                            player.NetworkHandler.SendPacket(EntityEquipmentUpdateS2CPacket.Get(currentTrackedEntity.ID, slot, equipment[slot]));
+                            player.NetworkHandler.SendMessage(Equipment(currentTrackedEntity.ID, slot, equipment[slot]));
                         }
                     }
 
@@ -340,7 +396,7 @@ internal class EntityTrackerEntry
             else if (listeners.Remove(player))
             {
                 player.SnapshotStream.Forget(currentTrackedEntity.ID);
-                player.NetworkHandler.SendPacket(EntityDestroyS2CPacket.Get(currentTrackedEntity.ID));
+                player.NetworkHandler.SendMessage(new EntityDestroyMessage { EntityId = currentTrackedEntity.ID });
             }
         }
     }
@@ -425,7 +481,7 @@ internal class EntityTrackerEntry
         if (listeners.Remove(player))
         {
             player.SnapshotStream.Forget(currentTrackedEntity.ID);
-            player.NetworkHandler.SendPacket(EntityDestroyS2CPacket.Get(currentTrackedEntity.ID));
+            player.NetworkHandler.SendMessage(new EntityDestroyMessage { EntityId = currentTrackedEntity.ID });
         }
     }
 }

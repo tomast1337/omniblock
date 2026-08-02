@@ -106,6 +106,16 @@ public sealed class GeneratedMessageTests
             ClientCommandMessage.Id,
             PlayerInputMessage.Id,
             ClickSlotMessage.Id,
+            EntityMoveMessage.Id,
+            EntityTeleportMessage.Id,
+            EntityDestroyMessage.Id,
+            EntityStatusMessage.Id,
+            EntityVelocityMessage.Id,
+            EntityVehicleMessage.Id,
+            EntityDataMessage.Id,
+            EntityEquipmentMessage.Id,
+            EntityAnimationMessage.Id,
+            ItemPickupMessage.Id,
         })
         {
             Assert.True(registry.GetId(key) >= 0, $"{key} is not registered.");
@@ -225,6 +235,50 @@ public sealed class GeneratedMessageTests
         Assert.Equal(Serialise(empty).Length, empty.Size());
         Assert.Equal(Serialise(filled).Length, filled.Size());
         Assert.Equal(3, filled.Size() - empty.Size());
+    }
+
+    // ---- the four position packets, collapsed ----
+
+    [Fact]
+    public void A_move_carries_its_mask_and_both_field_groups()
+    {
+        EntityMoveMessage written = new()
+        {
+            EntityId = 4242,
+            Mask = EntityMoveMessage.Field.Moved | EntityMoveMessage.Field.Rotated,
+            DeltaX = -3,
+            DeltaY = 1,
+            DeltaZ = 127,
+            Yaw = -128,
+            Pitch = 64,
+        };
+
+        byte[] bytes = Serialise(written);
+        Assert.Equal(bytes.Length, written.Size());
+
+        EntityMoveMessage read = new();
+        read.Read(new MemoryStream(bytes));
+
+        Assert.Equal(written.Mask, read.Mask);
+        Assert.Equal(written.DeltaX, read.DeltaX);
+        Assert.Equal(written.DeltaY, read.DeltaY);
+        Assert.Equal(written.DeltaZ, read.DeltaZ);
+        Assert.Equal(written.Yaw, read.Yaw);
+        Assert.Equal(written.Pitch, read.Pitch);
+    }
+
+    /// <summary>
+    ///     A bare "still here" — what <c>EntityS2CPacket</c> was — is the same type with an empty
+    ///     mask, and it must survive the round trip as empty rather than as a move of zero.
+    /// </summary>
+    [Fact]
+    public void A_move_with_no_mask_stays_unflagged()
+    {
+        EntityMoveMessage read = new() { Mask = EntityMoveMessage.Field.Moved };
+        read.Read(new MemoryStream(Serialise(new EntityMoveMessage { EntityId = 7 })));
+
+        Assert.Equal(EntityMoveMessage.Field.None, read.Mask);
+        Assert.Equal(7, read.EntityId);
     }
 
     // ---- dispatch ----

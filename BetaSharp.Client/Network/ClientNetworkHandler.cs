@@ -379,11 +379,7 @@ public class ClientNetworkHandler : NetHandler
             return;
         }
 
-        OmniMessagePacket? envelope = OmniMessagePacket.For(registry, message);
-        if (envelope is not null)
-        {
-            SendPacket(envelope);
-        }
+        _netManager.sendMessage(registry, message);
     }
 
     public override void onMessageRegistrySync(MessageRegistrySyncS2CPacket packet)
@@ -408,6 +404,16 @@ public class ClientNetworkHandler : NetHandler
         MessageHandlers.On<ChunkDataMessage>(onChunkData);
         MessageHandlers.On<ChunkUnchangedMessage>(onChunkUnchanged);
         MessageHandlers.On<EntitySnapshotMessage>(onEntitySnapshot);
+        MessageHandlers.On<EntityMoveMessage>(onEntityMove);
+        MessageHandlers.On<EntityTeleportMessage>(onEntityTeleport);
+        MessageHandlers.On<EntityDestroyMessage>(onEntityDestroy);
+        MessageHandlers.On<EntityStatusMessage>(onEntityStatus);
+        MessageHandlers.On<EntityVelocityMessage>(onEntityVelocity);
+        MessageHandlers.On<EntityVehicleMessage>(onEntityVehicle);
+        MessageHandlers.On<EntityDataMessage>(onEntityData);
+        MessageHandlers.On<EntityEquipmentMessage>(onEntityEquipment);
+        MessageHandlers.On<EntityAnimationMessage>(onEntityAnimation);
+        MessageHandlers.On<ItemPickupMessage>(onItemPickup);
     }
 
     /// <summary>
@@ -794,16 +800,16 @@ public class ClientNetworkHandler : NetHandler
         _worldClient.ForceEntity(packet.EntityId, ent);
     }
 
-    public override void onEntityVelocityUpdate(EntityVelocityUpdateS2CPacket packet)
+    private void onEntityVelocity(EntityVelocityMessage packet)
     {
         Entity? ent = GetEntityById(packet.EntityId);
         ent?.SetVelocityClient(packet.MotionX / 8000.0D, packet.MotionY / 8000.0D, packet.MotionZ / 8000.0D);
     }
 
-    public override void onEntityTrackerUpdate(EntityTrackerUpdateS2CPacket packet)
+    private void onEntityData(EntityDataMessage packet)
     {
         Entity? ent = GetEntityById(packet.EntityId);
-        if (ent == null || packet.Data == null || packet.Data.Length == 0)
+        if (ent == null || packet.Data.Length == 0)
         {
             return;
         }
@@ -836,9 +842,9 @@ public class ClientNetworkHandler : NetHandler
         _worldClient.ForceEntity(packet.EntityId, ent);
     }
 
-    public override void onEntityPosition(EntityPositionS2CPacket packet)
+    private void onEntityTeleport(EntityTeleportMessage packet)
     {
-        Entity? ent = GetEntityById(packet);
+        Entity? ent = GetEntityById(packet.EntityId);
         if (ent != null)
         {
             ent.TrackedPosX = packet.X;
@@ -879,53 +885,34 @@ public class ClientNetworkHandler : NetHandler
         }
     }
 
-    public override void onEntity(EntityS2CPacket packet)
+    /// <summary>
+    ///     The four position packets collapsed into one message and a mask, so the four handlers
+    ///     that differed only in which of these two lines they ran collapse with them.
+    /// </summary>
+    private void onEntityMove(EntityMoveMessage packet)
     {
-        Entity? ent = GetEntityById(packet);
-        if (ent != null)
+        Entity? ent = GetEntityById(packet.EntityId);
+        if (ent is null)
         {
-            RetargetEntity(ent, ent.Yaw, ent.Pitch);
+            return;
         }
+
+        if (packet.Mask.HasFlag(EntityMoveMessage.Field.Moved))
+        {
+            ent.TrackedPosX += packet.DeltaX;
+            ent.TrackedPosY += packet.DeltaY;
+            ent.TrackedPosZ += packet.DeltaZ;
+        }
+
+        // An unrotated update keeps whatever angle the entity already had, which is what the two
+        // position-only packets did by having no rotation field to read.
+        float yaw = packet.Mask.HasFlag(EntityMoveMessage.Field.Rotated) ? packet.Yaw * 360 / 256.0F : ent.Yaw;
+        float pitch = packet.Mask.HasFlag(EntityMoveMessage.Field.Rotated) ? packet.Pitch * 360 / 256.0F : ent.Pitch;
+
+        RetargetEntity(ent, yaw, pitch);
     }
 
-    public override void onEntity(EntityRotateS2CPacket packet)
-    {
-        Entity? ent = GetEntityById(packet);
-        if (ent != null)
-        {
-            float yaw = packet.Yaw * 360 / 256.0F;
-            float pitch = packet.Pitch * 360 / 256.0F;
-            RetargetEntity(ent, yaw, pitch);
-        }
-    }
-
-    public override void onEntity(EntityMoveRelativeS2CPacket s2CPacket)
-    {
-        Entity? ent = GetEntityById(s2CPacket);
-        if (ent != null)
-        {
-            ent.TrackedPosX += s2CPacket.DeltaX;
-            ent.TrackedPosY += s2CPacket.DeltaY;
-            ent.TrackedPosZ += s2CPacket.DeltaZ;
-            RetargetEntity(ent, ent.Yaw, ent.Pitch);
-        }
-    }
-
-    public override void onEntity(EntityRotateAndMoveRelativeS2CPacket s2CPacket)
-    {
-        Entity? ent = GetEntityById(s2CPacket);
-        if (ent != null)
-        {
-            ent.TrackedPosX += s2CPacket.DeltaX;
-            ent.TrackedPosY += s2CPacket.DeltaY;
-            ent.TrackedPosZ += s2CPacket.DeltaZ;
-            float yaw = s2CPacket.Yaw * 360 / 256.0F;
-            float pitch = s2CPacket.Pitch * 360 / 256.0F;
-            RetargetEntity(ent, yaw, pitch);
-        }
-    }
-
-    public override void onEntityDestroy(EntityDestroyS2CPacket packet)
+    private void onEntityDestroy(EntityDestroyMessage packet)
     {
         Interpolation.Forget(packet.EntityId);
 
@@ -1054,7 +1041,7 @@ public class ClientNetworkHandler : NetHandler
         SendPacket(packet);
     }
 
-    public override void onItemPickupAnimation(ItemPickupAnimationS2CPacket packet)
+    private void onItemPickup(ItemPickupMessage packet)
     {
         Entity? ent = GetEntityById(packet.EntityId);
         Entity collector = GetEntityById(packet.CollectorEntityId) as EntityLiving ?? _context.PlayerHost.Player;
@@ -1073,7 +1060,7 @@ public class ClientNetworkHandler : NetHandler
         _context.AddChatMessage(packet.ChatMessage);
     }
 
-    public override void onEntityAnimation(EntityAnimationPacket packet)
+    private void onEntityAnimation(EntityAnimationMessage packet)
     {
         Entity? ent = GetEntityById(packet.EntityId);
         if (ent != null)
@@ -1185,7 +1172,7 @@ public class ClientNetworkHandler : NetHandler
         _context.WorldHost.World?.Properties.SetSpawn(packet.X, packet.Y, packet.Z);
     }
 
-    public override void onEntityVehicleSet(EntityVehicleSetS2CPacket packet)
+    private void onEntityVehicle(EntityVehicleMessage packet)
     {
         object? rider = GetEntityById(packet.EntityId);
         Entity? ent = GetEntityById(packet.VehicleEntityId);
@@ -1200,14 +1187,13 @@ public class ClientNetworkHandler : NetHandler
         }
     }
 
-    public override void onEntityStatus(EntityStatusS2CPacket packet)
+    private void onEntityStatus(EntityStatusMessage packet)
     {
         Entity? ent = GetEntityById(packet.EntityId);
-        ent?.ProcessServerEntityStatus(packet.EntityStatus);
+        ent?.ProcessServerEntityStatus(packet.Status);
 
     }
 
-    private Entity? GetEntityById(IPacketEntity entityId) => GetEntityById(entityId.EntityId);
     private Entity? GetEntityById(int entityId)
     {
         if (_context.PlayerHost.Player == null || _worldClient == null)
@@ -1380,7 +1366,7 @@ public class ClientNetworkHandler : NetHandler
 
     }
 
-    public override void onEntityEquipmentUpdate(EntityEquipmentUpdateS2CPacket packet)
+    private void onEntityEquipment(EntityEquipmentMessage packet)
     {
         Entity? ent = GetEntityById(packet.EntityId);
         ent?.SetEquipmentStack(packet.Slot, packet.ItemRawId, packet.ItemDamage);

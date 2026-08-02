@@ -3,6 +3,7 @@ using BetaSharp.Entities.State;
 using BetaSharp.Items;
 using BetaSharp.Items.Behaviors;
 using BetaSharp.NBT;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Util;
 
@@ -110,12 +111,12 @@ public sealed class TameableBehavior : IEntityInteractable, IEntityPersistence, 
 
     public bool OnEntityStatus(EntityLiving self, sbyte status)
     {
-        switch ((EntityStatusS2CPacket.EntityState)status)
+        switch ((EntityStatusMessage.EntityState)status)
         {
-            case EntityStatusS2CPacket.EntityState.WolfHeartsFx:
+            case EntityStatusMessage.EntityState.WolfHeartsFx:
                 ShowParticles(self, "heart");
                 return true;
-            case EntityStatusS2CPacket.EntityState.WolfSmokeFx:
+            case EntityStatusMessage.EntityState.WolfSmokeFx:
                 ShowParticles(self, "smoke");
                 return true;
             default:
@@ -296,7 +297,7 @@ public sealed class TameableBehavior : IEntityInteractable, IEntityPersistence, 
         if (self.Random.NextInt(_tamingChanceOneIn) != 0)
         {
             ShowParticles(self, "smoke");
-            self.World.Broadcaster.EntityEvent(self, EntityStatusS2CPacket.EntityState.WolfSmokeFx);
+            self.World.Broadcaster.EntityEvent(self, EntityStatusMessage.EntityState.WolfSmokeFx);
             return true;
         }
 
@@ -306,7 +307,7 @@ public sealed class TameableBehavior : IEntityInteractable, IEntityPersistence, 
         self.Health = _tamedHealth;
         SetOwner(self, player.Name);
         ShowParticles(self, "heart");
-        self.World.Broadcaster.EntityEvent(self, EntityStatusS2CPacket.EntityState.WolfHeartsFx);
+        self.World.Broadcaster.EntityEvent(self, EntityStatusMessage.EntityState.WolfHeartsFx);
         return true;
     }
 

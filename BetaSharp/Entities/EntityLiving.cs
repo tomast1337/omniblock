@@ -2,6 +2,7 @@ using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Items;
 using BetaSharp.NBT;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Util.Hit;
 using BetaSharp.Util.Maths;
@@ -488,7 +489,7 @@ public class EntityLiving : Entity
         AttackedAtYaw = 0.0F;
         if (playHurtEffects)
         {
-            World.Broadcaster.EntityEvent(this, EntityStatusS2CPacket.EntityState.Hurt);
+            World.Broadcaster.EntityEvent(this, EntityStatusMessage.EntityState.Hurt);
             ScheduleVelocityUpdate();
             if (entity != null)
             {
@@ -571,7 +572,7 @@ public class EntityLiving : Entity
             DropLoot(entity);
         }
 
-        World.Broadcaster.EntityEvent(this, EntityStatusS2CPacket.EntityState.Death);
+        World.Broadcaster.EntityEvent(this, EntityStatusMessage.EntityState.Death);
     }
 
     protected virtual void DropLoot(Entity? killer) => Loot?.DropLoot(this, killer);
@@ -1110,7 +1111,7 @@ public class EntityLiving : Entity
     {
         switch (statusId)
         {
-            case (sbyte)EntityStatusS2CPacket.EntityState.Hurt:
+            case (sbyte)EntityStatusMessage.EntityState.Hurt:
                 WalkAnimationSpeed = 1.5F;
                 Hearts = MaxHealth;
                 HurtTime = MaxHurtTime = 10;
@@ -1122,7 +1123,7 @@ public class EntityLiving : Entity
 
                 Damage(null, 0);
                 break;
-            case (sbyte)EntityStatusS2CPacket.EntityState.Death:
+            case (sbyte)EntityStatusMessage.EntityState.Death:
                 if (DeathSound != null)
                 {
                     World.Broadcaster.PlaySoundAtEntity(this, DeathSound, SoundVolume, (Random.NextFloat() - Random.NextFloat()) * 0.2F + 1.0F);

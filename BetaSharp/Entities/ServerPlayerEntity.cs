@@ -152,7 +152,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
                 continue;
             }
 
-            _server.getEntityTracker(DimensionId).sendToListeners(this, EntityEquipmentUpdateS2CPacket.Get(ID, i, itemStack));
+            _server.getEntityTracker(DimensionId).sendToListeners(this, EntityTrackerEntry.Equipment(ID, i, itemStack));
             _equipment[i] = itemStack;
         }
     }
@@ -467,7 +467,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             EntityTracker et = _server.getEntityTracker(DimensionId);
             if (ArrowBehavior.IsArrow(item) || item.Behaviors.Find<DroppedItemBehavior>() is not null)
             {
-                et.sendToListeners(item, ItemPickupAnimationS2CPacket.Get(item.ID, ID));
+                et.sendToListeners(item, new ItemPickupMessage { EntityId = item.ID, CollectorEntityId = ID });
             }
         }
 
@@ -485,8 +485,11 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         HandSwingTicks = -1;
         HandSwinging = true;
         EntityTracker et = _server.getEntityTracker(DimensionId);
-        et.sendToListeners(this, EntityAnimationPacket.Get(this, EntityAnimationPacket.EntityAnimation.SwingHand));
+        et.sendToListeners(this, Animate(EntityAnimationMessage.EntityAnimation.SwingHand));
     }
+
+    private EntityAnimationMessage Animate(EntityAnimationMessage.EntityAnimation animation) =>
+        new() { EntityId = ID, AnimationId = (byte)animation };
 
     public override SleepAttemptResult TrySleep(int x, int y, int z)
     {
@@ -509,7 +512,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         if (IsSleeping)
         {
             EntityTracker et = _server.getEntityTracker(DimensionId);
-            et.sendToAround(this, EntityAnimationPacket.Get(this, EntityAnimationPacket.EntityAnimation.WakeUp));
+            et.sendToAround(this, Animate(EntityAnimationMessage.EntityAnimation.WakeUp));
         }
 
         base.WakeUp(resetSleepTimer, updateSleepingPlayers, setSpawnPos);
@@ -520,7 +523,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     public override void SetVehicle(Entity? entity)
     {
         base.SetVehicle(entity);
-        NetworkHandler?.SendPacket(EntityVehicleSetS2CPacket.Get(this, Vehicle));
+        NetworkHandler?.SendMessage(new EntityVehicleMessage { EntityId = ID, VehicleEntityId = Vehicle?.ID ?? -1 });
         NetworkHandler?.teleport(X, Y, Z, Yaw, Pitch);
     }
 

@@ -62,6 +62,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         MessageHandlers.On<ClientCommandMessage>(onClientCommand);
         MessageHandlers.On<PlayerInputMessage>(input => player.updateInput(input));
         MessageHandlers.On<ClickSlotMessage>(onClickSlot);
+        MessageHandlers.On<EntityAnimationMessage>(onEntityAnimation);
     }
 
     public void tick()
@@ -168,11 +169,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             return;
         }
 
-        OmniMessagePacket? envelope = OmniMessagePacket.For(registry, message);
-        if (envelope is not null)
-        {
-            SendPacket(envelope);
-        }
+        connection.sendMessage(registry, message);
     }
 
     public override void onPlayerMove(PacketPlayerMoveAbstract packet)
@@ -599,9 +596,9 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         }
     }
 
-    public override void onEntityAnimation(EntityAnimationPacket packet)
+    private void onEntityAnimation(EntityAnimationMessage message)
     {
-        if (packet.AnimationId == 1)
+        if (message.AnimationId == (byte)EntityAnimationMessage.EntityAnimation.SwingHand)
         {
             player.SwingHand();
         }

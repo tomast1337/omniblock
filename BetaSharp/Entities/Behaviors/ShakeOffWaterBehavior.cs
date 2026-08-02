@@ -1,4 +1,5 @@
 using BetaSharp.Entities.State;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Util.Maths;
 
@@ -42,7 +43,7 @@ public sealed class ShakeOffWaterBehavior : IEntityPhysics, IEntityTicker, IEnti
     /// <summary>The client is told to start shaking instead of working it out for itself.</summary>
     public bool OnEntityStatus(EntityLiving self, sbyte status)
     {
-        if ((EntityStatusS2CPacket.EntityState)status != EntityStatusS2CPacket.EntityState.WolfShaking)
+        if ((EntityStatusMessage.EntityState)status != EntityStatusMessage.EntityState.WolfShaking)
         {
             return false;
         }
@@ -69,7 +70,7 @@ public sealed class ShakeOffWaterBehavior : IEntityPhysics, IEntityTicker, IEnti
         }
 
         Begin(self);
-        self.World.Broadcaster.EntityEvent(self, EntityStatusS2CPacket.EntityState.WolfShaking);
+        self.World.Broadcaster.EntityEvent(self, EntityStatusMessage.EntityState.WolfShaking);
     }
 
     public void OnTickEnd(EntityLiving self)
