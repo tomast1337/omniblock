@@ -403,6 +403,33 @@ public class Chunk
         else if (lightType == LightType.Block) BlockLight.SetNibble(x, y, z, value);
     }
 
+    /// <summary>
+    ///     Both light values for a cell in one byte: block light in the low nibble, sky light in the
+    ///     high one. This is the form the block-update messages carry.
+    /// </summary>
+    public byte GetPackedLight(int x, int y, int z) =>
+        (byte)(BlockLight.GetNibble(x, y, z) | (SkyLight.GetNibble(x, y, z) << 4));
+
+    /// <summary>
+    ///     Writes both light values from the packed form. Returns whether either changed, so a
+    ///     caller can skip rebuilding the mesh when an update repeats what the chunk already held.
+    /// </summary>
+    public bool SetPackedLight(int x, int y, int z, byte packed)
+    {
+        int block = packed & 0xF;
+        int sky = (packed >> 4) & 0xF;
+
+        if (BlockLight.GetNibble(x, y, z) == block && SkyLight.GetNibble(x, y, z) == sky)
+        {
+            return false;
+        }
+
+        BlockLight.SetNibble(x, y, z, block);
+        SkyLight.SetNibble(x, y, z, sky);
+        Dirty = true;
+        return true;
+    }
+
     public virtual int GetLight(int x, int y, int z, int ambientDarkness)
     {
         int sky = SkyLight.GetNibble(x, y, z);
