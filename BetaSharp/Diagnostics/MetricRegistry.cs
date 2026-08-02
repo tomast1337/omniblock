@@ -56,6 +56,16 @@ public static class MetricRegistry
         => Storage<T>.Values[handle.Index];
 
     /// <summary>
+    /// When the metric was last written, on the <see cref="Environment.TickCount64"/> clock.
+    /// </summary>
+    /// <remarks>
+    /// Lets a reader that samples faster than the writer tell a new reading from a repeat of the
+    /// last one. A history graph drawn per frame from a metric written per second otherwise records
+    /// the same value sixty times and reports it as sixty samples.
+    /// </remarks>
+    public static long LastUpdatedMs<T>(MetricHandle<T> handle) => s_lastUpdatedMs[handle.Index];
+
+    /// <summary>
     /// Check if a metric, by its index, is stale.
     /// </summary>
     /// <param name="toleranceMs">How long can it stay while being considered stale.</param>
