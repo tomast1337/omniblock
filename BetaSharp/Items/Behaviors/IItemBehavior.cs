@@ -1,6 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
-using BetaSharp.Network.Packets;
+using BetaSharp.Network.Messages;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items.Behaviors;
@@ -38,5 +38,5 @@ public interface IItemBehavior
     }
 
     bool IsNetworkSynced(Item item) => false;
-    Packet? GetUpdatePacket(Item item, ItemStack stack, IWorldContext world, EntityPlayer player) => null;
+    Message? GetUpdatePacket(Item item, ItemStack stack, IWorldContext world, EntityPlayer player) => null;
 }

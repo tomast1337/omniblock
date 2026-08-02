@@ -1,7 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Entities;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core.Systems;
@@ -48,10 +48,15 @@ public sealed class MapBehavior : IItemBehavior
 
     public bool IsNetworkSynced(Item item) => true;
 
-    public Packet? GetUpdatePacket(Item item, ItemStack stack, IWorldContext world, EntityPlayer player)
+    public Message? GetUpdatePacket(Item item, ItemStack stack, IWorldContext world, EntityPlayer player)
     {
         byte[]? updateData = GetMapState(stack.getDamage(), world).GetPlayerMarkerPacket(player);
-        return updateData == null ? null : MapUpdateS2CPacket.Get((short)item.Id, (short)stack.getDamage(), updateData);
+        return updateData == null ? null : new MapUpdateMessage
+        {
+            ItemRawId = (short)item.Id,
+            MapId = (short)stack.getDamage(),
+            Data = updateData
+        };
     }
 
     public static MapState GetMapState(int mapId, IWorldContext world)

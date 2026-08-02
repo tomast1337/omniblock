@@ -349,6 +349,18 @@ public class PlayerManager
         }
     }
 
+    public void sendToDimension(Message message, int dimensionId)
+    {
+        for (int playerIndex = 0; playerIndex < players.Count; playerIndex++)
+        {
+            ServerPlayerEntity playerEntity = players[playerIndex];
+            if (playerEntity.DimensionId == dimensionId)
+            {
+                playerEntity.NetworkHandler.SendMessage(message);
+            }
+        }
+    }
+
     public string getPlayerList()
     {
         return string.Join(", ", players.ConvertAll(p => p.Name));
@@ -673,7 +685,7 @@ public class PlayerManager
 
     public static void sendWorldInfo(ServerPlayerEntity player, ServerWorld world)
     {
-        player.NetworkHandler.SendPacket(WorldTimeUpdateS2CPacket.Get(world.GetTime()));
+        player.NetworkHandler.SendMessage(new WorldTimeUpdateMessage { Time = world.GetTime() });
         if (world.Properties.IsRaining)
         {
             player.NetworkHandler.SendMessage(new GameStateChangeMessage { Reason = 1 });

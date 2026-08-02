@@ -389,7 +389,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             {
                 if (MathHelper.GetDistSqr(player.X, player.Y, player.Z, x, y, z) < 256.0)
                 {
-                    player.NetworkHandler.SendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
+                    player.NetworkHandler.SendMessage(new BlockUpdateMessage { X = x, Y = (sbyte)y, Z = z, BlockRawId = (byte)world.Reader.GetBlockId(x, y, z), BlockMetadata = (byte)world.Reader.GetBlockMeta(x, y, z) });
                 }
 
                 return;
@@ -409,7 +409,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             {
                 if (!CanBypassSpawnProtection(x, z, world))
                 {
-                    player.NetworkHandler.SendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
+                    player.NetworkHandler.SendMessage(new BlockUpdateMessage { X = x, Y = (sbyte)y, Z = z, BlockRawId = (byte)world.Reader.GetBlockId(x, y, z), BlockMetadata = (byte)world.Reader.GetBlockMeta(x, y, z) });
                 }
                 else
                 {
@@ -421,7 +421,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 player.InteractionManager.continueMining(x, y, z);
                 if (world.Reader.GetBlockId(x, y, z) != 0)
                 {
-                    player.NetworkHandler.SendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
+                    player.NetworkHandler.SendMessage(new BlockUpdateMessage { X = x, Y = (sbyte)y, Z = z, BlockRawId = (byte)world.Reader.GetBlockId(x, y, z), BlockMetadata = (byte)world.Reader.GetBlockMeta(x, y, z) });
                 }
             }
         }
@@ -461,7 +461,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 player.InteractionManager.interactBlock(player, world, stack, x, y, z, side);
             }
 
-            player.NetworkHandler.SendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
+            player.NetworkHandler.SendMessage(new BlockUpdateMessage { X = x, Y = (sbyte)y, Z = z, BlockRawId = (byte)world.Reader.GetBlockId(x, y, z), BlockMetadata = (byte)world.Reader.GetBlockMeta(x, y, z) });
             switch (side)
             {
                 case 0:
@@ -484,7 +484,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                     break;
             }
 
-            player.NetworkHandler.SendPacket(BlockUpdateS2CPacket.Get(x, y, z, world));
+            player.NetworkHandler.SendMessage(new BlockUpdateMessage { X = x, Y = (sbyte)y, Z = z, BlockRawId = (byte)world.Reader.GetBlockId(x, y, z), BlockMetadata = (byte)world.Reader.GetBlockMeta(x, y, z) });
         }
 
         stack = player.Inventory.ItemInHand;

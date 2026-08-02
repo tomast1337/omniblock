@@ -563,7 +563,7 @@ public abstract class BetaSharpServer : ICommandOutput
                 ServerWorld world = worlds[i];
                 if (_ticks % 20 == 0)
                 {
-                    playerManager.sendToDimension(WorldTimeUpdateS2CPacket.Get(world.GetTime()), world.Dimension.Id);
+                    playerManager.sendToDimension(new WorldTimeUpdateMessage { Time = world.GetTime() }, world.Dimension.Id);
                 }
 
                 world.Tick();

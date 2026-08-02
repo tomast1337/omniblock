@@ -2,6 +2,7 @@ using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Items.Behaviors;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
 using BetaSharp.Registries;
 using BetaSharp.Stats;
@@ -185,7 +186,7 @@ public class Item
 
     public virtual bool isNetworkSynced() => _behavior?.IsNetworkSynced(this) ?? false;
 
-    public virtual Packet? getUpdatePacket(ItemStack stack, IWorldContext world, EntityPlayer player) => _behavior?.GetUpdatePacket(this, stack, world, player);
+    public virtual Message? getUpdatePacket(ItemStack stack, IWorldContext world, EntityPlayer player) => _behavior?.GetUpdatePacket(this, stack, world, player);
 
     internal static Func<Block, bool> PickaxeSuitableFor(ToolMaterial material) => block =>
     {

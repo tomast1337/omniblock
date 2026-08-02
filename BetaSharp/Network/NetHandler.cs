@@ -134,48 +134,9 @@ public abstract class NetHandler
         handle(packet);
     }
 
-    public virtual void onChunkDeltaUpdate(ChunkDeltaUpdateS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onBlockUpdate(BlockUpdateS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onChunkStatusUpdate(ChunkStatusUpdateS2CPacket packet)
-    {
-        handle(packet);
-    }
-
     public virtual void onHandshake(HandshakePacket packet)
     {
         handle(packet);
     }
 
-    public virtual void onWorldTimeUpdate(WorldTimeUpdateS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onExplosion(ExplosionS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onPlayNoteSound(PlayNoteSoundS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onMapUpdate(MapUpdateS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onWorldEvent(WorldEventS2CPacket packet)
-    {
-        handle(packet);
-    }
 }

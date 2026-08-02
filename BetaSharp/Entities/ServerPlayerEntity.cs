@@ -229,10 +229,10 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
                 continue;
             }
 
-            Packet? packet = Item.ITEMS[itemStack.ItemId]!.getUpdatePacket(itemStack, World, this);
+            Message? packet = Item.ITEMS[itemStack.ItemId]!.getUpdatePacket(itemStack, World, this);
             if (packet != null)
             {
-                NetworkHandler?.SendPacket(packet);
+                NetworkHandler?.SendMessage(packet);
             }
         }
 

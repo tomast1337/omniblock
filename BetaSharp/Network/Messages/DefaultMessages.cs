@@ -31,5 +31,7 @@ public static class DefaultMessages
         registry.Register(ChunkCacheOfferMessage.Id, 1, static () => new ChunkCacheOfferMessage());
         registry.Register(EntitySnapshotMessage.Id, 1, static () => new EntitySnapshotMessage());
         registry.Register(RegistryDataMessage.Id, 1, static () => new RegistryDataMessage());
+        registry.Register(ChunkDeltaUpdateMessage.Id, 1, static () => new ChunkDeltaUpdateMessage());
+        registry.Register(ExplosionMessage.Id, 1, static () => new ExplosionMessage());
     }
 }

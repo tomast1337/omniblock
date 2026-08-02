@@ -39,7 +39,8 @@ internal class ServerWorldEventListener : IWorldEventListener
 
     public void WorldEvent(EntityPlayer? player, int @event, int x, int y, int z, int data)
     {
-        server.playerManager.sendToAround(player, x, y, z, 64.0, world.Dimension.Id, WorldEventS2CPacket.Get(@event, x, y, z, data));
+        server.playerManager.sendToAround(player, x, y, z, 64.0, world.Dimension.Id,
+            new WorldEventMessage { EventId = @event, X = x, Y = (sbyte)y, Z = z, Data = data });
     }
 
     public void BroadcastEntityEvent(Entity entity, byte @event)
@@ -50,7 +51,8 @@ internal class ServerWorldEventListener : IWorldEventListener
 
     public void PlayNote(int x, int y, int z, int soundType, int pitch)
     {
-        server.playerManager.sendToAround(x, y, z, 64.0, world.Dimension.Id, PlayNoteSoundS2CPacket.Get(x, y, z, soundType, pitch));
+        server.playerManager.sendToAround(x, y, z, 64.0, world.Dimension.Id,
+            new PlayNoteSoundMessage { X = x, Y = (short)y, Z = z, Instrument = (byte)soundType, Pitch = (byte)pitch });
     }
 
     public void SpawnParticle(string particle, double x, double y, double z, double velocityX, double velocityY, double velocityZ) { }
