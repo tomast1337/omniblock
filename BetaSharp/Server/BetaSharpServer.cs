@@ -432,9 +432,24 @@ public abstract class BetaSharpServer : ICommandOutput
                         }
                         _ticksThisSecond = 0;
                         _lastTpsTime = tpsNow;
+                        int playerCount = playerManager.players.Count;
+                        int entityCount = worlds[0].Entities.Entities.Count;
+
                         MetricRegistry.Set(ServerMetrics.Tps, _currentTps);
-                        MetricRegistry.Set(ServerMetrics.PlayerCount, playerManager.players.Count);
-                        MetricRegistry.Set(ServerMetrics.EntityCount, worlds[0].Entities.Entities.Count);
+                        MetricRegistry.Set(ServerMetrics.PlayerCount, playerCount);
+                        MetricRegistry.Set(ServerMetrics.EntityCount, entityCount);
+
+                        // The same numbers, pushed to anyone who is not in this process. Here rather
+                        // than on its own timer because this is already the once-a-second point where
+                        // they are recomputed, and a second timer would either duplicate that work or
+                        // read values from a moment it did not choose.
+                        playerManager.sendToAll(new ServerStatusMessage
+                        {
+                            Tps = _currentTps,
+                            Mspt = MetricRegistry.Get(ServerMetrics.Mspt),
+                            EntityCount = entityCount,
+                            PlayerCount = playerCount
+                        });
                     }
 
                     Thread.Sleep(1);

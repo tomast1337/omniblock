@@ -399,6 +399,7 @@ public class ClientNetworkHandler : NetHandler
     {
         MessageHandlers.On<TimeSyncResponseMessage>(onTimeSyncResponse);
         MessageHandlers.On<TickStampMessage>(onTickStamp);
+        MessageHandlers.On<ServerStatusMessage>(onServerStatus);
         MessageHandlers.On<ChunkDataMessage>(onChunkData);
         MessageHandlers.On<RegionDataMessage>(onRegionData);
         MessageHandlers.On<PlayerMoveMessage>(onPlayerMove);
@@ -450,6 +451,23 @@ public class ClientNetworkHandler : NetHandler
         MessageHandlers.On<PlayNoteSoundMessage>(onPlayNoteSound);
         MessageHandlers.On<ExplosionMessage>(onExplosion);
         MessageHandlers.On<MapUpdateMessage>(onMapUpdate);
+    }
+
+    /// <summary>
+    ///     Publishes the server's own health into the metric registry the debug overlay reads.
+    ///     <para>
+    ///         Writing to the same handles the server writes in singleplayer is deliberate: the
+    ///         overlay then has one source to read and does not need to know which kind of session it
+    ///         is in. In singleplayer both writers exist and agree, because they are reporting the
+    ///         same numbers from the same process.
+    ///     </para>
+    /// </summary>
+    private static void onServerStatus(ServerStatusMessage message)
+    {
+        MetricRegistry.Set(ServerMetrics.Tps, message.Tps);
+        MetricRegistry.Set(ServerMetrics.Mspt, message.Mspt);
+        MetricRegistry.Set(ServerMetrics.EntityCount, message.EntityCount);
+        MetricRegistry.Set(ServerMetrics.PlayerCount, message.PlayerCount);
     }
 
     /// <summary>
