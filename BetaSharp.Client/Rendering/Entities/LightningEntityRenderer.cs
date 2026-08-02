@@ -8,14 +8,27 @@ namespace BetaSharp.Client.Rendering.Entities;
 
 public class LightningEntityRenderer : EntityRenderer
 {
+    /// <summary>
+    ///     The bolt, which only ever brightens what is behind it.
+    /// </summary>
+    /// <remarks>
+    ///     Everything but the blending is what the entity pass already has in effect, spelled out
+    ///     rather than inherited: culling and the depth test are switched on for the frame in
+    ///     <c>GameRenderer.RenderFrame</c>, and the compare function and cull face are set once at
+    ///     startup and never changed. Saying all of it is the point, since a pipeline is selected
+    ///     whole rather than adjusted a field at a time.
+    /// </remarks>
+    private static readonly RenderState s_bolt = RenderState.Opaque with { Blend = BlendMode.AdditiveByAlpha };
 
     public void render(long renderSeed, double x, double y, double z)
     {
         Tessellator tessellator = Tessellator.instance;
+
+        // Texturing and lighting are shader uniforms underneath rather than pipeline state, so they
+        // stay as they are and are not part of the state above.
         GLManager.GL.Disable(GLEnum.Texture2D);
         GLManager.GL.Disable(GLEnum.Lighting);
-        GLManager.GL.Enable(GLEnum.Blend);
-        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.One);
+        GLManager.State.ApplyUntrusted(s_bolt);
         double[] xOffsets = new double[8];
         double[] zOffsets = new double[8];
         double offsetX = 0.0D;
@@ -116,7 +129,7 @@ public class LightningEntityRenderer : EntityRenderer
             }
         }
 
-        GLManager.GL.Disable(GLEnum.Blend);
+        GLManager.State.ApplyUntrusted(RenderState.Opaque);
         GLManager.GL.Enable(GLEnum.Lighting);
         GLManager.GL.Enable(GLEnum.Texture2D);
     }

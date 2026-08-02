@@ -28,6 +28,23 @@ public sealed class RenderStateApplier
     /// </summary>
     public void Invalidate() => _known = false;
 
+    /// <summary>
+    ///     Applies a state without trusting what is cached.
+    /// </summary>
+    /// <remarks>
+    ///     What every migrated caller needs until the last unmigrated one is gone. The cache is only
+    ///     updated by <see cref="Apply" />, so while most of the renderer still sets these globals
+    ///     directly it describes the state at some earlier <c>Apply</c> rather than the state now.
+    ///     Trusting it would let a field be skipped because the cache says it already holds a value
+    ///     that raw calls have since overwritten. Every use of this is a call site waiting to become
+    ///     <see cref="Apply" />.
+    /// </remarks>
+    public void ApplyUntrusted(in RenderState state)
+    {
+        Invalidate();
+        Apply(state);
+    }
+
     public void Apply(in RenderState state)
     {
         if (_known && _current == state)
