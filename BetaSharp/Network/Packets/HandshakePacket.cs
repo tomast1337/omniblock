@@ -17,5 +17,5 @@ public class HandshakePacket() : Packet(PacketId.Handshake)
 
     public override void Apply(NetHandler handler) => handler.onHandshake(this);
 
-    public override int Size() => 4 + Username.Length + 4;
+    public override int Size() => StreamExtensions.LongStringSize(Username);
 }

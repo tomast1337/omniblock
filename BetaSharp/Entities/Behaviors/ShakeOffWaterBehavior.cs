@@ -1,6 +1,5 @@
 using BetaSharp.Entities.State;
 using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Entities.Behaviors;

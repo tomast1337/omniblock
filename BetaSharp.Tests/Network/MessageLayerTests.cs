@@ -1,7 +1,6 @@
 using BetaSharp;
 using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.S2CPlay;
 
 namespace BetaSharp.Tests.Network;
 

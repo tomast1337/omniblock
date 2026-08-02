@@ -18,7 +18,6 @@ using BetaSharp.Network;
 using BetaSharp.Network.Chunks;
 using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Network.Snapshots;
 using BetaSharp.Network.Transport;
 using BetaSharp.Registries;

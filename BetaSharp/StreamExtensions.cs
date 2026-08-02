@@ -57,6 +57,18 @@ internal static class StreamExtensions
     public static int ByteArraySize(byte[] value) => VarIntSize(value.Length) + value.Length;
 
     /// <summary>
+    ///     Bytes <see cref="Stream.WriteLongString" /> will emit: a two-byte character count, then
+    ///     two bytes per character.
+    ///     <para>
+    ///         Both packets that use this encoding sized it as one byte per character and then added
+    ///         a constant that happened to make one length come out right. The encoding is UTF-16,
+    ///         so the count and the byte total are different numbers, and the count is the one the
+    ///         length prefix carries.
+    ///     </para>
+    /// </summary>
+    public static int LongStringSize(string value) => sizeof(ushort) + value.Length * 2;
+
+    /// <summary>
     ///     Bytes <see cref="Stream.WriteResourceLocation" /> will emit. Mirrors that writer's
     ///     shortcut for the default namespace, which travels as a single sentinel byte rather than
     ///     as its name.
@@ -253,13 +265,17 @@ internal static class StreamExtensions
         public string ReadLongString(ushort maximumLength = ushort.MaxValue)
         {
             ushort length = stream.ReadUShort();
-            byte[] buffer = new byte[length * 2];
 
+            // Before the allocation, not after it. The peer supplies this count and it sizes the
+            // buffer, so checking it afterwards means the memory the check exists to refuse has
+            // already been handed out.
             if (length > maximumLength)
             {
-                throw new IOException("Received string length longer than maximum allowed (" + buffer.Length + " > " + maximumLength + ")");
+                throw new IOException(
+                    $"Received string of {length} characters; the maximum allowed is {maximumLength}.");
             }
 
+            byte[] buffer = new byte[length * 2];
             stream.ReadExactly(buffer);
 
             return Encoding.BigEndianUnicode.GetString(buffer);

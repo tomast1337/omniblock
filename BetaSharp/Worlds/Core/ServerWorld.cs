@@ -1,7 +1,6 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Server;
 using BetaSharp.Server.Internal;
 using BetaSharp.Server.Worlds;

@@ -42,5 +42,6 @@ public class LoginHelloPacket() : Packet(PacketId.LoginHello)
 
     public override void Apply(NetHandler handler) => handler.onHello(this);
 
-    public override int Size() => 4 + Username.Length + 4 + 5;
+    public override int Size() =>
+        sizeof(int) + StreamExtensions.LongStringSize(Username) + sizeof(long) + sizeof(byte);
 }
