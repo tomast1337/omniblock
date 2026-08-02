@@ -402,6 +402,7 @@ public class ClientNetworkHandler : NetHandler
         MessageHandlers.On<TimeSyncResponseMessage>(onTimeSyncResponse);
         MessageHandlers.On<TickStampMessage>(onTickStamp);
         MessageHandlers.On<ChunkDataMessage>(onChunkData);
+        MessageHandlers.On<RegionDataMessage>(onRegionData);
         MessageHandlers.On<ChunkUnchangedMessage>(onChunkUnchanged);
         MessageHandlers.On<EntitySnapshotMessage>(onEntitySnapshot);
         MessageHandlers.On<EntityMoveMessage>(onEntityMove);
@@ -1024,10 +1025,10 @@ public class ClientNetworkHandler : NetHandler
 
     }
 
-    public override void handleChunkData(ChunkDataS2CPacket packet)
+    private void onRegionData(RegionDataMessage message)
     {
-        _worldClient.ClearBlockResets(packet.X, packet.Y, packet.Z, packet.X + packet.SizeX - 1, packet.Y + packet.SizeY - 1, packet.Z + packet.SizeZ - 1);
-        _worldClient.HandleChunkDataUpdate(packet.X, packet.Y, packet.Z, packet.SizeX, packet.SizeY, packet.SizeZ, packet.ChunkData);
+        _worldClient.ClearBlockResets(message.X, message.Y, message.Z, message.X + message.SizeX - 1, message.Y + message.SizeY - 1, message.Z + message.SizeZ - 1);
+        _worldClient.HandleChunkDataUpdate(message.X, message.Y, message.Z, message.SizeX, message.SizeY, message.SizeZ, message.Decompress());
     }
 
     private void onBlockUpdate(BlockUpdateMessage packet)

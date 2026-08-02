@@ -116,28 +116,24 @@ public abstract class Packet
 
     public abstract int Size();
 
-    public virtual void ProcessForInternal() { }
-
     static Packet() =>
         Registry.Register([
-            New(PacketId.LoginHello, true, true, false, () => new LoginHelloPacket()),
-            New(PacketId.Handshake, true, true, false, () => new HandshakePacket()),
-            New(PacketId.PlayerMove, true, true, false, () => new PlayerMovePacket()),
-            New(PacketId.PlayerMovePositionAndOnGround, true, true, false, () => new PlayerMovePositionAndOnGroundPacket()),
-            New(PacketId.PlayerMoveLookAndOnGround, true, true, false, () => new PlayerMoveLookAndOnGroundPacket()),
-            New(PacketId.PlayerMoveFull, true, true, false, () => new PlayerMoveFullPacket()),
-            New(PacketId.ChunkDataS2C, true, false, true, () => new ChunkDataS2CPacket()),
-            New(PacketId.MessageRegistrySyncS2C, true, false, false, () => new MessageRegistrySyncS2CPacket()),
-            New(PacketId.OmniMessage, true, true, false, () => new OmniMessagePacket())
+            New(PacketId.LoginHello, true, true, () => new LoginHelloPacket()),
+            New(PacketId.Handshake, true, true, () => new HandshakePacket()),
+            New(PacketId.PlayerMove, true, true, () => new PlayerMovePacket()),
+            New(PacketId.PlayerMovePositionAndOnGround, true, true, () => new PlayerMovePositionAndOnGroundPacket()),
+            New(PacketId.PlayerMoveLookAndOnGround, true, true, () => new PlayerMoveLookAndOnGroundPacket()),
+            New(PacketId.PlayerMoveFull, true, true, () => new PlayerMoveFullPacket()),
+            New(PacketId.MessageRegistrySyncS2C, true, false, () => new MessageRegistrySyncS2CPacket()),
+            New(PacketId.OmniMessage, true, true, () => new OmniMessagePacket())
         ]);
 
-    public class PacketRegisterItem(byte rawId, bool clientBound, bool serverBound, bool worldPacket, Func<Packet> factory) : FactoryItem<Packet>(rawId, factory)
+    public class PacketRegisterItem(byte rawId, bool clientBound, bool serverBound, Func<Packet> factory) : FactoryItem<Packet>(rawId, factory)
     {
         public readonly bool ClientBound = clientBound;
         public readonly bool ServerBound = serverBound;
-        public readonly bool WorldPacket = worldPacket;
     }
 
-    private static PacketRegisterItem New(PacketId rawId, bool clientBound, bool serverBound, bool worldPacket, Func<Packet> factory) =>
-        new((byte)rawId, clientBound, serverBound, worldPacket, factory);
+    private static PacketRegisterItem New(PacketId rawId, bool clientBound, bool serverBound, Func<Packet> factory) =>
+        new((byte)rawId, clientBound, serverBound, factory);
 }

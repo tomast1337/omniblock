@@ -78,9 +78,10 @@ public class Connection
     ///     <para>
     ///         True only for loopback, where <see cref="InternalConnection" /> hands the packet
     ///         straight over. Callers use it to skip work whose entire purpose is to make bytes
-    ///         smaller: on this connection there are no bytes, so compressing is pure cost. It is the
-    ///         same question <c>Packet.ProcessForInternal</c> answers, asked before the packet is
-    ///         built rather than after.
+    ///         smaller: on this connection there are no bytes, so compressing is pure cost. It
+    ///         replaces the <c>ProcessForInternal</c> hook the legacy packets had, which asked the
+    ///         same question after the work had already been done and could therefore only discard
+    ///         the result.
     ///     </para>
     /// </summary>
     public virtual bool IsInternal => false;

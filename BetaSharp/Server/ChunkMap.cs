@@ -464,17 +464,6 @@ internal class ChunkMap
             }
         }
 
-        public void sendPacketToPlayers(Packet packet)
-        {
-            foreach (ServerPlayerEntity serverPlayer in _players)
-            {
-                if (serverPlayer.ActiveChunks.Contains(_chunkPos))
-                {
-                    serverPlayer.NetworkHandler.SendPacket(packet);
-                }
-            }
-        }
-
         public void sendMessageToPlayers(Message message)
         {
             foreach (ServerPlayerEntity serverPlayer in _players)
@@ -519,7 +508,7 @@ internal class ChunkMap
                     int sizeX = _dirtyBlockMaxX - _dirtyBlockMinX + 1;
                     int sizeY = _dirtyBlockMaxY - _dirtyBlockMinY + 2;
                     int sizeZ = _dirtyBlockMaxZ - _dirtyBlockMinZ + 1;
-                    sendPacketToPlayers(ChunkDataS2CPacket.Get(worldX, worldY, worldZ, sizeX, sizeY, sizeZ, sWorld));
+                    sendMessageToPlayers(RegionDataMessage.Of(worldX, worldY, worldZ, sizeX, sizeY, sizeZ, sWorld));
                     List<BlockEntity> blockEntities = sWorld.getBlockEntities(worldX, worldY, worldZ, worldX + sizeX, worldY + sizeY, worldZ + sizeZ);
 
                     for (int i = 0; i < blockEntities.Count; i++)

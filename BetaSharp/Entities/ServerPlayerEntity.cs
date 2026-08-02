@@ -443,11 +443,14 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             return message.Size();
         }
 
-        int worldX = chunkPos.X * 16;
-        int worldZ = chunkPos.Z * 16;
-        ChunkDataS2CPacket packet = ChunkDataS2CPacket.Get(worldX, 0, worldZ, 16, ChuckFormat.WorldHeight, 16, world);
-        handler.SendPacket(packet);
-        return packet.Size();
+        // Loopback, and nothing else now that every play packet is a message. The palette encoding
+        // is skipped because its saving is measured in wire bytes and there is no wire; the box
+        // encoding is kept because the chunk pacer's budget is denominated in the size the message
+        // reports, and a message that reports a header is not paced at all.
+        RegionDataMessage region = RegionDataMessage.Of(
+            chunkPos.X * 16, 0, chunkPos.Z * 16, 16, ChuckFormat.WorldHeight, 16, world);
+        handler.SendMessage(region);
+        return region.Size();
     }
 
     private void SendBlockEntityUpdates(IWorldContext world, ChunkPos chunkPos)
