@@ -29,3 +29,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-01 — feat(network): move the player state packets onto the message layer (Nicolas Vyčas Nery; `8427bd3c722445b6a29d79d84e7f440b8314a15d`)
 - 2026-08-01 — feat(network): move the world and block packets onto the message layer (Nicolas Vyčas Nery; `958373b2557cc123aea6e3fa0d5bd5b7f11bb793`)
 - 2026-08-02 — fix(network): give RegistryDataMessage a writable default registry ID (Nicolas Vyčas Nery; `969d79dc215bc038fa8b42228d0e4e72df05751a`)
+- 2026-08-02 — refactor(network): delete the dead bundle packet (Nicolas Vyčas Nery; `b064705270beec6926117fc2c00dca807697dfc9`)
