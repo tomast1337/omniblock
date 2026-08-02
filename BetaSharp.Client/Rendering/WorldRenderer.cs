@@ -38,10 +38,15 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     private readonly TextureManager _textureManager;
     private readonly BetaSharp _game;
     private int _cloudOffsetX;
-    private readonly int _starGLCallList;
-    private readonly int _glSkyList;
-    private readonly int _glSkyList2;
-    private int _glCloudsList = -1;
+    private readonly StaticMesh _stars;
+    private readonly StaticMesh _skyAbove;
+    private readonly StaticMesh _skyBelow;
+
+    /// <summary>
+    ///     One mesh for the shader-based clouds, four for the legacy ones (bottom, top, and the two
+    ///     side faces), rebuilt whenever the clouds quality option changes.
+    /// </summary>
+    private StaticMesh[] _clouds = [];
     private int _renderDistance = -1;
     private int _renderEntitiesStartupCounter = 2;
     private readonly Shader _skyShader;
@@ -59,18 +64,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         _game = gameInstance;
         _textureManager = textureManager;
 
-        _starGLCallList = GLAllocation.generateDisplayLists(3);
-        GLManager.GL.PushMatrix();
-        GLManager.GL.NewList((uint)_starGLCallList, GLEnum.Compile);
-        RenderStars();
-        GLManager.GL.EndList();
-        GLManager.GL.PopMatrix();
-        Tessellator tessellator = Tessellator.instance;
-        _glSkyList = _starGLCallList + 1;
-        GLManager.GL.NewList((uint)_glSkyList, GLEnum.Compile);
-        byte skyPlaneStep = 64;
-        int skyPlaneRadius = 256 / skyPlaneStep + 2;
-        float skyPlaneY = 16.0F;
+        _stars = BuildStars();
 
         ChunkRenderer = new(gameInstance.World, _game.Options);
         EntityBatchRenderer.Initialize(_game.Options);
@@ -80,40 +74,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         _cloudShader = new Shader(_game.Options.ShaderOptions.GetOrCreate("cloud"), "shaders/cloud.vert", "shaders/cloud.frag");
         _cloudShader.Changed += OnBuildCloudShader;
 
-        int planeX;
-        int planeZ;
-        for (planeX = -skyPlaneStep * skyPlaneRadius; planeX <= skyPlaneStep * skyPlaneRadius; planeX += skyPlaneStep)
-        {
-            for (planeZ = -skyPlaneStep * skyPlaneRadius; planeZ <= skyPlaneStep * skyPlaneRadius; planeZ += skyPlaneStep)
-            {
-                tessellator.startDrawingQuads();
-                tessellator.addVertex(planeX + 0, skyPlaneY, planeZ + 0);
-                tessellator.addVertex(planeX + skyPlaneStep, skyPlaneY, planeZ + 0);
-                tessellator.addVertex(planeX + skyPlaneStep, skyPlaneY, planeZ + skyPlaneStep);
-                tessellator.addVertex(planeX + 0, skyPlaneY, planeZ + skyPlaneStep);
-                tessellator.draw();
-            }
-        }
-
-        GLManager.GL.EndList();
-        _glSkyList2 = _starGLCallList + 2;
-        GLManager.GL.NewList((uint)_glSkyList2, GLEnum.Compile);
-        skyPlaneY = -16.0F;
-        tessellator.startDrawingQuads();
-
-        for (planeX = -skyPlaneStep * skyPlaneRadius; planeX <= skyPlaneStep * skyPlaneRadius; planeX += skyPlaneStep)
-        {
-            for (planeZ = -skyPlaneStep * skyPlaneRadius; planeZ <= skyPlaneStep * skyPlaneRadius; planeZ += skyPlaneStep)
-            {
-                tessellator.addVertex(planeX + skyPlaneStep, skyPlaneY, planeZ + 0);
-                tessellator.addVertex(planeX + 0, skyPlaneY, planeZ + 0);
-                tessellator.addVertex(planeX + 0, skyPlaneY, planeZ + skyPlaneStep);
-                tessellator.addVertex(planeX + skyPlaneStep, skyPlaneY, planeZ + skyPlaneStep);
-            }
-        }
-
-        tessellator.draw();
-        GLManager.GL.EndList();
+        _skyAbove = BuildSkyPlane(16.0F, facingUp: true);
+        _skyBelow = BuildSkyPlane(-16.0F, facingUp: false);
 
         _skyShader = new Shader(_game.Options.ShaderOptions.GetOrCreate("sky"), "shaders/sky.vert", "shaders/sky.frag");
         _skyShader.Changed += OnBuildSkyShader;
@@ -130,8 +92,17 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         if (_cloudsQuality == _game.Options.CloudsQuality) return;
         if (_cloudsQuality == -1 || _game.Options.CloudsQuality == 0 || _game.Options.CloudsQuality == 2)
         {
-            if (_game.Options.CloudsQuality <= 0) BuildCloudDisplayListsLegacy();
-            else if (_game.Options.CloudsQuality > 1) BuildCloudDisplayLists();
+            // The meshes belong to whichever quality built them, so the old set goes before the new
+            // one is built rather than leaking a buffer on every change.
+            foreach (StaticMesh mesh in _clouds)
+            {
+                mesh.Dispose();
+            }
+
+            _clouds = [];
+
+            if (_game.Options.CloudsQuality <= 0) _clouds = BuildLegacyCloudMeshes();
+            else if (_game.Options.CloudsQuality > 1) _clouds = [BuildCloudMesh()];
         }
 
         _cloudsQuality = _game.Options.CloudsQuality;
@@ -146,7 +117,48 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public void SetFogColor(float r, float g, float b) => _fogColor = new(r, g, b);
 
-    private static void RenderStars()
+    /// <summary>
+    ///     The flat sheet of quads the sky colour is painted onto, at <paramref name="y" />.
+    /// </summary>
+    /// <remarks>
+    ///     Wound the opposite way for the sheet below the horizon, since it is seen from the other
+    ///     side. The two used to be built by separate loops that differed only in that and in the
+    ///     height, one of them starting a batch per quad and the other batching the lot; the
+    ///     geometry was always the same.
+    /// </remarks>
+    private static StaticMesh BuildSkyPlane(float y, bool facingUp)
+    {
+        const int step = 64;
+        const int radius = 256 / step + 2;
+
+        Tessellator tessellator = Tessellator.instance;
+        tessellator.startDrawingQuads();
+
+        for (int x = -step * radius; x <= step * radius; x += step)
+        {
+            for (int z = -step * radius; z <= step * radius; z += step)
+            {
+                if (facingUp)
+                {
+                    tessellator.addVertex(x + 0, y, z + 0);
+                    tessellator.addVertex(x + step, y, z + 0);
+                    tessellator.addVertex(x + step, y, z + step);
+                    tessellator.addVertex(x + 0, y, z + step);
+                }
+                else
+                {
+                    tessellator.addVertex(x + step, y, z + 0);
+                    tessellator.addVertex(x + 0, y, z + 0);
+                    tessellator.addVertex(x + 0, y, z + step);
+                    tessellator.addVertex(x + step, y, z + step);
+                }
+            }
+        }
+
+        return tessellator.captureStatic();
+    }
+
+    private static StaticMesh BuildStars()
     {
         Random random = new(10842);
         Tessellator tessellator = Tessellator.instance;
@@ -194,7 +206,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             }
         }
 
-        tessellator.draw();
+        return tessellator.captureStatic();
     }
 
     public void ChangeWorld(World world)
@@ -228,6 +240,17 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     {
         _cloudShader?.Dispose();
         ChunkRenderer?.Dispose();
+
+        _stars.Dispose();
+        _skyAbove.Dispose();
+        _skyBelow.Dispose();
+
+        foreach (StaticMesh mesh in _clouds)
+        {
+            mesh.Dispose();
+        }
+
+        _clouds = [];
     }
 
     public void LoadRenderers()
@@ -405,8 +428,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
         GLManager.GL.Color3(1.0F, 1.0F, 1.0F);
-        GLManager.GL.CallList((uint)_glSkyList);
-        GLManager.GL.CallList((uint)_glSkyList2);
+        _skyAbove.Draw();
+        _skyBelow.Draw();
 
         // Sunrise/sunset fan
         _skyShader.SetUniform1("u_GradientMode", 0);
@@ -470,7 +493,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         if (starBrightness > 0.0F)
         {
             GLManager.GL.Color4(starBrightness, starBrightness, starBrightness, starBrightness);
-            GLManager.GL.CallList((uint)_starGLCallList);
+            _stars.Draw();
         }
 
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
@@ -502,12 +525,10 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         }
     }
 
-    private void BuildCloudDisplayLists()
+    private static StaticMesh BuildCloudMesh()
     {
-        _glCloudsList = GLAllocation.generateDisplayLists(1);
         Tessellator tessellator = Tessellator.instance;
 
-        GLManager.GL.NewList((uint)_glCloudsList, GLEnum.Compile);
         tessellator.startDrawingQuads();
         float uvScale = 1.0F / 256.0F;
         byte tileSize = CloudsRenderDistance;
@@ -519,18 +540,17 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         tessellator.addVertexWithUV(tileSize, 0.0, 0, tile, 0);
         tessellator.addVertexWithUV(0, 0.0, 0, 0, 0);
 
-        tessellator.draw();
-        GLManager.GL.EndList();
+        return tessellator.captureStatic();
     }
 
-    private void BuildCloudDisplayListsLegacy()
+    /// <summary>Bottom, top, and the two side faces, in the order the draw path expects them.</summary>
+    private static StaticMesh[] BuildLegacyCloudMeshes()
     {
-        _glCloudsList = GLAllocation.generateDisplayLists(4);
         Tessellator tessellator = Tessellator.instance;
+        StaticMesh[] meshes = new StaticMesh[4];
 
         for (int i = 0; i < 4; ++i)
         {
-            GLManager.GL.NewList((uint)(_glCloudsList + i), GLEnum.Compile);
             tessellator.startDrawingQuads();
             float cloudHeight = 4.0F;
             float uvScale = 1.0F / 256.0F;
@@ -621,9 +641,10 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                 }
             }
 
-            tessellator.draw();
-            GLManager.GL.EndList();
+            meshes[i] = tessellator.captureStatic();
         }
+
+        return meshes;
     }
 
     private void RenderCloudsFancy(float tickDelta)
@@ -669,7 +690,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         GLManager.GL.MatrixMode(GLEnum.Modelview);
 
         GLManager.GL.Color4(cloudRed, cloudGreen, cloudBlue, 0.8F);
-        GLManager.GL.CallList((uint)_glCloudsList);
+        _clouds[0].Draw();
 
         GLManager.GL.MatrixMode(GLEnum.Texture);
         GLManager.GL.PopMatrix();
@@ -735,20 +756,20 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             if (cloudY > -cloudHeight - 1.0F)
             {
                 GLManager.GL.Color4(cloudRed * 0.7F, cloudGreen * 0.7F, cloudBlue * 0.7F, 0.8F);
-                GLManager.GL.CallList((uint)(_glCloudsList + 0)); // Bottom
+                _clouds[0].Draw(); // Bottom
             }
 
             if (cloudY <= cloudHeight + 1.0F)
             {
                 GLManager.GL.Color4(cloudRed, cloudGreen, cloudBlue, 0.8F);
-                GLManager.GL.CallList((uint)(_glCloudsList + 1)); // Top
+                _clouds[1].Draw(); // Top
             }
 
             GLManager.GL.Color4(cloudRed * 0.9F, cloudGreen * 0.9F, cloudBlue * 0.9F, 0.8F);
-            GLManager.GL.CallList((uint)(_glCloudsList + 2)); // Side X
+            _clouds[2].Draw(); // Side X
 
             GLManager.GL.Color4(cloudRed * 0.8F, cloudGreen * 0.8F, cloudBlue * 0.8F, 0.8F);
-            GLManager.GL.CallList((uint)(_glCloudsList + 3)); // Side Z
+            _clouds[3].Draw(); // Side Z
 
             GLManager.GL.MatrixMode(GLEnum.Texture);
             GLManager.GL.PopMatrix();

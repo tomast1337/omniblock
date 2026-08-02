@@ -257,53 +257,54 @@ public class Tessellator
                     GLManager.GL.BufferData(GLEnum.ArrayBuffer, (nuint)(rawBufferIndex * 4), ptr, GLEnum.StreamDraw);
                 }
 
-                if (hasTexture)
-                {
-                    GLManager.GL.TexCoordPointer(2, GLEnum.Float, 32, (void*)12);
-                    GLManager.GL.EnableClientState(GLEnum.TextureCoordArray);
-                }
-                if (hasColor)
-                {
-                    GLManager.GL.ColorPointer(4, ColorPointerType.UnsignedByte, 32, (void*)20);
-                    GLManager.GL.EnableClientState(GLEnum.ColorArray);
-                }
-                if (hasNormals)
-                {
-                    GLManager.GL.NormalPointer(NormalPointerType.Byte, 32, (void*)24);
-                    GLManager.GL.EnableClientState(GLEnum.NormalArray);
-                }
-
-                GLManager.GL.VertexPointer(3, GLEnum.Float, 32, (void*)0);
-
-                GLManager.GL.EnableClientState(GLEnum.VertexArray);
-                if (drawMode == 7 && convertQuadsToTriangles)
-                {
-                    GLManager.GL.DrawArrays(GLEnum.Triangles, 0, (uint)vertexCount);
-                }
-                else
-                {
-                    GLManager.GL.DrawArrays((GLEnum)drawMode, 0, (uint)vertexCount);
-                }
-
-                GLManager.GL.DisableClientState(GLEnum.VertexArray);
-                if (hasTexture)
-                {
-                    GLManager.GL.DisableClientState(GLEnum.TextureCoordArray);
-                }
-
-                if (hasColor)
-                {
-                    GLManager.GL.DisableClientState(GLEnum.ColorArray);
-                }
-
-                if (hasNormals)
-                {
-                    GLManager.GL.DisableClientState(GLEnum.NormalArray);
-                }
+                TessellatorVertexLayout.Bind(hasTexture, hasColor, hasNormals);
+                GLManager.GL.DrawArrays(SubmittedDrawMode, 0, (uint)vertexCount);
+                TessellatorVertexLayout.Unbind(hasTexture, hasColor, hasNormals);
             }
 
             reset();
         }
+    }
+
+    /// <summary>
+    ///     The primitive the accumulated vertices are actually submitted as.
+    /// </summary>
+    /// <remarks>
+    ///     Quads are expanded into triangles as vertices are added, so the recorded draw mode is not
+    ///     what gets drawn.
+    /// </remarks>
+    private GLEnum SubmittedDrawMode =>
+        drawMode == 7 && convertQuadsToTriangles ? GLEnum.Triangles : (GLEnum)drawMode;
+
+    /// <summary>
+    ///     Ends the batch by handing its vertices to a buffer that outlives the frame, instead of
+    ///     drawing them.
+    /// </summary>
+    /// <remarks>
+    ///     For geometry that never changes. <see cref="draw" /> cycles through a ring of streaming
+    ///     buffers, which is the right trade when the contents are rebuilt every frame and the wrong
+    ///     one when they are built once and drawn forever.
+    /// </remarks>
+    public unsafe StaticMesh captureStatic()
+    {
+        if (!IsDrawing)
+        {
+            throw new InvalidOperationException("Not tesselating!");
+        }
+
+        IsDrawing = false;
+
+        uint buffer = GLManager.GL.GenBuffer();
+        GLManager.GL.BindBuffer(GLEnum.ArrayBuffer, buffer);
+
+        fixed (int* ptr = rawBuffer)
+        {
+            GLManager.GL.BufferData(GLEnum.ArrayBuffer, (nuint)(rawBufferIndex * 4), ptr, GLEnum.StaticDraw);
+        }
+
+        StaticMesh mesh = new(buffer, vertexCount, SubmittedDrawMode, hasTexture, hasColor, hasNormals);
+        reset();
+        return mesh;
     }
 
     private void reset()

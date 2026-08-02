@@ -523,7 +523,7 @@ public partial class BetaSharp :
             _logger.LogInformation("Stopping!");
 
             try { ChangeWorld(null); } catch (Exception) { }
-            try { GLAllocation.deleteTexturesAndDisplayLists(); } catch (Exception) { }
+            try { GLAllocation.deleteTextures(); } catch (Exception) { }
 
             // don't bother trying to shutdown imgui because it keeps hanging/crashing
 
