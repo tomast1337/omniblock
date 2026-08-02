@@ -63,7 +63,7 @@ public sealed class FuseEntityRenderer : LivingEntityRenderer
         {
             float animationTime = entity.Age + tickDelta;
             loadTexture(_overlayTexture);
-            GLManager.GL.MatrixMode(GLEnum.Texture2D);
+            GLManager.GL.MatrixMode(GLEnum.Texture);
             GLManager.GL.LoadIdentity();
             GLManager.GL.Translate(animationTime * 0.01F, animationTime * 0.01F, 0.0F);
             setRenderPassModel(_overlay);
