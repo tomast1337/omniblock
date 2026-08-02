@@ -109,18 +109,36 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
         if (!SkipPacketSlotUpdates)
         {
-            NetworkHandler?.SendPacket(ScreenHandlerSlotUpdateS2CPacket.Get(handler.SyncId, slot, stack));
+            NetworkHandler?.SendMessage(SlotUpdate(handler.SyncId, slot, stack));
         }
     }
 
 
     public void onContentsUpdate(ScreenHandler handler, List<ItemStack> stacks)
     {
-        NetworkHandler?.SendPacket(InventoryS2CPacket.Get(handler.SyncId, stacks));
-        NetworkHandler?.SendPacket(ScreenHandlerSlotUpdateS2CPacket.Get(-1, -1, Inventory.GetCursorStack()));
+        NetworkHandler?.SendMessage(new InventoryMessage
+        {
+            SyncId = (sbyte)handler.SyncId,
+            Contents = [.. stacks.Select(s => s?.copy())],
+        });
+        NetworkHandler?.SendMessage(SlotUpdate(-1, -1, Inventory.GetCursorStack()));
     }
 
-    public void onPropertyUpdate(ScreenHandler handler, int syncId, int trackedValue) => NetworkHandler?.SendPacket(ScreenHandlerPropertyUpdateS2CPacket.Get(handler.SyncId, syncId, trackedValue));
+    public void onPropertyUpdate(ScreenHandler handler, int syncId, int trackedValue) =>
+        NetworkHandler?.SendMessage(new ScreenHandlerPropertyMessage
+        {
+            SyncId = (sbyte)handler.SyncId,
+            PropertyId = (short)syncId,
+            Value = (short)trackedValue,
+        });
+
+    /// <summary>The stack is copied because the screen keeps mutating the one it handed over.</summary>
+    private static ScreenHandlerSlotMessage SlotUpdate(int syncId, int slot, ItemStack? stack) => new()
+    {
+        SyncId = (sbyte)syncId,
+        Slot = (short)slot,
+        Stack = stack?.copy(),
+    };
 
 
     public override void SetWorld(IWorldContext world)
@@ -448,10 +466,9 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     private void updateBlockEntity(BlockEntity? blockEntity)
     {
-        Packet? packet = blockEntity?.CreateUpdatePacket();
-        if (packet != null)
+        if (blockEntity?.CreateUpdateMessage() is { } message)
         {
-            NetworkHandler?.SendPacket(packet);
+            NetworkHandler?.SendMessage(message);
         }
     }
 
@@ -534,13 +551,21 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public void handleFall(double heightDifference, bool onGround) => base.Fall(heightDifference, onGround);
 
-    private void incrementScreenHandlerSyncId() => _screenHandlerSyncId = _screenHandlerSyncId % 100 + 1;
+    private void incrementScreenHandlerSyncId() => _screenHandlerSyncId = (_screenHandlerSyncId % 100) + 1;
+
+    private OpenScreenMessage OpenScreen(int screenHandlerId, string name, int slots) => new()
+    {
+        SyncId = (sbyte)_screenHandlerSyncId,
+        ScreenHandlerId = (sbyte)screenHandlerId,
+        Name = name,
+        SlotsCount = (sbyte)slots,
+    };
 
 
     public override void openCraftingScreen(int x, int y, int z)
     {
         incrementScreenHandlerSyncId();
-        NetworkHandler?.SendPacket(OpenScreenS2CPacket.Get(_screenHandlerSyncId, 1, "Crafting", 9));
+        NetworkHandler?.SendMessage(OpenScreen(1, "Crafting", 9));
         CurrentScreenHandler = new CraftingScreenHandler(Inventory, World, x, y, z);
         CurrentScreenHandler.SyncId = _screenHandlerSyncId;
         CurrentScreenHandler.AddListener(this);
@@ -550,7 +575,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     public override void openChestScreen(IInventory inventory)
     {
         incrementScreenHandlerSyncId();
-        NetworkHandler?.SendPacket(OpenScreenS2CPacket.Get(_screenHandlerSyncId, 0, inventory.Name, inventory.Size));
+        NetworkHandler?.SendMessage(OpenScreen(0, inventory.Name, inventory.Size));
         CurrentScreenHandler = new GenericContainerScreenHandler(Inventory, inventory);
         CurrentScreenHandler.SyncId = _screenHandlerSyncId;
         CurrentScreenHandler.AddListener(this);
@@ -560,7 +585,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     public override void openFurnaceScreen(BlockEntityFurnace furnace)
     {
         incrementScreenHandlerSyncId();
-        NetworkHandler?.SendPacket(OpenScreenS2CPacket.Get(_screenHandlerSyncId, 2, furnace.Name, furnace.Size));
+        NetworkHandler?.SendMessage(OpenScreen(2, furnace.Name, furnace.Size));
         CurrentScreenHandler = new FurnaceScreenHandler(Inventory, furnace);
         CurrentScreenHandler.SyncId = _screenHandlerSyncId;
         CurrentScreenHandler.AddListener(this);
@@ -570,7 +595,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     public override void openDispenserScreen(BlockEntityDispenser dispenser)
     {
         incrementScreenHandlerSyncId();
-        NetworkHandler?.SendPacket(OpenScreenS2CPacket.Get(_screenHandlerSyncId, 3, dispenser.Name, dispenser.Size));
+        NetworkHandler?.SendMessage(OpenScreen(3, dispenser.Name, dispenser.Size));
         CurrentScreenHandler = new DispenserScreenHandler(Inventory, dispenser);
         CurrentScreenHandler.SyncId = _screenHandlerSyncId;
         CurrentScreenHandler.AddListener(this);
@@ -584,7 +609,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
     public override void closeHandledScreen()
     {
-        NetworkHandler?.SendPacket(CloseScreenS2CPacket.Get(CurrentScreenHandler.SyncId));
+        NetworkHandler?.SendMessage(new CloseScreenMessage { SyncId = (sbyte)CurrentScreenHandler.SyncId });
         onHandledScreenClosed();
     }
 
@@ -592,7 +617,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     {
         if (!SkipPacketSlotUpdates)
         {
-            NetworkHandler?.SendPacket(ScreenHandlerSlotUpdateS2CPacket.Get(-1, -1, Inventory.GetCursorStack()));
+            NetworkHandler?.SendMessage(SlotUpdate(-1, -1, Inventory.GetCursorStack()));
         }
     }
 

@@ -122,6 +122,13 @@ public sealed class GeneratedMessageTests
             GlobalEntitySpawnMessage.Id,
             PaintingSpawnMessage.Id,
             PlayerSpawnMessage.Id,
+            InventoryMessage.Id,
+            ScreenHandlerSlotMessage.Id,
+            ScreenHandlerPropertyMessage.Id,
+            ScreenHandlerAckMessage.Id,
+            OpenScreenMessage.Id,
+            CloseScreenMessage.Id,
+            UpdateSignMessage.Id,
         })
         {
             Assert.True(registry.GetId(key) >= 0, $"{key} is not registered.");
@@ -376,6 +383,93 @@ public sealed class GeneratedMessageTests
         Assert.Equal(Serialise(empty).Length, empty.Size());
         Assert.Equal(Serialise(populated).Length, populated.Size());
         Assert.Equal(5, populated.Size() - empty.Size());
+    }
+
+    // ---- screens ----
+
+    /// <summary>
+    ///     <c>InventoryS2CPacket</c> charged five bytes for every slot — <c>3 + Contents.Length *
+    ///     5</c> — while an empty one writes two. A player's inventory is mostly empty, so the
+    ///     declared size was wrong on essentially every send, and wrong by more the emptier it got.
+    /// </summary>
+    [Fact]
+    public void An_inventory_sizes_its_empty_slots_at_two_bytes_not_five()
+    {
+        InventoryMessage message = new()
+        {
+            SyncId = 0,
+            Contents = [new ItemStack(Item.ByName("stick"), 64, 0), null, null, new ItemStack(Item.ByName("bucket"), 1, 0)],
+        };
+
+        byte[] bytes = Serialise(message);
+
+        Assert.Equal(bytes.Length, message.Size());
+
+        // One byte of sync id, one varint of count, then 5 + 2 + 2 + 5.
+        Assert.Equal(1 + 1 + 5 + 2 + 2 + 5, bytes.Length);
+    }
+
+    [Fact]
+    public void An_inventory_round_trips_its_slots_including_the_empty_ones()
+    {
+        InventoryMessage written = new()
+        {
+            SyncId = 3,
+            Contents = [null, new ItemStack(Item.ByName("stick"), 7, 2), null],
+        };
+
+        InventoryMessage read = new();
+        read.Read(new MemoryStream(Serialise(written)));
+
+        Assert.Equal(3, read.Contents.Length);
+        Assert.Null(read.Contents[0]);
+        Assert.Null(read.Contents[2]);
+        Assert.Equal(7, read.Contents[1]!.Count);
+    }
+
+    /// <summary>
+    ///     The slot count decides an array allocation, so it is bounded before the array is made.
+    /// </summary>
+    [Fact]
+    public void An_inventory_larger_than_the_declared_bound_is_refused()
+    {
+        MemoryStream stream = new();
+        stream.WriteByte(0);
+        stream.WriteVarInt(InventoryMessage.MaxSlots + 1);
+        stream.Position = 0;
+
+        Assert.Throws<InvalidDataException>(() => new InventoryMessage().Read(stream));
+    }
+
+    /// <summary>
+    ///     A sign is four lines by definition. <c>UpdateSignPacket</c> wrapped each line in a
+    ///     try/catch to survive an array that was not four long; four named fields cannot be the
+    ///     wrong length, and a short array is padded rather than swallowed.
+    /// </summary>
+    [Fact]
+    public void A_sign_is_always_four_lines()
+    {
+        UpdateSignMessage message = new() { Lines = ["only", "two"] };
+
+        Assert.Equal(["only", "two", string.Empty, string.Empty], message.Lines);
+
+        UpdateSignMessage read = new();
+        read.Read(new MemoryStream(Serialise(message)));
+
+        Assert.Equal(message.Lines, read.Lines);
+    }
+
+    [Fact]
+    public void A_sign_line_longer_than_the_declared_bound_is_refused()
+    {
+        MemoryStream stream = new();
+        stream.WriteInt(0);
+        stream.WriteShort(64);
+        stream.WriteInt(0);
+        stream.WriteString(new string('x', UpdateSignMessage.MaxLineBytes + 1));
+        stream.Position = 0;
+
+        Assert.Throws<InvalidDataException>(() => new UpdateSignMessage().Read(stream));
     }
 
     // ---- dispatch ----

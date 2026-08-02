@@ -79,6 +79,27 @@ internal static class StreamExtensions
     /// </summary>
     public static int ItemStackSize(ItemStack? value) => value is null ? 2 : 5;
 
+    /// <summary>
+    ///     Bytes <see cref="Stream.WriteItemStacks" /> will emit: a varint count, then two bytes per
+    ///     empty slot and five per filled one.
+    ///     <para>
+    ///         Measured rather than assumed, which is the whole difference from the packet this
+    ///         replaces: <c>InventoryS2CPacket</c> charged five bytes for every slot including the
+    ///         empty ones, and a player's inventory is mostly empty ones.
+    ///     </para>
+    /// </summary>
+    public static int ItemStacksSize(ItemStack?[] value)
+    {
+        int size = VarIntSize(value.Length);
+
+        foreach (ItemStack? stack in value)
+        {
+            size += ItemStackSize(stack);
+        }
+
+        return size;
+    }
+
     extension(Stream stream)
     {
         public void WriteBoolean(bool value)
@@ -398,6 +419,47 @@ internal static class StreamExtensions
             stream.WriteShort((short)value.ItemId);
             stream.WriteByte((byte)value.Count);
             stream.WriteShort((short)value.getDamage());
+        }
+
+        /// <summary>Writes a run of slots, length-prefixed.</summary>
+        public void WriteItemStacks(ItemStack?[] value)
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            stream.WriteVarInt(value.Length);
+
+            foreach (ItemStack? stack in value)
+            {
+                stream.WriteItemStack(stack);
+            }
+        }
+
+        /// <summary>
+        ///     Reads a run of slots, refusing more than <paramref name="maximumCount" />.
+        ///     <para>
+        ///         The count is checked before the array is allocated. A screen has a known number of
+        ///         slots, so a peer naming a larger one is either broken or hostile and either way
+        ///         should not get the memory.
+        ///     </para>
+        /// </summary>
+        public ItemStack?[] ReadItemStacks(int maximumCount = ushort.MaxValue)
+        {
+            int count = stream.ReadVarInt();
+
+            if (count < 0 || count > maximumCount)
+            {
+                throw new InvalidDataException(
+                    $"Slot run declares {count} entries; the accepted range is 0 to {maximumCount}.");
+            }
+
+            ItemStack?[] stacks = new ItemStack?[count];
+
+            for (int i = 0; i < count; i++)
+            {
+                stacks[i] = stream.ReadItemStack();
+            }
+
+            return stacks;
         }
 
         /// <summary>Reads a slot written by <see cref="WriteItemStack" />; null for an empty one.</summary>

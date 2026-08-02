@@ -63,6 +63,9 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         MessageHandlers.On<PlayerInputMessage>(input => player.updateInput(input));
         MessageHandlers.On<ClickSlotMessage>(onClickSlot);
         MessageHandlers.On<EntityAnimationMessage>(onEntityAnimation);
+        MessageHandlers.On<CloseScreenMessage>(_ => player.onHandledScreenClosed());
+        MessageHandlers.On<ScreenHandlerAckMessage>(onScreenHandlerAck);
+        MessageHandlers.On<UpdateSignMessage>(onUpdateSign);
     }
 
     public void tick()
@@ -493,7 +496,12 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         player.SkipPacketSlotUpdates = false;
         if (!ItemStack.areEqual(player.Inventory.ItemInHand, packet.Stack))
         {
-            SendPacket(ScreenHandlerSlotUpdateS2CPacket.Get(player.CurrentScreenHandler.SyncId, slot.id, player.Inventory.ItemInHand));
+            SendMessage(new ScreenHandlerSlotMessage
+            {
+                SyncId = (sbyte)player.CurrentScreenHandler.SyncId,
+                Slot = (short)slot.id,
+                Stack = player.Inventory.ItemInHand,
+            });
         }
     }
 
@@ -706,11 +714,6 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         }
     }
 
-    public override void onCloseScreen(CloseScreenS2CPacket packet)
-    {
-        player.onHandledScreenClosed();
-    }
-
     private void onClickSlot(ClickSlotMessage packet)
     {
         if (player.CurrentScreenHandler.SyncId == packet.SyncId && player.CurrentScreenHandler.canOpen(player))
@@ -718,7 +721,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             ItemStack clickedStack = player.CurrentScreenHandler.onSlotClick(packet.Slot, packet.Button, packet.HoldingShift, player);
             if (ItemStack.areEqual(packet.Stack, clickedStack))
             {
-                player.NetworkHandler.SendPacket(ScreenHandlerAcknowledgementPacket.Get(packet.SyncId, packet.ActionType, true));
+                player.NetworkHandler.SendMessage(Acknowledge(packet.SyncId, packet.ActionType, accepted: true));
                 player.SkipPacketSlotUpdates = true;
                 player.CurrentScreenHandler.SendContentUpdates();
                 player.updateCursorStack();
@@ -728,7 +731,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             {
                 // should something be done adding fails?
                 transactions.TryAdd(player.CurrentScreenHandler.SyncId, packet.ActionType);
-                player.NetworkHandler.SendPacket(ScreenHandlerAcknowledgementPacket.Get(packet.SyncId, packet.ActionType, false));
+                player.NetworkHandler.SendMessage(Acknowledge(packet.SyncId, packet.ActionType, accepted: false));
                 player.CurrentScreenHandler.updatePlayerList(player, false);
 
                 int size = player.CurrentScreenHandler.Slots.Count;
@@ -744,7 +747,14 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         }
     }
 
-    public override void onScreenHandlerAcknowledgement(ScreenHandlerAcknowledgementPacket packet)
+    private static ScreenHandlerAckMessage Acknowledge(sbyte syncId, short actionType, bool accepted) => new()
+    {
+        SyncId = syncId,
+        ActionType = actionType,
+        Accepted = accepted,
+    };
+
+    private void onScreenHandlerAck(ScreenHandlerAckMessage packet)
     {
         if (transactions.TryGetValue(player.CurrentScreenHandler.SyncId, out short value)
             && packet.ActionType == value
@@ -755,7 +765,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         }
     }
 
-    public override void handleUpdateSign(UpdateSignPacket packet)
+    private void onUpdateSign(UpdateSignMessage packet)
     {
         ServerWorld playerWorld = server.getWorld(player.DimensionId);
         if (playerWorld.Reader.IsPosLoaded(packet.X, packet.Y, packet.Z))
@@ -771,29 +781,20 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 }
             }
 
+            // The length bound is already enforced by the reader, before the string is allocated.
+            // What is left here is the character filter, which is a content rule rather than a
+            // framing one and has to stay on the server: a client that skips it is the case this
+            // exists for.
+            string[] lines = packet.Lines;
             for (int lineIndex = 0; lineIndex < 4; lineIndex++)
             {
-                bool lineValid = true;
-                if (packet.Text[lineIndex].Length > 15)
+                if (!lines[lineIndex].All(ChatAllowedCharacters.IsAllowedCharacter))
                 {
-                    lineValid = false;
-                }
-                else
-                {
-                    for (int charIndex = 0; charIndex < packet.Text[lineIndex].Length; charIndex++)
-                    {
-                        if (!ChatAllowedCharacters.IsAllowedCharacter(packet.Text[lineIndex][charIndex]))
-                        {
-                            lineValid = false;
-                        }
-                    }
-                }
-
-                if (!lineValid)
-                {
-                    packet.Text[lineIndex] = "!?";
+                    lines[lineIndex] = "!?";
                 }
             }
+
+            packet.Lines = lines;
 
             if (sign != null)
             {
@@ -803,7 +804,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
                 for (int textLineIndex = 0; textLineIndex < 4; textLineIndex++)
                 {
-                    sign.Texts[textLineIndex] = packet.Text[textLineIndex];
+                    sign.Texts[textLineIndex] = packet.Lines[textLineIndex];
                 }
 
                 sign.SetEditable(false);

@@ -420,6 +420,13 @@ public class ClientNetworkHandler : NetHandler
         MessageHandlers.On<GlobalEntitySpawnMessage>(onGlobalEntitySpawn);
         MessageHandlers.On<PaintingSpawnMessage>(onPaintingSpawn);
         MessageHandlers.On<PlayerSpawnMessage>(onPlayerSpawn);
+        MessageHandlers.On<OpenScreenMessage>(onOpenScreen);
+        MessageHandlers.On<CloseScreenMessage>(_ => _context.PlayerHost.Player.closeHandledScreen());
+        MessageHandlers.On<InventoryMessage>(onInventory);
+        MessageHandlers.On<ScreenHandlerSlotMessage>(onScreenHandlerSlot);
+        MessageHandlers.On<ScreenHandlerPropertyMessage>(onScreenHandlerProperty);
+        MessageHandlers.On<ScreenHandlerAckMessage>(onScreenHandlerAck);
+        MessageHandlers.On<UpdateSignMessage>(onUpdateSign);
     }
 
     /// <summary>
@@ -1246,7 +1253,7 @@ public class ClientNetworkHandler : NetHandler
         explosion.doExplosionB(true);
     }
 
-    public override void onOpenScreen(OpenScreenS2CPacket packet)
+    private void onOpenScreen(OpenScreenMessage packet)
     {
         ClientPlayerEntity player = _context.PlayerHost.Player;
         if (!player.GameMode.CanInteract) return;
@@ -1277,7 +1284,7 @@ public class ClientNetworkHandler : NetHandler
 
     }
 
-    public override void onScreenHandlerSlotUpdate(ScreenHandlerSlotUpdateS2CPacket packet)
+    private void onScreenHandlerSlot(ScreenHandlerSlotMessage packet)
     {
         ClientPlayerEntity? player = _context.PlayerHost.Player;
         if (packet.SyncId == -1)
@@ -1301,7 +1308,7 @@ public class ClientNetworkHandler : NetHandler
 
     }
 
-    public override void onScreenHandlerAcknowledgement(ScreenHandlerAcknowledgementPacket packet)
+    private void onScreenHandlerAck(ScreenHandlerAckMessage packet)
     {
         ClientPlayerEntity player = _context.PlayerHost.Player;
         ScreenHandler? screenHandler = null;
@@ -1323,13 +1330,18 @@ public class ClientNetworkHandler : NetHandler
             else
             {
                 ScreenHandler.onAcknowledgementDenied(packet.ActionType);
-                AddToSendQueue(ScreenHandlerAcknowledgementPacket.Get(packet.SyncId, packet.ActionType, true));
+                SendMessage(new ScreenHandlerAckMessage
+                {
+                    SyncId = packet.SyncId,
+                    ActionType = packet.ActionType,
+                    Accepted = true,
+                });
             }
         }
 
     }
 
-    public override void onInventory(InventoryS2CPacket packet)
+    private void onInventory(InventoryMessage packet)
     {
         ClientPlayerEntity? player = _context.PlayerHost.Player;
         if (packet.SyncId == 0)
@@ -1343,7 +1355,7 @@ public class ClientNetworkHandler : NetHandler
 
     }
 
-    public override void handleUpdateSign(UpdateSignPacket packet)
+    private void onUpdateSign(UpdateSignMessage packet)
     {
         if (_context.WorldHost.World.BlockHost.IsPosLoaded(packet.X, packet.Y, packet.Z))
         {
@@ -1353,7 +1365,7 @@ public class ClientNetworkHandler : NetHandler
             {
                 for (int i = 0; i < 4; ++i)
                 {
-                    signEntity.Texts[i] = packet.Text[i];
+                    signEntity.Texts[i] = packet.Lines[i];
                 }
 
                 signEntity.MarkDirty();
@@ -1361,9 +1373,8 @@ public class ClientNetworkHandler : NetHandler
         }
     }
 
-    public override void onScreenHandlerPropertyUpdate(ScreenHandlerPropertyUpdateS2CPacket packet)
+    private void onScreenHandlerProperty(ScreenHandlerPropertyMessage packet)
     {
-        handle(packet);
         ClientPlayerEntity player = _context.PlayerHost.Player;
         if (player.CurrentScreenHandler != null && player.CurrentScreenHandler.SyncId == packet.SyncId)
         {
@@ -1377,11 +1388,6 @@ public class ClientNetworkHandler : NetHandler
         Entity? ent = GetEntityById(packet.EntityId);
         ent?.SetEquipmentStack(packet.Slot, packet.ItemRawId, packet.ItemDamage);
 
-    }
-
-    public override void onCloseScreen(CloseScreenS2CPacket packet)
-    {
-        _context.PlayerHost.Player.closeHandledScreen();
     }
 
     public override void onPlayNoteSound(PlayNoteSoundS2CPacket packet)

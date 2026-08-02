@@ -1,6 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Util.Maths;
@@ -474,6 +475,17 @@ internal class ChunkMap
             }
         }
 
+        public void sendMessageToPlayers(Message message)
+        {
+            foreach (ServerPlayerEntity serverPlayer in _players)
+            {
+                if (serverPlayer.ActiveChunks.Contains(_chunkPos))
+                {
+                    serverPlayer.NetworkHandler.SendMessage(message);
+                }
+            }
+        }
+
         public void updateChunk()
         {
             ServerWorld sWorld = _chunkMap.getWorld();
@@ -532,10 +544,9 @@ internal class ChunkMap
         {
             if (blockentity != null)
             {
-                Packet? packet = blockentity.CreateUpdatePacket();
-                if (packet != null)
+                if (blockentity.CreateUpdateMessage() is { } message)
                 {
-                    sendPacketToPlayers(packet);
+                    sendMessageToPlayers(message);
                 }
             }
         }

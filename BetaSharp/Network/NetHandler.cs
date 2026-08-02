@@ -189,41 +189,6 @@ public abstract class NetHandler
         handle(packet);
     }
 
-    public virtual void onOpenScreen(OpenScreenS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onCloseScreen(CloseScreenS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onScreenHandlerSlotUpdate(ScreenHandlerSlotUpdateS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onInventory(InventoryS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void handleUpdateSign(UpdateSignPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onScreenHandlerPropertyUpdate(ScreenHandlerPropertyUpdateS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onScreenHandlerAcknowledgement(ScreenHandlerAcknowledgementPacket packet)
-    {
-        handle(packet);
-    }
-
     public virtual void onPlayNoteSound(PlayNoteSoundS2CPacket packet)
     {
         handle(packet);
