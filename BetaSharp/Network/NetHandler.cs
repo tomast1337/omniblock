@@ -159,52 +159,12 @@ public abstract class NetHandler
         handle(packet);
     }
 
-    public virtual void onPlayerSpawnPosition(PlayerSpawnPositionS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onHealthUpdate(HealthUpdateS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onPlayerRespawn(PlayerRespawnPacket packet)
-    {
-        handle(packet);
-    }
-
     public virtual void onExplosion(ExplosionS2CPacket packet)
     {
         handle(packet);
     }
 
     public virtual void onPlayNoteSound(PlayNoteSoundS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onPlayerConnectionUpdate(PlayerConnectionUpdateS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onPlayerGameModeUpdate(PlayerGameModeUpdateS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onIncreaseStat(IncreaseStatS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onPlayerSleepUpdate(PlayerSleepUpdateS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onGameStateChange(GameStateChangeS2CPacket packet)
     {
         handle(packet);
     }

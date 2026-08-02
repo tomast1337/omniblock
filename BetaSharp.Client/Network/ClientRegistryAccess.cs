@@ -53,14 +53,14 @@ internal sealed class ClientRegistryAccess
     /// Returns a holder for a single entry by name, or <c>null</c> if not found.
     /// The holder is stable across resyncs.
     /// </summary>
-    public Holder<T>? Get<T>(RegistryKey<T> key, string name) where T :  class, IDataAsset, new()
+    public Holder<T>? Get<T>(RegistryKey<T> key, string name) where T : class, IDataAsset, new()
         => GetAll(key).GetValueOrDefault(name);
 
     /// <summary>
     /// Returns a holder for a single entry by resource location, or <c>null</c> if not found.
     /// The holder is stable across resyncs.
     /// </summary>
-    public Holder<T>? Get<T>(RegistryKey<T> key, ResourceLocation item) where T :  class, IDataAsset, new()
+    public Holder<T>? Get<T>(RegistryKey<T> key, ResourceLocation item) where T : class, IDataAsset, new()
         => GetAll(key).GetValueOrDefault(item);
 
     /// <summary>
@@ -71,7 +71,7 @@ internal sealed class ClientRegistryAccess
     /// <summary>
     /// Returns all entries for a registry as a name -> holder dictionary.
     /// </summary>
-    public IReadOnlyDictionary<ResourceLocation, Holder<T>> GetAll<T>(ResourceLocation key) where T :  class, IDataAsset, new()
+    public IReadOnlyDictionary<ResourceLocation, Holder<T>> GetAll<T>(ResourceLocation key) where T : class, IDataAsset, new()
     {
         if (!_raw.TryGetValue(key, out Dictionary<ResourceLocation, string?>? raw))
         {
@@ -101,7 +101,7 @@ internal sealed class ClientRegistryAccess
 
     private static Dictionary<ResourceLocation, Holder<T>> DeserializeToHolders<T>(
         Dictionary<ResourceLocation, string?> raw)
-        where T :  class, IDataAsset, new()
+        where T : class, IDataAsset, new()
     {
         var result = new Dictionary<ResourceLocation, Holder<T>>(raw.Count);
         foreach ((ResourceLocation key, string? json) in raw)

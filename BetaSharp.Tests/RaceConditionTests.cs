@@ -46,10 +46,14 @@ public class RaceConditionTests
         // Simulate sequential message delivery: registry data arrives, then migration packet.
         registries.Accumulate(RegistryDataMessage.FromRegistry(key, BuildRegistry("survival")));
 
-        var migrationPacket = PlayerGameModeUpdateS2CPacket.Get(new GameMode { Name = "survival", Namespace = Namespace.BetaSharp });
+        var migrationMessage = new PlayerGameModeUpdateMessage
+        {
+            GameModeNamespace = Namespace.BetaSharp.ToString(),
+            GameModeName = "survival"
+        };
 
         // This simulates ClientNetworkHandler.onPlayerGameModeUpdate
-        Holder<GameMode> updated = registries.Get(key, migrationPacket.GameModeName)!;
+        Holder<GameMode> updated = registries.Get(key, migrationMessage.GameModeName)!;
         currentPlayerHolder = updated;
 
         Assert.True(initialHolder.IsInvalid, "The old holder should have been invalidated during the merge.");

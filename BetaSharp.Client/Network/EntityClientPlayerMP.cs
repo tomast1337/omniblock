@@ -162,7 +162,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
     public override void Respawn()
     {
         sendInventoryChanged();
-        sendQueue.AddToSendQueue(PlayerRespawnPacket.Get((sbyte)DimensionId));
+        sendQueue.SendMessage(new PlayerRespawnMessage { DimensionId = (sbyte)DimensionId });
     }
 
     protected override void ApplyDamage(int amount)

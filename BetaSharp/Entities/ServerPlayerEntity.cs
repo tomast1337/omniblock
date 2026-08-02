@@ -291,7 +291,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             return;
         }
 
-        NetworkHandler?.SendPacket(HealthUpdateS2CPacket.Get(Health));
+        NetworkHandler?.SendMessage(new HealthUpdateMessage { HealthMp = (short)Health });
         _lastHealthScore = Health;
     }
 
@@ -517,8 +517,15 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         }
 
         EntityTracker et = _server.getEntityTracker(DimensionId);
-        PlayerSleepUpdateS2CPacket packet = PlayerSleepUpdateS2CPacket.Get(this, 0, x, y, z);
-        et.sendToAround(this, packet);
+        var sleepMessage = new PlayerSleepUpdateMessage
+        {
+            PlayerId = ID,
+            Status = 0,
+            X = x,
+            Y = (sbyte)y,
+            Z = z
+        };
+        et.sendToAround(this, sleepMessage);
         NetworkHandler?.teleport(x, y, z, Yaw, Pitch);
 
         return sleepAttemptResult;
@@ -671,11 +678,11 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 
         while (amount > 100)
         {
-            NetworkHandler?.SendPacket(IncreaseStatS2CPacket.Get(stat.Id, 100));
+            NetworkHandler?.SendMessage(new IncreaseStatMessage { StatId = stat.Id, Amount = 100 });
             amount -= 100;
         }
 
-        NetworkHandler?.SendPacket(IncreaseStatS2CPacket.Get(stat.Id, amount));
+        NetworkHandler?.SendMessage(new IncreaseStatMessage { StatId = stat.Id, Amount = (sbyte)amount });
     }
 
     public void onDisconnect()

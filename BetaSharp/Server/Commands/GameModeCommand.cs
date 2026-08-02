@@ -1,5 +1,5 @@
 using BetaSharp.Entities;
-using BetaSharp.Network.Packets.S2CPlay;
+using BetaSharp.Network.Messages;
 using BetaSharp.Registries;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
@@ -70,7 +70,11 @@ public class GameModeCommand : Command.Command
     private static void SetGameMode(ServerPlayerEntity p, Holder<GameMode> holder, CommandSource c)
     {
         p.GameModeHolder = holder;
-        p.NetworkHandler.SendPacket(PlayerGameModeUpdateS2CPacket.Get(holder.Value));
+        p.NetworkHandler.SendMessage(new PlayerGameModeUpdateMessage
+        {
+            GameModeNamespace = holder.Value.Namespace.ToString(),
+            GameModeName = holder.Value.Name
+        });
         string s = $"{p.Name} game mode set to {holder.Value.Name}.";
         s_logger.LogInformation(s);
         c.Output.SendMessage(s);
