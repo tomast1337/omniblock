@@ -49,9 +49,6 @@ public unsafe class EmulatedGL : LegacyGL
 
     private struct DirtyState
     {
-        public bool DirtyModelView = true;
-        public bool DirtyProjection = true;
-        public bool DirtyTextureMatrix = true;
         public bool DirtyLighting = true;
         public bool StateDirty = true;
         public bool DirtyFog = true;
@@ -84,6 +81,23 @@ public unsafe class EmulatedGL : LegacyGL
         _shader.SetTexture0(0);
     }
 
+    /// <summary>
+    ///     The transform stacks, for callers that hold one rather than steering it through
+    ///     <see cref="MatrixMode" />.
+    /// </summary>
+    /// <remarks>
+    ///     Composing transforms on a stack is not the legacy part; hierarchical models need it and
+    ///     it survives into any backend. What has to go is reaching it through a mode selector and
+    ///     a global, so these are exposed and the fixed-function entry points forward to them.
+    /// </remarks>
+    public MatrixStack ModelView => _modelViewStack;
+
+    /// <inheritdoc cref="ModelView" />
+    public MatrixStack Projection => _projectionStack;
+
+    /// <inheritdoc cref="ModelView" />
+    public MatrixStack TextureMatrix => _textureStack;
+
     internal MatrixStack ActiveStack => _currentMatrixMode switch
     {
         GLEnum.Modelview => _modelViewStack,
@@ -92,34 +106,50 @@ public unsafe class EmulatedGL : LegacyGL
         _ => _modelViewStack
     };
 
-    internal void MarkActiveMatrixDirty()
+    /// <summary>
+    ///     The stack versions last written to the active program, or <see cref="Unuploaded" /> when
+    ///     nothing has been.
+    /// </summary>
+    /// <remarks>
+    ///     Compared against <see cref="MatrixStack.Version" /> rather than tracked as dirty flags,
+    ///     because the stacks are reachable through <c>GLManager</c> and a caller mutating one
+    ///     directly has no way to raise a flag held here.
+    /// </remarks>
+    private const uint Unuploaded = uint.MaxValue;
+
+    private uint _uploadedModelView = Unuploaded;
+    private uint _uploadedProjection = Unuploaded;
+    private uint _uploadedTextureMatrix = Unuploaded;
+
+    /// <summary>Forces every matrix uniform to be written again on the next draw.</summary>
+    private void InvalidateUploadedMatrices()
     {
-        if (_currentMatrixMode == GLEnum.Modelview) _dirtyState.DirtyModelView = true;
-        else if (_currentMatrixMode == GLEnum.Projection) _dirtyState.DirtyProjection = true;
-        else if (_currentMatrixMode == GLEnum.Texture) _dirtyState.DirtyTextureMatrix = true;
+        _uploadedModelView = Unuploaded;
+        _uploadedProjection = Unuploaded;
+        _uploadedTextureMatrix = Unuploaded;
     }
 
     internal void ActivateShader()
     {
         if (_externalShaderActive)
         {
-            if (_dirtyState.DirtyModelView && _externalMvUniform >= 0)
+            if (_uploadedModelView != _modelViewStack.Version && _externalMvUniform >= 0)
             {
                 Matrix4X4<float> m = _modelViewStack.Top;
                 unsafe { SilkGL.UniformMatrix4(_externalMvUniform, 1, false, (float*)&m); }
-                _dirtyState.DirtyModelView = false;
+                _uploadedModelView = _modelViewStack.Version;
             }
-            if (_dirtyState.DirtyProjection && _externalProjUniform >= 0)
+            if (_uploadedProjection != _projectionStack.Version && _externalProjUniform >= 0)
             {
                 Matrix4X4<float> m = _projectionStack.Top;
                 unsafe { SilkGL.UniformMatrix4(_externalProjUniform, 1, false, (float*)&m); }
-                _dirtyState.DirtyProjection = false;
+                _uploadedProjection = _projectionStack.Version;
             }
-            if (_dirtyState.DirtyTextureMatrix && _externalTexMatUniform >= 0)
+            if (_uploadedTextureMatrix != _textureStack.Version && _externalTexMatUniform >= 0)
             {
                 Matrix4X4<float> m = _textureStack.Top;
                 unsafe { SilkGL.UniformMatrix4(_externalTexMatUniform, 1, false, (float*)&m); }
-                _dirtyState.DirtyTextureMatrix = false;
+                _uploadedTextureMatrix = _textureStack.Version;
             }
             return;
         }
@@ -128,16 +158,14 @@ public unsafe class EmulatedGL : LegacyGL
         {
             SilkGL.UseProgram(_shader.Program);
             _currentProgram = _shader.Program;
-            _dirtyState.DirtyModelView = true;
-            _dirtyState.DirtyProjection = true;
-            _dirtyState.DirtyTextureMatrix = true;
+            InvalidateUploadedMatrices();
             _dirtyState.StateDirty = true;
             if (_lightingState.LightingEnabled) _dirtyState.DirtyLighting = true;
             if (_fogState.FogEnabled) _dirtyState.DirtyFog = true;
         }
 
-        if (_dirtyState.DirtyProjection) { _shader.SetProjection(_projectionStack.Top); _dirtyState.DirtyProjection = false; }
-        if (_dirtyState.DirtyTextureMatrix) { _shader.SetTextureMatrix(_textureStack.Top); _dirtyState.DirtyTextureMatrix = false; }
+        if (_uploadedProjection != _projectionStack.Version) { _shader.SetProjection(_projectionStack.Top); _uploadedProjection = _projectionStack.Version; }
+        if (_uploadedTextureMatrix != _textureStack.Version) { _shader.SetTextureMatrix(_textureStack.Top); _uploadedTextureMatrix = _textureStack.Version; }
 
         if (_dirtyState.StateDirty)
         {
@@ -149,7 +177,7 @@ public unsafe class EmulatedGL : LegacyGL
             _dirtyState.StateDirty = false;
         }
 
-        if (_dirtyState.DirtyModelView)
+        if (_uploadedModelView != _modelViewStack.Version)
         {
             _shader.SetModelView(_modelViewStack.Top);
 
@@ -170,7 +198,7 @@ public unsafe class EmulatedGL : LegacyGL
                     _shader.SetNormalMatrix(Matrix3X3<float>.Identity);
                 }
             }
-            _dirtyState.DirtyModelView = false;
+            _uploadedModelView = _modelViewStack.Version;
         }
 
         if (_lightingState.LightingEnabled && _dirtyState.DirtyLighting)
@@ -211,55 +239,46 @@ public unsafe class EmulatedGL : LegacyGL
     public override void LoadIdentity()
     {
         ActiveStack.LoadIdentity();
-        MarkActiveMatrixDirty();
     }
 
     public override void PushMatrix()
     {
         ActiveStack.Push();
-        MarkActiveMatrixDirty();
     }
 
     public override void PopMatrix()
     {
         ActiveStack.Pop();
-        MarkActiveMatrixDirty();
     }
 
     public override void Translate(float x, float y, float z)
     {
         ActiveStack.Translate(x, y, z);
-        MarkActiveMatrixDirty();
     }
 
     public override void Rotate(float angle, float x, float y, float z)
     {
         ActiveStack.Rotate(angle, x, y, z);
-        MarkActiveMatrixDirty();
     }
 
     public override void Scale(float x, float y, float z)
     {
         ActiveStack.Scale(x, y, z);
-        MarkActiveMatrixDirty();
     }
 
     public override void Scale(double x, double y, double z)
     {
         ActiveStack.Scale((float)x, (float)y, (float)z);
-        MarkActiveMatrixDirty();
     }
 
     public override void Ortho(double left, double right, double bottom, double top, double zNear, double zFar)
     {
         ActiveStack.Ortho(left, right, bottom, top, zNear, zFar);
-        MarkActiveMatrixDirty();
     }
 
     public override void Frustum(double left, double right, double bottom, double top, double zNear, double zFar)
     {
         ActiveStack.Frustum(left, right, bottom, top, zNear, zFar);
-        MarkActiveMatrixDirty();
     }
 
     public override void Color3(float red, float green, float blue)
@@ -506,9 +525,7 @@ public unsafe class EmulatedGL : LegacyGL
     {
         _currentProgram = program;
         _dirtyState.StateDirty = true;
-        _dirtyState.DirtyModelView = true;
-        _dirtyState.DirtyProjection = true;
-        _dirtyState.DirtyTextureMatrix = true;
+        InvalidateUploadedMatrices();
         base.UseProgram(program);
     }
 
@@ -552,9 +569,7 @@ public unsafe class EmulatedGL : LegacyGL
         _externalMvUniform = mvLoc;
         _externalProjUniform = projLoc;
         _externalTexMatUniform = texMatLoc;
-        _dirtyState.DirtyModelView = true;
-        _dirtyState.DirtyProjection = true;
-        _dirtyState.DirtyTextureMatrix = true;
+        InvalidateUploadedMatrices();
     }
 
     public override void EndExternalShader()
