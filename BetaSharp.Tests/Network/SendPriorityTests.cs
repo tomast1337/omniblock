@@ -37,14 +37,14 @@ public sealed class SendPriorityTests
     [Fact]
     public void Entity_and_timing_packets_are_high_priority()
     {
-        Assert.Equal(SendPriority.High, PacketPriorities.Of(Packet.Get(PacketId.LivingEntitySpawnS2C)));
         Assert.Equal(SendPriority.High, PacketPriorities.Of(Packet.Get(PacketId.KeepAlive)));
 
-        // The per-entity updates left the allowlist when they left PacketId. Their priority now
+        // Entity replication and the spawns left the allowlist when they left PacketId. Their priority now
         // comes from the message declaring it, which is the extensibility the table could not give:
         // a mod says its message is latency-sensitive rather than hoping for a slot in this switch.
         Assert.Equal(SendPriority.High, PacketPriorities.Of(Envelope(new EntityMoveMessage())));
         Assert.Equal(SendPriority.High, PacketPriorities.Of(Envelope(new EntityDestroyMessage())));
+        Assert.Equal(SendPriority.High, PacketPriorities.Of(Envelope(new LivingEntitySpawnMessage())));
         Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Envelope(new ChunkDataMessage())));
     }
 
@@ -97,7 +97,7 @@ public sealed class SendPriorityTests
     public void Entity_and_timing_packets_take_the_state_channel()
     {
         Assert.Equal(UdpConnection.StateChannel, UdpConnection.ChannelFor(Envelope(new EntityMoveMessage())));
-        Assert.Equal(UdpConnection.StateChannel, UdpConnection.ChannelFor(Packet.Get(PacketId.LivingEntitySpawnS2C)));
+        Assert.Equal(UdpConnection.StateChannel, UdpConnection.ChannelFor(Envelope(new LivingEntitySpawnMessage())));
         Assert.Equal(UdpConnection.StateChannel, UdpConnection.ChannelFor(Packet.Get(PacketId.KeepAlive)));
     }
 
@@ -155,15 +155,17 @@ public sealed class SendPriorityTests
         FakeTransportConnection transport = new();
         UdpConnection connection = Connected(transport);
 
-        connection.sendPacket(Packet.Get(PacketId.LivingEntitySpawnS2C));
+        connection.sendPacket(Packet.Get(PacketId.KeepAlive));
         connection.sendPacket(Packet.Get(PacketId.ChunkDataS2C));
+        connection.sendPacket(Envelope(new LivingEntitySpawnMessage()));
         connection.sendPacket(Envelope(new EntityMoveMessage()));
-        connection.sendPacket(Envelope(new EntityDestroyMessage()));
 
-        // Both messages share the envelope's packet ID, so the assertion is on how many landed on
-        // the state channel and in which order relative to the spawn, not on distinguishable bytes.
+        // The two messages share the envelope's packet ID, so the assertion is on how many landed
+        // on the state channel and in what order relative to the keep-alive, not on bytes that
+        // distinguish them. Spawn before move is the property: a move that overtakes its own spawn
+        // names an entity the client has never heard of, and is dropped.
         Assert.Equal(
-            [(byte)PacketId.LivingEntitySpawnS2C, (byte)PacketId.OmniMessage, (byte)PacketId.OmniMessage],
+            [(byte)PacketId.KeepAlive, (byte)PacketId.OmniMessage, (byte)PacketId.OmniMessage],
             transport.Sent.Where(s => s.Channel == UdpConnection.StateChannel).Select(s => s.Payload[0]));
     }
 }

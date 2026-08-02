@@ -356,7 +356,7 @@ internal class EntityTrackerEntry
                     }
 
                     listeners.Add(player);
-                    player.NetworkHandler.SendPacket(createAddEntityPacket());
+                    player.NetworkHandler.SendMessage(createSpawnMessage());
                     if (alwaysUpdateVelocity)
                     {
                         player.NetworkHandler.SendMessage(Velocity(
@@ -409,19 +409,55 @@ internal class EntityTrackerEntry
         }
     }
 
-    private Packet createAddEntityPacket()
+    /// <summary>Fixed point in sixteenths of a block, the units every spawn position travels in.</summary>
+    private static int Fixed(double value) => MathHelper.Floor(value * 32.0);
+
+    /// <summary>A full turn in 256 steps.</summary>
+    private static sbyte Angle(float degrees) => (sbyte)(int)(degrees * 256.0F / 360.0F);
+
+    private Message createSpawnMessage()
     {
-        if (currentTrackedEntity.Behaviors.Find<DroppedItemBehavior>() is not null)
+        if (currentTrackedEntity.Behaviors.Find<DroppedItemBehavior>() is { } dropped)
         {
-            var spawnPacket = ItemEntitySpawnS2CPacket.Get(currentTrackedEntity);
-            currentTrackedEntity.X = spawnPacket.X / 32.0;
-            currentTrackedEntity.Y = spawnPacket.Y / 32.0;
-            currentTrackedEntity.Z = spawnPacket.Z / 32.0;
-            return spawnPacket;
+            ItemStack stack = dropped.Stack(currentTrackedEntity)!;
+            ItemEntitySpawnMessage spawn = new()
+            {
+                EntityId = currentTrackedEntity.ID,
+                ItemRawId = (short)stack.ItemId,
+                ItemCount = (sbyte)stack.Count,
+                ItemDamage = (short)stack.getDamage(),
+                X = Fixed(currentTrackedEntity.X),
+                Y = Fixed(currentTrackedEntity.Y),
+                Z = Fixed(currentTrackedEntity.Z),
+                VelocityX = (sbyte)(int)(currentTrackedEntity.VelocityX * 128.0),
+                VelocityY = (sbyte)(int)(currentTrackedEntity.VelocityY * 128.0),
+                VelocityZ = (sbyte)(int)(currentTrackedEntity.VelocityZ * 128.0),
+            };
+
+            // Snaps the entity to the position that was just quantised, so the server's idea of
+            // where it is matches what the client was told rather than drifting by up to a
+            // thirty-second of a block. Inherited behaviour, kept deliberately.
+            currentTrackedEntity.X = spawn.X / 32.0;
+            currentTrackedEntity.Y = spawn.Y / 32.0;
+            currentTrackedEntity.Z = spawn.Z / 32.0;
+
+            return spawn;
         }
         else if (currentTrackedEntity is ServerPlayerEntity p)
         {
-            return PlayerSpawnS2CPacket.Get(p);
+            ItemStack? inHand = p.Inventory.ItemInHand;
+
+            return new PlayerSpawnMessage
+            {
+                EntityId = p.ID,
+                Name = p.Name,
+                X = Fixed(p.X),
+                Y = Fixed(p.Y),
+                Z = Fixed(p.Z),
+                Yaw = Angle(p.Yaw),
+                Pitch = Angle(p.Pitch),
+                CurrentItem = (short)(inHand?.ItemId ?? 0),
+            };
         }
         else
         {
@@ -429,51 +465,108 @@ internal class EntityTrackerEntry
             // on comes from the behavior rather than the definition's single id.
             if (currentTrackedEntity.Behaviors.Find<MinecartBehavior>() is { } cart)
             {
-                return EntitySpawnS2CPacket.Get(currentTrackedEntity, cart.SpawnObjectId(currentTrackedEntity));
+                return ObjectSpawn(cart.SpawnObjectId(currentTrackedEntity));
             }
 
             if (currentTrackedEntity is EntityLiving living and not EntityPlayer)
             {
-                return LivingEntitySpawnS2CPacket.Get(living);
+                MemoryStream data = new();
+                living.DataSynchronizer.WriteAll(data);
+
+                return new LivingEntitySpawnMessage
+                {
+                    EntityId = living.ID,
+                    Type = (sbyte)EntityRegistry.GetRawId(living),
+                    X = Fixed(living.X),
+                    Y = Fixed(living.Y),
+                    Z = Fixed(living.Z),
+                    Yaw = Angle(living.Yaw),
+                    Pitch = Angle(living.Pitch),
+                    Data = data.ToArray(),
+                };
             }
             // An arrow's spawn packet names whoever loosed it, so the client can credit the hit;
             // an unowned one (a dispenser's) names itself.
             else if (currentTrackedEntity.Behaviors.Find<ArrowBehavior>() is { } flight)
             {
                 EntityLiving? shooter = flight.Owner(currentTrackedEntity);
-                return EntitySpawnS2CPacket.Get(currentTrackedEntity, 60, shooter != null ? shooter.ID : currentTrackedEntity.ID);
+                return ObjectSpawn(60, shooter?.ID ?? currentTrackedEntity.ID);
             }
             // A fireball's spawn packet carries its shooter's id and rides its power vector in the
             // velocity fields, so it comes from the behavior rather than the generic declared branch.
             else if (currentTrackedEntity.Behaviors.Find<FireballBehavior>() is { } fireball)
             {
-                var packet = EntitySpawnS2CPacket.Get(currentTrackedEntity, 63, fireball.Owner(currentTrackedEntity)!.ID);
-                packet.VelocityX = (int)(fireball.PowerX(currentTrackedEntity) * 8000.0);
-                packet.VelocityY = (int)(fireball.PowerY(currentTrackedEntity) * 8000.0);
-                packet.VelocityZ = (int)(fireball.PowerZ(currentTrackedEntity) * 8000.0);
+                EntitySpawnMessage spawn = ObjectSpawn(63, fireball.Owner(currentTrackedEntity)!.ID);
+                spawn.VelocityX = (short)(fireball.PowerX(currentTrackedEntity) * 8000.0);
+                spawn.VelocityY = (short)(fireball.PowerY(currentTrackedEntity) * 8000.0);
+                spawn.VelocityZ = (short)(fireball.PowerZ(currentTrackedEntity) * 8000.0);
 
-                return packet;
+                return spawn;
             }
             // A falling block's object-spawn id depends on which block it carries, so it comes from
             // the behavior rather than the definition's single SpawnObjectId.
             else if (currentTrackedEntity.Behaviors.Find<SettleAsBlockBehavior>() is { } settle)
             {
-                return EntitySpawnS2CPacket.Get(currentTrackedEntity, settle.SpawnObjectId(currentTrackedEntity));
+                return ObjectSpawn(settle.SpawnObjectId(currentTrackedEntity));
             }
             else if (currentTrackedEntity.Type?.Definition is { SpawnObjectId: > 0 } declared)
             {
-                return EntitySpawnS2CPacket.Get(currentTrackedEntity, declared.SpawnObjectId);
+                return ObjectSpawn(declared.SpawnObjectId);
             }
             // A painting spawns by name and anchor rather than by position, so it has its own packet.
             else if (currentTrackedEntity.Behaviors.Find<HangingArtBehavior>() is not null)
             {
-                return PaintingEntitySpawnS2CPacket.Get(currentTrackedEntity);
+                HangingArtBehavior hanging = currentTrackedEntity.Behaviors.Find<HangingArtBehavior>()!;
+
+                return new PaintingSpawnMessage
+                {
+                    EntityId = currentTrackedEntity.ID,
+                    Title = hanging.Art(currentTrackedEntity)!.Title,
+                    X = hanging.TileX(currentTrackedEntity),
+                    Y = hanging.TileY(currentTrackedEntity),
+                    Z = hanging.TileZ(currentTrackedEntity),
+                    Direction = hanging.Direction(currentTrackedEntity),
+                };
             }
             else
             {
                 throw new ArgumentException("Don't know how to add " + currentTrackedEntity.GetType() + "!");
             }
         }
+    }
+
+    /// <summary>
+    ///     Builds an object spawn, clamping the velocity to what a short carries at 1/8000 of a
+    ///     block per tick.
+    ///     <para>
+    ///         The velocity is only meaningful when <paramref name="entityData" /> is positive, and
+    ///         it is computed only then — but it now always travels, because a payload whose length
+    ///         depends on one of its own fields is what produced <c>EntitySpawnS2CPacket</c>'s
+    ///         <c>Size()</c> answering 6 for a 21-byte packet.
+    ///     </para>
+    /// </summary>
+    private EntitySpawnMessage ObjectSpawn(int spawnObjectId, int entityData = 0)
+    {
+        const double limit = 3.9;
+
+        return new EntitySpawnMessage
+        {
+            EntityId = currentTrackedEntity.ID,
+            EntityType = (sbyte)spawnObjectId,
+            X = Fixed(currentTrackedEntity.X),
+            Y = Fixed(currentTrackedEntity.Y),
+            Z = Fixed(currentTrackedEntity.Z),
+            EntityData = entityData,
+            VelocityX = entityData > 0
+                ? (short)(Math.Clamp(currentTrackedEntity.VelocityX, -limit, limit) * 8000.0)
+                : (short)0,
+            VelocityY = entityData > 0
+                ? (short)(Math.Clamp(currentTrackedEntity.VelocityY, -limit, limit) * 8000.0)
+                : (short)0,
+            VelocityZ = entityData > 0
+                ? (short)(Math.Clamp(currentTrackedEntity.VelocityZ, -limit, limit) * 8000.0)
+                : (short)0,
+        };
     }
 
     public void removeListener(ServerPlayerEntity player)

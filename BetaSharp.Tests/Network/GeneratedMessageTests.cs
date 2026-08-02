@@ -116,6 +116,12 @@ public sealed class GeneratedMessageTests
             EntityEquipmentMessage.Id,
             EntityAnimationMessage.Id,
             ItemPickupMessage.Id,
+            EntitySpawnMessage.Id,
+            ItemEntitySpawnMessage.Id,
+            LivingEntitySpawnMessage.Id,
+            GlobalEntitySpawnMessage.Id,
+            PaintingSpawnMessage.Id,
+            PlayerSpawnMessage.Id,
         })
         {
             Assert.True(registry.GetId(key) >= 0, $"{key} is not registered.");
@@ -279,6 +285,97 @@ public sealed class GeneratedMessageTests
 
         Assert.Equal(EntityMoveMessage.Field.None, read.Mask);
         Assert.Equal(7, read.EntityId);
+    }
+
+    // ---- spawns ----
+
+    /// <summary>
+    ///     <c>EntitySpawnS2CPacket</c> wrote its velocity only when <c>EntityData</c> was positive,
+    ///     so the payload's length depended on one of its own fields — and its <c>Size()</c> read
+    ///     <c>17 + 4 + EntityData &gt; 0 ? 6 : 0</c>, which C# groups as
+    ///     <c>(21 + EntityData) &gt; 0 ? 6 : 0</c> and therefore answered 6 for a 21-byte packet.
+    ///     The message carries the velocity unconditionally; six bytes on a spawn is cheaper than a
+    ///     conditional nobody can size.
+    /// </summary>
+    [Fact]
+    public void An_object_spawn_is_the_same_size_with_and_without_entity_data()
+    {
+        EntitySpawnMessage plain = new() { EntityId = 1, EntityType = 10 };
+        EntitySpawnMessage owned = new() { EntityId = 1, EntityType = 60, EntityData = 77, VelocityX = 400 };
+
+        Assert.Equal(Serialise(plain).Length, plain.Size());
+        Assert.Equal(Serialise(owned).Length, owned.Size());
+        Assert.Equal(plain.Size(), owned.Size());
+    }
+
+    [Fact]
+    public void A_player_spawn_round_trips_its_name_and_pose()
+    {
+        PlayerSpawnMessage written = new()
+        {
+            EntityId = 12,
+            Name = "Nicolas",
+            X = -32_768,
+            Y = 2_048,
+            Z = 96,
+            Yaw = -64,
+            Pitch = 32,
+            CurrentItem = 280,
+        };
+
+        byte[] bytes = Serialise(written);
+        Assert.Equal(bytes.Length, written.Size());
+
+        PlayerSpawnMessage read = new();
+        read.Read(new MemoryStream(bytes));
+
+        Assert.Equal(written.Name, read.Name);
+        Assert.Equal(written.X, read.X);
+        Assert.Equal(written.Yaw, read.Yaw);
+        Assert.Equal(written.CurrentItem, read.CurrentItem);
+    }
+
+    /// <summary>
+    ///     A name is bounded before the allocation, not after. Sixteen characters is the account
+    ///     limit; a peer claiming sixty thousand gets refused rather than obliged.
+    /// </summary>
+    [Fact]
+    public void A_name_longer_than_the_declared_bound_is_refused()
+    {
+        MemoryStream stream = new();
+        stream.WriteInt(0);
+        stream.WriteString(new string('x', PlayerSpawnMessage.MaxNameBytes + 1));
+        stream.Position = 0;
+
+        Assert.Throws<InvalidDataException>(() => new PlayerSpawnMessage().Read(stream));
+    }
+
+    /// <summary>
+    ///     The painting title's bound is a literal because <c>Painting.MaxArtTitleLength</c> is
+    ///     computed and cannot be named in an attribute. This is what keeps the two from drifting.
+    /// </summary>
+    [Fact]
+    public void The_painting_title_bound_covers_every_art_title()
+    {
+        Assert.True(
+            PaintingSpawnMessage.MaxTitleBytes >= Painting.MaxArtTitleLength,
+            $"the wire bound {PaintingSpawnMessage.MaxTitleBytes} is below the longest art title "
+            + $"{Painting.MaxArtTitleLength}, so a valid painting would be refused");
+    }
+
+    /// <summary>
+    ///     A mob's first sight carries its whole synchronised data set, and the packet that did so
+    ///     declared a constant 20 bytes for a payload of 20 plus that data — wrong on every spawn.
+    /// </summary>
+    [Fact]
+    public void A_living_spawn_sizes_its_data_rather_than_assuming_it_is_absent()
+    {
+        LivingEntitySpawnMessage empty = new();
+        LivingEntitySpawnMessage populated = new() { Data = [1, 2, 3, 4, 5] };
+
+        Assert.Equal(Serialise(empty).Length, empty.Size());
+        Assert.Equal(Serialise(populated).Length, populated.Size());
+        Assert.Equal(5, populated.Size() - empty.Size());
     }
 
     // ---- dispatch ----
