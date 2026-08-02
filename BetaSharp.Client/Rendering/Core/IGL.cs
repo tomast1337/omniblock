@@ -3,9 +3,17 @@ using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client.Rendering.Core;
 
-public unsafe interface IGL
+/// <summary>
+///     The rendering API the client calls.
+/// </summary>
+/// <remarks>
+///     Everything declared here exists in a GL 4.3 core context. The fixed-function calls live in
+///     <see cref="IFixedFunctionGL" />, which this still inherits so that call sites can move over a
+///     directory at a time; dropping that base is what will make the split enforced rather than
+///     advisory.
+/// </remarks>
+public unsafe interface IGL : IFixedFunctionGL
 {
-    void AlphaFunc(GLEnum func, float refValue);
     void AttachShader(uint program, uint shader);
     void BindBuffer(GLEnum target, uint buffer);
     void BindTexture(GLEnum target, uint texture);
@@ -13,23 +21,15 @@ public unsafe interface IGL
     void BlendFunc(GLEnum sfactor, GLEnum dfactor);
     void BufferData<T0>(GLEnum target, ReadOnlySpan<T0> data, GLEnum usage) where T0 : unmanaged;
     void BufferData(GLEnum target, nuint size, void* data, GLEnum usage);
-    void CallList(uint list);
-    void CallLists(uint n, GLEnum type, void* lists);
     void Clear(ClearBufferMask mask);
     void ClearColor(float red, float green, float blue, float alpha);
     void ClearDepth(double depth);
-    void Color3(float red, float green, float blue);
-    void Color3(byte red, byte green, byte blue);
-    void Color4(float red, float green, float blue, float alpha);
     void ColorMask(bool red, bool green, bool blue, bool alpha);
-    void ColorMaterial(GLEnum face, GLEnum mode);
-    void ColorPointer(int size, ColorPointerType type, uint stride, void* pointer);
     void CompileShader(uint shader);
     uint CreateProgram();
     uint CreateShader(ShaderType type);
     void CullFace(GLEnum mode);
     void DeleteBuffer(uint buffer);
-    void DeleteLists(uint list, uint range);
     void DeleteProgram(uint program);
     void DeleteShader(uint shader);
     void DeleteTexture(uint texture);
@@ -38,21 +38,24 @@ public unsafe interface IGL
     void DeleteVertexArray(uint array);
     void DepthFunc(GLEnum func);
     void DepthMask(bool flag);
+
+    /// <summary>
+    ///     Some capabilities passed here are fixed-function state (fog, alpha test, lighting). The
+    ///     call itself is not, so it stays on this side of the split.
+    /// </summary>
     void Disable(EnableCap cap);
+
+    /// <inheritdoc cref="Disable(EnableCap)" />
     void Disable(GLEnum cap);
-    void DisableClientState(GLEnum array);
-    void DrawArrays(GLEnum mode, int first, uint count);
+
+    /// <inheritdoc cref="Disable(EnableCap)" />
     void Enable(GLEnum cap);
-    void EnableClientState(GLEnum array);
+
+    void DrawArrays(GLEnum mode, int first, uint count);
     void EnableVertexAttribArray(uint index);
-    void EndList();
-    void Fog(GLEnum pname, float param);
-    void Fog(GLEnum pname, ReadOnlySpan<float> params_);
-    void Frustum(double left, double right, double bottom, double top, double zNear, double zFar);
     uint GenBuffer();
     void GenBuffers(uint n, Span<uint> buffers);
     void GenBuffers(Span<uint> buffers);
-    uint GenLists(uint range);
     uint GenTexture();
     void GenTextures(Span<uint> textures);
     uint GenVertexArray();
@@ -66,34 +69,18 @@ public unsafe interface IGL
     string GetShaderInfoLog(uint shader);
     int GetUniformLocation(uint program, string name);
     bool IsExtensionPresent(string extension);
-    void Light(GLEnum light, GLEnum pname, float* params_);
-    void LightModel(GLEnum pname, float* params_);
     void LineWidth(float width);
     void LinkProgram(uint program);
-    void LoadIdentity();
-    void MatrixMode(GLEnum mode);
-    void NewList(uint list, GLEnum mode);
-    void Normal3(float nx, float ny, float nz);
-    void NormalPointer(NormalPointerType type, uint stride, void* pointer);
-    void Ortho(double left, double right, double bottom, double top, double zNear, double zFar);
     void PixelStore(PixelStoreParameter pname, int param);
     void PolygonOffset(float factor, float units);
-    void PopMatrix();
-    void PushMatrix();
     void ReadPixels(int x, int y, uint width, uint height, PixelFormat format, PixelType type, void* pixels);
-    void Rotate(float angle, float x, float y, float z);
-    void Scale(float x, float y, float z);
-    void Scale(double x, double y, double z);
-    void ShadeModel(GLEnum mode);
     void ShaderSource(uint shader, string string_);
-    void TexCoordPointer(int size, GLEnum type, uint stride, void* pointer);
     void TexImage2D(TextureTarget target, int level, InternalFormat internalformat, uint width, uint height, int border, PixelFormat format, PixelType type, void* pixels);
     void TexImage2D(GLEnum target, int level, int internalformat, uint width, uint height, int border, GLEnum format, GLEnum type, void* pixels);
     void TexParameter(TextureTarget target, TextureParameterName pname, int param);
     void TexParameter(GLEnum target, GLEnum pname, int param);
     void TexParameter(GLEnum target, GLEnum pname, float param);
     void TexSubImage2D(GLEnum target, int level, int xoffset, int yoffset, uint width, uint height, GLEnum format, GLEnum type, void* pixels);
-    void Translate(float x, float y, float z);
     void Uniform1(int location, int v0);
     void Uniform1(int location, float v0);
     void Uniform2(int location, float v0, float v1);
@@ -103,7 +90,6 @@ public unsafe interface IGL
     void UseProgram(uint program);
     void VertexAttribIPointer(uint index, int size, GLEnum type, uint stride, void* pointer);
     void VertexAttribPointer(uint index, int size, GLEnum type, bool normalized, uint stride, void* pointer);
-    void VertexPointer(int size, GLEnum type, uint stride, void* pointer);
     void Viewport(int x, int y, uint width, uint height);
     void Scissor(int x, int y, uint width, uint height);
     uint GenFramebuffer();
@@ -118,6 +104,4 @@ public unsafe interface IGL
     void DeleteRenderbuffer(uint renderbuffer);
     void BlitFramebuffer(int srcX0, int srcY0, int srcX1, int srcY1, int dstX0, int dstY0, int dstX1, int dstY1, uint mask, BlitFramebufferFilter filter);
     void ActiveTexture(GLEnum texture);
-    void BeginExternalShader(int mvLoc, int projLoc, int texMatLoc = -1);
-    void EndExternalShader();
 }
