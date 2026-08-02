@@ -1,385 +1,385 @@
 ﻿{
     "gui": {
-        "joinServer": "Join Server",
-        "rename": "Rename",
-        "edit": "Edit",
-        "refresh": "Refresh",
-        "done": "Done",
-        "cancel": "Cancel",
-        "delete": "Delete",
-        "toMenu": "Back to title screen",
-        "up": "Up",
-        "down": "Down",
-        "yes": "Yes",
-        "no": "No",
-        "connect": "Connect",
-        "directConnect": "Direct Connect",
-        "addServer": "Add Server",
-        "create": "Create",
-        "customize": "Customize",
-        "achievements": "Achievements",
-        "stats": "Statistics",
+        "joinServer": "Pievienoties serverim",
+        "rename": "Pārdēvēt",
+        "edit": "Rediģēt",
+        "refresh": "Atsvaidzināt",
+        "done": "Gatavs",
+        "cancel": "Atcelt",
+        "delete": "Dzēst",
+        "toMenu": "Atpakaļ uz galveno ekrānu",
+        "up": "Uz augšu",
+        "down": "Uz leju",
+        "yes": "Jā",
+        "no": "Nē",
+        "connect": "Savienoties",
+        "directConnect": "Tiešais savienojums",
+        "addServer": "Pievienot serveri",
+        "create": "Izveidot",
+        "customize": "Pielāgot",
+        "achievements": "Sasniegumi",
+        "stats": "Statistika",
         "container": {
-            "crafting": "Crafting",
-            "inventory": "Inventory",
-            "dispenser": "Dispenser",
-            "furnace": "Furnace",
+            "crafting": "Amatniecība",
+            "inventory": "Inventārs",
+            "dispenser": "Izsniedzējs",
+            "furnace": "Kurtuve",
             "tip": {
-                "move": "Move",
-                "quickMove": "Quick Move",
-                "takeHalf": "Take Half",
-                "place": "Place",
-                "placeOne": "Place One"
+                "move": "Pārvietot",
+                "quickMove": "Ātra pārvietošana",
+                "takeHalf": "Paņemt pusi",
+                "place": "Novietot",
+                "placeOne": "Novietot vienu"
             }
         }
     },
     "menu": {
-        "singleplayer": "Singleplayer",
-        "multiplayer": "Multiplayer",
-        "texturePacks": "Texture Packs",
-        "options": "Options...",
-        "language": "Language",
-        "quit": "Quit Game",
-        "credits": "Credits",
-        "sendFeedback": "Send Feedback",
-        "reportBugs": "Report Bugs",
-        "saveAndQuitToTitle": "Save and quit to title",
-        "disconnect": "Disconnect"
+        "singleplayer": "Vienspēlētāja režīms",
+        "multiplayer": "Vairākspēlētāju režīms",
+        "texturePacks": "Tekstūru pakotnes",
+        "options": "Iestatījumi...",
+        "language": "Valoda",
+        "quit": "Iziet no spēles",
+        "credits": "Autori",
+        "sendFeedback": "Sūtīt atsauksmi",
+        "reportBugs": "Ziņot par kļūdām",
+        "saveAndQuitToTitle": "Saglabāt un iziet uz galveno ekrānu",
+        "disconnect": "Atvienoties"
     },
     "selectWorld": {
-        "title": "Select World",
-        "empty": "empty",
-        "world": "World",
-        "select": "Play Selected World",
-        "create": "Create New World",
-        "createDemo": "Play New Demo World",
-        "deleteQuestion": "Are you sure you want to delete this world?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "renameTitle": "Rename World",
-        "conversion": "Must be converted!",
-        "newWorld": "New World",
-        "enterName": "World Name",
-        "resultFolder": "Will be saved in:",
-        "enterSeed": "Seed for the World Generator",
-        "seedInfo": "Leave blank for a random seed",
-        "selectWorldType": "Select World Type",
-        "worldType": "World Type",
-        "customize": "Customize",
-        "moreWorldOptions": "More World Options...",
+        "title": "Izvēlēties pasauli",
+        "empty": "tukšs",
+        "world": "Pasaule",
+        "select": "Spēlēt izvēlēto pasauli",
+        "create": "Izveidot jaunu pasauli",
+        "createDemo": "Spēlēt jauno demonstrācijas pasauli",
+        "deleteQuestion": "Vai tiešām vēlaties dzēst šo pasauli?",
+        "deleteWarning": "tiks zaudēta uz visiem laikiem! (Ilgu laiku!)",
+        "renameTitle": "Pārdēvēt pasauli",
+        "conversion": "Jāpārveido!",
+        "newWorld": "Jauna pasaule",
+        "enterName": "Pasaules nosaukums",
+        "resultFolder": "Tiks saglabāta:",
+        "enterSeed": "Sēkla pasaules ģeneratoram",
+        "seedInfo": "Atstājiet tukšu, lai iegūtu nejaušu sēklu",
+        "selectWorldType": "Izvēlēties pasaules veidu",
+        "worldType": "Pasaules veids",
+        "customize": "Pielāgot",
+        "moreWorldOptions": "Vairāk pasaules opciju...",
         "type": {
             "default": {
-                "title": "Default",
-                "description": "The standard Minecraft world."
+                "title": "Noklusējuma",
+                "description": "Standarta Minecraft pasaule."
             },
             "flat": {
-                "title": "Flat",
-                "description": "A completely flat world."
+                "title": "Plakana",
+                "description": "Pilnīgi plakana pasaule."
             },
             "sky": {
-                "title": "Sky",
-                "description": "A world floating in the sky."
+                "title": "Debesis",
+                "description": "Pasaule, kas peld debesīs."
             }
         }
     },
     "newWorld": {
         "customize": {
             "superflatWorld": {
-                "title": "Customize Superflat World"
+                "title": "Pielāgot superplakano pasauli"
             },
-            "removeLayer": "Remove Layer",
-            "presets": "Presets",
-            "height": "Height",
+            "removeLayer": "Noņemt slāni",
+            "presets": "Šabloni",
+            "height": "Augstums",
             "unknown": "???"
         }
     },
     "world": {
-        "world": "World",
-        "unsupportedFormat": "Unsupported Format!"
+        "world": "Pasaule",
+        "unsupportedFormat": "Neatbalstīts formāts!"
     },
     "multiplayer": {
-        "title": "Play Multiplayer",
-        "betasharpServer": "BetaSharp Server",
-        "info1": "Minecraft Multiplayer is currently not finished, but there",
-        "info2": "is some buggy early testing going on.",
-        "ipinfo": "Enter the IP of a server to connect to it:",
-        "deleteQuestion": "Are you sure you want to delete this server?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "downloadingTerrain": "Downloading terrain",
-        "stopSleeping": "Leave Bed",
-        "editServerTitle": "Edit Server Info",
-        "addServerTitle": "Add Server Info",
-        "serverName": "Server Name",
-        "serverAddress": "Server Address"
+        "title": "Spēlēt vairākspēlētāju režīmā",
+        "betasharpServer": "BetaSharp serveris",
+        "info1": "Minecraft vairākspēlētāju režīms pašlaik nav pabeigts, bet",
+        "info2": "notiek nedaudz bugainas agrīnās testēšanas.",
+        "ipinfo": "Ievadiet servera IP, lai tam pievienotos:",
+        "deleteQuestion": "Vai tiešām vēlaties dzēst šo serveri?",
+        "deleteWarning": "tiks zaudēts uz visiem laikiem! (Ilgu laiku!)",
+        "downloadingTerrain": "Lejupielādē reljefu",
+        "stopSleeping": "Atstāt gultu",
+        "editServerTitle": "Rediģēt servera informāciju",
+        "addServerTitle": "Pievienot servera informāciju",
+        "serverName": "Servera nosaukums",
+        "serverAddress": "Servera adrese"
     },
     "loading": {
-        "loadingLevel": "Loading level",
-        "startingServer": "Starting server...",
-        "preparingSpawnArea": "Preparing spawn area"
+        "loadingLevel": "Ielādē līmeni",
+        "startingServer": "Palaiž serveri...",
+        "preparingSpawnArea": "Sagatavo atdzimšanas zonu"
     },
     "achievements": {
-        "title": "Achievements"
+        "title": "Sasniegumi"
     },
     "gameover": {
-        "title": "Game Over!",
-        "score": "Score",
-        "respawn": "Respawn",
-        "titleMenu": "Title menu"
+        "title": "Spēle beigusies!",
+        "score": "Rezultāts",
+        "respawn": "Atdzimt",
+        "titleMenu": "Galvenā izvēlne"
     },
     "gamemenu": {
-        "title": "Game Menu",
-        "backToGame": "Back to Game"
+        "title": "Spēles izvēlne",
+        "backToGame": "Atpakaļ uz spēli"
     },
     "sign": {
-        "title": "Edit sign message:"
+        "title": "Rediģē zīmes tekstu:"
     },
     "stats": {
-        "title": "Statistics",
-        "general": "General",
+        "title": "Statistika",
+        "general": "Vispārīgi",
         "blocks": {
-            "name": "Blocks",
-            "mined": "Mined",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Bloki",
+            "mined": "Iegūti",
+            "crafted": "Izgatavoti",
+            "used": "Izmantoti"
         },
         "items": {
-            "name": "Items",
-            "broken": "Broken",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Priekšmeti",
+            "broken": "Salauzti",
+            "crafted": "Izgatavoti",
+            "used": "Izmantoti"
         },
-        "item": "Item"
+        "item": "Priekšmets"
     },
     "connect": {
-        "connecting": "Connecting to the server...",
-        "authorizing": "Logging in...",
-        "failed": "Failed to connect to the server"
+        "connecting": "Savienojas ar serveri...",
+        "authorizing": "Piesakās...",
+        "failed": "Neizdevās savienoties ar serveri"
     },
     "disconnect": {
         "genericReason": "{0}",
-        "disconnected": "Disconnected by Server",
-        "lost": "Connection Lost",
-        "kicked": "Was kicked from the game",
-        "timeout": "Timed out",
-        "closed": "Connection closed",
-        "loginFailed": "Failed to login",
-        "quitting": "Quitting",
-        "endOfStream": "End of stream",
-        "overflow": "Buffer overflow"
+        "disconnected": "Atvienoja serveris",
+        "lost": "Savienojums tika zaudēts",
+        "kicked": "Tika izmests no spēles",
+        "timeout": "Laika limits beidzās",
+        "closed": "Savienojums slēgts",
+        "loginFailed": "Neizdevās pieteikties",
+        "quitting": "Iziet no spēles",
+        "endOfStream": "Straumes beigas",
+        "overflow": "Bufera pārpilde"
     },
     "options": {
-        "off": "OFF",
-        "on": "ON",
-        "disabled": "Disabled",
-        "title": "Options",
-        "controls": "Controls...",
-        "keyboardControls": "Keyboard Controls...",
-        "controllerSettings": "Controller Settings...",
-        "controllerType": "Controller Type",
+        "off": "IZSLĒGTS",
+        "on": "IESLĒGTS",
+        "disabled": "Atspējots",
+        "title": "Iestatījumi",
+        "controls": "Vadība...",
+        "keyboardControls": "Tastatūras vadība...",
+        "controllerSettings": "Kontroliera iestatījumi...",
+        "controllerType": "Kontroliera veids",
         "video": {
-            "text": "Video Settings...",
-            "performance": "Performance",
-            "display": "Display"
+            "text": "Video iestatījumi...",
+            "performance": "Veiktspēja",
+            "display": "Ekrāns"
         },
-        "uiSettings": "UI Settings...",
-        "audioSettings": "Audio Settings...",
-        "audioTitle": "Audio Settings",
-        "videoTitle": "Video Settings",
-        "language": "Language...",
-        "anisoLevel": "Aniso Level",
-        "music": "Music",
-        "sound": "Sound",
-        "invertMouse": "Invert Mouse",
-        "alternateBlocks": "Alternate Blocks",
-        "chunkFade": "Chunk Fade",
+        "uiSettings": "UI iestatījumi...",
+        "audioSettings": "Audio iestatījumi...",
+        "audioTitle": "Audio iestatījumi",
+        "videoTitle": "Video iestatījumi",
+        "language": "Valoda...",
+        "anisoLevel": "Anizotropijas līmenis",
+        "music": "Mūzika",
+        "sound": "Skaņa",
+        "invertMouse": "Apgriezt peli",
+        "alternateBlocks": "Alternatīvie bloki",
+        "chunkFade": "Chunk izbalēšana",
         "sensitivity": {
-            "text": "Sensitivity",
-            "controllerText": "Controller Sensitivity",
-            "min": "*yawn*",
-            "max": "HYPERSPEED!!!"
+            "text": "Jutība",
+            "controllerText": "Kontroliera jutība",
+            "min": "*žāvas*",
+            "max": "HIPERĀTRUMS!!!"
         },
         "renderDistance": {
-            "text": "Render Distance",
-            "chunks": "Chunks",
-            "tiny": "Tiny",
-            "short": "Short",
-            "normal": "Normal",
-            "far": "Far"
+            "text": "Renderēšanas attālums",
+            "chunks": "Chunk",
+            "tiny": "Ļoti īss",
+            "short": "Īss",
+            "normal": "Normāls",
+            "far": "Tāls"
         },
-        "viewBobbing": "View Bobbing",
-        "ao": "Smooth Lighting",
-        "anaglyph": "3D Anaglyph",
-        "framerateLimit": "Performance",
+        "viewBobbing": "Skata šūpošana",
+        "ao": "Gluds apgaismojums",
+        "anaglyph": "3D anaglifs",
+        "framerateLimit": "Veiktspēja",
         "difficulty": {
-            "text": "Difficulty",
-            "peaceful": "Peaceful",
-            "easy": "Easy",
-            "normal": "Normal",
-            "hard": "Hard"
+            "text": "Grūtības pakāpe",
+            "peaceful": "Mierīga",
+            "easy": "Viegla",
+            "normal": "Normāla",
+            "hard": "Grūta"
         },
         "graphics": {
-            "text": "Graphics",
-            "fancy": "Fancy",
-            "fast": "Fast"
+            "text": "Grafika",
+            "fancy": "Grezna",
+            "fast": "Ātra"
         },
         "cloudsQuality": {
-            "text": "Clouds Quality",
-            "off": "No Clouds",
-            "legacy": "Old Clouds",
-            "shader": "Shader"
+            "text": "Mākoņu kvalitāte",
+            "off": "Bez mākoņiem",
+            "legacy": "Vecie mākoņi",
+            "shader": "Šeideris"
         },
         "softClouds": {
-            "text": "Soft Clouds"
+            "text": "Mīkstie mākoņi"
         },
         "guiScale": {
-            "text": "GUI Scale",
-            "auto": "Auto",
-            "small": "Small",
-            "normal": "Normal",
-            "large": "Large"
+            "text": "Saskarnes mērogs",
+            "auto": "Automātiski",
+            "small": "Mazs",
+            "normal": "Normāls",
+            "large": "Liels"
         },
         "chatScale": {
-            "text": "Chat Scale"
+            "text": "Tērzēšanas mērogs"
         },
         "chatWidth": {
-            "text": "Chat Width"
+            "text": "Tērzēšanas platums"
         },
-        "advancedOpengl": "Advanced OpenGL",
+        "advancedOpengl": "Papildu OpenGL",
         "fps": {
             "text": "FPS",
-            "maxFps": "Max FPS",
-            "unlimited": "Unlimited"
+            "maxFps": "Maks. FPS",
+            "unlimited": "Neierobežots"
         },
-        "showCoordinates": "Show Coordinates",
-        "uiCursors": "UI Cursors",
+        "showCoordinates": "Rādīt koordinātas",
+        "uiCursors": "UI kursori",
         "gamma": "Gamma",
         "vSync": "VSync",
-        "mipmaps": "Mipmaps",
-        "menuMusic": "Menu Music",
+        "mipmaps": "Mipmapas",
+        "menuMusic": "Izvēlnes mūzika",
         "msaa": "MSAA",
         "fov": "FOV",
         "movement": {
-            "text": "Movement"
+            "text": "Kustība"
         },
         "view": {
-            "text": "View"
+            "text": "Skats"
         },
         "other": {
-            "text": "Other"
+            "text": "Citi"
         },
-        "editBindings": "Edit Bindings...",
-        "resetBindings": "Reset Bindings...",
-        "controllerBindings": "Controller Bindings",
+        "editBindings": "Rediģēt taustiņu saistījumus...",
+        "resetBindings": "Atiestatīt taustiņu saistījumus...",
+        "controllerBindings": "Kontroliera saistījumi",
         "shader": {
-            "text": "Shader Options",
+            "text": "Šeideru opcijas",
             "chunkVert": {
-                "text": "World",
-                "WavyLeavesStrength": "Wavy Leaves Strength",
-                "WavyLeavesSpeed": "Wavy Leaves Speed",
-                "WavyPlantStrength": "Wavy Plant Strength",
-                "WavyPlantSpeed": "Wavy Plant Speed",
-                "WavyPlantMode": "Wavy Plant Mode"
+                "text": "Pasaule",
+                "WavyLeavesStrength": "Viļņojošo lapu stiprums",
+                "WavyLeavesSpeed": "Viļņojošo lapu ātrums",
+                "WavyPlantStrength": "Viļņojošo augu stiprums",
+                "WavyPlantSpeed": "Viļņojošo augu ātrums",
+                "WavyPlantMode": "Viļņojošo augu režīms"
             },
             "cloud": {
-                "text": "Clouds",
-                "minParallax": "Min Parallax",
-                "maxParallax": "Max Parallax",
-                "minGradient": "Min Gradient",
-                "maxGradient": "Max Gradient",
-                "cloudHeight": "Cloud Height",
-                "shadow": "Shadow Color",
-                "smoothWidth": "Smooth Width",
-                "smoothSamples": "Smooth Samples",
-                "closeFade": "Close Fade",
-                "smoothTop": "Smooth Top",
-                "smoothEdge": "Smooth Edge",
-                "smoothBottom": "Smooth Bottom",
-                "smoothBottomTopDown": "Smooth Bottom Top Down"
+                "text": "Mākoņi",
+                "minParallax": "Min. paralakse",
+                "maxParallax": "Maks. paralakse",
+                "minGradient": "Min. gradients",
+                "maxGradient": "Maks. gradients",
+                "cloudHeight": "Mākoņu augstums",
+                "shadow": "Ēnas krāsa",
+                "smoothWidth": "Gludais platums",
+                "smoothSamples": "Gludie paraugi",
+                "closeFade": "Tuvā izbalēšana",
+                "smoothTop": "Gluda virspuse",
+                "smoothEdge": "Gluda mala",
+                "smoothBottom": "Gluda apakša",
+                "smoothBottomTopDown": "Gluda apakša no augšas uz leju"
             },
             "ui": {
                 "text": "UI",
-                "darkMode": "Dark Mode"
+                "darkMode": "Tumšais režīms"
             },
             "preset": {
-                "text": "Preset",
-                "disabled": "Disabled",
-                "default": "Default",
-                "custom": "Custom",
+                "text": "Šablons",
+                "disabled": "Atspējots",
+                "default": "Noklusējuma",
+                "custom": "Pielāgots",
                 "2d": "2D",
                 "3d": "3D",
-                "low": "Low",
-                "medium": "Medium",
-                "high": "High",
+                "low": "Zems",
+                "medium": "Vidējs",
+                "high": "Augsts",
                 "ultra": "Ultra"
             }
         }
     },
     "performance": {
-        "max": "Max FPS",
-        "balanced": "Balanced",
-        "powersaver": "Power saver"
+        "max": "Maks. FPS",
+        "balanced": "Līdzsvarots",
+        "powersaver": "Energotaupīšana"
     },
     "controls": {
-        "title": "Controls"
+        "title": "Vadība"
     },
     "key": {
-        "forward": "Forward",
-        "left": "Left",
-        "back": "Back",
-        "right": "Right",
-        "jump": "Jump",
-        "inventory": "Inventory",
-        "drop": "Drop",
-        "chat": "Chat",
-        "fog": "Toggle Fog",
-        "sneak": "Sneak",
-        "playerlist": "List players",
-        "zoom": "Zoom",
-        "hotbarLeft": "Hotbar Left",
-        "hotbarRight": "Hotbar Right",
-        "pickBlock": "Pick Block",
-        "camera": "Camera Mode",
-        "pause": "Pause"
+        "forward": "Uz priekšu",
+        "left": "Pa kreisi",
+        "back": "Atpakaļ",
+        "right": "Pa labi",
+        "jump": "Lēkt",
+        "inventory": "Inventārs",
+        "drop": "Izmet",
+        "chat": "Tērzēšana",
+        "fog": "Pārslēgt miglu",
+        "sneak": "Ložņāt",
+        "playerlist": "Spēlētāju saraksts",
+        "zoom": "Tuvināšana",
+        "hotbarLeft": "Karstā josla pa kreisi",
+        "hotbarRight": "Karstā josla pa labi",
+        "pickBlock": "Paņemt bloku",
+        "camera": "Kamerrežīms",
+        "pause": "Pauze"
     },
     "texturePack": {
-        "openFolder": "Open texture pack folder",
-        "title": "Select Texture Pack",
-        "folderInfo": "(Place texture pack files here)"
+        "openFolder": "Atvērt tekstūru pakotņu mapi",
+        "title": "Izvēlēties tekstūru pakotni",
+        "folderInfo": "(Ievietojiet tekstūru pakotņu failus šeit)"
     },
     "tile": {
         "tallgrass": {
-            "name": "Tallgrass",
+            "name": "Garā zāle",
             "desc": ""
         },
         "stone": {
-            "name": "Stone",
+            "name": "Akmens",
             "desc": ""
         },
         "grass": {
-            "name": "Grass",
+            "name": "Zāles bloks",
             "desc": ""
         },
         "dirt": {
-            "name": "Dirt",
+            "name": "Zeme",
             "desc": ""
         },
         "stonebrick": {
-            "name": "Cobblestone",
+            "name": "Bruģakmens",
             "desc": ""
         },
         "wood": {
-            "name": "Wooden Planks",
+            "name": "Koka dēļi",
             "desc": ""
         },
         "sapling": {
-            "name": "Sapling",
+            "name": "Stāds",
             "desc": ""
         },
         "bedrock": {
-            "name": "Bedrock",
+            "name": "Pamatiezis",
             "desc": ""
         },
         "water": {
-            "name": "Water",
+            "name": "Ūdens",
             "desc": ""
         },
         "lava": {
@@ -387,150 +387,150 @@
             "desc": ""
         },
         "sand": {
-            "name": "Sand",
+            "name": "Smiltis",
             "desc": ""
         },
-        "sandStone": { "name": "Sandstone" },
+        "sandStone": { "name": "Smilšakmens" },
         "gravel": {
-            "name": "Gravel",
+            "name": "Grants",
             "desc": ""
         },
         "oreGold": {
-            "name": "Gold Ore",
+            "name": "Zelta rūda",
             "desc": ""
         },
         "oreIron": {
-            "name": "Iron Ore",
+            "name": "Dzelzs rūda",
             "desc": ""
         },
         "oreCoal": {
-            "name": "Coal Ore",
+            "name": "Akmeņogļu rūda",
             "desc": ""
         },
         "log": {
-            "name": "Wood",
+            "name": "Koks",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Lapas",
             "desc": ""
         },
         "sponge": {
-            "name": "Sponge",
+            "name": "Sūklis",
             "desc": ""
         },
         "glass": {
-            "name": "Glass",
+            "name": "Stikls",
             "desc": ""
         },
         "cloth": {
-            "name": "Wool",
+            "name": "Vilna",
             "desc": "",
             "black": {
-                "name": "Black Wool",
+                "name": "Melna vilna",
                 "desc": ""
             },
             "red": {
-                "name": "Red Wool",
+                "name": "Sarkana vilna",
                 "desc": ""
             },
             "green": {
-                "name": "Green Wool",
+                "name": "Zaļa vilna",
                 "desc": ""
             },
             "brown": {
-                "name": "Brown Wool",
+                "name": "Brūna vilna",
                 "desc": ""
             },
             "blue": {
-                "name": "Blue Wool",
+                "name": "Zila vilna",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Wool",
+                "name": "Purpura vilna",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Wool",
+                "name": "Ciāna vilna",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Wool",
+                "name": "Gaiši pelēka vilna",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Wool",
+                "name": "Pelēka vilna",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Wool",
+                "name": "Rozā vilna",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Wool",
+                "name": "Laima vilna",
                 "desc": ""
             },
             "yellow": {
-                "name": "Yellow Wool",
+                "name": "Dzeltena vilna",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Wool",
+                "name": "Gaiši zila vilna",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Wool",
+                "name": "Fuksīna vilna",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Wool",
+                "name": "Oranža vilna",
                 "desc": ""
             },
             "white": {
-                "name": "Wool",
+                "name": "Vilna",
                 "desc": ""
             }
         },
         "flower": {
-            "name": "Flower",
+            "name": "Zieds",
             "desc": ""
         },
         "rose": {
-            "name": "Rose",
+            "name": "Roze",
             "desc": ""
         },
         "mushroom": {
-            "name": "Mushroom",
+            "name": "Sēne",
             "desc": ""
         },
         "blockGold": {
-            "name": "Block of Gold",
+            "name": "Zelta bloks",
             "desc": ""
         },
         "blockIron": {
-            "name": "Block of Iron",
+            "name": "Dzelzs bloks",
             "desc": ""
         },
         "stoneSlab": {
             "stone": {
-                "name": "Stone Slab",
+                "name": "Akmens plāksne",
                 "desc": ""
             },
             "sand": {
-                "name": "Sandstone Slab",
+                "name": "Smilšakmens plāksne",
                 "desc": ""
             },
             "wood": {
-                "name": "Wooden Slab",
+                "name": "Koka plāksne",
                 "desc": ""
             },
             "cobble": {
-                "name": "Stone Slab",
+                "name": "Akmens plāksne",
                 "desc": ""
             }
         },
         "brick": {
-            "name": "Bricks",
+            "name": "Ķieģeļi",
             "desc": ""
         },
         "tnt": {
@@ -538,832 +538,832 @@
             "desc": ""
         },
         "bookshelf": {
-            "name": "Bookshelf",
+            "name": "Grāmatu plaukts",
             "desc": ""
         },
         "stoneMoss": {
-            "name": "Moss Stone",
+            "name": "Sūnains akmens",
             "desc": ""
         },
         "obsidian": {
-            "name": "Obsidian",
+            "name": "Obsidiāns",
             "desc": ""
         },
         "torch": {
-            "name": "Torch",
+            "name": "Lāpa",
             "desc": ""
         },
         "fire": {
-            "name": "Fire",
+            "name": "Uguns",
             "desc": ""
         },
         "mobSpawner": {
-            "name": "Monster Spawner",
+            "name": "Briesmoņu radītājs",
             "desc": ""
         },
         "stairsWood": {
-            "name": "Wooden Stairs",
+            "name": "Koka kāpnes",
             "desc": ""
         },
         "chest": {
-            "name": "Chest",
+            "name": "Lāde",
             "desc": ""
         },
         "redstoneDust": {
-            "name": "Redstone Dust",
+            "name": "Sarkanakmens putekļi",
             "desc": ""
         },
         "oreDiamond": {
-            "name": "Diamond Ore",
+            "name": "Dimanta rūda",
             "desc": ""
         },
         "blockDiamond": {
-            "name": "Block of Diamond",
+            "name": "Dimanta bloks",
             "desc": ""
         },
         "workbench": {
-            "name": "Crafting Table",
+            "name": "Darbagalds",
             "desc": ""
         },
         "crops": {
-            "name": "Crops",
+            "name": "Labība",
             "desc": ""
         },
         "farmland": {
-            "name": "Farmland",
+            "name": "Aramzeme",
             "desc": ""
         },
         "furnace": {
-            "name": "Furnace",
+            "name": "Kurtuve",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Zīme",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Koka durvis",
             "desc": ""
         },
         "ladder": {
-            "name": "Ladder",
+            "name": "Trepes",
             "desc": ""
         },
         "rail": {
-            "name": "Rail",
+            "name": "Sliede",
             "desc": ""
         },
         "goldenRail": {
-            "name": "Powered Rail",
+            "name": "Darbināta sliede",
             "desc": ""
         },
         "detectorRail": {
-            "name": "Detector Rail",
+            "name": "Detektorsliede",
             "desc": ""
         },
         "stairsStone": {
-            "name": "Stone Stairs",
+            "name": "Akmens kāpnes",
             "desc": ""
         },
         "lever": {
-            "name": "Lever",
+            "name": "Svira",
             "desc": ""
         },
         "pressurePlate": {
-            "name": "Pressure Plate",
+            "name": "Spiediena plāksne",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Dzelzs durvis",
             "desc": ""
         },
         "oreRedstone": {
-            "name": "Redstone Ore",
+            "name": "Sarkanakmens rūda",
             "desc": ""
         },
         "notGate": {
-            "name": "Redstone Torch",
+            "name": "Sarkanakmens lāpa",
             "desc": ""
         },
         "button": {
-            "name": "Button",
+            "name": "Poga",
             "desc": ""
         },
         "snow": {
-            "name": "Snow",
+            "name": "Sniegs",
             "desc": ""
         },
         "ice": {
-            "name": "Ice",
+            "name": "Ledus",
             "desc": ""
         },
         "cactus": {
-            "name": "Cactus",
+            "name": "Kaktuss",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Māls",
             "desc": ""
         },
         "reeds": {
-            "name": "Sugar cane",
+            "name": "Cukurniedres",
             "desc": ""
         },
         "jukebox": {
-            "name": "Jukebox",
+            "name": "Mūzikas automāts",
             "desc": ""
         },
         "fence": {
-            "name": "Fence",
+            "name": "Žogs",
             "desc": ""
         },
         "pumpkin": {
-            "name": "Pumpkin",
+            "name": "Ķirbis",
             "desc": ""
         },
         "litpumpkin": {
-            "name": "Jack 'o' Lantern",
+            "name": "Ķirbja laterna",
             "desc": ""
         },
         "hellrock": {
-            "name": "Netherrack",
+            "name": "Neterakmens",
             "desc": ""
         },
         "hellsand": {
-            "name": "Soul Sand",
+            "name": "Dvēseļu smiltis",
             "desc": ""
         },
         "lightgem": {
-            "name": "Glowstone",
+            "name": "Gaismakmens",
             "desc": ""
         },
         "portal": {
-            "name": "Portal",
+            "name": "Portāls",
             "desc": ""
         },
         "oreLapis": {
-            "name": "Lapis Lazuli Ore",
+            "name": "Lapis lazuli rūda",
             "desc": ""
         },
         "blockLapis": {
-            "name": "Lapis Lazuli Block",
+            "name": "Lapis lazuli bloks",
             "desc": ""
         },
         "dispenser": {
-            "name": "Dispenser",
+            "name": "Izsniedzējs",
             "desc": ""
         },
         "musicBlock": {
-            "name": "Note Block",
+            "name": "Nošu bloks",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Kūka",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Gulta",
             "desc": "",
-            "occupied": "This bed is occupied",
-            "noSleep": "You can only sleep at night",
-            "notValid": "Your home bed was missing or obstructed"
+            "occupied": "Šī gulta ir aizņemta",
+            "noSleep": "Tu vari gulēt tikai naktī",
+            "notValid": "Jūsu mājas gulta ir pazudusi vai aizšķērsota"
         },
         "lockedchest": {
-            "name": "Locked chest",
+            "name": "Aizslēgta lāde",
             "desc": ""
         },
         "trapdoor": {
-            "name": "Trapdoor",
+            "name": "Lūka",
             "desc": ""
         },
         "web": {
-            "name": "Cobweb",
+            "name": "Zirnekļa tīkls",
             "desc": ""
         },
         "stonebricksmooth": {
-            "name": "Stone Bricks",
+            "name": "Akmens ķieģeļi",
             "desc": ""
         },
         "pistonBase": {
-            "name": "Piston",
+            "name": "Virzulis",
             "desc": ""
         },
         "pistonStickyBase": {
-            "name": "Sticky Piston",
+            "name": "Lipīgais virzulis",
             "desc": ""
         }
     },
     "item": {
         "shovelIron": {
-            "name": "Iron Shovel",
+            "name": "Dzelzs lāpsta",
             "desc": ""
         },
         "pickaxeIron": {
-            "name": "Iron Pickaxe",
+            "name": "Dzelzs cērte",
             "desc": ""
         },
         "hatchetIron": {
-            "name": "Iron Axe",
+            "name": "Dzelzs cirvis",
             "desc": ""
         },
         "flintAndSteel": {
-            "name": "Flint and Steel",
+            "name": "Krams un tērauds",
             "desc": ""
         },
         "apple": {
-            "name": "Apple",
+            "name": "Ābols",
             "desc": ""
         },
         "cookie": {
-            "name": "Cookie",
+            "name": "Cepums",
             "desc": ""
         },
         "bow": {
-            "name": "Bow",
+            "name": "Loks",
             "desc": ""
         },
         "arrow": {
-            "name": "Arrow",
+            "name": "Bulta",
             "desc": ""
         },
         "coal": {
-            "name": "Coal",
+            "name": "Akmeņogles",
             "desc": ""
         },
         "charcoal": {
-            "name": "Charcoal",
+            "name": "Kokogles",
             "desc": ""
         },
         "diamond": {
-            "name": "Diamond",
+            "name": "Dimants",
             "desc": ""
         },
         "ingotIron": {
-            "name": "Iron Ingot",
+            "name": "Dzelzs lietnis",
             "desc": ""
         },
         "ingotGold": {
-            "name": "Gold Ingot",
+            "name": "Zelta lietnis",
             "desc": ""
         },
         "swordIron": {
-            "name": "Iron Sword",
+            "name": "Dzelzs zobens",
             "desc": ""
         },
         "swordWood": {
-            "name": "Wooden Sword",
+            "name": "Koka zobens",
             "desc": ""
         },
         "shovelWood": {
-            "name": "Wooden Shovel",
+            "name": "Koka lāpsta",
             "desc": ""
         },
         "pickaxeWood": {
-            "name": "Wooden Pickaxe",
+            "name": "Koka cērte",
             "desc": ""
         },
         "hatchetWood": {
-            "name": "Wooden Axe",
+            "name": "Koka cirvis",
             "desc": ""
         },
         "swordStone": {
-            "name": "Stone Sword",
+            "name": "Akmens zobens",
             "desc": ""
         },
         "shovelStone": {
-            "name": "Stone Shovel",
+            "name": "Akmens lāpsta",
             "desc": ""
         },
         "pickaxeStone": {
-            "name": "Stone Pickaxe",
+            "name": "Akmens cērte",
             "desc": ""
         },
         "hatchetStone": {
-            "name": "Stone Axe",
+            "name": "Akmens cirvis",
             "desc": ""
         },
         "swordDiamond": {
-            "name": "Diamond Sword",
+            "name": "Dimanta zobens",
             "desc": ""
         },
         "shovelDiamond": {
-            "name": "Diamond Shovel",
+            "name": "Dimanta lāpsta",
             "desc": ""
         },
         "pickaxeDiamond": {
-            "name": "Diamond Pickaxe",
+            "name": "Dimanta cērte",
             "desc": ""
         },
         "hatchetDiamond": {
-            "name": "Diamond Axe",
+            "name": "Dimanta cirvis",
             "desc": ""
         },
         "stick": {
-            "name": "Stick",
+            "name": "Kociņš",
             "desc": ""
         },
         "bowl": {
-            "name": "Bowl",
+            "name": "Bļoda",
             "desc": ""
         },
         "mushroomStew": {
-            "name": "Mushroom Stew",
+            "name": "Sēņu sautējums",
             "desc": ""
         },
         "swordGold": {
-            "name": "Golden Sword",
+            "name": "Zelta zobens",
             "desc": ""
         },
         "shovelGold": {
-            "name": "Golden Shovel",
+            "name": "Zelta lāpsta",
             "desc": ""
         },
         "pickaxeGold": {
-            "name": "Golden Pickaxe",
+            "name": "Zelta cērte",
             "desc": ""
         },
         "hatchetGold": {
-            "name": "Golden Axe",
+            "name": "Zelta cirvis",
             "desc": ""
         },
         "string": {
-            "name": "String",
+            "name": "Aukla",
             "desc": ""
         },
         "feather": {
-            "name": "Feather",
+            "name": "Spalva",
             "desc": ""
         },
         "gunpowder": {
-            "name": "Gunpowder",
+            "name": "Šaujampulveris",
             "desc": ""
         },
         "hoeWood": {
-            "name": "Wooden Hoe",
+            "name": "Koka kaplis",
             "desc": ""
         },
         "hoeStone": {
-            "name": "Stone Hoe",
+            "name": "Akmens kaplis",
             "desc": ""
         },
         "hoeIron": {
-            "name": "Iron Hoe",
+            "name": "Dzelzs kaplis",
             "desc": ""
         },
         "hoeDiamond": {
-            "name": "Diamond Hoe",
+            "name": "Dimanta kaplis",
             "desc": ""
         },
         "hoeGold": {
-            "name": "Golden Hoe",
+            "name": "Zelta kaplis",
             "desc": ""
         },
         "seeds": {
-            "name": "Seeds",
+            "name": "Sēklas",
             "desc": ""
         },
         "wheat": {
-            "name": "Wheat",
+            "name": "Kvieši",
             "desc": ""
         },
         "bread": {
-            "name": "Bread",
+            "name": "Maize",
             "desc": ""
         },
         "helmetLeather": {
-            "name": "Leather Cap",
+            "name": "Ādas cepure",
             "desc": ""
         },
         "chestplateLeather": {
-            "name": "Leather Tunic",
+            "name": "Ādas tunika",
             "desc": ""
         },
         "leggingsLeather": {
-            "name": "Leather Pants",
+            "name": "Ādas bikses",
             "desc": ""
         },
         "bootsLeather": {
-            "name": "Leather Boots",
+            "name": "Ādas zābaki",
             "desc": ""
         },
         "helmetChain": {
-            "name": "Chain Helmet",
+            "name": "Ķēžu ķivere",
             "desc": ""
         },
         "chestplateChain": {
-            "name": "Chain Chestplate",
+            "name": "Ķēžu bruņukrekls",
             "desc": ""
         },
         "leggingsChain": {
-            "name": "Chain Leggings",
+            "name": "Ķēžu kājsargi",
             "desc": ""
         },
         "bootsChain": {
-            "name": "Chain Boots",
+            "name": "Ķēžu zābaki",
             "desc": ""
         },
         "helmetIron": {
-            "name": "Iron Helmet",
+            "name": "Dzelzs ķivere",
             "desc": ""
         },
         "chestplateIron": {
-            "name": "Iron Chestplate",
+            "name": "Dzelzs bruņukrekls",
             "desc": ""
         },
         "leggingsIron": {
-            "name": "Iron Leggings",
+            "name": "Dzelzs kājsargi",
             "desc": ""
         },
         "bootsIron": {
-            "name": "Iron Boots",
+            "name": "Dzelzs zābaki",
             "desc": ""
         },
         "helmetDiamond": {
-            "name": "Diamond Helmet",
+            "name": "Dimanta ķivere",
             "desc": ""
         },
         "chestplateDiamond": {
-            "name": "Diamond Chestplate",
+            "name": "Dimanta bruņukrekls",
             "desc": ""
         },
         "leggingsDiamond": {
-            "name": "Diamond Leggings",
+            "name": "Dimanta kājsargi",
             "desc": ""
         },
         "bootsDiamond": {
-            "name": "Diamond Boots",
+            "name": "Dimanta zābaki",
             "desc": ""
         },
         "helmetGold": {
-            "name": "Golden Helmet",
+            "name": "Zelta ķivere",
             "desc": ""
         },
         "chestplateGold": {
-            "name": "Golden Chestplate",
+            "name": "Zelta bruņukrekls",
             "desc": ""
         },
         "leggingsGold": {
-            "name": "Golden Leggings",
+            "name": "Zelta kājsargi",
             "desc": ""
         },
         "bootsGold": {
-            "name": "Golden boots",
+            "name": "Zelta zābaki",
             "desc": ""
         },
         "flint": {
-            "name": "Flint",
+            "name": "Krams",
             "desc": ""
         },
         "porkchopRaw": {
-            "name": "Raw Porkchop",
+            "name": "Neapstrādāta cūkgaļa",
             "desc": ""
         },
         "porkchopCooked": {
-            "name": "Cooked Porkchop",
+            "name": "Cepta cūkgaļa",
             "desc": ""
         },
         "painting": {
-            "name": "Painting",
+            "name": "Glezna",
             "desc": ""
         },
         "appleGold": {
-            "name": "Golden Apple",
+            "name": "Zelta ābols",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Zīme",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Koka durvis",
             "desc": ""
         },
         "bucket": {
-            "name": "Bucket",
+            "name": "Spainis",
             "desc": ""
         },
         "bucketWater": {
-            "name": "Water Bucket",
+            "name": "Ūdens spainis",
             "desc": ""
         },
         "bucketLava": {
-            "name": "Lava bucket",
+            "name": "Lavas spainis",
             "desc": ""
         },
         "minecart": {
-            "name": "Minecart",
+            "name": "Raktuvju ratiņi",
             "desc": ""
         },
         "saddle": {
-            "name": "Saddle",
+            "name": "Segli",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Dzelzs durvis",
             "desc": ""
         },
         "redstone": {
-            "name": "Redstone",
+            "name": "Sarkanakmens",
             "desc": ""
         },
         "snowball": {
-            "name": "Snowball",
+            "name": "Sniega pika",
             "desc": ""
         },
         "boat": {
-            "name": "Boat",
+            "name": "Laiva",
             "desc": ""
         },
         "leather": {
-            "name": "Leather",
+            "name": "Āda",
             "desc": ""
         },
         "milk": {
-            "name": "Milk",
+            "name": "Piens",
             "desc": ""
         },
         "brick": {
-            "name": "Brick",
+            "name": "Ķieģelis",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Māls",
             "desc": ""
         },
         "sugarCanes": {
-            "name": "Sugar Canes",
+            "name": "Cukurniedres",
             "desc": ""
         },
         "paper": {
-            "name": "Paper",
+            "name": "Papīrs",
             "desc": ""
         },
         "book": {
-            "name": "Book",
+            "name": "Grāmata",
             "desc": ""
         },
         "slimeball": {
-            "name": "Slimeball",
+            "name": "Gļotu bumba",
             "desc": ""
         },
         "minecartChest": {
-            "name": "Minecart with Chest",
+            "name": "Raktuvju ratiņi ar lādi",
             "desc": ""
         },
         "minecartFurnace": {
-            "name": "Minecart with Furnace",
+            "name": "Raktuvju ratiņi ar kurtuvi",
             "desc": ""
         },
         "egg": {
-            "name": "Egg",
+            "name": "Ola",
             "desc": ""
         },
         "compass": {
-            "name": "Compass",
+            "name": "Kompass",
             "desc": ""
         },
         "fishingRod": {
-            "name": "Fishing Rod",
+            "name": "Makšķere",
             "desc": ""
         },
         "clock": {
-            "name": "Clock",
+            "name": "Pulkstenis",
             "desc": ""
         },
         "yellowDust": {
-            "name": "Glowstone Dust",
+            "name": "Gaismakmens putekļi",
             "desc": ""
         },
         "fishRaw": {
-            "name": "Raw Fish",
+            "name": "Neapstrādāta zivs",
             "desc": ""
         },
         "fishCooked": {
-            "name": "Cooked Fish",
+            "name": "Cepta zivs",
             "desc": ""
         },
         "record": {
-            "name": "Music Disc",
+            "name": "Mūzikas disks",
             "desc": ""
         },
         "bone": {
-            "name": "Bone",
+            "name": "Kauls",
             "desc": ""
         },
         "dyePowder": {
             "black": {
-                "name": "Ink Sac",
+                "name": "Tintes pūslītis",
                 "desc": ""
             },
             "red": {
-                "name": "Rose Red",
+                "name": "Rožu sarkanā krāsviela",
                 "desc": ""
             },
             "green": {
-                "name": "Cactus Green",
+                "name": "Kaktusa zaļā krāsviela",
                 "desc": ""
             },
             "brown": {
-                "name": "Cocoa Beans",
+                "name": "Kakao pupiņas",
                 "desc": ""
             },
             "blue": {
-                "name": "Lapis Lazuli",
+                "name": "Lapis lazuli",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Dye",
+                "name": "Purpura krāsviela",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Dye",
+                "name": "Ciāna krāsviela",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Dye",
+                "name": "Gaiši pelēka krāsviela",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Dye",
+                "name": "Pelēka krāsviela",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Dye",
+                "name": "Rozā krāsviela",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Dye",
+                "name": "Laima krāsviela",
                 "desc": ""
             },
             "yellow": {
-                "name": "Dandelion Yellow",
+                "name": "Pieneņu dzeltenā krāsviela",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Dye",
+                "name": "Gaiši zila krāsviela",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Dye",
+                "name": "Fuksīna krāsviela",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Dye",
+                "name": "Oranža krāsviela",
                 "desc": ""
             },
             "white": {
-                "name": "Bone Meal",
+                "name": "Kaulu milti",
                 "desc": ""
             }
         },
         "sugar": {
-            "name": "Sugar",
+            "name": "Cukurs",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Kūka",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Gulta",
             "desc": ""
         },
         "redstoneRepeater": {
-            "name": "Redstone Repeater",
+            "name": "Sarkanakmens atkārtotājs",
             "desc": ""
         },
         "map": {
-            "name": "Map",
+            "name": "Karte",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Lapas",
             "desc": ""
         },
         "shears": {
-            "name": "Shears",
+            "name": "Šķēres",
             "desc": ""
         }
     },
     "stat": {
-        "generalButton": "General",
-        "blocksButton": "Blocks",
-        "itemsButton": "Items",
-        "used": "Times Used",
-        "mined": "Times Mined",
-        "depleted": "Times Depleted",
-        "crafted": "Times Crafted",
-        "startGame": "Times played",
-        "createWorld": "Worlds played",
-        "loadWorld": "Saves loaded",
-        "joinMultiplayer": "Multiplayer joins",
-        "leaveGame": "Games quit",
-        "playOneMinute": "Minutes Played",
-        "walkOneCm": "Distance Walked",
-        "fallOneCm": "Distance Fallen",
-        "swimOneCm": "Distance Swum",
-        "flyOneCm": "Distance Flown",
-        "climbOneCm": "Distance Climbed",
-        "diveOneCm": "Distance Dove",
-        "minecartOneCm": "Distance by Minecart",
-        "boatOneCm": "Distance by Boat",
-        "pigOneCm": "Distance by Pig",
-        "jump": "Jumps",
-        "drop": "Items Dropped",
-        "damageDealt": "Damage Dealt",
-        "damageTaken": "Damage Taken",
-        "deaths": "Number of Deaths",
-        "mobKills": "Mob Kills",
-        "playerKills": "Player Kills",
-        "fishCaught": "Fish Caught",
-        "mineBlock": "{0} Mined",
-        "craftItem": "{0} Crafted",
-        "useItem": "{0} Used",
-        "breakItem": "{0} Depleted"
+        "generalButton": "Vispārīgi",
+        "blocksButton": "Bloki",
+        "itemsButton": "Priekšmeti",
+        "used": "Reizes izmantots",
+        "mined": "Reizes iegūts",
+        "depleted": "Reizes nolietots",
+        "crafted": "Reizes izgatavots",
+        "startGame": "Reizes spēlēts",
+        "createWorld": "Spēlētas pasaules",
+        "loadWorld": "Ielādēti saglabājumi",
+        "joinMultiplayer": "Vairākspēlētāju pieslēgšanās",
+        "leaveGame": "Pamestas spēles",
+        "playOneMinute": "Nospēlētas minūtes",
+        "walkOneCm": "Noietais attālums",
+        "fallOneCm": "Nokritais attālums",
+        "swimOneCm": "Nopeldētais attālums",
+        "flyOneCm": "Nolidotais attālums",
+        "climbOneCm": "Uzkāptais attālums",
+        "diveOneCm": "Nirtais attālums",
+        "minecartOneCm": "Attālums ar raktuvju ratiņiem",
+        "boatOneCm": "Attālums ar laivu",
+        "pigOneCm": "Attālums ar cūku",
+        "jump": "Lēcieni",
+        "drop": "Izmesti priekšmeti",
+        "damageDealt": "Nodarītie bojājumi",
+        "damageTaken": "Saņemtie bojājumi",
+        "deaths": "Nāvju skaits",
+        "mobKills": "Nogalinātie briesmoņi",
+        "playerKills": "Nogalinātie spēlētāji",
+        "fishCaught": "Noķertās zivis",
+        "mineBlock": "Iegūts: {0}",
+        "craftItem": "Izgatavots: {0}",
+        "useItem": "Izmantots: {0}",
+        "breakItem": "Nolietots: {0}"
     },
-    "achievements.title": "Achievements",
+    "achievements.title": "Sasniegumi",
     "achievement": {
-        "get": "Achievement get!",
-        "taken": "Taken!",
-        "challenge": "CHALLENGE",
-        "unlocked": "UNLOCKED",
-        "locked": "LOCKED",
-        "requires": "Requires '{0}'",
+        "get": "Sasniegums iegūts!",
+        "taken": "Iegūts!",
+        "challenge": "IZAICINĀJUMS",
+        "unlocked": "ATSLĒGTS",
+        "locked": "BLOĶĒTS",
+        "requires": "Nepieciešams '{0}'",
         "openInventory": {
-            "title": "Taking Inventory",
-            "desc": "Open your inventory."
+            "title": "Inventāra apskate",
+            "desc": "Atver savu inventāru."
         },
         "mineWood": {
-            "title": "Getting Wood",
-            "desc": "Attack a tree until a block of wood pops out"
+            "title": "Koka iegūšana",
+            "desc": "Uzbruc kokam, līdz izkrīt koka bloks"
         },
         "buildWorkBench": {
-            "title": "Benchmarking",
-            "desc": "Craft a workbench with four blocks of planks"
+            "title": "Darbagalds",
+            "desc": "Izgatavo darbagaldu no četriem dēļu blokiem"
         },
         "buildPickaxe": {
-            "title": "Time to Mine!",
-            "desc": "Use planks and sticks to make a pickaxe"
+            "title": "Laiks rakt!",
+            "desc": "Izmanto dēļus un kociņus, lai izgatavotu cērti"
         },
         "buildFurnace": {
-            "title": "Hot Topic",
-            "desc": "Construct a furnace out of eight stone blocks"
+            "title": "Karsta tēma",
+            "desc": "Uzbūvē kurtuvi no astoņiem akmens blokiem"
         },
         "acquireIron": {
-            "title": "Acquire Hardware",
-            "desc": "Smelt an iron ingot"
+            "title": "Iegūsti aparatūru",
+            "desc": "Izkausē dzelzs lietni"
         },
         "buildHoe": {
-            "title": "Time to Farm!",
-            "desc": "Use planks and sticks to make a hoe"
+            "title": "Laiks saimniekot!",
+            "desc": "Izmanto dēļus un kociņus, lai izgatavotu kapli"
         },
         "makeBread": {
-            "title": "Bake Bread",
-            "desc": "Turn wheat into bread"
+            "title": "Cep maizi",
+            "desc": "Pārvērt kviešus maizē"
         },
         "bakeCake": {
-            "title": "The Lie",
-            "desc": "Wheat, sugar, milk and eggs!"
+            "title": "Meli",
+            "desc": "Kvieši, cukurs, piens un olas!"
         },
         "buildBetterPickaxe": {
-            "title": "Getting an Upgrade",
-            "desc": "Construct a better pickaxe"
+            "title": "Iegūsti uzlabojumu",
+            "desc": "Izgatavo labāku cērti"
         },
         "cookFish": {
-            "title": "Delicious Fish",
-            "desc": "Catch and cook fish!"
+            "title": "Gardas zivis",
+            "desc": "Noķer un izcep zivi!"
         },
         "onARail": {
-            "title": "On A Rail",
-            "desc": "Travel by minecart at least 1 km from where you started "
+            "title": "Uz sliedēm",
+            "desc": "Brauc ar ratiņiem vismaz 1 km no vietas, kur sāki "
         },
         "buildSword": {
-            "title": "Time to Strike!",
-            "desc": "Use planks and sticks to make a sword"
+            "title": "Laiks sist!",
+            "desc": "Izmanto dēļus un kociņus, lai izgatavotu zobenu"
         },
         "killEnemy": {
-            "title": "Monster Hunter",
-            "desc": "Attack and destroy a monster"
+            "title": "Briesmoņu mednieks",
+            "desc": "Uzbruc un iznīcini briesmoni"
         },
         "killCow": {
-            "title": "Cow Tipper",
-            "desc": "Harvest some leather"
+            "title": "Govju gāzējs",
+            "desc": "Iegūsti nedaudz ādas"
         },
         "flyPig": {
-            "title": "When Pigs Fly",
-            "desc": "Fly a pig off a cliff"
+            "title": "Kad cūkas lidos",
+            "desc": "Lidini cūku no klints"
         }
     },
     "credits": {
-        "version": "BetaSharp Version %1$s",
-        "description": "An enhanced of Minecraft Beta 1.7.3, written in C#.",
-        "github": "On GitHub",
-        "author": "Made by Fazin85",
-        "libs": "Libraries",
-        "slik": "Slik.NET - Graphics",
-        "imgui": "ImGui - Debug UI",
+        "version": "BetaSharp versija %1$s",
+        "description": "Minecraft Beta 1.7.3 uzlabojums, rakstīts C#.",
+        "github": "GitHub",
+        "author": "Izveidoja Fazin85",
+        "libs": "Bibliotēkas",
+        "slik": "Slik.NET - Grafika",
+        "imgui": "ImGui - Atkļūdošanas UI",
         "sfml": "SFML.NET - Audio",
-        "sixlabors": "SixLabors - Fonts, image processing",
-        "translations": "Translations Credits"
+        "sixlabors": "SixLabors - Fonti, attēlu apstrāde",
+        "translations": "Tulkojumu autori"
     }
 }
