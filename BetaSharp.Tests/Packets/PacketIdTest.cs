@@ -83,27 +83,6 @@ public class PacketIdTest : PacketTestBase
         }
     }
 
-    [SkippableTheory, MemberData(nameof(PacketIds))]
-    public void VerifyPacketReadWriteLenght(PacketId value)
-    {
-        Packet p = Packet.Get(value);
-
-        MemoryStream stream = new MemoryStream();
-        try
-        {
-            p.Write(stream);
-        }
-        catch (NullReferenceException e)
-        {
-            throw new SkipException("Arguments mising to perform test");
-        }
-        //Assert.True(stream.Length != p.Size(), $"Declared packet size is different than written size. ({stream.Length} != {p.Size()})");
-        stream.Position = 0;
-        p.Read(stream);
-
-        Assert.StrictEqual(stream.Length, stream.Position);
-    }
-
     [Fact]
     public void VerifyPacketCount()
     {

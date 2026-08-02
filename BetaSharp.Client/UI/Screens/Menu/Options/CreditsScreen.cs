@@ -79,8 +79,6 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
         void Text(string key, float scale = 1.0F)
             => ColoredText(key, Color.White, scale);
 
-        void HeaderFormat(string key)
-            => ColoredText(Translations.GetFormat(key), Color.Yellow, 1f);
         void Header(string key)
             => ColoredText(key, Color.Yellow, 1f);
 

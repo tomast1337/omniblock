@@ -7,8 +7,8 @@ public abstract class GameRule<T>(ResourceLocation key, T defaultValue, string c
 {
     public ResourceLocation Key { get; } = key;
     public Type ValueType => typeof(T);
-    IRuleValue IGameRule.DefaultValue => defaultValue;
     public T DefaultValue { get; } = defaultValue;
+    IRuleValue IGameRule.DefaultValue => DefaultValue;
     public string Category { get; } = category;
     public string Description { get; } = description;
 

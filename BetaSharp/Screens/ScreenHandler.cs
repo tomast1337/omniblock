@@ -271,7 +271,7 @@ public abstract class ScreenHandler
         GetSlot(index).setStack(stack);
     }
 
-    public void updateSlotStacks(ItemStack[] stacks)
+    public void updateSlotStacks(ItemStack?[] stacks)
     {
         for (int index = 0; index < stacks.Length; ++index)
         {

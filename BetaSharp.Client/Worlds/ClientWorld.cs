@@ -53,7 +53,7 @@ public class ClientWorld : World
             Entity entity = pendingEntities.First();
             if (!Entities.Entities.Contains(entity))
             {
-                SpawnEntity(entity);
+                SpawnOrQueueEntity(entity);
             }
             else
             {
@@ -122,7 +122,17 @@ public class ClientWorld : World
         }
     }
 
-    private bool SpawnEntity(Entity entity)
+    /// <summary>
+    ///     Spawns an entity the server told this client about, queueing it for a later attempt if
+    ///     its chunk has not arrived yet.
+    /// </summary>
+    /// <remarks>
+    ///     Deliberately not named <c>SpawnEntity</c>: <see cref="World.SpawnEntity" /> is not
+    ///     virtual, so a same-named member here would be reached only through a
+    ///     <see cref="ClientWorld" />-typed reference. Every caller holding a <see cref="World" />
+    ///     would silently get the base version and skip the queueing this exists for.
+    /// </remarks>
+    private bool SpawnOrQueueEntity(Entity entity)
     {
         bool spawned = Entities.SpawnEntity(entity);
         forcedEntities.Add(entity);
@@ -173,7 +183,7 @@ public class ClientWorld : World
         forcedEntities.Add(ent);
         ent.ID = networkId;
 
-        if (!SpawnEntity(ent))
+        if (!SpawnOrQueueEntity(ent))
         {
             pendingEntities.Add(ent);
         }

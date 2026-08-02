@@ -7,10 +7,28 @@ namespace BetaSharp.Client.Rendering.Core.OpenGL;
 
 internal class GLErrorHandler
 {
+    /// <summary>
+    ///     Keeps the installed handler reachable.
+    /// </summary>
+    /// <remarks>
+    ///     OpenGL holds a raw function pointer to <see cref="_debugProcCallback" /> and nothing on
+    ///     the GL side keeps the managed delegate alive. If the owning handler is collected, the
+    ///     pointer dangles and the next GL message faults in native code. The reference lives here
+    ///     rather than at the call site so that discarding the result of <see cref="Install" />
+    ///     cannot break it.
+    /// </remarks>
+    private static GLErrorHandler? s_installed;
+
     private readonly ILogger _logger = Log.Instance.For<GLErrorHandler>();
     private readonly DebugProc _debugProcCallback;
 
-    public unsafe GLErrorHandler()
+    /// <summary>
+    ///     Routes GL debug messages to the log. Replaces any handler installed before it, so a
+    ///     recreated context gets a callback bound to the context that is current now.
+    /// </summary>
+    public static void Install() => s_installed = new GLErrorHandler();
+
+    private unsafe GLErrorHandler()
     {
         GL gl = Display.getGL()!;
 

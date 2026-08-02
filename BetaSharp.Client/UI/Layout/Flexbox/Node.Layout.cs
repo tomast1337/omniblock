@@ -69,8 +69,16 @@ public partial class Node
         }
         public static bool operator ==(Layout8D a, Layout8D b) => a.Equals(b);
         public static bool operator !=(Layout8D a, Layout8D b) => !a.Equals(b);
-        public override readonly bool Equals(object l) { return base.Equals(l); }
-        public override readonly int GetHashCode() { return base.GetHashCode(); }
+
+        /// <summary>
+        ///     Forwards to the typed <see cref="Equals(Layout8D)" />, so boxed comparison agrees
+        ///     with <c>==</c>. Inheriting <see cref="ValueType.Equals(object)" /> instead would
+        ///     compare by reflection over every field, which is both slower and a different answer.
+        /// </summary>
+        public override readonly bool Equals(object? l) => l is Layout8D other && Equals(other);
+
+        public override readonly int GetHashCode() =>
+            HashCode.Combine(x, y, width, height, left, right, top, bottom);
     }
     public struct Layout : IEquatable<Layout>
     {
@@ -156,7 +164,31 @@ public partial class Node
                  && direction == l.direction;
 
         }
-        public override readonly bool Equals(object l) { return base.Equals(l); }
-        public override readonly int GetHashCode() { return base.GetHashCode(); }
+        public override readonly bool Equals(object? l) => l is Layout other && Equals(other);
+
+        /// <summary>
+        ///     Hashes exactly the members <see cref="Equals(Layout)" /> compares. <c>setted</c> is
+        ///     excluded from both: two layouts that agree on every measurement are equal whether or
+        ///     not one of them was built from a <see cref="Node" />.
+        /// </summary>
+        public override readonly int GetHashCode()
+        {
+            HashCode hash = new();
+            hash.Add(x);
+            hash.Add(y);
+            hash.Add(width);
+            hash.Add(height);
+            hash.Add(left);
+            hash.Add(right);
+            hash.Add(top);
+            hash.Add(bottom);
+            hash.Add(margin);
+            hash.Add(border);
+            hash.Add(padding);
+            hash.Add(content);
+            hash.Add(hadOverflow);
+            hash.Add(direction);
+            return hash.ToHashCode();
+        }
     }
 }
