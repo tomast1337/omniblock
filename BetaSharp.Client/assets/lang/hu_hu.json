@@ -1,536 +1,536 @@
-﻿{
+{
     "gui": {
-        "joinServer": "Join Server",
-        "rename": "Rename",
-        "edit": "Edit",
-        "refresh": "Refresh",
-        "done": "Done",
-        "cancel": "Cancel",
-        "delete": "Delete",
-        "toMenu": "Back to title screen",
-        "up": "Up",
-        "down": "Down",
-        "yes": "Yes",
-        "no": "No",
-        "connect": "Connect",
-        "directConnect": "Direct Connect",
-        "addServer": "Add Server",
-        "create": "Create",
-        "customize": "Customize",
-        "achievements": "Achievements",
-        "stats": "Statistics",
+        "joinServer": "Csatlakozás a szerverhez",
+        "rename": "Átnevezés",
+        "edit": "Szerkesztés",
+        "refresh": "Frissítés",
+        "done": "Kész",
+        "cancel": "Mégse",
+        "delete": "Törlés",
+        "toMenu": "Vissza a címképernyőre",
+        "up": "Fel",
+        "down": "Le",
+        "yes": "Igen",
+        "no": "Nem",
+        "connect": "Csatlakozás",
+        "directConnect": "Közvetlen csatlakozás",
+        "addServer": "Szerver hozzáadása",
+        "create": "Létrehozás",
+        "customize": "Testreszabás",
+        "achievements": "Eredmények",
+        "stats": "Statisztikák",
         "container": {
-            "crafting": "Crafting",
-            "inventory": "Inventory",
-            "dispenser": "Dispenser",
-            "furnace": "Furnace",
+            "crafting": "Barkácsolás",
+            "inventory": "Leltár",
+            "dispenser": "Adagoló",
+            "furnace": "Kemence",
             "tip": {
-                "move": "Move",
-                "quickMove": "Quick Move",
-                "takeHalf": "Take Half",
-                "place": "Place",
-                "placeOne": "Place One"
+                "move": "Mozgatás",
+                "quickMove": "Gyors mozgatás",
+                "takeHalf": "Fél kézbevétele",
+                "place": "Elhelyezés",
+                "placeOne": "Egy elhelyezése"
             }
         }
     },
     "menu": {
-        "singleplayer": "Singleplayer",
-        "multiplayer": "Multiplayer",
-        "texturePacks": "Texture Packs",
-        "options": "Options...",
-        "language": "Language",
-        "quit": "Quit Game",
-        "credits": "Credits",
-        "sendFeedback": "Send Feedback",
-        "reportBugs": "Report Bugs",
-        "saveAndQuitToTitle": "Save and quit to title",
-        "disconnect": "Disconnect"
+        "singleplayer": "Egyjátékos",
+        "multiplayer": "Többjátékos",
+        "texturePacks": "Textúracsomagok",
+        "options": "Beállítások...",
+        "language": "Nyelv",
+        "quit": "Kilépés a játékból",
+        "credits": "Stáblista",
+        "sendFeedback": "Visszajelzés küldése",
+        "reportBugs": "Hibák jelentése",
+        "saveAndQuitToTitle": "Mentés és kilépés a címképernyőre",
+        "disconnect": "Lecsatlakozás"
     },
     "selectWorld": {
-        "title": "Select World",
-        "empty": "empty",
-        "world": "World",
-        "select": "Play Selected World",
-        "create": "Create New World",
-        "createDemo": "Play New Demo World",
-        "deleteQuestion": "Are you sure you want to delete this world?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "renameTitle": "Rename World",
-        "conversion": "Must be converted!",
-        "newWorld": "New World",
-        "enterName": "World Name",
-        "resultFolder": "Will be saved in:",
-        "enterSeed": "Seed for the World Generator",
-        "seedInfo": "Leave blank for a random seed",
-        "selectWorldType": "Select World Type",
-        "worldType": "World Type",
-        "customize": "Customize",
-        "moreWorldOptions": "More World Options...",
+        "title": "Világ választása",
+        "empty": "üres",
+        "world": "Világ",
+        "select": "Játék a kiválasztott világban",
+        "create": "Új világ létrehozása",
+        "createDemo": "Játék az új demóvilágban",
+        "deleteQuestion": "Biztosan törölni szeretnéd ezt a világot?",
+        "deleteWarning": "örökre elveszik! (Nagyon hosszú időre!)",
+        "renameTitle": "Világ átnevezése",
+        "conversion": "Átalakítandó!",
+        "newWorld": "Új világ",
+        "enterName": "Világ neve",
+        "resultFolder": "Mentés helye:",
+        "enterSeed": "Seed a világgenerátorhoz",
+        "seedInfo": "Hagyd üresen a véletlen seed-hez",
+        "selectWorldType": "Válassz világtípust",
+        "worldType": "Világtípus",
+        "customize": "Testreszabás",
+        "moreWorldOptions": "További világbeállítások...",
         "type": {
             "default": {
-                "title": "Default",
-                "description": "The standard Minecraft world."
+                "title": "Alapértelmezett",
+                "description": "A szabványos Minecraft világ."
             },
             "flat": {
-                "title": "Flat",
-                "description": "A completely flat world."
+                "title": "Sík",
+                "description": "Teljesen sík világ."
             },
             "sky": {
-                "title": "Sky",
-                "description": "A world floating in the sky."
+                "title": "Ég",
+                "description": "Az égen lebegő világ."
             }
         }
     },
     "newWorld": {
         "customize": {
             "superflatWorld": {
-                "title": "Customize Superflat World"
+                "title": "Szuperlapos világ testreszabása"
             },
-            "removeLayer": "Remove Layer",
-            "presets": "Presets",
-            "height": "Height",
+            "removeLayer": "Réteg eltávolítása",
+            "presets": "Előbeállítások",
+            "height": "Magasság",
             "unknown": "???"
         }
     },
     "world": {
-        "world": "World",
-        "unsupportedFormat": "Unsupported Format!"
+        "world": "Világ",
+        "unsupportedFormat": "Nem támogatott formátum!"
     },
     "multiplayer": {
-        "title": "Play Multiplayer",
-        "betasharpServer": "BetaSharp Server",
-        "info1": "Minecraft Multiplayer is currently not finished, but there",
-        "info2": "is some buggy early testing going on.",
-        "ipinfo": "Enter the IP of a server to connect to it:",
-        "deleteQuestion": "Are you sure you want to delete this server?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "downloadingTerrain": "Downloading terrain",
-        "stopSleeping": "Leave Bed",
-        "editServerTitle": "Edit Server Info",
-        "addServerTitle": "Add Server Info",
-        "serverName": "Server Name",
-        "serverAddress": "Server Address"
+        "title": "Többjátékos játék",
+        "betasharpServer": "BetaSharp szerver",
+        "info1": "A Minecraft többjátékos módja még nem kész, de",
+        "info2": "már folyik némi korai, bugos tesztelés.",
+        "ipinfo": "Add meg egy szerver IP-címét a csatlakozáshoz:",
+        "deleteQuestion": "Biztosan törölni szeretnéd ezt a szervert?",
+        "deleteWarning": "örökre elveszik! (Nagyon hosszú időre!)",
+        "downloadingTerrain": "Terep letöltése",
+        "stopSleeping": "Ágy elhagyása",
+        "editServerTitle": "Szerveradatok szerkesztése",
+        "addServerTitle": "Szerveradatok hozzáadása",
+        "serverName": "Szerver neve",
+        "serverAddress": "Szerver címe"
     },
     "loading": {
-        "loadingLevel": "Loading level",
-        "startingServer": "Starting server...",
-        "preparingSpawnArea": "Preparing spawn area"
+        "loadingLevel": "Pálya betöltése",
+        "startingServer": "Szerver indítása...",
+        "preparingSpawnArea": "Születési terület előkészítése"
     },
     "achievements": {
-        "title": "Achievements"
+        "title": "Eredmények"
     },
     "gameover": {
-        "title": "Game Over!",
-        "score": "Score",
-        "respawn": "Respawn",
-        "titleMenu": "Title menu"
+        "title": "Játék vége!",
+        "score": "Pontszám",
+        "respawn": "Újraéledés",
+        "titleMenu": "Címmenü"
     },
     "gamemenu": {
-        "title": "Game Menu",
-        "backToGame": "Back to Game"
+        "title": "Játékmenü",
+        "backToGame": "Vissza a játékhoz"
     },
     "sign": {
-        "title": "Edit sign message:"
+        "title": "Tábla szövegének szerkesztése:"
     },
     "stats": {
-        "title": "Statistics",
-        "general": "General",
+        "title": "Statisztikák",
+        "general": "Általános",
         "blocks": {
-            "name": "Blocks",
-            "mined": "Mined",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Blokkok",
+            "mined": "Kibányászva",
+            "crafted": "Elkészítve",
+            "used": "Használva"
         },
         "items": {
-            "name": "Items",
-            "broken": "Broken",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Tárgyak",
+            "broken": "Elromolva",
+            "crafted": "Elkészítve",
+            "used": "Használva"
         },
-        "item": "Item"
+        "item": "Tárgy"
     },
     "connect": {
-        "connecting": "Connecting to the server...",
-        "authorizing": "Logging in...",
-        "failed": "Failed to connect to the server"
+        "connecting": "Csatlakozás a szerverhez...",
+        "authorizing": "Bejelentkezés...",
+        "failed": "Nem sikerült csatlakozni a szerverhez"
     },
     "disconnect": {
         "genericReason": "{0}",
-        "disconnected": "Disconnected by Server",
-        "lost": "Connection Lost",
-        "kicked": "Was kicked from the game",
-        "timeout": "Timed out",
-        "closed": "Connection closed",
-        "loginFailed": "Failed to login",
-        "quitting": "Quitting",
-        "endOfStream": "End of stream",
-        "overflow": "Buffer overflow"
+        "disconnected": "A szerver bontotta a kapcsolatot",
+        "lost": "Kapcsolat megszakadt",
+        "kicked": "Kirúgtak a játékból",
+        "timeout": "Időtúllépés",
+        "closed": "A kapcsolat lezárult",
+        "loginFailed": "Nem sikerült bejelentkezni",
+        "quitting": "Kilépés",
+        "endOfStream": "Az adatfolyam vége",
+        "overflow": "Puffertúlcsordulás"
     },
     "options": {
-        "off": "OFF",
-        "on": "ON",
-        "disabled": "Disabled",
-        "title": "Options",
-        "controls": "Controls...",
-        "keyboardControls": "Keyboard Controls...",
-        "controllerSettings": "Controller Settings...",
-        "controllerType": "Controller Type",
+        "off": "KI",
+        "on": "BE",
+        "disabled": "Letiltva",
+        "title": "Beállítások",
+        "controls": "Vezérlés...",
+        "keyboardControls": "Billentyűzet vezérlés...",
+        "controllerSettings": "Vezérlő beállításai...",
+        "controllerType": "Vezérlő típusa",
         "video": {
-            "text": "Video Settings...",
-            "performance": "Performance",
-            "display": "Display"
+            "text": "Videóbeállítások...",
+            "performance": "Teljesítmény",
+            "display": "Kijelző"
         },
-        "uiSettings": "UI Settings...",
-        "audioSettings": "Audio Settings...",
-        "audioTitle": "Audio Settings",
-        "videoTitle": "Video Settings",
-        "language": "Language...",
-        "anisoLevel": "Aniso Level",
-        "music": "Music",
-        "sound": "Sound",
-        "invertMouse": "Invert Mouse",
-        "alternateBlocks": "Alternate Blocks",
-        "chunkFade": "Chunk Fade",
+        "uiSettings": "UI beállítások...",
+        "audioSettings": "Hangbeállítások...",
+        "audioTitle": "Hangbeállítások",
+        "videoTitle": "Videóbeállítások",
+        "language": "Nyelv...",
+        "anisoLevel": "Anizotróp szint",
+        "music": "Zene",
+        "sound": "Hang",
+        "invertMouse": "Egér invertálása",
+        "alternateBlocks": "Alternatív blokkok",
+        "chunkFade": "Chunk elhalványulás",
         "sensitivity": {
-            "text": "Sensitivity",
-            "controllerText": "Controller Sensitivity",
-            "min": "*yawn*",
-            "max": "HYPERSPEED!!!"
+            "text": "Érzékenység",
+            "controllerText": "Vezérlő érzékenység",
+            "min": "*ásítás*",
+            "max": "HIPERSEBESSÉG!!!"
         },
         "renderDistance": {
-            "text": "Render Distance",
-            "chunks": "Chunks",
-            "tiny": "Tiny",
-            "short": "Short",
-            "normal": "Normal",
-            "far": "Far"
+            "text": "Megjelenítési távolság",
+            "chunks": "Chunkok",
+            "tiny": "Apró",
+            "short": "Rövid",
+            "normal": "Normál",
+            "far": "Távoli"
         },
-        "viewBobbing": "View Bobbing",
-        "ao": "Smooth Lighting",
-        "anaglyph": "3D Anaglyph",
-        "framerateLimit": "Performance",
+        "viewBobbing": "Kilengő nézet",
+        "ao": "Simított fény",
+        "anaglyph": "3D anaglif",
+        "framerateLimit": "Teljesítmény",
         "difficulty": {
-            "text": "Difficulty",
-            "peaceful": "Peaceful",
-            "easy": "Easy",
-            "normal": "Normal",
-            "hard": "Hard"
+            "text": "Nehézség",
+            "peaceful": "Békés",
+            "easy": "Könnyű",
+            "normal": "Normál",
+            "hard": "Nehéz"
         },
         "graphics": {
-            "text": "Graphics",
-            "fancy": "Fancy",
-            "fast": "Fast"
+            "text": "Grafika",
+            "fancy": "Díszes",
+            "fast": "Gyors"
         },
         "cloudsQuality": {
-            "text": "Clouds Quality",
-            "off": "No Clouds",
-            "legacy": "Old Clouds",
+            "text": "Felhők minősége",
+            "off": "Nincs felhő",
+            "legacy": "Régi felhők",
             "shader": "Shader"
         },
         "softClouds": {
-            "text": "Soft Clouds"
+            "text": "Lágy felhők"
         },
         "guiScale": {
-            "text": "GUI Scale",
-            "auto": "Auto",
-            "small": "Small",
-            "normal": "Normal",
-            "large": "Large"
+            "text": "GUI méret",
+            "auto": "Automatikus",
+            "small": "Kicsi",
+            "normal": "Normál",
+            "large": "Nagy"
         },
         "chatScale": {
-            "text": "Chat Scale"
+            "text": "Chat méret"
         },
         "chatWidth": {
-            "text": "Chat Width"
+            "text": "Chat szélesség"
         },
-        "advancedOpengl": "Advanced OpenGL",
+        "advancedOpengl": "Haladó OpenGL",
         "fps": {
             "text": "FPS",
             "maxFps": "Max FPS",
-            "unlimited": "Unlimited"
+            "unlimited": "Korlátlan"
         },
-        "showCoordinates": "Show Coordinates",
-        "uiCursors": "UI Cursors",
+        "showCoordinates": "Koordináták mutatása",
+        "uiCursors": "UI kurzorok",
         "gamma": "Gamma",
         "vSync": "VSync",
-        "mipmaps": "Mipmaps",
-        "menuMusic": "Menu Music",
+        "mipmaps": "Mipmapok",
+        "menuMusic": "Menüzene",
         "msaa": "MSAA",
-        "fov": "FOV",
+        "fov": "Látómező",
         "movement": {
-            "text": "Movement"
+            "text": "Mozgás"
         },
         "view": {
-            "text": "View"
+            "text": "Nézet"
         },
         "other": {
-            "text": "Other"
+            "text": "Egyéb"
         },
-        "editBindings": "Edit Bindings...",
-        "resetBindings": "Reset Bindings...",
-        "controllerBindings": "Controller Bindings",
+        "editBindings": "Billentyűk szerkesztése...",
+        "resetBindings": "Billentyűk visszaállítása...",
+        "controllerBindings": "Vezérlő gombjai",
         "shader": {
-            "text": "Shader Options",
+            "text": "Shader beállítások",
             "chunkVert": {
-                "text": "World",
-                "WavyLeavesStrength": "Wavy Leaves Strength",
-                "WavyLeavesSpeed": "Wavy Leaves Speed",
-                "WavyPlantStrength": "Wavy Plant Strength",
-                "WavyPlantSpeed": "Wavy Plant Speed",
-                "WavyPlantMode": "Wavy Plant Mode"
+                "text": "Világ",
+                "WavyLeavesStrength": "Hullámzó levelek ereje",
+                "WavyLeavesSpeed": "Hullámzó levelek sebessége",
+                "WavyPlantStrength": "Hullámzó növények ereje",
+                "WavyPlantSpeed": "Hullámzó növények sebessége",
+                "WavyPlantMode": "Hullámzó növények módja"
             },
             "cloud": {
-                "text": "Clouds",
-                "minParallax": "Min Parallax",
-                "maxParallax": "Max Parallax",
-                "minGradient": "Min Gradient",
-                "maxGradient": "Max Gradient",
-                "cloudHeight": "Cloud Height",
-                "shadow": "Shadow Color",
-                "smoothWidth": "Smooth Width",
-                "smoothSamples": "Smooth Samples",
-                "closeFade": "Close Fade",
-                "smoothTop": "Smooth Top",
-                "smoothEdge": "Smooth Edge",
-                "smoothBottom": "Smooth Bottom",
-                "smoothBottomTopDown": "Smooth Bottom Top Down"
+                "text": "Felhők",
+                "minParallax": "Min. parallaxis",
+                "maxParallax": "Max. parallaxis",
+                "minGradient": "Min. átmenet",
+                "maxGradient": "Max. átmenet",
+                "cloudHeight": "Felhőmagasság",
+                "shadow": "Árnyékszín",
+                "smoothWidth": "Simítás szélessége",
+                "smoothSamples": "Simítási minták",
+                "closeFade": "Közeli elhalványulás",
+                "smoothTop": "Felső simítás",
+                "smoothEdge": "Szélsimítás",
+                "smoothBottom": "Alsó simítás",
+                "smoothBottomTopDown": "Alsó simítás fentről lefelé"
             },
             "ui": {
                 "text": "UI",
-                "darkMode": "Dark Mode"
+                "darkMode": "Sötét mód"
             },
             "preset": {
-                "text": "Preset",
-                "disabled": "Disabled",
-                "default": "Default",
-                "custom": "Custom",
+                "text": "Előbeállítás",
+                "disabled": "Letiltva",
+                "default": "Alapértelmezett",
+                "custom": "Egyéni",
                 "2d": "2D",
                 "3d": "3D",
-                "low": "Low",
-                "medium": "Medium",
-                "high": "High",
+                "low": "Alacsony",
+                "medium": "Közepes",
+                "high": "Magas",
                 "ultra": "Ultra"
             }
         }
     },
     "performance": {
         "max": "Max FPS",
-        "balanced": "Balanced",
-        "powersaver": "Power saver"
+        "balanced": "Kiegyensúlyozott",
+        "powersaver": "Energiatakarékos"
     },
     "controls": {
-        "title": "Controls"
+        "title": "Vezérlés"
     },
     "key": {
-        "forward": "Forward",
-        "left": "Left",
-        "back": "Back",
-        "right": "Right",
-        "jump": "Jump",
-        "inventory": "Inventory",
-        "drop": "Drop",
+        "forward": "Előre",
+        "left": "Balra",
+        "back": "Hátra",
+        "right": "Jobbra",
+        "jump": "Ugrás",
+        "inventory": "Leltár",
+        "drop": "Eldobás",
         "chat": "Chat",
-        "fog": "Toggle Fog",
-        "sneak": "Sneak",
-        "playerlist": "List players",
-        "zoom": "Zoom",
-        "hotbarLeft": "Hotbar Left",
-        "hotbarRight": "Hotbar Right",
-        "pickBlock": "Pick Block",
-        "camera": "Camera Mode",
-        "pause": "Pause"
+        "fog": "Köd ki/be",
+        "sneak": "Osonás",
+        "playerlist": "Játékosok listája",
+        "zoom": "Nagyítás",
+        "hotbarLeft": "Gyorssáv balra",
+        "hotbarRight": "Gyorssáv jobbra",
+        "pickBlock": "Blokk kiválasztása",
+        "camera": "Kameramód",
+        "pause": "Szünet"
     },
     "texturePack": {
-        "openFolder": "Open texture pack folder",
-        "title": "Select Texture Pack",
-        "folderInfo": "(Place texture pack files here)"
+        "openFolder": "Textúracsomag-mappa megnyitása",
+        "title": "Textúracsomag kiválasztása",
+        "folderInfo": "(Helyezd ide a textúracsomag fájlokat)"
     },
     "tile": {
         "tallgrass": {
-            "name": "Tallgrass",
+            "name": "Fű",
             "desc": ""
         },
         "stone": {
-            "name": "Stone",
+            "name": "Kő",
             "desc": ""
         },
         "grass": {
-            "name": "Grass",
+            "name": "Füves föld",
             "desc": ""
         },
         "dirt": {
-            "name": "Dirt",
+            "name": "Föld",
             "desc": ""
         },
         "stonebrick": {
-            "name": "Cobblestone",
+            "name": "Macskakő",
             "desc": ""
         },
         "wood": {
-            "name": "Wooden Planks",
+            "name": "Fahasáb",
             "desc": ""
         },
         "sapling": {
-            "name": "Sapling",
+            "name": "Csemete",
             "desc": ""
         },
         "bedrock": {
-            "name": "Bedrock",
+            "name": "Alapkőzet",
             "desc": ""
         },
         "water": {
-            "name": "Water",
+            "name": "Víz",
             "desc": ""
         },
         "lava": {
-            "name": "Lava",
+            "name": "Láva",
             "desc": ""
         },
         "sand": {
-            "name": "Sand",
+            "name": "Homok",
             "desc": ""
         },
-        "sandStone": { "name": "Sandstone" },
+        "sandStone": { "name": "Homokkő" },
         "gravel": {
-            "name": "Gravel",
+            "name": "Kavics",
             "desc": ""
         },
         "oreGold": {
-            "name": "Gold Ore",
+            "name": "Aranyérc",
             "desc": ""
         },
         "oreIron": {
-            "name": "Iron Ore",
+            "name": "Vasérc",
             "desc": ""
         },
         "oreCoal": {
-            "name": "Coal Ore",
+            "name": "Szénérc",
             "desc": ""
         },
         "log": {
-            "name": "Wood",
+            "name": "Fahasáb",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Levél",
             "desc": ""
         },
         "sponge": {
-            "name": "Sponge",
+            "name": "Szivacs",
             "desc": ""
         },
         "glass": {
-            "name": "Glass",
+            "name": "Üveg",
             "desc": ""
         },
         "cloth": {
-            "name": "Wool",
+            "name": "Gyapjú",
             "desc": "",
             "black": {
-                "name": "Black Wool",
+                "name": "Fekete gyapjú",
                 "desc": ""
             },
             "red": {
-                "name": "Red Wool",
+                "name": "Piros gyapjú",
                 "desc": ""
             },
             "green": {
-                "name": "Green Wool",
+                "name": "Zöld gyapjú",
                 "desc": ""
             },
             "brown": {
-                "name": "Brown Wool",
+                "name": "Barna gyapjú",
                 "desc": ""
             },
             "blue": {
-                "name": "Blue Wool",
+                "name": "Kék gyapjú",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Wool",
+                "name": "Lila gyapjú",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Wool",
+                "name": "Ciánkék gyapjú",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Wool",
+                "name": "Világosszürke gyapjú",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Wool",
+                "name": "Szürke gyapjú",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Wool",
+                "name": "Rózsaszín gyapjú",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Wool",
+                "name": "Lime gyapjú",
                 "desc": ""
             },
             "yellow": {
-                "name": "Yellow Wool",
+                "name": "Sárga gyapjú",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Wool",
+                "name": "Világoskék gyapjú",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Wool",
+                "name": "Bíborvörös gyapjú",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Wool",
+                "name": "Narancssárga gyapjú",
                 "desc": ""
             },
             "white": {
-                "name": "Wool",
+                "name": "Gyapjú",
                 "desc": ""
             }
         },
         "flower": {
-            "name": "Flower",
+            "name": "Virág",
             "desc": ""
         },
         "rose": {
-            "name": "Rose",
+            "name": "Rózsa",
             "desc": ""
         },
         "mushroom": {
-            "name": "Mushroom",
+            "name": "Gomba",
             "desc": ""
         },
         "blockGold": {
-            "name": "Block of Gold",
+            "name": "Aranytömb",
             "desc": ""
         },
         "blockIron": {
-            "name": "Block of Iron",
+            "name": "Vastömb",
             "desc": ""
         },
         "stoneSlab": {
             "stone": {
-                "name": "Stone Slab",
+                "name": "Kőlap",
                 "desc": ""
             },
             "sand": {
-                "name": "Sandstone Slab",
+                "name": "Homokkőlap",
                 "desc": ""
             },
             "wood": {
-                "name": "Wooden Slab",
+                "name": "Falap",
                 "desc": ""
             },
             "cobble": {
-                "name": "Stone Slab",
+                "name": "Kőlap",
                 "desc": ""
             }
         },
         "brick": {
-            "name": "Bricks",
+            "name": "Tégla",
             "desc": ""
         },
         "tnt": {
@@ -538,528 +538,528 @@
             "desc": ""
         },
         "bookshelf": {
-            "name": "Bookshelf",
+            "name": "Könyvespolc",
             "desc": ""
         },
         "stoneMoss": {
-            "name": "Moss Stone",
+            "name": "Mohás kő",
             "desc": ""
         },
         "obsidian": {
-            "name": "Obsidian",
+            "name": "Obszidián",
             "desc": ""
         },
         "torch": {
-            "name": "Torch",
+            "name": "Fáklya",
             "desc": ""
         },
         "fire": {
-            "name": "Fire",
+            "name": "Tűz",
             "desc": ""
         },
         "mobSpawner": {
-            "name": "Monster Spawner",
+            "name": "Szörnykeltő",
             "desc": ""
         },
         "stairsWood": {
-            "name": "Wooden Stairs",
+            "name": "Falépcső",
             "desc": ""
         },
         "chest": {
-            "name": "Chest",
+            "name": "Láda",
             "desc": ""
         },
         "redstoneDust": {
-            "name": "Redstone Dust",
+            "name": "Redstone por",
             "desc": ""
         },
         "oreDiamond": {
-            "name": "Diamond Ore",
+            "name": "Gyémántérc",
             "desc": ""
         },
         "blockDiamond": {
-            "name": "Block of Diamond",
+            "name": "Gyémánttömb",
             "desc": ""
         },
         "workbench": {
-            "name": "Crafting Table",
+            "name": "Barkácsasztal",
             "desc": ""
         },
         "crops": {
-            "name": "Crops",
+            "name": "Termények",
             "desc": ""
         },
         "farmland": {
-            "name": "Farmland",
+            "name": "Szántóföld",
             "desc": ""
         },
         "furnace": {
-            "name": "Furnace",
+            "name": "Kemence",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Tábla",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Faajtó",
             "desc": ""
         },
         "ladder": {
-            "name": "Ladder",
+            "name": "Létra",
             "desc": ""
         },
         "rail": {
-            "name": "Rail",
+            "name": "Sín",
             "desc": ""
         },
         "goldenRail": {
-            "name": "Powered Rail",
+            "name": "Gyorsítósín",
             "desc": ""
         },
         "detectorRail": {
-            "name": "Detector Rail",
+            "name": "Érzékelő sín",
             "desc": ""
         },
         "stairsStone": {
-            "name": "Stone Stairs",
+            "name": "Kőlépcső",
             "desc": ""
         },
         "lever": {
-            "name": "Lever",
+            "name": "Kar",
             "desc": ""
         },
         "pressurePlate": {
-            "name": "Pressure Plate",
+            "name": "Nyomólap",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Vasajtó",
             "desc": ""
         },
         "oreRedstone": {
-            "name": "Redstone Ore",
+            "name": "Redstone érc",
             "desc": ""
         },
         "notGate": {
-            "name": "Redstone Torch",
+            "name": "Redstone fáklya",
             "desc": ""
         },
         "button": {
-            "name": "Button",
+            "name": "Gomb",
             "desc": ""
         },
         "snow": {
-            "name": "Snow",
+            "name": "Hó",
             "desc": ""
         },
         "ice": {
-            "name": "Ice",
+            "name": "Jég",
             "desc": ""
         },
         "cactus": {
-            "name": "Cactus",
+            "name": "Kaktusz",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Agyag",
             "desc": ""
         },
         "reeds": {
-            "name": "Sugar cane",
+            "name": "Cukornád",
             "desc": ""
         },
         "jukebox": {
-            "name": "Jukebox",
+            "name": "Zenegép",
             "desc": ""
         },
         "fence": {
-            "name": "Fence",
+            "name": "Kerítés",
             "desc": ""
         },
         "pumpkin": {
-            "name": "Pumpkin",
+            "name": "Tök",
             "desc": ""
         },
         "litpumpkin": {
-            "name": "Jack 'o' Lantern",
+            "name": "Töklámpás",
             "desc": ""
         },
         "hellrock": {
-            "name": "Netherrack",
+            "name": "Pokolkő",
             "desc": ""
         },
         "hellsand": {
-            "name": "Soul Sand",
+            "name": "Lelkek homoka",
             "desc": ""
         },
         "lightgem": {
-            "name": "Glowstone",
+            "name": "Fénylő kő",
             "desc": ""
         },
         "portal": {
-            "name": "Portal",
+            "name": "Portál",
             "desc": ""
         },
         "oreLapis": {
-            "name": "Lapis Lazuli Ore",
+            "name": "Lazuritérc",
             "desc": ""
         },
         "blockLapis": {
-            "name": "Lapis Lazuli Block",
+            "name": "Lazurittömb",
             "desc": ""
         },
         "dispenser": {
-            "name": "Dispenser",
+            "name": "Adagoló",
             "desc": ""
         },
         "musicBlock": {
-            "name": "Note Block",
+            "name": "Hangjegyblokk",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Torta",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Ágy",
             "desc": "",
-            "occupied": "This bed is occupied",
-            "noSleep": "You can only sleep at night",
-            "notValid": "Your home bed was missing or obstructed"
+            "occupied": "Ezt az ágyat már használják",
+            "noSleep": "Csak éjjel aludhatsz",
+            "notValid": "Az otthoni ágyad hiányzott vagy elzárva volt"
         },
         "lockedchest": {
-            "name": "Locked chest",
+            "name": "Lezárt láda",
             "desc": ""
         },
         "trapdoor": {
-            "name": "Trapdoor",
+            "name": "Csapóajtó",
             "desc": ""
         },
         "web": {
-            "name": "Cobweb",
+            "name": "Pókháló",
             "desc": ""
         },
         "stonebricksmooth": {
-            "name": "Stone Bricks",
+            "name": "Kőtégla",
             "desc": ""
         },
         "pistonBase": {
-            "name": "Piston",
+            "name": "Dugattyú",
             "desc": ""
         },
         "pistonStickyBase": {
-            "name": "Sticky Piston",
+            "name": "Ragadós dugattyú",
             "desc": ""
         }
     },
     "item": {
         "shovelIron": {
-            "name": "Iron Shovel",
+            "name": "Vasásó",
             "desc": ""
         },
         "pickaxeIron": {
-            "name": "Iron Pickaxe",
+            "name": "Vascsákány",
             "desc": ""
         },
         "hatchetIron": {
-            "name": "Iron Axe",
+            "name": "Vasfejsze",
             "desc": ""
         },
         "flintAndSteel": {
-            "name": "Flint and Steel",
+            "name": "Kovakő és acél",
             "desc": ""
         },
         "apple": {
-            "name": "Apple",
+            "name": "Alma",
             "desc": ""
         },
         "cookie": {
-            "name": "Cookie",
+            "name": "Keksz",
             "desc": ""
         },
         "bow": {
-            "name": "Bow",
+            "name": "Íj",
             "desc": ""
         },
         "arrow": {
-            "name": "Arrow",
+            "name": "Nyíl",
             "desc": ""
         },
         "coal": {
-            "name": "Coal",
+            "name": "Szén",
             "desc": ""
         },
         "charcoal": {
-            "name": "Charcoal",
+            "name": "Faszén",
             "desc": ""
         },
         "diamond": {
-            "name": "Diamond",
+            "name": "Gyémánt",
             "desc": ""
         },
         "ingotIron": {
-            "name": "Iron Ingot",
+            "name": "Vasrúd",
             "desc": ""
         },
         "ingotGold": {
-            "name": "Gold Ingot",
+            "name": "Aranyrúd",
             "desc": ""
         },
         "swordIron": {
-            "name": "Iron Sword",
+            "name": "Vaskard",
             "desc": ""
         },
         "swordWood": {
-            "name": "Wooden Sword",
+            "name": "Fakard",
             "desc": ""
         },
         "shovelWood": {
-            "name": "Wooden Shovel",
+            "name": "Faásó",
             "desc": ""
         },
         "pickaxeWood": {
-            "name": "Wooden Pickaxe",
+            "name": "Facsákány",
             "desc": ""
         },
         "hatchetWood": {
-            "name": "Wooden Axe",
+            "name": "Fafejsze",
             "desc": ""
         },
         "swordStone": {
-            "name": "Stone Sword",
+            "name": "Kőkard",
             "desc": ""
         },
         "shovelStone": {
-            "name": "Stone Shovel",
+            "name": "Kőásó",
             "desc": ""
         },
         "pickaxeStone": {
-            "name": "Stone Pickaxe",
+            "name": "Kőcsákány",
             "desc": ""
         },
         "hatchetStone": {
-            "name": "Stone Axe",
+            "name": "Kőfejsze",
             "desc": ""
         },
         "swordDiamond": {
-            "name": "Diamond Sword",
+            "name": "Gyémántkard",
             "desc": ""
         },
         "shovelDiamond": {
-            "name": "Diamond Shovel",
+            "name": "Gyémántásó",
             "desc": ""
         },
         "pickaxeDiamond": {
-            "name": "Diamond Pickaxe",
+            "name": "Gyémántcsákány",
             "desc": ""
         },
         "hatchetDiamond": {
-            "name": "Diamond Axe",
+            "name": "Gyémántfejsze",
             "desc": ""
         },
         "stick": {
-            "name": "Stick",
+            "name": "Bot",
             "desc": ""
         },
         "bowl": {
-            "name": "Bowl",
+            "name": "Tál",
             "desc": ""
         },
         "mushroomStew": {
-            "name": "Mushroom Stew",
+            "name": "Gombaragu",
             "desc": ""
         },
         "swordGold": {
-            "name": "Golden Sword",
+            "name": "Aranykard",
             "desc": ""
         },
         "shovelGold": {
-            "name": "Golden Shovel",
+            "name": "Aranyásó",
             "desc": ""
         },
         "pickaxeGold": {
-            "name": "Golden Pickaxe",
+            "name": "Aranycsákány",
             "desc": ""
         },
         "hatchetGold": {
-            "name": "Golden Axe",
+            "name": "Aranyfejsze",
             "desc": ""
         },
         "string": {
-            "name": "String",
+            "name": "Fonal",
             "desc": ""
         },
         "feather": {
-            "name": "Feather",
+            "name": "Toll",
             "desc": ""
         },
         "gunpowder": {
-            "name": "Gunpowder",
+            "name": "Lőpor",
             "desc": ""
         },
         "hoeWood": {
-            "name": "Wooden Hoe",
+            "name": "Fakapa",
             "desc": ""
         },
         "hoeStone": {
-            "name": "Stone Hoe",
+            "name": "Kőkapa",
             "desc": ""
         },
         "hoeIron": {
-            "name": "Iron Hoe",
+            "name": "Vaskapa",
             "desc": ""
         },
         "hoeDiamond": {
-            "name": "Diamond Hoe",
+            "name": "Gyémántkapa",
             "desc": ""
         },
         "hoeGold": {
-            "name": "Golden Hoe",
+            "name": "Aranykapa",
             "desc": ""
         },
         "seeds": {
-            "name": "Seeds",
+            "name": "Búzamag",
             "desc": ""
         },
         "wheat": {
-            "name": "Wheat",
+            "name": "Búza",
             "desc": ""
         },
         "bread": {
-            "name": "Bread",
+            "name": "Kenyér",
             "desc": ""
         },
         "helmetLeather": {
-            "name": "Leather Cap",
+            "name": "Bőrsapka",
             "desc": ""
         },
         "chestplateLeather": {
-            "name": "Leather Tunic",
+            "name": "Bőrtunika",
             "desc": ""
         },
         "leggingsLeather": {
-            "name": "Leather Pants",
+            "name": "Bőrnadrág",
             "desc": ""
         },
         "bootsLeather": {
-            "name": "Leather Boots",
+            "name": "Bőrcsizma",
             "desc": ""
         },
         "helmetChain": {
-            "name": "Chain Helmet",
+            "name": "Láncsisak",
             "desc": ""
         },
         "chestplateChain": {
-            "name": "Chain Chestplate",
+            "name": "Láncing",
             "desc": ""
         },
         "leggingsChain": {
-            "name": "Chain Leggings",
+            "name": "Láncnadrág",
             "desc": ""
         },
         "bootsChain": {
-            "name": "Chain Boots",
+            "name": "Lánccsizma",
             "desc": ""
         },
         "helmetIron": {
-            "name": "Iron Helmet",
+            "name": "Vassisak",
             "desc": ""
         },
         "chestplateIron": {
-            "name": "Iron Chestplate",
+            "name": "Vas mellvért",
             "desc": ""
         },
         "leggingsIron": {
-            "name": "Iron Leggings",
+            "name": "Vasnadrág",
             "desc": ""
         },
         "bootsIron": {
-            "name": "Iron Boots",
+            "name": "Vascsizma",
             "desc": ""
         },
         "helmetDiamond": {
-            "name": "Diamond Helmet",
+            "name": "Gyémántsisak",
             "desc": ""
         },
         "chestplateDiamond": {
-            "name": "Diamond Chestplate",
+            "name": "Gyémánt mellvért",
             "desc": ""
         },
         "leggingsDiamond": {
-            "name": "Diamond Leggings",
+            "name": "Gyémántnadrág",
             "desc": ""
         },
         "bootsDiamond": {
-            "name": "Diamond Boots",
+            "name": "Gyémántcsizma",
             "desc": ""
         },
         "helmetGold": {
-            "name": "Golden Helmet",
+            "name": "Aranysisak",
             "desc": ""
         },
         "chestplateGold": {
-            "name": "Golden Chestplate",
+            "name": "Arany mellvért",
             "desc": ""
         },
         "leggingsGold": {
-            "name": "Golden Leggings",
+            "name": "Aranynadrág",
             "desc": ""
         },
         "bootsGold": {
-            "name": "Golden boots",
+            "name": "Aranycsizma",
             "desc": ""
         },
         "flint": {
-            "name": "Flint",
+            "name": "Kovakő",
             "desc": ""
         },
         "porkchopRaw": {
-            "name": "Raw Porkchop",
+            "name": "Nyers disznóhús",
             "desc": ""
         },
         "porkchopCooked": {
-            "name": "Cooked Porkchop",
+            "name": "Sült disznóhús",
             "desc": ""
         },
         "painting": {
-            "name": "Painting",
+            "name": "Festmény",
             "desc": ""
         },
         "appleGold": {
-            "name": "Golden Apple",
+            "name": "Aranyalma",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Tábla",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Faajtó",
             "desc": ""
         },
         "bucket": {
-            "name": "Bucket",
+            "name": "Vödör",
             "desc": ""
         },
         "bucketWater": {
-            "name": "Water Bucket",
+            "name": "Vizesvödör",
             "desc": ""
         },
         "bucketLava": {
-            "name": "Lava bucket",
+            "name": "Lávás vödör",
             "desc": ""
         },
         "minecart": {
-            "name": "Minecart",
+            "name": "Csille",
             "desc": ""
         },
         "saddle": {
-            "name": "Saddle",
+            "name": "Nyereg",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Vasajtó",
             "desc": ""
         },
         "redstone": {
@@ -1067,303 +1067,303 @@
             "desc": ""
         },
         "snowball": {
-            "name": "Snowball",
+            "name": "Hógolyó",
             "desc": ""
         },
         "boat": {
-            "name": "Boat",
+            "name": "Csónak",
             "desc": ""
         },
         "leather": {
-            "name": "Leather",
+            "name": "Bőr",
             "desc": ""
         },
         "milk": {
-            "name": "Milk",
+            "name": "Tej",
             "desc": ""
         },
         "brick": {
-            "name": "Brick",
+            "name": "Tégla",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Agyag",
             "desc": ""
         },
         "sugarCanes": {
-            "name": "Sugar Canes",
+            "name": "Cukornád",
             "desc": ""
         },
         "paper": {
-            "name": "Paper",
+            "name": "Papír",
             "desc": ""
         },
         "book": {
-            "name": "Book",
+            "name": "Könyv",
             "desc": ""
         },
         "slimeball": {
-            "name": "Slimeball",
+            "name": "Nyálka",
             "desc": ""
         },
         "minecartChest": {
-            "name": "Minecart with Chest",
+            "name": "Ládás csille",
             "desc": ""
         },
         "minecartFurnace": {
-            "name": "Minecart with Furnace",
+            "name": "Kemencés csille",
             "desc": ""
         },
         "egg": {
-            "name": "Egg",
+            "name": "Tojás",
             "desc": ""
         },
         "compass": {
-            "name": "Compass",
+            "name": "Iránytű",
             "desc": ""
         },
         "fishingRod": {
-            "name": "Fishing Rod",
+            "name": "Horgászbot",
             "desc": ""
         },
         "clock": {
-            "name": "Clock",
+            "name": "Óra",
             "desc": ""
         },
         "yellowDust": {
-            "name": "Glowstone Dust",
+            "name": "Fénylő kő por",
             "desc": ""
         },
         "fishRaw": {
-            "name": "Raw Fish",
+            "name": "Nyers hal",
             "desc": ""
         },
         "fishCooked": {
-            "name": "Cooked Fish",
+            "name": "Sült hal",
             "desc": ""
         },
         "record": {
-            "name": "Music Disc",
+            "name": "Zeneszalag",
             "desc": ""
         },
         "bone": {
-            "name": "Bone",
+            "name": "Csont",
             "desc": ""
         },
         "dyePowder": {
             "black": {
-                "name": "Ink Sac",
+                "name": "Tintazsák",
                 "desc": ""
             },
             "red": {
-                "name": "Rose Red",
+                "name": "Rózsavörös",
                 "desc": ""
             },
             "green": {
-                "name": "Cactus Green",
+                "name": "Kaktusz zöld",
                 "desc": ""
             },
             "brown": {
-                "name": "Cocoa Beans",
+                "name": "Kakaóbab",
                 "desc": ""
             },
             "blue": {
-                "name": "Lapis Lazuli",
+                "name": "Lazurit",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Dye",
+                "name": "Lila festék",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Dye",
+                "name": "Ciánkék festék",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Dye",
+                "name": "Világosszürke festék",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Dye",
+                "name": "Szürke festék",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Dye",
+                "name": "Rózsaszín festék",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Dye",
+                "name": "Lime festék",
                 "desc": ""
             },
             "yellow": {
-                "name": "Dandelion Yellow",
+                "name": "Pitypang sárga",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Dye",
+                "name": "Világoskék festék",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Dye",
+                "name": "Bíborvörös festék",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Dye",
+                "name": "Narancssárga festék",
                 "desc": ""
             },
             "white": {
-                "name": "Bone Meal",
+                "name": "Csontliszt",
                 "desc": ""
             }
         },
         "sugar": {
-            "name": "Sugar",
+            "name": "Cukor",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Torta",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Ágy",
             "desc": ""
         },
         "redstoneRepeater": {
-            "name": "Redstone Repeater",
+            "name": "Redstone erősítő",
             "desc": ""
         },
         "map": {
-            "name": "Map",
+            "name": "Térkép",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Levél",
             "desc": ""
         },
         "shears": {
-            "name": "Shears",
+            "name": "Olló",
             "desc": ""
         }
     },
     "stat": {
-        "generalButton": "General",
-        "blocksButton": "Blocks",
-        "itemsButton": "Items",
-        "used": "Times Used",
-        "mined": "Times Mined",
-        "depleted": "Times Depleted",
-        "crafted": "Times Crafted",
-        "startGame": "Times played",
-        "createWorld": "Worlds played",
-        "loadWorld": "Saves loaded",
-        "joinMultiplayer": "Multiplayer joins",
-        "leaveGame": "Games quit",
-        "playOneMinute": "Minutes Played",
-        "walkOneCm": "Distance Walked",
-        "fallOneCm": "Distance Fallen",
-        "swimOneCm": "Distance Swum",
-        "flyOneCm": "Distance Flown",
-        "climbOneCm": "Distance Climbed",
-        "diveOneCm": "Distance Dove",
-        "minecartOneCm": "Distance by Minecart",
-        "boatOneCm": "Distance by Boat",
-        "pigOneCm": "Distance by Pig",
-        "jump": "Jumps",
-        "drop": "Items Dropped",
-        "damageDealt": "Damage Dealt",
-        "damageTaken": "Damage Taken",
-        "deaths": "Number of Deaths",
-        "mobKills": "Mob Kills",
-        "playerKills": "Player Kills",
-        "fishCaught": "Fish Caught",
-        "mineBlock": "{0} Mined",
-        "craftItem": "{0} Crafted",
-        "useItem": "{0} Used",
-        "breakItem": "{0} Depleted"
+        "generalButton": "Általános",
+        "blocksButton": "Blokkok",
+        "itemsButton": "Tárgyak",
+        "used": "Használatok száma",
+        "mined": "Kibányászások száma",
+        "depleted": "Elhasználások száma",
+        "crafted": "Elkészítések száma",
+        "startGame": "Játszmák száma",
+        "createWorld": "Játszott világok",
+        "loadWorld": "Betöltött mentések",
+        "joinMultiplayer": "Többjátékos csatlakozások",
+        "leaveGame": "Kilépett játékok",
+        "playOneMinute": "Játékkal töltött percek",
+        "walkOneCm": "Gyalog megtett távolság",
+        "fallOneCm": "Esési távolság",
+        "swimOneCm": "Úszási távolság",
+        "flyOneCm": "Repülési távolság",
+        "climbOneCm": "Mászási távolság",
+        "diveOneCm": "Búvárkodási távolság",
+        "minecartOneCm": "Csillén megtett távolság",
+        "boatOneCm": "Csónakkal megtett távolság",
+        "pigOneCm": "Disznón megtett távolság",
+        "jump": "Ugrások",
+        "drop": "Eldobott tárgyak",
+        "damageDealt": "Okozott sebzés",
+        "damageTaken": "Elszenvedett sebzés",
+        "deaths": "Halálok száma",
+        "mobKills": "Mob-ölések",
+        "playerKills": "Játékos-ölések",
+        "fishCaught": "Kifogott halak",
+        "mineBlock": "{0} kibányászva",
+        "craftItem": "{0} elkészítve",
+        "useItem": "{0} használva",
+        "breakItem": "{0} elhasználva"
     },
-    "achievements.title": "Achievements",
+    "achievements.title": "Eredmények",
     "achievement": {
-        "get": "Achievement get!",
-        "taken": "Taken!",
-        "challenge": "CHALLENGE",
-        "unlocked": "UNLOCKED",
-        "locked": "LOCKED",
-        "requires": "Requires '{0}'",
+        "get": "Eredmény megszerezve!",
+        "taken": "Megszerezve!",
+        "challenge": "KIHÍVÁS",
+        "unlocked": "FELOLDVA",
+        "locked": "LEZÁRVA",
+        "requires": "Ehhez kell: '{0}'",
         "openInventory": {
-            "title": "Taking Inventory",
-            "desc": "Open your inventory."
+            "title": "Leltár felvétele",
+            "desc": "Nyisd meg a leltáradat."
         },
         "mineWood": {
-            "title": "Getting Wood",
-            "desc": "Attack a tree until a block of wood pops out"
+            "title": "Faszerzés",
+            "desc": "Támadj egy fát, amíg ki nem pottyan egy fahasáb"
         },
         "buildWorkBench": {
-            "title": "Benchmarking",
-            "desc": "Craft a workbench with four blocks of planks"
+            "title": "Barkácsasztal",
+            "desc": "Készíts barkácsasztalt négy fadeszka felhasználásával"
         },
         "buildPickaxe": {
-            "title": "Time to Mine!",
-            "desc": "Use planks and sticks to make a pickaxe"
+            "title": "Ideje bányászni!",
+            "desc": "Használj deszkát és botot csákány készítéséhez"
         },
         "buildFurnace": {
-            "title": "Hot Topic",
-            "desc": "Construct a furnace out of eight stone blocks"
+            "title": "Forró téma",
+            "desc": "Építs kemencét nyolc kő felhasználásával"
         },
         "acquireIron": {
-            "title": "Acquire Hardware",
-            "desc": "Smelt an iron ingot"
+            "title": "Vas beszerzése",
+            "desc": "Olvaszd ki a vasércet"
         },
         "buildHoe": {
-            "title": "Time to Farm!",
-            "desc": "Use planks and sticks to make a hoe"
+            "title": "Ideje gazdálkodni!",
+            "desc": "Használj deszkát és botot kapa készítéséhez"
         },
         "makeBread": {
-            "title": "Bake Bread",
-            "desc": "Turn wheat into bread"
+            "title": "Kenyeret sütni",
+            "desc": "Alakítsd át a búzát kenyérré"
         },
         "bakeCake": {
-            "title": "The Lie",
-            "desc": "Wheat, sugar, milk and eggs!"
+            "title": "A hazugság",
+            "desc": "Búza, cukor, tej és tojás!"
         },
         "buildBetterPickaxe": {
-            "title": "Getting an Upgrade",
-            "desc": "Construct a better pickaxe"
+            "title": "Fejlesztés",
+            "desc": "Készíts jobb csákányt"
         },
         "cookFish": {
-            "title": "Delicious Fish",
-            "desc": "Catch and cook fish!"
+            "title": "Finom hal",
+            "desc": "Fogj halat, és süsd meg!"
         },
         "onARail": {
-            "title": "On A Rail",
-            "desc": "Travel by minecart at least 1 km from where you started "
+            "title": "Sínen",
+            "desc": "Utazz legalább 1 km-t csillén a kiindulási pontodtól"
         },
         "buildSword": {
-            "title": "Time to Strike!",
-            "desc": "Use planks and sticks to make a sword"
+            "title": "Ideje támadni!",
+            "desc": "Használj deszkát és botot kard készítéséhez"
         },
         "killEnemy": {
-            "title": "Monster Hunter",
-            "desc": "Attack and destroy a monster"
+            "title": "Szörnyvadász",
+            "desc": "Támadj meg és semmisíts meg egy szörnyet"
         },
         "killCow": {
-            "title": "Cow Tipper",
-            "desc": "Harvest some leather"
+            "title": "Tehénborogató",
+            "desc": "Szerezz némi bőrt"
         },
         "flyPig": {
-            "title": "When Pigs Fly",
-            "desc": "Fly a pig off a cliff"
+            "title": "Ha a disznók repülnek",
+            "desc": "Repülj el egy disznóval egy szikláról"
         }
     },
     "credits": {
-        "version": "BetaSharp Version %1$s",
-        "description": "An enhanced of Minecraft Beta 1.7.3, written in C#.",
-        "github": "On GitHub",
-        "author": "Made by Fazin85",
-        "libs": "Libraries",
-        "slik": "Slik.NET - Graphics",
-        "imgui": "ImGui - Debug UI",
-        "sfml": "SFML.NET - Audio",
-        "sixlabors": "SixLabors - Fonts, image processing",
-        "translations": "Translations Credits"
+        "version": "BetaSharp %1$s verzió",
+        "description": "A Minecraft Beta 1.7.3 továbbfejlesztett változata, C#-ban írva.",
+        "github": "A GitHubon",
+        "author": "Készítette: Fazin85",
+        "libs": "Könyvtárak",
+        "slik": "Slik.NET - Grafika",
+        "imgui": "ImGui - Hibakereső UI",
+        "sfml": "SFML.NET - Hang",
+        "sixlabors": "SixLabors - Betűtípusok, képszerkesztés",
+        "translations": "Fordítók"
     }
 }
