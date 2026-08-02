@@ -4,7 +4,7 @@ using BetaSharp.Client.Network;
 using BetaSharp.Client.Sound;
 using BetaSharp.Entities;
 using BetaSharp.Items;
-using BetaSharp.Network.Packets.C2SPlay;
+using BetaSharp.Network.Messages;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
@@ -57,7 +57,7 @@ public class PlayerControllerMP : PlayerController
     {
         if (!_isHittingBlock || x != _targetBlockPos.X || y != _targetBlockPos.Y || z != _targetBlockPos.Z)
         {
-            _netClientHandler.AddToSendQueue(PlayerActionC2SPacket.Get(PlayerActionC2SPacket.Actions.BlockClick, x, y, z, direction));
+            _netClientHandler.SendMessage(PlayerAction(PlayerActionMessage.Actions.BlockClick, x, y, z, direction));
             int blockId = Game.World.Reader.GetBlockId(x, y, z);
             if (blockId > 0 && _curBlockDamageMp == 0.0F && Game.Player.GameMode.CanInteract)
             {
@@ -135,7 +135,7 @@ public class PlayerControllerMP : PlayerController
                     if (_curBlockDamageMp >= 1.0F)
                     {
                         _isHittingBlock = false;
-                        _netClientHandler.AddToSendQueue(PlayerActionC2SPacket.Get(PlayerActionC2SPacket.Actions.BlockBroken, x, y, z, direction));
+                        _netClientHandler.SendMessage(PlayerAction(PlayerActionMessage.Actions.BlockBroken, x, y, z, direction));
                         if (SendBlockRemoved(x, y, z, direction))
                         {
                             Game.WorldRenderer.WorldEventBreak(blockId, Game.World.Reader.GetBlockMeta(x, y, z), x, y, z);
@@ -181,7 +181,7 @@ public class PlayerControllerMP : PlayerController
         if (selectedSlot != _currentPlayerItem)
         {
             _currentPlayerItem = selectedSlot;
-            _netClientHandler.AddToSendQueue(UpdateSelectedSlotC2SPacket.Get(_currentPlayerItem));
+            _netClientHandler.SendMessage(new SelectedSlotMessage { Slot = (short)_currentPlayerItem });
         }
     }
 
@@ -196,7 +196,7 @@ public class PlayerControllerMP : PlayerController
     )
     {
         SyncCurrentPlayItem();
-        _netClientHandler.AddToSendQueue(PlayerInteractBlockC2SPacket.Get(blockX, blockY, blockZ, blockSide, player.Inventory.ItemInHand));
+        _netClientHandler.SendMessage(InteractBlock(blockX, blockY, blockZ, blockSide, player.Inventory.ItemInHand));
         bool placed = base.SendPlaceBlock(player, world, selectedItem, blockX, blockY, blockZ, blockSide);
         return placed;
     }
@@ -204,7 +204,7 @@ public class PlayerControllerMP : PlayerController
     public override bool SendUseItem(EntityPlayer player, World world, ItemStack stack)
     {
         SyncCurrentPlayItem();
-        _netClientHandler.AddToSendQueue(PlayerInteractBlockC2SPacket.Get(-1, -1, -1, 255, player.Inventory.ItemInHand));
+        _netClientHandler.SendMessage(InteractBlock(-1, -1, -1, 255, player.Inventory.ItemInHand));
         bool usedItem = base.SendUseItem(player, world, stack);
         return usedItem;
     }
@@ -230,7 +230,15 @@ public class PlayerControllerMP : PlayerController
     {
         short revision = player.CurrentScreenHandler.nextRevision(player.Inventory);
         ItemStack resultStack = base.OnSlotClick(windowId, slotIndex, mouseButton, shiftClick, player);
-        _netClientHandler.AddToSendQueue(ClickSlotC2SPacket.Get(windowId, slotIndex, mouseButton, shiftClick, resultStack, revision));
+        _netClientHandler.SendMessage(new ClickSlotMessage
+        {
+            SyncId = (sbyte)windowId,
+            Slot = (short)slotIndex,
+            Button = (sbyte)mouseButton,
+            ActionType = revision,
+            HoldingShift = shiftClick,
+            Stack = resultStack,
+        });
         return resultStack;
     }
 
@@ -238,4 +246,29 @@ public class PlayerControllerMP : PlayerController
     {
         if (windowId != -9999) { }
     }
+
+    /// <summary>
+    ///     Y and the block face are bytes on the wire, and were already read as bytes before this
+    ///     was a message — the world is 128 blocks tall and a face is one of six. The casts are
+    ///     here rather than at each call site so the narrowing is stated once.
+    /// </summary>
+    private static PlayerActionMessage PlayerAction(
+        PlayerActionMessage.Actions action, int x, int y, int z, int direction) => new()
+        {
+            Action = (byte)action,
+            X = x,
+            Y = (byte)y,
+            Z = z,
+            Direction = (byte)direction,
+        };
+
+    /// <summary>Side 255 with x, y and z at -1 is the "used an item with no block in front" case.</summary>
+    private static InteractBlockMessage InteractBlock(int x, int y, int z, int side, ItemStack? stack) => new()
+    {
+        X = x,
+        Y = (byte)y,
+        Z = z,
+        Side = (byte)side,
+        Stack = stack,
+    };
 }

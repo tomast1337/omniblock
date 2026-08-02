@@ -6,7 +6,6 @@ using BetaSharp.NBT;
 using BetaSharp.Network.Chunks;
 using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Network.Snapshots;
@@ -610,7 +609,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         Yaw = yaw;
     }
 
-    public void updateInput(PlayerInputC2SPacket packet)
+    public void updateInput(PlayerInputMessage packet)
     {
         if (GameMode is { CanWalk: false, DisallowFlying: true })
         {

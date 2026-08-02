@@ -1,6 +1,5 @@
 using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using Microsoft.Extensions.Logging;
@@ -96,10 +95,18 @@ public abstract class NetHandler
         onMessage(message);
     }
 
-    /// <summary>Handles a decoded message. The override point for content and mods.</summary>
-    public virtual void onMessage(Message message)
-    {
-    }
+    /// <summary>
+    ///     Where this peer declares which messages it wants. Populated by the subclass, and open to
+    ///     content and mods for the same reason the registry is: nobody has to edit a switch in the
+    ///     engine to receive a message they defined.
+    /// </summary>
+    public MessageDispatcher MessageHandlers { get; } = new();
+
+    /// <summary>
+    ///     Handles a decoded message. Virtual for the rare handler that wants to see everything;
+    ///     the ordinary way to receive one is to register on <see cref="MessageHandlers" />.
+    /// </summary>
+    public virtual void onMessage(Message message) => MessageHandlers.Dispatch(message);
 
     public virtual void handle(Packet packet)
     {
@@ -125,11 +132,6 @@ public abstract class NetHandler
     }
 
     public virtual void onChunkDeltaUpdate(ChunkDeltaUpdateS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void handlePlayerAction(PlayerActionC2SPacket packet)
     {
         handle(packet);
     }
@@ -174,16 +176,6 @@ public abstract class NetHandler
         handle(packet);
     }
 
-    public virtual void onPlayerInteractBlock(PlayerInteractBlockC2SPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onUpdateSelectedSlot(UpdateSelectedSlotC2SPacket packet)
-    {
-        handle(packet);
-    }
-
     public virtual void onEntityDestroy(EntityDestroyS2CPacket packet)
     {
         handle(packet);
@@ -210,11 +202,6 @@ public abstract class NetHandler
     }
 
     public virtual void onEntityAnimation(EntityAnimationPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void handleClientCommand(ClientCommandC2SPacket packet)
     {
         handle(packet);
     }
@@ -254,11 +241,6 @@ public abstract class NetHandler
         handle(packet);
     }
 
-    public virtual void handleInteractEntity(PlayerInteractEntityC2SPacket packet)
-    {
-        handle(packet);
-    }
-
     public virtual void onEntityStatus(EntityStatusS2CPacket packet)
     {
         handle(packet);
@@ -285,11 +267,6 @@ public abstract class NetHandler
     }
 
     public virtual void onCloseScreen(CloseScreenS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onClickSlot(ClickSlotC2SPacket packet)
     {
         handle(packet);
     }
@@ -360,11 +337,6 @@ public abstract class NetHandler
     }
 
     public virtual void onPlayerSleepUpdate(PlayerSleepUpdateS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onPlayerInput(PlayerInputC2SPacket packet)
     {
         handle(packet);
     }

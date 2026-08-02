@@ -1,6 +1,6 @@
 using BetaSharp.Client.Entities;
 using BetaSharp.Entities;
-using BetaSharp.Network.Packets.C2SPlay;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Stats;
@@ -59,11 +59,11 @@ public class EntityClientPlayerMP : ClientPlayerEntity
         {
             if (isSneaking)
             {
-                sendQueue.AddToSendQueue(ClientCommandC2SPacket.Get(this, 1));
+                sendQueue.SendMessage(new ClientCommandMessage { EntityId = ID, Mode = 1 });
             }
             else
             {
-                sendQueue.AddToSendQueue(ClientCommandC2SPacket.Get(this, 2));
+                sendQueue.SendMessage(new ClientCommandMessage { EntityId = ID, Mode = 2 });
             }
 
             wasSneaking = isSneaking;
@@ -133,7 +133,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
         {
             IncreaseStat(Stats.Stats.DropStat, 1);
         }
-        sendQueue.AddToSendQueue(PlayerActionC2SPacket.Get(PlayerActionC2SPacket.Actions.DropSelectedItem, 0, 0, 0, 0));
+        sendQueue.SendMessage(new PlayerActionMessage { Action = (byte)PlayerActionMessage.Actions.DropSelectedItem });
     }
 
     private void sendInventoryChanged()
