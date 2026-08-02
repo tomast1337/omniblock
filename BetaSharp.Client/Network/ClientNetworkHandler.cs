@@ -1039,6 +1039,14 @@ public class ClientNetworkHandler : NetHandler
             int blockZ = positions >> 8 & 15;
             int blockY = positions & 255;
             chunk.SetBlock(blockX, blockY, blockZ, blockRawId, metadata);
+
+            // Applied separately from the block, because SetBlock refuses an update that leaves the
+            // block identical and a light-only change is exactly that.
+            if (i < packet.Light.Length)
+            {
+                chunk.SetPackedLight(blockX, blockY, blockZ, packet.Light[i]);
+            }
+
             _worldClient.ClearBlockResets(blockX + x, blockY, blockZ + y, blockX + x, blockY, blockZ + y);
             _worldClient.setBlocksDirty(blockX + x, blockY, blockZ + y, blockX + x, blockY, blockZ + y);
         }
@@ -1053,7 +1061,7 @@ public class ClientNetworkHandler : NetHandler
 
     private void onBlockUpdate(BlockUpdateMessage packet)
     {
-        _worldClient.SetBlockWithMetaFromPacket(packet.X, packet.Y, packet.Z, packet.BlockRawId, packet.BlockMetadata);
+        _worldClient.SetBlockWithMetaFromPacket(packet.X, packet.Y, packet.Z, packet.BlockRawId, packet.BlockMetadata, packet.Light);
     }
 
     private void onDisconnect(DisconnectMessage packet)

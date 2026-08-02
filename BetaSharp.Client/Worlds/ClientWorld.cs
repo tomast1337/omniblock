@@ -206,16 +206,31 @@ public class ClientWorld : World
         return ent;
     }
 
-    public bool SetBlockWithMetaFromPacket(int minX, int minY, int minZ, int blockId, int meta)
+    /// <summary>
+    ///     Applies one position's worth of server state: its block and its light.
+    /// </summary>
+    /// <remarks>
+    ///     The light is applied whether or not the block changed. The server announces a position
+    ///     whenever its light changes, and a light-only change leaves the block byte-identical to
+    ///     what this client already holds, which is precisely the case
+    ///     <see cref="Chunk.SetBlock" /> refuses. Gating the light on the block having changed
+    ///     discards every such update, and nothing resends it.
+    /// </remarks>
+    public bool SetBlockWithMetaFromPacket(int minX, int minY, int minZ, int blockId, int meta, byte light)
     {
         ClearBlockResets(minX, minY, minZ, minX, minY, minZ);
-        if (Writer.SetBlockWithoutNotifyingNeighbors(minX, minY, minZ, blockId, meta))
+        bool blockChanged = Writer.SetBlockWithoutNotifyingNeighbors(minX, minY, minZ, blockId, meta);
+
+        bool lightChanged = BlockHost.HasChunk(minX >> 4, minZ >> 4)
+            && BlockHost.GetChunk(minX >> 4, minZ >> 4)
+                .SetPackedLight(minX & 15, minY, minZ & 15, light);
+
+        if (blockChanged || lightChanged)
         {
             BlockUpdate(minX, minY, minZ, blockId);
-            return true;
         }
 
-        return false;
+        return blockChanged;
     }
 
     public override void Disconnect()
