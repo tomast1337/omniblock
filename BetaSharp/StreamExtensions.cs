@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 using System.Text;
+using BetaSharp.Items;
 using BetaSharp.Util;
 
 namespace BetaSharp;
@@ -64,6 +65,19 @@ internal static class StreamExtensions
         (value.Namespace.GetHashCode() == 0 ? 1 : 1 + value.Namespace.ToString().Length)
         + 1
         + value.Path.Length;
+
+    /// <summary>
+    ///     Bytes <see cref="Stream.WriteItemStack" /> will emit. Two for an empty slot, five for a
+    ///     filled one.
+    ///     <para>
+    ///         Hand-written packets carrying a stack got this wrong in both directions —
+    ///         <c>ClickSlotC2SPacket</c> declared eleven bytes for a payload that is nine or twelve,
+    ///         and <c>PlayerInteractBlockC2SPacket</c> fifteen for one that is twelve or fifteen.
+    ///         Harmless under the legacy framing, which has no length to disagree with; not harmless
+    ///         under an envelope that does.
+    ///     </para>
+    /// </summary>
+    public static int ItemStackSize(ItemStack? value) => value is null ? 2 : 5;
 
     extension(Stream stream)
     {
@@ -351,6 +365,42 @@ internal static class StreamExtensions
 
             stream.WriteVarInt(value.Length);
             stream.Write(value);
+        }
+
+        /// <summary>
+        ///     Writes an inventory slot, using a negative item ID for an empty one.
+        ///     <para>
+        ///         The encoding is the one the legacy packets already used, spelled once. It was
+        ///         open-coded in several of them, and each copy was its own opportunity to disagree
+        ///         with the matching reader.
+        ///     </para>
+        /// </summary>
+        public void WriteItemStack(ItemStack? value)
+        {
+            if (value is null)
+            {
+                stream.WriteShort(-1);
+                return;
+            }
+
+            stream.WriteShort((short)value.ItemId);
+            stream.WriteByte((byte)value.Count);
+            stream.WriteShort((short)value.getDamage());
+        }
+
+        /// <summary>Reads a slot written by <see cref="WriteItemStack" />; null for an empty one.</summary>
+        public ItemStack? ReadItemStack()
+        {
+            short itemId = stream.ReadShort();
+            if (itemId < 0)
+            {
+                return null;
+            }
+
+            sbyte count = (sbyte)stream.ReadByte();
+            short damage = stream.ReadShort();
+
+            return new ItemStack(itemId, count, damage);
         }
 
         /// <summary>

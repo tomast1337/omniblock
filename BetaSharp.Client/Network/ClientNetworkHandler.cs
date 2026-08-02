@@ -18,7 +18,6 @@ using BetaSharp.Network;
 using BetaSharp.Network.Chunks;
 using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Network.Snapshots;
@@ -133,6 +132,8 @@ public class ClientNetworkHandler : NetHandler
         _cacheKey = $"{address}_{port}";
 
         Clock = new ServerClock();
+
+        RegisterMessageHandlers();
     }
 
     /// <summary>
@@ -147,6 +148,8 @@ public class ClientNetworkHandler : NetHandler
     {
         _context = context;
         _netManager = connection;
+
+        RegisterMessageHandlers();
     }
 
     public void Tick()
@@ -293,21 +296,20 @@ public class ClientNetworkHandler : NetHandler
     /// </summary>
     public void SendInteractEntity(int playerId, int entityId, byte action)
     {
-        if (Messages is { Negotiated: true }
-            && Clock is { Synchronised: true }
-            && Interpolation.IsInterpolating(entityId))
+        // Zero when the clock has not synchronised or the target is not being interpolated, which
+        // the server reads as "no rewind" rather than as the epoch. That is the honest answer: with
+        // no synchronised clock there is no instant to name, and judging such a click against the
+        // present is what every click got before the rewind existed.
+        long renderTimeMs = Clock is { Synchronised: true } && Interpolation.IsInterpolating(entityId)
+            ? Clock.ServerTimeMs - Interpolation.AppliedDelayFor(entityId)
+            : 0;
+
+        SendMessage(new InteractEntityMessage
         {
-            SendMessage(new InteractEntityMessage
-            {
-                EntityId = entityId,
-                Action = action,
-                RenderTimeMs = Clock.ServerTimeMs - Interpolation.AppliedDelayFor(entityId),
-            });
-
-            return;
-        }
-
-        AddToSendQueue(PlayerInteractEntityC2SPacket.Get(playerId, entityId, action));
+            EntityId = entityId,
+            Action = action,
+            RenderTimeMs = renderTimeMs,
+        });
     }
 
     /// <summary>
@@ -369,7 +371,7 @@ public class ClientNetworkHandler : NetHandler
     ///     Sends a message, or drops it when the server never advertised the key — the designed
     ///     outcome for a peer that does not implement it, not an error.
     /// </summary>
-    private void SendMessage(Message message)
+    public void SendMessage(Message message)
     {
         MessageRegistry? registry = Messages;
         if (registry is null || !registry.Negotiated)
@@ -395,30 +397,17 @@ public class ClientNetworkHandler : NetHandler
         _netManager.NotePeerProtocol(packet.ProtocolVersion);
     }
 
-    public override void onMessage(Message message)
+    /// <summary>
+    ///     Declares which messages this peer wants. Called from both constructors: the registration
+    ///     set is a property of the handler, not of how its connection was made.
+    /// </summary>
+    private void RegisterMessageHandlers()
     {
-        switch (message)
-        {
-            case TimeSyncResponseMessage response:
-                onTimeSyncResponse(response);
-                break;
-
-            case TickStampMessage stamp:
-                onTickStamp(stamp);
-                break;
-
-            case ChunkDataMessage chunk:
-                onChunkData(chunk);
-                break;
-
-            case ChunkUnchangedMessage unchanged:
-                onChunkUnchanged(unchanged);
-                break;
-
-            case EntitySnapshotMessage snapshot:
-                onEntitySnapshot(snapshot);
-                break;
-        }
+        MessageHandlers.On<TimeSyncResponseMessage>(onTimeSyncResponse);
+        MessageHandlers.On<TickStampMessage>(onTickStamp);
+        MessageHandlers.On<ChunkDataMessage>(onChunkData);
+        MessageHandlers.On<ChunkUnchangedMessage>(onChunkUnchanged);
+        MessageHandlers.On<EntitySnapshotMessage>(onEntitySnapshot);
     }
 
     /// <summary>

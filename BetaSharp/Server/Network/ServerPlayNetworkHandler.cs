@@ -6,7 +6,6 @@ using BetaSharp.Items;
 using BetaSharp.Network;
 using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Screens.Slots;
@@ -51,6 +50,18 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         connection.setNetworkHandler(this);
         this.player = player;
         player.NetworkHandler = this;
+
+        MessageHandlers.On<TimeSyncRequestMessage>(onTimeSyncRequest);
+        MessageHandlers.On<ChunkCacheOfferMessage>(onChunkCacheOffer);
+        MessageHandlers.On<SnapshotAckMessage>(ack => player.SnapshotStream.Acknowledge(ack.Sequence));
+        MessageHandlers.On<InteractEntityMessage>(
+            interact => InteractWithEntity(interact.EntityId, interact.Action, interact.RenderTimeMs));
+        MessageHandlers.On<PlayerActionMessage>(onPlayerAction);
+        MessageHandlers.On<InteractBlockMessage>(onInteractBlock);
+        MessageHandlers.On<SelectedSlotMessage>(onSelectedSlot);
+        MessageHandlers.On<ClientCommandMessage>(onClientCommand);
+        MessageHandlers.On<PlayerInputMessage>(input => player.updateInput(input));
+        MessageHandlers.On<ClickSlotMessage>(onClickSlot);
     }
 
     public void tick()
@@ -78,28 +89,6 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         disconnected = true;
     }
 
-
-    public override void onMessage(Message message)
-    {
-        switch (message)
-        {
-            case TimeSyncRequestMessage request:
-                onTimeSyncRequest(request);
-                break;
-
-            case ChunkCacheOfferMessage offer:
-                onChunkCacheOffer(offer);
-                break;
-
-            case InteractEntityMessage interact:
-                InteractWithEntity(interact.EntityId, interact.Action, interact.RenderTimeMs);
-                break;
-
-            case SnapshotAckMessage ack:
-                player.SnapshotStream.Acknowledge(ack.Sequence);
-                break;
-        }
-    }
 
     /// <summary>
     ///     Chunk hashes the client claims to already hold.
@@ -185,8 +174,6 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             SendPacket(envelope);
         }
     }
-
-    public override void onPlayerInput(PlayerInputC2SPacket packet) => player.updateInput(packet);
 
     public override void onPlayerMove(PacketPlayerMoveAbstract packet)
     {
@@ -381,7 +368,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     }
 
 
-    public override void handlePlayerAction(PlayerActionC2SPacket packet)
+    private void onPlayerAction(PlayerActionMessage packet)
     {
         ServerWorld world = server.getWorld(player.DimensionId);
         if (packet.Action == 4)
@@ -404,7 +391,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 return;
             }
 
-            if (packet.Action == (int)PlayerActionC2SPacket.Actions.BlockClick || packet.Action == (int)PlayerActionC2SPacket.Actions.BlockBroken)
+            if (packet.Action == (byte)PlayerActionMessage.Actions.BlockClick || packet.Action == (byte)PlayerActionMessage.Actions.BlockBroken)
             {
                 if (player.GameMode.BlockReach <= 0) return;
                 float reach = player.GameMode.BlockReach + 1f;
@@ -414,7 +401,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                 }
             }
 
-            if (packet.Action == (int)PlayerActionC2SPacket.Actions.BlockClick)
+            if (packet.Action == (byte)PlayerActionMessage.Actions.BlockClick)
             {
                 if (!CanBypassSpawnProtection(x, z, world))
                 {
@@ -425,7 +412,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
                     player.InteractionManager.onBlockBreakingAction(x, y, z, packet.Direction);
                 }
             }
-            else if (packet.Action == (int)PlayerActionC2SPacket.Actions.BlockBroken)
+            else if (packet.Action == (byte)PlayerActionMessage.Actions.BlockBroken)
             {
                 player.InteractionManager.continueMining(x, y, z);
                 if (world.Reader.GetBlockId(x, y, z) != 0)
@@ -445,7 +432,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         return notBlockedFromSpawnProtection;
     }
 
-    public override void onPlayerInteractBlock(PlayerInteractBlockC2SPacket packet)
+    private void onInteractBlock(InteractBlockMessage packet)
     {
         ServerWorld world = server.getWorld(player.DimensionId);
         ItemStack stack = player.Inventory.ItemInHand;
@@ -538,12 +525,12 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         lastKeepAliveTime = ticks;
     }
 
-    public override void onUpdateSelectedSlot(UpdateSelectedSlotC2SPacket packet)
+    private void onSelectedSlot(SelectedSlotMessage packet)
     {
-        if (packet.SelectedSlot >= 0 && packet.SelectedSlot <= InventoryPlayer.HotbarSize)
+        if (packet.Slot >= 0 && packet.Slot <= InventoryPlayer.HotbarSize)
         {
             player.InteractionManager.UpdateMiningTool();
-            player.Inventory.SelectedSlot = packet.SelectedSlot;
+            player.Inventory.SelectedSlot = packet.Slot;
         }
         else
         {
@@ -620,7 +607,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         }
     }
 
-    public override void handleClientCommand(ClientCommandC2SPacket packet)
+    private void onClientCommand(ClientCommandMessage packet)
     {
         if (packet.Mode == 1)
         {
@@ -659,17 +646,6 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 
     public string Name => player.Name;
     public byte PermissionLevel => server.playerManager.isOperator(player.Name) ? (byte)4 : (byte)0;
-
-    /// <summary>
-    ///     The legacy path, from a peer that cannot say when it was aiming. It gets no rewind, which
-    ///     is what every peer got before <see cref="InteractEntityMessage" /> existed.
-    /// </summary>
-    public override void handleInteractEntity(PlayerInteractEntityC2SPacket packet)
-    {
-        ArgumentNullException.ThrowIfNull(packet);
-
-        InteractWithEntity(packet.EntityId, (byte)packet.IsLeftClick, renderTimeMs: 0);
-    }
 
     /// <summary>
     ///     Resolves a click on an entity, checking reach against where the clicking player actually
@@ -738,7 +714,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         player.onHandledScreenClosed();
     }
 
-    public override void onClickSlot(ClickSlotC2SPacket packet)
+    private void onClickSlot(ClickSlotMessage packet)
     {
         if (player.CurrentScreenHandler.SyncId == packet.SyncId && player.CurrentScreenHandler.canOpen(player))
         {

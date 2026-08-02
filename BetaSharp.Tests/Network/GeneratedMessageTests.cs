@@ -1,3 +1,4 @@
+using BetaSharp.Items;
 using BetaSharp.Network.Messages;
 
 namespace BetaSharp.Tests.Network;
@@ -99,6 +100,12 @@ public sealed class GeneratedMessageTests
             ChunkUnchangedMessage.Id,
             InteractEntityMessage.Id,
             SnapshotAckMessage.Id,
+            PlayerActionMessage.Id,
+            InteractBlockMessage.Id,
+            SelectedSlotMessage.Id,
+            ClientCommandMessage.Id,
+            PlayerInputMessage.Id,
+            ClickSlotMessage.Id,
         })
         {
             Assert.True(registry.GetId(key) >= 0, $"{key} is not registered.");
@@ -170,6 +177,84 @@ public sealed class GeneratedMessageTests
         stream.Position = 0;
 
         Assert.Throws<InvalidDataException>(() => new ChunkDataMessage().Read(stream));
+    }
+
+    // ---- inventory slots ----
+
+    [Fact]
+    public void A_filled_slot_round_trips_and_costs_five_bytes()
+    {
+        ClickSlotMessage written = new()
+        {
+            SyncId = 3,
+            Slot = 17,
+            Button = 1,
+            ActionType = 42,
+            HoldingShift = true,
+            Stack = new ItemStack(Item.ByName("stick"), 7, 2),
+        };
+
+        byte[] bytes = Serialise(written);
+        Assert.Equal(bytes.Length, written.Size());
+
+        ClickSlotMessage read = new();
+        read.Read(new MemoryStream(bytes));
+
+        Assert.Equal(written.SyncId, read.SyncId);
+        Assert.Equal(written.Slot, read.Slot);
+        Assert.Equal(written.Button, read.Button);
+        Assert.Equal(written.ActionType, read.ActionType);
+        Assert.Equal(written.HoldingShift, read.HoldingShift);
+        Assert.NotNull(read.Stack);
+        Assert.Equal(written.Stack.ItemId, read.Stack.ItemId);
+        Assert.Equal(written.Stack.Count, read.Stack.Count);
+        Assert.Equal(written.Stack.getDamage(), read.Stack.getDamage());
+    }
+
+    /// <summary>
+    ///     The two slot encodings differ by three bytes, which is what the hand-written packets got
+    ///     wrong: <c>ClickSlotC2SPacket</c> declared a constant eleven for a payload that is nine or
+    ///     twelve. A generated size is measured, not declared.
+    /// </summary>
+    [Fact]
+    public void An_empty_slot_costs_three_bytes_less_than_a_filled_one()
+    {
+        ClickSlotMessage empty = new();
+        ClickSlotMessage filled = new() { Stack = new ItemStack(Item.ByName("stick"), 1, 0) };
+
+        Assert.Equal(Serialise(empty).Length, empty.Size());
+        Assert.Equal(Serialise(filled).Length, filled.Size());
+        Assert.Equal(3, filled.Size() - empty.Size());
+    }
+
+    // ---- dispatch ----
+
+    [Fact]
+    public void A_registered_handler_receives_its_message()
+    {
+        MessageDispatcher dispatcher = new();
+        uint seen = 0;
+        dispatcher.On<SnapshotAckMessage>(ack => seen = ack.Sequence);
+
+        Assert.True(dispatcher.Dispatch(new SnapshotAckMessage { Sequence = 9 }));
+        Assert.Equal(9u, seen);
+    }
+
+    [Fact]
+    public void An_unregistered_message_is_reported_as_unhandled_rather_than_thrown()
+    {
+        // A client-bound message arriving at a server is the ordinary case, not a fault.
+        Assert.False(new MessageDispatcher().Dispatch(new TickStampMessage()));
+    }
+
+    [Fact]
+    public void Two_handlers_for_one_message_is_refused()
+    {
+        MessageDispatcher dispatcher = new();
+        dispatcher.On<TickStampMessage>(_ => { });
+
+        // Silently letting the second win would make which one runs depend on load order.
+        Assert.Throws<InvalidOperationException>(() => dispatcher.On<TickStampMessage>(_ => { }));
     }
 
     // ---- the varint fields are actually varint ----

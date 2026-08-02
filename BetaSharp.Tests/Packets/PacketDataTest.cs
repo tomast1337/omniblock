@@ -1,6 +1,5 @@
 using BetaSharp.Items;
 using BetaSharp.Network.Packets;
-using BetaSharp.Network.Packets.C2SPlay;
 using BetaSharp.Network.Packets.S2CPlay;
 
 namespace BetaSharp.Tests.Packets;
@@ -10,8 +9,6 @@ public class PacketDataTest : PacketTestBase
     // intended for packets where size differs depending on the context.
     public static IEnumerable<object[]> ExamplePackets = new List<Packet[]>
     {
-        new Packet[] { ClickSlotC2SPacket.Get(0, 0, 0, false, new ItemStack(Item.ByName("wheat"), 18), 0) },
-        new Packet[] { PlayerInteractBlockC2SPacket.Get(0, 64, 0, 0, new ItemStack(Item.ByName("stick"), 2)) },
         new Packet[] { InventoryS2CPacket.Get(1, [new ItemStack(Item.ByName("stick"), 64), new ItemStack(Item.ByName("bucket"))]) }
     };
 

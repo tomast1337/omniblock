@@ -52,7 +52,21 @@ internal static class WireCodec
                 $"{Extensions}.ByteArraySize({access})");
         }
 
-        if (type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == "global::BetaSharp.ResourceLocation")
+        string fullName = type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
+        // An inventory slot, with a negative item ID standing in for an empty one. Here rather than
+        // left to hand-written readers because it is the most-repeated shape in the legacy packets
+        // and the one they most often mis-sized: the two variants differ by three bytes, and a
+        // constant Size() cannot be right about both.
+        if (fullName is "global::BetaSharp.Items.ItemStack" or "global::BetaSharp.Items.ItemStack?")
+        {
+            return new Snippets(
+                "stream.ReadItemStack()",
+                $"stream.WriteItemStack({access});",
+                $"{Extensions}.ItemStackSize({access})");
+        }
+
+        if (fullName == "global::BetaSharp.ResourceLocation")
         {
             return new Snippets(
                 "stream.ReadResourceLocation()",

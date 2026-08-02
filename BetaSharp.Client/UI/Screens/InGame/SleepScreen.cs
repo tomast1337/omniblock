@@ -2,7 +2,7 @@ using BetaSharp.Client.Entities;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
-using BetaSharp.Network.Packets.C2SPlay;
+using BetaSharp.Network.Messages;
 
 namespace BetaSharp.Client.UI.Screens.InGame;
 
@@ -55,7 +55,7 @@ public class SleepScreen(UIContext context, ClientPlayerEntity player) : UIScree
     {
         if (player is EntityClientPlayerMP playerMP)
         {
-            playerMP.sendQueue.AddToSendQueue(ClientCommandC2SPacket.Get(player, 3));
+            playerMP.sendQueue.SendMessage(new ClientCommandMessage { EntityId = player.ID, Mode = 3 });
         }
     }
 }
