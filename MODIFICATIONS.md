@@ -24,3 +24,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-01 — feat(network): move the client-to-server play packets onto the message layer (Nicolas Vyčas Nery; `7366f043287b0ff9d395a60201f7ad62d394908d`)
 - 2026-08-01 — feat(network): move entity replication onto the message layer (Nicolas Vyčas Nery; `edd21570c2097a116d4b7dfe48221e7f0d5b7740`)
 - 2026-08-01 — feat(network): move the spawn packets onto the message layer (Nicolas Vyčas Nery; `858103fd6061014b64de0e98c8c447cbbbf94e5b`)
+- 2026-08-01 — feat(network): move the inventory and screen packets onto the message layer (Nicolas Vyčas Nery; `73bcf1aeb08e638e53e127286c144fcfc54073e6`)

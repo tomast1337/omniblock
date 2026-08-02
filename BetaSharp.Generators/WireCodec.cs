@@ -52,6 +52,16 @@ internal static class WireCodec
                 $"{Extensions}.ByteArraySize({access})");
         }
 
+        if (type is IArrayTypeSymbol { Rank: 1 } array
+            && array.ElementType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
+                is "global::BetaSharp.Items.ItemStack" or "global::BetaSharp.Items.ItemStack?")
+        {
+            return new Snippets(
+                maxLength > 0 ? $"stream.ReadItemStacks({maxLength})" : "stream.ReadItemStacks()",
+                $"stream.WriteItemStacks({access});",
+                $"{Extensions}.ItemStacksSize({access})");
+        }
+
         string fullName = type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
         // An inventory slot, with a negative item ID standing in for an empty one. Here rather than

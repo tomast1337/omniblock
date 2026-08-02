@@ -8,6 +8,7 @@ using BetaSharp.Client.UI.Screens.InGame.Containers;
 using BetaSharp.Entities;
 using BetaSharp.Inventorys;
 using BetaSharp.NBT;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Stats;
 using BetaSharp.Util.Maths;
@@ -191,7 +192,8 @@ public class ClientPlayerEntity : EntityPlayer
         Action? sendUpdate = null;
         if (this is EntityClientPlayerMP mp && (Game.World?.IsRemote ?? false))
         {
-            sendUpdate = () => mp.sendQueue.AddToSendQueue(UpdateSignPacket.Get(sign.X, sign.Y, sign.Z, sign.Texts));
+            sendUpdate = () => mp.sendQueue.SendMessage(
+                new UpdateSignMessage { X = sign.X, Y = (short)sign.Y, Z = sign.Z, Lines = sign.Texts });
         }
 
         Game.Navigate(new SignEditScreen(Game.UIContext, sign, sendUpdate));

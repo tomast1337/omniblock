@@ -1,4 +1,5 @@
 using BetaSharp.NBT;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.Play;
 
@@ -35,17 +36,8 @@ public class BlockEntitySign : BlockEntity
         }
     }
 
-    public override Packet? CreateUpdatePacket()
-    {
-        string[] lines = new string[4];
-
-        for (int lineIndex = 0; lineIndex < 4; lineIndex++)
-        {
-            lines[lineIndex] = Texts[lineIndex];
-        }
-
-        return UpdateSignPacket.Get(X, Y, Z, lines);
-    }
+    public override Message? CreateUpdateMessage() =>
+        new UpdateSignMessage { X = X, Y = (short)Y, Z = Z, Lines = Texts };
 
     public bool IsEditable() => _editable;
 

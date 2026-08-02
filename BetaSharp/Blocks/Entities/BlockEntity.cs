@@ -1,5 +1,6 @@
 using BetaSharp.Entities;
 using BetaSharp.NBT;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
 using BetaSharp.Registries;
 using BetaSharp.Util.Maths;
@@ -117,7 +118,11 @@ public abstract class BlockEntity : IEntity
 
     public Block GetBlock() => Block.Blocks[World!.Reader.GetBlockId(X, Y, Z)];
 
-    public virtual Packet? CreateUpdatePacket() => null;
+    /// <summary>
+    ///     What to send a client that has just loaded this block entity, or null when its NBT is
+    ///     everything the client needs.
+    /// </summary>
+    public virtual Message? CreateUpdateMessage() => null;
 
     public bool IsRemoved()
     {
