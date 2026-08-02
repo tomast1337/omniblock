@@ -24,7 +24,19 @@ public sealed class RegistryDataMessage : Message
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
-    public ResourceLocation RegistryId { get; set; } = null!;
+    /// <summary>
+    ///     Stands in until <see cref="FromRegistry" /> or <see cref="Read" /> supplies the real one.
+    ///     <para>
+    ///         A placeholder rather than <c>null!</c> because a default-constructed message has to be
+    ///         writable: that is what lets the generated-message tests round-trip every registered
+    ///         type without knowing how to populate any of them, and a null here fails inside
+    ///         <c>Write</c> with a <c>NullReferenceException</c> rather than at the point the field
+    ///         was left unset.
+    ///     </para>
+    /// </summary>
+    private static readonly ResourceLocation s_unset = new(Namespace.BetaSharp, "unset");
+
+    public ResourceLocation RegistryId { get; set; } = s_unset;
 
     /// <summary>The entries, each a key and an optional JSON payload. Null JSON means the entry was
     /// deleted — the key is present so the client knows which one to remove.</summary>
