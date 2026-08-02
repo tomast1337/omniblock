@@ -1,9 +1,11 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets.S2CPlay;
 using BetaSharp.Server;
 using BetaSharp.Server.Internal;
 using BetaSharp.Server.Worlds;
+using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Dimensions;
@@ -46,7 +48,23 @@ public class ServerWorld : World
 
     private void HandleEntityRemoved(Entity entity) => entitiesById.Remove(entity.ID);
 
-    private void HandleGlobalEntityAdded(Entity entity) => server.playerManager.sendToAround(entity.X, entity.Y, entity.Z, 512.0, Dimension.Id, GlobalEntitySpawnS2CPacket.Get(entity));
+    private void HandleGlobalEntityAdded(Entity entity) =>
+        server.playerManager.sendToAround(
+            entity.X,
+            entity.Y,
+            entity.Z,
+            512.0,
+            Dimension.Id,
+            new GlobalEntitySpawnMessage
+            {
+                EntityId = entity.ID,
+                Type = entity.Type?.Definition is { GlobalSpawnId: > 0 } definition
+                    ? (byte)definition.GlobalSpawnId
+                    : (byte)0,
+                X = MathHelper.Floor(entity.X * 32.0),
+                Y = MathHelper.Floor(entity.Y * 32.0),
+                Z = MathHelper.Floor(entity.Z * 32.0),
+            });
 
     private bool HandleEntityUpdating(Entity entity)
     {

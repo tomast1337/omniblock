@@ -131,7 +131,7 @@ internal static class WireCodec
             // The size counts encoded bytes rather than characters. Every hand-written Size() in the
             // legacy packets counts characters, which is correct only while the text stays ASCII.
             SpecialType.System_String => new Snippets(
-                "stream.ReadString()",
+                maxLength > 0 ? $"stream.ReadString({maxLength})" : "stream.ReadString()",
                 $"stream.WriteString({access});",
                 $"(2 + global::BetaSharp.Util.ModifiedUtf8.GetByteCount({access}))"),
 

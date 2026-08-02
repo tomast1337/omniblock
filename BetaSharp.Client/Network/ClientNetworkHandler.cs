@@ -414,6 +414,12 @@ public class ClientNetworkHandler : NetHandler
         MessageHandlers.On<EntityEquipmentMessage>(onEntityEquipment);
         MessageHandlers.On<EntityAnimationMessage>(onEntityAnimation);
         MessageHandlers.On<ItemPickupMessage>(onItemPickup);
+        MessageHandlers.On<EntitySpawnMessage>(onEntitySpawn);
+        MessageHandlers.On<ItemEntitySpawnMessage>(onItemEntitySpawn);
+        MessageHandlers.On<LivingEntitySpawnMessage>(onLivingEntitySpawn);
+        MessageHandlers.On<GlobalEntitySpawnMessage>(onGlobalEntitySpawn);
+        MessageHandlers.On<PaintingSpawnMessage>(onPaintingSpawn);
+        MessageHandlers.On<PlayerSpawnMessage>(onPlayerSpawn);
     }
 
     /// <summary>
@@ -681,7 +687,7 @@ public class ClientNetworkHandler : NetHandler
         _context.PlayerHost.Player.ID = packet.ProtocolVersion;
     }
 
-    public override void onItemEntitySpawn(ItemEntitySpawnS2CPacket packet)
+    private void onItemEntitySpawn(ItemEntitySpawnMessage packet)
     {
         double x = packet.X / 32.0D;
         double y = packet.Y / 32.0D;
@@ -696,7 +702,7 @@ public class ClientNetworkHandler : NetHandler
         _worldClient.ForceEntity(packet.EntityId, entityItem);
     }
 
-    public override void onEntitySpawn(EntitySpawnS2CPacket packet)
+    private void onEntitySpawn(EntitySpawnMessage packet)
     {
         double x = packet.X / 32.0D;
         double y = packet.Y / 32.0D;
@@ -769,7 +775,7 @@ public class ClientNetworkHandler : NetHandler
 
     }
 
-    public override void onLightningEntitySpawn(GlobalEntitySpawnS2CPacket packet)
+    private void onGlobalEntitySpawn(GlobalEntitySpawnMessage packet)
     {
         double x = packet.X / 32.0D;
         double y = packet.Y / 32.0D;
@@ -794,9 +800,9 @@ public class ClientNetworkHandler : NetHandler
 
     }
 
-    public override void onPaintingEntitySpawn(PaintingEntitySpawnS2CPacket packet)
+    private void onPaintingSpawn(PaintingSpawnMessage packet)
     {
-        Entity ent = HangingArtBehavior.HangAt(_worldClient, packet.XPosition, packet.YPosition, packet.ZPosition, packet.Direction, packet.Title);
+        Entity ent = HangingArtBehavior.HangAt(_worldClient, packet.X, packet.Y, packet.Z, packet.Direction, packet.Title);
         _worldClient.ForceEntity(packet.EntityId, ent);
     }
 
@@ -817,17 +823,17 @@ public class ClientNetworkHandler : NetHandler
         ent.DataSynchronizer.ApplyChanges(new MemoryStream(packet.Data));
     }
 
-    public override void onPlayerSpawn(PlayerSpawnS2CPacket packet)
+    private void onPlayerSpawn(PlayerSpawnMessage packet)
     {
-        double x = packet.XPosition / 32.0D;
-        double y = packet.YPosition / 32.0D;
-        double z = packet.ZPosition / 32.0D;
-        float rotation = packet.Rotation * 360 / 256.0F;
+        double x = packet.X / 32.0D;
+        double y = packet.Y / 32.0D;
+        double z = packet.Z / 32.0D;
+        float rotation = packet.Yaw * 360 / 256.0F;
         float pitch = packet.Pitch * 360 / 256.0F;
         OtherPlayerEntity ent = new(_context.WorldHost.World, packet.Name);
-        ent.PrevX = ent.LastTickX = ent.TrackedPosX = packet.XPosition;
-        ent.PrevY = ent.LastTickY = ent.TrackedPosY = packet.YPosition;
-        ent.PrevZ = ent.LastTickZ = ent.TrackedPosZ = packet.ZPosition;
+        ent.PrevX = ent.LastTickX = ent.TrackedPosX = packet.X;
+        ent.PrevY = ent.LastTickY = ent.TrackedPosY = packet.Y;
+        ent.PrevZ = ent.LastTickZ = ent.TrackedPosZ = packet.Z;
         int currentItem = packet.CurrentItem;
         if (currentItem == 0)
         {
@@ -1140,17 +1146,17 @@ public class ClientNetworkHandler : NetHandler
         _chunkCache = null;
     }
 
-    public override void onLivingEntitySpawn(LivingEntitySpawnS2CPacket packet)
+    private void onLivingEntitySpawn(LivingEntitySpawnMessage packet)
     {
-        double x = packet.XPosition / 32.0D;
-        double y = packet.YPosition / 32.0D;
-        double z = packet.ZPosition / 32.0D;
+        double x = packet.X / 32.0D;
+        double y = packet.Y / 32.0D;
+        double z = packet.Z / 32.0D;
         float yaw = packet.Yaw * 360 / 256.0F;
         float pitch = packet.Pitch * 360 / 256.0F;
         EntityLiving ent = (EntityLiving)EntityRegistry.Create(packet.Type, _context.WorldHost.World);
-        ent.TrackedPosX = packet.XPosition;
-        ent.TrackedPosY = packet.YPosition;
-        ent.TrackedPosZ = packet.ZPosition;
+        ent.TrackedPosX = packet.X;
+        ent.TrackedPosY = packet.Y;
+        ent.TrackedPosZ = packet.Z;
         ent.ID = packet.EntityId;
         ent.SetPositionAndAngles(x, y, z, yaw, pitch);
         ent.LastTickX = ent.X;

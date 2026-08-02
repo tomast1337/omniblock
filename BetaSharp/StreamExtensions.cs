@@ -202,11 +202,23 @@ internal static class StreamExtensions
         }
 
         /// <summary>
-        /// Read fixed length UTF-8 string
+        ///     Reads a UTF-8 string, refusing one longer than <paramref name="maximumBytes" />.
+        ///     <para>
+        ///         The bound is on encoded bytes rather than characters, because bytes are what the
+        ///         length prefix counts and what the allocation costs. Sixteen characters of a name
+        ///         is a different number from sixteen bytes of one, and only the second is a limit.
+        ///     </para>
         /// </summary>
-        public string ReadString()
+        public string ReadString(int maximumBytes = ushort.MaxValue)
         {
             ushort length = stream.ReadUShort();
+
+            if (length > maximumBytes)
+            {
+                throw new InvalidDataException(
+                    $"String declares {length} bytes; the limit is {maximumBytes}.");
+            }
+
             byte[] buffer = new byte[length];
 
             stream.ReadExactly(buffer);

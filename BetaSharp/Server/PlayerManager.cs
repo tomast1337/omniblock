@@ -1,5 +1,6 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
+using BetaSharp.Network.Messages;
 using BetaSharp.Network.Packets;
 using BetaSharp.Network.Packets.Play;
 using BetaSharp.Network.Packets.S2CPlay;
@@ -550,6 +551,30 @@ public class PlayerManager
     public void sendToAround(double x, double y, double z, double range, int dimensionId, Packet packet)
     {
         sendToAround(null, x, y, z, range, dimensionId, packet);
+    }
+
+    public void sendToAround(double x, double y, double z, double range, int dimensionId, Message message)
+    {
+        sendToAround(null, x, y, z, range, dimensionId, message);
+    }
+
+    public void sendToAround(
+        EntityPlayer? player, double x, double y, double z, double range, int dimensionId, Message message)
+    {
+        for (int playerIndex = 0; playerIndex < players.Count; playerIndex++)
+        {
+            ServerPlayerEntity playerEntity = players[playerIndex];
+            if (playerEntity != player && playerEntity.DimensionId == dimensionId)
+            {
+                double deltaX = x - playerEntity.X;
+                double deltaY = y - playerEntity.Y;
+                double deltaZ = z - playerEntity.Z;
+                if ((deltaX * deltaX) + (deltaY * deltaY) + (deltaZ * deltaZ) < range * range)
+                {
+                    playerEntity.NetworkHandler.SendMessage(message);
+                }
+            }
+        }
     }
 
     public void sendToAround(EntityPlayer? player, double x, double y, double z, double range, int dimensionId, Packet packet)

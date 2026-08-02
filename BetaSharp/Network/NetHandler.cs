@@ -154,32 +154,12 @@ public abstract class NetHandler
         handle(packet);
     }
 
-    public virtual void onPlayerSpawn(PlayerSpawnS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onItemEntitySpawn(ItemEntitySpawnS2CPacket packet)
-    {
-        handle(packet);
-    }
-
     public virtual void onChatMessage(ChatMessagePacket packet)
     {
         handle(packet);
     }
 
-    public virtual void onEntitySpawn(EntitySpawnS2CPacket packet)
-    {
-        handle(packet);
-    }
-
     public virtual void onHandshake(HandshakePacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onLivingEntitySpawn(LivingEntitySpawnS2CPacket packet)
     {
         handle(packet);
     }
@@ -244,11 +224,6 @@ public abstract class NetHandler
         handle(packet);
     }
 
-    public virtual void onPaintingEntitySpawn(PaintingEntitySpawnS2CPacket packet)
-    {
-        handle(packet);
-    }
-
     public virtual void onPlayNoteSound(PlayNoteSoundS2CPacket packet)
     {
         handle(packet);
@@ -285,11 +260,6 @@ public abstract class NetHandler
     }
 
     public virtual void onGameStateChange(GameStateChangeS2CPacket packet)
-    {
-        handle(packet);
-    }
-
-    public virtual void onLightningEntitySpawn(GlobalEntitySpawnS2CPacket packet)
     {
         handle(packet);
     }

@@ -62,20 +62,11 @@ public static class PacketPriorities
         {
             PacketId.KeepAlive => SendPriority.High,
 
-            // Entity replication used to be listed here, packet by packet. It has migrated to the
+            // Entity replication and the spawns used to be listed here, packet by packet. It has migrated to the
             // message layer, where each type declares its own priority and the envelope carries the
             // answer — handled above, before this switch is reached. That is the extensibility the
             // list could not offer: a mod's message says it is latency-sensitive instead of hoping
             // somebody adds its packet ID to a table in the engine.
-
-            // Spawns travel with the updates that follow them, or a move can overtake the spawn it
-            // describes and be dropped as referring to an unknown entity.
-            PacketId.PlayerSpawnS2C or
-            PacketId.EntitySpawnS2C or
-            PacketId.LivingEntitySpawnS2C or
-            PacketId.ItemEntitySpawnS2C or
-            PacketId.PaintingEntitySpawnS2C or
-            PacketId.GlobalEntitySpawnS2C => SendPriority.High,
 
             _ => SendPriority.Normal,
         };
