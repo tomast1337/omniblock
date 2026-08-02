@@ -9,7 +9,17 @@ namespace BetaSharp;
 
 public class Translations
 {
-    public static Translations? Instance { get; private set; }
+    /// <summary>
+    ///     The loaded translations, or an empty set before <see cref="Init" /> has run.
+    /// </summary>
+    /// <remarks>
+    ///     Never null. An instance that knows no languages already behaves the way callers wanted
+    ///     the null to behave: <see cref="this[string]" /> hands back the key it was given, and
+    ///     <see cref="SwitchLanguage" /> finds nothing to switch to. Leaving it null instead made
+    ///     that every caller's problem, and <c>SwitchLanguage</c> was one of the callers that
+    ///     forgot.
+    /// </remarks>
+    public static Translations Instance { get; private set; } = new();
 
     public Dictionary<string, Language> Languages { get; private set; } = new Dictionary<string, Language>();
     public Language? CurrentLanguage { get; private set; }
@@ -29,8 +39,10 @@ public class Translations
             var code = item.Name;
             var value = item.Value;
 
-            var name = value.GetProperty("name").GetString();
-            var author = value.GetProperty("author").GetString();
+            // A JSON null for either reads back as null. Neither is worth refusing to start over:
+            // the code itself names the language well enough, and the credit is decoration.
+            string name = value.GetProperty("name").GetString() ?? code;
+            string author = value.GetProperty("author").GetString() ?? string.Empty;
 
             Languages.Add(code, new Language(code, name, author));
 
@@ -65,12 +77,7 @@ public class Translations
         }
     }
 
-    public static string Get(string key)
-    {
-        if (Instance is null) return key;
-
-        return Instance[key];
-    }
+    public static string Get(string key) => Instance[key];
 
     public static string GetFormat(string key, params object[] values)
     {

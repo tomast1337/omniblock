@@ -7,7 +7,11 @@ public class CycleOption : GameOption
     public int Length { get; }
     public string[] Labels { get; }
     public Func<int, string>? Formatter { get; init; }
-    public Action<int>? OnChanged { get; init; }
+    /// <summary>
+    ///     Settable rather than init-only so a handler that has to reach the option back can be
+    ///     attached after it exists, instead of closing over a property still being assigned.
+    /// </summary>
+    public Action<int>? OnChanged { get; set; }
 
     public CycleOption(string translationKey, string saveKey, string[] labels, int defaultValue = 0) : this(translationKey, saveKey, labels, defaultValue, labels.Length) { }
 
