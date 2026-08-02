@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.UI;
 using Microsoft.Extensions.Logging;
@@ -174,8 +175,18 @@ public class GameOptions
 
     private Dictionary<string, GameOption> _allOptions;
 
-    public event Action ReloadTextures;
-    public event Action ReloadChunks;
+    /// <summary>
+    ///     Raised when an option changes something the texture or chunk caches derive from.
+    /// </summary>
+    /// <remarks>
+    ///     Given an empty handler rather than left null: these are invoked directly rather than
+    ///     through <c>?.Invoke</c>, so an unsubscribed instance would throw at the point an option
+    ///     is changed.
+    /// </remarks>
+    public event Action ReloadTextures = delegate { };
+
+    /// <inheritdoc cref="ReloadTextures" />
+    public event Action ReloadChunks = delegate { };
 
     public ShaderOptionsRegistry ShaderOptions { get; } = new();
 
@@ -240,9 +251,9 @@ public class GameOptions
         LoadOptions();
         _initialMsaa = MSAALevel;
 
-        if(Translations.Instance.Languages.ContainsKey(LanguageOption!.Value))
+        if (Translations.Instance.Languages.ContainsKey(LanguageOption.Value))
         {
-            Language = LanguageOption!.Value;
+            Language = LanguageOption.Value;
         }
         else
         {
@@ -250,12 +261,45 @@ public class GameOptions
         }
     }
 
-    public GameOptions()
-    {
-        InitializeOptions();
-        ControllerBindings = [];
-    }
-
+    /// <summary>
+    ///     Builds every option and the lookup over them.
+    /// </summary>
+    /// <remarks>
+    ///     The attribute is what lets the options stay non-nullable while being built here rather
+    ///     than at their declarations, which they cannot be: several read each other, and one has a
+    ///     side effect on <see cref="ControlTooltip" />. It is a claim the compiler checks inside
+    ///     this method, so an option added below without being assigned fails the build rather than
+    ///     turning up as a null at runtime.
+    /// </remarks>
+    [MemberNotNull(
+        nameof(MusicVolumeOption),
+        nameof(SoundVolumeOption),
+        nameof(MouseSensitivityOption),
+        nameof(ControllerSensitivityOption),
+        nameof(ControllerTypeOption),
+        nameof(FramerateLimitOption),
+        nameof(FovOption),
+        nameof(GammaOption),
+        nameof(ChatScaleOption),
+        nameof(ChatWidthOption),
+        nameof(InvertMouseOption),
+        nameof(ViewBobbingOption),
+        nameof(VSyncOption),
+        nameof(MipmapsOption),
+        nameof(ChunkFadeOption),
+        nameof(AlternateBlocksOption),
+        nameof(MenuMusicOption),
+        nameof(RenderDistanceOption),
+        nameof(CloudsQualityOption),
+        nameof(SoftCloudsOption),
+        nameof(DifficultyOption),
+        nameof(GuiScaleOption),
+        nameof(AnisotropicOption),
+        nameof(MsaaOption),
+        nameof(ShowCoordinatesOption),
+        nameof(LanguageOption),
+        nameof(UICursorsOption),
+        nameof(_allOptions))]
     private void InitializeOptions()
     {
         MusicVolumeOption = new FloatOption("options.music", "music", 1.0F)
@@ -361,20 +405,25 @@ public class GameOptions
         SoftCloudsOption = new BoolOption("options.softClouds.text", "softClouds", true);
         DifficultyOption = new CycleOption("options.difficulty.text", "difficulty", s_difficultyLabels, 2);
         GuiScaleOption = new CycleOption("options.guiScale.text", "guiScale", s_guiScaleLabels);
-        AnisotropicOption = new CycleOption("options.anisoLevel", "anisotropicLevel", s_anisoLabels)
+        // Bound to a local before the handler that reads it back is attached, so the closure
+        // captures something already assigned rather than the property mid-construction.
+        CycleOption anisotropic = new("options.anisoLevel", "anisotropicLevel", s_anisoLabels)
         {
-            Formatter = (v) => v == 0 ? Translations.Get("options.off") : s_anisoLabels[v],
-            OnChanged = v =>
-            {
-                int anisoValue = v == 0 ? 0 : (int)Math.Pow(2, v);
-                if (anisoValue > MaxAnisotropy)
-                {
-                    AnisotropicOption.Value = 0;
-                }
-
-                ReloadTextures();
-            }
+            Formatter = (v) => v == 0 ? Translations.Get("options.off") : s_anisoLabels[v]
         };
+
+        anisotropic.OnChanged = v =>
+        {
+            int anisoValue = v == 0 ? 0 : (int)Math.Pow(2, v);
+            if (anisoValue > MaxAnisotropy)
+            {
+                anisotropic.Value = 0;
+            }
+
+            ReloadTextures();
+        };
+
+        AnisotropicOption = anisotropic;
         MsaaOption = new CycleOption("options.msaa", "msaaLevel", s_msaaLabels)
         {
             Formatter = (v) =>
@@ -386,7 +435,10 @@ public class GameOptions
         };
         LanguageOption = new StringOption("Language", "language", "en_us")
         {
-            OnChanged = _ => Language = LanguageOption.Value
+            // Takes the new value from the callback rather than reading it back off the option,
+            // which is both shorter and the only form that does not reference a property that is
+            // still being assigned. Nothing invokes StringOption.OnChanged today.
+            OnChanged = value => Language = value
         };
 
         _allOptions = [];
