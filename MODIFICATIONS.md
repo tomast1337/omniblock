@@ -36,3 +36,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-02 — refactor(network): finish the packet migration (Nicolas Vyčas Nery; `6662da4a791a447bbdaf8f409e7a06cbe76ba48f`)
 - 2026-08-02 — feat(network): report server health to remote clients (Nicolas Vyčas Nery; `93de00190333491c4ca4062228c4cfaab67fa35a`)
 - 2026-08-02 — docs: replace plan references in comments with what they were pointing at (Nicolas Vyčas Nery; `30d953f298c8a250929727cb1162d72291234bbe`)
+- 2026-08-02 — fix: clear every compiler warning that is not a nullability annotation (Nicolas Vyčas Nery; `f58dd3527e2563a3193e831fa89a59c9c7e50c2b`)

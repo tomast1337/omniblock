@@ -31,7 +31,6 @@ internal class EntityTrackerEntry
     private bool isInitialized;
     private bool alwaysUpdateVelocity;
     private int ticksSinceLastDismount;
-    private int _ticksSinceLastAbsoluteSync = 0;
     public bool newPlayerDataUpdated;
     public HashSet<ServerPlayerEntity> listeners = [];
 
@@ -365,7 +364,7 @@ internal class EntityTrackerEntry
                             currentTrackedEntity.VelocityZ));
                     }
 
-                    ItemStack[] equipment = currentTrackedEntity.Equipment;
+                    ItemStack?[] equipment = currentTrackedEntity.Equipment;
                     if (equipment != null)
                     {
                         for (int slot = 0; slot < equipment.Length; slot++)

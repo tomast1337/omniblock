@@ -13,7 +13,6 @@ namespace BetaSharp.Client.UI.Screens.Menu;
 public class MainMenuScreen(
     UIContext context,
     Session? session,
-    bool hideQuitButton,
     ISingleplayerHost singleplayerHost,
     ClientNetworkContext networkContext,
     TexturePacks texturePackList,
@@ -94,14 +93,7 @@ public class MainMenuScreen(
 
         footerButtons.AddChild(btnLang);
         footerButtons.AddChild(btnOptions);
-        if (!hideQuitButton)
-        {
-            footerButtons.AddChild(btnQuit);
-        }
-        else
-        {
-            btnOptions.Style.Width = 200;
-        }
+        footerButtons.AddChild(btnQuit);
         Root.AddChild(footerButtons);
 
         AddBottomLabels();

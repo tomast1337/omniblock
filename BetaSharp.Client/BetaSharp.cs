@@ -165,13 +165,7 @@ public partial class BetaSharp :
     private readonly LavaSprite _textureLavaFX = new();
     private readonly DebugTelemetry _debugTelemetry = new();
 
-    private readonly string _serverName;
-    private readonly int _serverPort;
-    private readonly bool _hideQuitButton;
-
-
     private DebugWindowManager _debugWindowManager;
-    private GLErrorHandler _glErrorHandler;
     private string _gameDataDir;
 
     private bool _fullscreen;
@@ -226,14 +220,7 @@ public partial class BetaSharp :
         CheckGLError("Post startup");
 
         StatFileWriter.ReadStat(Stats.Stats.StartGameStat, 1);
-        if (_serverName != null)
-        {
-            Navigate(new ConnectingScreen(UIContext, CreateNetworkContext(), _serverName, _serverPort));
-        }
-        else
-        {
-            Navigate(CreateMainMenuScreen());
-        }
+        Navigate(CreateMainMenuScreen());
     }
 
     private unsafe void SetupDisplay()
@@ -287,7 +274,7 @@ public partial class BetaSharp :
             Display.getGlfw().SwapInterval(Options.VSync ? 1 : 0);
 
 #if DEBUG
-            _glErrorHandler = new();
+            GLErrorHandler.Install();
 #endif
         }
         catch (Exception ex)
@@ -1708,7 +1695,7 @@ public partial class BetaSharp :
         }
     }
 
-    private MainMenuScreen CreateMainMenuScreen() => new(UIContext, Session, _hideQuitButton, this, CreateNetworkContext(), TexturePackList, Shutdown);
+    private MainMenuScreen CreateMainMenuScreen() => new(UIContext, Session, this, CreateNetworkContext(), TexturePackList, Shutdown);
     private ClientNetworkContext CreateNetworkContext() => new(this, this, this, Session, StatFileWriter, ParticleManager, HUD.AddChatMessage, this, Path.Combine(_gameDataDir, "chunkcache"));
 
     #endregion

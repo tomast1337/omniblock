@@ -512,7 +512,6 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         float uvScale = 1.0F / 256.0F;
         byte tileSize = CloudsRenderDistance;
         float tile = tileSize * uvScale;
-        byte cloudRadius = 3;
 
         tessellator.setNormal(0.0F, -1.0F, 0.0F);
         tessellator.addVertexWithUV(0, 0.0, tileSize, 0, tile);
@@ -969,7 +968,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public void UpdateBlockEntity(int x, int y, int z, BlockEntity blockEntity) { }
 
-    public void WorldEvent(EntityPlayer player, int eventId, int x, int y, int z, int data)
+    public void WorldEvent(EntityPlayer? player, int eventId, int x, int y, int z, int data)
     {
         JavaRandom random = _world.Random;
         int blockId;
