@@ -82,7 +82,11 @@ public class Chunk
         return HeightMap[localZ << 4 | localX];
     }
 
-    public virtual void PopulateLight() { }
+    /// <summary>
+    ///     Lights a chunk whose block light was never stored, by the same route as
+    ///     <see cref="PopulateBlockLight" />.
+    /// </summary>
+    public virtual void PopulateLight() => PopulateBlockLight();
 
     public virtual void PopulateHeightMapOnly()
     {
@@ -162,7 +166,40 @@ public class Chunk
         Dirty = true;
     }
 
-    public virtual void PopulateBlockLight() { }
+    /// <summary>
+    ///     Queues a block-light update for every light source already sitting in this chunk's
+    ///     terrain.
+    /// </summary>
+    /// <remarks>
+    ///     Block light only ever spreads from an update, and the only thing that queues one is a
+    ///     block being placed through <see cref="SetBlock" />. Terrain that arrives with its light
+    ///     sources already in place — every lava pool a generator carved, every chunk read back
+    ///     without a stored BlockLight array — goes through no such call, so without this pass it
+    ///     stays at zero until something happens to touch it.
+    /// </remarks>
+    public virtual void PopulateBlockLight()
+    {
+        for (int localX = 0; localX < 16; ++localX)
+        {
+            int worldX = X * 16 + localX;
+
+            for (int localZ = 0; localZ < 16; ++localZ)
+            {
+                int worldZ = Z * 16 + localZ;
+                int column = ChuckFormat.GetIndex(localX, localZ);
+
+                for (int y = 0; y < ChuckFormat.ChunkHeight; ++y)
+                {
+                    if (Block.BlocksLightLuminance[Blocks[column + y]] == 0)
+                    {
+                        continue;
+                    }
+
+                    World.Lighting.QueueLightUpdate(LightType.Block, worldX, y, worldZ, worldX, y, worldZ);
+                }
+            }
+        }
+    }
 
     private void LightGaps(int localX, int localZ)
     {
