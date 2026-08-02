@@ -1,536 +1,536 @@
-﻿{
+{
     "gui": {
-        "joinServer": "Join Server",
-        "rename": "Rename",
-        "edit": "Edit",
-        "refresh": "Refresh",
-        "done": "Done",
-        "cancel": "Cancel",
-        "delete": "Delete",
-        "toMenu": "Back to title screen",
-        "up": "Up",
-        "down": "Down",
-        "yes": "Yes",
-        "no": "No",
-        "connect": "Connect",
-        "directConnect": "Direct Connect",
-        "addServer": "Add Server",
-        "create": "Create",
-        "customize": "Customize",
-        "achievements": "Achievements",
-        "stats": "Statistics",
+        "joinServer": "Připojit se k serveru",
+        "rename": "Přejmenovat",
+        "edit": "Upravit",
+        "refresh": "Obnovit",
+        "done": "Hotovo",
+        "cancel": "Zrušit",
+        "delete": "Smazat",
+        "toMenu": "Zpět na úvodní obrazovku",
+        "up": "Nahoru",
+        "down": "Dolů",
+        "yes": "Ano",
+        "no": "Ne",
+        "connect": "Připojit",
+        "directConnect": "Přímé připojení",
+        "addServer": "Přidat server",
+        "create": "Vytvořit",
+        "customize": "Přizpůsobit",
+        "achievements": "Ocenění",
+        "stats": "Statistiky",
         "container": {
-            "crafting": "Crafting",
-            "inventory": "Inventory",
-            "dispenser": "Dispenser",
-            "furnace": "Furnace",
+            "crafting": "Výroba",
+            "inventory": "Inventář",
+            "dispenser": "Dávkovač",
+            "furnace": "Pec",
             "tip": {
-                "move": "Move",
-                "quickMove": "Quick Move",
-                "takeHalf": "Take Half",
-                "place": "Place",
-                "placeOne": "Place One"
+                "move": "Přesunout",
+                "quickMove": "Rychlý přesun",
+                "takeHalf": "Vzít polovinu",
+                "place": "Umístit",
+                "placeOne": "Umístit jeden"
             }
         }
     },
     "menu": {
-        "singleplayer": "Singleplayer",
-        "multiplayer": "Multiplayer",
-        "texturePacks": "Texture Packs",
-        "options": "Options...",
-        "language": "Language",
-        "quit": "Quit Game",
-        "credits": "Credits",
-        "sendFeedback": "Send Feedback",
-        "reportBugs": "Report Bugs",
-        "saveAndQuitToTitle": "Save and quit to title",
-        "disconnect": "Disconnect"
+        "singleplayer": "Hra jednoho hráče",
+        "multiplayer": "Hra více hráčů",
+        "texturePacks": "Balíčky textur",
+        "options": "Nastavení...",
+        "language": "Jazyk",
+        "quit": "Ukončit hru",
+        "credits": "Poděkování",
+        "sendFeedback": "Poslat zpětnou vazbu",
+        "reportBugs": "Nahlásit chyby",
+        "saveAndQuitToTitle": "Uložit a vrátit se na úvodní obrazovku",
+        "disconnect": "Odpojit"
     },
     "selectWorld": {
-        "title": "Select World",
-        "empty": "empty",
-        "world": "World",
-        "select": "Play Selected World",
-        "create": "Create New World",
-        "createDemo": "Play New Demo World",
-        "deleteQuestion": "Are you sure you want to delete this world?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "renameTitle": "Rename World",
-        "conversion": "Must be converted!",
-        "newWorld": "New World",
-        "enterName": "World Name",
-        "resultFolder": "Will be saved in:",
-        "enterSeed": "Seed for the World Generator",
-        "seedInfo": "Leave blank for a random seed",
-        "selectWorldType": "Select World Type",
-        "worldType": "World Type",
-        "customize": "Customize",
-        "moreWorldOptions": "More World Options...",
+        "title": "Výběr světa",
+        "empty": "prázdný",
+        "world": "Svět",
+        "select": "Hrát vybraný svět",
+        "create": "Vytvořit nový svět",
+        "createDemo": "Hrát nový demo svět",
+        "deleteQuestion": "Opravdu chcete tento svět smazat?",
+        "deleteWarning": "bude navždy ztracen! (Navždy!)",
+        "renameTitle": "Přejmenovat svět",
+        "conversion": "Musí být převeden!",
+        "newWorld": "Nový svět",
+        "enterName": "Jméno světa",
+        "resultFolder": "Bude uložen do:",
+        "enterSeed": "Seed pro generátor světa",
+        "seedInfo": "Ponechte prázdné pro náhodný seed",
+        "selectWorldType": "Vyberte typ světa",
+        "worldType": "Typ světa",
+        "customize": "Přizpůsobit",
+        "moreWorldOptions": "Další nastavení světa...",
         "type": {
             "default": {
-                "title": "Default",
-                "description": "The standard Minecraft world."
+                "title": "Výchozí",
+                "description": "Standardní svět Minecraftu."
             },
             "flat": {
-                "title": "Flat",
-                "description": "A completely flat world."
+                "title": "Plochý",
+                "description": "Úplně plochý svět."
             },
             "sky": {
-                "title": "Sky",
-                "description": "A world floating in the sky."
+                "title": "Obloha",
+                "description": "Svět vznášející se na obloze."
             }
         }
     },
     "newWorld": {
         "customize": {
             "superflatWorld": {
-                "title": "Customize Superflat World"
+                "title": "Přizpůsobit plochý svět"
             },
-            "removeLayer": "Remove Layer",
-            "presets": "Presets",
-            "height": "Height",
+            "removeLayer": "Odstranit vrstvu",
+            "presets": "Předvolby",
+            "height": "Výška",
             "unknown": "???"
         }
     },
     "world": {
-        "world": "World",
-        "unsupportedFormat": "Unsupported Format!"
+        "world": "Svět",
+        "unsupportedFormat": "Nepodporovaný formát!"
     },
     "multiplayer": {
-        "title": "Play Multiplayer",
+        "title": "Hrát hru více hráčů",
         "betasharpServer": "BetaSharp Server",
-        "info1": "Minecraft Multiplayer is currently not finished, but there",
-        "info2": "is some buggy early testing going on.",
-        "ipinfo": "Enter the IP of a server to connect to it:",
-        "deleteQuestion": "Are you sure you want to delete this server?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "downloadingTerrain": "Downloading terrain",
-        "stopSleeping": "Leave Bed",
-        "editServerTitle": "Edit Server Info",
-        "addServerTitle": "Add Server Info",
-        "serverName": "Server Name",
-        "serverAddress": "Server Address"
+        "info1": "Minecraft pro více hráčů zatím není dokončen, ale probíhá",
+        "info2": "nějaké počáteční testování s chybami.",
+        "ipinfo": "Zadejte IP serveru pro připojení:",
+        "deleteQuestion": "Opravdu chcete tento server smazat?",
+        "deleteWarning": "bude navždy ztracen! (Navždy!)",
+        "downloadingTerrain": "Stahování terénu",
+        "stopSleeping": "Vstát z postele",
+        "editServerTitle": "Upravit informace o serveru",
+        "addServerTitle": "Přidat informace o serveru",
+        "serverName": "Název serveru",
+        "serverAddress": "Adresa serveru"
     },
     "loading": {
-        "loadingLevel": "Loading level",
-        "startingServer": "Starting server...",
-        "preparingSpawnArea": "Preparing spawn area"
+        "loadingLevel": "Načítání úrovně",
+        "startingServer": "Spouštění serveru...",
+        "preparingSpawnArea": "Příprava místa spawnu"
     },
     "achievements": {
-        "title": "Achievements"
+        "title": "Ocenění"
     },
     "gameover": {
-        "title": "Game Over!",
-        "score": "Score",
-        "respawn": "Respawn",
-        "titleMenu": "Title menu"
+        "title": "Konec hry!",
+        "score": "Skóre",
+        "respawn": "Oživit se",
+        "titleMenu": "Úvodní nabídka"
     },
     "gamemenu": {
-        "title": "Game Menu",
-        "backToGame": "Back to Game"
+        "title": "Nabídka hry",
+        "backToGame": "Zpět do hry"
     },
     "sign": {
-        "title": "Edit sign message:"
+        "title": "Upravit text cedule:"
     },
     "stats": {
-        "title": "Statistics",
-        "general": "General",
+        "title": "Statistiky",
+        "general": "Obecné",
         "blocks": {
-            "name": "Blocks",
-            "mined": "Mined",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Bloky",
+            "mined": "Vytěženo",
+            "crafted": "Vyrobeno",
+            "used": "Použito"
         },
         "items": {
-            "name": "Items",
-            "broken": "Broken",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Předměty",
+            "broken": "Zničeno",
+            "crafted": "Vyrobeno",
+            "used": "Použito"
         },
-        "item": "Item"
+        "item": "Předmět"
     },
     "connect": {
-        "connecting": "Connecting to the server...",
-        "authorizing": "Logging in...",
-        "failed": "Failed to connect to the server"
+        "connecting": "Připojování k serveru...",
+        "authorizing": "Přihlašování...",
+        "failed": "Připojení k serveru se nezdařilo"
     },
     "disconnect": {
         "genericReason": "{0}",
-        "disconnected": "Disconnected by Server",
-        "lost": "Connection Lost",
-        "kicked": "Was kicked from the game",
-        "timeout": "Timed out",
-        "closed": "Connection closed",
-        "loginFailed": "Failed to login",
-        "quitting": "Quitting",
-        "endOfStream": "End of stream",
-        "overflow": "Buffer overflow"
+        "disconnected": "Odpojen serverem",
+        "lost": "Připojení ztraceno",
+        "kicked": "Byl jste vyhozen ze hry",
+        "timeout": "Vypršel časový limit",
+        "closed": "Připojení uzavřeno",
+        "loginFailed": "Přihlášení se nezdařilo",
+        "quitting": "Ukončování",
+        "endOfStream": "Konec datového proudu",
+        "overflow": "Přetečení vyrovnávací paměti"
     },
     "options": {
-        "off": "OFF",
-        "on": "ON",
-        "disabled": "Disabled",
-        "title": "Options",
-        "controls": "Controls...",
-        "keyboardControls": "Keyboard Controls...",
-        "controllerSettings": "Controller Settings...",
-        "controllerType": "Controller Type",
+        "off": "VYP",
+        "on": "ZAP",
+        "disabled": "Vypnuto",
+        "title": "Nastavení",
+        "controls": "Ovládání...",
+        "keyboardControls": "Ovládání klávesnicí...",
+        "controllerSettings": "Nastavení ovladače...",
+        "controllerType": "Typ ovladače",
         "video": {
-            "text": "Video Settings...",
-            "performance": "Performance",
-            "display": "Display"
+            "text": "Nastavení grafiky...",
+            "performance": "Výkon",
+            "display": "Zobrazení"
         },
-        "uiSettings": "UI Settings...",
-        "audioSettings": "Audio Settings...",
-        "audioTitle": "Audio Settings",
-        "videoTitle": "Video Settings",
-        "language": "Language...",
-        "anisoLevel": "Aniso Level",
-        "music": "Music",
-        "sound": "Sound",
-        "invertMouse": "Invert Mouse",
-        "alternateBlocks": "Alternate Blocks",
-        "chunkFade": "Chunk Fade",
+        "uiSettings": "Nastavení rozhraní...",
+        "audioSettings": "Nastavení zvuku...",
+        "audioTitle": "Nastavení zvuku",
+        "videoTitle": "Nastavení grafiky",
+        "language": "Jazyk...",
+        "anisoLevel": "Úroveň anizotropie",
+        "music": "Hudba",
+        "sound": "Zvuk",
+        "invertMouse": "Invertovat myš",
+        "alternateBlocks": "Alternativní bloky",
+        "chunkFade": "Vyblednutí chunků",
         "sensitivity": {
-            "text": "Sensitivity",
-            "controllerText": "Controller Sensitivity",
-            "min": "*yawn*",
-            "max": "HYPERSPEED!!!"
+            "text": "Citlivost",
+            "controllerText": "Citlivost ovladače",
+            "min": "*zív*",
+            "max": "HYPERSONICKÁ RYCHLOST!!!"
         },
         "renderDistance": {
-            "text": "Render Distance",
-            "chunks": "Chunks",
-            "tiny": "Tiny",
-            "short": "Short",
-            "normal": "Normal",
-            "far": "Far"
+            "text": "Vzdálenost vykreslování",
+            "chunks": "Chunky",
+            "tiny": "Malá",
+            "short": "Krátká",
+            "normal": "Normální",
+            "far": "Daleká"
         },
-        "viewBobbing": "View Bobbing",
-        "ao": "Smooth Lighting",
-        "anaglyph": "3D Anaglyph",
-        "framerateLimit": "Performance",
+        "viewBobbing": "Houpání pohledu",
+        "ao": "Hladké osvětlení",
+        "anaglyph": "3D anaglyf",
+        "framerateLimit": "Výkon",
         "difficulty": {
-            "text": "Difficulty",
-            "peaceful": "Peaceful",
-            "easy": "Easy",
-            "normal": "Normal",
-            "hard": "Hard"
+            "text": "Obtížnost",
+            "peaceful": "Mírumilovná",
+            "easy": "Lehká",
+            "normal": "Normální",
+            "hard": "Těžká"
         },
         "graphics": {
-            "text": "Graphics",
-            "fancy": "Fancy",
-            "fast": "Fast"
+            "text": "Grafika",
+            "fancy": "Pěkná",
+            "fast": "Rychlá"
         },
         "cloudsQuality": {
-            "text": "Clouds Quality",
-            "off": "No Clouds",
-            "legacy": "Old Clouds",
+            "text": "Kvalita mraků",
+            "off": "Bez mraků",
+            "legacy": "Staré mraky",
             "shader": "Shader"
         },
         "softClouds": {
-            "text": "Soft Clouds"
+            "text": "Měkké mraky"
         },
         "guiScale": {
-            "text": "GUI Scale",
-            "auto": "Auto",
-            "small": "Small",
-            "normal": "Normal",
-            "large": "Large"
+            "text": "Velikost rozhraní",
+            "auto": "Automaticky",
+            "small": "Malá",
+            "normal": "Normální",
+            "large": "Velká"
         },
         "chatScale": {
-            "text": "Chat Scale"
+            "text": "Velikost chatu"
         },
         "chatWidth": {
-            "text": "Chat Width"
+            "text": "Šířka chatu"
         },
-        "advancedOpengl": "Advanced OpenGL",
+        "advancedOpengl": "Pokročilé OpenGL",
         "fps": {
             "text": "FPS",
-            "maxFps": "Max FPS",
-            "unlimited": "Unlimited"
+            "maxFps": "Max. FPS",
+            "unlimited": "Neomezené"
         },
-        "showCoordinates": "Show Coordinates",
-        "uiCursors": "UI Cursors",
-        "gamma": "Gamma",
-        "vSync": "VSync",
+        "showCoordinates": "Zobrazit souřadnice",
+        "uiCursors": "Kurzory rozhraní",
+        "gamma": "Gama",
+        "vSync": "Vertikální synchronizace",
         "mipmaps": "Mipmaps",
-        "menuMusic": "Menu Music",
+        "menuMusic": "Hudba v menu",
         "msaa": "MSAA",
-        "fov": "FOV",
+        "fov": "Zorné pole",
         "movement": {
-            "text": "Movement"
+            "text": "Pohyb"
         },
         "view": {
-            "text": "View"
+            "text": "Zobrazení"
         },
         "other": {
-            "text": "Other"
+            "text": "Ostatní"
         },
-        "editBindings": "Edit Bindings...",
-        "resetBindings": "Reset Bindings...",
-        "controllerBindings": "Controller Bindings",
+        "editBindings": "Upravit přiřazení...",
+        "resetBindings": "Obnovit přiřazení...",
+        "controllerBindings": "Přiřazení ovladače",
         "shader": {
-            "text": "Shader Options",
+            "text": "Nastavení shaderů",
             "chunkVert": {
-                "text": "World",
-                "WavyLeavesStrength": "Wavy Leaves Strength",
-                "WavyLeavesSpeed": "Wavy Leaves Speed",
-                "WavyPlantStrength": "Wavy Plant Strength",
-                "WavyPlantSpeed": "Wavy Plant Speed",
-                "WavyPlantMode": "Wavy Plant Mode"
+                "text": "Svět",
+                "WavyLeavesStrength": "Síla vlnění listí",
+                "WavyLeavesSpeed": "Rychlost vlnění listí",
+                "WavyPlantStrength": "Síla vlnění rostlin",
+                "WavyPlantSpeed": "Rychlost vlnění rostlin",
+                "WavyPlantMode": "Režim vlnění rostlin"
             },
             "cloud": {
-                "text": "Clouds",
-                "minParallax": "Min Parallax",
-                "maxParallax": "Max Parallax",
-                "minGradient": "Min Gradient",
-                "maxGradient": "Max Gradient",
-                "cloudHeight": "Cloud Height",
-                "shadow": "Shadow Color",
-                "smoothWidth": "Smooth Width",
-                "smoothSamples": "Smooth Samples",
-                "closeFade": "Close Fade",
-                "smoothTop": "Smooth Top",
-                "smoothEdge": "Smooth Edge",
-                "smoothBottom": "Smooth Bottom",
-                "smoothBottomTopDown": "Smooth Bottom Top Down"
+                "text": "Mraky",
+                "minParallax": "Min. paralaxa",
+                "maxParallax": "Max. paralaxa",
+                "minGradient": "Min. gradient",
+                "maxGradient": "Max. gradient",
+                "cloudHeight": "Výška mraků",
+                "shadow": "Barva stínu",
+                "smoothWidth": "Šířka vyhlazení",
+                "smoothSamples": "Vzorky vyhlazení",
+                "closeFade": "Vyblednutí zblízka",
+                "smoothTop": "Hladký vrchol",
+                "smoothEdge": "Hladký okraj",
+                "smoothBottom": "Hladké dno",
+                "smoothBottomTopDown": "Hladké dno shora dolů"
             },
             "ui": {
-                "text": "UI",
-                "darkMode": "Dark Mode"
+                "text": "Rozhraní",
+                "darkMode": "Tmavý režim"
             },
             "preset": {
-                "text": "Preset",
-                "disabled": "Disabled",
-                "default": "Default",
-                "custom": "Custom",
+                "text": "Předvolba",
+                "disabled": "Vypnuto",
+                "default": "Výchozí",
+                "custom": "Vlastní",
                 "2d": "2D",
                 "3d": "3D",
-                "low": "Low",
-                "medium": "Medium",
-                "high": "High",
+                "low": "Nízká",
+                "medium": "Střední",
+                "high": "Vysoká",
                 "ultra": "Ultra"
             }
         }
     },
     "performance": {
-        "max": "Max FPS",
-        "balanced": "Balanced",
-        "powersaver": "Power saver"
+        "max": "Max. FPS",
+        "balanced": "Vyvážené",
+        "powersaver": "Úspora energie"
     },
     "controls": {
-        "title": "Controls"
+        "title": "Ovládání"
     },
     "key": {
-        "forward": "Forward",
-        "left": "Left",
-        "back": "Back",
-        "right": "Right",
-        "jump": "Jump",
-        "inventory": "Inventory",
-        "drop": "Drop",
+        "forward": "Dopředu",
+        "left": "Vlevo",
+        "back": "Dozadu",
+        "right": "Vpravo",
+        "jump": "Skok",
+        "inventory": "Inventář",
+        "drop": "Odhodit",
         "chat": "Chat",
-        "fog": "Toggle Fog",
-        "sneak": "Sneak",
-        "playerlist": "List players",
-        "zoom": "Zoom",
-        "hotbarLeft": "Hotbar Left",
-        "hotbarRight": "Hotbar Right",
-        "pickBlock": "Pick Block",
-        "camera": "Camera Mode",
-        "pause": "Pause"
+        "fog": "Přepnout mlhu",
+        "sneak": "Plížit se",
+        "playerlist": "Seznam hráčů",
+        "zoom": "Přiblížit",
+        "hotbarLeft": "Lišta doleva",
+        "hotbarRight": "Lišta doprava",
+        "pickBlock": "Vzít blok",
+        "camera": "Režim kamery",
+        "pause": "Pauza"
     },
     "texturePack": {
-        "openFolder": "Open texture pack folder",
-        "title": "Select Texture Pack",
-        "folderInfo": "(Place texture pack files here)"
+        "openFolder": "Otevřít složku balíčků textur",
+        "title": "Výběr balíčku textur",
+        "folderInfo": "(Umístěte sem soubory balíčků textur)"
     },
     "tile": {
         "tallgrass": {
-            "name": "Tallgrass",
+            "name": "Tráva",
             "desc": ""
         },
         "stone": {
-            "name": "Stone",
+            "name": "Kámen",
             "desc": ""
         },
         "grass": {
-            "name": "Grass",
+            "name": "Trávník",
             "desc": ""
         },
         "dirt": {
-            "name": "Dirt",
+            "name": "Hlína",
             "desc": ""
         },
         "stonebrick": {
-            "name": "Cobblestone",
+            "name": "Kamenivo",
             "desc": ""
         },
         "wood": {
-            "name": "Wooden Planks",
+            "name": "Dřevěná prkna",
             "desc": ""
         },
         "sapling": {
-            "name": "Sapling",
+            "name": "Sazenice",
             "desc": ""
         },
         "bedrock": {
-            "name": "Bedrock",
+            "name": "Podloží",
             "desc": ""
         },
         "water": {
-            "name": "Water",
+            "name": "Voda",
             "desc": ""
         },
         "lava": {
-            "name": "Lava",
+            "name": "Láva",
             "desc": ""
         },
         "sand": {
-            "name": "Sand",
+            "name": "Písek",
             "desc": ""
         },
-        "sandStone": { "name": "Sandstone" },
+        "sandStone": { "name": "Pískovec" },
         "gravel": {
-            "name": "Gravel",
+            "name": "Štěrk",
             "desc": ""
         },
         "oreGold": {
-            "name": "Gold Ore",
+            "name": "Zlatá ruda",
             "desc": ""
         },
         "oreIron": {
-            "name": "Iron Ore",
+            "name": "Železná ruda",
             "desc": ""
         },
         "oreCoal": {
-            "name": "Coal Ore",
+            "name": "Uhelná ruda",
             "desc": ""
         },
         "log": {
-            "name": "Wood",
+            "name": "Dřevo",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Listí",
             "desc": ""
         },
         "sponge": {
-            "name": "Sponge",
+            "name": "Houba",
             "desc": ""
         },
         "glass": {
-            "name": "Glass",
+            "name": "Sklo",
             "desc": ""
         },
         "cloth": {
-            "name": "Wool",
+            "name": "Vlna",
             "desc": "",
             "black": {
-                "name": "Black Wool",
+                "name": "Černá vlna",
                 "desc": ""
             },
             "red": {
-                "name": "Red Wool",
+                "name": "Červená vlna",
                 "desc": ""
             },
             "green": {
-                "name": "Green Wool",
+                "name": "Zelená vlna",
                 "desc": ""
             },
             "brown": {
-                "name": "Brown Wool",
+                "name": "Hnědá vlna",
                 "desc": ""
             },
             "blue": {
-                "name": "Blue Wool",
+                "name": "Modrá vlna",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Wool",
+                "name": "Fialová vlna",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Wool",
+                "name": "Tyrkysová vlna",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Wool",
+                "name": "Světle šedá vlna",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Wool",
+                "name": "Šedá vlna",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Wool",
+                "name": "Růžová vlna",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Wool",
+                "name": "Citronová vlna",
                 "desc": ""
             },
             "yellow": {
-                "name": "Yellow Wool",
+                "name": "Žlutá vlna",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Wool",
+                "name": "Světle modrá vlna",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Wool",
+                "name": "Purpurová vlna",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Wool",
+                "name": "Oranžová vlna",
                 "desc": ""
             },
             "white": {
-                "name": "Wool",
+                "name": "Vlna",
                 "desc": ""
             }
         },
         "flower": {
-            "name": "Flower",
+            "name": "Květina",
             "desc": ""
         },
         "rose": {
-            "name": "Rose",
+            "name": "Růže",
             "desc": ""
         },
         "mushroom": {
-            "name": "Mushroom",
+            "name": "Houba",
             "desc": ""
         },
         "blockGold": {
-            "name": "Block of Gold",
+            "name": "Zlatý blok",
             "desc": ""
         },
         "blockIron": {
-            "name": "Block of Iron",
+            "name": "Železný blok",
             "desc": ""
         },
         "stoneSlab": {
             "stone": {
-                "name": "Stone Slab",
+                "name": "Kamenná deska",
                 "desc": ""
             },
             "sand": {
-                "name": "Sandstone Slab",
+                "name": "Pískovcová deska",
                 "desc": ""
             },
             "wood": {
-                "name": "Wooden Slab",
+                "name": "Dřevěná deska",
                 "desc": ""
             },
             "cobble": {
-                "name": "Stone Slab",
+                "name": "Deska z kameniva",
                 "desc": ""
             }
         },
         "brick": {
-            "name": "Bricks",
+            "name": "Cihly",
             "desc": ""
         },
         "tnt": {
@@ -538,832 +538,832 @@
             "desc": ""
         },
         "bookshelf": {
-            "name": "Bookshelf",
+            "name": "Knihovna",
             "desc": ""
         },
         "stoneMoss": {
-            "name": "Moss Stone",
+            "name": "Mechový kámen",
             "desc": ""
         },
         "obsidian": {
-            "name": "Obsidian",
+            "name": "Obsidián",
             "desc": ""
         },
         "torch": {
-            "name": "Torch",
+            "name": "Pochodeň",
             "desc": ""
         },
         "fire": {
-            "name": "Fire",
+            "name": "Oheň",
             "desc": ""
         },
         "mobSpawner": {
-            "name": "Monster Spawner",
+            "name": "Spawner příšer",
             "desc": ""
         },
         "stairsWood": {
-            "name": "Wooden Stairs",
+            "name": "Dřevěné schody",
             "desc": ""
         },
         "chest": {
-            "name": "Chest",
+            "name": "Truhla",
             "desc": ""
         },
         "redstoneDust": {
-            "name": "Redstone Dust",
+            "name": "Ruditový prach",
             "desc": ""
         },
         "oreDiamond": {
-            "name": "Diamond Ore",
+            "name": "Diamantová ruda",
             "desc": ""
         },
         "blockDiamond": {
-            "name": "Block of Diamond",
+            "name": "Diamantový blok",
             "desc": ""
         },
         "workbench": {
-            "name": "Crafting Table",
+            "name": "Pracovní stůl",
             "desc": ""
         },
         "crops": {
-            "name": "Crops",
+            "name": "Plodiny",
             "desc": ""
         },
         "farmland": {
-            "name": "Farmland",
+            "name": "Ornice",
             "desc": ""
         },
         "furnace": {
-            "name": "Furnace",
+            "name": "Pec",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Cedule",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Dřevěné dveře",
             "desc": ""
         },
         "ladder": {
-            "name": "Ladder",
+            "name": "Žebřík",
             "desc": ""
         },
         "rail": {
-            "name": "Rail",
+            "name": "Kolej",
             "desc": ""
         },
         "goldenRail": {
-            "name": "Powered Rail",
+            "name": "Poháněná kolej",
             "desc": ""
         },
         "detectorRail": {
-            "name": "Detector Rail",
+            "name": "Spouštěcí kolej",
             "desc": ""
         },
         "stairsStone": {
-            "name": "Stone Stairs",
+            "name": "Kamenné schody",
             "desc": ""
         },
         "lever": {
-            "name": "Lever",
+            "name": "Páka",
             "desc": ""
         },
         "pressurePlate": {
-            "name": "Pressure Plate",
+            "name": "Tlaková deska",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Železné dveře",
             "desc": ""
         },
         "oreRedstone": {
-            "name": "Redstone Ore",
+            "name": "Ruditová ruda",
             "desc": ""
         },
         "notGate": {
-            "name": "Redstone Torch",
+            "name": "Ruditová pochodeň",
             "desc": ""
         },
         "button": {
-            "name": "Button",
+            "name": "Tlačítko",
             "desc": ""
         },
         "snow": {
-            "name": "Snow",
+            "name": "Sníh",
             "desc": ""
         },
         "ice": {
-            "name": "Ice",
+            "name": "Led",
             "desc": ""
         },
         "cactus": {
-            "name": "Cactus",
+            "name": "Kaktus",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Jíl",
             "desc": ""
         },
         "reeds": {
-            "name": "Sugar cane",
+            "name": "Cukrová třtina",
             "desc": ""
         },
         "jukebox": {
-            "name": "Jukebox",
+            "name": "Gramofon",
             "desc": ""
         },
         "fence": {
-            "name": "Fence",
+            "name": "Plot",
             "desc": ""
         },
         "pumpkin": {
-            "name": "Pumpkin",
+            "name": "Dýně",
             "desc": ""
         },
         "litpumpkin": {
-            "name": "Jack 'o' Lantern",
+            "name": "Jackova lucerna",
             "desc": ""
         },
         "hellrock": {
-            "name": "Netherrack",
+            "name": "Pekelný kámen",
             "desc": ""
         },
         "hellsand": {
-            "name": "Soul Sand",
+            "name": "Písek duší",
             "desc": ""
         },
         "lightgem": {
-            "name": "Glowstone",
+            "name": "Žhnoucí kámen",
             "desc": ""
         },
         "portal": {
-            "name": "Portal",
+            "name": "Portál",
             "desc": ""
         },
         "oreLapis": {
-            "name": "Lapis Lazuli Ore",
+            "name": "Ruda lazuritu",
             "desc": ""
         },
         "blockLapis": {
-            "name": "Lapis Lazuli Block",
+            "name": "Blok lazuritu",
             "desc": ""
         },
         "dispenser": {
-            "name": "Dispenser",
+            "name": "Dávkovač",
             "desc": ""
         },
         "musicBlock": {
-            "name": "Note Block",
+            "name": "Notový blok",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Dort",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Postel",
             "desc": "",
-            "occupied": "This bed is occupied",
-            "noSleep": "You can only sleep at night",
-            "notValid": "Your home bed was missing or obstructed"
+            "occupied": "Tato postel je obsazená",
+            "noSleep": "Spát můžete pouze v noci",
+            "notValid": "Vaše domácí postel chyběla nebo byla zablokovaná"
         },
         "lockedchest": {
-            "name": "Locked chest",
+            "name": "Zamčená truhla",
             "desc": ""
         },
         "trapdoor": {
-            "name": "Trapdoor",
+            "name": "Poklop",
             "desc": ""
         },
         "web": {
-            "name": "Cobweb",
+            "name": "Pavučina",
             "desc": ""
         },
         "stonebricksmooth": {
-            "name": "Stone Bricks",
+            "name": "Kamenné cihly",
             "desc": ""
         },
         "pistonBase": {
-            "name": "Piston",
+            "name": "Píst",
             "desc": ""
         },
         "pistonStickyBase": {
-            "name": "Sticky Piston",
+            "name": "Lepivý píst",
             "desc": ""
         }
     },
     "item": {
         "shovelIron": {
-            "name": "Iron Shovel",
+            "name": "Železná lopata",
             "desc": ""
         },
         "pickaxeIron": {
-            "name": "Iron Pickaxe",
+            "name": "Železný krumpáč",
             "desc": ""
         },
         "hatchetIron": {
-            "name": "Iron Axe",
+            "name": "Železná sekera",
             "desc": ""
         },
         "flintAndSteel": {
-            "name": "Flint and Steel",
+            "name": "Křesadlo",
             "desc": ""
         },
         "apple": {
-            "name": "Apple",
+            "name": "Jablko",
             "desc": ""
         },
         "cookie": {
-            "name": "Cookie",
+            "name": "Sušenka",
             "desc": ""
         },
         "bow": {
-            "name": "Bow",
+            "name": "Luk",
             "desc": ""
         },
         "arrow": {
-            "name": "Arrow",
+            "name": "Šíp",
             "desc": ""
         },
         "coal": {
-            "name": "Coal",
+            "name": "Uhlí",
             "desc": ""
         },
         "charcoal": {
-            "name": "Charcoal",
+            "name": "Dřevěné uhlí",
             "desc": ""
         },
         "diamond": {
-            "name": "Diamond",
+            "name": "Diamant",
             "desc": ""
         },
         "ingotIron": {
-            "name": "Iron Ingot",
+            "name": "Železný ingot",
             "desc": ""
         },
         "ingotGold": {
-            "name": "Gold Ingot",
+            "name": "Zlatý ingot",
             "desc": ""
         },
         "swordIron": {
-            "name": "Iron Sword",
+            "name": "Železný meč",
             "desc": ""
         },
         "swordWood": {
-            "name": "Wooden Sword",
+            "name": "Dřevěný meč",
             "desc": ""
         },
         "shovelWood": {
-            "name": "Wooden Shovel",
+            "name": "Dřevěná lopata",
             "desc": ""
         },
         "pickaxeWood": {
-            "name": "Wooden Pickaxe",
+            "name": "Dřevěný krumpáč",
             "desc": ""
         },
         "hatchetWood": {
-            "name": "Wooden Axe",
+            "name": "Dřevěná sekera",
             "desc": ""
         },
         "swordStone": {
-            "name": "Stone Sword",
+            "name": "Kamenný meč",
             "desc": ""
         },
         "shovelStone": {
-            "name": "Stone Shovel",
+            "name": "Kamenná lopata",
             "desc": ""
         },
         "pickaxeStone": {
-            "name": "Stone Pickaxe",
+            "name": "Kamenný krumpáč",
             "desc": ""
         },
         "hatchetStone": {
-            "name": "Stone Axe",
+            "name": "Kamenná sekera",
             "desc": ""
         },
         "swordDiamond": {
-            "name": "Diamond Sword",
+            "name": "Diamantový meč",
             "desc": ""
         },
         "shovelDiamond": {
-            "name": "Diamond Shovel",
+            "name": "Diamantová lopata",
             "desc": ""
         },
         "pickaxeDiamond": {
-            "name": "Diamond Pickaxe",
+            "name": "Diamantový krumpáč",
             "desc": ""
         },
         "hatchetDiamond": {
-            "name": "Diamond Axe",
+            "name": "Diamantová sekera",
             "desc": ""
         },
         "stick": {
-            "name": "Stick",
+            "name": "Klacek",
             "desc": ""
         },
         "bowl": {
-            "name": "Bowl",
+            "name": "Miska",
             "desc": ""
         },
         "mushroomStew": {
-            "name": "Mushroom Stew",
+            "name": "Houbová polévka",
             "desc": ""
         },
         "swordGold": {
-            "name": "Golden Sword",
+            "name": "Zlatý meč",
             "desc": ""
         },
         "shovelGold": {
-            "name": "Golden Shovel",
+            "name": "Zlatá lopata",
             "desc": ""
         },
         "pickaxeGold": {
-            "name": "Golden Pickaxe",
+            "name": "Zlatý krumpáč",
             "desc": ""
         },
         "hatchetGold": {
-            "name": "Golden Axe",
+            "name": "Zlatá sekera",
             "desc": ""
         },
         "string": {
-            "name": "String",
+            "name": "Provázek",
             "desc": ""
         },
         "feather": {
-            "name": "Feather",
+            "name": "Pírko",
             "desc": ""
         },
         "gunpowder": {
-            "name": "Gunpowder",
+            "name": "Střelný prach",
             "desc": ""
         },
         "hoeWood": {
-            "name": "Wooden Hoe",
+            "name": "Dřevěná motyka",
             "desc": ""
         },
         "hoeStone": {
-            "name": "Stone Hoe",
+            "name": "Kamenná motyka",
             "desc": ""
         },
         "hoeIron": {
-            "name": "Iron Hoe",
+            "name": "Železná motyka",
             "desc": ""
         },
         "hoeDiamond": {
-            "name": "Diamond Hoe",
+            "name": "Diamantová motyka",
             "desc": ""
         },
         "hoeGold": {
-            "name": "Golden Hoe",
+            "name": "Zlatá motyka",
             "desc": ""
         },
         "seeds": {
-            "name": "Seeds",
+            "name": "Semeno",
             "desc": ""
         },
         "wheat": {
-            "name": "Wheat",
+            "name": "Pšenice",
             "desc": ""
         },
         "bread": {
-            "name": "Bread",
+            "name": "Chléb",
             "desc": ""
         },
         "helmetLeather": {
-            "name": "Leather Cap",
+            "name": "Kožená čepice",
             "desc": ""
         },
         "chestplateLeather": {
-            "name": "Leather Tunic",
+            "name": "Kožená tunika",
             "desc": ""
         },
         "leggingsLeather": {
-            "name": "Leather Pants",
+            "name": "Kožené kalhoty",
             "desc": ""
         },
         "bootsLeather": {
-            "name": "Leather Boots",
+            "name": "Kožené boty",
             "desc": ""
         },
         "helmetChain": {
-            "name": "Chain Helmet",
+            "name": "Kroužková přilba",
             "desc": ""
         },
         "chestplateChain": {
-            "name": "Chain Chestplate",
+            "name": "Kroužkový pancíř",
             "desc": ""
         },
         "leggingsChain": {
-            "name": "Chain Leggings",
+            "name": "Kroužkové kalhoty",
             "desc": ""
         },
         "bootsChain": {
-            "name": "Chain Boots",
+            "name": "Kroužkové boty",
             "desc": ""
         },
         "helmetIron": {
-            "name": "Iron Helmet",
+            "name": "Železná přilba",
             "desc": ""
         },
         "chestplateIron": {
-            "name": "Iron Chestplate",
+            "name": "Železný pancíř",
             "desc": ""
         },
         "leggingsIron": {
-            "name": "Iron Leggings",
+            "name": "Železné kalhoty",
             "desc": ""
         },
         "bootsIron": {
-            "name": "Iron Boots",
+            "name": "Železné boty",
             "desc": ""
         },
         "helmetDiamond": {
-            "name": "Diamond Helmet",
+            "name": "Diamantová přilba",
             "desc": ""
         },
         "chestplateDiamond": {
-            "name": "Diamond Chestplate",
+            "name": "Diamantový pancíř",
             "desc": ""
         },
         "leggingsDiamond": {
-            "name": "Diamond Leggings",
+            "name": "Diamantové kalhoty",
             "desc": ""
         },
         "bootsDiamond": {
-            "name": "Diamond Boots",
+            "name": "Diamantové boty",
             "desc": ""
         },
         "helmetGold": {
-            "name": "Golden Helmet",
+            "name": "Zlatá přilba",
             "desc": ""
         },
         "chestplateGold": {
-            "name": "Golden Chestplate",
+            "name": "Zlatý pancíř",
             "desc": ""
         },
         "leggingsGold": {
-            "name": "Golden Leggings",
+            "name": "Zlaté kalhoty",
             "desc": ""
         },
         "bootsGold": {
-            "name": "Golden boots",
+            "name": "Zlaté boty",
             "desc": ""
         },
         "flint": {
-            "name": "Flint",
+            "name": "Pazourek",
             "desc": ""
         },
         "porkchopRaw": {
-            "name": "Raw Porkchop",
+            "name": "Syrová kotleta",
             "desc": ""
         },
         "porkchopCooked": {
-            "name": "Cooked Porkchop",
+            "name": "Pečená kotleta",
             "desc": ""
         },
         "painting": {
-            "name": "Painting",
+            "name": "Obraz",
             "desc": ""
         },
         "appleGold": {
-            "name": "Golden Apple",
+            "name": "Zlaté jablko",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Cedule",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Dřevěné dveře",
             "desc": ""
         },
         "bucket": {
-            "name": "Bucket",
+            "name": "Kbelík",
             "desc": ""
         },
         "bucketWater": {
-            "name": "Water Bucket",
+            "name": "Kbelík vody",
             "desc": ""
         },
         "bucketLava": {
-            "name": "Lava bucket",
+            "name": "Kbelík lávy",
             "desc": ""
         },
         "minecart": {
-            "name": "Minecart",
+            "name": "Důlní vozík",
             "desc": ""
         },
         "saddle": {
-            "name": "Saddle",
+            "name": "Sedlo",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Železné dveře",
             "desc": ""
         },
         "redstone": {
-            "name": "Redstone",
+            "name": "Rudit",
             "desc": ""
         },
         "snowball": {
-            "name": "Snowball",
+            "name": "Sněhová koule",
             "desc": ""
         },
         "boat": {
-            "name": "Boat",
+            "name": "Lod",
             "desc": ""
         },
         "leather": {
-            "name": "Leather",
+            "name": "Kůže",
             "desc": ""
         },
         "milk": {
-            "name": "Milk",
+            "name": "Mléko",
             "desc": ""
         },
         "brick": {
-            "name": "Brick",
+            "name": "Cihla",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Jíl",
             "desc": ""
         },
         "sugarCanes": {
-            "name": "Sugar Canes",
+            "name": "Cukrová třtina",
             "desc": ""
         },
         "paper": {
-            "name": "Paper",
+            "name": "Papír",
             "desc": ""
         },
         "book": {
-            "name": "Book",
+            "name": "Kniha",
             "desc": ""
         },
         "slimeball": {
-            "name": "Slimeball",
+            "name": "Sliz",
             "desc": ""
         },
         "minecartChest": {
-            "name": "Minecart with Chest",
+            "name": "Důlní vozík s truhlou",
             "desc": ""
         },
         "minecartFurnace": {
-            "name": "Minecart with Furnace",
+            "name": "Důlní vozík s pecí",
             "desc": ""
         },
         "egg": {
-            "name": "Egg",
+            "name": "Vejce",
             "desc": ""
         },
         "compass": {
-            "name": "Compass",
+            "name": "Kompas",
             "desc": ""
         },
         "fishingRod": {
-            "name": "Fishing Rod",
+            "name": "Rybářský prut",
             "desc": ""
         },
         "clock": {
-            "name": "Clock",
+            "name": "Hodiny",
             "desc": ""
         },
         "yellowDust": {
-            "name": "Glowstone Dust",
+            "name": "Žhnoucí prach",
             "desc": ""
         },
         "fishRaw": {
-            "name": "Raw Fish",
+            "name": "Syrová ryba",
             "desc": ""
         },
         "fishCooked": {
-            "name": "Cooked Fish",
+            "name": "Pečená ryba",
             "desc": ""
         },
         "record": {
-            "name": "Music Disc",
+            "name": "Hudební deska",
             "desc": ""
         },
         "bone": {
-            "name": "Bone",
+            "name": "Kost",
             "desc": ""
         },
         "dyePowder": {
             "black": {
-                "name": "Ink Sac",
+                "name": "Inkoustový vak",
                 "desc": ""
             },
             "red": {
-                "name": "Rose Red",
+                "name": "Růžová červeň",
                 "desc": ""
             },
             "green": {
-                "name": "Cactus Green",
+                "name": "Kaktusová zeleň",
                 "desc": ""
             },
             "brown": {
-                "name": "Cocoa Beans",
+                "name": "Kakaové boby",
                 "desc": ""
             },
             "blue": {
-                "name": "Lapis Lazuli",
+                "name": "Lazurit",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Dye",
+                "name": "Fialové barvivo",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Dye",
+                "name": "Tyrkysové barvivo",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Dye",
+                "name": "Světle šedé barvivo",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Dye",
+                "name": "Šedé barvivo",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Dye",
+                "name": "Růžové barvivo",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Dye",
+                "name": "Citronové barvivo",
                 "desc": ""
             },
             "yellow": {
-                "name": "Dandelion Yellow",
+                "name": "Pampelišková žluť",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Dye",
+                "name": "Světle modré barvivo",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Dye",
+                "name": "Purpurové barvivo",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Dye",
+                "name": "Oranžové barvivo",
                 "desc": ""
             },
             "white": {
-                "name": "Bone Meal",
+                "name": "Kostní moučka",
                 "desc": ""
             }
         },
         "sugar": {
-            "name": "Sugar",
+            "name": "Cukr",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Dort",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Postel",
             "desc": ""
         },
         "redstoneRepeater": {
-            "name": "Redstone Repeater",
+            "name": "Ruditový opakovač",
             "desc": ""
         },
         "map": {
-            "name": "Map",
+            "name": "Mapa",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Listí",
             "desc": ""
         },
         "shears": {
-            "name": "Shears",
+            "name": "Nůžky",
             "desc": ""
         }
     },
     "stat": {
-        "generalButton": "General",
-        "blocksButton": "Blocks",
-        "itemsButton": "Items",
-        "used": "Times Used",
-        "mined": "Times Mined",
-        "depleted": "Times Depleted",
-        "crafted": "Times Crafted",
-        "startGame": "Times played",
-        "createWorld": "Worlds played",
-        "loadWorld": "Saves loaded",
-        "joinMultiplayer": "Multiplayer joins",
-        "leaveGame": "Games quit",
-        "playOneMinute": "Minutes Played",
-        "walkOneCm": "Distance Walked",
-        "fallOneCm": "Distance Fallen",
-        "swimOneCm": "Distance Swum",
-        "flyOneCm": "Distance Flown",
-        "climbOneCm": "Distance Climbed",
-        "diveOneCm": "Distance Dove",
-        "minecartOneCm": "Distance by Minecart",
-        "boatOneCm": "Distance by Boat",
-        "pigOneCm": "Distance by Pig",
-        "jump": "Jumps",
-        "drop": "Items Dropped",
-        "damageDealt": "Damage Dealt",
-        "damageTaken": "Damage Taken",
-        "deaths": "Number of Deaths",
-        "mobKills": "Mob Kills",
-        "playerKills": "Player Kills",
-        "fishCaught": "Fish Caught",
-        "mineBlock": "{0} Mined",
-        "craftItem": "{0} Crafted",
-        "useItem": "{0} Used",
-        "breakItem": "{0} Depleted"
+        "generalButton": "Obecné",
+        "blocksButton": "Bloky",
+        "itemsButton": "Předměty",
+        "used": "Kolikrát použito",
+        "mined": "Kolikrát vytěženo",
+        "depleted": "Kolikrát spotřebováno",
+        "crafted": "Kolikrát vyrobeno",
+        "startGame": "Kolikrát odehráno",
+        "createWorld": "Odehraných světů",
+        "loadWorld": "Načtených uložení",
+        "joinMultiplayer": "Připojení k hře více hráčů",
+        "leaveGame": "Ukončených her",
+        "playOneMinute": "Odehrané minuty",
+        "walkOneCm": "Uražená vzdálenost chůzí",
+        "fallOneCm": "Uražená vzdálenost pádem",
+        "swimOneCm": "Uražená vzdálenost plaváním",
+        "flyOneCm": "Uražená vzdálenost letem",
+        "climbOneCm": "Uražená vzdálenost lezením",
+        "diveOneCm": "Uražená vzdálenost potápěním",
+        "minecartOneCm": "Vzdálenost důlním vozíkem",
+        "boatOneCm": "Vzdálenost lodí",
+        "pigOneCm": "Vzdálenost na praseti",
+        "jump": "Skoky",
+        "drop": "Odhozených předmětů",
+        "damageDealt": "Způsobené poškození",
+        "damageTaken": "Obdržené poškození",
+        "deaths": "Počet úmrtí",
+        "mobKills": "Zabitých mobů",
+        "playerKills": "Zabitých hráčů",
+        "fishCaught": "Chycených ryb",
+        "mineBlock": "Vytěženo {0}",
+        "craftItem": "Vyrobeno {0}",
+        "useItem": "Použito {0}",
+        "breakItem": "Spotřebováno {0}"
     },
-    "achievements.title": "Achievements",
+    "achievements.title": "Ocenění",
     "achievement": {
-        "get": "Achievement get!",
-        "taken": "Taken!",
-        "challenge": "CHALLENGE",
-        "unlocked": "UNLOCKED",
-        "locked": "LOCKED",
-        "requires": "Requires '{0}'",
+        "get": "Získal jsi ocenění!",
+        "taken": "Získáno!",
+        "challenge": "VÝZVA",
+        "unlocked": "ODEMČENO",
+        "locked": "ZAMČENO",
+        "requires": "Vyžaduje '{0}'",
         "openInventory": {
-            "title": "Taking Inventory",
-            "desc": "Open your inventory."
+            "title": "Sčítání inventáře",
+            "desc": "Otevři si inventář."
         },
         "mineWood": {
-            "title": "Getting Wood",
-            "desc": "Attack a tree until a block of wood pops out"
+            "title": "Jak na dřevo",
+            "desc": "Útoč na strom, dokud z něj nevypadne blok dřeva."
         },
         "buildWorkBench": {
-            "title": "Benchmarking",
-            "desc": "Craft a workbench with four blocks of planks"
+            "title": "Od základů",
+            "desc": "Vyrob pracovní stůl ze čtyř bloků prken."
         },
         "buildPickaxe": {
-            "title": "Time to Mine!",
-            "desc": "Use planks and sticks to make a pickaxe"
+            "title": "Čas na těžbu!",
+            "desc": "Použij prkna a klacky na výrobu krumpáče."
         },
         "buildFurnace": {
-            "title": "Hot Topic",
-            "desc": "Construct a furnace out of eight stone blocks"
+            "title": "Žhavé téma",
+            "desc": "Sestav pec z osmi bloků kamene."
         },
         "acquireIron": {
-            "title": "Acquire Hardware",
-            "desc": "Smelt an iron ingot"
+            "title": "Pořádný kov",
+            "desc": "Vytav železný ingot."
         },
         "buildHoe": {
-            "title": "Time to Farm!",
-            "desc": "Use planks and sticks to make a hoe"
+            "title": "Čas na farmaření!",
+            "desc": "Použij prkna a klacky na výrobu motyky."
         },
         "makeBread": {
-            "title": "Bake Bread",
-            "desc": "Turn wheat into bread"
+            "title": "Upeč chléb",
+            "desc": "Zpracuj pšenici na chléb."
         },
         "bakeCake": {
-            "title": "The Lie",
-            "desc": "Wheat, sugar, milk and eggs!"
+            "title": "Lež",
+            "desc": "Pšenice, cukr, mléko a vejce!"
         },
         "buildBetterPickaxe": {
-            "title": "Getting an Upgrade",
-            "desc": "Construct a better pickaxe"
+            "title": "Vylepšování",
+            "desc": "Vyrob lepší krumpáč."
         },
         "cookFish": {
-            "title": "Delicious Fish",
-            "desc": "Catch and cook fish!"
+            "title": "Lahodná ryba",
+            "desc": "Chyť a upeč rybu!"
         },
         "onARail": {
-            "title": "On A Rail",
-            "desc": "Travel by minecart at least 1 km from where you started "
+            "title": "Na kolejích",
+            "desc": "Cestuj důlním vozíkem alespoň 1 km od místa, kde jsi začal."
         },
         "buildSword": {
-            "title": "Time to Strike!",
-            "desc": "Use planks and sticks to make a sword"
+            "title": "Čas na úder!",
+            "desc": "Použij prkna a klacky na výrobu meče."
         },
         "killEnemy": {
-            "title": "Monster Hunter",
-            "desc": "Attack and destroy a monster"
+            "title": "Lovec příšer",
+            "desc": "Zaútoč na příšeru a znič ji."
         },
         "killCow": {
-            "title": "Cow Tipper",
-            "desc": "Harvest some leather"
+            "title": "Srážač krav",
+            "desc": "Získej trochu kůže."
         },
         "flyPig": {
-            "title": "When Pigs Fly",
-            "desc": "Fly a pig off a cliff"
+            "title": "Až prasata poletí",
+            "desc": "Sleť na praseti z útesu."
         }
     },
     "credits": {
-        "version": "BetaSharp Version %1$s",
-        "description": "An enhanced of Minecraft Beta 1.7.3, written in C#.",
-        "github": "On GitHub",
-        "author": "Made by Fazin85",
-        "libs": "Libraries",
-        "slik": "Slik.NET - Graphics",
-        "imgui": "ImGui - Debug UI",
-        "sfml": "SFML.NET - Audio",
-        "sixlabors": "SixLabors - Fonts, image processing",
-        "translations": "Translations Credits"
+        "version": "BetaSharp verze %1$s",
+        "description": "Vylepšená verze Minecraftu Beta 1.7.3, napsaná v C#.",
+        "github": "Na GitHubu",
+        "author": "Vytvořil Fazin85",
+        "libs": "Knihovny",
+        "slik": "Slik.NET - Grafika",
+        "imgui": "ImGui - Ladící rozhraní",
+        "sfml": "SFML.NET - Zvuk",
+        "sixlabors": "SixLabors - Písma, zpracování obrázků",
+        "translations": "Poděkování překladatelům"
     }
 }

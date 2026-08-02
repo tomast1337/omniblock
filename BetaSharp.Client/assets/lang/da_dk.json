@@ -1,385 +1,385 @@
-﻿{
+{
     "gui": {
-        "joinServer": "Join Server",
-        "rename": "Rename",
-        "edit": "Edit",
-        "refresh": "Refresh",
-        "done": "Done",
-        "cancel": "Cancel",
-        "delete": "Delete",
-        "toMenu": "Back to title screen",
-        "up": "Up",
-        "down": "Down",
-        "yes": "Yes",
-        "no": "No",
-        "connect": "Connect",
-        "directConnect": "Direct Connect",
-        "addServer": "Add Server",
-        "create": "Create",
-        "customize": "Customize",
-        "achievements": "Achievements",
-        "stats": "Statistics",
+        "joinServer": "Tilslut server",
+        "rename": "Omdøb",
+        "edit": "Rediger",
+        "refresh": "Opdater",
+        "done": "Færdig",
+        "cancel": "Annullér",
+        "delete": "Slet",
+        "toMenu": "Tilbage til titelskærmen",
+        "up": "Op",
+        "down": "Ned",
+        "yes": "Ja",
+        "no": "Nej",
+        "connect": "Tilslut",
+        "directConnect": "Direkte forbindelse",
+        "addServer": "Tilføj server",
+        "create": "Opret",
+        "customize": "Tilpas",
+        "achievements": "Bedrifter",
+        "stats": "Statistik",
         "container": {
-            "crafting": "Crafting",
-            "inventory": "Inventory",
+            "crafting": "Fremstilling",
+            "inventory": "Inventar",
             "dispenser": "Dispenser",
-            "furnace": "Furnace",
+            "furnace": "Ovn",
             "tip": {
-                "move": "Move",
-                "quickMove": "Quick Move",
-                "takeHalf": "Take Half",
-                "place": "Place",
-                "placeOne": "Place One"
+                "move": "Flyt",
+                "quickMove": "Hurtig flytning",
+                "takeHalf": "Tag halvdelen",
+                "place": "Placér",
+                "placeOne": "Placér én"
             }
         }
     },
     "menu": {
-        "singleplayer": "Singleplayer",
-        "multiplayer": "Multiplayer",
-        "texturePacks": "Texture Packs",
-        "options": "Options...",
-        "language": "Language",
-        "quit": "Quit Game",
-        "credits": "Credits",
-        "sendFeedback": "Send Feedback",
-        "reportBugs": "Report Bugs",
-        "saveAndQuitToTitle": "Save and quit to title",
-        "disconnect": "Disconnect"
+        "singleplayer": "Enkeltspiller",
+        "multiplayer": "Flerspiller",
+        "texturePacks": "Teksturpakker",
+        "options": "Indstillinger...",
+        "language": "Sprog",
+        "quit": "Afslut spil",
+        "credits": "Krediteringer",
+        "sendFeedback": "Send feedback",
+        "reportBugs": "Rapportér fejl",
+        "saveAndQuitToTitle": "Gem og afslut til titel",
+        "disconnect": "Afbryd forbindelse"
     },
     "selectWorld": {
-        "title": "Select World",
-        "empty": "empty",
-        "world": "World",
-        "select": "Play Selected World",
-        "create": "Create New World",
-        "createDemo": "Play New Demo World",
-        "deleteQuestion": "Are you sure you want to delete this world?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "renameTitle": "Rename World",
-        "conversion": "Must be converted!",
-        "newWorld": "New World",
-        "enterName": "World Name",
-        "resultFolder": "Will be saved in:",
-        "enterSeed": "Seed for the World Generator",
-        "seedInfo": "Leave blank for a random seed",
-        "selectWorldType": "Select World Type",
-        "worldType": "World Type",
-        "customize": "Customize",
-        "moreWorldOptions": "More World Options...",
+        "title": "Vælg verden",
+        "empty": "tom",
+        "world": "Verden",
+        "select": "Spil valgt verden",
+        "create": "Opret ny verden",
+        "createDemo": "Spil ny demo-verden",
+        "deleteQuestion": "Er du sikker på, at du vil slette denne verden?",
+        "deleteWarning": "vil gå tabt for evigt! (Meget længe!)",
+        "renameTitle": "Omdøb verden",
+        "conversion": "Skal konverteres!",
+        "newWorld": "Ny verden",
+        "enterName": "Verdensnavn",
+        "resultFolder": "Gemmes i:",
+        "enterSeed": "Seed til verdensgeneratoren",
+        "seedInfo": "Lad være tomt for tilfældig seed",
+        "selectWorldType": "Vælg verdentype",
+        "worldType": "Verdentype",
+        "customize": "Tilpas",
+        "moreWorldOptions": "Flere verdensindstillinger...",
         "type": {
             "default": {
-                "title": "Default",
-                "description": "The standard Minecraft world."
+                "title": "Standard",
+                "description": "Den normale Minecraft-verden."
             },
             "flat": {
-                "title": "Flat",
-                "description": "A completely flat world."
+                "title": "Flad",
+                "description": "En helt flad verden."
             },
             "sky": {
-                "title": "Sky",
-                "description": "A world floating in the sky."
+                "title": "Himmel",
+                "description": "En verden, der flyder på himlen."
             }
         }
     },
     "newWorld": {
         "customize": {
             "superflatWorld": {
-                "title": "Customize Superflat World"
+                "title": "Tilpas superflad verden"
             },
-            "removeLayer": "Remove Layer",
-            "presets": "Presets",
-            "height": "Height",
+            "removeLayer": "Fjern lag",
+            "presets": "Forudindstillinger",
+            "height": "Højde",
             "unknown": "???"
         }
     },
     "world": {
-        "world": "World",
-        "unsupportedFormat": "Unsupported Format!"
+        "world": "Verden",
+        "unsupportedFormat": "Ikke-understøttet format!"
     },
     "multiplayer": {
-        "title": "Play Multiplayer",
-        "betasharpServer": "BetaSharp Server",
-        "info1": "Minecraft Multiplayer is currently not finished, but there",
-        "info2": "is some buggy early testing going on.",
-        "ipinfo": "Enter the IP of a server to connect to it:",
-        "deleteQuestion": "Are you sure you want to delete this server?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "downloadingTerrain": "Downloading terrain",
-        "stopSleeping": "Leave Bed",
-        "editServerTitle": "Edit Server Info",
-        "addServerTitle": "Add Server Info",
-        "serverName": "Server Name",
-        "serverAddress": "Server Address"
+        "title": "Spil flerspiller",
+        "betasharpServer": "BetaSharp-server",
+        "info1": "Minecraft Flerspiller er ikke færdig endnu, men der",
+        "info2": "foregår noget fejlbehæftet tidlig test.",
+        "ipinfo": "Indtast IP-adressen på en server for at oprette forbindelse:",
+        "deleteQuestion": "Er du sikker på, at du vil slette denne server?",
+        "deleteWarning": "vil gå tabt for evigt! (Meget længe!)",
+        "downloadingTerrain": "Downloader terræn",
+        "stopSleeping": "Forlad sengen",
+        "editServerTitle": "Rediger serveroplysninger",
+        "addServerTitle": "Tilføj serveroplysninger",
+        "serverName": "Servernavn",
+        "serverAddress": "Serveradresse"
     },
     "loading": {
-        "loadingLevel": "Loading level",
-        "startingServer": "Starting server...",
-        "preparingSpawnArea": "Preparing spawn area"
+        "loadingLevel": "Indlæser niveau",
+        "startingServer": "Starter server...",
+        "preparingSpawnArea": "Forbereder spawn-område"
     },
     "achievements": {
-        "title": "Achievements"
+        "title": "Bedrifter"
     },
     "gameover": {
-        "title": "Game Over!",
+        "title": "Spillet er slut!",
         "score": "Score",
-        "respawn": "Respawn",
-        "titleMenu": "Title menu"
+        "respawn": "Genopstå",
+        "titleMenu": "Titelmenu"
     },
     "gamemenu": {
-        "title": "Game Menu",
-        "backToGame": "Back to Game"
+        "title": "Spilmenu",
+        "backToGame": "Tilbage til spillet"
     },
     "sign": {
-        "title": "Edit sign message:"
+        "title": "Rediger skiltbesked:"
     },
     "stats": {
-        "title": "Statistics",
-        "general": "General",
+        "title": "Statistik",
+        "general": "Generelt",
         "blocks": {
-            "name": "Blocks",
-            "mined": "Mined",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Blokke",
+            "mined": "Brudt",
+            "crafted": "Fremstillet",
+            "used": "Brugt"
         },
         "items": {
-            "name": "Items",
-            "broken": "Broken",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Genstande",
+            "broken": "Ødelagt",
+            "crafted": "Fremstillet",
+            "used": "Brugt"
         },
-        "item": "Item"
+        "item": "Genstand"
     },
     "connect": {
-        "connecting": "Connecting to the server...",
-        "authorizing": "Logging in...",
-        "failed": "Failed to connect to the server"
+        "connecting": "Opretter forbindelse til serveren...",
+        "authorizing": "Logger ind...",
+        "failed": "Kunne ikke oprette forbindelse til serveren"
     },
     "disconnect": {
         "genericReason": "{0}",
-        "disconnected": "Disconnected by Server",
-        "lost": "Connection Lost",
-        "kicked": "Was kicked from the game",
-        "timeout": "Timed out",
-        "closed": "Connection closed",
-        "loginFailed": "Failed to login",
-        "quitting": "Quitting",
-        "endOfStream": "End of stream",
-        "overflow": "Buffer overflow"
+        "disconnected": "Afbrudt af server",
+        "lost": "Forbindelse mistet",
+        "kicked": "Blev smidt ud af spillet",
+        "timeout": "Timeout",
+        "closed": "Forbindelsen er lukket",
+        "loginFailed": "Login mislykkedes",
+        "quitting": "Afslutter",
+        "endOfStream": "Slut på stream",
+        "overflow": "Buffer-overløb"
     },
     "options": {
-        "off": "OFF",
-        "on": "ON",
-        "disabled": "Disabled",
-        "title": "Options",
-        "controls": "Controls...",
-        "keyboardControls": "Keyboard Controls...",
-        "controllerSettings": "Controller Settings...",
-        "controllerType": "Controller Type",
+        "off": "FRA",
+        "on": "TIL",
+        "disabled": "Deaktiveret",
+        "title": "Indstillinger",
+        "controls": "Kontroller...",
+        "keyboardControls": "Tastaturkontroller...",
+        "controllerSettings": "Controller-indstillinger...",
+        "controllerType": "Controllertype",
         "video": {
-            "text": "Video Settings...",
-            "performance": "Performance",
-            "display": "Display"
+            "text": "Videoindstillinger...",
+            "performance": "Ydeevne",
+            "display": "Skærm"
         },
-        "uiSettings": "UI Settings...",
-        "audioSettings": "Audio Settings...",
-        "audioTitle": "Audio Settings",
-        "videoTitle": "Video Settings",
-        "language": "Language...",
-        "anisoLevel": "Aniso Level",
-        "music": "Music",
-        "sound": "Sound",
-        "invertMouse": "Invert Mouse",
-        "alternateBlocks": "Alternate Blocks",
-        "chunkFade": "Chunk Fade",
+        "uiSettings": "UI-indstillinger...",
+        "audioSettings": "Lydindstillinger...",
+        "audioTitle": "Lydindstillinger",
+        "videoTitle": "Videoindstillinger",
+        "language": "Sprog...",
+        "anisoLevel": "Anisotrofi-niveau",
+        "music": "Musik",
+        "sound": "Lyd",
+        "invertMouse": "Inverter mus",
+        "alternateBlocks": "Skift blokke",
+        "chunkFade": "Chunk-fade",
         "sensitivity": {
-            "text": "Sensitivity",
-            "controllerText": "Controller Sensitivity",
-            "min": "*yawn*",
-            "max": "HYPERSPEED!!!"
+            "text": "Følsomhed",
+            "controllerText": "Controllerfølsomhed",
+            "min": "*gaben*",
+            "max": "HYPERHASTIGHED!!!"
         },
         "renderDistance": {
-            "text": "Render Distance",
+            "text": "Renderingsafstand",
             "chunks": "Chunks",
-            "tiny": "Tiny",
-            "short": "Short",
+            "tiny": "Lillebitte",
+            "short": "Kort",
             "normal": "Normal",
-            "far": "Far"
+            "far": "Langt"
         },
-        "viewBobbing": "View Bobbing",
-        "ao": "Smooth Lighting",
-        "anaglyph": "3D Anaglyph",
-        "framerateLimit": "Performance",
+        "viewBobbing": "Bevægelsessyn",
+        "ao": "Blød belysning",
+        "anaglyph": "3D-anaglyf",
+        "framerateLimit": "Ydeevne",
         "difficulty": {
-            "text": "Difficulty",
-            "peaceful": "Peaceful",
-            "easy": "Easy",
+            "text": "Sværhedsgrad",
+            "peaceful": "Fredelig",
+            "easy": "Let",
             "normal": "Normal",
-            "hard": "Hard"
+            "hard": "Svær"
         },
         "graphics": {
-            "text": "Graphics",
-            "fancy": "Fancy",
-            "fast": "Fast"
+            "text": "Grafik",
+            "fancy": "Flot",
+            "fast": "Hurtig"
         },
         "cloudsQuality": {
-            "text": "Clouds Quality",
-            "off": "No Clouds",
-            "legacy": "Old Clouds",
+            "text": "Skykvalitet",
+            "off": "Ingen skyer",
+            "legacy": "Gamle skyer",
             "shader": "Shader"
         },
         "softClouds": {
-            "text": "Soft Clouds"
+            "text": "Bløde skyer"
         },
         "guiScale": {
-            "text": "GUI Scale",
+            "text": "GUI-skala",
             "auto": "Auto",
-            "small": "Small",
+            "small": "Lille",
             "normal": "Normal",
-            "large": "Large"
+            "large": "Stor"
         },
         "chatScale": {
-            "text": "Chat Scale"
+            "text": "Chat-skala"
         },
         "chatWidth": {
-            "text": "Chat Width"
+            "text": "Chat-bredde"
         },
-        "advancedOpengl": "Advanced OpenGL",
+        "advancedOpengl": "Avanceret OpenGL",
         "fps": {
             "text": "FPS",
-            "maxFps": "Max FPS",
-            "unlimited": "Unlimited"
+            "maxFps": "Maks. FPS",
+            "unlimited": "Ubegrænset"
         },
-        "showCoordinates": "Show Coordinates",
-        "uiCursors": "UI Cursors",
+        "showCoordinates": "Vis koordinater",
+        "uiCursors": "UI-markører",
         "gamma": "Gamma",
         "vSync": "VSync",
         "mipmaps": "Mipmaps",
-        "menuMusic": "Menu Music",
+        "menuMusic": "Menumusik",
         "msaa": "MSAA",
         "fov": "FOV",
         "movement": {
-            "text": "Movement"
+            "text": "Bevægelse"
         },
         "view": {
-            "text": "View"
+            "text": "Visning"
         },
         "other": {
-            "text": "Other"
+            "text": "Andet"
         },
-        "editBindings": "Edit Bindings...",
-        "resetBindings": "Reset Bindings...",
-        "controllerBindings": "Controller Bindings",
+        "editBindings": "Rediger bindinger...",
+        "resetBindings": "Nulstil bindinger...",
+        "controllerBindings": "Controllerbindinger",
         "shader": {
-            "text": "Shader Options",
+            "text": "Shader-indstillinger",
             "chunkVert": {
-                "text": "World",
-                "WavyLeavesStrength": "Wavy Leaves Strength",
-                "WavyLeavesSpeed": "Wavy Leaves Speed",
-                "WavyPlantStrength": "Wavy Plant Strength",
-                "WavyPlantSpeed": "Wavy Plant Speed",
-                "WavyPlantMode": "Wavy Plant Mode"
+                "text": "Verden",
+                "WavyLeavesStrength": "Bølgende bladstyrke",
+                "WavyLeavesSpeed": "Bølgende bladhastighed",
+                "WavyPlantStrength": "Bølgende plantestyrke",
+                "WavyPlantSpeed": "Bølgende plante-hastighed",
+                "WavyPlantMode": "Bølgende plante-tilstand"
             },
             "cloud": {
-                "text": "Clouds",
-                "minParallax": "Min Parallax",
-                "maxParallax": "Max Parallax",
-                "minGradient": "Min Gradient",
-                "maxGradient": "Max Gradient",
-                "cloudHeight": "Cloud Height",
-                "shadow": "Shadow Color",
-                "smoothWidth": "Smooth Width",
-                "smoothSamples": "Smooth Samples",
-                "closeFade": "Close Fade",
-                "smoothTop": "Smooth Top",
-                "smoothEdge": "Smooth Edge",
-                "smoothBottom": "Smooth Bottom",
-                "smoothBottomTopDown": "Smooth Bottom Top Down"
+                "text": "Skyer",
+                "minParallax": "Min. parallakse",
+                "maxParallax": "Maks. parallakse",
+                "minGradient": "Min. gradient",
+                "maxGradient": "Maks. gradient",
+                "cloudHeight": "Skyhøjde",
+                "shadow": "Skyggefarve",
+                "smoothWidth": "Glat bredde",
+                "smoothSamples": "Glatte prøver",
+                "closeFade": "Nær fade",
+                "smoothTop": "Glat top",
+                "smoothEdge": "Glat kant",
+                "smoothBottom": "Glat bund",
+                "smoothBottomTopDown": "Glat bund top ned"
             },
             "ui": {
                 "text": "UI",
-                "darkMode": "Dark Mode"
+                "darkMode": "Mørk tilstand"
             },
             "preset": {
-                "text": "Preset",
-                "disabled": "Disabled",
-                "default": "Default",
-                "custom": "Custom",
+                "text": "Forudindstilling",
+                "disabled": "Deaktiveret",
+                "default": "Standard",
+                "custom": "Tilpasset",
                 "2d": "2D",
                 "3d": "3D",
-                "low": "Low",
-                "medium": "Medium",
-                "high": "High",
+                "low": "Lav",
+                "medium": "Mellem",
+                "high": "Høj",
                 "ultra": "Ultra"
             }
         }
     },
     "performance": {
-        "max": "Max FPS",
-        "balanced": "Balanced",
-        "powersaver": "Power saver"
+        "max": "Maks. FPS",
+        "balanced": "Afbalanceret",
+        "powersaver": "Strømbesparende"
     },
     "controls": {
-        "title": "Controls"
+        "title": "Kontroller"
     },
     "key": {
-        "forward": "Forward",
-        "left": "Left",
-        "back": "Back",
-        "right": "Right",
-        "jump": "Jump",
-        "inventory": "Inventory",
-        "drop": "Drop",
+        "forward": "Frem",
+        "left": "Venstre",
+        "back": "Tilbage",
+        "right": "Højre",
+        "jump": "Hop",
+        "inventory": "Inventar",
+        "drop": "Smid",
         "chat": "Chat",
-        "fog": "Toggle Fog",
-        "sneak": "Sneak",
-        "playerlist": "List players",
+        "fog": "Slå tåge til/fra",
+        "sneak": "Snig",
+        "playerlist": "Vis spillere",
         "zoom": "Zoom",
-        "hotbarLeft": "Hotbar Left",
-        "hotbarRight": "Hotbar Right",
-        "pickBlock": "Pick Block",
-        "camera": "Camera Mode",
+        "hotbarLeft": "Hurtiglinje venstre",
+        "hotbarRight": "Hurtiglinje højre",
+        "pickBlock": "Vælg blok",
+        "camera": "Kameratilstand",
         "pause": "Pause"
     },
     "texturePack": {
-        "openFolder": "Open texture pack folder",
-        "title": "Select Texture Pack",
-        "folderInfo": "(Place texture pack files here)"
+        "openFolder": "Åbn teksturpakkemappe",
+        "title": "Vælg teksturpakke",
+        "folderInfo": "(Placér teksturpakke-filer her)"
     },
     "tile": {
         "tallgrass": {
-            "name": "Tallgrass",
+            "name": "Højt græs",
             "desc": ""
         },
         "stone": {
-            "name": "Stone",
+            "name": "Sten",
             "desc": ""
         },
         "grass": {
-            "name": "Grass",
+            "name": "Græs",
             "desc": ""
         },
         "dirt": {
-            "name": "Dirt",
+            "name": "Jord",
             "desc": ""
         },
         "stonebrick": {
-            "name": "Cobblestone",
+            "name": "Brosten",
             "desc": ""
         },
         "wood": {
-            "name": "Wooden Planks",
+            "name": "Træplanker",
             "desc": ""
         },
         "sapling": {
-            "name": "Sapling",
+            "name": "Frøplante",
             "desc": ""
         },
         "bedrock": {
-            "name": "Bedrock",
+            "name": "Bundfjeld",
             "desc": ""
         },
         "water": {
-            "name": "Water",
+            "name": "Vand",
             "desc": ""
         },
         "lava": {
@@ -390,109 +390,109 @@
             "name": "Sand",
             "desc": ""
         },
-        "sandStone": { "name": "Sandstone" },
+        "sandStone": { "name": "Sandsten" },
         "gravel": {
-            "name": "Gravel",
+            "name": "Grus",
             "desc": ""
         },
         "oreGold": {
-            "name": "Gold Ore",
+            "name": "Gulderts",
             "desc": ""
         },
         "oreIron": {
-            "name": "Iron Ore",
+            "name": "Jernerts",
             "desc": ""
         },
         "oreCoal": {
-            "name": "Coal Ore",
+            "name": "Kulerts",
             "desc": ""
         },
         "log": {
-            "name": "Wood",
+            "name": "Træ",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Blade",
             "desc": ""
         },
         "sponge": {
-            "name": "Sponge",
+            "name": "Svamp",
             "desc": ""
         },
         "glass": {
-            "name": "Glass",
+            "name": "Glas",
             "desc": ""
         },
         "cloth": {
-            "name": "Wool",
+            "name": "Uld",
             "desc": "",
             "black": {
-                "name": "Black Wool",
+                "name": "Sort uld",
                 "desc": ""
             },
             "red": {
-                "name": "Red Wool",
+                "name": "Rød uld",
                 "desc": ""
             },
             "green": {
-                "name": "Green Wool",
+                "name": "Grøn uld",
                 "desc": ""
             },
             "brown": {
-                "name": "Brown Wool",
+                "name": "Brun uld",
                 "desc": ""
             },
             "blue": {
-                "name": "Blue Wool",
+                "name": "Blå uld",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Wool",
+                "name": "Lilla uld",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Wool",
+                "name": "Turkis uld",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Wool",
+                "name": "Lysegrå uld",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Wool",
+                "name": "Grå uld",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Wool",
+                "name": "Lyserød uld",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Wool",
+                "name": "Lime uld",
                 "desc": ""
             },
             "yellow": {
-                "name": "Yellow Wool",
+                "name": "Gul uld",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Wool",
+                "name": "Lyseblå uld",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Wool",
+                "name": "Magenta uld",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Wool",
+                "name": "Orange uld",
                 "desc": ""
             },
             "white": {
-                "name": "Wool",
+                "name": "Uld",
                 "desc": ""
             }
         },
         "flower": {
-            "name": "Flower",
+            "name": "Blomst",
             "desc": ""
         },
         "rose": {
@@ -500,37 +500,37 @@
             "desc": ""
         },
         "mushroom": {
-            "name": "Mushroom",
+            "name": "Svamp",
             "desc": ""
         },
         "blockGold": {
-            "name": "Block of Gold",
+            "name": "Guldblok",
             "desc": ""
         },
         "blockIron": {
-            "name": "Block of Iron",
+            "name": "Jernblok",
             "desc": ""
         },
         "stoneSlab": {
             "stone": {
-                "name": "Stone Slab",
+                "name": "Stenplade",
                 "desc": ""
             },
             "sand": {
-                "name": "Sandstone Slab",
+                "name": "Sandstensplade",
                 "desc": ""
             },
             "wood": {
-                "name": "Wooden Slab",
+                "name": "Træplade",
                 "desc": ""
             },
             "cobble": {
-                "name": "Stone Slab",
+                "name": "Brostensplade",
                 "desc": ""
             }
         },
         "brick": {
-            "name": "Bricks",
+            "name": "Mursten",
             "desc": ""
         },
         "tnt": {
@@ -538,11 +538,11 @@
             "desc": ""
         },
         "bookshelf": {
-            "name": "Bookshelf",
+            "name": "Bogreol",
             "desc": ""
         },
         "stoneMoss": {
-            "name": "Moss Stone",
+            "name": "Mossten",
             "desc": ""
         },
         "obsidian": {
@@ -550,139 +550,139 @@
             "desc": ""
         },
         "torch": {
-            "name": "Torch",
+            "name": "Fakkel",
             "desc": ""
         },
         "fire": {
-            "name": "Fire",
+            "name": "Ild",
             "desc": ""
         },
         "mobSpawner": {
-            "name": "Monster Spawner",
+            "name": "Monsterspawner",
             "desc": ""
         },
         "stairsWood": {
-            "name": "Wooden Stairs",
+            "name": "Trætrappe",
             "desc": ""
         },
         "chest": {
-            "name": "Chest",
+            "name": "Kiste",
             "desc": ""
         },
         "redstoneDust": {
-            "name": "Redstone Dust",
+            "name": "Rødstensstøv",
             "desc": ""
         },
         "oreDiamond": {
-            "name": "Diamond Ore",
+            "name": "Diamanterts",
             "desc": ""
         },
         "blockDiamond": {
-            "name": "Block of Diamond",
+            "name": "Diamantblok",
             "desc": ""
         },
         "workbench": {
-            "name": "Crafting Table",
+            "name": "Fremstillingsbord",
             "desc": ""
         },
         "crops": {
-            "name": "Crops",
+            "name": "Afgrøder",
             "desc": ""
         },
         "farmland": {
-            "name": "Farmland",
+            "name": "Agermuld",
             "desc": ""
         },
         "furnace": {
-            "name": "Furnace",
+            "name": "Ovn",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Skilt",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Trædør",
             "desc": ""
         },
         "ladder": {
-            "name": "Ladder",
+            "name": "Stige",
             "desc": ""
         },
         "rail": {
-            "name": "Rail",
+            "name": "Skinne",
             "desc": ""
         },
         "goldenRail": {
-            "name": "Powered Rail",
+            "name": "Drevet skinne",
             "desc": ""
         },
         "detectorRail": {
-            "name": "Detector Rail",
+            "name": "Detektorskinne",
             "desc": ""
         },
         "stairsStone": {
-            "name": "Stone Stairs",
+            "name": "Stentrappe",
             "desc": ""
         },
         "lever": {
-            "name": "Lever",
+            "name": "Håndtag",
             "desc": ""
         },
         "pressurePlate": {
-            "name": "Pressure Plate",
+            "name": "Trykplade",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Jerndør",
             "desc": ""
         },
         "oreRedstone": {
-            "name": "Redstone Ore",
+            "name": "Rødstenserts",
             "desc": ""
         },
         "notGate": {
-            "name": "Redstone Torch",
+            "name": "Rødstensfakkel",
             "desc": ""
         },
         "button": {
-            "name": "Button",
+            "name": "Knap",
             "desc": ""
         },
         "snow": {
-            "name": "Snow",
+            "name": "Sne",
             "desc": ""
         },
         "ice": {
-            "name": "Ice",
+            "name": "Is",
             "desc": ""
         },
         "cactus": {
-            "name": "Cactus",
+            "name": "Kaktus",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Ler",
             "desc": ""
         },
         "reeds": {
-            "name": "Sugar cane",
+            "name": "Sukkerrør",
             "desc": ""
         },
         "jukebox": {
-            "name": "Jukebox",
+            "name": "Jukeboks",
             "desc": ""
         },
         "fence": {
-            "name": "Fence",
+            "name": "Hegn",
             "desc": ""
         },
         "pumpkin": {
-            "name": "Pumpkin",
+            "name": "Græskar",
             "desc": ""
         },
         "litpumpkin": {
-            "name": "Jack 'o' Lantern",
+            "name": "Græskar-lys",
             "desc": ""
         },
         "hellrock": {
@@ -690,11 +690,11 @@
             "desc": ""
         },
         "hellsand": {
-            "name": "Soul Sand",
+            "name": "Sjælesand",
             "desc": ""
         },
         "lightgem": {
-            "name": "Glowstone",
+            "name": "Glødsten",
             "desc": ""
         },
         "portal": {
@@ -702,11 +702,11 @@
             "desc": ""
         },
         "oreLapis": {
-            "name": "Lapis Lazuli Ore",
+            "name": "Lapis Lazuli-erts",
             "desc": ""
         },
         "blockLapis": {
-            "name": "Lapis Lazuli Block",
+            "name": "Lapis Lazuli-blok",
             "desc": ""
         },
         "dispenser": {
@@ -714,300 +714,300 @@
             "desc": ""
         },
         "musicBlock": {
-            "name": "Note Block",
+            "name": "Nodeblok",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Kage",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Seng",
             "desc": "",
-            "occupied": "This bed is occupied",
-            "noSleep": "You can only sleep at night",
-            "notValid": "Your home bed was missing or obstructed"
+            "occupied": "Denne seng er optaget",
+            "noSleep": "Du kan kun sove om natten",
+            "notValid": "Din hjemmeseng mangler eller er blokeret"
         },
         "lockedchest": {
-            "name": "Locked chest",
+            "name": "Låst kiste",
             "desc": ""
         },
         "trapdoor": {
-            "name": "Trapdoor",
+            "name": "Lem",
             "desc": ""
         },
         "web": {
-            "name": "Cobweb",
+            "name": "Spindelvæv",
             "desc": ""
         },
         "stonebricksmooth": {
-            "name": "Stone Bricks",
+            "name": "Stenmursten",
             "desc": ""
         },
         "pistonBase": {
-            "name": "Piston",
+            "name": "Stempel",
             "desc": ""
         },
         "pistonStickyBase": {
-            "name": "Sticky Piston",
+            "name": "Klæbrigt stempel",
             "desc": ""
         }
     },
     "item": {
         "shovelIron": {
-            "name": "Iron Shovel",
+            "name": "Jernspade",
             "desc": ""
         },
         "pickaxeIron": {
-            "name": "Iron Pickaxe",
+            "name": "Jernhakke",
             "desc": ""
         },
         "hatchetIron": {
-            "name": "Iron Axe",
+            "name": "Jernøkse",
             "desc": ""
         },
         "flintAndSteel": {
-            "name": "Flint and Steel",
+            "name": "Fyrtøj",
             "desc": ""
         },
         "apple": {
-            "name": "Apple",
+            "name": "Æble",
             "desc": ""
         },
         "cookie": {
-            "name": "Cookie",
+            "name": "Småkage",
             "desc": ""
         },
         "bow": {
-            "name": "Bow",
+            "name": "Bue",
             "desc": ""
         },
         "arrow": {
-            "name": "Arrow",
+            "name": "Pil",
             "desc": ""
         },
         "coal": {
-            "name": "Coal",
+            "name": "Kul",
             "desc": ""
         },
         "charcoal": {
-            "name": "Charcoal",
+            "name": "Trækul",
             "desc": ""
         },
         "diamond": {
-            "name": "Diamond",
+            "name": "Diamant",
             "desc": ""
         },
         "ingotIron": {
-            "name": "Iron Ingot",
+            "name": "Jernbarre",
             "desc": ""
         },
         "ingotGold": {
-            "name": "Gold Ingot",
+            "name": "Guldbarre",
             "desc": ""
         },
         "swordIron": {
-            "name": "Iron Sword",
+            "name": "Jernsværd",
             "desc": ""
         },
         "swordWood": {
-            "name": "Wooden Sword",
+            "name": "Træsværd",
             "desc": ""
         },
         "shovelWood": {
-            "name": "Wooden Shovel",
+            "name": "Træspade",
             "desc": ""
         },
         "pickaxeWood": {
-            "name": "Wooden Pickaxe",
+            "name": "Træhakke",
             "desc": ""
         },
         "hatchetWood": {
-            "name": "Wooden Axe",
+            "name": "Træøkse",
             "desc": ""
         },
         "swordStone": {
-            "name": "Stone Sword",
+            "name": "Stensværd",
             "desc": ""
         },
         "shovelStone": {
-            "name": "Stone Shovel",
+            "name": "Stenspade",
             "desc": ""
         },
         "pickaxeStone": {
-            "name": "Stone Pickaxe",
+            "name": "Stenhakke",
             "desc": ""
         },
         "hatchetStone": {
-            "name": "Stone Axe",
+            "name": "Stenøkse",
             "desc": ""
         },
         "swordDiamond": {
-            "name": "Diamond Sword",
+            "name": "Diamantsværd",
             "desc": ""
         },
         "shovelDiamond": {
-            "name": "Diamond Shovel",
+            "name": "Diamantspade",
             "desc": ""
         },
         "pickaxeDiamond": {
-            "name": "Diamond Pickaxe",
+            "name": "Diamanthakke",
             "desc": ""
         },
         "hatchetDiamond": {
-            "name": "Diamond Axe",
+            "name": "Diamantøkse",
             "desc": ""
         },
         "stick": {
-            "name": "Stick",
+            "name": "Pind",
             "desc": ""
         },
         "bowl": {
-            "name": "Bowl",
+            "name": "Skål",
             "desc": ""
         },
         "mushroomStew": {
-            "name": "Mushroom Stew",
+            "name": "Svampesuppe",
             "desc": ""
         },
         "swordGold": {
-            "name": "Golden Sword",
+            "name": "Guldsværd",
             "desc": ""
         },
         "shovelGold": {
-            "name": "Golden Shovel",
+            "name": "Guldspade",
             "desc": ""
         },
         "pickaxeGold": {
-            "name": "Golden Pickaxe",
+            "name": "Guldhakke",
             "desc": ""
         },
         "hatchetGold": {
-            "name": "Golden Axe",
+            "name": "Guldøkse",
             "desc": ""
         },
         "string": {
-            "name": "String",
+            "name": "Tråd",
             "desc": ""
         },
         "feather": {
-            "name": "Feather",
+            "name": "Fjer",
             "desc": ""
         },
         "gunpowder": {
-            "name": "Gunpowder",
+            "name": "Krudt",
             "desc": ""
         },
         "hoeWood": {
-            "name": "Wooden Hoe",
+            "name": "Trælugejern",
             "desc": ""
         },
         "hoeStone": {
-            "name": "Stone Hoe",
+            "name": "Stenlugejern",
             "desc": ""
         },
         "hoeIron": {
-            "name": "Iron Hoe",
+            "name": "Jernlugejern",
             "desc": ""
         },
         "hoeDiamond": {
-            "name": "Diamond Hoe",
+            "name": "Diamantlugejern",
             "desc": ""
         },
         "hoeGold": {
-            "name": "Golden Hoe",
+            "name": "Guldlugejern",
             "desc": ""
         },
         "seeds": {
-            "name": "Seeds",
+            "name": "Frø",
             "desc": ""
         },
         "wheat": {
-            "name": "Wheat",
+            "name": "Hvede",
             "desc": ""
         },
         "bread": {
-            "name": "Bread",
+            "name": "Brød",
             "desc": ""
         },
         "helmetLeather": {
-            "name": "Leather Cap",
+            "name": "Læderhue",
             "desc": ""
         },
         "chestplateLeather": {
-            "name": "Leather Tunic",
+            "name": "Lædertunika",
             "desc": ""
         },
         "leggingsLeather": {
-            "name": "Leather Pants",
+            "name": "Læderbukser",
             "desc": ""
         },
         "bootsLeather": {
-            "name": "Leather Boots",
+            "name": "Læderstøvler",
             "desc": ""
         },
         "helmetChain": {
-            "name": "Chain Helmet",
+            "name": "Ringbrynjehjelm",
             "desc": ""
         },
         "chestplateChain": {
-            "name": "Chain Chestplate",
+            "name": "Ringbrynje-brystplade",
             "desc": ""
         },
         "leggingsChain": {
-            "name": "Chain Leggings",
+            "name": "Ringbrynje-benklæder",
             "desc": ""
         },
         "bootsChain": {
-            "name": "Chain Boots",
+            "name": "Ringbrynjestøvler",
             "desc": ""
         },
         "helmetIron": {
-            "name": "Iron Helmet",
+            "name": "Jernhjelm",
             "desc": ""
         },
         "chestplateIron": {
-            "name": "Iron Chestplate",
+            "name": "Jernbrystplade",
             "desc": ""
         },
         "leggingsIron": {
-            "name": "Iron Leggings",
+            "name": "Jernbenklæder",
             "desc": ""
         },
         "bootsIron": {
-            "name": "Iron Boots",
+            "name": "Jernstøvler",
             "desc": ""
         },
         "helmetDiamond": {
-            "name": "Diamond Helmet",
+            "name": "Diamanthjelm",
             "desc": ""
         },
         "chestplateDiamond": {
-            "name": "Diamond Chestplate",
+            "name": "Diamantbrystplade",
             "desc": ""
         },
         "leggingsDiamond": {
-            "name": "Diamond Leggings",
+            "name": "Diamantbenklæder",
             "desc": ""
         },
         "bootsDiamond": {
-            "name": "Diamond Boots",
+            "name": "Diamantstøvler",
             "desc": ""
         },
         "helmetGold": {
-            "name": "Golden Helmet",
+            "name": "Guldhjelm",
             "desc": ""
         },
         "chestplateGold": {
-            "name": "Golden Chestplate",
+            "name": "Guldbrystplade",
             "desc": ""
         },
         "leggingsGold": {
-            "name": "Golden Leggings",
+            "name": "Guldbenklæder",
             "desc": ""
         },
         "bootsGold": {
-            "name": "Golden boots",
+            "name": "Guldstøvler",
             "desc": ""
         },
         "flint": {
@@ -1015,156 +1015,156 @@
             "desc": ""
         },
         "porkchopRaw": {
-            "name": "Raw Porkchop",
+            "name": "Råt svinekotelet",
             "desc": ""
         },
         "porkchopCooked": {
-            "name": "Cooked Porkchop",
+            "name": "Stegt svinekotelet",
             "desc": ""
         },
         "painting": {
-            "name": "Painting",
+            "name": "Maleri",
             "desc": ""
         },
         "appleGold": {
-            "name": "Golden Apple",
+            "name": "Gyldent æble",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Skilt",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Trædør",
             "desc": ""
         },
         "bucket": {
-            "name": "Bucket",
+            "name": "Spand",
             "desc": ""
         },
         "bucketWater": {
-            "name": "Water Bucket",
+            "name": "Vandspand",
             "desc": ""
         },
         "bucketLava": {
-            "name": "Lava bucket",
+            "name": "Lavaspand",
             "desc": ""
         },
         "minecart": {
-            "name": "Minecart",
+            "name": "Minevogn",
             "desc": ""
         },
         "saddle": {
-            "name": "Saddle",
+            "name": "Saddel",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Jerndør",
             "desc": ""
         },
         "redstone": {
-            "name": "Redstone",
+            "name": "Rødsten",
             "desc": ""
         },
         "snowball": {
-            "name": "Snowball",
+            "name": "Snebold",
             "desc": ""
         },
         "boat": {
-            "name": "Boat",
+            "name": "Båd",
             "desc": ""
         },
         "leather": {
-            "name": "Leather",
+            "name": "Læder",
             "desc": ""
         },
         "milk": {
-            "name": "Milk",
+            "name": "Mælk",
             "desc": ""
         },
         "brick": {
-            "name": "Brick",
+            "name": "Mursten",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Ler",
             "desc": ""
         },
         "sugarCanes": {
-            "name": "Sugar Canes",
+            "name": "Sukkerrør",
             "desc": ""
         },
         "paper": {
-            "name": "Paper",
+            "name": "Papir",
             "desc": ""
         },
         "book": {
-            "name": "Book",
+            "name": "Bog",
             "desc": ""
         },
         "slimeball": {
-            "name": "Slimeball",
+            "name": "Slimkugle",
             "desc": ""
         },
         "minecartChest": {
-            "name": "Minecart with Chest",
+            "name": "Minevogn med kiste",
             "desc": ""
         },
         "minecartFurnace": {
-            "name": "Minecart with Furnace",
+            "name": "Minevogn med ovn",
             "desc": ""
         },
         "egg": {
-            "name": "Egg",
+            "name": "Æg",
             "desc": ""
         },
         "compass": {
-            "name": "Compass",
+            "name": "Kompas",
             "desc": ""
         },
         "fishingRod": {
-            "name": "Fishing Rod",
+            "name": "Fiskestang",
             "desc": ""
         },
         "clock": {
-            "name": "Clock",
+            "name": "Ur",
             "desc": ""
         },
         "yellowDust": {
-            "name": "Glowstone Dust",
+            "name": "Glødstensstøv",
             "desc": ""
         },
         "fishRaw": {
-            "name": "Raw Fish",
+            "name": "Rå fisk",
             "desc": ""
         },
         "fishCooked": {
-            "name": "Cooked Fish",
+            "name": "Stegt fisk",
             "desc": ""
         },
         "record": {
-            "name": "Music Disc",
+            "name": "Musikplade",
             "desc": ""
         },
         "bone": {
-            "name": "Bone",
+            "name": "Ben",
             "desc": ""
         },
         "dyePowder": {
             "black": {
-                "name": "Ink Sac",
+                "name": "Blæksæk",
                 "desc": ""
             },
             "red": {
-                "name": "Rose Red",
+                "name": "Roserød",
                 "desc": ""
             },
             "green": {
-                "name": "Cactus Green",
+                "name": "Kaktusgrøn",
                 "desc": ""
             },
             "brown": {
-                "name": "Cocoa Beans",
+                "name": "Kakaobønner",
                 "desc": ""
             },
             "blue": {
@@ -1172,198 +1172,198 @@
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Dye",
+                "name": "Lilla farve",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Dye",
+                "name": "Turkis farve",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Dye",
+                "name": "Lysegrå farve",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Dye",
+                "name": "Grå farve",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Dye",
+                "name": "Lyserød farve",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Dye",
+                "name": "Lime farve",
                 "desc": ""
             },
             "yellow": {
-                "name": "Dandelion Yellow",
+                "name": "Mælkebøttegul",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Dye",
+                "name": "Lyseblå farve",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Dye",
+                "name": "Magenta farve",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Dye",
+                "name": "Orange farve",
                 "desc": ""
             },
             "white": {
-                "name": "Bone Meal",
+                "name": "Benmel",
                 "desc": ""
             }
         },
         "sugar": {
-            "name": "Sugar",
+            "name": "Sukker",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Kage",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Seng",
             "desc": ""
         },
         "redstoneRepeater": {
-            "name": "Redstone Repeater",
+            "name": "Rødstensrepeater",
             "desc": ""
         },
         "map": {
-            "name": "Map",
+            "name": "Kort",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Blade",
             "desc": ""
         },
         "shears": {
-            "name": "Shears",
+            "name": "Saks",
             "desc": ""
         }
     },
     "stat": {
-        "generalButton": "General",
-        "blocksButton": "Blocks",
-        "itemsButton": "Items",
-        "used": "Times Used",
-        "mined": "Times Mined",
-        "depleted": "Times Depleted",
-        "crafted": "Times Crafted",
-        "startGame": "Times played",
-        "createWorld": "Worlds played",
-        "loadWorld": "Saves loaded",
-        "joinMultiplayer": "Multiplayer joins",
-        "leaveGame": "Games quit",
-        "playOneMinute": "Minutes Played",
-        "walkOneCm": "Distance Walked",
-        "fallOneCm": "Distance Fallen",
-        "swimOneCm": "Distance Swum",
-        "flyOneCm": "Distance Flown",
-        "climbOneCm": "Distance Climbed",
-        "diveOneCm": "Distance Dove",
-        "minecartOneCm": "Distance by Minecart",
-        "boatOneCm": "Distance by Boat",
-        "pigOneCm": "Distance by Pig",
-        "jump": "Jumps",
-        "drop": "Items Dropped",
-        "damageDealt": "Damage Dealt",
-        "damageTaken": "Damage Taken",
-        "deaths": "Number of Deaths",
-        "mobKills": "Mob Kills",
-        "playerKills": "Player Kills",
-        "fishCaught": "Fish Caught",
-        "mineBlock": "{0} Mined",
-        "craftItem": "{0} Crafted",
-        "useItem": "{0} Used",
-        "breakItem": "{0} Depleted"
+        "generalButton": "Generelt",
+        "blocksButton": "Blokke",
+        "itemsButton": "Genstande",
+        "used": "Antal gange brugt",
+        "mined": "Antal gange brudt",
+        "depleted": "Antal gange opbrugt",
+        "crafted": "Antal gange fremstillet",
+        "startGame": "Antal gange spillet",
+        "createWorld": "Verdener spillet",
+        "loadWorld": "Gemte spil indlæst",
+        "joinMultiplayer": "Flerspiller-deltagelser",
+        "leaveGame": "Spil afsluttet",
+        "playOneMinute": "Minutter spillet",
+        "walkOneCm": "Afstand gået",
+        "fallOneCm": "Afstand faldet",
+        "swimOneCm": "Afstand svømmet",
+        "flyOneCm": "Afstand fløjet",
+        "climbOneCm": "Afstand klatret",
+        "diveOneCm": "Afstand dykket",
+        "minecartOneCm": "Afstand med minevogn",
+        "boatOneCm": "Afstand med båd",
+        "pigOneCm": "Afstand med gris",
+        "jump": "Hop",
+        "drop": "Genstande smidt",
+        "damageDealt": "Skade uddelt",
+        "damageTaken": "Skade modtaget",
+        "deaths": "Antal dødsfald",
+        "mobKills": "Monsterdrab",
+        "playerKills": "Spillerdrab",
+        "fishCaught": "Fisk fanget",
+        "mineBlock": "{0} Brudt",
+        "craftItem": "{0} Fremstillet",
+        "useItem": "{0} Brugt",
+        "breakItem": "{0} Opbrugt"
     },
-    "achievements.title": "Achievements",
+    "achievements.title": "Bedrifter",
     "achievement": {
-        "get": "Achievement get!",
-        "taken": "Taken!",
-        "challenge": "CHALLENGE",
-        "unlocked": "UNLOCKED",
-        "locked": "LOCKED",
-        "requires": "Requires '{0}'",
+        "get": "Bedrift opnået!",
+        "taken": "Opnået!",
+        "challenge": "UDFORDRING",
+        "unlocked": "LÅST OP",
+        "locked": "LÅST",
+        "requires": "Kræver '{0}'",
         "openInventory": {
-            "title": "Taking Inventory",
-            "desc": "Open your inventory."
+            "title": "Tager inventar",
+            "desc": "Åbn dit inventar."
         },
         "mineWood": {
-            "title": "Getting Wood",
-            "desc": "Attack a tree until a block of wood pops out"
+            "title": "Får træ",
+            "desc": "Angrib et træ, indtil en træblok springer ud"
         },
         "buildWorkBench": {
             "title": "Benchmarking",
-            "desc": "Craft a workbench with four blocks of planks"
+            "desc": "Fremstil et fremstillingsbord med fire træplanker"
         },
         "buildPickaxe": {
-            "title": "Time to Mine!",
-            "desc": "Use planks and sticks to make a pickaxe"
+            "title": "Tid til at grave!",
+            "desc": "Brug planker og pinde til at lave en hakke"
         },
         "buildFurnace": {
-            "title": "Hot Topic",
-            "desc": "Construct a furnace out of eight stone blocks"
+            "title": "Varmt emne",
+            "desc": "Byg en ovn ud af otte stenblokke"
         },
         "acquireIron": {
-            "title": "Acquire Hardware",
-            "desc": "Smelt an iron ingot"
+            "title": "Anskaf værktøj",
+            "desc": "Smelt en jernbarre"
         },
         "buildHoe": {
-            "title": "Time to Farm!",
-            "desc": "Use planks and sticks to make a hoe"
+            "title": "Tid til at dyrke!",
+            "desc": "Brug planker og pinde til at lave et lugejern"
         },
         "makeBread": {
-            "title": "Bake Bread",
-            "desc": "Turn wheat into bread"
+            "title": "Bag brød",
+            "desc": "Forvandl hvede til brød"
         },
         "bakeCake": {
-            "title": "The Lie",
-            "desc": "Wheat, sugar, milk and eggs!"
+            "title": "Løgnen",
+            "desc": "Hvede, sukker, mælk og æg!"
         },
         "buildBetterPickaxe": {
-            "title": "Getting an Upgrade",
-            "desc": "Construct a better pickaxe"
+            "title": "Får en opgradering",
+            "desc": "Byg en bedre hakke"
         },
         "cookFish": {
-            "title": "Delicious Fish",
-            "desc": "Catch and cook fish!"
+            "title": "Lækker fisk",
+            "desc": "Fang og tilbered fisk!"
         },
         "onARail": {
-            "title": "On A Rail",
-            "desc": "Travel by minecart at least 1 km from where you started "
+            "title": "På en skinne",
+            "desc": "Rejs med minevogn mindst 1 km fra hvor du startede "
         },
         "buildSword": {
-            "title": "Time to Strike!",
-            "desc": "Use planks and sticks to make a sword"
+            "title": "Tid til at slå!",
+            "desc": "Brug planker og pinde til at lave et sværd"
         },
         "killEnemy": {
-            "title": "Monster Hunter",
-            "desc": "Attack and destroy a monster"
+            "title": "Monsterjæger",
+            "desc": "Angrib og ødelæg et monster"
         },
         "killCow": {
-            "title": "Cow Tipper",
-            "desc": "Harvest some leather"
+            "title": "Ko-vælter",
+            "desc": "Høst noget læder"
         },
         "flyPig": {
-            "title": "When Pigs Fly",
-            "desc": "Fly a pig off a cliff"
+            "title": "Når grise flyver",
+            "desc": "Få en gris til at flyve ud over en klippe"
         }
     },
     "credits": {
-        "version": "BetaSharp Version %1$s",
-        "description": "An enhanced of Minecraft Beta 1.7.3, written in C#.",
-        "github": "On GitHub",
-        "author": "Made by Fazin85",
-        "libs": "Libraries",
-        "slik": "Slik.NET - Graphics",
-        "imgui": "ImGui - Debug UI",
-        "sfml": "SFML.NET - Audio",
-        "sixlabors": "SixLabors - Fonts, image processing",
-        "translations": "Translations Credits"
+        "version": "BetaSharp-version %1$s",
+        "description": "En forbedret udgave af Minecraft Beta 1.7.3, skrevet i C#.",
+        "github": "På GitHub",
+        "author": "Lavet af Fazin85",
+        "libs": "Biblioteker",
+        "slik": "Slik.NET - Grafik",
+        "imgui": "ImGui - Debug-UI",
+        "sfml": "SFML.NET - Lyd",
+        "sixlabors": "SixLabors - Skrifttyper, billedbehandling",
+        "translations": "Oversættelses-krediteringer"
     }
 }
