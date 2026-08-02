@@ -21,7 +21,7 @@ public class Translations
     /// </remarks>
     public static Translations Instance { get; private set; } = new();
 
-    public Dictionary<string, Language> Languages { get; private set; } = new Dictionary<string, Language>();
+    public SortedDictionary<string, Language> Languages { get; private set; } = new SortedDictionary<string, Language>();
     public Language? CurrentLanguage { get; private set; }
     public Language? DefaultLanguage { get; private set; }
     private Translations() { }
