@@ -68,7 +68,6 @@ public unsafe class EmulatedGL : LegacyGL
 
     private readonly uint _immediateVao;
 
-    private readonly DisplayListCompiler _displayLists;
 
     private bool _externalShaderActive;
     private int _externalMvUniform = -1;
@@ -83,7 +82,6 @@ public unsafe class EmulatedGL : LegacyGL
         _shader = new FixedFunctionShader(gl);
         _shader.Use();
         _shader.SetTexture0(0);
-        _displayLists = new DisplayListCompiler(gl);
     }
 
     internal MatrixStack ActiveStack => _currentMatrixMode switch
@@ -200,50 +198,8 @@ public unsafe class EmulatedGL : LegacyGL
         _dirtyState.StateDirty = true;
     }
 
-    public override uint GenLists(uint range) => _displayLists.GenLists(range);
-
-    public override void NewList(uint list, GLEnum mode)
-    {
-        if (mode == GLEnum.Compile || mode == GLEnum.CompileAndExecute)
-        {
-            _displayLists.BeginList(list);
-        }
-    }
-
-    public override void EndList() => _displayLists.EndList();
-
-    public override void DeleteLists(uint list, uint range) => _displayLists.DeleteLists(list, range);
-
-    public override void CallList(uint list)
-    {
-        if (_displayLists.IsCompiling) return;
-
-        _displayLists.Execute(list, this);
-
-        SilkGL.BindVertexArray(_immediateVao);
-    }
-
-    public override void CallLists(uint n, GLEnum type, void* lists)
-    {
-        if (_displayLists.IsCompiling) return;
-
-        if (type == GLEnum.UnsignedInt)
-        {
-            uint* ids = (uint*)lists;
-            for (int i = 0; i < (int)n; i++)
-            {
-                CallList(ids[i]);
-            }
-        }
-    }
-
     public override void BufferData(GLEnum target, nuint size, void* data, GLEnum usage)
     {
-        if (_displayLists.IsCompiling && target == GLEnum.ArrayBuffer && data != null)
-        {
-            _displayLists.CaptureVertexData((byte*)data, (int)size);
-        }
-
         SilkGL.BufferData(target.ToModern(), size, data, usage.ToModern());
     }
 
@@ -254,63 +210,54 @@ public unsafe class EmulatedGL : LegacyGL
 
     public override void LoadIdentity()
     {
-        if (_displayLists.IsCompiling) return;
         ActiveStack.LoadIdentity();
         MarkActiveMatrixDirty();
     }
 
     public override void PushMatrix()
     {
-        if (_displayLists.IsCompiling) return;
         ActiveStack.Push();
         MarkActiveMatrixDirty();
     }
 
     public override void PopMatrix()
     {
-        if (_displayLists.IsCompiling) return;
         ActiveStack.Pop();
         MarkActiveMatrixDirty();
     }
 
     public override void Translate(float x, float y, float z)
     {
-        if (_displayLists.IsCompiling) { _displayLists.RecordTranslate(x, y, z); return; }
         ActiveStack.Translate(x, y, z);
         MarkActiveMatrixDirty();
     }
 
     public override void Rotate(float angle, float x, float y, float z)
     {
-        if (_displayLists.IsCompiling) return;
         ActiveStack.Rotate(angle, x, y, z);
         MarkActiveMatrixDirty();
     }
 
     public override void Scale(float x, float y, float z)
     {
-        if (_displayLists.IsCompiling) return;
         ActiveStack.Scale(x, y, z);
         MarkActiveMatrixDirty();
     }
 
     public override void Scale(double x, double y, double z)
     {
-        if (_displayLists.IsCompiling) return;
         ActiveStack.Scale((float)x, (float)y, (float)z);
         MarkActiveMatrixDirty();
     }
 
     public override void Ortho(double left, double right, double bottom, double top, double zNear, double zFar)
     {
-        if (_displayLists.IsCompiling) return;
         ActiveStack.Ortho(left, right, bottom, top, zNear, zFar);
         MarkActiveMatrixDirty();
     }
 
     public override void Frustum(double left, double right, double bottom, double top, double zNear, double zFar)
     {
-        if (_displayLists.IsCompiling) return;
         ActiveStack.Frustum(left, right, bottom, top, zNear, zFar);
         MarkActiveMatrixDirty();
     }
@@ -318,7 +265,6 @@ public unsafe class EmulatedGL : LegacyGL
     public override void Color3(float red, float green, float blue)
     {
         _currentColorTint = new Vector4D<float>(red, green, blue, 1.0f);
-        if (_displayLists.IsCompiling) { _displayLists.RecordColor(red, green, blue, 1.0f); return; }
         SilkGL.VertexAttrib4(1, red, green, blue, 1.0f);
     }
 
@@ -326,48 +272,41 @@ public unsafe class EmulatedGL : LegacyGL
     {
         float r = red / 255.0f, g = green / 255.0f, b = blue / 255.0f;
         _currentColorTint = new Vector4D<float>(r, g, b, 1.0f);
-        if (_displayLists.IsCompiling) { _displayLists.RecordColor(r, g, b, 1.0f); return; }
         SilkGL.VertexAttrib4(1, r, g, b, 1.0f);
     }
 
     public override void Color4(float red, float green, float blue, float alpha)
     {
         _currentColorTint = new Vector4D<float>(red, green, blue, alpha);
-        if (_displayLists.IsCompiling) { _displayLists.RecordColor(red, green, blue, alpha); return; }
         SilkGL.VertexAttrib4(1, red, green, blue, alpha);
     }
 
     public override void VertexPointer(int size, GLEnum type, uint stride, void* pointer)
     {
-        if (_displayLists.IsCompiling) { _displayLists.SetStride(stride); return; }
         SilkGL.BindVertexArray(_immediateVao);
         SilkGL.VertexAttribPointer(0, size, type.ToModern(), false, stride, pointer);
     }
 
     public override void ColorPointer(int size, ColorPointerType type, uint stride, void* pointer)
     {
-        if (_displayLists.IsCompiling) return;
         SilkGL.BindVertexArray(_immediateVao);
         SilkGL.VertexAttribPointer(1, size, (Silk.NET.OpenGL.GLEnum)type, true, stride, pointer);
     }
 
     public override void TexCoordPointer(int size, GLEnum type, uint stride, void* pointer)
     {
-        if (_displayLists.IsCompiling) return;
         SilkGL.BindVertexArray(_immediateVao);
         SilkGL.VertexAttribPointer(2, size, type.ToModern(), false, stride, pointer);
     }
 
     public override void NormalPointer(NormalPointerType type, uint stride, void* pointer)
     {
-        if (_displayLists.IsCompiling) return;
         SilkGL.BindVertexArray(_immediateVao);
         SilkGL.VertexAttribPointer(3, 3, (Silk.NET.OpenGL.GLEnum)type, true, stride, pointer);
     }
 
     public override void EnableClientState(GLEnum array)
     {
-        if (_displayLists.IsCompiling) { _displayLists.EnableAttribute(array); return; }
         SilkGL.BindVertexArray(_immediateVao);
         switch (array)
         {
@@ -381,7 +320,6 @@ public unsafe class EmulatedGL : LegacyGL
 
     public override void DisableClientState(GLEnum array)
     {
-        if (_displayLists.IsCompiling) return;
         SilkGL.BindVertexArray(_immediateVao);
         switch (array)
         {
@@ -428,7 +366,6 @@ public unsafe class EmulatedGL : LegacyGL
             case GLEnum.RescaleNormal: return;
         }
         OnRasterStateChanging(cap);
-        if (_displayLists.IsCompiling) return;
         SilkGL.Enable(cap.ToModern());
     }
 
@@ -462,7 +399,6 @@ public unsafe class EmulatedGL : LegacyGL
             case GLEnum.RescaleNormal: return;
         }
         OnRasterStateChanging(cap);
-        if (_displayLists.IsCompiling) return;
         SilkGL.Disable(cap.ToModern());
     }
 
@@ -558,12 +494,6 @@ public unsafe class EmulatedGL : LegacyGL
 
     public override void DrawArrays(GLEnum mode, int first, uint count)
     {
-        if (_displayLists.IsCompiling)
-        {
-            _displayLists.RecordDraw(mode, (int)count);
-            return;
-        }
-
         if (_currentProgram == 0 || _currentProgram == _shader.Program || _externalShaderActive)
         {
             ActivateShader();
@@ -574,7 +504,6 @@ public unsafe class EmulatedGL : LegacyGL
 
     public override void UseProgram(uint program)
     {
-        if (_displayLists.IsCompiling) return;
         _currentProgram = program;
         _dirtyState.StateDirty = true;
         _dirtyState.DirtyModelView = true;

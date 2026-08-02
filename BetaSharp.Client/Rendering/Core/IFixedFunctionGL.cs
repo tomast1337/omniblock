@@ -56,14 +56,6 @@ public unsafe interface IFixedFunctionGL
     void DisableClientState(GLEnum array);
     void EnableClientState(GLEnum array);
 
-    // Display lists. WebGPU has no equivalent concept at all.
-    void CallList(uint list);
-    void CallLists(uint n, GLEnum type, void* lists);
-    void DeleteLists(uint list, uint range);
-    void EndList();
-    uint GenLists(uint range);
-    void NewList(uint list, GLEnum mode);
-
     // Fixed pipeline state, all of it expressible as shader uniforms.
     void AlphaFunc(GLEnum func, float refValue);
     void ColorMaterial(GLEnum face, GLEnum mode);

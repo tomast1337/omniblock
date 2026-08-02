@@ -55,3 +55,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-02 — feat(lang): translate Maltese (Nicolas Vyčas Nery; `dbb4e67363bcd6993a595055ae703b62bd3bce33`)
 - 2026-08-02 — feat(lang): translate Finnish (Nicolas Vyčas Nery; `1725354f292eedbbf1a3d07da3d582df5bd75543`)
 - 2026-08-02 — refactor(rendering): separate the fixed-function calls from the rest of IGL (Nicolas Vyčas Nery; `87ea458e197af0d2ca55edc7ef9911f272af4856`)
+- 2026-08-02 — refactor(rendering): replace display lists with buffers that outlive the frame (Nicolas Vyčas Nery; `365741daa0ce8df528b81775e0ec8d2eefcf3acf`)

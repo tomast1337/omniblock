@@ -2,19 +2,8 @@ namespace BetaSharp.Client.Rendering.Core;
 
 public class GLAllocation
 {
-    private static readonly List<int> displayLists = new();
     private static readonly List<int> textureNames = new();
     private static readonly object l = new();
-    public static int generateDisplayLists(int count)
-    {
-        lock (l)
-        {
-            int displayList = (int)GLManager.GL.GenLists((uint)count);
-            displayLists.Add(displayList);
-            displayLists.Add(count);
-            return displayList;
-        }
-    }
 
     public static void generateTextureNames(Span<int> textureNamesBuffer)
     {
@@ -44,30 +33,10 @@ public class GLAllocation
         }
     }
 
-    public static void deleteBufferARB(int displayList)
+    public static void deleteTextures()
     {
         lock (l)
         {
-            int listIndex = displayLists.IndexOf(displayList);
-            int list = displayLists[listIndex];
-            int range = displayLists[listIndex + 1];
-            GLManager.GL.DeleteLists((uint)list, (uint)range);
-            displayLists.RemoveAt(listIndex);
-            displayLists.RemoveAt(listIndex);
-        }
-    }
-
-    public static void deleteTexturesAndDisplayLists()
-    {
-        lock (l)
-        {
-            for (int index = 0; index < displayLists.Count; index += 2)
-            {
-                int list = displayLists[index];
-                int range = displayLists[index + 1];
-                GLManager.GL.DeleteLists((uint)list, (uint)range);
-            }
-
             if (textureNames.Count > 0)
             {
                 uint[] textureIds = new uint[textureNames.Count];
@@ -78,7 +47,6 @@ public class GLAllocation
                 GLManager.GL.DeleteTextures(textureIds);
             }
 
-            displayLists.Clear();
             textureNames.Clear();
         }
     }

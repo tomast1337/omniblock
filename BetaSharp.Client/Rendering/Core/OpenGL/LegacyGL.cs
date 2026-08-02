@@ -75,9 +75,7 @@ public abstract unsafe class LegacyGL : IGL
 
     public abstract void BufferData(GLEnum target, nuint size, void* data, GLEnum usage);
 
-    public abstract void CallList(uint list);
 
-    public abstract void CallLists(uint n, GLEnum type, void* lists);
 
     public void Clear(ClearBufferMask mask)
     {
@@ -134,7 +132,6 @@ public abstract unsafe class LegacyGL : IGL
         SilkGL.DeleteBuffer(buffer);
     }
 
-    public abstract void DeleteLists(uint list, uint range);
 
     public void DeleteProgram(uint program)
     {
@@ -203,7 +200,6 @@ public abstract unsafe class LegacyGL : IGL
         SilkGL.EnableVertexAttribArray(index);
     }
 
-    public abstract void EndList();
 
     public abstract void Fog(GLEnum pname, float param);
 
@@ -226,7 +222,6 @@ public abstract unsafe class LegacyGL : IGL
         SilkGL.GenBuffers(buffers);
     }
 
-    public abstract uint GenLists(uint range);
 
     public uint GenTexture()
     {
@@ -311,7 +306,6 @@ public abstract unsafe class LegacyGL : IGL
 
     public abstract void MatrixMode(GLEnum mode);
 
-    public abstract void NewList(uint list, GLEnum mode);
 
     public abstract void Normal3(float nx, float ny, float nz);
 
