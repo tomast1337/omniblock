@@ -1,385 +1,385 @@
-﻿{
+{
     "gui": {
-        "joinServer": "Join Server",
-        "rename": "Rename",
-        "edit": "Edit",
-        "refresh": "Refresh",
-        "done": "Done",
-        "cancel": "Cancel",
-        "delete": "Delete",
-        "toMenu": "Back to title screen",
-        "up": "Up",
-        "down": "Down",
-        "yes": "Yes",
-        "no": "No",
-        "connect": "Connect",
-        "directConnect": "Direct Connect",
-        "addServer": "Add Server",
-        "create": "Create",
-        "customize": "Customize",
-        "achievements": "Achievements",
-        "stats": "Statistics",
+        "joinServer": "Ingħaqad mas-Server",
+        "rename": "Erġa' Semmi",
+        "edit": "Editja",
+        "refresh": "Aġġorna",
+        "done": "Lest",
+        "cancel": "Ikkanċella",
+        "delete": "Ħassar",
+        "toMenu": "Lura għall-iskrin tat-titlu",
+        "up": "Fuq",
+        "down": "Isfel",
+        "yes": "Iva",
+        "no": "Le",
+        "connect": "Ikkonnettja",
+        "directConnect": "Konnessjoni Diretta",
+        "addServer": "Żid Server",
+        "create": "Oħloq",
+        "customize": "Ippersonalizza",
+        "achievements": "Kisbiet",
+        "stats": "Statistika",
         "container": {
-            "crafting": "Crafting",
-            "inventory": "Inventory",
+            "crafting": "Snajja'",
+            "inventory": "Inventarju",
             "dispenser": "Dispenser",
-            "furnace": "Furnace",
+            "furnace": "Forn",
             "tip": {
-                "move": "Move",
-                "quickMove": "Quick Move",
-                "takeHalf": "Take Half",
-                "place": "Place",
-                "placeOne": "Place One"
+                "move": "Mexxi",
+                "quickMove": "Ċaqliq Mgħaġġel",
+                "takeHalf": "Ħu Nofs",
+                "place": "Poġġi",
+                "placeOne": "Poġġi Waħda"
             }
         }
     },
     "menu": {
-        "singleplayer": "Singleplayer",
+        "singleplayer": "Plejer Wieħed",
         "multiplayer": "Multiplayer",
-        "texturePacks": "Texture Packs",
-        "options": "Options...",
-        "language": "Language",
-        "quit": "Quit Game",
-        "credits": "Credits",
-        "sendFeedback": "Send Feedback",
-        "reportBugs": "Report Bugs",
-        "saveAndQuitToTitle": "Save and quit to title",
-        "disconnect": "Disconnect"
+        "texturePacks": "Pakki tat-Tessuti",
+        "options": "Għażliet...",
+        "language": "Lingwa",
+        "quit": "Agħlaq il-Logħba",
+        "credits": "Krediti",
+        "sendFeedback": "Ibgħat Feedback",
+        "reportBugs": "Irrapporta Bugs",
+        "saveAndQuitToTitle": "Issejvja u mur lura għall-iskrin tat-titlu",
+        "disconnect": "Skonnettja"
     },
     "selectWorld": {
-        "title": "Select World",
-        "empty": "empty",
-        "world": "World",
-        "select": "Play Selected World",
-        "create": "Create New World",
-        "createDemo": "Play New Demo World",
-        "deleteQuestion": "Are you sure you want to delete this world?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "renameTitle": "Rename World",
-        "conversion": "Must be converted!",
-        "newWorld": "New World",
-        "enterName": "World Name",
-        "resultFolder": "Will be saved in:",
-        "enterSeed": "Seed for the World Generator",
-        "seedInfo": "Leave blank for a random seed",
-        "selectWorldType": "Select World Type",
-        "worldType": "World Type",
-        "customize": "Customize",
-        "moreWorldOptions": "More World Options...",
+        "title": "Agħżel Dinja",
+        "empty": "vojt",
+        "world": "Dinja",
+        "select": "Ilgħab id-Dinja Magħżula",
+        "create": "Oħloq Dinja Ġdida",
+        "createDemo": "Ilgħab Dinja Demo Ġdida",
+        "deleteQuestion": "Int ċert li trid tħassar din id-dinja?",
+        "deleteWarning": "se tintilef għal dejjem! (Għal żmien twil!)",
+        "renameTitle": "Erġa' Semmi d-Dinja",
+        "conversion": "Trid tiġi kkonvertita!",
+        "newWorld": "Dinja Ġdida",
+        "enterName": "Isem id-Dinja",
+        "resultFolder": "Se tiġi ssejvjata fi:",
+        "enterSeed": "Żerriegħa għall-Ġeneratur tad-Dinja",
+        "seedInfo": "Ħalli vojt għal żerriegħa każwali",
+        "selectWorldType": "Agħżel Tip ta' Dinja",
+        "worldType": "Tip ta' Dinja",
+        "customize": "Ippersonalizza",
+        "moreWorldOptions": "Aktar Għażliet tad-Dinja...",
         "type": {
             "default": {
-                "title": "Default",
-                "description": "The standard Minecraft world."
+                "title": "Standard",
+                "description": "Id-dinja standard ta' Minecraft."
             },
             "flat": {
-                "title": "Flat",
-                "description": "A completely flat world."
+                "title": "Ċatta",
+                "description": "Dinja kompletament ċatta."
             },
             "sky": {
-                "title": "Sky",
-                "description": "A world floating in the sky."
+                "title": "Sema",
+                "description": "Dinja li tgħum fis-sema."
             }
         }
     },
     "newWorld": {
         "customize": {
             "superflatWorld": {
-                "title": "Customize Superflat World"
+                "title": "Ippersonalizza Dinja Superċatta"
             },
-            "removeLayer": "Remove Layer",
+            "removeLayer": "Neħħi Saff",
             "presets": "Presets",
-            "height": "Height",
+            "height": "Għoli",
             "unknown": "???"
         }
     },
     "world": {
-        "world": "World",
-        "unsupportedFormat": "Unsupported Format!"
+        "world": "Dinja",
+        "unsupportedFormat": "Format Mhux Sostnut!"
     },
     "multiplayer": {
-        "title": "Play Multiplayer",
-        "betasharpServer": "BetaSharp Server",
-        "info1": "Minecraft Multiplayer is currently not finished, but there",
-        "info2": "is some buggy early testing going on.",
-        "ipinfo": "Enter the IP of a server to connect to it:",
-        "deleteQuestion": "Are you sure you want to delete this server?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "downloadingTerrain": "Downloading terrain",
-        "stopSleeping": "Leave Bed",
-        "editServerTitle": "Edit Server Info",
-        "addServerTitle": "Add Server Info",
-        "serverName": "Server Name",
-        "serverAddress": "Server Address"
+        "title": "Ilgħab Multiplayer",
+        "betasharpServer": "Server BetaSharp",
+        "info1": "Il-Multiplayer ta' Minecraft għadu mhux lest, imma hemm",
+        "info2": "għaddejjin xi testijiet bikrin bi ftit żbalji.",
+        "ipinfo": "Daħħal l-IP ta' server biex tikkonnettja miegħu:",
+        "deleteQuestion": "Int ċert li trid tħassar dan is-server?",
+        "deleteWarning": "se jintilef għal dejjem! (Għal żmien twil!)",
+        "downloadingTerrain": "Qed jitniżżel it-terren",
+        "stopSleeping": "Qum mis-Sodda",
+        "editServerTitle": "Editja l-Informazzjoni tas-Server",
+        "addServerTitle": "Żid Informazzjoni tas-Server",
+        "serverName": "Isem is-Server",
+        "serverAddress": "Indirizz tas-Server"
     },
     "loading": {
-        "loadingLevel": "Loading level",
-        "startingServer": "Starting server...",
-        "preparingSpawnArea": "Preparing spawn area"
+        "loadingLevel": "Qed jitgħabba l-livell",
+        "startingServer": "Qed jibda s-server...",
+        "preparingSpawnArea": "Qed titħejja ż-żona fejn tidher"
     },
     "achievements": {
-        "title": "Achievements"
+        "title": "Kisbiet"
     },
     "gameover": {
-        "title": "Game Over!",
-        "score": "Score",
-        "respawn": "Respawn",
-        "titleMenu": "Title menu"
+        "title": "Tmiem tal-Logħba!",
+        "score": "Punteġġ",
+        "respawn": "Erġa' Spawn",
+        "titleMenu": "Menu tat-Titlu"
     },
     "gamemenu": {
-        "title": "Game Menu",
-        "backToGame": "Back to Game"
+        "title": "Menu tal-Logħba",
+        "backToGame": "Lura għal-Logħba"
     },
     "sign": {
-        "title": "Edit sign message:"
+        "title": "Editja l-messaġġ tas-sinjal:"
     },
     "stats": {
-        "title": "Statistics",
-        "general": "General",
+        "title": "Statistika",
+        "general": "Ġenerali",
         "blocks": {
-            "name": "Blocks",
-            "mined": "Mined",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Blokok",
+            "mined": "Mminati",
+            "crafted": "Maħduma",
+            "used": "Użati"
         },
         "items": {
-            "name": "Items",
-            "broken": "Broken",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Oġġetti",
+            "broken": "Miksurin",
+            "crafted": "Maħduma",
+            "used": "Użati"
         },
-        "item": "Item"
+        "item": "Oġġett"
     },
     "connect": {
-        "connecting": "Connecting to the server...",
-        "authorizing": "Logging in...",
-        "failed": "Failed to connect to the server"
+        "connecting": "Qed nikkonnettja mas-server...",
+        "authorizing": "Qed nidħol...",
+        "failed": "Ma rnexxiliex nikkonnettja mas-server"
     },
     "disconnect": {
         "genericReason": "{0}",
-        "disconnected": "Disconnected by Server",
-        "lost": "Connection Lost",
-        "kicked": "Was kicked from the game",
-        "timeout": "Timed out",
-        "closed": "Connection closed",
-        "loginFailed": "Failed to login",
-        "quitting": "Quitting",
-        "endOfStream": "End of stream",
-        "overflow": "Buffer overflow"
+        "disconnected": "Skonnettjat mis-Server",
+        "lost": "Tintilef il-Konnessjoni",
+        "kicked": "Tkeċċejt mil-logħba",
+        "timeout": "Skada l-Ħin",
+        "closed": "Il-Konnessjoni Għalqet",
+        "loginFailed": "Ma Rnexxiliex Nidħol",
+        "quitting": "Qed Noħroġ",
+        "endOfStream": "Tmiem tal-Fluss",
+        "overflow": "Ammont Żejjed fil-Buffer"
     },
     "options": {
-        "off": "OFF",
-        "on": "ON",
-        "disabled": "Disabled",
-        "title": "Options",
-        "controls": "Controls...",
-        "keyboardControls": "Keyboard Controls...",
-        "controllerSettings": "Controller Settings...",
-        "controllerType": "Controller Type",
+        "off": "MITFI",
+        "on": "MIXGħUL",
+        "disabled": "Diżattivat",
+        "title": "Għażliet",
+        "controls": "Kontrolli...",
+        "keyboardControls": "Kontrolli tat-Tastiera...",
+        "controllerSettings": "Settings tal-Kontrollur...",
+        "controllerType": "Tip ta' Kontrollur",
         "video": {
-            "text": "Video Settings...",
-            "performance": "Performance",
-            "display": "Display"
+            "text": "Settings tal-Vidjow...",
+            "performance": "Prestazzjoni",
+            "display": "Wirja"
         },
-        "uiSettings": "UI Settings...",
-        "audioSettings": "Audio Settings...",
-        "audioTitle": "Audio Settings",
-        "videoTitle": "Video Settings",
-        "language": "Language...",
-        "anisoLevel": "Aniso Level",
-        "music": "Music",
-        "sound": "Sound",
-        "invertMouse": "Invert Mouse",
-        "alternateBlocks": "Alternate Blocks",
-        "chunkFade": "Chunk Fade",
+        "uiSettings": "Settings tal-UI...",
+        "audioSettings": "Settings tal-Awdjo...",
+        "audioTitle": "Settings tal-Awdjo",
+        "videoTitle": "Settings tal-Vidjow",
+        "language": "Lingwa...",
+        "anisoLevel": "Livell Aniso",
+        "music": "Mużika",
+        "sound": "Ħoss",
+        "invertMouse": "Inverti l-Maws",
+        "alternateBlocks": "Blokok Alternattivi",
+        "chunkFade": "Tgħib tal-Chunk",
         "sensitivity": {
-            "text": "Sensitivity",
-            "controllerText": "Controller Sensitivity",
-            "min": "*yawn*",
-            "max": "HYPERSPEED!!!"
+            "text": "Sensittività",
+            "controllerText": "Sensittività tal-Kontrollur",
+            "min": "*tgħasira*",
+            "max": "VELOĊITÀ ESTREMA!!!"
         },
         "renderDistance": {
-            "text": "Render Distance",
+            "text": "Distanza tar-Render",
             "chunks": "Chunks",
-            "tiny": "Tiny",
-            "short": "Short",
-            "normal": "Normal",
-            "far": "Far"
+            "tiny": "Żgħira",
+            "short": "Qasira",
+            "normal": "Normali",
+            "far": "Mbiegħda"
         },
-        "viewBobbing": "View Bobbing",
-        "ao": "Smooth Lighting",
-        "anaglyph": "3D Anaglyph",
-        "framerateLimit": "Performance",
+        "viewBobbing": "Tbandil tal-Vista",
+        "ao": "Dawl Lixx",
+        "anaglyph": "Anaglyph 3D",
+        "framerateLimit": "Prestazzjoni",
         "difficulty": {
-            "text": "Difficulty",
-            "peaceful": "Peaceful",
-            "easy": "Easy",
-            "normal": "Normal",
-            "hard": "Hard"
+            "text": "Diffikultà",
+            "peaceful": "Paċifika",
+            "easy": "Faċli",
+            "normal": "Normali",
+            "hard": "Diffiċli"
         },
         "graphics": {
-            "text": "Graphics",
-            "fancy": "Fancy",
-            "fast": "Fast"
+            "text": "Grafika",
+            "fancy": "Raffinata",
+            "fast": "Mgħaġġla"
         },
         "cloudsQuality": {
-            "text": "Clouds Quality",
-            "off": "No Clouds",
-            "legacy": "Old Clouds",
+            "text": "Kwalità tas-Sħab",
+            "off": "Ebda Sħab",
+            "legacy": "Sħab Antik",
             "shader": "Shader"
         },
         "softClouds": {
-            "text": "Soft Clouds"
+            "text": "Sħab Artab"
         },
         "guiScale": {
-            "text": "GUI Scale",
-            "auto": "Auto",
-            "small": "Small",
-            "normal": "Normal",
-            "large": "Large"
+            "text": "Skala tal-GUI",
+            "auto": "Awto",
+            "small": "Żgħira",
+            "normal": "Normali",
+            "large": "Kbira"
         },
         "chatScale": {
-            "text": "Chat Scale"
+            "text": "Skala taċ-Chat"
         },
         "chatWidth": {
-            "text": "Chat Width"
+            "text": "Wisa' taċ-Chat"
         },
-        "advancedOpengl": "Advanced OpenGL",
+        "advancedOpengl": "OpenGL Avvanzat",
         "fps": {
             "text": "FPS",
-            "maxFps": "Max FPS",
-            "unlimited": "Unlimited"
+            "maxFps": "FPS Massimu",
+            "unlimited": "Illimitat"
         },
-        "showCoordinates": "Show Coordinates",
-        "uiCursors": "UI Cursors",
+        "showCoordinates": "Uri l-Koordinati",
+        "uiCursors": "Kursuri tal-UI",
         "gamma": "Gamma",
         "vSync": "VSync",
         "mipmaps": "Mipmaps",
-        "menuMusic": "Menu Music",
+        "menuMusic": "Mużika tal-Menu",
         "msaa": "MSAA",
         "fov": "FOV",
         "movement": {
-            "text": "Movement"
+            "text": "Moviment"
         },
         "view": {
-            "text": "View"
+            "text": "Vista"
         },
         "other": {
-            "text": "Other"
+            "text": "Oħrajn"
         },
-        "editBindings": "Edit Bindings...",
-        "resetBindings": "Reset Bindings...",
-        "controllerBindings": "Controller Bindings",
+        "editBindings": "Editja l-Irbit...",
+        "resetBindings": "Irrisettja l-Irbit...",
+        "controllerBindings": "Irbit tal-Kontrollur",
         "shader": {
-            "text": "Shader Options",
+            "text": "Għażliet tax-Shader",
             "chunkVert": {
-                "text": "World",
-                "WavyLeavesStrength": "Wavy Leaves Strength",
-                "WavyLeavesSpeed": "Wavy Leaves Speed",
-                "WavyPlantStrength": "Wavy Plant Strength",
-                "WavyPlantSpeed": "Wavy Plant Speed",
-                "WavyPlantMode": "Wavy Plant Mode"
+                "text": "Dinja",
+                "WavyLeavesStrength": "Qawwa tal-Weraq Imwewweġ",
+                "WavyLeavesSpeed": "Veloċità tal-Weraq Imwewweġ",
+                "WavyPlantStrength": "Qawwa tal-Pjanti Imwewwġa",
+                "WavyPlantSpeed": "Veloċità tal-Pjanti Imwewwġa",
+                "WavyPlantMode": "Mod tal-Pjanti Imwewwġa"
             },
             "cloud": {
-                "text": "Clouds",
-                "minParallax": "Min Parallax",
-                "maxParallax": "Max Parallax",
-                "minGradient": "Min Gradient",
-                "maxGradient": "Max Gradient",
-                "cloudHeight": "Cloud Height",
-                "shadow": "Shadow Color",
-                "smoothWidth": "Smooth Width",
-                "smoothSamples": "Smooth Samples",
-                "closeFade": "Close Fade",
-                "smoothTop": "Smooth Top",
-                "smoothEdge": "Smooth Edge",
-                "smoothBottom": "Smooth Bottom",
-                "smoothBottomTopDown": "Smooth Bottom Top Down"
+                "text": "Sħab",
+                "minParallax": "Parallax Minimu",
+                "maxParallax": "Parallax Massimu",
+                "minGradient": "Gradjent Minimu",
+                "maxGradient": "Gradjent Massimu",
+                "cloudHeight": "Għoli tas-Sħab",
+                "shadow": "Kulur tad-Dell",
+                "smoothWidth": "Wisa' Lixx",
+                "smoothSamples": "Kampjuni Lixxi",
+                "closeFade": "Tgħib mill-Qrib",
+                "smoothTop": "Quċċata Lixxa",
+                "smoothEdge": "Tarf Lixx",
+                "smoothBottom": "Qiegħ Lixx",
+                "smoothBottomTopDown": "Qiegħ Lixx minn Fuq għal Isfel"
             },
             "ui": {
                 "text": "UI",
-                "darkMode": "Dark Mode"
+                "darkMode": "Mod Skur"
             },
             "preset": {
                 "text": "Preset",
-                "disabled": "Disabled",
+                "disabled": "Diżattivat",
                 "default": "Default",
-                "custom": "Custom",
+                "custom": "Personalizzat",
                 "2d": "2D",
                 "3d": "3D",
-                "low": "Low",
-                "medium": "Medium",
-                "high": "High",
+                "low": "Baxx",
+                "medium": "Medju",
+                "high": "Għoli",
                 "ultra": "Ultra"
             }
         }
     },
     "performance": {
-        "max": "Max FPS",
-        "balanced": "Balanced",
-        "powersaver": "Power saver"
+        "max": "FPS Massimu",
+        "balanced": "Ibbilanċjat",
+        "powersaver": "Iffrankar tal-Enerġija"
     },
     "controls": {
-        "title": "Controls"
+        "title": "Kontrolli"
     },
     "key": {
-        "forward": "Forward",
-        "left": "Left",
-        "back": "Back",
-        "right": "Right",
-        "jump": "Jump",
-        "inventory": "Inventory",
-        "drop": "Drop",
+        "forward": "'Il Quddiem",
+        "left": "Xellug",
+        "back": "Lura",
+        "right": "Lemin",
+        "jump": "Qabża",
+        "inventory": "Inventarju",
+        "drop": "Armi",
         "chat": "Chat",
-        "fog": "Toggle Fog",
-        "sneak": "Sneak",
-        "playerlist": "List players",
-        "zoom": "Zoom",
-        "hotbarLeft": "Hotbar Left",
-        "hotbarRight": "Hotbar Right",
-        "pickBlock": "Pick Block",
-        "camera": "Camera Mode",
-        "pause": "Pause"
+        "fog": "Biddel iċ-Ċpar",
+        "sneak": "Tpissi",
+        "playerlist": "Lista tal-Plejers",
+        "zoom": "Żum",
+        "hotbarLeft": "Hotbar Xellug",
+        "hotbarRight": "Hotbar Lemin",
+        "pickBlock": "Agħżel il-Blokka",
+        "camera": "Mod tal-Kamera",
+        "pause": "Pawża"
     },
     "texturePack": {
-        "openFolder": "Open texture pack folder",
-        "title": "Select Texture Pack",
-        "folderInfo": "(Place texture pack files here)"
+        "openFolder": "Iftaħ il-folder tal-pakki tat-tessuti",
+        "title": "Agħżel Pakk ta' Tessuti",
+        "folderInfo": "(Poġġi l-fajls tal-pakki tat-tessuti hawn)"
     },
     "tile": {
         "tallgrass": {
-            "name": "Tallgrass",
+            "name": "Ħaxix Għoli",
             "desc": ""
         },
         "stone": {
-            "name": "Stone",
+            "name": "Ġebla",
             "desc": ""
         },
         "grass": {
-            "name": "Grass",
+            "name": "Ħaxix",
             "desc": ""
         },
         "dirt": {
-            "name": "Dirt",
+            "name": "Ħamrija",
             "desc": ""
         },
         "stonebrick": {
-            "name": "Cobblestone",
+            "name": "Ġebla tat-Triq",
             "desc": ""
         },
         "wood": {
-            "name": "Wooden Planks",
+            "name": "Pjanċi tal-Injam",
             "desc": ""
         },
         "sapling": {
-            "name": "Sapling",
+            "name": "Neżla",
             "desc": ""
         },
         "bedrock": {
-            "name": "Bedrock",
+            "name": "Blata Bażika",
             "desc": ""
         },
         "water": {
-            "name": "Water",
+            "name": "Ilma",
             "desc": ""
         },
         "lava": {
@@ -387,150 +387,150 @@
             "desc": ""
         },
         "sand": {
-            "name": "Sand",
+            "name": "Ramel",
             "desc": ""
         },
-        "sandStone": { "name": "Sandstone" },
+        "sandStone": { "name": "Ġebla tar-Ramel" },
         "gravel": {
-            "name": "Gravel",
+            "name": "Ċagħaq",
             "desc": ""
         },
         "oreGold": {
-            "name": "Gold Ore",
+            "name": "Mineral tad-Deheb",
             "desc": ""
         },
         "oreIron": {
-            "name": "Iron Ore",
+            "name": "Mineral tal-Ħadid",
             "desc": ""
         },
         "oreCoal": {
-            "name": "Coal Ore",
+            "name": "Mineral tal-Faħam",
             "desc": ""
         },
         "log": {
-            "name": "Wood",
+            "name": "Zokk",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Weraq",
             "desc": ""
         },
         "sponge": {
-            "name": "Sponge",
+            "name": "Sponża",
             "desc": ""
         },
         "glass": {
-            "name": "Glass",
+            "name": "Ħġieġ",
             "desc": ""
         },
         "cloth": {
-            "name": "Wool",
+            "name": "Suf",
             "desc": "",
             "black": {
-                "name": "Black Wool",
+                "name": "Suf Iswed",
                 "desc": ""
             },
             "red": {
-                "name": "Red Wool",
+                "name": "Suf Aħmar",
                 "desc": ""
             },
             "green": {
-                "name": "Green Wool",
+                "name": "Suf Aħdar",
                 "desc": ""
             },
             "brown": {
-                "name": "Brown Wool",
+                "name": "Suf Kannella",
                 "desc": ""
             },
             "blue": {
-                "name": "Blue Wool",
+                "name": "Suf Blu",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Wool",
+                "name": "Suf Vjola",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Wool",
+                "name": "Suf Ċjan",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Wool",
+                "name": "Suf Griż Ċar",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Wool",
+                "name": "Suf Griż",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Wool",
+                "name": "Suf Roża",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Wool",
+                "name": "Suf Aħdar Ċar",
                 "desc": ""
             },
             "yellow": {
-                "name": "Yellow Wool",
+                "name": "Suf Isfar",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Wool",
+                "name": "Suf Blu Ċar",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Wool",
+                "name": "Suf Maġenta",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Wool",
+                "name": "Suf Oranġjo",
                 "desc": ""
             },
             "white": {
-                "name": "Wool",
+                "name": "Suf",
                 "desc": ""
             }
         },
         "flower": {
-            "name": "Flower",
+            "name": "Fjura",
             "desc": ""
         },
         "rose": {
-            "name": "Rose",
+            "name": "Warda",
             "desc": ""
         },
         "mushroom": {
-            "name": "Mushroom",
+            "name": "Faqqiegħ",
             "desc": ""
         },
         "blockGold": {
-            "name": "Block of Gold",
+            "name": "Blokka tad-Deheb",
             "desc": ""
         },
         "blockIron": {
-            "name": "Block of Iron",
+            "name": "Blokka tal-Ħadid",
             "desc": ""
         },
         "stoneSlab": {
             "stone": {
-                "name": "Stone Slab",
+                "name": "Ċangatura tal-Ġebla",
                 "desc": ""
             },
             "sand": {
-                "name": "Sandstone Slab",
+                "name": "Ċangatura tal-Ġebla tar-Ramel",
                 "desc": ""
             },
             "wood": {
-                "name": "Wooden Slab",
+                "name": "Ċangatura tal-Injam",
                 "desc": ""
             },
             "cobble": {
-                "name": "Stone Slab",
+                "name": "Ċangatura tal-Ġebla",
                 "desc": ""
             }
         },
         "brick": {
-            "name": "Bricks",
+            "name": "Brikks",
             "desc": ""
         },
         "tnt": {
@@ -538,135 +538,135 @@
             "desc": ""
         },
         "bookshelf": {
-            "name": "Bookshelf",
+            "name": "Xkaffa tal-Kotba",
             "desc": ""
         },
         "stoneMoss": {
-            "name": "Moss Stone",
+            "name": "Ġebla bil-Ħażiż",
             "desc": ""
         },
         "obsidian": {
-            "name": "Obsidian",
+            "name": "Ossidjana",
             "desc": ""
         },
         "torch": {
-            "name": "Torch",
+            "name": "Torċa",
             "desc": ""
         },
         "fire": {
-            "name": "Fire",
+            "name": "Nar",
             "desc": ""
         },
         "mobSpawner": {
-            "name": "Monster Spawner",
+            "name": "Ġeneratur tal-Monstri",
             "desc": ""
         },
         "stairsWood": {
-            "name": "Wooden Stairs",
+            "name": "Turġien tal-Injam",
             "desc": ""
         },
         "chest": {
-            "name": "Chest",
+            "name": "Sender",
             "desc": ""
         },
         "redstoneDust": {
-            "name": "Redstone Dust",
+            "name": "Trab tar-Redstone",
             "desc": ""
         },
         "oreDiamond": {
-            "name": "Diamond Ore",
+            "name": "Mineral tad-Djamant",
             "desc": ""
         },
         "blockDiamond": {
-            "name": "Block of Diamond",
+            "name": "Blokka tad-Djamant",
             "desc": ""
         },
         "workbench": {
-            "name": "Crafting Table",
+            "name": "Tabella tax-Xogħol",
             "desc": ""
         },
         "crops": {
-            "name": "Crops",
+            "name": "Uċuħ",
             "desc": ""
         },
         "farmland": {
-            "name": "Farmland",
+            "name": "Art tal-Biedja",
             "desc": ""
         },
         "furnace": {
-            "name": "Furnace",
+            "name": "Forn",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Sinjal",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Bieb tal-Injam",
             "desc": ""
         },
         "ladder": {
-            "name": "Ladder",
+            "name": "Sellum",
             "desc": ""
         },
         "rail": {
-            "name": "Rail",
+            "name": "Binarju",
             "desc": ""
         },
         "goldenRail": {
-            "name": "Powered Rail",
+            "name": "Binarju Elettrifikat",
             "desc": ""
         },
         "detectorRail": {
-            "name": "Detector Rail",
+            "name": "Binarju tad-Ditekter",
             "desc": ""
         },
         "stairsStone": {
-            "name": "Stone Stairs",
+            "name": "Turġien tal-Ġebla",
             "desc": ""
         },
         "lever": {
-            "name": "Lever",
+            "name": "Lieva",
             "desc": ""
         },
         "pressurePlate": {
-            "name": "Pressure Plate",
+            "name": "Pjanċa tal-Pressjoni",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Bieb tal-Ħadid",
             "desc": ""
         },
         "oreRedstone": {
-            "name": "Redstone Ore",
+            "name": "Mineral tar-Redstone",
             "desc": ""
         },
         "notGate": {
-            "name": "Redstone Torch",
+            "name": "Torċa tar-Redstone",
             "desc": ""
         },
         "button": {
-            "name": "Button",
+            "name": "Buttuna",
             "desc": ""
         },
         "snow": {
-            "name": "Snow",
+            "name": "Borra",
             "desc": ""
         },
         "ice": {
-            "name": "Ice",
+            "name": "Silġ",
             "desc": ""
         },
         "cactus": {
-            "name": "Cactus",
+            "name": "Kaktus",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Tafal",
             "desc": ""
         },
         "reeds": {
-            "name": "Sugar cane",
+            "name": "Qasba taz-Zokkor",
             "desc": ""
         },
         "jukebox": {
@@ -674,15 +674,15 @@
             "desc": ""
         },
         "fence": {
-            "name": "Fence",
+            "name": "Ċint",
             "desc": ""
         },
         "pumpkin": {
-            "name": "Pumpkin",
+            "name": "Qara' Ħamra",
             "desc": ""
         },
         "litpumpkin": {
-            "name": "Jack 'o' Lantern",
+            "name": "Fanal tal-Qara'",
             "desc": ""
         },
         "hellrock": {
@@ -690,11 +690,11 @@
             "desc": ""
         },
         "hellsand": {
-            "name": "Soul Sand",
+            "name": "Ramel tar-Ruħ",
             "desc": ""
         },
         "lightgem": {
-            "name": "Glowstone",
+            "name": "Ġebla li Tiddi",
             "desc": ""
         },
         "portal": {
@@ -702,11 +702,11 @@
             "desc": ""
         },
         "oreLapis": {
-            "name": "Lapis Lazuli Ore",
+            "name": "Mineral tal-Lapis Lazuli",
             "desc": ""
         },
         "blockLapis": {
-            "name": "Lapis Lazuli Block",
+            "name": "Blokka tal-Lapis Lazuli",
             "desc": ""
         },
         "dispenser": {
@@ -714,352 +714,352 @@
             "desc": ""
         },
         "musicBlock": {
-            "name": "Note Block",
+            "name": "Blokka tan-Noti",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Kejk",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Sodda",
             "desc": "",
-            "occupied": "This bed is occupied",
-            "noSleep": "You can only sleep at night",
-            "notValid": "Your home bed was missing or obstructed"
+            "occupied": "Din is-sodda hija okkupata",
+            "noSleep": "Tista' torqod biss bil-lejl",
+            "notValid": "Is-sodda ta' darek ma nstabitx jew kienet imfixkla"
         },
         "lockedchest": {
-            "name": "Locked chest",
+            "name": "Sender Imsakkar",
             "desc": ""
         },
         "trapdoor": {
-            "name": "Trapdoor",
+            "name": "Bieba fl-Art",
             "desc": ""
         },
         "web": {
-            "name": "Cobweb",
+            "name": "Għanqbuta",
             "desc": ""
         },
         "stonebricksmooth": {
-            "name": "Stone Bricks",
+            "name": "Brikks tal-Ġebla",
             "desc": ""
         },
         "pistonBase": {
-            "name": "Piston",
+            "name": "Pistun",
             "desc": ""
         },
         "pistonStickyBase": {
-            "name": "Sticky Piston",
+            "name": "Pistun li Jwaħħal",
             "desc": ""
         }
     },
     "item": {
         "shovelIron": {
-            "name": "Iron Shovel",
+            "name": "Pala tal-Ħadid",
             "desc": ""
         },
         "pickaxeIron": {
-            "name": "Iron Pickaxe",
+            "name": "Pikk tal-Ħadid",
             "desc": ""
         },
         "hatchetIron": {
-            "name": "Iron Axe",
+            "name": "Mannara tal-Ħadid",
             "desc": ""
         },
         "flintAndSteel": {
-            "name": "Flint and Steel",
+            "name": "Żnied u Azzar",
             "desc": ""
         },
         "apple": {
-            "name": "Apple",
+            "name": "Tuffieħa",
             "desc": ""
         },
         "cookie": {
-            "name": "Cookie",
+            "name": "Biskottin",
             "desc": ""
         },
         "bow": {
-            "name": "Bow",
+            "name": "Qaws",
             "desc": ""
         },
         "arrow": {
-            "name": "Arrow",
+            "name": "Vleġġa",
             "desc": ""
         },
         "coal": {
-            "name": "Coal",
+            "name": "Faħam",
             "desc": ""
         },
         "charcoal": {
-            "name": "Charcoal",
+            "name": "Faħam tal-Injam",
             "desc": ""
         },
         "diamond": {
-            "name": "Diamond",
+            "name": "Djamant",
             "desc": ""
         },
         "ingotIron": {
-            "name": "Iron Ingot",
+            "name": "Ingott tal-Ħadid",
             "desc": ""
         },
         "ingotGold": {
-            "name": "Gold Ingot",
+            "name": "Ingott tad-Deheb",
             "desc": ""
         },
         "swordIron": {
-            "name": "Iron Sword",
+            "name": "Xabla tal-Ħadid",
             "desc": ""
         },
         "swordWood": {
-            "name": "Wooden Sword",
+            "name": "Xabla tal-Injam",
             "desc": ""
         },
         "shovelWood": {
-            "name": "Wooden Shovel",
+            "name": "Pala tal-Injam",
             "desc": ""
         },
         "pickaxeWood": {
-            "name": "Wooden Pickaxe",
+            "name": "Pikk tal-Injam",
             "desc": ""
         },
         "hatchetWood": {
-            "name": "Wooden Axe",
+            "name": "Mannara tal-Injam",
             "desc": ""
         },
         "swordStone": {
-            "name": "Stone Sword",
+            "name": "Xabla tal-Ġebla",
             "desc": ""
         },
         "shovelStone": {
-            "name": "Stone Shovel",
+            "name": "Pala tal-Ġebla",
             "desc": ""
         },
         "pickaxeStone": {
-            "name": "Stone Pickaxe",
+            "name": "Pikk tal-Ġebla",
             "desc": ""
         },
         "hatchetStone": {
-            "name": "Stone Axe",
+            "name": "Mannara tal-Ġebla",
             "desc": ""
         },
         "swordDiamond": {
-            "name": "Diamond Sword",
+            "name": "Xabla tad-Djamant",
             "desc": ""
         },
         "shovelDiamond": {
-            "name": "Diamond Shovel",
+            "name": "Pala tad-Djamant",
             "desc": ""
         },
         "pickaxeDiamond": {
-            "name": "Diamond Pickaxe",
+            "name": "Pikk tad-Djamant",
             "desc": ""
         },
         "hatchetDiamond": {
-            "name": "Diamond Axe",
+            "name": "Mannara tad-Djamant",
             "desc": ""
         },
         "stick": {
-            "name": "Stick",
+            "name": "Bastun",
             "desc": ""
         },
         "bowl": {
-            "name": "Bowl",
+            "name": "Skutella",
             "desc": ""
         },
         "mushroomStew": {
-            "name": "Mushroom Stew",
+            "name": "Soppa tal-Faqqiegħ",
             "desc": ""
         },
         "swordGold": {
-            "name": "Golden Sword",
+            "name": "Xabla tad-Deheb",
             "desc": ""
         },
         "shovelGold": {
-            "name": "Golden Shovel",
+            "name": "Pala tad-Deheb",
             "desc": ""
         },
         "pickaxeGold": {
-            "name": "Golden Pickaxe",
+            "name": "Pikk tad-Deheb",
             "desc": ""
         },
         "hatchetGold": {
-            "name": "Golden Axe",
+            "name": "Mannara tad-Deheb",
             "desc": ""
         },
         "string": {
-            "name": "String",
+            "name": "Spaga",
             "desc": ""
         },
         "feather": {
-            "name": "Feather",
+            "name": "Rixa",
             "desc": ""
         },
         "gunpowder": {
-            "name": "Gunpowder",
+            "name": "Trab tan-Nar",
             "desc": ""
         },
         "hoeWood": {
-            "name": "Wooden Hoe",
+            "name": "Zappetta tal-Injam",
             "desc": ""
         },
         "hoeStone": {
-            "name": "Stone Hoe",
+            "name": "Zappetta tal-Ġebla",
             "desc": ""
         },
         "hoeIron": {
-            "name": "Iron Hoe",
+            "name": "Zappetta tal-Ħadid",
             "desc": ""
         },
         "hoeDiamond": {
-            "name": "Diamond Hoe",
+            "name": "Zappetta tad-Djamant",
             "desc": ""
         },
         "hoeGold": {
-            "name": "Golden Hoe",
+            "name": "Zappetta tad-Deheb",
             "desc": ""
         },
         "seeds": {
-            "name": "Seeds",
+            "name": "Żrieragħ",
             "desc": ""
         },
         "wheat": {
-            "name": "Wheat",
+            "name": "Qamħ",
             "desc": ""
         },
         "bread": {
-            "name": "Bread",
+            "name": "Ħobż",
             "desc": ""
         },
         "helmetLeather": {
-            "name": "Leather Cap",
+            "name": "Kapp tal-Ġilda",
             "desc": ""
         },
         "chestplateLeather": {
-            "name": "Leather Tunic",
+            "name": "Tunika tal-Ġilda",
             "desc": ""
         },
         "leggingsLeather": {
-            "name": "Leather Pants",
+            "name": "Qalziet tal-Ġilda",
             "desc": ""
         },
         "bootsLeather": {
-            "name": "Leather Boots",
+            "name": "Stivali tal-Ġilda",
             "desc": ""
         },
         "helmetChain": {
-            "name": "Chain Helmet",
+            "name": "Elmu tal-Katina",
             "desc": ""
         },
         "chestplateChain": {
-            "name": "Chain Chestplate",
+            "name": "Korazza tal-Katina",
             "desc": ""
         },
         "leggingsChain": {
-            "name": "Chain Leggings",
+            "name": "Qliezet tal-Katina",
             "desc": ""
         },
         "bootsChain": {
-            "name": "Chain Boots",
+            "name": "Stivali tal-Katina",
             "desc": ""
         },
         "helmetIron": {
-            "name": "Iron Helmet",
+            "name": "Elmu tal-Ħadid",
             "desc": ""
         },
         "chestplateIron": {
-            "name": "Iron Chestplate",
+            "name": "Korazza tal-Ħadid",
             "desc": ""
         },
         "leggingsIron": {
-            "name": "Iron Leggings",
+            "name": "Qliezet tal-Ħadid",
             "desc": ""
         },
         "bootsIron": {
-            "name": "Iron Boots",
+            "name": "Stivali tal-Ħadid",
             "desc": ""
         },
         "helmetDiamond": {
-            "name": "Diamond Helmet",
+            "name": "Elmu tad-Djamant",
             "desc": ""
         },
         "chestplateDiamond": {
-            "name": "Diamond Chestplate",
+            "name": "Korazza tad-Djamant",
             "desc": ""
         },
         "leggingsDiamond": {
-            "name": "Diamond Leggings",
+            "name": "Qliezet tad-Djamant",
             "desc": ""
         },
         "bootsDiamond": {
-            "name": "Diamond Boots",
+            "name": "Stivali tad-Djamant",
             "desc": ""
         },
         "helmetGold": {
-            "name": "Golden Helmet",
+            "name": "Elmu tad-Deheb",
             "desc": ""
         },
         "chestplateGold": {
-            "name": "Golden Chestplate",
+            "name": "Korazza tad-Deheb",
             "desc": ""
         },
         "leggingsGold": {
-            "name": "Golden Leggings",
+            "name": "Qliezet tad-Deheb",
             "desc": ""
         },
         "bootsGold": {
-            "name": "Golden boots",
+            "name": "Stivali tad-Deheb",
             "desc": ""
         },
         "flint": {
-            "name": "Flint",
+            "name": "Żnied",
             "desc": ""
         },
         "porkchopRaw": {
-            "name": "Raw Porkchop",
+            "name": "Kutlet tal-Majjal Nej",
             "desc": ""
         },
         "porkchopCooked": {
-            "name": "Cooked Porkchop",
+            "name": "Kutlet tal-Majjal Imsajjar",
             "desc": ""
         },
         "painting": {
-            "name": "Painting",
+            "name": "Pittura",
             "desc": ""
         },
         "appleGold": {
-            "name": "Golden Apple",
+            "name": "Tuffieħa tad-Deheb",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Sinjal",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Bieb tal-Injam",
             "desc": ""
         },
         "bucket": {
-            "name": "Bucket",
+            "name": "Barmil",
             "desc": ""
         },
         "bucketWater": {
-            "name": "Water Bucket",
+            "name": "Barmil tal-Ilma",
             "desc": ""
         },
         "bucketLava": {
-            "name": "Lava bucket",
+            "name": "Barmil tal-Lava",
             "desc": ""
         },
         "minecart": {
-            "name": "Minecart",
+            "name": "Karrettun tal-Minjiera",
             "desc": ""
         },
         "saddle": {
-            "name": "Saddle",
+            "name": "Sarġ",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Bieb tal-Ħadid",
             "desc": ""
         },
         "redstone": {
@@ -1067,104 +1067,104 @@
             "desc": ""
         },
         "snowball": {
-            "name": "Snowball",
+            "name": "Ballun tal-Borra",
             "desc": ""
         },
         "boat": {
-            "name": "Boat",
+            "name": "Dgħajsa",
             "desc": ""
         },
         "leather": {
-            "name": "Leather",
+            "name": "Ġilda",
             "desc": ""
         },
         "milk": {
-            "name": "Milk",
+            "name": "Ħalib",
             "desc": ""
         },
         "brick": {
-            "name": "Brick",
+            "name": "Brikk",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Tafal",
             "desc": ""
         },
         "sugarCanes": {
-            "name": "Sugar Canes",
+            "name": "Qasbiet taz-Zokkor",
             "desc": ""
         },
         "paper": {
-            "name": "Paper",
+            "name": "Karta",
             "desc": ""
         },
         "book": {
-            "name": "Book",
+            "name": "Ktieb",
             "desc": ""
         },
         "slimeball": {
-            "name": "Slimeball",
+            "name": "Ballun tal-Ħama",
             "desc": ""
         },
         "minecartChest": {
-            "name": "Minecart with Chest",
+            "name": "Karrettun tal-Minjiera bis-Sender",
             "desc": ""
         },
         "minecartFurnace": {
-            "name": "Minecart with Furnace",
+            "name": "Karrettun tal-Minjiera bil-Forn",
             "desc": ""
         },
         "egg": {
-            "name": "Egg",
+            "name": "Bajda",
             "desc": ""
         },
         "compass": {
-            "name": "Compass",
+            "name": "Bużżola",
             "desc": ""
         },
         "fishingRod": {
-            "name": "Fishing Rod",
+            "name": "Qasba tas-Sajd",
             "desc": ""
         },
         "clock": {
-            "name": "Clock",
+            "name": "Arloġġ",
             "desc": ""
         },
         "yellowDust": {
-            "name": "Glowstone Dust",
+            "name": "Trab tal-Ġebla li Tiddi",
             "desc": ""
         },
         "fishRaw": {
-            "name": "Raw Fish",
+            "name": "Ħut Nej",
             "desc": ""
         },
         "fishCooked": {
-            "name": "Cooked Fish",
+            "name": "Ħut Imsajjar",
             "desc": ""
         },
         "record": {
-            "name": "Music Disc",
+            "name": "Diska tal-Mużika",
             "desc": ""
         },
         "bone": {
-            "name": "Bone",
+            "name": "Għadma",
             "desc": ""
         },
         "dyePowder": {
             "black": {
-                "name": "Ink Sac",
+                "name": "Borża tal-Linka",
                 "desc": ""
             },
             "red": {
-                "name": "Rose Red",
+                "name": "Aħmar tal-Warda",
                 "desc": ""
             },
             "green": {
-                "name": "Cactus Green",
+                "name": "Aħdar tal-Kaktus",
                 "desc": ""
             },
             "brown": {
-                "name": "Cocoa Beans",
+                "name": "Ful tal-Kawkaw",
                 "desc": ""
             },
             "blue": {
@@ -1172,198 +1172,198 @@
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Dye",
+                "name": "Żebgħa Vjola",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Dye",
+                "name": "Żebgħa Ċjan",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Dye",
+                "name": "Żebgħa Griża Ċara",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Dye",
+                "name": "Żebgħa Griża",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Dye",
+                "name": "Żebgħa Roża",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Dye",
+                "name": "Żebgħa Ħadra Ċara",
                 "desc": ""
             },
             "yellow": {
-                "name": "Dandelion Yellow",
+                "name": "Isfar taċ-Ċikwejra",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Dye",
+                "name": "Żebgħa Blu Ċara",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Dye",
+                "name": "Żebgħa Maġenta",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Dye",
+                "name": "Żebgħa Oranġjo",
                 "desc": ""
             },
             "white": {
-                "name": "Bone Meal",
+                "name": "Għadam Mitħun",
                 "desc": ""
             }
         },
         "sugar": {
-            "name": "Sugar",
+            "name": "Zokkor",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Kejk",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Sodda",
             "desc": ""
         },
         "redstoneRepeater": {
-            "name": "Redstone Repeater",
+            "name": "Ripetitur tar-Redstone",
             "desc": ""
         },
         "map": {
-            "name": "Map",
+            "name": "Mappa",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Weraq",
             "desc": ""
         },
         "shears": {
-            "name": "Shears",
+            "name": "Mqassijiet",
             "desc": ""
         }
     },
     "stat": {
-        "generalButton": "General",
-        "blocksButton": "Blocks",
-        "itemsButton": "Items",
-        "used": "Times Used",
-        "mined": "Times Mined",
-        "depleted": "Times Depleted",
-        "crafted": "Times Crafted",
-        "startGame": "Times played",
-        "createWorld": "Worlds played",
-        "loadWorld": "Saves loaded",
-        "joinMultiplayer": "Multiplayer joins",
-        "leaveGame": "Games quit",
-        "playOneMinute": "Minutes Played",
-        "walkOneCm": "Distance Walked",
-        "fallOneCm": "Distance Fallen",
-        "swimOneCm": "Distance Swum",
-        "flyOneCm": "Distance Flown",
-        "climbOneCm": "Distance Climbed",
-        "diveOneCm": "Distance Dove",
-        "minecartOneCm": "Distance by Minecart",
-        "boatOneCm": "Distance by Boat",
-        "pigOneCm": "Distance by Pig",
-        "jump": "Jumps",
-        "drop": "Items Dropped",
-        "damageDealt": "Damage Dealt",
-        "damageTaken": "Damage Taken",
-        "deaths": "Number of Deaths",
-        "mobKills": "Mob Kills",
-        "playerKills": "Player Kills",
-        "fishCaught": "Fish Caught",
-        "mineBlock": "{0} Mined",
-        "craftItem": "{0} Crafted",
-        "useItem": "{0} Used",
-        "breakItem": "{0} Depleted"
+        "generalButton": "Ġenerali",
+        "blocksButton": "Blokok",
+        "itemsButton": "Oġġetti",
+        "used": "Drabi Użati",
+        "mined": "Drabi Mminati",
+        "depleted": "Drabi Mikula",
+        "crafted": "Drabi Maħduma",
+        "startGame": "Drabi Milgħuba",
+        "createWorld": "Dinjiet Milgħuba",
+        "loadWorld": "Ssejvjar Mgħobbija",
+        "joinMultiplayer": "Dħul fil-Multiplayer",
+        "leaveGame": "Ħruġ mil-Logħba",
+        "playOneMinute": "Minuti Milgħuba",
+        "walkOneCm": "Distanza Mmixxija",
+        "fallOneCm": "Distanza li Waqajt",
+        "swimOneCm": "Distanza Mgħuma",
+        "flyOneCm": "Distanza li Tajt",
+        "climbOneCm": "Distanza li Tala'",
+        "diveOneCm": "Distanza Mgħoddusa",
+        "minecartOneCm": "Distanza bil-Karrettun tal-Minjiera",
+        "boatOneCm": "Distanza bid-Dgħajsa",
+        "pigOneCm": "Distanza bil-Ħanżir",
+        "jump": "Qabżiet",
+        "drop": "Oġġetti Mitfugħa",
+        "damageDealt": "Ħsara Mogħtija",
+        "damageTaken": "Ħsara Meħuda",
+        "deaths": "Numru ta' Mwiet",
+        "mobKills": "Qtil tal-Mobs",
+        "playerKills": "Qtil tal-Plejers",
+        "fishCaught": "Ħut Maqbud",
+        "mineBlock": "{0} Mminati",
+        "craftItem": "{0} Maħduma",
+        "useItem": "{0} Użati",
+        "breakItem": "{0} Mikula"
     },
-    "achievements.title": "Achievements",
+    "achievements.title": "Kisbiet",
     "achievement": {
-        "get": "Achievement get!",
-        "taken": "Taken!",
-        "challenge": "CHALLENGE",
-        "unlocked": "UNLOCKED",
-        "locked": "LOCKED",
-        "requires": "Requires '{0}'",
+        "get": "Kisba Miksuba!",
+        "taken": "Meħuda!",
+        "challenge": "SFIDA",
+        "unlocked": "MIFTUĦA",
+        "locked": "MAGĦLUQA",
+        "requires": "Tirrikjedi '{0}'",
         "openInventory": {
-            "title": "Taking Inventory",
-            "desc": "Open your inventory."
+            "title": "Ħu l-Inventarju",
+            "desc": "Iftaħ l-inventarju tiegħek."
         },
         "mineWood": {
-            "title": "Getting Wood",
-            "desc": "Attack a tree until a block of wood pops out"
+            "title": "Ġib l-Injam",
+            "desc": "Attakka siġra sakemm toħroġ blokka tal-injam"
         },
         "buildWorkBench": {
-            "title": "Benchmarking",
-            "desc": "Craft a workbench with four blocks of planks"
+            "title": "Ipprepara l-Bank",
+            "desc": "Ikkraftja tabella tax-xogħol b'erba' blokok tal-pjanċi"
         },
         "buildPickaxe": {
-            "title": "Time to Mine!",
-            "desc": "Use planks and sticks to make a pickaxe"
+            "title": "Wasal iż-Żmien tal-Minjieri!",
+            "desc": "Uża pjanċi u bsaten biex tagħmel pikk"
         },
         "buildFurnace": {
-            "title": "Hot Topic",
-            "desc": "Construct a furnace out of eight stone blocks"
+            "title": "Suġġett Jaħraq",
+            "desc": "Beni forn bi tmien blokok tal-ġebel"
         },
         "acquireIron": {
-            "title": "Acquire Hardware",
-            "desc": "Smelt an iron ingot"
+            "title": "Ikseb l-Għodda",
+            "desc": "Idwweb ingott tal-ħadid"
         },
         "buildHoe": {
-            "title": "Time to Farm!",
-            "desc": "Use planks and sticks to make a hoe"
+            "title": "Wasal iż-Żmien tal-Biedja!",
+            "desc": "Uża pjanċi u bsaten biex tagħmel zappetta"
         },
         "makeBread": {
-            "title": "Bake Bread",
-            "desc": "Turn wheat into bread"
+            "title": "Aħmi l-Ħobż",
+            "desc": "Biddel il-qamħ f'ħobż"
         },
         "bakeCake": {
-            "title": "The Lie",
-            "desc": "Wheat, sugar, milk and eggs!"
+            "title": "Il-Gidba",
+            "desc": "Qamħ, zokkor, ħalib u bajd!"
         },
         "buildBetterPickaxe": {
-            "title": "Getting an Upgrade",
-            "desc": "Construct a better pickaxe"
+            "title": "Ikseb Titjib",
+            "desc": "Beni pikk aħjar"
         },
         "cookFish": {
-            "title": "Delicious Fish",
-            "desc": "Catch and cook fish!"
+            "title": "Ħut Delizzjuż",
+            "desc": "Aqbad u sajjar il-ħut!"
         },
         "onARail": {
-            "title": "On A Rail",
-            "desc": "Travel by minecart at least 1 km from where you started "
+            "title": "Fuq Binarju",
+            "desc": "Ivvjaġġa bil-karrettun tal-minjiera mill-inqas kilometru minn fejn bdejt "
         },
         "buildSword": {
-            "title": "Time to Strike!",
-            "desc": "Use planks and sticks to make a sword"
+            "title": "Wasal iż-Żmien tal-Attakk!",
+            "desc": "Uża pjanċi u bsaten biex tagħmel xabla"
         },
         "killEnemy": {
-            "title": "Monster Hunter",
-            "desc": "Attack and destroy a monster"
+            "title": "Kaċċatur tal-Monstri",
+            "desc": "Attakka u qered mostru"
         },
         "killCow": {
-            "title": "Cow Tipper",
-            "desc": "Harvest some leather"
+            "title": "Twaqqa' l-Baqar",
+            "desc": "Aħsad ftit ġilda"
         },
         "flyPig": {
-            "title": "When Pigs Fly",
-            "desc": "Fly a pig off a cliff"
+            "title": "Meta jtiru l-Ħnieżer",
+            "desc": "Ħalli ħanżir itir minn fuq irdum"
         }
     },
     "credits": {
-        "version": "BetaSharp Version %1$s",
-        "description": "An enhanced of Minecraft Beta 1.7.3, written in C#.",
-        "github": "On GitHub",
-        "author": "Made by Fazin85",
-        "libs": "Libraries",
-        "slik": "Slik.NET - Graphics",
-        "imgui": "ImGui - Debug UI",
-        "sfml": "SFML.NET - Audio",
-        "sixlabors": "SixLabors - Fonts, image processing",
-        "translations": "Translations Credits"
+        "version": "BetaSharp Verżjoni %1$s",
+        "description": "Verżjoni mtejba ta' Minecraft Beta 1.7.3, miktuba bil-C#.",
+        "github": "Fuq GitHub",
+        "author": "Magħmul minn Fazin85",
+        "libs": "Libreriji",
+        "slik": "Slik.NET - Grafika",
+        "imgui": "ImGui - UI tad-Debug",
+        "sfml": "SFML.NET - Awdjo",
+        "sixlabors": "SixLabors - Fonts, ipproċessar tal-immaġini",
+        "translations": "Krediti tat-Traduzzjonijiet"
     }
 }
