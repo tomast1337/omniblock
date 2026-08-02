@@ -387,3 +387,8 @@ white-list.txt
 
 # claude stuff
 /.claude
+
+# Working notes. Kept on disk, not in the repository: they are records of what a
+# change looked like while it was being made, and they go stale the moment it lands.
+# The code is the documentation.
+/docs
