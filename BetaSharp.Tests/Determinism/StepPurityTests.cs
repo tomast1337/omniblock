@@ -4,9 +4,9 @@ using Microsoft.CodeAnalysis;
 namespace BetaSharp.Tests.Determinism;
 
 /// <summary>
-///     Phase 1 of <c>docs/deterministic-movement-extraction.md</c>: prove statically that the player
-///     movement path contains no platform-dependent math, no ambient randomness, and no direct side
-///     effects — and keep proving it, so a later commit cannot quietly reintroduce one.
+///     Proves statically that the player movement path contains no platform-dependent math, no
+///     ambient randomness, and no direct side effects — and keeps proving it, so a later commit
+///     cannot quietly reintroduce one.
 ///     <para>
 ///         Two frontiers, because they are held to different standards. The <b>core</b> — collision
 ///         resolution and the state it derives — must be clean now, and
@@ -24,8 +24,7 @@ public sealed class StepPurityTests
 {
     /// <summary>
     ///     PARKED. The deterministic <c>Step()</c> extraction was deferred in favour of the
-    ///     sandboxed modding API and message-layer phase 1; see
-    ///     <c>docs/time-sync-and-interpolation.md</c> for what replaced it. The analysis engine
+    ///     sandboxed modding API and the message layer. The analysis engine
     ///     (<see cref="CallGraph" />) is finished and its five self-checks still run — they keep the
     ///     compilation and the frontier declarations honest for whoever resumes this.
     ///     <para>
@@ -169,7 +168,7 @@ public sealed class StepPurityTests
             $"""
              The movement tick's effect tail reaches {tail.Count:N0} methods, over the budget of
              {TailBudget:N0}. Something impure was added to the movement path instead of being
-             lifted out of it. See docs/deterministic-movement-extraction.md §2.
+             lifted out of it.
              """);
 
         // Ratchet: a cut that lands must lower the constant, or the budget stops meaning anything.
@@ -315,8 +314,6 @@ public sealed class StepPurityTests
         StringBuilder report = new();
         report.AppendLine();
         report.AppendLine($"{violations.Count} banned symbol(s) reachable from the physics core.");
-        report.AppendLine("See docs/deterministic-movement-extraction.md §3 and §5.");
-        report.AppendLine();
 
         foreach (IGrouping<string, Violation> group in violations.GroupBy(v => v.Banned.Pattern).OrderBy(g => g.Key))
         {

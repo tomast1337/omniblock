@@ -7,8 +7,8 @@ namespace BetaSharp.Client.Network;
 ///     Drives remote entities from buffered server snapshots sampled at render time, rather than
 ///     moving them a fraction of the way toward the last-received target each tick.
 ///     <para>
-///         Phase 4 of <c>docs/time-sync-and-interpolation.md</c>. See <see cref="SnapshotBuffer" />
-///         for why sampling against the clock instead of against packet arrivals is the fix.
+///         See <see cref="SnapshotBuffer" /> for why sampling against the clock instead of against
+///         packet arrivals is the fix.
 ///     </para>
 ///     <para>
 ///         <b>Applied at render time, not tick time.</b> Entities are sampled once per frame and
@@ -25,9 +25,9 @@ public sealed class EntityInterpolator
     ///     Render this far behind the server's clock. The buffer needs snapshots on both sides of
     ///     render time to interpolate, so the delay is what absorbs jitter and stalls.
     ///     <para>
-    ///         The floor from §3.4's <c>clamp(2 * tickInterval + 2 * jitter, …)</c>. Two tick
-    ///         intervals is the minimum that keeps two snapshots bracketing render time at 20 TPS.
-    ///         The jitter term is added on top, from <see cref="NetworkJitterMs" />.
+    ///         The floor of <c>clamp(2 * tickInterval + 2 * jitter, …)</c>. Two tick intervals is
+    ///         the minimum that keeps two snapshots bracketing render time at 20 TPS. The jitter
+    ///         term is added on top, from <see cref="NetworkJitterMs" />.
     ///     </para>
     /// </summary>
     public const long DefaultDelayMs = 100;
@@ -78,7 +78,7 @@ public sealed class EntityInterpolator
     ///         observed interval every tick makes it jump the moment the median moves — an entity
     ///         that stalls goes from 300 ms to 800 ms of delay in one tick and teleports half a
     ///         second into its own past. Ramping converts that teleport into a brief slow-motion,
-    ///         which is the §3.5 requirement not to snap on recovery.
+    ///         which is what keeps recovery from reading as a snap.
     ///     </para>
     /// </summary>
     public const long DelayRaisePerTickMs = 20;
@@ -86,7 +86,7 @@ public sealed class EntityInterpolator
     /// <summary>
     ///     Most the delay may shrink per tick, when an entity's updates speed up again.
     ///     <para>
-    ///         Slower than the rise, per §3.4's asymmetry. Shrinking early re-enters starvation and
+    ///         Slower than the rise, deliberately. Shrinking early re-enters starvation and
     ///         oscillates, and there is no urgency: too much delay costs a little latency, too
     ///         little costs a freeze. The same speed-limit arithmetic applies with the sign flipped
     ///         — at 5 ms the entity plays at 110%, fast enough to converge and slow enough not to
@@ -144,7 +144,7 @@ public sealed class EntityInterpolator
 
     /// <summary>
     ///     Mean absolute deviation of round-trip time, from <see cref="ServerClock.JitterMs" />.
-    ///     Twice this is added to every entity's delay, per §3.4.
+    ///     Twice this is added to every entity's delay.
     ///     <para>
     ///         Connection-wide rather than per-entity, and that is the point: the interval term
     ///         covers how often the <em>server</em> chooses to speak about this entity, and this
@@ -189,7 +189,7 @@ public sealed class EntityInterpolator
     ///     opened — counted per entry into starvation, not per frame spent in it, and not counted at
     ///     all for an entity that simply stopped moving.
     ///     <para>
-    ///         §3.5's metric: this is what says the buffer is undersized for this connection.
+    ///         This is the number that says the buffer is undersized for this connection.
     ///         <see cref="FrozenCount" /> cannot answer that, because it is instantaneous and a
     ///         standing handful of genuinely idle entities looks identical to a stream that keeps
     ///         breaking down.
@@ -468,8 +468,8 @@ public sealed class EntityInterpolator
     ///     Books the outcome of one sample against the entity's starvation credit.
     ///     <para>
     ///         <b>While an entity is frozen its delay grows by exactly the clock's own advance</b>,
-    ///         which pins render time where playback stopped. That is §3.5's "on recovery, do not
-    ///         snap", arrived at from the other end: the delay <em>is</em> the render-time offset, so
+    ///         which pins render time where playback stopped. That is "do not snap on recovery"
+    ///         arrived at from the other end: the delay <em>is</em> the render-time offset, so
     ///         holding render time still and growing the delay at the tick rate are the same
     ///         operation, and expressing it as the latter means the existing asymmetric ramp handles
     ///         the way back out for free.
@@ -561,7 +561,7 @@ public sealed class EntityInterpolator
     {
         long interval = buffer.MedianIntervalMs;
 
-        // §3.4's jitter term. Independent of the update rate, so it is added rather than folded in:
+        // The jitter term. Independent of the update rate, so it is added rather than folded in:
         // a slow-updating entity on a jittery link needs both margins, not the larger of them.
         long jitterMargin = 2 * NetworkJitterMs;
 

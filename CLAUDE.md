@@ -140,7 +140,8 @@ Shaders live in `BetaSharp/shaders/` and are embedded resources. **Adding a shad
 - Behavior composition over inheritance — match the existing `Behaviors/` pattern rather than adding subclasses.
 - `JavaRandom` is the one sanctioned Java-ism. Everything else Java-shaped that you find is fair game to modernize, subject to the parity rule above.
 - Include tests with new features; when fixing a bug, start with a test that reproduces it.
+- Comments say why, not what. A comment that points at a plan (`Phase 3 of docs/foo.md §5.4`) is a comment that will be wrong within a month and cannot be checked by anyone reading the file — say what the constraint is instead, so the reason survives the plan.
 
 ## Docs
 
-`docs/` holds design and phase-plan documents for larger efforts (`gpu-instanced-entity-rendering.md`, `parallel-pathfinding.md`, the `*-data-driven-migration.md` set, `asset-loading-system-guide.md`). They are working records — a doc describing a completed migration reflects the state when it was written, so verify against the code before relying on specifics.
+There is no `docs/` in the repository, deliberately. Design notes written during a change describe intentions, and they go stale the moment the change lands; a stale document is worse than none, because it reads as authoritative. Whatever is worth keeping belongs next to the code it constrains, as a comment that a reader can check against what it sits on.

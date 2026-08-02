@@ -7,8 +7,8 @@ namespace BetaSharp.Tests.Network;
 ///     Delta-compressed entity replication: <see cref="EntitySnapshotMessage" />,
 ///     <see cref="PlayerSnapshotStream" /> and <see cref="ClientSnapshotStream" /> as one loop.
 ///     <para>
-///         <c>docs/network-rewrite.md</c> §4.4. Delta compression fails quietly — a snapshot applied
-///         to the wrong baseline decodes to a plausible position rather than to an error — so most of
+///         Delta compression fails quietly — a snapshot applied to the wrong baseline decodes to a
+///         plausible position rather than to an error — so most of
 ///         these drive a real sender against a real receiver and assert the receiver reconstructed
 ///         what the sender put in, rather than testing either half against a fixture.
 ///     </para>

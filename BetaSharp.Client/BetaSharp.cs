@@ -907,8 +907,8 @@ public partial class BetaSharp :
             // true, DebugWindowManager sets ImGuiConfigFlags.NoMouse and ImGui ignores the mouse
             // entirely. Every other path that drops in-game focus goes through Navigate(screen),
             // which opens (and pauses behind) a game screen. Releasing here is what makes the
-            // "debug overlay, no screen" row of the state table in
-            // docs/debug-system-implementation-guide.md reachable; closing re-grabs.
+            // one state where the debug overlay is up with no screen behind it reachable at all;
+            // closing the overlay re-grabs.
             if (CurrentScreen == null && World != null)
             {
                 if (Options.ShowDebugInfo)

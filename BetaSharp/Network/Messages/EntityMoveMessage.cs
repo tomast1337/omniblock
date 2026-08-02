@@ -13,9 +13,9 @@ namespace BetaSharp.Network.Messages;
 ///         <b>Fixed width rather than mask-conditional fields.</b> Omitting the absent deltas would
 ///         save four bytes; it would also make the payload's length depend on its own contents,
 ///         which is the shape <see cref="EntitySnapshotMessage" /> exists to do properly across a
-///         whole tick's worth of entities. This one is the per-entity legacy path, and since phase 6
-///         that path only carries singleplayer, where the message is handed over as an object and
-///         its width costs nothing at all.
+///         whole tick's worth of entities. This one is the per-entity path, and it now carries only
+///         singleplayer, where the message is handed over as an object and its width costs nothing
+///         at all.
 ///     </para>
 /// </summary>
 [WireMessage("betasharp:entity_move")]

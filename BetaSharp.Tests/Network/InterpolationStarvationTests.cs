@@ -3,12 +3,12 @@ using BetaSharp.Client.Network;
 namespace BetaSharp.Tests.Network;
 
 /// <summary>
-///     Phase 5 of <c>docs/time-sync-and-interpolation.md</c>: what happens when an entity runs out of
-///     buffered future, and what happens when its data comes back.
+///     What happens when an entity runs out of buffered future, and what happens when its data
+///     comes back.
 ///     <para>
-///         §3.5 asks for three things — extrapolate, then freeze, and on recovery do not snap. The
-///         first two shipped with phase 4. The third is here, and it is expressed through the delay
-///         rather than through a second per-entity clock: the delay <em>is</em> the render-time
+///         Three things have to hold: extrapolate, then freeze, and on recovery do not snap. The
+///         third is expressed through the delay rather than through a second per-entity clock,
+///         because the delay <em>is</em> the render-time
 ///         offset, so growing it at exactly the rate the server clock advances holds render time
 ///         still, and the existing asymmetric ramp then eases it back out for free.
 ///     </para>
@@ -70,7 +70,7 @@ public sealed class InterpolationStarvationTests
 
     /// <summary>
     ///     A stall long enough to exhaust extrapolation freezes the entity and counts one event —
-    ///     one, not one per tick spent frozen. §3.5's metric is "how often did this break down", and
+    ///     one, not one per tick spent frozen. The question is "how often did this break down", and
     ///     a per-tick count answers "how long has it been broken", which the Frozen gauge already
     ///     says.
     /// </summary>
@@ -207,8 +207,8 @@ public sealed class InterpolationStarvationTests
     }
 
     /// <summary>
-    ///     §3.5's third bullet, stated as the number that matters: how much of the entity's timeline
-    ///     is skipped when its data comes back.
+    ///     Recovery, stated as the number that matters: how much of the entity's timeline is
+    ///     skipped when its data comes back.
     ///     <para>
     ///         Without the pin, render time runs on through the whole stall and the entity resumes
     ///         from wherever the clock had reached — a two-second stall discards two seconds of

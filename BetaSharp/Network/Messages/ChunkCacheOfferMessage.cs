@@ -5,8 +5,8 @@ namespace BetaSharp.Network.Messages;
 /// <summary>
 ///     What chunks the client already holds, and the content hash of each.
 ///     <para>
-///         <c>docs/network-rewrite.md</c> §5.4 item 4. The server compares each hash against the
-///         chunk it was about to send and, on a match, sends <see cref="ChunkUnchangedMessage" />
+///         The server compares each hash against the chunk it was about to send and, on a match,
+///         sends <see cref="ChunkUnchangedMessage" />
 ///         instead of two kilobytes. Rejoining a world you have explored is the case this exists for,
 ///         and it takes that from a full re-send to nothing.
 ///     </para>

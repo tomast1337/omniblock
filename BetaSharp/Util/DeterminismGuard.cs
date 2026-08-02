@@ -87,8 +87,7 @@ public static class DeterminismGuard
         string message =
             $"Impure operation '{operation}' executed inside a deterministic region. "
             + "Movement code must not mutate ambient state or emit side effects directly; "
-            + "route effects through StepEffects and randomness through the injected generator. "
-            + "See docs/deterministic-movement-extraction.md §3.";
+            + "route effects through StepEffects and randomness through the injected generator.";
 
         if (Mode == DeterminismGuardMode.Collect)
         {

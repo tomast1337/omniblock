@@ -239,7 +239,8 @@ public abstract class BetaSharpServer : ICommandOutput
                 int totalChunks = chunkList.Count;
                 var preGenerated = new Chunk[totalChunks];
 
-                // Phase 1: Parallel terrain generation
+                // Terrain, in parallel. Generation reads no neighbours, so it is the only stage
+                // that can be.
                 var sw1 = Stopwatch.StartNew();
                 var threadLocalGen = new ThreadLocal<IChunkSource>(world.ChunkCache.CreateParallelGenerator, trackAllValues: false);
                 Parallel.For(0, totalChunks, idx =>
@@ -257,7 +258,8 @@ public abstract class BetaSharpServer : ICommandOutput
                 sw1.Stop();
                 _logger.LogInformation("  Level {Level} terrain: {ElapsedMs}ms", i, sw1.ElapsedMilliseconds);
 
-                // Phase 2a: Insert all chunks first (required so decoration can write to neighbors without hitting EmptyChunk)
+                // Insert before decorating, all of them: decoration writes into neighbours, and a
+                // neighbour not yet inserted reads back as EmptyChunk.
                 var sw2 = Stopwatch.StartNew();
                 for (int idx = 0; idx < totalChunks && running; idx++)
                 {
@@ -276,8 +278,8 @@ public abstract class BetaSharpServer : ICommandOutput
                 sw2.Stop();
                 _logger.LogInformation("  Level {Level} decoration: {ElapsedMs}ms", i, sw2.ElapsedMilliseconds);
 
-                // Phase 3: Batch lighting drain — all neighbors already loaded so sky-light
-                // propagates without border re-queuing.
+                // Lighting last, in one drain. Every neighbour is loaded by now, so sky light
+                // propagates across borders once instead of being re-queued at each edge.
                 var sw3 = Stopwatch.StartNew();
                 while (world.Lighting.DoLightingUpdates() && running) { }
                 sw3.Stop();

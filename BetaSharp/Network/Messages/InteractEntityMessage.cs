@@ -3,8 +3,8 @@ namespace BetaSharp.Network.Messages;
 /// <summary>
 ///     A click on another entity, carrying the instant the clicking player was rendering it at.
 ///     <para>
-///         Phase 6 of <c>docs/network-rewrite.md</c> §4.4. <c>PlayerInteractEntityC2SPacket</c> says
-///         which entity and which button, and that was sufficient when the client drew entities
+///         <c>PlayerInteractEntityC2SPacket</c> said which entity and which button, and that was
+///         sufficient when the client drew entities
 ///         wherever the last packet put them. It no longer is: entities are interpolated, so the
 ///         target on the attacker's screen is somewhere between two snapshots at a render time the
 ///         server has no way to reconstruct — it varies per entity, and it moves as the delay ramps.

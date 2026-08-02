@@ -54,8 +54,7 @@ public class Connection
 
     /// <summary>
     ///     Gap between successive packet arrivals. On a client this is the head-of-line stall the
-    ///     snapshot buffer will have to absorb, which is what sizes the interpolation delay — see
-    ///     <c>docs/time-sync-and-interpolation.md</c> §3.4.
+    ///     snapshot buffer will have to absorb, and it is what sizes the interpolation delay.
     /// </summary>
     public PacketArrivalHistogram ReadIntervals { get; } = new();
 
@@ -181,7 +180,7 @@ public class Connection
         {
             _backlogWarned = true;
             _logger.LogWarning(
-                "Read backlog of {Depth} packets: arriving faster than they can be applied, so positions are being applied late. See docs/time-sync-and-interpolation.md.",
+                "Read backlog of {Depth} packets: arriving faster than they can be applied, so positions are being applied late.",
                 depth);
         }
 

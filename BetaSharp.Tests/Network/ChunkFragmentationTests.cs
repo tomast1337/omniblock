@@ -8,18 +8,18 @@ namespace BetaSharp.Tests.Network;
 /// <summary>
 ///     How many datagrams a chunk actually becomes.
 ///     <para>
-///         This is the number <c>docs/network-rewrite.md</c> §5.1 built the case for a custom
-///         chunk transfer protocol on, and it was measured against the inherited format. §5.4's
-///         encoding changed it by more than an order of magnitude, so it is pinned here: the design
-///         decision to build selective repeat, or not, follows directly from this figure.
+///         The case for building a custom chunk transfer protocol rests on this number, and it was
+///         originally argued from the inherited format. <see cref="ChunkBlobCodec" /> changed it by
+///         more than an order of magnitude, so it is pinned here: whether selective repeat is worth
+///         building follows directly from this figure.
 ///     </para>
 /// </summary>
 public sealed class ChunkFragmentationTests(ITestOutputHelper output)
 {
-    /// <summary>Average compressed chunk, from the 200-chunk measurement in §5.4.</summary>
+    /// <summary>Average compressed chunk, from the 200-chunk measurement.</summary>
     private const int TypicalChunkBytes = 1966;
 
-    /// <summary>What §5.1 assumed a chunk cost after compression.</summary>
+    /// <summary>What the inherited format cost after compression, and what the case was argued from.</summary>
     private const int AssumedChunkBytes = 81_920;
 
     [Fact]
@@ -46,14 +46,14 @@ public sealed class ChunkFragmentationTests(ITestOutputHelper output)
         int assumed = (AssumedChunkBytes + mtu - 1) / mtu;
 
         output.WriteLine($"MTU {mtu}: a {TypicalChunkBytes} byte chunk is {fragments} datagram(s); "
-            + $"the {AssumedChunkBytes} byte form §5.1 assumed would be {assumed}");
+            + $"the inherited {AssumedChunkBytes} byte form would be {assumed}");
 
         // The claim the transfer protocol rests on. A lost fragment can only block what is behind it
         // within its own message, so at this depth head-of-line blocking inside one chunk is not a
         // problem worth a bespoke protocol to solve.
         Assert.True(
             fragments <= 4,
-            $"a chunk is {fragments} datagrams at MTU {mtu}; past a handful, §5.2's selective repeat "
+            $"a chunk is {fragments} datagrams at MTU {mtu}; past a handful, selective repeat "
             + "starts being worth building after all");
     }
 

@@ -17,10 +17,10 @@ public enum SendPriority
 /// <summary>
 ///     Decides which packets may overtake bulk traffic on the send queue.
 ///     <para>
-///         This is <c>docs/time-sync-and-interpolation.md</c> §4.1. A chunk is ~81 KB before
-///         compression and the writer drains strictly in order, so once one is being written every
-///         entity update behind it waits for all of it — the stall the snapshot buffer then has to
-///         absorb. Draining a second queue first shrinks the stall rather than hiding it.
+///         A chunk is ~81 KB before compression and the writer drains strictly in order, so once
+///         one is being written every entity update behind it waits for all of it. That is the
+///         stall the snapshot buffer then has to absorb; draining a second queue first shrinks it
+///         rather than hiding it.
 ///     </para>
 ///     <para>
 ///         <b>An allowlist, deliberately, rather than "everything except chunks".</b> Reordering is

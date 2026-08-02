@@ -6,25 +6,16 @@ namespace BetaSharp.Network.Messages;
 /// <summary>
 ///     One whole chunk, encoded by <see cref="ChunkBlobCodec" /> and then compressed.
 ///     <para>
-///         Phase 3 of <c>docs/network-rewrite.md</c> §5.4. Replaces <c>ChunkDataS2CPacket</c> for
-///         the full-chunk case only. Measured over 200 chunks of a played-in save, this costs 1,966
-///         bytes against 2,610 for the packet it replaces — the honest figure is a quarter, not the
-///         multiple §5.4 originally assumed, because zlib over the raw chunk already finds most of
-///         the same redundancy.
+///         Measured over 200 chunks of a played-in save this costs 1,966 bytes against the 2,610
+///         the raw format takes — a quarter, and worth stating because the saving looks like it
+///         should be far larger. It is not, because zlib over the raw chunk already finds most of
+///         the redundancy the palette removes.
 ///     </para>
 ///     <para>
-///         <b>Full chunks only, deliberately.</b> <c>ChunkDataS2CPacket</c> serves two jobs: the
-///         initial 16x128x16 send, and the batched region update <c>ChunkMap</c> falls back to when
-///         a tick dirties more blocks than individual updates are worth. The codec's unit is a
-///         chunk, so only the first is replaced; the second keeps the packet. Stretching the codec
-///         to cover arbitrary sub-boxes would cost the section structure the whole encoding rests
-///         on, to save bytes on a path that is already rare.
-///     </para>
-///     <para>
-///         <b>Vanilla peers never see this.</b> It travels inside <c>OmniMessagePacket</c>, which
-///         <c>Connection.sendPacket</c> drops for a peer that did not declare the protocol, and the
-///         sender falls back to the legacy packet in that case. The gate is the same one the
-///         time-sync messages use.
+///         <b>Full chunks only, deliberately.</b> The codec's unit is a chunk, and a sub-box has no
+///         sections to encode. An arbitrary box goes as <see cref="RegionDataMessage" /> instead;
+///         stretching the codec to cover both would cost the section structure the whole encoding
+///         rests on, to save bytes on a path that is already rare.
 ///     </para>
 /// </summary>
 [WireMessage("betasharp:chunk_data")]
@@ -59,9 +50,9 @@ public sealed partial class ChunkDataMessage : Message
     ///     <para>
     ///         Compression stays here rather than inside the codec: the codec's job is to remove the
     ///         structural redundancy a byte-oriented compressor is worst at, and which general
-    ///         compressor runs over the result afterwards is a transport decision. zlib for now
-    ///         because it is in the framework; §5.4 item 2 wants zstd, which is a dependency
-    ///         question rather than a format one.
+    ///         compressor runs over the result afterwards is a transport decision. zlib because it
+    ///         is in the framework; swapping it for zstd is a dependency question rather than a
+    ///         format one.
     ///     </para>
     /// </summary>
     public static ChunkDataMessage Of(

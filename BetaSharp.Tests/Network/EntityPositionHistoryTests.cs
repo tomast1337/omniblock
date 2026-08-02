@@ -7,8 +7,8 @@ namespace BetaSharp.Tests.Network;
 ///     <see cref="EntityPositionHistory" />: the server's record of where a tracked entity has been,
 ///     and the rewind policy that reads it.
 ///     <para>
-///         <c>docs/network-rewrite.md</c> §4.4. The property under test is that a reach check run
-///         against a rewound position agrees with what the attacking client had on screen — see
+///         The property under test is that a reach check run against a rewound position agrees with
+///         what the attacking client had on screen — see
 ///         <see cref="A_target_walking_away_is_still_within_reach_where_the_attacker_saw_it" />, which
 ///         is the whole of why this exists.
 ///     </para>

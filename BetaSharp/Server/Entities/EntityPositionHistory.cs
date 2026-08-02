@@ -3,9 +3,9 @@ namespace BetaSharp.Server.Entities;
 /// <summary>
 ///     Where a tracked entity was, for the last couple of seconds of server time.
 ///     <para>
-///         Phase 6 of <c>docs/network-rewrite.md</c> §4.4. The client renders remote entities in the
-///         past — <see cref="Client.Network.EntityInterpolator" /> puts them anywhere from 100 ms to
-///         three seconds behind the server clock, per entity — so the position an attacking player
+///         The client renders remote entities in the past — <see cref="Client.Network.EntityInterpolator" />
+///         puts them anywhere from 100 ms to three seconds behind the server clock, per entity — so
+///         the position an attacking player
 ///         actually aimed at is never the position the server holds when the attack arrives. Without
 ///         a record of the former, a hit that landed on screen is rejected by a reach check against
 ///         a target that has since walked away, and the miss scales with latency.

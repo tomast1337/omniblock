@@ -8,7 +8,7 @@ namespace BetaSharp.Loot;
 ///     (multiple pools).
 ///     <para>
 ///         Not to be confused with the older <see cref="BetaSharp.Blocks.LootTable" />, which blocks
-///         still use — see docs/mob-data-driven-migration.md for the pending block migration.
+///         still use. Moving them onto this one is outstanding.
 ///     </para>
 /// </summary>
 public sealed class LootTable(params LootPool[] pools)

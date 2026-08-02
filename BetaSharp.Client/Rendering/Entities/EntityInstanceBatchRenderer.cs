@@ -12,8 +12,7 @@ namespace BetaSharp.Client.Rendering.Entities;
 /// <summary>
 /// Each unique <see cref="ModelPart"/>'s local geometry is uploaded once into a shared static
 /// buffer. Per-frame pose (one matrix per bone) and tint go into an SSBO, consumed by
-/// <c>shaders/entity_instanced.vert</c> via <c>gl_InstanceID</c>. See
-/// docs/gpu-instanced-entity-rendering.md.
+/// <c>shaders/entity_instanced.vert</c> via <c>gl_InstanceID</c>.
 /// </summary>
 public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
 {

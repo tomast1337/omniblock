@@ -7,10 +7,9 @@ namespace BetaSharp.Network.Chunks;
 ///     A client's on-disk store of chunk blobs it has already received, so a server can skip sending
 ///     a chunk that has not changed since last time.
 ///     <para>
-///         <c>docs/network-rewrite.md</c> §5.4 item 4. Rejoining a world you have explored currently
-///         re-sends every chunk in full; with this it costs one hash comparison per chunk. It is the
-///         largest single saving in that section — larger than the palette encoding, which took the
-///         same traffic down by a quarter, because this takes it to zero.
+///         Rejoining a world you have explored otherwise re-sends every chunk in full; with this it
+///         costs one hash comparison per chunk. That is a larger saving than the palette encoding,
+///         which took the same traffic down by a quarter, because this takes it to zero.
 ///     </para>
 ///     <para>
 ///         <b>Append-only, with an index rebuilt at open.</b> A record is written at the end and the

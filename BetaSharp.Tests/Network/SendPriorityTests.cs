@@ -135,7 +135,7 @@ public sealed class SendPriorityTests
     }
 
     /// <summary>
-    ///     Reliable and ordered for everything, which is the phase 2 position and not the end state.
+    ///     Reliable and ordered for everything, which is a starting position and not the end state.
     ///     Sending entity updates sequenced is the obvious next move and would be wrong today:
     ///     sequenced keeps only the newest payload on the channel, so one entity's update would
     ///     discard another's and spawns would be dropped outright.

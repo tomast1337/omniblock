@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 namespace BetaSharp.Tests.Network;
 
 /// <summary>
-///     Phase 3 of <c>docs/network-rewrite.md</c> §5.4: the chunk wire encoding.
+///     <see cref="ChunkBlobCodec" />: the chunk wire encoding.
 ///     <para>
 ///         Two things have to hold. The blob must round-trip <em>exactly</em> — a wire format that
 ///         loses a metadata nibble produces terrain that is subtly wrong in a way no player reports
@@ -238,7 +238,8 @@ public sealed class ChunkBlobCodecTests(ITestOutputHelper output)
     ///         nothing: the raw form has never been what goes on the wire. The wire has always been
     ///         zlib over the raw chunk, and zlib already finds most of the redundancy a palette does.
     ///         Measured over 200 chunks of a real save the honest figure is 2,610 bytes per chunk
-    ///         today against 1,966 with this — around a quarter, not the multiple §5.4 assumed.
+    ///         today against 1,966 with this — around a quarter, and far less than a palette
+    ///         encoding looks like it should buy.
     ///     </para>
     ///     <para>
     ///         Generated terrain here rather than a save, because a test cannot depend on one. It is
