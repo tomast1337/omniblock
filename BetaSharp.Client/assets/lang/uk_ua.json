@@ -1,1369 +1,1369 @@
 ﻿{
     "gui": {
-        "joinServer": "Join Server",
-        "rename": "Rename",
-        "edit": "Edit",
-        "refresh": "Refresh",
-        "done": "Done",
-        "cancel": "Cancel",
-        "delete": "Delete",
-        "toMenu": "Back to title screen",
-        "up": "Up",
-        "down": "Down",
-        "yes": "Yes",
-        "no": "No",
-        "connect": "Connect",
-        "directConnect": "Direct Connect",
-        "addServer": "Add Server",
-        "create": "Create",
-        "customize": "Customize",
-        "achievements": "Achievements",
-        "stats": "Statistics",
+        "joinServer": "Приєднатися до сервера",
+        "rename": "Перейменувати",
+        "edit": "Редагувати",
+        "refresh": "Оновити",
+        "done": "Готово",
+        "cancel": "Скасувати",
+        "delete": "Видалити",
+        "toMenu": "Повернутися до головного меню",
+        "up": "Вгору",
+        "down": "Вниз",
+        "yes": "Так",
+        "no": "Ні",
+        "connect": "З'єднатися",
+        "directConnect": "Пряме з'єднання",
+        "addServer": "Додати сервер",
+        "create": "Створити",
+        "customize": "Налаштувати",
+        "achievements": "Досягнення",
+        "stats": "Статистика",
         "container": {
-            "crafting": "Crafting",
-            "inventory": "Inventory",
-            "dispenser": "Dispenser",
-            "furnace": "Furnace",
+            "crafting": "Створення",
+            "inventory": "Інвентар",
+            "dispenser": "Роздавач",
+            "furnace": "Піч",
             "tip": {
-                "move": "Move",
-                "quickMove": "Quick Move",
-                "takeHalf": "Take Half",
-                "place": "Place",
-                "placeOne": "Place One"
+                "move": "Перемістити",
+                "quickMove": "Швидко перемістити",
+                "takeHalf": "Взяти половину",
+                "place": "Розмістити",
+                "placeOne": "Розмістити один"
             }
         }
     },
     "menu": {
-        "singleplayer": "Singleplayer",
-        "multiplayer": "Multiplayer",
-        "texturePacks": "Texture Packs",
-        "options": "Options...",
-        "language": "Language",
-        "quit": "Quit Game",
-        "credits": "Credits",
-        "sendFeedback": "Send Feedback",
-        "reportBugs": "Report Bugs",
-        "saveAndQuitToTitle": "Save and quit to title",
-        "disconnect": "Disconnect"
+        "singleplayer": "Гра наодинці",
+        "multiplayer": "Мережева гра",
+        "texturePacks": "Текстур-паки",
+        "options": "Налаштування...",
+        "language": "Мова",
+        "quit": "Вийти з гри",
+        "credits": "Титри",
+        "sendFeedback": "Надіслати відгук",
+        "reportBugs": "Повідомити про помилки",
+        "saveAndQuitToTitle": "Зберегти та вийти до головного меню",
+        "disconnect": "Роз'єднатися"
     },
     "selectWorld": {
-        "title": "Select World",
-        "empty": "empty",
-        "world": "World",
-        "select": "Play Selected World",
-        "create": "Create New World",
-        "createDemo": "Play New Demo World",
-        "deleteQuestion": "Are you sure you want to delete this world?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "renameTitle": "Rename World",
-        "conversion": "Must be converted!",
-        "newWorld": "New World",
-        "enterName": "World Name",
-        "resultFolder": "Will be saved in:",
-        "enterSeed": "Seed for the World Generator",
-        "seedInfo": "Leave blank for a random seed",
-        "selectWorldType": "Select World Type",
-        "worldType": "World Type",
-        "customize": "Customize",
-        "moreWorldOptions": "More World Options...",
+        "title": "Вибір світу",
+        "empty": "порожньо",
+        "world": "Світ",
+        "select": "Грати у вибраному світі",
+        "create": "Створити новий світ",
+        "createDemo": "Грати в новий демо-світ",
+        "deleteQuestion": "Ви впевнені, що хочете видалити цей світ?",
+        "deleteWarning": "буде втрачено назавжди! (Надовго!)",
+        "renameTitle": "Перейменувати світ",
+        "conversion": "Потребує конвертації!",
+        "newWorld": "Новий світ",
+        "enterName": "Назва світу",
+        "resultFolder": "Буде збережено в:",
+        "enterSeed": "Сід для генерації світу",
+        "seedInfo": "Залиште порожнім, щоб сід був випадковим",
+        "selectWorldType": "Виберіть тип світу",
+        "worldType": "Тип світу",
+        "customize": "Налаштувати",
+        "moreWorldOptions": "Більше параметрів світу...",
         "type": {
             "default": {
-                "title": "Default",
-                "description": "The standard Minecraft world."
+                "title": "Звичайний",
+                "description": "Стандартний світ Minecraft."
             },
             "flat": {
-                "title": "Flat",
-                "description": "A completely flat world."
+                "title": "Плоский",
+                "description": "Повністю плоский світ."
             },
             "sky": {
-                "title": "Sky",
-                "description": "A world floating in the sky."
+                "title": "Небесний",
+                "description": "Світ, що ширяє в небі."
             }
         }
     },
     "newWorld": {
         "customize": {
             "superflatWorld": {
-                "title": "Customize Superflat World"
+                "title": "Налаштувати суперплоский світ"
             },
-            "removeLayer": "Remove Layer",
-            "presets": "Presets",
-            "height": "Height",
+            "removeLayer": "Прибрати шар",
+            "presets": "Пресети",
+            "height": "Висота",
             "unknown": "???"
         }
     },
     "world": {
-        "world": "World",
-        "unsupportedFormat": "Unsupported Format!"
+        "world": "Світ",
+        "unsupportedFormat": "Непідтримуваний формат!"
     },
     "multiplayer": {
-        "title": "Play Multiplayer",
-        "betasharpServer": "BetaSharp Server",
-        "info1": "Minecraft Multiplayer is currently not finished, but there",
-        "info2": "is some buggy early testing going on.",
-        "ipinfo": "Enter the IP of a server to connect to it:",
-        "deleteQuestion": "Are you sure you want to delete this server?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "downloadingTerrain": "Downloading terrain",
-        "stopSleeping": "Leave Bed",
-        "editServerTitle": "Edit Server Info",
-        "addServerTitle": "Add Server Info",
-        "serverName": "Server Name",
-        "serverAddress": "Server Address"
+        "title": "Мережева гра",
+        "betasharpServer": "Сервер BetaSharp",
+        "info1": "Мережева гра в Minecraft ще не завершена, але",
+        "info2": "триває раннє тестування з вадами.",
+        "ipinfo": "Введіть IP-адресу сервера, до якого потрібно під'єднатися:",
+        "deleteQuestion": "Ви впевнені, що хочете видалити цей сервер?",
+        "deleteWarning": "буде втрачено назавжди! (Надовго!)",
+        "downloadingTerrain": "Завантаження території",
+        "stopSleeping": "Встати з ліжка",
+        "editServerTitle": "Редагувати інформацію про сервер",
+        "addServerTitle": "Додати інформацію про сервер",
+        "serverName": "Назва сервера",
+        "serverAddress": "Адреса сервера"
     },
     "loading": {
-        "loadingLevel": "Loading level",
-        "startingServer": "Starting server...",
-        "preparingSpawnArea": "Preparing spawn area"
+        "loadingLevel": "Завантаження рівня",
+        "startingServer": "Запуск сервера...",
+        "preparingSpawnArea": "Підготовка зони відродження"
     },
     "achievements": {
-        "title": "Achievements"
+        "title": "Досягнення"
     },
     "gameover": {
-        "title": "Game Over!",
-        "score": "Score",
-        "respawn": "Respawn",
-        "titleMenu": "Title menu"
+        "title": "Гру завершено!",
+        "score": "Рахунок",
+        "respawn": "Відродитися",
+        "titleMenu": "Головне меню"
     },
     "gamemenu": {
-        "title": "Game Menu",
-        "backToGame": "Back to Game"
+        "title": "Ігрове меню",
+        "backToGame": "Повернутися до гри"
     },
     "sign": {
-        "title": "Edit sign message:"
+        "title": "Редагуйте текст таблички:"
     },
     "stats": {
-        "title": "Statistics",
-        "general": "General",
+        "title": "Статистика",
+        "general": "Загальне",
         "blocks": {
-            "name": "Blocks",
-            "mined": "Mined",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Блоки",
+            "mined": "Видобуто",
+            "crafted": "Створено",
+            "used": "Використано"
         },
         "items": {
-            "name": "Items",
-            "broken": "Broken",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Предмети",
+            "broken": "Зламано",
+            "crafted": "Створено",
+            "used": "Використано"
         },
-        "item": "Item"
+        "item": "Предмет"
     },
     "connect": {
-        "connecting": "Connecting to the server...",
-        "authorizing": "Logging in...",
-        "failed": "Failed to connect to the server"
+        "connecting": "З'єднання з сервером...",
+        "authorizing": "Вхід у гру...",
+        "failed": "Не вдалося з'єднатися з сервером"
     },
     "disconnect": {
         "genericReason": "{0}",
-        "disconnected": "Disconnected by Server",
-        "lost": "Connection Lost",
-        "kicked": "Was kicked from the game",
-        "timeout": "Timed out",
-        "closed": "Connection closed",
-        "loginFailed": "Failed to login",
-        "quitting": "Quitting",
-        "endOfStream": "End of stream",
-        "overflow": "Buffer overflow"
+        "disconnected": "Від'єднано сервером",
+        "lost": "З'єднання втрачено",
+        "kicked": "Вас вигнали з гри",
+        "timeout": "Час очікування вичерпано",
+        "closed": "З'єднання закрито",
+        "loginFailed": "Не вдалося увійти",
+        "quitting": "Вихід",
+        "endOfStream": "Кінець потоку",
+        "overflow": "Переповнення буфера"
     },
     "options": {
-        "off": "OFF",
-        "on": "ON",
-        "disabled": "Disabled",
-        "title": "Options",
-        "controls": "Controls...",
-        "keyboardControls": "Keyboard Controls...",
-        "controllerSettings": "Controller Settings...",
-        "controllerType": "Controller Type",
+        "off": "ВИМК",
+        "on": "УВІМК",
+        "disabled": "Вимкнено",
+        "title": "Налаштування",
+        "controls": "Керування...",
+        "keyboardControls": "Керування з клавіатури...",
+        "controllerSettings": "Налаштування контролера...",
+        "controllerType": "Тип контролера",
         "video": {
-            "text": "Video Settings...",
-            "performance": "Performance",
-            "display": "Display"
+            "text": "Відео...",
+            "performance": "Продуктивність",
+            "display": "Дисплей"
         },
-        "uiSettings": "UI Settings...",
-        "audioSettings": "Audio Settings...",
-        "audioTitle": "Audio Settings",
-        "videoTitle": "Video Settings",
-        "language": "Language...",
-        "anisoLevel": "Aniso Level",
-        "music": "Music",
-        "sound": "Sound",
-        "invertMouse": "Invert Mouse",
-        "alternateBlocks": "Alternate Blocks",
-        "chunkFade": "Chunk Fade",
+        "uiSettings": "Налаштування інтерфейсу...",
+        "audioSettings": "Налаштування аудіо...",
+        "audioTitle": "Налаштування аудіо",
+        "videoTitle": "Відео",
+        "language": "Мова...",
+        "anisoLevel": "Рівень анізотропії",
+        "music": "Музика",
+        "sound": "Звук",
+        "invertMouse": "Інвертувати мишу",
+        "alternateBlocks": "Чергування блоків",
+        "chunkFade": "Затухання чанків",
         "sensitivity": {
-            "text": "Sensitivity",
-            "controllerText": "Controller Sensitivity",
-            "min": "*yawn*",
-            "max": "HYPERSPEED!!!"
+            "text": "Чутливість",
+            "controllerText": "Чутливість контролера",
+            "min": "*позіхає*",
+            "max": "НАДШВИДКІСТЬ!!!"
         },
         "renderDistance": {
-            "text": "Render Distance",
-            "chunks": "Chunks",
-            "tiny": "Tiny",
-            "short": "Short",
-            "normal": "Normal",
-            "far": "Far"
+            "text": "Дистанція прогляду",
+            "chunks": "Чанки",
+            "tiny": "Мінімальна",
+            "short": "Коротка",
+            "normal": "Звичайна",
+            "far": "Велика"
         },
-        "viewBobbing": "View Bobbing",
-        "ao": "Smooth Lighting",
-        "anaglyph": "3D Anaglyph",
-        "framerateLimit": "Performance",
+        "viewBobbing": "Похитування огляду",
+        "ao": "Плавне освітлення",
+        "anaglyph": "3D-анагліф",
+        "framerateLimit": "Продуктивність",
         "difficulty": {
-            "text": "Difficulty",
-            "peaceful": "Peaceful",
-            "easy": "Easy",
-            "normal": "Normal",
-            "hard": "Hard"
+            "text": "Складність",
+            "peaceful": "Мирний",
+            "easy": "Легкий",
+            "normal": "Звичайний",
+            "hard": "Складний"
         },
         "graphics": {
-            "text": "Graphics",
-            "fancy": "Fancy",
-            "fast": "Fast"
+            "text": "Графіка",
+            "fancy": "Красива",
+            "fast": "Швидка"
         },
         "cloudsQuality": {
-            "text": "Clouds Quality",
-            "off": "No Clouds",
-            "legacy": "Old Clouds",
-            "shader": "Shader"
+            "text": "Якість хмар",
+            "off": "Без хмар",
+            "legacy": "Старі хмари",
+            "shader": "Шейдер"
         },
         "softClouds": {
-            "text": "Soft Clouds"
+            "text": "М'які хмари"
         },
         "guiScale": {
-            "text": "GUI Scale",
-            "auto": "Auto",
-            "small": "Small",
-            "normal": "Normal",
-            "large": "Large"
+            "text": "Масштаб інтерфейсу",
+            "auto": "Авто",
+            "small": "Малий",
+            "normal": "Звичайний",
+            "large": "Великий"
         },
         "chatScale": {
-            "text": "Chat Scale"
+            "text": "Масштаб чату"
         },
         "chatWidth": {
-            "text": "Chat Width"
+            "text": "Ширина чату"
         },
-        "advancedOpengl": "Advanced OpenGL",
+        "advancedOpengl": "Розширений OpenGL",
         "fps": {
             "text": "FPS",
-            "maxFps": "Max FPS",
-            "unlimited": "Unlimited"
+            "maxFps": "Макс. FPS",
+            "unlimited": "Без обмежень"
         },
-        "showCoordinates": "Show Coordinates",
-        "uiCursors": "UI Cursors",
-        "gamma": "Gamma",
+        "showCoordinates": "Показувати координати",
+        "uiCursors": "Курсори інтерфейсу",
+        "gamma": "Гамма",
         "vSync": "VSync",
-        "mipmaps": "Mipmaps",
-        "menuMusic": "Menu Music",
+        "mipmaps": "Міп-карти",
+        "menuMusic": "Музика в меню",
         "msaa": "MSAA",
         "fov": "FOV",
         "movement": {
-            "text": "Movement"
+            "text": "Рух"
         },
         "view": {
-            "text": "View"
+            "text": "Вид"
         },
         "other": {
-            "text": "Other"
+            "text": "Інше"
         },
-        "editBindings": "Edit Bindings...",
-        "resetBindings": "Reset Bindings...",
-        "controllerBindings": "Controller Bindings",
+        "editBindings": "Змінити клавіші...",
+        "resetBindings": "Скинути клавіші...",
+        "controllerBindings": "Клавіші контролера",
         "shader": {
-            "text": "Shader Options",
+            "text": "Параметри шейдера",
             "chunkVert": {
-                "text": "World",
-                "WavyLeavesStrength": "Wavy Leaves Strength",
-                "WavyLeavesSpeed": "Wavy Leaves Speed",
-                "WavyPlantStrength": "Wavy Plant Strength",
-                "WavyPlantSpeed": "Wavy Plant Speed",
-                "WavyPlantMode": "Wavy Plant Mode"
+                "text": "Світ",
+                "WavyLeavesStrength": "Сила хвилювання листя",
+                "WavyLeavesSpeed": "Швидкість хвилювання листя",
+                "WavyPlantStrength": "Сила хвилювання рослин",
+                "WavyPlantSpeed": "Швидкість хвилювання рослин",
+                "WavyPlantMode": "Режим хвилювання рослин"
             },
             "cloud": {
-                "text": "Clouds",
-                "minParallax": "Min Parallax",
-                "maxParallax": "Max Parallax",
-                "minGradient": "Min Gradient",
-                "maxGradient": "Max Gradient",
-                "cloudHeight": "Cloud Height",
-                "shadow": "Shadow Color",
-                "smoothWidth": "Smooth Width",
-                "smoothSamples": "Smooth Samples",
-                "closeFade": "Close Fade",
-                "smoothTop": "Smooth Top",
-                "smoothEdge": "Smooth Edge",
-                "smoothBottom": "Smooth Bottom",
-                "smoothBottomTopDown": "Smooth Bottom Top Down"
+                "text": "Хмари",
+                "minParallax": "Мін. паралакс",
+                "maxParallax": "Макс. паралакс",
+                "minGradient": "Мін. градієнт",
+                "maxGradient": "Макс. градієнт",
+                "cloudHeight": "Висота хмар",
+                "shadow": "Колір тіні",
+                "smoothWidth": "Ширина згладжування",
+                "smoothSamples": "Кількість зразків",
+                "closeFade": "Близьке затухання",
+                "smoothTop": "Згладжений верх",
+                "smoothEdge": "Згладжені краї",
+                "smoothBottom": "Згладжене дно",
+                "smoothBottomTopDown": "Згладжене дно зверху вниз"
             },
             "ui": {
-                "text": "UI",
-                "darkMode": "Dark Mode"
+                "text": "Інтерфейс",
+                "darkMode": "Темний режим"
             },
             "preset": {
-                "text": "Preset",
-                "disabled": "Disabled",
-                "default": "Default",
-                "custom": "Custom",
+                "text": "Пресет",
+                "disabled": "Вимкнено",
+                "default": "За замовчуванням",
+                "custom": "Власний",
                 "2d": "2D",
                 "3d": "3D",
-                "low": "Low",
-                "medium": "Medium",
-                "high": "High",
-                "ultra": "Ultra"
+                "low": "Низька",
+                "medium": "Середня",
+                "high": "Висока",
+                "ultra": "Ультра"
             }
         }
     },
     "performance": {
-        "max": "Max FPS",
-        "balanced": "Balanced",
-        "powersaver": "Power saver"
+        "max": "Макс. FPS",
+        "balanced": "Збалансовано",
+        "powersaver": "Енергозбереження"
     },
     "controls": {
-        "title": "Controls"
+        "title": "Керування"
     },
     "key": {
-        "forward": "Forward",
-        "left": "Left",
-        "back": "Back",
-        "right": "Right",
-        "jump": "Jump",
-        "inventory": "Inventory",
-        "drop": "Drop",
-        "chat": "Chat",
-        "fog": "Toggle Fog",
-        "sneak": "Sneak",
-        "playerlist": "List players",
-        "zoom": "Zoom",
-        "hotbarLeft": "Hotbar Left",
-        "hotbarRight": "Hotbar Right",
-        "pickBlock": "Pick Block",
-        "camera": "Camera Mode",
-        "pause": "Pause"
+        "forward": "Вперед",
+        "left": "Ліворуч",
+        "back": "Назад",
+        "right": "Праворуч",
+        "jump": "Стрибок",
+        "inventory": "Інвентар",
+        "drop": "Викинути",
+        "chat": "Чат",
+        "fog": "Перемкнути туман",
+        "sneak": "Крастися",
+        "playerlist": "Список гравців",
+        "zoom": "Зум",
+        "hotbarLeft": "Панель ліворуч",
+        "hotbarRight": "Панель праворуч",
+        "pickBlock": "Вибрати блок",
+        "camera": "Режим камери",
+        "pause": "Пауза"
     },
     "texturePack": {
-        "openFolder": "Open texture pack folder",
-        "title": "Select Texture Pack",
-        "folderInfo": "(Place texture pack files here)"
+        "openFolder": "Відкрити папку текстур-паків",
+        "title": "Вибір текстур-пака",
+        "folderInfo": "(Помістіть файли текстур-пака сюди)"
     },
     "tile": {
         "tallgrass": {
-            "name": "Tallgrass",
+            "name": "Висока трава",
             "desc": ""
         },
         "stone": {
-            "name": "Stone",
+            "name": "Камінь",
             "desc": ""
         },
         "grass": {
-            "name": "Grass",
+            "name": "Блок трави",
             "desc": ""
         },
         "dirt": {
-            "name": "Dirt",
+            "name": "Земля",
             "desc": ""
         },
         "stonebrick": {
-            "name": "Cobblestone",
+            "name": "Бруківка",
             "desc": ""
         },
         "wood": {
-            "name": "Wooden Planks",
+            "name": "Дерев'яні дошки",
             "desc": ""
         },
         "sapling": {
-            "name": "Sapling",
+            "name": "Саджанець",
             "desc": ""
         },
         "bedrock": {
-            "name": "Bedrock",
+            "name": "Корінна порода",
             "desc": ""
         },
         "water": {
-            "name": "Water",
+            "name": "Вода",
             "desc": ""
         },
         "lava": {
-            "name": "Lava",
+            "name": "Лава",
             "desc": ""
         },
         "sand": {
-            "name": "Sand",
+            "name": "Пісок",
             "desc": ""
         },
-        "sandStone": { "name": "Sandstone" },
+        "sandStone": { "name": "Пісковик" },
         "gravel": {
-            "name": "Gravel",
+            "name": "Гравій",
             "desc": ""
         },
         "oreGold": {
-            "name": "Gold Ore",
+            "name": "Золота руда",
             "desc": ""
         },
         "oreIron": {
-            "name": "Iron Ore",
+            "name": "Залізна руда",
             "desc": ""
         },
         "oreCoal": {
-            "name": "Coal Ore",
+            "name": "Вугільна руда",
             "desc": ""
         },
         "log": {
-            "name": "Wood",
+            "name": "Деревина",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Листя",
             "desc": ""
         },
         "sponge": {
-            "name": "Sponge",
+            "name": "Губка",
             "desc": ""
         },
         "glass": {
-            "name": "Glass",
+            "name": "Скло",
             "desc": ""
         },
         "cloth": {
-            "name": "Wool",
+            "name": "Вовна",
             "desc": "",
             "black": {
-                "name": "Black Wool",
+                "name": "Чорна вовна",
                 "desc": ""
             },
             "red": {
-                "name": "Red Wool",
+                "name": "Червона вовна",
                 "desc": ""
             },
             "green": {
-                "name": "Green Wool",
+                "name": "Зелена вовна",
                 "desc": ""
             },
             "brown": {
-                "name": "Brown Wool",
+                "name": "Коричнева вовна",
                 "desc": ""
             },
             "blue": {
-                "name": "Blue Wool",
+                "name": "Синя вовна",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Wool",
+                "name": "Фіолетова вовна",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Wool",
+                "name": "Бірюзова вовна",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Wool",
+                "name": "Світло-сіра вовна",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Wool",
+                "name": "Сіра вовна",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Wool",
+                "name": "Рожева вовна",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Wool",
+                "name": "Лаймова вовна",
                 "desc": ""
             },
             "yellow": {
-                "name": "Yellow Wool",
+                "name": "Жовта вовна",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Wool",
+                "name": "Світло-блакитна вовна",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Wool",
+                "name": "Пурпурова вовна",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Wool",
+                "name": "Помаранчева вовна",
                 "desc": ""
             },
             "white": {
-                "name": "Wool",
+                "name": "Біла вовна",
                 "desc": ""
             }
         },
         "flower": {
-            "name": "Flower",
+            "name": "Кульбаба",
             "desc": ""
         },
         "rose": {
-            "name": "Rose",
+            "name": "Троянда",
             "desc": ""
         },
         "mushroom": {
-            "name": "Mushroom",
+            "name": "Гриб",
             "desc": ""
         },
         "blockGold": {
-            "name": "Block of Gold",
+            "name": "Золотий блок",
             "desc": ""
         },
         "blockIron": {
-            "name": "Block of Iron",
+            "name": "Залізний блок",
             "desc": ""
         },
         "stoneSlab": {
             "stone": {
-                "name": "Stone Slab",
+                "name": "Кам'яна плита",
                 "desc": ""
             },
             "sand": {
-                "name": "Sandstone Slab",
+                "name": "Пісковикова плита",
                 "desc": ""
             },
             "wood": {
-                "name": "Wooden Slab",
+                "name": "Дерев'яна плита",
                 "desc": ""
             },
             "cobble": {
-                "name": "Stone Slab",
+                "name": "Кам'яна плита",
                 "desc": ""
             }
         },
         "brick": {
-            "name": "Bricks",
+            "name": "Цегла",
             "desc": ""
         },
         "tnt": {
-            "name": "TNT",
+            "name": "Динаміт",
             "desc": ""
         },
         "bookshelf": {
-            "name": "Bookshelf",
+            "name": "Книжкова полиця",
             "desc": ""
         },
         "stoneMoss": {
-            "name": "Moss Stone",
+            "name": "Мохова бруківка",
             "desc": ""
         },
         "obsidian": {
-            "name": "Obsidian",
+            "name": "Обсидіан",
             "desc": ""
         },
         "torch": {
-            "name": "Torch",
+            "name": "Смолоскип",
             "desc": ""
         },
         "fire": {
-            "name": "Fire",
+            "name": "Вогонь",
             "desc": ""
         },
         "mobSpawner": {
-            "name": "Monster Spawner",
+            "name": "Спавнер монстрів",
             "desc": ""
         },
         "stairsWood": {
-            "name": "Wooden Stairs",
+            "name": "Дерев'яні сходи",
             "desc": ""
         },
         "chest": {
-            "name": "Chest",
+            "name": "Скриня",
             "desc": ""
         },
         "redstoneDust": {
-            "name": "Redstone Dust",
+            "name": "Червоний пил",
             "desc": ""
         },
         "oreDiamond": {
-            "name": "Diamond Ore",
+            "name": "Діамантова руда",
             "desc": ""
         },
         "blockDiamond": {
-            "name": "Block of Diamond",
+            "name": "Діамантовий блок",
             "desc": ""
         },
         "workbench": {
-            "name": "Crafting Table",
+            "name": "Верстат",
             "desc": ""
         },
         "crops": {
-            "name": "Crops",
+            "name": "Посіви",
             "desc": ""
         },
         "farmland": {
-            "name": "Farmland",
+            "name": "Рілля",
             "desc": ""
         },
         "furnace": {
-            "name": "Furnace",
+            "name": "Піч",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Табличка",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Дерев'яні двері",
             "desc": ""
         },
         "ladder": {
-            "name": "Ladder",
+            "name": "Драбина",
             "desc": ""
         },
         "rail": {
-            "name": "Rail",
+            "name": "Рейка",
             "desc": ""
         },
         "goldenRail": {
-            "name": "Powered Rail",
+            "name": "Прискорювальна рейка",
             "desc": ""
         },
         "detectorRail": {
-            "name": "Detector Rail",
+            "name": "Рейка з датчиком",
             "desc": ""
         },
         "stairsStone": {
-            "name": "Stone Stairs",
+            "name": "Кам'яні сходи",
             "desc": ""
         },
         "lever": {
-            "name": "Lever",
+            "name": "Важіль",
             "desc": ""
         },
         "pressurePlate": {
-            "name": "Pressure Plate",
+            "name": "Натискна плита",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Залізні двері",
             "desc": ""
         },
         "oreRedstone": {
-            "name": "Redstone Ore",
+            "name": "Руда редстоуну",
             "desc": ""
         },
         "notGate": {
-            "name": "Redstone Torch",
+            "name": "Редстоуновий смолоскип",
             "desc": ""
         },
         "button": {
-            "name": "Button",
+            "name": "Кнопка",
             "desc": ""
         },
         "snow": {
-            "name": "Snow",
+            "name": "Сніг",
             "desc": ""
         },
         "ice": {
-            "name": "Ice",
+            "name": "Лід",
             "desc": ""
         },
         "cactus": {
-            "name": "Cactus",
+            "name": "Кактус",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Глина",
             "desc": ""
         },
         "reeds": {
-            "name": "Sugar cane",
+            "name": "Цукрова тростина",
             "desc": ""
         },
         "jukebox": {
-            "name": "Jukebox",
+            "name": "Програвач",
             "desc": ""
         },
         "fence": {
-            "name": "Fence",
+            "name": "Паркан",
             "desc": ""
         },
         "pumpkin": {
-            "name": "Pumpkin",
+            "name": "Гарбуз",
             "desc": ""
         },
         "litpumpkin": {
-            "name": "Jack 'o' Lantern",
+            "name": "Світильник Джека",
             "desc": ""
         },
         "hellrock": {
-            "name": "Netherrack",
+            "name": "Незерак",
             "desc": ""
         },
         "hellsand": {
-            "name": "Soul Sand",
+            "name": "Пісок душ",
             "desc": ""
         },
         "lightgem": {
-            "name": "Glowstone",
+            "name": "Світлокамінь",
             "desc": ""
         },
         "portal": {
-            "name": "Portal",
+            "name": "Портал",
             "desc": ""
         },
         "oreLapis": {
-            "name": "Lapis Lazuli Ore",
+            "name": "Лазуритова руда",
             "desc": ""
         },
         "blockLapis": {
-            "name": "Lapis Lazuli Block",
+            "name": "Лазуритовий блок",
             "desc": ""
         },
         "dispenser": {
-            "name": "Dispenser",
+            "name": "Роздавач",
             "desc": ""
         },
         "musicBlock": {
-            "name": "Note Block",
+            "name": "Нотний блок",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Торт",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Ліжко",
             "desc": "",
-            "occupied": "This bed is occupied",
-            "noSleep": "You can only sleep at night",
-            "notValid": "Your home bed was missing or obstructed"
+            "occupied": "Це ліжко зайняте",
+            "noSleep": "Спати можна лише вночі",
+            "notValid": "Ваше домашнє ліжко зникло або його щось загороджує"
         },
         "lockedchest": {
-            "name": "Locked chest",
+            "name": "Замкнена скриня",
             "desc": ""
         },
         "trapdoor": {
-            "name": "Trapdoor",
+            "name": "Люк",
             "desc": ""
         },
         "web": {
-            "name": "Cobweb",
+            "name": "Павутиння",
             "desc": ""
         },
         "stonebricksmooth": {
-            "name": "Stone Bricks",
+            "name": "Кам'яна цегла",
             "desc": ""
         },
         "pistonBase": {
-            "name": "Piston",
+            "name": "Поршень",
             "desc": ""
         },
         "pistonStickyBase": {
-            "name": "Sticky Piston",
+            "name": "Липкий поршень",
             "desc": ""
         }
     },
     "item": {
         "shovelIron": {
-            "name": "Iron Shovel",
+            "name": "Залізна лопата",
             "desc": ""
         },
         "pickaxeIron": {
-            "name": "Iron Pickaxe",
+            "name": "Залізне кайло",
             "desc": ""
         },
         "hatchetIron": {
-            "name": "Iron Axe",
+            "name": "Залізна сокира",
             "desc": ""
         },
         "flintAndSteel": {
-            "name": "Flint and Steel",
+            "name": "Кресало",
             "desc": ""
         },
         "apple": {
-            "name": "Apple",
+            "name": "Яблуко",
             "desc": ""
         },
         "cookie": {
-            "name": "Cookie",
+            "name": "Печиво",
             "desc": ""
         },
         "bow": {
-            "name": "Bow",
+            "name": "Лук",
             "desc": ""
         },
         "arrow": {
-            "name": "Arrow",
+            "name": "Стріла",
             "desc": ""
         },
         "coal": {
-            "name": "Coal",
+            "name": "Вугілля",
             "desc": ""
         },
         "charcoal": {
-            "name": "Charcoal",
+            "name": "Деревне вугілля",
             "desc": ""
         },
         "diamond": {
-            "name": "Diamond",
+            "name": "Діамант",
             "desc": ""
         },
         "ingotIron": {
-            "name": "Iron Ingot",
+            "name": "Залізний злиток",
             "desc": ""
         },
         "ingotGold": {
-            "name": "Gold Ingot",
+            "name": "Золотий злиток",
             "desc": ""
         },
         "swordIron": {
-            "name": "Iron Sword",
+            "name": "Залізний меч",
             "desc": ""
         },
         "swordWood": {
-            "name": "Wooden Sword",
+            "name": "Дерев'яний меч",
             "desc": ""
         },
         "shovelWood": {
-            "name": "Wooden Shovel",
+            "name": "Дерев'яна лопата",
             "desc": ""
         },
         "pickaxeWood": {
-            "name": "Wooden Pickaxe",
+            "name": "Дерев'яне кайло",
             "desc": ""
         },
         "hatchetWood": {
-            "name": "Wooden Axe",
+            "name": "Дерев'яна сокира",
             "desc": ""
         },
         "swordStone": {
-            "name": "Stone Sword",
+            "name": "Кам'яний меч",
             "desc": ""
         },
         "shovelStone": {
-            "name": "Stone Shovel",
+            "name": "Кам'яна лопата",
             "desc": ""
         },
         "pickaxeStone": {
-            "name": "Stone Pickaxe",
+            "name": "Кам'яне кайло",
             "desc": ""
         },
         "hatchetStone": {
-            "name": "Stone Axe",
+            "name": "Кам'яна сокира",
             "desc": ""
         },
         "swordDiamond": {
-            "name": "Diamond Sword",
+            "name": "Діамантовий меч",
             "desc": ""
         },
         "shovelDiamond": {
-            "name": "Diamond Shovel",
+            "name": "Діамантова лопата",
             "desc": ""
         },
         "pickaxeDiamond": {
-            "name": "Diamond Pickaxe",
+            "name": "Діамантове кайло",
             "desc": ""
         },
         "hatchetDiamond": {
-            "name": "Diamond Axe",
+            "name": "Діамантова сокира",
             "desc": ""
         },
         "stick": {
-            "name": "Stick",
+            "name": "Палиця",
             "desc": ""
         },
         "bowl": {
-            "name": "Bowl",
+            "name": "Миска",
             "desc": ""
         },
         "mushroomStew": {
-            "name": "Mushroom Stew",
+            "name": "Грибна юшка",
             "desc": ""
         },
         "swordGold": {
-            "name": "Golden Sword",
+            "name": "Золотий меч",
             "desc": ""
         },
         "shovelGold": {
-            "name": "Golden Shovel",
+            "name": "Золота лопата",
             "desc": ""
         },
         "pickaxeGold": {
-            "name": "Golden Pickaxe",
+            "name": "Золоте кайло",
             "desc": ""
         },
         "hatchetGold": {
-            "name": "Golden Axe",
+            "name": "Золота сокира",
             "desc": ""
         },
         "string": {
-            "name": "String",
+            "name": "Нитка",
             "desc": ""
         },
         "feather": {
-            "name": "Feather",
+            "name": "Перо",
             "desc": ""
         },
         "gunpowder": {
-            "name": "Gunpowder",
+            "name": "Порох",
             "desc": ""
         },
         "hoeWood": {
-            "name": "Wooden Hoe",
+            "name": "Дерев'яна мотика",
             "desc": ""
         },
         "hoeStone": {
-            "name": "Stone Hoe",
+            "name": "Кам'яна мотика",
             "desc": ""
         },
         "hoeIron": {
-            "name": "Iron Hoe",
+            "name": "Залізна мотика",
             "desc": ""
         },
         "hoeDiamond": {
-            "name": "Diamond Hoe",
+            "name": "Діамантова мотика",
             "desc": ""
         },
         "hoeGold": {
-            "name": "Golden Hoe",
+            "name": "Золота мотика",
             "desc": ""
         },
         "seeds": {
-            "name": "Seeds",
+            "name": "Насіння",
             "desc": ""
         },
         "wheat": {
-            "name": "Wheat",
+            "name": "Пшениця",
             "desc": ""
         },
         "bread": {
-            "name": "Bread",
+            "name": "Хліб",
             "desc": ""
         },
         "helmetLeather": {
-            "name": "Leather Cap",
+            "name": "Шкіряний капелюх",
             "desc": ""
         },
         "chestplateLeather": {
-            "name": "Leather Tunic",
+            "name": "Шкіряна туніка",
             "desc": ""
         },
         "leggingsLeather": {
-            "name": "Leather Pants",
+            "name": "Шкіряні штани",
             "desc": ""
         },
         "bootsLeather": {
-            "name": "Leather Boots",
+            "name": "Шкіряні черевики",
             "desc": ""
         },
         "helmetChain": {
-            "name": "Chain Helmet",
+            "name": "Кольчужний шолом",
             "desc": ""
         },
         "chestplateChain": {
-            "name": "Chain Chestplate",
+            "name": "Кольчужний нагрудник",
             "desc": ""
         },
         "leggingsChain": {
-            "name": "Chain Leggings",
+            "name": "Кольчужні поножі",
             "desc": ""
         },
         "bootsChain": {
-            "name": "Chain Boots",
+            "name": "Кольчужні черевики",
             "desc": ""
         },
         "helmetIron": {
-            "name": "Iron Helmet",
+            "name": "Залізний шолом",
             "desc": ""
         },
         "chestplateIron": {
-            "name": "Iron Chestplate",
+            "name": "Залізний нагрудник",
             "desc": ""
         },
         "leggingsIron": {
-            "name": "Iron Leggings",
+            "name": "Залізні поножі",
             "desc": ""
         },
         "bootsIron": {
-            "name": "Iron Boots",
+            "name": "Залізні черевики",
             "desc": ""
         },
         "helmetDiamond": {
-            "name": "Diamond Helmet",
+            "name": "Діамантовий шолом",
             "desc": ""
         },
         "chestplateDiamond": {
-            "name": "Diamond Chestplate",
+            "name": "Діамантовий нагрудник",
             "desc": ""
         },
         "leggingsDiamond": {
-            "name": "Diamond Leggings",
+            "name": "Діамантові поножі",
             "desc": ""
         },
         "bootsDiamond": {
-            "name": "Diamond Boots",
+            "name": "Діамантові черевики",
             "desc": ""
         },
         "helmetGold": {
-            "name": "Golden Helmet",
+            "name": "Золотий шолом",
             "desc": ""
         },
         "chestplateGold": {
-            "name": "Golden Chestplate",
+            "name": "Золотий нагрудник",
             "desc": ""
         },
         "leggingsGold": {
-            "name": "Golden Leggings",
+            "name": "Золоті поножі",
             "desc": ""
         },
         "bootsGold": {
-            "name": "Golden boots",
+            "name": "Золоті черевики",
             "desc": ""
         },
         "flint": {
-            "name": "Flint",
+            "name": "Кремінь",
             "desc": ""
         },
         "porkchopRaw": {
-            "name": "Raw Porkchop",
+            "name": "Сира свинина",
             "desc": ""
         },
         "porkchopCooked": {
-            "name": "Cooked Porkchop",
+            "name": "Смажена свинина",
             "desc": ""
         },
         "painting": {
-            "name": "Painting",
+            "name": "Картина",
             "desc": ""
         },
         "appleGold": {
-            "name": "Golden Apple",
+            "name": "Золоте яблуко",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Табличка",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Дерев'яні двері",
             "desc": ""
         },
         "bucket": {
-            "name": "Bucket",
+            "name": "Відро",
             "desc": ""
         },
         "bucketWater": {
-            "name": "Water Bucket",
+            "name": "Відро води",
             "desc": ""
         },
         "bucketLava": {
-            "name": "Lava bucket",
+            "name": "Відро лави",
             "desc": ""
         },
         "minecart": {
-            "name": "Minecart",
+            "name": "Вагонетка",
             "desc": ""
         },
         "saddle": {
-            "name": "Saddle",
+            "name": "Сідло",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Залізні двері",
             "desc": ""
         },
         "redstone": {
-            "name": "Redstone",
+            "name": "Редстоун",
             "desc": ""
         },
         "snowball": {
-            "name": "Snowball",
+            "name": "Сніжка",
             "desc": ""
         },
         "boat": {
-            "name": "Boat",
+            "name": "Човен",
             "desc": ""
         },
         "leather": {
-            "name": "Leather",
+            "name": "Шкіра",
             "desc": ""
         },
         "milk": {
-            "name": "Milk",
+            "name": "Молоко",
             "desc": ""
         },
         "brick": {
-            "name": "Brick",
+            "name": "Цеглина",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Глина",
             "desc": ""
         },
         "sugarCanes": {
-            "name": "Sugar Canes",
+            "name": "Цукрова тростина",
             "desc": ""
         },
         "paper": {
-            "name": "Paper",
+            "name": "Папір",
             "desc": ""
         },
         "book": {
-            "name": "Book",
+            "name": "Книга",
             "desc": ""
         },
         "slimeball": {
-            "name": "Slimeball",
+            "name": "Слиз",
             "desc": ""
         },
         "minecartChest": {
-            "name": "Minecart with Chest",
+            "name": "Вагонетка зі скринею",
             "desc": ""
         },
         "minecartFurnace": {
-            "name": "Minecart with Furnace",
+            "name": "Вагонетка з піччю",
             "desc": ""
         },
         "egg": {
-            "name": "Egg",
+            "name": "Яйце",
             "desc": ""
         },
         "compass": {
-            "name": "Compass",
+            "name": "Компас",
             "desc": ""
         },
         "fishingRod": {
-            "name": "Fishing Rod",
+            "name": "Вудка",
             "desc": ""
         },
         "clock": {
-            "name": "Clock",
+            "name": "Годинник",
             "desc": ""
         },
         "yellowDust": {
-            "name": "Glowstone Dust",
+            "name": "Світлокам'яний пил",
             "desc": ""
         },
         "fishRaw": {
-            "name": "Raw Fish",
+            "name": "Сира риба",
             "desc": ""
         },
         "fishCooked": {
-            "name": "Cooked Fish",
+            "name": "Смажена риба",
             "desc": ""
         },
         "record": {
-            "name": "Music Disc",
+            "name": "Платівка",
             "desc": ""
         },
         "bone": {
-            "name": "Bone",
+            "name": "Кістка",
             "desc": ""
         },
         "dyePowder": {
             "black": {
-                "name": "Ink Sac",
+                "name": "Чорнильний мішок",
                 "desc": ""
             },
             "red": {
-                "name": "Rose Red",
+                "name": "Червоний барвник",
                 "desc": ""
             },
             "green": {
-                "name": "Cactus Green",
+                "name": "Зелений барвник",
                 "desc": ""
             },
             "brown": {
-                "name": "Cocoa Beans",
+                "name": "Какао-боби",
                 "desc": ""
             },
             "blue": {
-                "name": "Lapis Lazuli",
+                "name": "Лазурит",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Dye",
+                "name": "Фіолетовий барвник",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Dye",
+                "name": "Бірюзовий барвник",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Dye",
+                "name": "Світло-сірий барвник",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Dye",
+                "name": "Сірий барвник",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Dye",
+                "name": "Рожевий барвник",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Dye",
+                "name": "Лаймовий барвник",
                 "desc": ""
             },
             "yellow": {
-                "name": "Dandelion Yellow",
+                "name": "Жовтий барвник",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Dye",
+                "name": "Світло-блакитний барвник",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Dye",
+                "name": "Пурпуровий барвник",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Dye",
+                "name": "Помаранчевий барвник",
                 "desc": ""
             },
             "white": {
-                "name": "Bone Meal",
+                "name": "Кісткове борошно",
                 "desc": ""
             }
         },
         "sugar": {
-            "name": "Sugar",
+            "name": "Цукор",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Торт",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Ліжко",
             "desc": ""
         },
         "redstoneRepeater": {
-            "name": "Redstone Repeater",
+            "name": "Редстоуновий повторювач",
             "desc": ""
         },
         "map": {
-            "name": "Map",
+            "name": "Мапа",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Листя",
             "desc": ""
         },
         "shears": {
-            "name": "Shears",
+            "name": "Ножиці",
             "desc": ""
         }
     },
     "stat": {
-        "generalButton": "General",
-        "blocksButton": "Blocks",
-        "itemsButton": "Items",
-        "used": "Times Used",
-        "mined": "Times Mined",
-        "depleted": "Times Depleted",
-        "crafted": "Times Crafted",
-        "startGame": "Times played",
-        "createWorld": "Worlds played",
-        "loadWorld": "Saves loaded",
-        "joinMultiplayer": "Multiplayer joins",
-        "leaveGame": "Games quit",
-        "playOneMinute": "Minutes Played",
-        "walkOneCm": "Distance Walked",
-        "fallOneCm": "Distance Fallen",
-        "swimOneCm": "Distance Swum",
-        "flyOneCm": "Distance Flown",
-        "climbOneCm": "Distance Climbed",
-        "diveOneCm": "Distance Dove",
-        "minecartOneCm": "Distance by Minecart",
-        "boatOneCm": "Distance by Boat",
-        "pigOneCm": "Distance by Pig",
-        "jump": "Jumps",
-        "drop": "Items Dropped",
-        "damageDealt": "Damage Dealt",
-        "damageTaken": "Damage Taken",
-        "deaths": "Number of Deaths",
-        "mobKills": "Mob Kills",
-        "playerKills": "Player Kills",
-        "fishCaught": "Fish Caught",
-        "mineBlock": "{0} Mined",
-        "craftItem": "{0} Crafted",
-        "useItem": "{0} Used",
-        "breakItem": "{0} Depleted"
+        "generalButton": "Загальне",
+        "blocksButton": "Блоки",
+        "itemsButton": "Предмети",
+        "used": "Кількість використань",
+        "mined": "Кількість видобутків",
+        "depleted": "Кількість зношень",
+        "crafted": "Кількість створень",
+        "startGame": "Кількість ігор",
+        "createWorld": "Кількість світів",
+        "loadWorld": "Завантажень збережень",
+        "joinMultiplayer": "Входів у мережеву гру",
+        "leaveGame": "Виходів з гри",
+        "playOneMinute": "Хвилин зіграно",
+        "walkOneCm": "Пройдена відстань",
+        "fallOneCm": "Відстань падіння",
+        "swimOneCm": "Пропливана відстань",
+        "flyOneCm": "Прольота відстань",
+        "climbOneCm": "Відстань підйому",
+        "diveOneCm": "Відстань пірнання",
+        "minecartOneCm": "Відстань на вагонетці",
+        "boatOneCm": "Відстань на човні",
+        "pigOneCm": "Відстань на свині",
+        "jump": "Стрибків",
+        "drop": "Викинутих предметів",
+        "damageDealt": "Завданої шкоди",
+        "damageTaken": "Отриманої шкоди",
+        "deaths": "Кількість смертей",
+        "mobKills": "Вбивств мобів",
+        "playerKills": "Вбивств гравців",
+        "fishCaught": "Зловленої риби",
+        "mineBlock": "{0}: видобуто",
+        "craftItem": "{0}: створено",
+        "useItem": "{0}: використано",
+        "breakItem": "{0}: зношено"
     },
-    "achievements.title": "Achievements",
+    "achievements.title": "Досягнення",
     "achievement": {
-        "get": "Achievement get!",
-        "taken": "Taken!",
-        "challenge": "CHALLENGE",
-        "unlocked": "UNLOCKED",
-        "locked": "LOCKED",
-        "requires": "Requires '{0}'",
+        "get": "Отримано досягнення!",
+        "taken": "Отримано!",
+        "challenge": "ВИКЛИК",
+        "unlocked": "РОЗБЛОКОВАНО",
+        "locked": "ЗАБЛОКОВАНО",
+        "requires": "Вимагає '{0}'",
         "openInventory": {
-            "title": "Taking Inventory",
-            "desc": "Open your inventory."
+            "title": "Беремо інвентар",
+            "desc": "Відкрийте свій інвентар."
         },
         "mineWood": {
-            "title": "Getting Wood",
-            "desc": "Attack a tree until a block of wood pops out"
+            "title": "Добуваємо деревину",
+            "desc": "Атакуйте дерево, доки не випаде блок деревини"
         },
         "buildWorkBench": {
-            "title": "Benchmarking",
-            "desc": "Craft a workbench with four blocks of planks"
+            "title": "Верстат",
+            "desc": "Створіть верстат із чотирьох блоків дощок"
         },
         "buildPickaxe": {
-            "title": "Time to Mine!",
-            "desc": "Use planks and sticks to make a pickaxe"
+            "title": "Час копати!",
+            "desc": "Зробіть кайло з дощок і палиць"
         },
         "buildFurnace": {
-            "title": "Hot Topic",
-            "desc": "Construct a furnace out of eight stone blocks"
+            "title": "Гаряча тема",
+            "desc": "Створіть піч із восьми блоків каменю"
         },
         "acquireIron": {
-            "title": "Acquire Hardware",
-            "desc": "Smelt an iron ingot"
+            "title": "Здобути залізо",
+            "desc": "Виплавте залізний злиток"
         },
         "buildHoe": {
-            "title": "Time to Farm!",
-            "desc": "Use planks and sticks to make a hoe"
+            "title": "Час господарювати!",
+            "desc": "Зробіть мотику з дощок і палиць"
         },
         "makeBread": {
-            "title": "Bake Bread",
-            "desc": "Turn wheat into bread"
+            "title": "Випекти хліб",
+            "desc": "Перетворіть пшеницю на хліб"
         },
         "bakeCake": {
-            "title": "The Lie",
-            "desc": "Wheat, sugar, milk and eggs!"
+            "title": "Брехня",
+            "desc": "Пшениця, цукор, молоко та яйця!"
         },
         "buildBetterPickaxe": {
-            "title": "Getting an Upgrade",
-            "desc": "Construct a better pickaxe"
+            "title": "Оновлення",
+            "desc": "Створіть краще кайло"
         },
         "cookFish": {
-            "title": "Delicious Fish",
-            "desc": "Catch and cook fish!"
+            "title": "Смачна риба",
+            "desc": "Зловіть і приготуйте рибу!"
         },
         "onARail": {
-            "title": "On A Rail",
-            "desc": "Travel by minecart at least 1 km from where you started "
+            "title": "По рейках",
+            "desc": "Проїдьте вагонеткою щонайменше 1 км від місця, де ви стартували"
         },
         "buildSword": {
-            "title": "Time to Strike!",
-            "desc": "Use planks and sticks to make a sword"
+            "title": "Час бити!",
+            "desc": "Зробіть меч з дощок і палиць"
         },
         "killEnemy": {
-            "title": "Monster Hunter",
-            "desc": "Attack and destroy a monster"
+            "title": "Мисливець на монстрів",
+            "desc": "Атакуйте і знищте монстра"
         },
         "killCow": {
-            "title": "Cow Tipper",
-            "desc": "Harvest some leather"
+            "title": "Коров'як",
+            "desc": "Добудьте трохи шкіри"
         },
         "flyPig": {
-            "title": "When Pigs Fly",
-            "desc": "Fly a pig off a cliff"
+            "title": "Коли свині полетять",
+            "desc": "Скиньте свиню зі скелі"
         }
     },
     "credits": {
-        "version": "BetaSharp Version %1$s",
-        "description": "An enhanced of Minecraft Beta 1.7.3, written in C#.",
-        "github": "On GitHub",
-        "author": "Made by Fazin85",
-        "libs": "Libraries",
-        "slik": "Slik.NET - Graphics",
-        "imgui": "ImGui - Debug UI",
-        "sfml": "SFML.NET - Audio",
-        "sixlabors": "SixLabors - Fonts, image processing",
-        "translations": "Translations Credits"
+        "version": "BetaSharp версія %1$s",
+        "description": "Вдосконалена версія Minecraft Beta 1.7.3, написана на C#.",
+        "github": "На GitHub",
+        "author": "Створено Fazin85",
+        "libs": "Бібліотеки",
+        "slik": "Slik.NET - Графіка",
+        "imgui": "ImGui - Налагоджувальний інтерфейс",
+        "sfml": "SFML.NET - Аудіо",
+        "sixlabors": "SixLabors - Шрифти, обробка зображень",
+        "translations": "Подяка перекладачам"
     }
 }
