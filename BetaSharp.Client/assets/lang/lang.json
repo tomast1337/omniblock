@@ -1,11 +1,83 @@
-﻿{
+{
+    "ar_sa": {
+        "name": "العربية",
+        "author": ""
+    },
+    "bg_bg": {
+        "name": "Български",
+        "author": ""
+    },
+    "cs_cz": {
+        "name": "Čeština",
+        "author": ""
+    },
+    "da_dk": {
+        "name": "Dansk",
+        "author": ""
+    },
+    "de_de": {
+        "name": "Deutsch",
+        "author": ""
+    },
+    "el_gr": {
+        "name": "Ελληνικά",
+        "author": ""
+    },
     "en_us": {
         "name": "English (United States)",
         "author": "BetaSharp Team"
     },
+    "es_es": {
+        "name": "Español",
+        "author": ""
+    },
+    "et_ee": {
+        "name": "Eesti",
+        "author": ""
+    },
+    "fi_fi": {
+        "name": "Suomi",
+        "author": ""
+    },
+    "fr_fr": {
+        "name": "Français",
+        "author": ""
+    },
+    "ga_ie": {
+        "name": "Gaeilge",
+        "author": ""
+    },
+    "hr_hr": {
+        "name": "Hrvatski",
+        "author": ""
+    },
+    "hu_hu": {
+        "name": "Magyar",
+        "author": ""
+    },
+    "it_it": {
+        "name": "Italiano",
+        "author": ""
+    },
     "ja_jp": {
         "name": "日本語",
         "author": "tomodesuyo"
+    },
+    "lt_lt": {
+        "name": "Lietuvių (Lietuva)",
+        "author": "Nicolas Vyčas Nery"
+    },
+    "lv_lv": {
+        "name": "Latviešu",
+        "author": ""
+    },
+    "mt_mt": {
+        "name": "Malti",
+        "author": ""
+    },
+    "nl_nl": {
+        "name": "Nederlands",
+        "author": ""
     },
     "pl_pl": {
         "name": "Polski",
@@ -15,8 +87,36 @@
         "name": "Português (Brasil)",
         "author": "Nicolas Vyčas Nery"
     },
-    "lt_lt": {
-        "name": "Lietuvių (Lietuva)",
-        "author": "Nicolas Vyčas Nery"
+    "pt_pt": {
+        "name": "Português (Portugal)",
+        "author": ""
+    },
+    "ro_ro": {
+        "name": "Română",
+        "author": ""
+    },
+    "sk_sk": {
+        "name": "Slovenčina",
+        "author": ""
+    },
+    "sl_si": {
+        "name": "Slovenščina",
+        "author": ""
+    },
+    "sv_se": {
+        "name": "Svenska",
+        "author": ""
+    },
+    "uk_ua": {
+        "name": "Українська",
+        "author": ""
+    },
+    "zh_cn": {
+        "name": "简体中文",
+        "author": ""
+    },
+    "zh_tw": {
+        "name": "繁體中文",
+        "author": ""
     }
 }

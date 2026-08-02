@@ -40,3 +40,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-02 — fix(network): carry light in the block updates that announce a light change (Nicolas Vyčas Nery; `1415132cf57cf126f3b64384cfebfd8e83b6f460`)
 - 2026-08-02 — fix(worlds): light the sources a chunk arrives with (Nicolas Vyčas Nery; `a97818cba5297402fab1ba43865edfcd3e5ecc7a`)
 - 2026-08-02 — refactor(options): remove the nulls behind GameOptions rather than mark them (Nicolas Vyčas Nery; `626897837fb1823e2082eb8f39cf35b22bfb6157`)
+- 2026-08-02 — feat(lang): add 25 translation placeholder files for EU languages, Ukrainian, Chinese, and Arabic (Nicolas Vyčas Nery; `bf3152ea2c5dd51c5daf7aac0a33f1e1f3cfa4fb`)
