@@ -32,11 +32,23 @@ public class GLManager
     /// <inheritdoc cref="ModelView" />
     public static MatrixStack TextureMatrix => _emulated.TextureMatrix;
 
+    /// <summary>
+    ///     Blend, depth, cull and write masks, said once per draw rather than toggled a global at a
+    ///     time.
+    /// </summary>
+    /// <remarks>
+    ///     Call <see cref="RenderStateApplier.Invalidate" /> after any code that sets these through
+    ///     the raw entry points, since what this believes is set will no longer be true. That is a
+    ///     transitional hazard and goes away with the last of those call sites.
+    /// </remarks>
+    public static RenderStateApplier State { get; } = new();
+
     private static EmulatedGL _emulated = null!;
 
     public static void Init(GL silkGl)
     {
         _emulated = new EmulatedGL(silkGl);
         GL = _emulated;
+        State.Invalidate();
     }
 }

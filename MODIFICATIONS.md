@@ -59,3 +59,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-02 — refactor(rendering): let the transform stacks be held rather than steered (Nicolas Vyčas Nery; `e0fa8677f558cd9237814fa7ed04936d37aa0253`)
 - 2026-08-02 — fix(rendering): scroll the charge overlay's texture, not the model (Nicolas Vyčas Nery; `cf7c83f148ab091351f5d084dfab78ba422da588`)
 - 2026-08-02 — feat(diagnostics): hash fixed scenes so a rendering change can be checked (Nicolas Vyčas Nery; `b536a0cd45a6f67d4a631b92efb1462b62878636`)
+- 2026-08-02 — feat(rendering): describe blend, depth and cull as one value (Nicolas Vyčas Nery; `bba553853138c3c27040dccc8cc4a5afeeb4b4a0`)
