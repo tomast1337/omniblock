@@ -59,7 +59,7 @@ public sealed class SendPriorityTests
     [Fact]
     public void World_data_and_anything_ordered_against_it_stays_normal()
     {
-        Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Packet.Get(PacketId.ChunkDataS2C)));
+        Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Envelope(new RegionDataMessage())));
         Assert.Equal(SendPriority.Normal, PacketPriorities.Of(Packet.Get(PacketId.PlayerMoveFull)));
         // Block updates, chunk deltas, status updates, and map updates migrated to the message
         // layer. Their priority is Normal by default.
@@ -113,7 +113,7 @@ public sealed class SendPriorityTests
     [Fact]
     public void World_data_and_block_updates_share_the_ordered_channel()
     {
-        Assert.Equal(UdpConnection.OrderedChannel, UdpConnection.ChannelFor(Packet.Get(PacketId.ChunkDataS2C)));
+        Assert.Equal(UdpConnection.OrderedChannel, UdpConnection.ChannelFor(Envelope(new RegionDataMessage())));
         // Block updates migrated; travels through the envelope on the ordered channel.
         Assert.Equal(UdpConnection.OrderedChannel, UdpConnection.ChannelFor(Envelope(new BlockUpdateMessage())));
         // ChatMessage migrated; travels through the envelope on the ordered channel.
@@ -126,7 +126,7 @@ public sealed class SendPriorityTests
         FakeTransportConnection transport = new();
         UdpConnection connection = Connected(transport);
 
-        connection.sendPacket(Packet.Get(PacketId.ChunkDataS2C));
+        connection.sendPacket(Envelope(new RegionDataMessage()));
         connection.sendPacket(Envelope(new EntityMoveMessage()));
 
         Assert.Equal(
@@ -147,7 +147,7 @@ public sealed class SendPriorityTests
         UdpConnection connection = Connected(transport);
 
         connection.sendPacket(Envelope(new EntityMoveMessage()));
-        connection.sendPacket(Packet.Get(PacketId.ChunkDataS2C));
+        connection.sendPacket(Envelope(new RegionDataMessage()));
 
         Assert.All(transport.Sent, sent => Assert.Equal(DeliveryMode.ReliableOrdered, sent.Mode));
     }
@@ -163,7 +163,7 @@ public sealed class SendPriorityTests
         UdpConnection connection = Connected(transport);
 
         connection.sendPacket(Envelope(new KeepAliveMessage()));
-        connection.sendPacket(Packet.Get(PacketId.ChunkDataS2C));
+        connection.sendPacket(Envelope(new RegionDataMessage()));
         connection.sendPacket(Envelope(new LivingEntitySpawnMessage()));
         connection.sendPacket(Envelope(new EntityMoveMessage()));
 

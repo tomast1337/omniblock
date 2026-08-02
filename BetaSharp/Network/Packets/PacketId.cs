@@ -8,7 +8,6 @@ public enum PacketId : byte
     PlayerMovePositionAndOnGround = 11,
     PlayerMoveLookAndOnGround = 12,
     PlayerMoveFull = 13,
-    ChunkDataS2C = 51,
 
     // 240-254 are reserved for the extensible message layer. Only these two IDs are spent on it:
     // everything else it carries travels inside OmniMessage, keyed by name rather than by number,

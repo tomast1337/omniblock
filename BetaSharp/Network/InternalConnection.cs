@@ -30,7 +30,6 @@ public class InternalConnection : Connection
     {
         if (!closed)
         {
-            packet.ProcessForInternal();
             int pSize = packet.Size();
             BytesWritten += pSize;
             PacketsWritten++;

@@ -22,10 +22,6 @@ public abstract class NetHandler
     /// </summary>
     public virtual MessageRegistry? Messages => null;
 
-    public virtual void handleChunkData(ChunkDataS2CPacket packet)
-    {
-    }
-
     /// <summary>
     ///     Adopts the server's message ordering. Client side; a server receiving this is a protocol
     ///     error and ignores it.
