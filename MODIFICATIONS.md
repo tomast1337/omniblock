@@ -44,3 +44,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-02 — fix(lang): update author fields for multiple language entries (Nicolas Vyčas Nery; `3b74cf07a63b820b94843c0f764efe073a1fc15b`)
 - 2026-08-02 — feat(lang): translate French, Spanish, German, Italian, European Portuguese (Nicolas Vyčas Nery; `6aa1be90611e2cb0969de4cef75dbe25b28d39be`)
 - 2026-08-02 — feat(lang): translate Dutch, Swedish, Danish, Czech, Simplified Chinese, Traditional Chinese (Nicolas Vyčas Nery; `0fa920a72a2405aaca87cb480584baee5cafdf70`)
+- 2026-08-02 — feat(lang): translate Romanian (Nicolas Vyčas Nery; `742e95e621fe77c506cce8009d989c3952a7d9c5`)

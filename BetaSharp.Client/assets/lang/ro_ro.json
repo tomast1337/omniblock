@@ -1,536 +1,536 @@
-﻿{
+{
     "gui": {
-        "joinServer": "Join Server",
-        "rename": "Rename",
-        "edit": "Edit",
-        "refresh": "Refresh",
-        "done": "Done",
-        "cancel": "Cancel",
-        "delete": "Delete",
-        "toMenu": "Back to title screen",
-        "up": "Up",
-        "down": "Down",
-        "yes": "Yes",
-        "no": "No",
-        "connect": "Connect",
-        "directConnect": "Direct Connect",
-        "addServer": "Add Server",
-        "create": "Create",
-        "customize": "Customize",
-        "achievements": "Achievements",
-        "stats": "Statistics",
+        "joinServer": "Conectare la server",
+        "rename": "Redenumește",
+        "edit": "Editează",
+        "refresh": "Reîmprospătează",
+        "done": "Gata",
+        "cancel": "Anulează",
+        "delete": "Șterge",
+        "toMenu": "Înapoi la ecranul de titlu",
+        "up": "Sus",
+        "down": "Jos",
+        "yes": "Da",
+        "no": "Nu",
+        "connect": "Conectează",
+        "directConnect": "Conectare directă",
+        "addServer": "Adaugă server",
+        "create": "Creează",
+        "customize": "Personalizează",
+        "achievements": "Realizări",
+        "stats": "Statistici",
         "container": {
-            "crafting": "Crafting",
-            "inventory": "Inventory",
-            "dispenser": "Dispenser",
-            "furnace": "Furnace",
+            "crafting": "Artizanat",
+            "inventory": "Inventar",
+            "dispenser": "Distribuitor",
+            "furnace": "Cuptor",
             "tip": {
-                "move": "Move",
-                "quickMove": "Quick Move",
-                "takeHalf": "Take Half",
-                "place": "Place",
-                "placeOne": "Place One"
+                "move": "Mută",
+                "quickMove": "Mutare rapidă",
+                "takeHalf": "Ia jumătate",
+                "place": "Plasează",
+                "placeOne": "Plasează unul"
             }
         }
     },
     "menu": {
-        "singleplayer": "Singleplayer",
+        "singleplayer": "Un singur jucător",
         "multiplayer": "Multiplayer",
-        "texturePacks": "Texture Packs",
-        "options": "Options...",
-        "language": "Language",
-        "quit": "Quit Game",
-        "credits": "Credits",
-        "sendFeedback": "Send Feedback",
-        "reportBugs": "Report Bugs",
-        "saveAndQuitToTitle": "Save and quit to title",
-        "disconnect": "Disconnect"
+        "texturePacks": "Pachete de texturi",
+        "options": "Opțiuni...",
+        "language": "Limbă",
+        "quit": "Părăsește jocul",
+        "credits": "Credite",
+        "sendFeedback": "Trimite feedback",
+        "reportBugs": "Raportează bug-uri",
+        "saveAndQuitToTitle": "Salvează și revino la meniul principal",
+        "disconnect": "Deconectare"
     },
     "selectWorld": {
-        "title": "Select World",
-        "empty": "empty",
-        "world": "World",
-        "select": "Play Selected World",
-        "create": "Create New World",
-        "createDemo": "Play New Demo World",
-        "deleteQuestion": "Are you sure you want to delete this world?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "renameTitle": "Rename World",
-        "conversion": "Must be converted!",
-        "newWorld": "New World",
-        "enterName": "World Name",
-        "resultFolder": "Will be saved in:",
-        "enterSeed": "Seed for the World Generator",
-        "seedInfo": "Leave blank for a random seed",
-        "selectWorldType": "Select World Type",
-        "worldType": "World Type",
-        "customize": "Customize",
-        "moreWorldOptions": "More World Options...",
+        "title": "Selectează lumea",
+        "empty": "gol",
+        "world": "Lume",
+        "select": "Joacă lumea selectată",
+        "create": "Creează o lume nouă",
+        "createDemo": "Joacă o lume demo nouă",
+        "deleteQuestion": "Ești sigur că vrei să ștergi această lume?",
+        "deleteWarning": "va fi pierdută pentru totdeauna! (Mult timp!)",
+        "renameTitle": "Redenumește lumea",
+        "conversion": "Trebuie convertită!",
+        "newWorld": "Lume nouă",
+        "enterName": "Numele lumii",
+        "resultFolder": "Va fi salvată în:",
+        "enterSeed": "Seed pentru generatorul de lume",
+        "seedInfo": "Lasă gol pentru un seed aleatoriu",
+        "selectWorldType": "Selectează tipul de lume",
+        "worldType": "Tip de lume",
+        "customize": "Personalizează",
+        "moreWorldOptions": "Mai multe opțiuni pentru lume...",
         "type": {
             "default": {
-                "title": "Default",
-                "description": "The standard Minecraft world."
+                "title": "Implicit",
+                "description": "Lumea standard Minecraft."
             },
             "flat": {
-                "title": "Flat",
-                "description": "A completely flat world."
+                "title": "Plată",
+                "description": "O lume complet plată."
             },
             "sky": {
-                "title": "Sky",
-                "description": "A world floating in the sky."
+                "title": "Cer",
+                "description": "O lume plutind în cer."
             }
         }
     },
     "newWorld": {
         "customize": {
             "superflatWorld": {
-                "title": "Customize Superflat World"
+                "title": "Personalizează lumea superplată"
             },
-            "removeLayer": "Remove Layer",
-            "presets": "Presets",
-            "height": "Height",
+            "removeLayer": "Elimină stratul",
+            "presets": "Presetări",
+            "height": "Înălțime",
             "unknown": "???"
         }
     },
     "world": {
-        "world": "World",
-        "unsupportedFormat": "Unsupported Format!"
+        "world": "Lume",
+        "unsupportedFormat": "Format nesuportat!"
     },
     "multiplayer": {
-        "title": "Play Multiplayer",
-        "betasharpServer": "BetaSharp Server",
-        "info1": "Minecraft Multiplayer is currently not finished, but there",
-        "info2": "is some buggy early testing going on.",
-        "ipinfo": "Enter the IP of a server to connect to it:",
-        "deleteQuestion": "Are you sure you want to delete this server?",
-        "deleteWarning": "will be lost forever! (A long time!)",
-        "downloadingTerrain": "Downloading terrain",
-        "stopSleeping": "Leave Bed",
-        "editServerTitle": "Edit Server Info",
-        "addServerTitle": "Add Server Info",
-        "serverName": "Server Name",
-        "serverAddress": "Server Address"
+        "title": "Joacă multiplayer",
+        "betasharpServer": "Server BetaSharp",
+        "info1": "Multiplayer-ul Minecraft nu este momentan terminat, dar există",
+        "info2": "în curs niște teste timpurii pline de bug-uri.",
+        "ipinfo": "Introdu IP-ul serverului pentru a te conecta la el:",
+        "deleteQuestion": "Ești sigur că vrei să ștergi acest server?",
+        "deleteWarning": "va fi pierdut pentru totdeauna! (Mult timp!)",
+        "downloadingTerrain": "Se descarcă terenul",
+        "stopSleeping": "Părăsește patul",
+        "editServerTitle": "Editează informațiile serverului",
+        "addServerTitle": "Adaugă informațiile serverului",
+        "serverName": "Numele serverului",
+        "serverAddress": "Adresa serverului"
     },
     "loading": {
-        "loadingLevel": "Loading level",
-        "startingServer": "Starting server...",
-        "preparingSpawnArea": "Preparing spawn area"
+        "loadingLevel": "Se încarcă nivelul",
+        "startingServer": "Se pornește serverul...",
+        "preparingSpawnArea": "Se pregătește zona de apariție"
     },
     "achievements": {
-        "title": "Achievements"
+        "title": "Realizări"
     },
     "gameover": {
-        "title": "Game Over!",
-        "score": "Score",
-        "respawn": "Respawn",
-        "titleMenu": "Title menu"
+        "title": "Joc terminat!",
+        "score": "Scor",
+        "respawn": "Reînvie",
+        "titleMenu": "Meniul principal"
     },
     "gamemenu": {
-        "title": "Game Menu",
-        "backToGame": "Back to Game"
+        "title": "Meniul jocului",
+        "backToGame": "Înapoi la joc"
     },
     "sign": {
-        "title": "Edit sign message:"
+        "title": "Editează mesajul indicatorului:"
     },
     "stats": {
-        "title": "Statistics",
+        "title": "Statistici",
         "general": "General",
         "blocks": {
-            "name": "Blocks",
-            "mined": "Mined",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Blocuri",
+            "mined": "Minat",
+            "crafted": "Create",
+            "used": "Folosite"
         },
         "items": {
-            "name": "Items",
-            "broken": "Broken",
-            "crafted": "Crafted",
-            "used": "Used"
+            "name": "Obiecte",
+            "broken": "Rupte",
+            "crafted": "Create",
+            "used": "Folosite"
         },
-        "item": "Item"
+        "item": "Obiect"
     },
     "connect": {
-        "connecting": "Connecting to the server...",
-        "authorizing": "Logging in...",
-        "failed": "Failed to connect to the server"
+        "connecting": "Se conectează la server...",
+        "authorizing": "Se autentifică...",
+        "failed": "Conectarea la server a eșuat"
     },
     "disconnect": {
         "genericReason": "{0}",
-        "disconnected": "Disconnected by Server",
-        "lost": "Connection Lost",
-        "kicked": "Was kicked from the game",
-        "timeout": "Timed out",
-        "closed": "Connection closed",
-        "loginFailed": "Failed to login",
-        "quitting": "Quitting",
-        "endOfStream": "End of stream",
-        "overflow": "Buffer overflow"
+        "disconnected": "Deconectat de server",
+        "lost": "Conexiune pierdută",
+        "kicked": "Ai fost dat afară din joc",
+        "timeout": "Timpul a expirat",
+        "closed": "Conexiune închisă",
+        "loginFailed": "Autentificare eșuată",
+        "quitting": "Se iese",
+        "endOfStream": "Sfârșitul fluxului",
+        "overflow": "Depășirea memoriei tampon"
     },
     "options": {
-        "off": "OFF",
-        "on": "ON",
-        "disabled": "Disabled",
-        "title": "Options",
-        "controls": "Controls...",
-        "keyboardControls": "Keyboard Controls...",
-        "controllerSettings": "Controller Settings...",
-        "controllerType": "Controller Type",
+        "off": "Oprit",
+        "on": "Pornit",
+        "disabled": "Dezactivat",
+        "title": "Opțiuni",
+        "controls": "Controale...",
+        "keyboardControls": "Controale de tastatură...",
+        "controllerSettings": "Setări controller...",
+        "controllerType": "Tip de controller",
         "video": {
-            "text": "Video Settings...",
-            "performance": "Performance",
-            "display": "Display"
+            "text": "Setări video...",
+            "performance": "Performanță",
+            "display": "Afișare"
         },
-        "uiSettings": "UI Settings...",
-        "audioSettings": "Audio Settings...",
-        "audioTitle": "Audio Settings",
-        "videoTitle": "Video Settings",
-        "language": "Language...",
-        "anisoLevel": "Aniso Level",
-        "music": "Music",
-        "sound": "Sound",
-        "invertMouse": "Invert Mouse",
-        "alternateBlocks": "Alternate Blocks",
-        "chunkFade": "Chunk Fade",
+        "uiSettings": "Setări interfață...",
+        "audioSettings": "Setări audio...",
+        "audioTitle": "Setări audio",
+        "videoTitle": "Setări video",
+        "language": "Limbă...",
+        "anisoLevel": "Nivel de anizotropie",
+        "music": "Muzică",
+        "sound": "Sunet",
+        "invertMouse": "Inversează mouse-ul",
+        "alternateBlocks": "Blocuri alternative",
+        "chunkFade": "Disiparea chunk-urilor",
         "sensitivity": {
-            "text": "Sensitivity",
-            "controllerText": "Controller Sensitivity",
-            "min": "*yawn*",
-            "max": "HYPERSPEED!!!"
+            "text": "Sensibilitate",
+            "controllerText": "Sensibilitate controller",
+            "min": "*căscat*",
+            "max": "HIPERVITEZĂ!!!"
         },
         "renderDistance": {
-            "text": "Render Distance",
-            "chunks": "Chunks",
-            "tiny": "Tiny",
-            "short": "Short",
+            "text": "Distanța de randare",
+            "chunks": "Chunk-uri",
+            "tiny": "Mic",
+            "short": "Scurt",
             "normal": "Normal",
-            "far": "Far"
+            "far": "Departe"
         },
-        "viewBobbing": "View Bobbing",
-        "ao": "Smooth Lighting",
-        "anaglyph": "3D Anaglyph",
-        "framerateLimit": "Performance",
+        "viewBobbing": "Legănarea camerei",
+        "ao": "Iluminare lină",
+        "anaglyph": "Anaglifă 3D",
+        "framerateLimit": "Performanță",
         "difficulty": {
-            "text": "Difficulty",
-            "peaceful": "Peaceful",
-            "easy": "Easy",
+            "text": "Dificultate",
+            "peaceful": "Pașnic",
+            "easy": "Ușor",
             "normal": "Normal",
-            "hard": "Hard"
+            "hard": "Greu"
         },
         "graphics": {
-            "text": "Graphics",
-            "fancy": "Fancy",
-            "fast": "Fast"
+            "text": "Grafică",
+            "fancy": "Detaliată",
+            "fast": "Rapidă"
         },
         "cloudsQuality": {
-            "text": "Clouds Quality",
-            "off": "No Clouds",
-            "legacy": "Old Clouds",
+            "text": "Calitatea norilor",
+            "off": "Fără nori",
+            "legacy": "Nori vechi",
             "shader": "Shader"
         },
         "softClouds": {
-            "text": "Soft Clouds"
+            "text": "Nori moi"
         },
         "guiScale": {
-            "text": "GUI Scale",
+            "text": "Scala interfeței",
             "auto": "Auto",
-            "small": "Small",
-            "normal": "Normal",
-            "large": "Large"
+            "small": "Mică",
+            "normal": "Normală",
+            "large": "Mare"
         },
         "chatScale": {
-            "text": "Chat Scale"
+            "text": "Scala chat-ului"
         },
         "chatWidth": {
-            "text": "Chat Width"
+            "text": "Lățimea chat-ului"
         },
-        "advancedOpengl": "Advanced OpenGL",
+        "advancedOpengl": "OpenGL avansat",
         "fps": {
             "text": "FPS",
-            "maxFps": "Max FPS",
-            "unlimited": "Unlimited"
+            "maxFps": "FPS maxim",
+            "unlimited": "Nelimitat"
         },
-        "showCoordinates": "Show Coordinates",
-        "uiCursors": "UI Cursors",
-        "gamma": "Gamma",
+        "showCoordinates": "Arată coordonatele",
+        "uiCursors": "Cursore de interfață",
+        "gamma": "Luminozitate",
         "vSync": "VSync",
-        "mipmaps": "Mipmaps",
-        "menuMusic": "Menu Music",
+        "mipmaps": "Mipmap",
+        "menuMusic": "Muzică de meniu",
         "msaa": "MSAA",
-        "fov": "FOV",
+        "fov": "Câmp vizual",
         "movement": {
-            "text": "Movement"
+            "text": "Mișcare"
         },
         "view": {
-            "text": "View"
+            "text": "Vizualizare"
         },
         "other": {
-            "text": "Other"
+            "text": "Altele"
         },
-        "editBindings": "Edit Bindings...",
-        "resetBindings": "Reset Bindings...",
-        "controllerBindings": "Controller Bindings",
+        "editBindings": "Editează butoanele...",
+        "resetBindings": "Resetează butoanele...",
+        "controllerBindings": "Butoane controller",
         "shader": {
-            "text": "Shader Options",
+            "text": "Opțiuni shader",
             "chunkVert": {
-                "text": "World",
-                "WavyLeavesStrength": "Wavy Leaves Strength",
-                "WavyLeavesSpeed": "Wavy Leaves Speed",
-                "WavyPlantStrength": "Wavy Plant Strength",
-                "WavyPlantSpeed": "Wavy Plant Speed",
-                "WavyPlantMode": "Wavy Plant Mode"
+                "text": "Lume",
+                "WavyLeavesStrength": "Intensitatea frunzelor ondulate",
+                "WavyLeavesSpeed": "Viteza frunzelor ondulate",
+                "WavyPlantStrength": "Intensitatea plantelor ondulate",
+                "WavyPlantSpeed": "Viteza plantelor ondulate",
+                "WavyPlantMode": "Modul plantelor ondulate"
             },
             "cloud": {
-                "text": "Clouds",
-                "minParallax": "Min Parallax",
-                "maxParallax": "Max Parallax",
-                "minGradient": "Min Gradient",
-                "maxGradient": "Max Gradient",
-                "cloudHeight": "Cloud Height",
-                "shadow": "Shadow Color",
-                "smoothWidth": "Smooth Width",
-                "smoothSamples": "Smooth Samples",
-                "closeFade": "Close Fade",
-                "smoothTop": "Smooth Top",
-                "smoothEdge": "Smooth Edge",
-                "smoothBottom": "Smooth Bottom",
-                "smoothBottomTopDown": "Smooth Bottom Top Down"
+                "text": "Nori",
+                "minParallax": "Paralaxă minimă",
+                "maxParallax": "Paralaxă maximă",
+                "minGradient": "Gradient minim",
+                "maxGradient": "Gradient maxim",
+                "cloudHeight": "Înălțimea norilor",
+                "shadow": "Culoarea umbrei",
+                "smoothWidth": "Lățimea netezirii",
+                "smoothSamples": "Eșantioane de netezire",
+                "closeFade": "Disipare apropiată",
+                "smoothTop": "Netezire sus",
+                "smoothEdge": "Margine netezită",
+                "smoothBottom": "Netezire jos",
+                "smoothBottomTopDown": "Netezire de jos în sus"
             },
             "ui": {
-                "text": "UI",
-                "darkMode": "Dark Mode"
+                "text": "Interfață",
+                "darkMode": "Mod întunecat"
             },
             "preset": {
-                "text": "Preset",
-                "disabled": "Disabled",
-                "default": "Default",
-                "custom": "Custom",
+                "text": "Presetare",
+                "disabled": "Dezactivat",
+                "default": "Implicit",
+                "custom": "Personalizat",
                 "2d": "2D",
                 "3d": "3D",
-                "low": "Low",
-                "medium": "Medium",
-                "high": "High",
+                "low": "Scăzut",
+                "medium": "Mediu",
+                "high": "Ridicat",
                 "ultra": "Ultra"
             }
         }
     },
     "performance": {
-        "max": "Max FPS",
-        "balanced": "Balanced",
-        "powersaver": "Power saver"
+        "max": "FPS maxim",
+        "balanced": "Echilibrat",
+        "powersaver": "Economisire de energie"
     },
     "controls": {
-        "title": "Controls"
+        "title": "Controale"
     },
     "key": {
-        "forward": "Forward",
-        "left": "Left",
-        "back": "Back",
-        "right": "Right",
-        "jump": "Jump",
-        "inventory": "Inventory",
-        "drop": "Drop",
+        "forward": "Înainte",
+        "left": "Stânga",
+        "back": "Înapoi",
+        "right": "Dreapta",
+        "jump": "Sari",
+        "inventory": "Inventar",
+        "drop": "Aruncă",
         "chat": "Chat",
-        "fog": "Toggle Fog",
-        "sneak": "Sneak",
-        "playerlist": "List players",
+        "fog": "Comută ceața",
+        "sneak": "Te furișezi",
+        "playerlist": "Lista jucătorilor",
         "zoom": "Zoom",
-        "hotbarLeft": "Hotbar Left",
-        "hotbarRight": "Hotbar Right",
-        "pickBlock": "Pick Block",
-        "camera": "Camera Mode",
-        "pause": "Pause"
+        "hotbarLeft": "Bară rapidă stânga",
+        "hotbarRight": "Bară rapidă dreapta",
+        "pickBlock": "Selectează blocul",
+        "camera": "Mod cameră",
+        "pause": "Pauză"
     },
     "texturePack": {
-        "openFolder": "Open texture pack folder",
-        "title": "Select Texture Pack",
-        "folderInfo": "(Place texture pack files here)"
+        "openFolder": "Deschide folderul pachetelor de texturi",
+        "title": "Selectează pachetul de texturi",
+        "folderInfo": "(Plasează fișierele pachetului de texturi aici)"
     },
     "tile": {
         "tallgrass": {
-            "name": "Tallgrass",
+            "name": "Iarbă înaltă",
             "desc": ""
         },
         "stone": {
-            "name": "Stone",
+            "name": "Piatră",
             "desc": ""
         },
         "grass": {
-            "name": "Grass",
+            "name": "Iarbă",
             "desc": ""
         },
         "dirt": {
-            "name": "Dirt",
+            "name": "Pământ",
             "desc": ""
         },
         "stonebrick": {
-            "name": "Cobblestone",
+            "name": "Piatră de râu",
             "desc": ""
         },
         "wood": {
-            "name": "Wooden Planks",
+            "name": "Scânduri de lemn",
             "desc": ""
         },
         "sapling": {
-            "name": "Sapling",
+            "name": "Puiet",
             "desc": ""
         },
         "bedrock": {
-            "name": "Bedrock",
+            "name": "Piatră de bază",
             "desc": ""
         },
         "water": {
-            "name": "Water",
+            "name": "Apă",
             "desc": ""
         },
         "lava": {
-            "name": "Lava",
+            "name": "Lavă",
             "desc": ""
         },
         "sand": {
-            "name": "Sand",
+            "name": "Nisip",
             "desc": ""
         },
-        "sandStone": { "name": "Sandstone" },
+        "sandStone": { "name": "Gresie" },
         "gravel": {
-            "name": "Gravel",
+            "name": "Pietriș",
             "desc": ""
         },
         "oreGold": {
-            "name": "Gold Ore",
+            "name": "Minereu de aur",
             "desc": ""
         },
         "oreIron": {
-            "name": "Iron Ore",
+            "name": "Minereu de fier",
             "desc": ""
         },
         "oreCoal": {
-            "name": "Coal Ore",
+            "name": "Minereu de cărbune",
             "desc": ""
         },
         "log": {
-            "name": "Wood",
+            "name": "Lemn",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Frunze",
             "desc": ""
         },
         "sponge": {
-            "name": "Sponge",
+            "name": "Burete",
             "desc": ""
         },
         "glass": {
-            "name": "Glass",
+            "name": "Sticlă",
             "desc": ""
         },
         "cloth": {
-            "name": "Wool",
+            "name": "Lână",
             "desc": "",
             "black": {
-                "name": "Black Wool",
+                "name": "Lână neagră",
                 "desc": ""
             },
             "red": {
-                "name": "Red Wool",
+                "name": "Lână roșie",
                 "desc": ""
             },
             "green": {
-                "name": "Green Wool",
+                "name": "Lână verde",
                 "desc": ""
             },
             "brown": {
-                "name": "Brown Wool",
+                "name": "Lână maro",
                 "desc": ""
             },
             "blue": {
-                "name": "Blue Wool",
+                "name": "Lână albastră",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Wool",
+                "name": "Lână violet",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Wool",
+                "name": "Lână turcoaz",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Wool",
+                "name": "Lână gri deschis",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Wool",
+                "name": "Lână gri",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Wool",
+                "name": "Lână roz",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Wool",
+                "name": "Lână verde lime",
                 "desc": ""
             },
             "yellow": {
-                "name": "Yellow Wool",
+                "name": "Lână galbenă",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Wool",
+                "name": "Lână albastru deschis",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Wool",
+                "name": "Lână magenta",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Wool",
+                "name": "Lână portocalie",
                 "desc": ""
             },
             "white": {
-                "name": "Wool",
+                "name": "Lână",
                 "desc": ""
             }
         },
         "flower": {
-            "name": "Flower",
+            "name": "Floare",
             "desc": ""
         },
         "rose": {
-            "name": "Rose",
+            "name": "Trandafir",
             "desc": ""
         },
         "mushroom": {
-            "name": "Mushroom",
+            "name": "Ciupercă",
             "desc": ""
         },
         "blockGold": {
-            "name": "Block of Gold",
+            "name": "Bloc de aur",
             "desc": ""
         },
         "blockIron": {
-            "name": "Block of Iron",
+            "name": "Bloc de fier",
             "desc": ""
         },
         "stoneSlab": {
             "stone": {
-                "name": "Stone Slab",
+                "name": "Placă de piatră",
                 "desc": ""
             },
             "sand": {
-                "name": "Sandstone Slab",
+                "name": "Placă de gresie",
                 "desc": ""
             },
             "wood": {
-                "name": "Wooden Slab",
+                "name": "Placă de lemn",
                 "desc": ""
             },
             "cobble": {
-                "name": "Stone Slab",
+                "name": "Placă de piatră",
                 "desc": ""
             }
         },
         "brick": {
-            "name": "Bricks",
+            "name": "Cărămizi",
             "desc": ""
         },
         "tnt": {
@@ -538,11 +538,11 @@
             "desc": ""
         },
         "bookshelf": {
-            "name": "Bookshelf",
+            "name": "Bibliotecă",
             "desc": ""
         },
         "stoneMoss": {
-            "name": "Moss Stone",
+            "name": "Piatră cu mușchi",
             "desc": ""
         },
         "obsidian": {
@@ -550,111 +550,111 @@
             "desc": ""
         },
         "torch": {
-            "name": "Torch",
+            "name": "Torță",
             "desc": ""
         },
         "fire": {
-            "name": "Fire",
+            "name": "Foc",
             "desc": ""
         },
         "mobSpawner": {
-            "name": "Monster Spawner",
+            "name": "Generator de monștri",
             "desc": ""
         },
         "stairsWood": {
-            "name": "Wooden Stairs",
+            "name": "Scări de lemn",
             "desc": ""
         },
         "chest": {
-            "name": "Chest",
+            "name": "Cufăr",
             "desc": ""
         },
         "redstoneDust": {
-            "name": "Redstone Dust",
+            "name": "Praf de redstone",
             "desc": ""
         },
         "oreDiamond": {
-            "name": "Diamond Ore",
+            "name": "Minereu de diamant",
             "desc": ""
         },
         "blockDiamond": {
-            "name": "Block of Diamond",
+            "name": "Bloc de diamant",
             "desc": ""
         },
         "workbench": {
-            "name": "Crafting Table",
+            "name": "Masă de artizanat",
             "desc": ""
         },
         "crops": {
-            "name": "Crops",
+            "name": "Culturi",
             "desc": ""
         },
         "farmland": {
-            "name": "Farmland",
+            "name": "Pământ arat",
             "desc": ""
         },
         "furnace": {
-            "name": "Furnace",
+            "name": "Cuptor",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Indicator",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Ușă de lemn",
             "desc": ""
         },
         "ladder": {
-            "name": "Ladder",
+            "name": "Scară",
             "desc": ""
         },
         "rail": {
-            "name": "Rail",
+            "name": "Șină",
             "desc": ""
         },
         "goldenRail": {
-            "name": "Powered Rail",
+            "name": "Șină propulsată",
             "desc": ""
         },
         "detectorRail": {
-            "name": "Detector Rail",
+            "name": "Șină cu senzor",
             "desc": ""
         },
         "stairsStone": {
-            "name": "Stone Stairs",
+            "name": "Scări de piatră",
             "desc": ""
         },
         "lever": {
-            "name": "Lever",
+            "name": "Pârghie",
             "desc": ""
         },
         "pressurePlate": {
-            "name": "Pressure Plate",
+            "name": "Placă de presiune",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Ușă de fier",
             "desc": ""
         },
         "oreRedstone": {
-            "name": "Redstone Ore",
+            "name": "Minereu de redstone",
             "desc": ""
         },
         "notGate": {
-            "name": "Redstone Torch",
+            "name": "Torță de redstone",
             "desc": ""
         },
         "button": {
-            "name": "Button",
+            "name": "Buton",
             "desc": ""
         },
         "snow": {
-            "name": "Snow",
+            "name": "Zăpadă",
             "desc": ""
         },
         "ice": {
-            "name": "Ice",
+            "name": "Gheață",
             "desc": ""
         },
         "cactus": {
@@ -662,11 +662,11 @@
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Lut",
             "desc": ""
         },
         "reeds": {
-            "name": "Sugar cane",
+            "name": "Trestie de zahăr",
             "desc": ""
         },
         "jukebox": {
@@ -674,27 +674,27 @@
             "desc": ""
         },
         "fence": {
-            "name": "Fence",
+            "name": "Gard",
             "desc": ""
         },
         "pumpkin": {
-            "name": "Pumpkin",
+            "name": "Dovleac",
             "desc": ""
         },
         "litpumpkin": {
-            "name": "Jack 'o' Lantern",
+            "name": "Felinar de dovleac",
             "desc": ""
         },
         "hellrock": {
-            "name": "Netherrack",
+            "name": "Piatra iadului",
             "desc": ""
         },
         "hellsand": {
-            "name": "Soul Sand",
+            "name": "Nisip sufletesc",
             "desc": ""
         },
         "lightgem": {
-            "name": "Glowstone",
+            "name": "Piatră luminoasă",
             "desc": ""
         },
         "portal": {
@@ -702,46 +702,46 @@
             "desc": ""
         },
         "oreLapis": {
-            "name": "Lapis Lazuli Ore",
+            "name": "Minereu de lapis lazuli",
             "desc": ""
         },
         "blockLapis": {
-            "name": "Lapis Lazuli Block",
+            "name": "Bloc de lapis lazuli",
             "desc": ""
         },
         "dispenser": {
-            "name": "Dispenser",
+            "name": "Distribuitor",
             "desc": ""
         },
         "musicBlock": {
-            "name": "Note Block",
+            "name": "Bloc muzical",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Tort",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Pat",
             "desc": "",
-            "occupied": "This bed is occupied",
-            "noSleep": "You can only sleep at night",
-            "notValid": "Your home bed was missing or obstructed"
+            "occupied": "Acest pat este ocupat",
+            "noSleep": "Poți dormi doar noaptea",
+            "notValid": "Patul tău de acasă lipsește sau este blocat"
         },
         "lockedchest": {
-            "name": "Locked chest",
+            "name": "Cufăr blocat",
             "desc": ""
         },
         "trapdoor": {
-            "name": "Trapdoor",
+            "name": "Trapă",
             "desc": ""
         },
         "web": {
-            "name": "Cobweb",
+            "name": "Pânză de păianjen",
             "desc": ""
         },
         "stonebricksmooth": {
-            "name": "Stone Bricks",
+            "name": "Cărămizi de piatră",
             "desc": ""
         },
         "pistonBase": {
@@ -749,317 +749,317 @@
             "desc": ""
         },
         "pistonStickyBase": {
-            "name": "Sticky Piston",
+            "name": "Piston lipicios",
             "desc": ""
         }
     },
     "item": {
         "shovelIron": {
-            "name": "Iron Shovel",
+            "name": "Lopată de fier",
             "desc": ""
         },
         "pickaxeIron": {
-            "name": "Iron Pickaxe",
+            "name": "Târnăcop de fier",
             "desc": ""
         },
         "hatchetIron": {
-            "name": "Iron Axe",
+            "name": "Topor de fier",
             "desc": ""
         },
         "flintAndSteel": {
-            "name": "Flint and Steel",
+            "name": "Amnar și cremene",
             "desc": ""
         },
         "apple": {
-            "name": "Apple",
+            "name": "Măr",
             "desc": ""
         },
         "cookie": {
-            "name": "Cookie",
+            "name": "Fursec",
             "desc": ""
         },
         "bow": {
-            "name": "Bow",
+            "name": "Arc",
             "desc": ""
         },
         "arrow": {
-            "name": "Arrow",
+            "name": "Săgeată",
             "desc": ""
         },
         "coal": {
-            "name": "Coal",
+            "name": "Cărbune",
             "desc": ""
         },
         "charcoal": {
-            "name": "Charcoal",
+            "name": "Cărbune de lemn",
             "desc": ""
         },
         "diamond": {
-            "name": "Diamond",
+            "name": "Diamant",
             "desc": ""
         },
         "ingotIron": {
-            "name": "Iron Ingot",
+            "name": "Lingou de fier",
             "desc": ""
         },
         "ingotGold": {
-            "name": "Gold Ingot",
+            "name": "Lingou de aur",
             "desc": ""
         },
         "swordIron": {
-            "name": "Iron Sword",
+            "name": "Sabie de fier",
             "desc": ""
         },
         "swordWood": {
-            "name": "Wooden Sword",
+            "name": "Sabie de lemn",
             "desc": ""
         },
         "shovelWood": {
-            "name": "Wooden Shovel",
+            "name": "Lopată de lemn",
             "desc": ""
         },
         "pickaxeWood": {
-            "name": "Wooden Pickaxe",
+            "name": "Târnăcop de lemn",
             "desc": ""
         },
         "hatchetWood": {
-            "name": "Wooden Axe",
+            "name": "Topor de lemn",
             "desc": ""
         },
         "swordStone": {
-            "name": "Stone Sword",
+            "name": "Sabie de piatră",
             "desc": ""
         },
         "shovelStone": {
-            "name": "Stone Shovel",
+            "name": "Lopată de piatră",
             "desc": ""
         },
         "pickaxeStone": {
-            "name": "Stone Pickaxe",
+            "name": "Târnăcop de piatră",
             "desc": ""
         },
         "hatchetStone": {
-            "name": "Stone Axe",
+            "name": "Topor de piatră",
             "desc": ""
         },
         "swordDiamond": {
-            "name": "Diamond Sword",
+            "name": "Sabie de diamant",
             "desc": ""
         },
         "shovelDiamond": {
-            "name": "Diamond Shovel",
+            "name": "Lopată de diamant",
             "desc": ""
         },
         "pickaxeDiamond": {
-            "name": "Diamond Pickaxe",
+            "name": "Târnăcop de diamant",
             "desc": ""
         },
         "hatchetDiamond": {
-            "name": "Diamond Axe",
+            "name": "Topor de diamant",
             "desc": ""
         },
         "stick": {
-            "name": "Stick",
+            "name": "Băț",
             "desc": ""
         },
         "bowl": {
-            "name": "Bowl",
+            "name": "Castron",
             "desc": ""
         },
         "mushroomStew": {
-            "name": "Mushroom Stew",
+            "name": "Supă de ciuperci",
             "desc": ""
         },
         "swordGold": {
-            "name": "Golden Sword",
+            "name": "Sabie de aur",
             "desc": ""
         },
         "shovelGold": {
-            "name": "Golden Shovel",
+            "name": "Lopată de aur",
             "desc": ""
         },
         "pickaxeGold": {
-            "name": "Golden Pickaxe",
+            "name": "Târnăcop de aur",
             "desc": ""
         },
         "hatchetGold": {
-            "name": "Golden Axe",
+            "name": "Topor de aur",
             "desc": ""
         },
         "string": {
-            "name": "String",
+            "name": "Ață",
             "desc": ""
         },
         "feather": {
-            "name": "Feather",
+            "name": "Pană",
             "desc": ""
         },
         "gunpowder": {
-            "name": "Gunpowder",
+            "name": "Praf de pușcă",
             "desc": ""
         },
         "hoeWood": {
-            "name": "Wooden Hoe",
+            "name": "Sapă de lemn",
             "desc": ""
         },
         "hoeStone": {
-            "name": "Stone Hoe",
+            "name": "Sapă de piatră",
             "desc": ""
         },
         "hoeIron": {
-            "name": "Iron Hoe",
+            "name": "Sapă de fier",
             "desc": ""
         },
         "hoeDiamond": {
-            "name": "Diamond Hoe",
+            "name": "Sapă de diamant",
             "desc": ""
         },
         "hoeGold": {
-            "name": "Golden Hoe",
+            "name": "Sapă de aur",
             "desc": ""
         },
         "seeds": {
-            "name": "Seeds",
+            "name": "Semințe",
             "desc": ""
         },
         "wheat": {
-            "name": "Wheat",
+            "name": "Grâu",
             "desc": ""
         },
         "bread": {
-            "name": "Bread",
+            "name": "Pâine",
             "desc": ""
         },
         "helmetLeather": {
-            "name": "Leather Cap",
+            "name": "Cască de piele",
             "desc": ""
         },
         "chestplateLeather": {
-            "name": "Leather Tunic",
+            "name": "Tunică de piele",
             "desc": ""
         },
         "leggingsLeather": {
-            "name": "Leather Pants",
+            "name": "Pantaloni de piele",
             "desc": ""
         },
         "bootsLeather": {
-            "name": "Leather Boots",
+            "name": "Cizme de piele",
             "desc": ""
         },
         "helmetChain": {
-            "name": "Chain Helmet",
+            "name": "Cască de zale",
             "desc": ""
         },
         "chestplateChain": {
-            "name": "Chain Chestplate",
+            "name": "Platosă de zale",
             "desc": ""
         },
         "leggingsChain": {
-            "name": "Chain Leggings",
+            "name": "Jambiere de zale",
             "desc": ""
         },
         "bootsChain": {
-            "name": "Chain Boots",
+            "name": "Cizme de zale",
             "desc": ""
         },
         "helmetIron": {
-            "name": "Iron Helmet",
+            "name": "Cască de fier",
             "desc": ""
         },
         "chestplateIron": {
-            "name": "Iron Chestplate",
+            "name": "Platosă de fier",
             "desc": ""
         },
         "leggingsIron": {
-            "name": "Iron Leggings",
+            "name": "Jambiere de fier",
             "desc": ""
         },
         "bootsIron": {
-            "name": "Iron Boots",
+            "name": "Cizme de fier",
             "desc": ""
         },
         "helmetDiamond": {
-            "name": "Diamond Helmet",
+            "name": "Cască de diamant",
             "desc": ""
         },
         "chestplateDiamond": {
-            "name": "Diamond Chestplate",
+            "name": "Platosă de diamant",
             "desc": ""
         },
         "leggingsDiamond": {
-            "name": "Diamond Leggings",
+            "name": "Jambiere de diamant",
             "desc": ""
         },
         "bootsDiamond": {
-            "name": "Diamond Boots",
+            "name": "Cizme de diamant",
             "desc": ""
         },
         "helmetGold": {
-            "name": "Golden Helmet",
+            "name": "Cască de aur",
             "desc": ""
         },
         "chestplateGold": {
-            "name": "Golden Chestplate",
+            "name": "Platosă de aur",
             "desc": ""
         },
         "leggingsGold": {
-            "name": "Golden Leggings",
+            "name": "Jambiere de aur",
             "desc": ""
         },
         "bootsGold": {
-            "name": "Golden boots",
+            "name": "Cizme de aur",
             "desc": ""
         },
         "flint": {
-            "name": "Flint",
+            "name": "Cremașă",
             "desc": ""
         },
         "porkchopRaw": {
-            "name": "Raw Porkchop",
+            "name": "Cotlet de porc crud",
             "desc": ""
         },
         "porkchopCooked": {
-            "name": "Cooked Porkchop",
+            "name": "Cotlet de porc gătit",
             "desc": ""
         },
         "painting": {
-            "name": "Painting",
+            "name": "Pictură",
             "desc": ""
         },
         "appleGold": {
-            "name": "Golden Apple",
+            "name": "Măr de aur",
             "desc": ""
         },
         "sign": {
-            "name": "Sign",
+            "name": "Indicator",
             "desc": ""
         },
         "doorWood": {
-            "name": "Wooden Door",
+            "name": "Ușă de lemn",
             "desc": ""
         },
         "bucket": {
-            "name": "Bucket",
+            "name": "Găleată",
             "desc": ""
         },
         "bucketWater": {
-            "name": "Water Bucket",
+            "name": "Găleată cu apă",
             "desc": ""
         },
         "bucketLava": {
-            "name": "Lava bucket",
+            "name": "Găleată cu lavă",
             "desc": ""
         },
         "minecart": {
-            "name": "Minecart",
+            "name": "Vagonet",
             "desc": ""
         },
         "saddle": {
-            "name": "Saddle",
+            "name": "Șa",
             "desc": ""
         },
         "doorIron": {
-            "name": "Iron Door",
+            "name": "Ușă de fier",
             "desc": ""
         },
         "redstone": {
@@ -1067,303 +1067,303 @@
             "desc": ""
         },
         "snowball": {
-            "name": "Snowball",
+            "name": "Bulgăre de zăpadă",
             "desc": ""
         },
         "boat": {
-            "name": "Boat",
+            "name": "Barcă",
             "desc": ""
         },
         "leather": {
-            "name": "Leather",
+            "name": "Piele",
             "desc": ""
         },
         "milk": {
-            "name": "Milk",
+            "name": "Lapte",
             "desc": ""
         },
         "brick": {
-            "name": "Brick",
+            "name": "Cărămidă",
             "desc": ""
         },
         "clay": {
-            "name": "Clay",
+            "name": "Lut",
             "desc": ""
         },
         "sugarCanes": {
-            "name": "Sugar Canes",
+            "name": "Trestii de zahăr",
             "desc": ""
         },
         "paper": {
-            "name": "Paper",
+            "name": "Hârtie",
             "desc": ""
         },
         "book": {
-            "name": "Book",
+            "name": "Carte",
             "desc": ""
         },
         "slimeball": {
-            "name": "Slimeball",
+            "name": "Bilă de slime",
             "desc": ""
         },
         "minecartChest": {
-            "name": "Minecart with Chest",
+            "name": "Vagonet cu cufăr",
             "desc": ""
         },
         "minecartFurnace": {
-            "name": "Minecart with Furnace",
+            "name": "Vagonet cu cuptor",
             "desc": ""
         },
         "egg": {
-            "name": "Egg",
+            "name": "Ou",
             "desc": ""
         },
         "compass": {
-            "name": "Compass",
+            "name": "Busolă",
             "desc": ""
         },
         "fishingRod": {
-            "name": "Fishing Rod",
+            "name": "Undiță",
             "desc": ""
         },
         "clock": {
-            "name": "Clock",
+            "name": "Ceas",
             "desc": ""
         },
         "yellowDust": {
-            "name": "Glowstone Dust",
+            "name": "Praf de piatră luminoasă",
             "desc": ""
         },
         "fishRaw": {
-            "name": "Raw Fish",
+            "name": "Pește crud",
             "desc": ""
         },
         "fishCooked": {
-            "name": "Cooked Fish",
+            "name": "Pește gătit",
             "desc": ""
         },
         "record": {
-            "name": "Music Disc",
+            "name": "Disc muzical",
             "desc": ""
         },
         "bone": {
-            "name": "Bone",
+            "name": "Os",
             "desc": ""
         },
         "dyePowder": {
             "black": {
-                "name": "Ink Sac",
+                "name": "Sac de cerneală",
                 "desc": ""
             },
             "red": {
-                "name": "Rose Red",
+                "name": "Roșu de trandafir",
                 "desc": ""
             },
             "green": {
-                "name": "Cactus Green",
+                "name": "Verde de cactus",
                 "desc": ""
             },
             "brown": {
-                "name": "Cocoa Beans",
+                "name": "Boabe de cacao",
                 "desc": ""
             },
             "blue": {
-                "name": "Lapis Lazuli",
+                "name": "Lapis lazuli",
                 "desc": ""
             },
             "purple": {
-                "name": "Purple Dye",
+                "name": "Vopsea violet",
                 "desc": ""
             },
             "cyan": {
-                "name": "Cyan Dye",
+                "name": "Vopsea turcoaz",
                 "desc": ""
             },
             "silver": {
-                "name": "Light Gray Dye",
+                "name": "Vopsea gri deschis",
                 "desc": ""
             },
             "gray": {
-                "name": "Gray Dye",
+                "name": "Vopsea gri",
                 "desc": ""
             },
             "pink": {
-                "name": "Pink Dye",
+                "name": "Vopsea roz",
                 "desc": ""
             },
             "lime": {
-                "name": "Lime Dye",
+                "name": "Vopsea verde lime",
                 "desc": ""
             },
             "yellow": {
-                "name": "Dandelion Yellow",
+                "name": "Galben de păpădie",
                 "desc": ""
             },
             "lightBlue": {
-                "name": "Light Blue Dye",
+                "name": "Vopsea albastru deschis",
                 "desc": ""
             },
             "magenta": {
-                "name": "Magenta Dye",
+                "name": "Vopsea magenta",
                 "desc": ""
             },
             "orange": {
-                "name": "Orange Dye",
+                "name": "Vopsea portocalie",
                 "desc": ""
             },
             "white": {
-                "name": "Bone Meal",
+                "name": "Făină de oase",
                 "desc": ""
             }
         },
         "sugar": {
-            "name": "Sugar",
+            "name": "Zahăr",
             "desc": ""
         },
         "cake": {
-            "name": "Cake",
+            "name": "Tort",
             "desc": ""
         },
         "bed": {
-            "name": "Bed",
+            "name": "Pat",
             "desc": ""
         },
         "redstoneRepeater": {
-            "name": "Redstone Repeater",
+            "name": "Repetitor de redstone",
             "desc": ""
         },
         "map": {
-            "name": "Map",
+            "name": "Hartă",
             "desc": ""
         },
         "leaves": {
-            "name": "Leaves",
+            "name": "Frunze",
             "desc": ""
         },
         "shears": {
-            "name": "Shears",
+            "name": "Foarfecă",
             "desc": ""
         }
     },
     "stat": {
         "generalButton": "General",
-        "blocksButton": "Blocks",
-        "itemsButton": "Items",
-        "used": "Times Used",
-        "mined": "Times Mined",
-        "depleted": "Times Depleted",
-        "crafted": "Times Crafted",
-        "startGame": "Times played",
-        "createWorld": "Worlds played",
-        "loadWorld": "Saves loaded",
-        "joinMultiplayer": "Multiplayer joins",
-        "leaveGame": "Games quit",
-        "playOneMinute": "Minutes Played",
-        "walkOneCm": "Distance Walked",
-        "fallOneCm": "Distance Fallen",
-        "swimOneCm": "Distance Swum",
-        "flyOneCm": "Distance Flown",
-        "climbOneCm": "Distance Climbed",
-        "diveOneCm": "Distance Dove",
-        "minecartOneCm": "Distance by Minecart",
-        "boatOneCm": "Distance by Boat",
-        "pigOneCm": "Distance by Pig",
-        "jump": "Jumps",
-        "drop": "Items Dropped",
-        "damageDealt": "Damage Dealt",
-        "damageTaken": "Damage Taken",
-        "deaths": "Number of Deaths",
-        "mobKills": "Mob Kills",
-        "playerKills": "Player Kills",
-        "fishCaught": "Fish Caught",
-        "mineBlock": "{0} Mined",
-        "craftItem": "{0} Crafted",
-        "useItem": "{0} Used",
-        "breakItem": "{0} Depleted"
+        "blocksButton": "Blocuri",
+        "itemsButton": "Obiecte",
+        "used": "De ori folosit",
+        "mined": "De ori minat",
+        "depleted": "De ori epuizat",
+        "crafted": "De ori creat",
+        "startGame": "De ori jucat",
+        "createWorld": "Lumi jucate",
+        "loadWorld": "Salvări încărcate",
+        "joinMultiplayer": "Conexiuni multiplayer",
+        "leaveGame": "Jocuri părăsite",
+        "playOneMinute": "Minute jucate",
+        "walkOneCm": "Distanță mersă",
+        "fallOneCm": "Distanță căzută",
+        "swimOneCm": "Distanță înotată",
+        "flyOneCm": "Distanță zburată",
+        "climbOneCm": "Distanță urcată",
+        "diveOneCm": "Distanță scufundată",
+        "minecartOneCm": "Distanță cu vagonetul",
+        "boatOneCm": "Distanță cu barca",
+        "pigOneCm": "Distanță cu porcul",
+        "jump": "Sărituri",
+        "drop": "Obiecte aruncate",
+        "damageDealt": "Daune provocate",
+        "damageTaken": "Daune primite",
+        "deaths": "Numărul de decese",
+        "mobKills": "Monștri uciși",
+        "playerKills": "Jucători uciși",
+        "fishCaught": "Pești prinși",
+        "mineBlock": "{0} minate",
+        "craftItem": "{0} create",
+        "useItem": "{0} folosite",
+        "breakItem": "{0} epuizate"
     },
-    "achievements.title": "Achievements",
+    "achievements.title": "Realizări",
     "achievement": {
-        "get": "Achievement get!",
-        "taken": "Taken!",
-        "challenge": "CHALLENGE",
-        "unlocked": "UNLOCKED",
-        "locked": "LOCKED",
-        "requires": "Requires '{0}'",
+        "get": "Realizare obținută!",
+        "taken": "Obținută!",
+        "challenge": "PROVOCARE",
+        "unlocked": "DEBLOCAT",
+        "locked": "BLOCAT",
+        "requires": "Necesită '{0}'",
         "openInventory": {
-            "title": "Taking Inventory",
-            "desc": "Open your inventory."
+            "title": "Luând inventarul",
+            "desc": "Deschide-ți inventarul."
         },
         "mineWood": {
-            "title": "Getting Wood",
-            "desc": "Attack a tree until a block of wood pops out"
+            "title": "Obținând lemn",
+            "desc": "Lovește un copac până cade un bloc de lemn"
         },
         "buildWorkBench": {
-            "title": "Benchmarking",
-            "desc": "Craft a workbench with four blocks of planks"
+            "title": "Banc de lucru",
+            "desc": "Construiește o masă de artizanat cu patru blocuri de scânduri"
         },
         "buildPickaxe": {
-            "title": "Time to Mine!",
-            "desc": "Use planks and sticks to make a pickaxe"
+            "title": "Timpul să minezi!",
+            "desc": "Folosește scânduri și bețe pentru a face un târnăcop"
         },
         "buildFurnace": {
-            "title": "Hot Topic",
-            "desc": "Construct a furnace out of eight stone blocks"
+            "title": "Subiect fierbinte",
+            "desc": "Construiește un cuptor din opt blocuri de piatră"
         },
         "acquireIron": {
-            "title": "Acquire Hardware",
-            "desc": "Smelt an iron ingot"
+            "title": "Dobândește hardware",
+            "desc": "Topește un lingou de fier"
         },
         "buildHoe": {
-            "title": "Time to Farm!",
-            "desc": "Use planks and sticks to make a hoe"
+            "title": "Timpul să cultivi!",
+            "desc": "Folosește scânduri și bețe pentru a face o sapă"
         },
         "makeBread": {
-            "title": "Bake Bread",
-            "desc": "Turn wheat into bread"
+            "title": "Coace pâine",
+            "desc": "Transformă grâul în pâine"
         },
         "bakeCake": {
-            "title": "The Lie",
-            "desc": "Wheat, sugar, milk and eggs!"
+            "title": "Minciuna",
+            "desc": "Grâu, zahăr, lapte și ouă!"
         },
         "buildBetterPickaxe": {
-            "title": "Getting an Upgrade",
-            "desc": "Construct a better pickaxe"
+            "title": "Obținând o îmbunătățire",
+            "desc": "Construiește un târnăcop mai bun"
         },
         "cookFish": {
-            "title": "Delicious Fish",
-            "desc": "Catch and cook fish!"
+            "title": "Pește delicios",
+            "desc": "Prinde și gătește pește!"
         },
         "onARail": {
-            "title": "On A Rail",
-            "desc": "Travel by minecart at least 1 km from where you started "
+            "title": "Pe șină",
+            "desc": "Călătorește cu vagonetul cel puțin 1 km de unde ai pornit"
         },
         "buildSword": {
-            "title": "Time to Strike!",
-            "desc": "Use planks and sticks to make a sword"
+            "title": "Timpul să lovești!",
+            "desc": "Folosește scânduri și bețe pentru a face o sabie"
         },
         "killEnemy": {
-            "title": "Monster Hunter",
-            "desc": "Attack and destroy a monster"
+            "title": "Vânător de monștri",
+            "desc": "Atacă și distruge un monstru"
         },
         "killCow": {
-            "title": "Cow Tipper",
-            "desc": "Harvest some leather"
+            "title": "Vânător de vaci",
+            "desc": "Strânge ceva piele"
         },
         "flyPig": {
-            "title": "When Pigs Fly",
-            "desc": "Fly a pig off a cliff"
+            "title": "Când porcii zboară",
+            "desc": "Fă un porc să zboare de pe o stâncă"
         }
     },
     "credits": {
-        "version": "BetaSharp Version %1$s",
-        "description": "An enhanced of Minecraft Beta 1.7.3, written in C#.",
-        "github": "On GitHub",
-        "author": "Made by Fazin85",
-        "libs": "Libraries",
-        "slik": "Slik.NET - Graphics",
-        "imgui": "ImGui - Debug UI",
+        "version": "BetaSharp Versiune %1$s",
+        "description": "O versiune îmbunătățită a Minecraft Beta 1.7.3, scrisă în C#.",
+        "github": "Pe GitHub",
+        "author": "Creat de Fazin85",
+        "libs": "Biblioteci",
+        "slik": "Slik.NET - Grafică",
+        "imgui": "ImGui - Interfață de depanare",
         "sfml": "SFML.NET - Audio",
-        "sixlabors": "SixLabors - Fonts, image processing",
-        "translations": "Translations Credits"
+        "sixlabors": "SixLabors - Fonturi, procesare de imagini",
+        "translations": "Credite pentru traduceri"
     }
 }
