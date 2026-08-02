@@ -127,7 +127,6 @@ public abstract class Packet
             New(PacketId.PlayerMoveLookAndOnGround, true, true, false, () => new PlayerMoveLookAndOnGroundPacket()),
             New(PacketId.PlayerMoveFull, true, true, false, () => new PlayerMoveFullPacket()),
             New(PacketId.ChunkDataS2C, true, false, true, () => new ChunkDataS2CPacket()),
-            New(PacketId.BundleS2C, true, false, false, () => new BundleS2CPacket()),
             New(PacketId.MessageRegistrySyncS2C, true, false, false, () => new MessageRegistrySyncS2CPacket()),
             New(PacketId.OmniMessage, true, true, false, () => new OmniMessagePacket())
         ]);
