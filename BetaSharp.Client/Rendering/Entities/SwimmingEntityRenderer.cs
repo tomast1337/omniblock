@@ -21,10 +21,10 @@ public sealed class SwimmingEntityRenderer(ModelBase main, float shadowRadius) :
         JetSwimBehavior? swim = entity.Behaviors.Find<JetSwimBehavior>();
         if (swim is null) return;
 
-        GLManager.GL.Translate(0.0F, 0.5F, 0.0F);
-        GLManager.GL.Rotate(180.0F - bodyYaw, 0.0F, 1.0F, 0.0F);
-        GLManager.GL.Rotate(swim.TiltAngle(entity, tickDelta), 1.0F, 0.0F, 0.0F);
-        GLManager.GL.Rotate(swim.TentaclePhase(entity, tickDelta), 0.0F, 1.0F, 0.0F);
-        GLManager.GL.Translate(0.0F, -1.2F, 0.0F);
+        GLManager.ModelView.Translate(0.0F, 0.5F, 0.0F);
+        GLManager.ModelView.Rotate(180.0F - bodyYaw, 0.0F, 1.0F, 0.0F);
+        GLManager.ModelView.Rotate(swim.TiltAngle(entity, tickDelta), 1.0F, 0.0F, 0.0F);
+        GLManager.ModelView.Rotate(swim.TentaclePhase(entity, tickDelta), 0.0F, 1.0F, 0.0F);
+        GLManager.ModelView.Translate(0.0F, -1.2F, 0.0F);
     }
 }

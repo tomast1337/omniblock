@@ -14,10 +14,10 @@ public class ArrowEntityRenderer : EntityRenderer
         if (arrowEntity.PrevYaw != 0.0F || arrowEntity.PrevPitch != 0.0F)
         {
             loadTexture("/item/arrows.png");
-            GLManager.GL.PushMatrix();
-            GLManager.GL.Translate((float)x, (float)y, (float)z);
-            GLManager.GL.Rotate(arrowEntity.PrevYaw + (arrowEntity.Yaw - arrowEntity.PrevYaw) * tickDelta - 90.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Rotate(arrowEntity.PrevPitch + (arrowEntity.Pitch - arrowEntity.PrevPitch) * tickDelta, 0.0F, 0.0F, 1.0F);
+            GLManager.ModelView.Push();
+            GLManager.ModelView.Translate((float)x, (float)y, (float)z);
+            GLManager.ModelView.Rotate(arrowEntity.PrevYaw + (arrowEntity.Yaw - arrowEntity.PrevYaw) * tickDelta - 90.0F, 0.0F, 1.0F, 0.0F);
+            GLManager.ModelView.Rotate(arrowEntity.PrevPitch + (arrowEntity.Pitch - arrowEntity.PrevPitch) * tickDelta, 0.0F, 0.0F, 1.0F);
             Tessellator tessellator = Tessellator.instance;
             byte arrowType = 0;
             float shaftMinU = 0.0F;
@@ -34,12 +34,12 @@ public class ArrowEntityRenderer : EntityRenderer
             if (shakeTime > 0.0F)
             {
                 float shakeRotation = -MathHelper.Sin(shakeTime * 3.0F) * shakeTime;
-                GLManager.GL.Rotate(shakeRotation, 0.0F, 0.0F, 1.0F);
+                GLManager.ModelView.Rotate(shakeRotation, 0.0F, 0.0F, 1.0F);
             }
 
-            GLManager.GL.Rotate(45.0F, 1.0F, 0.0F, 0.0F);
-            GLManager.GL.Scale(modelScale, modelScale, modelScale);
-            GLManager.GL.Translate(-4.0F, 0.0F, 0.0F);
+            GLManager.ModelView.Rotate(45.0F, 1.0F, 0.0F, 0.0F);
+            GLManager.ModelView.Scale(modelScale, modelScale, modelScale);
+            GLManager.ModelView.Translate(-4.0F, 0.0F, 0.0F);
             GLManager.GL.Normal3(modelScale, 0.0F, 0.0F);
             tessellator.startDrawingQuads();
             tessellator.addVertexWithUV(-7.0D, -2.0D, -2.0D, (double)sideMinU, (double)sideMinV);
@@ -57,7 +57,7 @@ public class ArrowEntityRenderer : EntityRenderer
 
             for (int quadIndex = 0; quadIndex < 4; ++quadIndex)
             {
-                GLManager.GL.Rotate(90.0F, 1.0F, 0.0F, 0.0F);
+                GLManager.ModelView.Rotate(90.0F, 1.0F, 0.0F, 0.0F);
                 GLManager.GL.Normal3(0.0F, 0.0F, modelScale);
                 tessellator.startDrawingQuads();
                 tessellator.addVertexWithUV(-8.0D, -2.0D, 0.0D, (double)shaftMinU, (double)featherMinV);
@@ -68,7 +68,7 @@ public class ArrowEntityRenderer : EntityRenderer
             }
 
             GLManager.GL.Disable(GLEnum.RescaleNormal);
-            GLManager.GL.PopMatrix();
+            GLManager.ModelView.Pop();
         }
     }
 

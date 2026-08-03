@@ -82,11 +82,11 @@ public class MapItemRenderer
         textureManager.BindTexture(textureManager.GetTextureId("/misc/mapicons.png"));
         foreach (var icon in mapState.Icons)
         {
-            GLManager.GL.PushMatrix();
-            GLManager.GL.Translate((sbyte)icon.X / 2.0F + 64.0F, (sbyte)icon.Z / 2.0F + 64.0F, -0.02F);
-            GLManager.GL.Rotate((sbyte)icon.Rotation * 360 / 16.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.GL.Scale(4.0F, 4.0F, 3.0F);
-            GLManager.GL.Translate(-(2.0F / 16.0F), 2.0F / 16.0F, 0.0F);
+            GLManager.ModelView.Push();
+            GLManager.ModelView.Translate((sbyte)icon.X / 2.0F + 64.0F, (sbyte)icon.Z / 2.0F + 64.0F, -0.02F);
+            GLManager.ModelView.Rotate((sbyte)icon.Rotation * 360 / 16.0F, 0.0F, 0.0F, 1.0F);
+            GLManager.ModelView.Scale(4.0F, 4.0F, 3.0F);
+            GLManager.ModelView.Translate(-(2.0F / 16.0F), 2.0F / 16.0F, 0.0F);
             float uMin = (icon.Type % 4 + 0) / 4.0F;
             float vMin = (icon.Type / 4 + 0) / 4.0F;
             float uMax = (icon.Type % 4 + 1) / 4.0F;
@@ -97,13 +97,13 @@ public class MapItemRenderer
             tess.addVertexWithUV(1, -1, 0, uMax, vMax);
             tess.addVertexWithUV(-1, -1, 0, uMin, vMax);
             tess.draw();
-            GLManager.GL.PopMatrix();
+            GLManager.ModelView.Pop();
         }
 
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Translate(0.0F, 0.0F, -0.04F);
-        GLManager.GL.Scale(1.0F, 1.0F, 1.0F);
+        GLManager.ModelView.Push();
+        GLManager.ModelView.Translate(0.0F, 0.0F, -0.04F);
+        GLManager.ModelView.Scale(1.0F, 1.0F, 1.0F);
         _textRenderer.DrawString(mapState.Id, 0, 0, Color.White);
-        GLManager.GL.PopMatrix();
+        GLManager.ModelView.Pop();
     }
 }

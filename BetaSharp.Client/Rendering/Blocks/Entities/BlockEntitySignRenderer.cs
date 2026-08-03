@@ -15,14 +15,14 @@ public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
     public void renderTileEntitySignAt(BlockEntitySign sign, double x, double y, double z, float tickDelta)
     {
         Block signBlock = sign.GetBlock();
-        GLManager.GL.PushMatrix();
+        GLManager.ModelView.Push();
         float modelScale = 2.0F / 3.0F;
         float rotationYaw;
         if (signBlock == BlockRegistry.Get("sign"))
         {
-            GLManager.GL.Translate((float)x + 0.5F, (float)y + 12.0F / 16.0F * modelScale, (float)z + 0.5F);
+            GLManager.ModelView.Translate((float)x + 0.5F, (float)y + 12.0F / 16.0F * modelScale, (float)z + 0.5F);
             float rotationDegrees = sign.PushedBlockData * 360 / 16.0F;
-            GLManager.GL.Rotate(-rotationDegrees, 0.0F, 1.0F, 0.0F);
+            GLManager.ModelView.Rotate(-rotationDegrees, 0.0F, 1.0F, 0.0F);
             _modelSign.SignStick.Visible = true;
         }
         else
@@ -44,15 +44,15 @@ public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
                 rotationYaw = -90.0F;
             }
 
-            GLManager.GL.Translate((float)x + 0.5F, (float)y + 12.0F / 16.0F * modelScale, (float)z + 0.5F);
-            GLManager.GL.Rotate(-rotationYaw, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Translate(0.0F, -(5.0F / 16.0F), -(7.0F / 16.0F));
+            GLManager.ModelView.Translate((float)x + 0.5F, (float)y + 12.0F / 16.0F * modelScale, (float)z + 0.5F);
+            GLManager.ModelView.Rotate(-rotationYaw, 0.0F, 1.0F, 0.0F);
+            GLManager.ModelView.Translate(0.0F, -(5.0F / 16.0F), -(7.0F / 16.0F));
             _modelSign.SignStick.Visible = false;
         }
 
         bindTextureByName("/item/sign.png");
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Scale(modelScale, -modelScale, -modelScale);
+        GLManager.ModelView.Push();
+        GLManager.ModelView.Scale(modelScale, -modelScale, -modelScale);
 
         _modelSign.Render();
 
@@ -62,11 +62,11 @@ public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
         // hair in front of the board, so the board has to reach the depth buffer first.
         EntityInstanceBatchRenderer.Instance.Flush();
 
-        GLManager.GL.PopMatrix();
+        GLManager.ModelView.Pop();
         TextRenderer fontRenderer = getFontRenderer();
         rotationYaw = (float)(1.0D / 60.0D) * modelScale;
-        GLManager.GL.Translate(0.0F, 0.5F * modelScale, 0.07F * modelScale);
-        GLManager.GL.Scale(rotationYaw, -rotationYaw, rotationYaw);
+        GLManager.ModelView.Translate(0.0F, 0.5F * modelScale, 0.07F * modelScale);
+        GLManager.ModelView.Scale(rotationYaw, -rotationYaw, rotationYaw);
         GLManager.GL.Normal3(0.0F, 0.0F, -1.0F * rotationYaw);
 
         // The text sits a hair in front of the board and still writes to the same depth values
@@ -90,7 +90,7 @@ public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
 
         GLManager.State.Apply(RenderState.Entity);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        GLManager.GL.PopMatrix();
+        GLManager.ModelView.Pop();
     }
 
     public override void renderTileEntityAt(BlockEntity blockEntity, double x, double y, double z, float tickDelta)

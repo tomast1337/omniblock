@@ -64,7 +64,7 @@ public class UIRenderer
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.State.Apply(RenderState.Interface);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        GLManager.GL.PushMatrix();
+        GLManager.ModelView.Push();
 
         _translateX = 0;
         _translateY = 0;
@@ -82,7 +82,7 @@ public class UIRenderer
     public void End()
     {
         _batch.End();
-        GLManager.GL.PopMatrix();
+        GLManager.ModelView.Pop();
         GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
@@ -416,8 +416,8 @@ public class UIRenderer
         if (isBlock)
         {
             _batch.Flush();
-            GLManager.GL.PushMatrix();
-            GLManager.GL.Translate(0, 0, 32.0f);
+            GLManager.ModelView.Push();
+            GLManager.ModelView.Translate(0, 0, 32.0f);
 
             // Depth writing as well as testing: the block is solid geometry that has to occlude
             // its own far faces. RenderState.Interface does neither, which is right for flat panels
@@ -431,7 +431,7 @@ public class UIRenderer
 
             GLManager.State.Apply(RenderState.Interface);
             GLManager.GL.Disable(GLEnum.RescaleNormal);
-            GLManager.GL.PopMatrix();
+            GLManager.ModelView.Pop();
         }
         else
         {
@@ -492,11 +492,11 @@ public class UIRenderer
         GLManager.State.Apply(s_preview);
         GLManager.GL.Enable(GLEnum.RescaleNormal);
         GLManager.GL.Enable(GLEnum.ColorMaterial);
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Translate(x + _translateX, y + _translateY, 50.0F);
+        GLManager.ModelView.Push();
+        GLManager.ModelView.Translate(x + _translateX, y + _translateY, 50.0F);
 
-        GLManager.GL.Scale(-scale, scale, scale);
-        GLManager.GL.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
+        GLManager.ModelView.Scale(-scale, scale, scale);
+        GLManager.ModelView.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
 
         float bodyYaw = entity is EntityLiving el ? el.BodyYaw : entity.Yaw;
         float headYaw = entity.Yaw;
@@ -504,10 +504,10 @@ public class UIRenderer
         float lookX = x + _translateX - mouseX;
         float lookY = y + _translateY - 50 - mouseY;
 
-        GLManager.GL.Rotate(135.0F, 0.0F, 1.0F, 0.0F);
+        GLManager.ModelView.Rotate(135.0F, 0.0F, 1.0F, 0.0F);
         Lighting.turnOn();
-        GLManager.GL.Rotate(-135.0F, 0.0F, 1.0F, 0.0F);
-        GLManager.GL.Rotate(-(float)Math.Atan(lookY / 40.0F) * 20.0F, 1.0F, 0.0F, 0.0F);
+        GLManager.ModelView.Rotate(-135.0F, 0.0F, 1.0F, 0.0F);
+        GLManager.ModelView.Rotate(-(float)Math.Atan(lookY / 40.0F) * 20.0F, 1.0F, 0.0F, 0.0F);
 
         if (entity is EntityLiving el2)
         {
@@ -518,7 +518,7 @@ public class UIRenderer
         entity.Pitch = -(float)Math.Atan(lookY / 40.0F) * 20.0F;
         entity.MinBrightness = 1.0F;
 
-        GLManager.GL.Translate(0.0F, entity.StandingEyeHeight, 0.0F);
+        GLManager.ModelView.Translate(0.0F, entity.StandingEyeHeight, 0.0F);
         EntityRenderDispatcher.Instance.PlayerViewY = 180.0F;
         EntityRenderDispatcher.Instance.RenderEntityWithPosYaw(entity, 0.0D, 0.0D, 0.0D, 0.0F, 1.0F);
 
@@ -531,7 +531,7 @@ public class UIRenderer
         entity.Yaw = headYaw;
         entity.Pitch = headPitch;
 
-        GLManager.GL.PopMatrix();
+        GLManager.ModelView.Pop();
         Lighting.turnOff();
         GLManager.State.Apply(RenderState.Interface);
         GLManager.GL.Disable(GLEnum.RescaleNormal);
@@ -619,18 +619,18 @@ public class UIRenderer
 
         GLManager.State.Apply(s_preview);
         GLManager.GL.Enable(GLEnum.RescaleNormal);
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Translate(x + _translateX, y + _translateY, 50.0F);
+        GLManager.ModelView.Push();
+        GLManager.ModelView.Translate(x + _translateX, y + _translateY, 50.0F);
 
-        GLManager.GL.Scale(-scale, -scale, -scale);
-        GLManager.GL.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
+        GLManager.ModelView.Scale(-scale, -scale, -scale);
+        GLManager.ModelView.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
 
         Block signBlock = sign.GetBlock();
         if (signBlock == BlockRegistry.Get("sign"))
         {
             float rotation = sign.PushedBlockData * 360 / 16.0F;
-            GLManager.GL.Rotate(rotation, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Translate(0.0F, -1.0625F, 0.0F);
+            GLManager.ModelView.Rotate(rotation, 0.0F, 1.0F, 0.0F);
+            GLManager.ModelView.Translate(0.0F, -1.0625F, 0.0F);
         }
         else
         {
@@ -651,12 +651,12 @@ public class UIRenderer
                 angle = -90.0F;
             }
 
-            GLManager.GL.Rotate(angle, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Translate(0.0F, -1.0625F, 0.0F);
+            GLManager.ModelView.Rotate(angle, 0.0F, 1.0F, 0.0F);
+            GLManager.ModelView.Translate(0.0F, -1.0625F, 0.0F);
         }
 
         BlockEntityRenderer.Instance.RenderTileEntityAt(sign, -0.5D, -0.75D, -0.5D, 0.0F);
-        GLManager.GL.PopMatrix();
+        GLManager.ModelView.Pop();
         GLManager.State.Apply(RenderState.Interface);
         GLManager.GL.Disable(GLEnum.RescaleNormal);
     }

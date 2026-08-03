@@ -26,8 +26,8 @@ public class PrimedBlockEntityRenderer : EntityRenderer
     {
         int fuse = target.Behaviors.Find<PrimedExplosiveBehavior>()?.FuseTicks(target) ?? 0;
 
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Translate((float)x, (float)y, (float)z);
+        GLManager.ModelView.Push();
+        GLManager.ModelView.Translate((float)x, (float)y, (float)z);
         float flashProgress;
         if (fuse - tickDelta + 1.0F < 10.0F)
         {
@@ -45,7 +45,7 @@ public class PrimedBlockEntityRenderer : EntityRenderer
             flashProgress *= flashProgress;
             flashProgress *= flashProgress;
             float scale = 1.0F + flashProgress * 0.3F;
-            GLManager.GL.Scale(scale, scale, scale);
+            GLManager.ModelView.Scale(scale, scale, scale);
         }
 
         flashProgress = (1.0F - (fuse - tickDelta + 1.0F) / 100.0F) * 0.8F;
@@ -66,6 +66,6 @@ public class PrimedBlockEntityRenderer : EntityRenderer
             GLManager.GL.Enable(GLEnum.Lighting);
             GLManager.GL.Enable(GLEnum.Texture2D);
         }
-        GLManager.GL.PopMatrix();
+        GLManager.ModelView.Pop();
     }
 }

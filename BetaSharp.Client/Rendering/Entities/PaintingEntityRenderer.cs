@@ -15,21 +15,21 @@ public class PaintingEntityRenderer : EntityRenderer
 
     private void RenderPainting(Entity paintingEntity, double x, double y, double z, float yaw)
     {
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Translate((float)x, (float)y, (float)z);
-        GLManager.GL.Rotate(yaw, 0.0F, 1.0F, 0.0F);
+        GLManager.ModelView.Push();
+        GLManager.ModelView.Translate((float)x, (float)y, (float)z);
+        GLManager.ModelView.Rotate(yaw, 0.0F, 1.0F, 0.0F);
         GLManager.GL.Enable(GLEnum.RescaleNormal);
 
         loadTexture("/art/kz.png");
 
         Painting art = paintingEntity.Behaviors.Find<HangingArtBehavior>()!.Art(paintingEntity)!;
         float pixelScale = 1.0F / 16.0F;
-        GLManager.GL.Scale(pixelScale, pixelScale, pixelScale);
+        GLManager.ModelView.Scale(pixelScale, pixelScale, pixelScale);
 
         RenderPaintingQuads(paintingEntity, art.SizeX, art.SizeY, art.OffsetX, art.OffsetY);
 
         GLManager.GL.Disable(GLEnum.RescaleNormal);
-        GLManager.GL.PopMatrix();
+        GLManager.ModelView.Pop();
     }
 
     private void RenderPaintingQuads(Entity paintingEntity, int width, int height, int textureX, int textureY)

@@ -29,7 +29,7 @@ public class LivingEntityRenderer : EntityRenderer
 
     public virtual void DoRenderLiving(EntityLiving entity, double x, double y, double z, float yaw, float tickDelta)
     {
-        GLManager.GL.PushMatrix();
+        GLManager.ModelView.Push();
 
         // Establishes the state the whole of this method and its passes assume, rather than
         // switching culling off and leaving everything else to whatever drew last.
@@ -56,9 +56,9 @@ public class LivingEntityRenderer : EntityRenderer
             RotateCorpse(entity, animationProgress, bodyYaw, tickDelta);
             float modelScale = 1.0F / 16.0F;
             GLManager.GL.Enable(GLEnum.RescaleNormal);
-            GLManager.GL.Scale(-1.0F, -1.0F, 1.0F);
+            GLManager.ModelView.Scale(-1.0F, -1.0F, 1.0F);
             PreRenderCallback(entity, tickDelta);
-            GLManager.GL.Translate(0.0F, -24.0F * modelScale - (1 / 128f), 0.0F);
+            GLManager.ModelView.Translate(0.0F, -24.0F * modelScale - (1 / 128f), 0.0F);
             float walkSpeed = entity.LastWalkAnimationSpeed + (entity.WalkAnimationSpeed - entity.LastWalkAnimationSpeed) * tickDelta;
             float walkPhase = entity.AnimationPhase - entity.WalkAnimationSpeed * (1.0F - tickDelta);
             if (walkSpeed > 1.0F)
@@ -146,18 +146,18 @@ public class LivingEntityRenderer : EntityRenderer
             _logger.LogError(e, e.Message);
         }
 
-        GLManager.GL.PopMatrix();
+        GLManager.ModelView.Pop();
         PassSpecialRender(entity, x, y, z);
     }
 
     protected virtual void Func_22012_b(EntityLiving entity, double x, double y, double z)
     {
-        GLManager.GL.Translate((float)x, (float)y, (float)z);
+        GLManager.ModelView.Translate((float)x, (float)y, (float)z);
     }
 
     protected virtual void RotateCorpse(EntityLiving entity, float animationProgress, float bodyYaw, float tickDelta)
     {
-        GLManager.GL.Rotate(180.0F - bodyYaw, 0.0F, 1.0F, 0.0F);
+        GLManager.ModelView.Rotate(180.0F - bodyYaw, 0.0F, 1.0F, 0.0F);
         if (entity.DeathTime > 0)
         {
             float deathRotation = (entity.DeathTime + tickDelta - 1.0F) / 20.0F * 1.6F;
@@ -167,7 +167,7 @@ public class LivingEntityRenderer : EntityRenderer
                 deathRotation = 1.0F;
             }
 
-            GLManager.GL.Rotate(deathRotation * getDeathMaxRotation(entity), 0.0F, 0.0F, 1.0F);
+            GLManager.ModelView.Rotate(deathRotation * getDeathMaxRotation(entity), 0.0F, 0.0F, 1.0F);
         }
 
     }
@@ -227,12 +227,12 @@ public class LivingEntityRenderer : EntityRenderer
             TextRenderer fontRenderer = TextRenderer;
             float labelScale = 1.6F;
             float renderScale = (float)(1.0D / 60.0D) * labelScale;
-            GLManager.GL.PushMatrix();
-            GLManager.GL.Translate((float)x + 0.0F, (float)y + 2.3F, (float)z);
+            GLManager.ModelView.Push();
+            GLManager.ModelView.Translate((float)x + 0.0F, (float)y + 2.3F, (float)z);
             GLManager.GL.Normal3(0.0F, 1.0F, 0.0F);
-            GLManager.GL.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Rotate(Dispatcher.PlayerViewX, 1.0F, 0.0F, 0.0F);
-            GLManager.GL.Scale(-renderScale, -renderScale, renderScale);
+            GLManager.ModelView.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
+            GLManager.ModelView.Rotate(Dispatcher.PlayerViewX, 1.0F, 0.0F, 0.0F);
+            GLManager.ModelView.Scale(-renderScale, -renderScale, renderScale);
             // Drawn twice on purpose. This first pass ignores depth entirely, so the plate and the
             // text behind it show through whatever the label is standing in front of.
             GLManager.GL.Disable(GLEnum.Lighting);
@@ -267,7 +267,7 @@ public class LivingEntityRenderer : EntityRenderer
             GLManager.GL.Enable(GLEnum.Lighting);
             GLManager.State.Apply(RenderState.Entity);
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-            GLManager.GL.PopMatrix();
+            GLManager.ModelView.Pop();
         }
     }
 
