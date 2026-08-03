@@ -255,7 +255,7 @@ public class LivingEntityRenderer : EntityRenderer
             tessellator.addVertex(-labelHalfWidth - 1, 8 + yOffset, 0.0D);
             tessellator.addVertex(labelHalfWidth + 1, 8 + yOffset, 0.0D);
             tessellator.addVertex(labelHalfWidth + 1, -1 + yOffset, 0.0D);
-            tessellator.draw();
+            tessellator.draw(ProgramSlot.Basic);
             GLManager.TextureEnabled = true;
             fontRenderer.DrawString(label, -fontRenderer.GetStringWidth(label) / 2, yOffset, Color.WhiteAlpha20);
             // And again with depth restored, so the part of the label that is genuinely in front

@@ -6,8 +6,8 @@ namespace BetaSharp.Client.Rendering.Core;
 /// <remarks>
 ///     Ten uniforms against the fixed-function shader's twenty. What is gone is everything an
 ///     untextured draw was never going to read — the texture and its matrix, the two lights, the
-///     normal matrix — and the value of that is not the uniforms saved but that a caller can no
-///     longer leave lighting on and have it reach geometry that has no normals.
+///     normal matrix — and the value is not the uniforms saved but that a caller can no longer leave
+///     lighting on and have it reach geometry that has no normals.
 /// </remarks>
 internal sealed class BasicSlotProgram : ISlotProgram, IDisposable
 {
@@ -21,20 +21,11 @@ internal sealed class BasicSlotProgram : ISlotProgram, IDisposable
 
     public void Activate()
     {
+        SlotUniforms.ReportIfLit(nameof(ProgramSlot.Basic));
+
         _shader.Bind();
-
-        FogState fog = GLManager.Fog;
-
-        _shader.SetUniformMatrix4("modelViewMatrix", GLManager.ModelView.Top);
-        _shader.SetUniformMatrix4("projectionMatrix", GLManager.Projection.Top);
-        _shader.SetUniform1("alphaThreshold", GLManager.EffectiveAlphaThreshold);
-        _shader.SetUniform1("shadeModel", (int)GLManager.ShadeModel);
-        _shader.SetUniform1("fogEnabled", GLManager.FogEnabled ? 1 : 0);
-        _shader.SetUniform1("fogMode", (int)fog.Curve);
-        _shader.SetUniform1("fogStart", fog.Start);
-        _shader.SetUniform1("fogEnd", fog.End);
-        _shader.SetUniform1("fogDensity", fog.Density);
-        _shader.SetUniform4("fogColor", fog.Color);
+        SlotUniforms.UploadTransforms(_shader);
+        SlotUniforms.UploadFogAndAlpha(_shader);
     }
 
     /// <summary>

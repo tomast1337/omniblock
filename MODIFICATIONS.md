@@ -113,3 +113,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-03 — refactor(rendering): stop reading matrices back out of GL, and rename EmulatedGL (Nicolas Vyčas Nery; `58a30b15aec08ace5831225f8a6edd91e6db0721`)
 - 2026-08-03 — feat(rendering): name what a draw is, so a pack has something to override (Nicolas Vyčas Nery; `3cb2f3ec570c6789f948a41a9af86f7d5d618a5d`)
 - 2026-08-03 — feat(rendering): give untextured geometry a program of its own (Nicolas Vyčas Nery; `33699a18e41a5e795846940f56c86420932a2f6d`)
+- 2026-08-03 — feat(rendering): give textured, unlit geometry a program of its own (Nicolas Vyčas Nery; `e00ad0c74eee69bb9037220ad0882997967fa871`)

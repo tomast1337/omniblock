@@ -52,6 +52,7 @@ public static class SlotPrograms
     public static void Initialize(GameOptions options)
     {
         Register(ProgramSlot.Basic, new BasicSlotProgram(options));
+        Register(ProgramSlot.Textured, new TexturedSlotProgram(options));
     }
 
     public static void Dispose()

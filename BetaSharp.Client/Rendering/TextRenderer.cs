@@ -465,7 +465,7 @@ public class TextRenderer : IDisposable
             }
         }
 
-        tessellator.draw();
+        tessellator.draw(ProgramSlot.Textured);
     }
 
     private static int HexToDec(char c)
