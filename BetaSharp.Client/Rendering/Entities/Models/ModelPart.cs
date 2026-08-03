@@ -223,13 +223,12 @@ public class ModelPart
 
     private unsafe void CaptureCurrentMatrix(float scale)
     {
-        Span<float> matrixData = stackalloc float[16];
-        GLManager.GL.GetFloat(GLEnum.ModelviewMatrix, matrixData);
+        Matrix4X4<float> mv = GLManager.ModelView.Top;
         System.Numerics.Matrix4x4 modelView = new(
-            matrixData[0], matrixData[1], matrixData[2], matrixData[3],
-            matrixData[4], matrixData[5], matrixData[6], matrixData[7],
-            matrixData[8], matrixData[9], matrixData[10], matrixData[11],
-            matrixData[12], matrixData[13], matrixData[14], matrixData[15]);
+            mv.M11, mv.M12, mv.M13, mv.M14,
+            mv.M21, mv.M22, mv.M23, mv.M24,
+            mv.M31, mv.M32, mv.M33, mv.M34,
+            mv.M41, mv.M42, mv.M43, mv.M44);
 
         // Fold scale in here so the shader never needs its own scale uniform.
         CapturedPose = System.Numerics.Matrix4x4.CreateScale(scale) * modelView;
@@ -331,17 +330,15 @@ public class ModelPart
     {
         if (_bakedVertices == null || _bakedVertices.Length == 0) return;
 
-        Span<float> matrixData = stackalloc float[16];
-        GLManager.GL.GetFloat(GLEnum.ModelviewMatrix, matrixData);
+        Matrix4X4<float> mv = GLManager.ModelView.Top;
         System.Numerics.Matrix4x4 modelView = new(
-            matrixData[0], matrixData[1], matrixData[2], matrixData[3],
-            matrixData[4], matrixData[5], matrixData[6], matrixData[7],
-            matrixData[8], matrixData[9], matrixData[10], matrixData[11],
-            matrixData[12], matrixData[13], matrixData[14], matrixData[15]);
+            mv.M11, mv.M12, mv.M13, mv.M14,
+            mv.M21, mv.M22, mv.M23, mv.M24,
+            mv.M31, mv.M32, mv.M33, mv.M34,
+            mv.M41, mv.M42, mv.M43, mv.M44);
 
         System.Numerics.Matrix4x4 normalMatrix = ComputeNormalMatrix(modelView);
 
-        EmulatedGL emuGl = (EmulatedGL)GLManager.GL;
         Vector4D<float> tintSrc = GLManager.Color;
         System.Numerics.Vector4 tint = new(tintSrc.X, tintSrc.Y, tintSrc.Z, tintSrc.W);
         LightingState lightingSrc = GLManager.Lighting;

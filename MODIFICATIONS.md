@@ -110,3 +110,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-03 — refactor(rendering): hold the current colour and normal as values (Nicolas Vyčas Nery; `289f1de29df295e31977ea7be71c3adf1396989b`)
 - 2026-08-03 — refactor(rendering): hold the lights and the shade model as values (Nicolas Vyčas Nery; `43617021cc8409a07447550111642334340a6915`)
 - 2026-08-03 — refactor(rendering): name the last four capabilities as the uniforms they are (Nicolas Vyčas Nery; `1c215657fca2aab7c5e044a792f14f4831abaf57`)
+- 2026-08-03 — refactor(rendering): stop reading matrices back out of GL, and rename EmulatedGL (Nicolas Vyčas Nery; `58a30b15aec08ace5831225f8a6edd91e6db0721`)

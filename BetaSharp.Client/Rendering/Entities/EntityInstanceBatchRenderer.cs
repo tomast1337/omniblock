@@ -266,11 +266,10 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         _instanceData[tintOffset + 2] = tint.Z;
         _instanceData[tintOffset + 3] = tint.W;
 
-        EmulatedGL gl = (EmulatedGL)GLManager.GL;
         DrawState draw = new(
             GLManager.State.Current,
             GLManager.TextureEnabled,
-            gl.GetCurrentAlphaThreshold(),
+            GLManager.EffectiveAlphaThreshold,
             GLManager.LightingEnabled,
             GLManager.Lighting,
             GLManager.TextureMatrix.Top);
@@ -398,15 +397,7 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
     /// </remarks>
     private void UploadPassState()
     {
-        EmulatedGL gl = (EmulatedGL)GLManager.GL;
-
-        Span<float> projectionData = stackalloc float[16];
-        gl.GetFloat(Core.OpenGL.GLEnum.ProjectionMatrix, projectionData);
-        Matrix4X4<float> projection = new(
-            projectionData[0], projectionData[1], projectionData[2], projectionData[3],
-            projectionData[4], projectionData[5], projectionData[6], projectionData[7],
-            projectionData[8], projectionData[9], projectionData[10], projectionData[11],
-            projectionData[12], projectionData[13], projectionData[14], projectionData[15]);
+        Matrix4X4<float> projection = GLManager.Projection.Top;
 
         FogState fog = GLManager.Fog;
 

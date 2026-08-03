@@ -189,15 +189,7 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
     /// <summary>Mirrors the fixed-function state the queued vertices were posed under.</summary>
     private void UploadState()
     {
-        EmulatedGL gl = (EmulatedGL)GLManager.GL;
-
-        Span<float> projectionData = stackalloc float[16];
-        gl.GetFloat(Core.OpenGL.GLEnum.ProjectionMatrix, projectionData);
-        Matrix4X4<float> projection = new(
-            projectionData[0], projectionData[1], projectionData[2], projectionData[3],
-            projectionData[4], projectionData[5], projectionData[6], projectionData[7],
-            projectionData[8], projectionData[9], projectionData[10], projectionData[11],
-            projectionData[12], projectionData[13], projectionData[14], projectionData[15]);
+        Matrix4X4<float> projection = GLManager.Projection.Top;
 
         FogState fog = GLManager.Fog;
 
@@ -206,7 +198,7 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
         _shader.SetUniform1("useTexture", _useTexture ? 1 : 0);
         _shader.SetUniform1("entityId",
             _useTexture ? _glTexToLogicalId.GetValueOrDefault(_currentTextureId) : 0);
-        _shader.SetUniform1("alphaThreshold", gl.GetCurrentAlphaThreshold());
+        _shader.SetUniform1("alphaThreshold", GLManager.EffectiveAlphaThreshold);
         _shader.SetUniform1("fogEnabled", GLManager.FogEnabled ? 1 : 0);
         _shader.SetUniform1("fogMode", (int)fog.Curve);
         _shader.SetUniform1("fogStart", fog.Start);

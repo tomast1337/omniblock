@@ -14,11 +14,11 @@ namespace BetaSharp.Client.Rendering.Core;
 ///         compiler now refuses a fixed-function call rather than merely marking it.
 ///     </para>
 ///     <para>
-///         <see cref="Enable" /> and <see cref="Disable" /> still take capabilities a core context
-///         does not have — <c>Lighting</c>, <c>Fog</c>, <c>AlphaTest</c>, <c>Texture2D</c>. They are
-///         the same calls modern code uses and only some of the values passed to them are legacy,
-///         which is not something an interface can express. <c>EmulatedGL</c> routes those to
-///         shader uniforms, and they are the last of it.
+///         <see cref="Enable" /> and <see cref="Disable" /> took capabilities a core context does
+///         not have for a long time — <c>Lighting</c>, <c>Fog</c>, <c>AlphaTest</c>,
+///         <c>Texture2D</c> — which no interface split could express, since the calls themselves
+///         are ordinary. Those are named state on <c>GLManager</c> now, and what is left here is
+///         only what a core context really has.
 ///     </para>
 /// </remarks>
 public unsafe interface IGL
@@ -48,16 +48,9 @@ public unsafe interface IGL
     void DepthFunc(GLEnum func);
     void DepthMask(bool flag);
 
-    /// <summary>
-    ///     Some capabilities passed here are fixed-function state (fog, alpha test, lighting). The
-    ///     call itself is not, so it stays on this side of the split.
-    /// </summary>
     void Disable(EnableCap cap);
 
-    /// <inheritdoc cref="Disable(EnableCap)" />
     void Disable(GLEnum cap);
-
-    /// <inheritdoc cref="Disable(EnableCap)" />
     void Enable(GLEnum cap);
 
     void DrawArrays(GLEnum mode, int first, uint count);
