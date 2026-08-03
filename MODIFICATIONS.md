@@ -80,3 +80,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-03 — fix(rendering): enable blending for the soft-cloud composite instead of inheriting it (Nicolas Vyčas Nery; `c627abe15b814d749ce19dbe04d8bfa83bd2ef61`)
 - 2026-08-03 — refactor(rendering): state the pipeline for the virtual cursor (Nicolas Vyčas Nery; `6a1309fb2aae0ad42481b341c287ea76e0292edb`)
 - 2026-08-03 — refactor(rendering): state the pipeline for rain and snow (Nicolas Vyčas Nery; `5850ace8a9affc71dceda9c511c70ca61b6c3acf`)
+- 2026-08-03 — refactor(rendering): state the pipeline for the chunk border overlay (Nicolas Vyčas Nery; `a5b52adbcbcaf621d7673f890e5ebd0e7a5d54fe`)
