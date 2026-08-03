@@ -61,16 +61,12 @@ public unsafe class EmulatedGL : LegacyGL
     private DirtyState _dirtyState = new();
     private Vector4D<float> _currentColorTint = Vector4D<float>.One;
 
-    private readonly uint _immediateVao;
 
 
 
 
     public EmulatedGL(GL gl) : base(gl)
     {
-        _immediateVao = gl.GenVertexArray();
-        gl.BindVertexArray(_immediateVao);
-
         _shader = new FixedFunctionShader(gl);
         _shader.Use();
         _shader.SetTexture0(0);
@@ -212,56 +208,6 @@ public unsafe class EmulatedGL : LegacyGL
     {
         _currentColorTint = new Vector4D<float>(red, green, blue, alpha);
         SilkGL.VertexAttrib4(1, red, green, blue, alpha);
-    }
-
-    public override void VertexPointer(int size, GLEnum type, uint stride, void* pointer)
-    {
-        SilkGL.BindVertexArray(_immediateVao);
-        SilkGL.VertexAttribPointer(0, size, type.ToModern(), false, stride, pointer);
-    }
-
-    public override void ColorPointer(int size, ColorPointerType type, uint stride, void* pointer)
-    {
-        SilkGL.BindVertexArray(_immediateVao);
-        SilkGL.VertexAttribPointer(1, size, (Silk.NET.OpenGL.GLEnum)type, true, stride, pointer);
-    }
-
-    public override void TexCoordPointer(int size, GLEnum type, uint stride, void* pointer)
-    {
-        SilkGL.BindVertexArray(_immediateVao);
-        SilkGL.VertexAttribPointer(2, size, type.ToModern(), false, stride, pointer);
-    }
-
-    public override void NormalPointer(NormalPointerType type, uint stride, void* pointer)
-    {
-        SilkGL.BindVertexArray(_immediateVao);
-        SilkGL.VertexAttribPointer(3, 3, (Silk.NET.OpenGL.GLEnum)type, true, stride, pointer);
-    }
-
-    public override void EnableClientState(GLEnum array)
-    {
-        SilkGL.BindVertexArray(_immediateVao);
-        switch (array)
-        {
-            case GLEnum.VertexArray: SilkGL.EnableVertexAttribArray(0); break;
-            case GLEnum.ColorArray: SilkGL.EnableVertexAttribArray(1); break;
-            case GLEnum.TextureCoordArray: SilkGL.EnableVertexAttribArray(2); break;
-            case GLEnum.NormalArray: SilkGL.EnableVertexAttribArray(3); break;
-            default: break;
-        }
-    }
-
-    public override void DisableClientState(GLEnum array)
-    {
-        SilkGL.BindVertexArray(_immediateVao);
-        switch (array)
-        {
-            case GLEnum.VertexArray: SilkGL.DisableVertexAttribArray(0); break;
-            case GLEnum.ColorArray: SilkGL.DisableVertexAttribArray(1); break;
-            case GLEnum.TextureCoordArray: SilkGL.DisableVertexAttribArray(2); break;
-            case GLEnum.NormalArray: SilkGL.DisableVertexAttribArray(3); break;
-            default: break;
-        }
     }
 
     public override void Enable(GLEnum cap)

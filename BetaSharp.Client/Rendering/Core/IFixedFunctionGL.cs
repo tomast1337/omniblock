@@ -36,14 +36,6 @@ public unsafe interface IFixedFunctionGL
     void Color4(float red, float green, float blue, float alpha);
     void Normal3(float nx, float ny, float nz);
 
-    // Client-side array pointers, superseded by vertex attributes.
-    void ColorPointer(int size, ColorPointerType type, uint stride, void* pointer);
-    void NormalPointer(NormalPointerType type, uint stride, void* pointer);
-    void TexCoordPointer(int size, GLEnum type, uint stride, void* pointer);
-    void VertexPointer(int size, GLEnum type, uint stride, void* pointer);
-    void DisableClientState(GLEnum array);
-    void EnableClientState(GLEnum array);
-
     // Fixed pipeline state, all of it expressible as shader uniforms.
     void AlphaFunc(GLEnum func, float refValue);
     void ColorMaterial(GLEnum face, GLEnum mode);

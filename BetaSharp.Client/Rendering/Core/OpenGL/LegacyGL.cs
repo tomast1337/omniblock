@@ -105,8 +105,6 @@ public abstract unsafe class LegacyGL : IGL
 
     public abstract void ColorMaterial(GLEnum face, GLEnum mode);
 
-    public abstract void ColorPointer(int size, ColorPointerType type, uint stride, void* pointer);
-
     public void CompileShader(uint shader)
     {
         SilkGL.CompileShader(shader);
@@ -187,13 +185,9 @@ public abstract unsafe class LegacyGL : IGL
         SilkGL.Disable(cap.ToModern());
     }
 
-    public abstract void DisableClientState(GLEnum array);
-
     public abstract void DrawArrays(GLEnum mode, int first, uint count);
 
     public abstract void Enable(GLEnum cap);
-
-    public abstract void EnableClientState(GLEnum array);
 
     public virtual void EnableVertexAttribArray(uint index)
     {
@@ -302,7 +296,6 @@ public abstract unsafe class LegacyGL : IGL
 
     public abstract void Normal3(float nx, float ny, float nz);
 
-    public abstract void NormalPointer(NormalPointerType type, uint stride, void* pointer);
 
     public void PixelStore(PixelStoreParameter pname, int param)
     {
@@ -326,7 +319,6 @@ public abstract unsafe class LegacyGL : IGL
         SilkGL.ShaderSource(shader, string_);
     }
 
-    public abstract void TexCoordPointer(int size, GLEnum type, uint stride, void* pointer);
 
     public void TexImage2D(TextureTarget target, int level, InternalFormat internalformat, uint width, uint height, int border, PixelFormat format, PixelType type, void* pixels)
     {
@@ -402,8 +394,6 @@ public abstract unsafe class LegacyGL : IGL
     {
         SilkGL.VertexAttribPointer(index, size, type.ToModern(), normalized, stride, pointer);
     }
-
-    public abstract void VertexPointer(int size, GLEnum type, uint stride, void* pointer);
 
     public void Viewport(int x, int y, uint width, uint height)
     {
