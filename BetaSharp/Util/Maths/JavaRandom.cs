@@ -1,6 +1,4 @@
-using System;
 using System.Runtime.CompilerServices;
-using BetaSharp.Util;
 
 namespace BetaSharp.Util.Maths;
 
@@ -11,7 +9,7 @@ namespace BetaSharp.Util.Maths;
 /// </summary>
 public class JavaRandom
 {
-    private static long _seedUniquifier = 8682522807148012L;
+    private static long s_seedUniquifier = 8682522807148012L;
     private bool _haveNextNextGaussian = false;
     private double _nextNextGaussian;
 
@@ -109,7 +107,7 @@ public class JavaRandom
 
     private static long SeedUniquifier()
     {
-        _seedUniquifier *= 1181783497276652981L;
-        return _seedUniquifier;
+        s_seedUniquifier *= 1181783497276652981L;
+        return s_seedUniquifier;
     }
 }

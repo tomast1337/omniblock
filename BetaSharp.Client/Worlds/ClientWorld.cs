@@ -27,7 +27,7 @@ public class ClientWorld : World
     public ClientWorld(ClientNetworkHandler netHandler, long seed, int dimId) : base(new EmptyWorldStorage(), "MpServer", new WorldSettings(seed, WorldType.Default, ""), Dimension.FromId(dimId))
     {
         _networkHandler = netHandler;
-        SetSpawnPos(new Vec3i(8, 64, 8));
+        SetSpawnPos(new Vec3I(8, 64, 8));
 
         StateManager = netHandler.ClientPersistentStateManager;
         Entities.OnEntityAdded += HandleEntityAdded;
@@ -99,7 +99,7 @@ public class ClientWorld : World
         return _chunkCache;
     }
 
-    public override void UpdateSpawnPosition() => SetSpawnPos(new Vec3i(8, 64, 8));
+    public override void UpdateSpawnPosition() => SetSpawnPos(new Vec3I(8, 64, 8));
 
     protected override void ManageChunkUpdatesAndEvents()
     {

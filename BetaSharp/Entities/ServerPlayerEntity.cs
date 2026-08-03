@@ -46,7 +46,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         GameModeHolder = server.DefaultGameMode;
         interactionManager.player = this;
         InteractionManager = interactionManager;
-        Vec3i spawnPos = world.Properties.GetSpawnPos();
+        Vec3I spawnPos = world.Properties.GetSpawnPos();
         int x = spawnPos.X;
         int y = spawnPos.Z;
         int z = spawnPos.Y;

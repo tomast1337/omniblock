@@ -13,7 +13,7 @@ namespace BetaSharp.Client.Input;
 
 public class PlayerControllerMP : PlayerController
 {
-    private Vec3i _targetBlockPos = new();
+    private Vec3I _targetBlockPos = new();
     private float _curBlockDamageMp;
     private float _prevBlockDamageMp;
     private byte _mineSoundTimer;
@@ -77,7 +77,7 @@ public class PlayerControllerMP : PlayerController
             else
             {
                 _isHittingBlock = true;
-                _targetBlockPos = new Vec3i(x, y, z);
+                _targetBlockPos = new Vec3I(x, y, z);
                 _curBlockDamageMp = 0.0F;
                 _prevBlockDamageMp = 0.0F;
                 _mineSoundTimer = 0;

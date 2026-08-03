@@ -164,7 +164,7 @@ public sealed class ArrowBehavior : IEntityTicker, IEntityPersistence, IEntityIn
             HitResult hit = self.World.Reader.Raycast(rayStart, rayEnd, false, true);
             if (hit.Type != HitResultType.Miss)
             {
-                rayEnd = new Vec3D(hit.Pos.x, hit.Pos.y, hit.Pos.z);
+                rayEnd = new Vec3D(hit.Pos.X, hit.Pos.Y, hit.Pos.Z);
             }
 
             EntityLiving? owner = Owner(self);
@@ -188,7 +188,7 @@ public sealed class ArrowBehavior : IEntityTicker, IEntityPersistence, IEntityIn
                     continue;
                 }
 
-                double hitDistance = rayStart.distanceTo(hitResult.Pos);
+                double hitDistance = rayStart.DistanceTo(hitResult.Pos);
                 if (!(hitDistance < minHitDistance) && minHitDistance != 0.0D)
                 {
                     continue;
@@ -230,9 +230,9 @@ public sealed class ArrowBehavior : IEntityTicker, IEntityPersistence, IEntityIn
                     self.State[_tileZ] = hit.BlockZ;
                     self.State[_inTile] = self.World.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
                     self.State[_inData] = self.World.Reader.GetBlockMeta(hit.BlockX, hit.BlockY, hit.BlockZ);
-                    self.VelocityX = (float)(hit.Pos.x - self.X);
-                    self.VelocityY = (float)(hit.Pos.y - self.Y);
-                    self.VelocityZ = (float)(hit.Pos.z - self.Z);
+                    self.VelocityX = (float)(hit.Pos.X - self.X);
+                    self.VelocityY = (float)(hit.Pos.Y - self.Y);
+                    self.VelocityZ = (float)(hit.Pos.Z - self.Z);
                     horizontalSpeed = MathHelper.Sqrt(self.VelocityX * self.VelocityX + self.VelocityY * self.VelocityY + self.VelocityZ * self.VelocityZ);
                     self.X -= self.VelocityX / horizontalSpeed * 0.05F;
                     self.Y -= self.VelocityY / horizontalSpeed * 0.05F;

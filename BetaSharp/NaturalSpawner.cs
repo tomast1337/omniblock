@@ -54,7 +54,7 @@ internal static class NaturalSpawner
             }
         }
 
-        Vec3i worldSpawn = world.Properties.GetSpawnPos();
+        Vec3I worldSpawn = world.Properties.GetSpawnPos();
         foreach (var creatureKind in CreatureKind.Values)
         {
             if (((!creatureKind.Peaceful && spawnHostile) || (creatureKind.Peaceful && spawnPeaceful)) &&
@@ -90,13 +90,13 @@ internal static class NaturalSpawner
                             {
                                 Vec3D entityPos = new Vec3D(x + 0.5D, y, z + 0.5D);
 
-                                if (world.Entities.GetClosestPlayer(entityPos.x, entityPos.y, entityPos.z, SpawnMinRadius) != null) continue;
+                                if (world.Entities.GetClosestPlayer(entityPos.X, entityPos.Y, entityPos.Z, SpawnMinRadius) != null) continue;
 
-                                if (entityPos.squareDistanceTo((Vec3D)worldSpawn) < SpawnMinRadius * SpawnMinRadius) continue;
+                                if (entityPos.SquareDistanceTo((Vec3D)worldSpawn) < SpawnMinRadius * SpawnMinRadius) continue;
 
                                 EntityLiving entity = toSpawn.Factory(world);
 
-                                entity.SetPositionAndAnglesKeepPrevAngles(entityPos.x, entityPos.y, entityPos.z,
+                                entity.SetPositionAndAnglesKeepPrevAngles(entityPos.X, entityPos.Y, entityPos.Z,
                                     world.Random.NextFloat() * 360.0F, 0.0F);
 
                                 if (entity.CanSpawn())
@@ -170,10 +170,10 @@ internal static class NaturalSpawner
                             if (Math.Abs(pathPoint.X - player.X) < 1.5D && Math.Abs(pathPoint.Z - player.Z) < 1.5D &&
                                 Math.Abs(pathPoint.Y - player.Y) < 1.5D)
                             {
-                                Vec3i wakeUpPos =
+                                Vec3I wakeUpPos =
                                     BedBehavior.FindWakeUpPosition(world.Reader, MathHelper.Floor(player.X),
                                         MathHelper.Floor(player.Y), MathHelper.Floor(player.Z), 1) ??
-                                    new Vec3i(spawnX, newSpawnY + 1, spawnZ);
+                                    new Vec3I(spawnX, newSpawnY + 1, spawnZ);
 
                                 entity.SetPositionAndAnglesKeepPrevAngles(wakeUpPos.X + 0.5F, wakeUpPos.Y, wakeUpPos.Z + 0.5F, 0.0F, 0.0F);
                                 world.Entities.SpawnEntity(entity);

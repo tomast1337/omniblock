@@ -36,15 +36,15 @@ public abstract partial class Command
             {
                 player ??= SenderPosition(c);
                 reader.Cursor++;
-                pos.x = player.Value.x;
+                pos.X = player.Value.X;
                 if (reader.Peek() != ' ')
                 {
-                    pos.x += reader.ReadDouble();
+                    pos.X += reader.ReadDouble();
                 }
             }
             else
             {
-                pos.x = reader.ReadDouble();
+                pos.X = reader.ReadDouble();
             }
 
             reader.Cursor++;
@@ -53,15 +53,15 @@ public abstract partial class Command
             {
                 player ??= SenderPosition(c);
                 reader.Cursor++;
-                pos.y = player.Value.y;
+                pos.Y = player.Value.Y;
                 if (reader.Peek() != ' ')
                 {
-                    pos.y += reader.ReadDouble();
+                    pos.Y += reader.ReadDouble();
                 }
             }
             else
             {
-                pos.y = reader.ReadDouble();
+                pos.Y = reader.ReadDouble();
             }
 
             reader.Cursor++;
@@ -70,15 +70,15 @@ public abstract partial class Command
             {
                 player ??= SenderPosition(c);
                 reader.Cursor++;
-                pos.z = player.Value.z;
+                pos.Z = player.Value.Z;
                 if (reader.RemainingLength != 0 && reader.Peek() != ' ')
                 {
-                    pos.z += reader.ReadDouble();
+                    pos.Z += reader.ReadDouble();
                 }
             }
             else
             {
-                pos.z = reader.ReadDouble();
+                pos.Z = reader.ReadDouble();
             }
 
             return pos;

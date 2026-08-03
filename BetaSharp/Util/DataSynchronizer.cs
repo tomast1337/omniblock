@@ -18,7 +18,7 @@ public sealed class DataSynchronizer
         TypeIds[typeof(float)] = SyncedDataType.Float;
         TypeIds[typeof(string)] = SyncedDataType.String;
         TypeIds[typeof(ItemStack)] = SyncedDataType.ItemStack;
-        TypeIds[typeof(Vec3i)] = SyncedDataType.Vec3i;
+        TypeIds[typeof(Vec3I)] = SyncedDataType.Vec3i;
 
         TypeIds[typeof(bool)] = SyncedDataType.Byte; // Serialize bools as bytes
     }
@@ -87,7 +87,7 @@ public sealed class DataSynchronizer
                 stream.WriteByte((byte)item.Count);
                 stream.WriteShort((short)item.GetDamage());
                 break;
-            case SyncedProperty<Vec3i>(var vec):
+            case SyncedProperty<Vec3I>(var vec):
                 stream.WriteInt(vec.X);
                 stream.WriteInt(vec.Y);
                 stream.WriteInt(vec.Z);
@@ -139,7 +139,7 @@ public sealed class DataSynchronizer
                 ((SyncedProperty<ItemStack>)prop).Value = new ItemStack(stream.ReadShort(), (sbyte)stream.ReadByte(), stream.ReadShort());
                 break;
             case SyncedDataType.Vec3i:
-                ((SyncedProperty<Vec3i>)prop).Value = new Vec3i(stream.ReadInt(), stream.ReadInt(), stream.ReadInt());
+                ((SyncedProperty<Vec3I>)prop).Value = new Vec3I(stream.ReadInt(), stream.ReadInt(), stream.ReadInt());
                 break;
             default:
                 throw new ArgumentException("Unsupported data type: " + objectType);

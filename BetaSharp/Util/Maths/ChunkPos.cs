@@ -1,17 +1,11 @@
 namespace BetaSharp.Util.Maths;
 
-public readonly record struct ChunkPos(int x, int z)
+public readonly record struct ChunkPos(int X, int Z)
 {
-    public readonly int X = x;
-    public readonly int Z = z;
+    public readonly int X = X;
+    public readonly int Z = Z;
 
-    public static int GetHashCode(int x, int z)
-    {
-        return (x < 0 ? int.MinValue : 0) | (x & short.MaxValue) << 16 | (z < 0 ? -short.MinValue : 0) | z & short.MaxValue;
-    }
+    public static int GetHashCode(int x, int z) => (x < 0 ? int.MinValue : 0) | ((x & short.MaxValue) << 16) | (z < 0 ? -short.MinValue : 0) | (z & short.MaxValue);
 
-    public override int GetHashCode()
-    {
-        return GetHashCode(X, Z);
-    }
+    public override int GetHashCode() => GetHashCode(X, Z);
 }

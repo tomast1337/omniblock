@@ -5,21 +5,21 @@ namespace BetaSharp.Util.Maths;
 
 public static class MathHelper
 {
-    private static readonly float[] SinTable = new float[65536];
+    private static readonly float[] s_sinTable = new float[65536];
     private const float FastMathFactor = 65536.0f / (float)(Math.PI * 2.0);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static float Sin(float value)
     {
         // Bypasses .NET array bounds checking for maximum performance
-        ref float tableRef = ref MemoryMarshal.GetArrayDataReference(SinTable);
+        ref float tableRef = ref MemoryMarshal.GetArrayDataReference(s_sinTable);
         return Unsafe.Add(ref tableRef, (int)(value * FastMathFactor) & 0xFFFF);
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static float Cos(float value)
     {
         // 16384 is 90 degrees in this 65536-step table
-        ref float tableRef = ref MemoryMarshal.GetArrayDataReference(SinTable);
+        ref float tableRef = ref MemoryMarshal.GetArrayDataReference(s_sinTable);
         return Unsafe.Add(ref tableRef, (int)(value * FastMathFactor + 16384.0f) & 0xFFFF);
     }
 
@@ -78,7 +78,7 @@ public static class MathHelper
     {
         for (int i = 0; i < 65536; ++i)
         {
-            SinTable[i] = (float)Math.Sin(i * Math.PI * 2.0D / 65536.0D);
+            s_sinTable[i] = (float)Math.Sin(i * Math.PI * 2.0D / 65536.0D);
         }
     }
 }

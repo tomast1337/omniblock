@@ -225,7 +225,7 @@ public abstract class BetaSharpServer : ICommandOutput
             if (i == 0)
             {
                 ServerWorld world = worlds[i];
-                Vec3i spawnPos = world.Properties.GetSpawnPos();
+                Vec3I spawnPos = world.Properties.GetSpawnPos();
 
                 var chunkList = new List<Vector2D<int>>();
                 for (int x = -startRegionSize; x <= startRegionSize; x += 16)

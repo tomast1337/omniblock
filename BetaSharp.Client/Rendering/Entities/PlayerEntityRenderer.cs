@@ -175,9 +175,9 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         {
             GLManager.GL.PushMatrix();
             GLManager.GL.Translate(0.0F, 0.0F, 2.0F / 16.0F);
-            double capeOffsetX = playerEntity.PrevCapePos.x + (playerEntity.CapePos.x - playerEntity.PrevCapePos.x) * (double)tickDelta - (playerEntity.PrevX + (playerEntity.X - playerEntity.PrevX) * (double)tickDelta);
-            double capeOffsetY = playerEntity.PrevCapePos.y + (playerEntity.CapePos.y - playerEntity.PrevCapePos.y) * (double)tickDelta - (playerEntity.PrevY + (playerEntity.Y - playerEntity.PrevY) * (double)tickDelta);
-            double capeOffsetZ = playerEntity.PrevCapePos.z + (playerEntity.CapePos.z - playerEntity.PrevCapePos.z) * (double)tickDelta - (playerEntity.PrevZ + (playerEntity.Z - playerEntity.PrevZ) * (double)tickDelta);
+            double capeOffsetX = playerEntity.PrevCapePos.X + (playerEntity.CapePos.X - playerEntity.PrevCapePos.X) * (double)tickDelta - (playerEntity.PrevX + (playerEntity.X - playerEntity.PrevX) * (double)tickDelta);
+            double capeOffsetY = playerEntity.PrevCapePos.Y + (playerEntity.CapePos.Y - playerEntity.PrevCapePos.Y) * (double)tickDelta - (playerEntity.PrevY + (playerEntity.Y - playerEntity.PrevY) * (double)tickDelta);
+            double capeOffsetZ = playerEntity.PrevCapePos.Z + (playerEntity.CapePos.Z - playerEntity.PrevCapePos.Z) * (double)tickDelta - (playerEntity.PrevZ + (playerEntity.Z - playerEntity.PrevZ) * (double)tickDelta);
             float bodyYaw = playerEntity.LastBodyYaw + (playerEntity.BodyYaw - playerEntity.LastBodyYaw) * tickDelta;
             double sinBodyYaw = (double)MathHelper.Sin(bodyYaw * (float)Math.PI / 180.0F);
             double cosBodyYaw = (double)-MathHelper.Cos(bodyYaw * (float)Math.PI / 180.0F);

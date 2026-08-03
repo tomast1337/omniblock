@@ -178,5 +178,5 @@ public class WorldProperties
         SpawnZ = z;
     }
 
-    public Vec3i GetSpawnPos() => new(SpawnX, SpawnY, SpawnZ);
+    public Vec3I GetSpawnPos() => new(SpawnX, SpawnY, SpawnZ);
 }

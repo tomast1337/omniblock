@@ -86,7 +86,7 @@ public class GameRenderer
         if (_client.ObjectMouseOver.Type != HitResultType.Miss)
         {
             reachDistance = Math.Min(
-                    _client.ObjectMouseOver.Pos.distanceTo(cameraPosition),
+                    _client.ObjectMouseOver.Pos.DistanceTo(cameraPosition),
                     _client.PlayerController.GetEntityReachDistance()
                 );
         }
@@ -100,7 +100,7 @@ public class GameRenderer
         _targetedEntity = null;
 
         float searchMargin = 1.0F;
-        List<Entity> entities = _client.World.Entities.GetEntities(_client.Camera, _client.Camera.BoundingBox.Stretch(lookVec.x * reachDistance, lookVec.y * reachDistance, lookVec.z * reachDistance).Expand(searchMargin, searchMargin, searchMargin));
+        List<Entity> entities = _client.World.Entities.GetEntities(_client.Camera, _client.Camera.BoundingBox.Stretch(lookVec.X * reachDistance, lookVec.Y * reachDistance, lookVec.Z * reachDistance).Expand(searchMargin, searchMargin, searchMargin));
 
         double closestDistance = double.MaxValue;
         foreach (var ent in entities)
@@ -119,7 +119,7 @@ public class GameRenderer
                 }
                 if (hit.Type != HitResultType.Miss)
                 {
-                    double hitDistance = cameraPosition.distanceTo(hit.Pos);
+                    double hitDistance = cameraPosition.DistanceTo(hit.Pos);
                     if (hitDistance < closestDistance)
                     {
                         _targetedEntity = ent;

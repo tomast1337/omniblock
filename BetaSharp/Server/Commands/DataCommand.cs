@@ -141,7 +141,7 @@ public class DataCommand : Command.Command
             foreach (IEntity entity in items)
             {
                 // Tiered distance check for faster comparison
-                double d = Math.Abs(entity.Position.x - player.X) + Math.Abs(entity.Position.z - player.Z);
+                double d = Math.Abs(entity.Position.X - player.X) + Math.Abs(entity.Position.Z - player.Z);
                 if (d * d * 1.15 > distanceFast)
                 {
                     continue;
@@ -149,13 +149,13 @@ public class DataCommand : Command.Command
 
                 Vec3D pPos = player.Position;
                 Vec3D ePos = entity.Position;
-                d = pPos.squareDistance2DTo(ePos);
+                d = pPos.SquareDistance2DTo(ePos);
                 if (d > distanceFast)
                 {
                     continue;
                 }
 
-                double slowD = pPos.squareDistanceTo(ePos);
+                double slowD = pPos.SquareDistanceTo(ePos);
                 if (slowD > distance)
                 {
                     continue;

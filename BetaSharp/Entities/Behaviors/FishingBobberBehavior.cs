@@ -288,7 +288,7 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
         rayEnd = new Vec3D(self.X + self.VelocityX, self.Y + self.VelocityY, self.Z + self.VelocityZ);
         if (hit.Type != HitResultType.Miss)
         {
-            rayEnd = new Vec3D(hit.Pos.x, hit.Pos.y, hit.Pos.z);
+            rayEnd = new Vec3D(hit.Pos.X, hit.Pos.Y, hit.Pos.Z);
         }
 
         EntityPlayer? angler = Angler(self);
@@ -311,7 +311,7 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
                 continue;
             }
 
-            double distance = rayStart.distanceTo(entityHit.Pos);
+            double distance = rayStart.DistanceTo(entityHit.Pos);
             if (!(distance < minHitDistance) && minHitDistance != 0.0D)
             {
                 continue;

@@ -274,22 +274,22 @@ public class WorldReader : IBlockReader
                         {
                             isSubmerged = true;
                             Vec3D blockFlow = block.ApplyVelocity(new OnApplyVelocityEvent(_context, entity, x, y, z));
-                            flowVector.x += blockFlow.x;
-                            flowVector.y += blockFlow.y;
-                            flowVector.z += blockFlow.z;
+                            flowVector.X += blockFlow.X;
+                            flowVector.Y += blockFlow.Y;
+                            flowVector.Z += blockFlow.Z;
                         }
                     }
                 }
             }
         }
 
-        if (flowVector.magnitude() > 0.0D)
+        if (flowVector.Magnitude() > 0.0D)
         {
-            flowVector = flowVector.normalize();
+            flowVector = flowVector.Normalize();
             const double flowStrength = 0.014D;
-            entity.VelocityX += flowVector.x * flowStrength;
-            entity.VelocityY += flowVector.y * flowStrength;
-            entity.VelocityZ += flowVector.z * flowStrength;
+            entity.VelocityX += flowVector.X * flowStrength;
+            entity.VelocityY += flowVector.Y * flowStrength;
+            entity.VelocityZ += flowVector.Z * flowStrength;
         }
 
         return isSubmerged;

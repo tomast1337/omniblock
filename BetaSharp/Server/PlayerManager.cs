@@ -166,7 +166,7 @@ public class PlayerManager
         GetChunkMap(player.DimensionId).removePlayer(player);
         players.Remove(player);
         _server.getWorld(player.DimensionId).Entities.ServerRemove(player);
-        Vec3i? spawnPos = player.GetSpawnPos();
+        Vec3I? spawnPos = player.GetSpawnPos();
         player.DimensionId = dimensionId;
         ServerPlayerEntity serverPlayer = new(
             _server, _server.getWorld(player.DimensionId), player.Name, new ServerPlayerInteractionManager(_server.getWorld(player.DimensionId))
@@ -178,7 +178,7 @@ public class PlayerManager
         ServerWorld targetWorld = _server.getWorld(player.DimensionId);
         if (spawnPos is (int x, int y, int z))
         {
-            Vec3i? respawnPosition = EntityPlayer.FindRespawnPosition(_server.getWorld(player.DimensionId), spawnPos);
+            Vec3I? respawnPosition = EntityPlayer.FindRespawnPosition(_server.getWorld(player.DimensionId), spawnPos);
             if (respawnPosition is (int x2, int y2, int z2))
             {
                 serverPlayer.SetPositionAndAnglesKeepPrevAngles(x2 + 0.5F, y2 + 0.1F, z2 + 0.5F, 0.0F, 0.0F);
@@ -483,7 +483,7 @@ public class PlayerManager
         if (range > 0)
         {
             Vec3D pos = position!.Value;
-            dict = players.Select((item, i) => (i, item)).ToDictionary(t => t.item.Position.distanceTo(pos), t => t.item);
+            dict = players.Select((item, i) => (i, item)).ToDictionary(t => t.item.Position.DistanceTo(pos), t => t.item);
         }
         else
         {
@@ -497,7 +497,7 @@ public class PlayerManager
                 case Selector.Furthest:
                     if (position == null) throw new ArgumentNullException(nameof(position));
                     Vec3D pos = position.Value;
-                    dict = players.Select((item, i) => (i, item)).ToDictionary(t => t.item.Position.distanceTo(pos), t => t.item);
+                    dict = players.Select((item, i) => (i, item)).ToDictionary(t => t.item.Position.DistanceTo(pos), t => t.item);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(selector), selector, null);

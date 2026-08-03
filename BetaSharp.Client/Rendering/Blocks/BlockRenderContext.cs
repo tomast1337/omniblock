@@ -122,9 +122,9 @@ public ref struct BlockRenderContext
         CalculateUv(bMaxX, bMinZ, UvRotateBottom, FlipBottom, texU, texV, out float u2, out float v2);
         CalculateUv(bMaxX, bMaxZ, UvRotateBottom, FlipBottom, texU, texV, out float u3, out float v3);
 
-        float pX = (float)pos.x;
-        float pY = (float)pos.y;
-        float pZ = (float)pos.z;
+        float pX = (float)pos.X;
+        float pY = (float)pos.Y;
+        float pZ = (float)pos.Z;
 
         float minX = pX + bbMinX;
         float maxX = pX + bbMaxX;
@@ -187,9 +187,9 @@ public ref struct BlockRenderContext
         CalculateUv(bMinX, bMinZ, UvRotateTop, FlipTop, texU, texV, out float u2, out float v2);
         CalculateUv(bMinX, bMaxZ, UvRotateTop, FlipTop, texU, texV, out float u3, out float v3);
 
-        float pX = (float)pos.x;
-        float pY = (float)pos.y;
-        float pZ = (float)pos.z;
+        float pX = (float)pos.X;
+        float pY = (float)pos.Y;
+        float pZ = (float)pos.Z;
 
         float minX = pX + bbMinX;
         float maxX = pX + bbMaxX;
@@ -247,9 +247,9 @@ public ref struct BlockRenderContext
         CalculateUv(bbMaxZ, 1.0f - bbMinY, UvRotateNorth, FlipNorth, texU, texV, out float uBr, out float vBr);
         CalculateUv(bbMaxZ, 1.0f - bbMaxY, UvRotateNorth, FlipNorth, texU, texV, out float uTr, out float vTr);
 
-        float pX = (float)pos.x;
-        float pY = (float)pos.y;
-        float pZ = (float)pos.z;
+        float pX = (float)pos.X;
+        float pY = (float)pos.Y;
+        float pZ = (float)pos.Z;
 
         float minX = pX + (float)bb.MinX;
         float minY = pY + bbMinY;
@@ -312,9 +312,9 @@ public ref struct BlockRenderContext
         CalculateUv(1.0f - bMinZ, 1.0f - bMinY, UvRotateSouth, FlipSouth, texU, texV, out float uBr, out float vBr);
         CalculateUv(1.0f - bMinZ, 1.0f - bMaxY, UvRotateSouth, FlipSouth, texU, texV, out float uTr, out float vTr);
 
-        float pX = (float)pos.x;
-        float pY = (float)pos.y;
-        float pZ = (float)pos.z;
+        float pX = (float)pos.X;
+        float pY = (float)pos.Y;
+        float pZ = (float)pos.Z;
 
         float posX = pX + (float)bb.MaxX;
         float minY = pY + bbMinY;
@@ -377,9 +377,9 @@ public ref struct BlockRenderContext
         CalculateUv(1.0f - bMinX, 1.0f - bMinY, UvRotateEast, FlipEast, texU, texV, out float uBr, out float vBr);
         CalculateUv(1.0f - bMinX, 1.0f - bMaxY, UvRotateEast, FlipEast, texU, texV, out float uTr, out float vTr);
 
-        float pX = (float)pos.x;
-        float pY = (float)pos.y;
-        float pZ = (float)pos.z;
+        float pX = (float)pos.X;
+        float pY = (float)pos.Y;
+        float pZ = (float)pos.Z;
 
         float minX = pX + bbMinX;
         float maxX = pX + bbMaxX;
@@ -442,9 +442,9 @@ public ref struct BlockRenderContext
         CalculateUv(bMaxX, 1.0f - bMinY, UvRotateWest, FlipWest, texU, texV, out float uBr, out float vBr);
         CalculateUv(bMaxX, 1.0f - bMaxY, UvRotateWest, FlipWest, texU, texV, out float uTr, out float vTr);
 
-        float pX = (float)pos.x;
-        float pY = (float)pos.y;
-        float pZ = (float)pos.z;
+        float pX = (float)pos.X;
+        float pY = (float)pos.Y;
+        float pZ = (float)pos.Z;
 
         float minX = pX + bbMinX;
         float maxX = pX + bbMaxX;
@@ -756,9 +756,9 @@ public ref struct BlockRenderContext
         float topMaxU = minU + topMaxUOffset;
         float topMaxV = minV + topMaxVOffset;
 
-        float pX = (float)pos.x;
-        float pY = (float)pos.y;
-        float pZ = (float)pos.z;
+        float pX = (float)pos.X;
+        float pY = (float)pos.Y;
+        float pZ = (float)pos.Z;
 
         float centerX = pX + 0.5f;
         float centerZ = pZ + 0.5f;

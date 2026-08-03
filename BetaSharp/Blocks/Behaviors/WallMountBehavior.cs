@@ -191,11 +191,11 @@ public sealed class WallMountBehavior : IBlockPhysics, IBlockLifecycle, IBlockTi
     private static bool TryGetHorizontalWallPickRay(EntityLiving placer, int torchX, int torchZ, out double lx, out double lz)
     {
         Vec3D look = placer.GetLook(1.0F);
-        double h = Math.Sqrt(look.x * look.x + look.z * look.z);
+        double h = Math.Sqrt(look.X * look.X + look.Z * look.Z);
         if (h >= 1e-3)
         {
-            lx = look.x / h;
-            lz = look.z / h;
+            lx = look.X / h;
+            lz = look.Z / h;
             return true;
         }
 

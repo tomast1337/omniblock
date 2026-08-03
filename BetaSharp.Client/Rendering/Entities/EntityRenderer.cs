@@ -69,7 +69,7 @@ public abstract class EntityRenderer
         float maxV;
 
         GLManager.GL.PushMatrix();
-        GLManager.GL.Translate((float)pos.x, (float)pos.y, (float)pos.z);
+        GLManager.GL.Translate((float)pos.X, (float)pos.Y, (float)pos.Z);
 
         float scale = ent.Width * 1.4F;
         GLManager.GL.Scale(scale, scale, scale);
@@ -152,9 +152,9 @@ public abstract class EntityRenderer
         int minZ = MathHelper.Floor(targetZ - radius);
         int maxZ = MathHelper.Floor(targetZ + radius);
 
-        double dx = pos.x - targetX;
-        double dy = pos.y - targetY;
-        double dz = pos.z - targetZ;
+        double dx = pos.X - targetX;
+        double dy = pos.Y - targetY;
+        double dz = pos.Z - targetZ;
 
         Tessellator tess = Tessellator.instance;
         tess.startDrawingQuads();
@@ -170,7 +170,7 @@ public abstract class EntityRenderer
                     {
                         renderShadowOnBlock(
                             Block.Blocks[blockId],
-                            new Vec3D(pos.x, pos.y + target.GetShadowRadius(), pos.z),
+                            new Vec3D(pos.X, pos.Y + target.GetShadowRadius(), pos.Z),
                             blockX, blockY, blockZ,
                             shadowiness,
                             radius,
@@ -190,7 +190,7 @@ public abstract class EntityRenderer
     {
         if (!block.IsFullCube()) return;
 
-        double shadowDarkness = (shadowiness - (pos.y - (blockY + offset.y)) / 2.0D) * 0.5D * World.GetLuminance(blockX, blockY, blockZ);
+        double shadowDarkness = (shadowiness - (pos.Y - (blockY + offset.Y)) / 2.0D) * 0.5D * World.GetLuminance(blockX, blockY, blockZ);
 
         if (shadowDarkness < 0.0D) return;
 
@@ -200,16 +200,16 @@ public abstract class EntityRenderer
         Tessellator tess = Tessellator.instance;
         tess.setColorRGBA_F(1.0F, 1.0F, 1.0F, (float)shadowDarkness);
 
-        double minX = blockX + block.BoundingBox.MinX + offset.x;
-        double maxX = blockX + block.BoundingBox.MaxX + offset.x;
-        double minY = blockY + block.BoundingBox.MinY + offset.y + 1.0D / 64.0D;
-        double minZ = blockZ + block.BoundingBox.MinZ + offset.z;
-        double maxZ = blockZ + block.BoundingBox.MaxZ + offset.z;
+        double minX = blockX + block.BoundingBox.MinX + offset.X;
+        double maxX = blockX + block.BoundingBox.MaxX + offset.X;
+        double minY = blockY + block.BoundingBox.MinY + offset.Y + 1.0D / 64.0D;
+        double minZ = blockZ + block.BoundingBox.MinZ + offset.Z;
+        double maxZ = blockZ + block.BoundingBox.MaxZ + offset.Z;
 
-        float minU = (float)((pos.x - minX) / 2.0D / (double)radius + 0.5D);
-        float maxU = (float)((pos.x - maxX) / 2.0D / (double)radius + 0.5D);
-        float minV = (float)((pos.z - minZ) / 2.0D / (double)radius + 0.5D);
-        float maxV = (float)((pos.z - maxZ) / 2.0D / (double)radius + 0.5D);
+        float minU = (float)((pos.X - minX) / 2.0D / (double)radius + 0.5D);
+        float maxU = (float)((pos.X - maxX) / 2.0D / (double)radius + 0.5D);
+        float minV = (float)((pos.Z - minZ) / 2.0D / (double)radius + 0.5D);
+        float maxV = (float)((pos.Z - maxZ) / 2.0D / (double)radius + 0.5D);
 
         tess.addVertexWithUV(minX, minY, minZ, (double)minU, (double)minV);
         tess.addVertexWithUV(minX, minY, maxZ, (double)minU, (double)maxV);
@@ -224,7 +224,7 @@ public abstract class EntityRenderer
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
 
         tess.startDrawingQuads();
-        tess.setTranslationD(pos.x, pos.y, pos.z);
+        tess.setTranslationD(pos.X, pos.Y, pos.Z);
 
         tess.setNormal(0.0F, 0.0F, -1.0F);
 
@@ -332,7 +332,7 @@ public abstract class EntityRenderer
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Disable(GLEnum.Texture2D);
         GLManager.GL.PushMatrix();
-        GLManager.GL.Translate((float)pos.x, (float)pos.y, (float)pos.z);
+        GLManager.GL.Translate((float)pos.X, (float)pos.Y, (float)pos.Z);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
 
         Box bb = target.BoundingBox;

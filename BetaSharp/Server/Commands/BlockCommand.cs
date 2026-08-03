@@ -33,7 +33,7 @@ public class BlockCommand : Command.Command
             return 1;
         }
 
-        return BlockGet(context, player.World, new Vec3i((int)Math.Floor(player.Position.x), (int)Math.Floor(player.Position.y) - 1, (int)Math.Floor(player.Position.z)));
+        return BlockGet(context, player.World, new Vec3I((int)Math.Floor(player.Position.X), (int)Math.Floor(player.Position.Y) - 1, (int)Math.Floor(player.Position.Z)));
     }
 
     private static int BlockGet(CommandContext<CommandSource> context, Vec3D p)
@@ -44,10 +44,10 @@ public class BlockCommand : Command.Command
             return 1;
         }
 
-        return BlockGet(context, player.World, new Vec3i((int)Math.Floor(p.x), (int)Math.Floor(p.y), (int)Math.Floor(p.z)));
+        return BlockGet(context, player.World, new Vec3I((int)Math.Floor(p.X), (int)Math.Floor(p.Y), (int)Math.Floor(p.Z)));
     }
 
-    private static int BlockGet(CommandContext<CommandSource> context, IWorldContext world, Vec3i p)
+    private static int BlockGet(CommandContext<CommandSource> context, IWorldContext world, Vec3I p)
     {
         int id = world.Reader.GetBlockId(p.X, p.Y, p.Z);
         int meta = world.Reader.GetBlockMeta(p.X, p.Y, p.Z);
@@ -78,7 +78,7 @@ public class BlockCommand : Command.Command
             return 1;
         }
 
-        return BlockSet(context, player.World, block, new Vec3i((int)Math.Floor(player.Position.x), (int)Math.Floor(player.Position.y) - 1, (int)Math.Floor(player.Position.z)));
+        return BlockSet(context, player.World, block, new Vec3I((int)Math.Floor(player.Position.X), (int)Math.Floor(player.Position.Y) - 1, (int)Math.Floor(player.Position.Z)));
     }
 
     private static int BlockSet(CommandContext<CommandSource> context, (int id, int meta) block, Vec3D p)
@@ -89,10 +89,10 @@ public class BlockCommand : Command.Command
             return 1;
         }
 
-        return BlockSet(context, player.World, block, new Vec3i((int)Math.Floor(p.x), (int)Math.Floor(p.y), (int)Math.Floor(p.z)));
+        return BlockSet(context, player.World, block, new Vec3I((int)Math.Floor(p.X), (int)Math.Floor(p.Y), (int)Math.Floor(p.Z)));
     }
 
-    private static int BlockSet(CommandContext<CommandSource> context, IWorldContext world, (int id, int meta) block, Vec3i p)
+    private static int BlockSet(CommandContext<CommandSource> context, IWorldContext world, (int id, int meta) block, Vec3I p)
     {
         world.Writer.SetBlock(p.X, p.Y, p.Z, block.id, block.meta);
         return 1;

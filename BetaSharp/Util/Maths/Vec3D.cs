@@ -2,167 +2,142 @@ namespace BetaSharp.Util.Maths;
 
 public record struct Vec3D
 {
+    private const double Tolerance = 1.0E-7F;
+
     public static readonly Vec3D Zero = new(0.0D, 0.0D, 0.0D);
 
-    public double x;
-    public double y;
-    public double z;
+    public double X;
+    public double Y;
+    public double Z;
 
     public Vec3D(double x, double y, double z)
     {
-        if (x == -0.0D) x = 0.0D;
-        if (y == -0.0D) y = 0.0D;
-        if (z == -0.0D) z = 0.0D;
+        if (Math.Abs(x - -0.0D) < Tolerance)
+        {
+            x = 0.0D;
+        }
 
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        if (Math.Abs(y - -0.0D) < Tolerance)
+        {
+            y = 0.0D;
+        }
+
+        if (Math.Abs(z - -0.0D) < Tolerance)
+        {
+            z = 0.0D;
+        }
+
+        X = x;
+        Y = y;
+        Z = z;
     }
 
-    public double squareDistanceTo(Vec3D other)
+    public double SquareDistanceTo(Vec3D other)
     {
-        double dx = other.x - x;
-        double dy = other.y - y;
-        double dz = other.z - z;
+        double dx = other.X - X;
+        double dy = other.Y - Y;
+        double dz = other.Z - Z;
         return dx * dx + dy * dy + dz * dz;
     }
 
-    public double distanceTo(Vec3D other)
-    {
-        return Math.Sqrt(squareDistanceTo(other));
-    }
+    public double DistanceTo(Vec3D other) => Math.Sqrt(SquareDistanceTo(other));
 
-    public double squareDistance2DTo(Vec3D other)
+    public double SquareDistance2DTo(Vec3D other)
     {
-        double dx = other.x - x;
-        double dz = other.z - z;
+        double dx = other.X - X;
+        double dz = other.Z - Z;
         return dx * dx + dz * dz;
     }
 
-    public double magnitude()
-    {
-        return distanceTo(Zero);
-    }
+    public double Magnitude() => DistanceTo(Zero);
 
-    public Vec3D normalize()
+    public Vec3D Normalize()
     {
-        double mag = magnitude();
+        double mag = Magnitude();
         return mag < 1.0E-4D ? Zero : this / mag;
     }
 
-    public Vec3D crossProduct(Vec3D other)
-    {
-        return new Vec3D(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x);
-    }
+    public Vec3D CrossProduct(Vec3D other) => new(Y * other.Z - Z * other.Y, Z * other.X - X * other.Z, X * other.Y - Y * other.X);
 
-    public Vec3D? getIntermediateWithXValue(Vec3D other, double xValue)
+    public Vec3D? GetIntermediateWithXValue(Vec3D other, double xValue)
     {
-        double deltaX = other.x - x;
-        double deltaY = other.y - y;
-        double deltaZ = other.z - z;
-        if (deltaX * deltaX < (double)1.0E-7F)
+        double deltaX = other.X - X;
+        double deltaY = other.Y - Y;
+        double deltaZ = other.Z - Z;
+        if (deltaX * deltaX < 1.0E-7F)
         {
             return null;
         }
-        else
-        {
-            double progress = (xValue - x) / deltaX;
-            return progress >= 0.0D && progress <= 1.0D ? new Vec3D(x + deltaX * progress, y + deltaY * progress, z + deltaZ * progress) : null;
-        }
+
+        double progress = (xValue - X) / deltaX;
+        return progress is >= 0.0D and <= 1.0D ? new Vec3D(X + deltaX * progress, Y + deltaY * progress, Z + deltaZ * progress) : null;
     }
 
-    public Vec3D? getIntermediateWithYValue(Vec3D other, double yValue)
+    public Vec3D? GetIntermediateWithYValue(Vec3D other, double yValue)
     {
-        double deltaX = other.x - x;
-        double deltaY = other.y - y;
-        double deltaZ = other.z - z;
-        if (deltaY * deltaY < (double)1.0E-7F)
+        double deltaX = other.X - X;
+        double deltaY = other.Y - Y;
+        double deltaZ = other.Z - Z;
+        if (deltaY * deltaY < 1.0E-7F)
         {
             return null;
         }
-        else
-        {
-            double progress = (yValue - y) / deltaY;
-            return progress >= 0.0D && progress <= 1.0D ? new Vec3D(x + deltaX * progress, y + deltaY * progress, z + deltaZ * progress) : null;
-        }
+
+        double progress = (yValue - Y) / deltaY;
+        return progress is >= 0.0D and <= 1.0D ? new Vec3D(X + deltaX * progress, Y + deltaY * progress, Z + deltaZ * progress) : null;
     }
 
-    public Vec3D? getIntermediateWithZValue(Vec3D other, double zValue)
+    public Vec3D? GetIntermediateWithZValue(Vec3D other, double zValue)
     {
-        double deltaX = other.x - x;
-        double deltaY = other.y - y;
-        double deltaZ = other.z - z;
-        if (deltaZ * deltaZ < (double)1.0E-7F)
+        double deltaX = other.X - X;
+        double deltaY = other.Y - Y;
+        double deltaZ = other.Z - Z;
+        if (deltaZ * deltaZ < 1.0E-7F)
         {
             return null;
         }
-        else
-        {
-            double progress = (zValue - z) / deltaZ;
-            return progress >= 0.0D && progress <= 1.0D ? new Vec3D(x + deltaX * progress, y + deltaY * progress, z + deltaZ * progress) : null;
-        }
+
+        double progress = (zValue - Z) / deltaZ;
+        return progress is >= 0.0D and <= 1.0D ? new Vec3D(X + deltaX * progress, Y + deltaY * progress, Z + deltaZ * progress) : null;
     }
 
-    public void rotateAroundX(float angleRadians)
+    public void RotateAroundX(float angleRadians)
     {
         float cosAngle = MathHelper.Cos(angleRadians);
         float sinAngle = MathHelper.Sin(angleRadians);
 
-        double rotatedY = y * cosAngle + z * sinAngle;
-        double rotatedZ = z * cosAngle - y * sinAngle;
+        double rotatedY = Y * cosAngle + Z * sinAngle;
+        double rotatedZ = Z * cosAngle - Y * sinAngle;
 
-        y = rotatedY;
-        z = rotatedZ;
+        Y = rotatedY;
+        Z = rotatedZ;
     }
 
-    public void rotateAroundY(float angleRadians)
+    public void RotateAroundY(float angleRadians)
     {
         float cosAngle = MathHelper.Cos(angleRadians);
         float sinAngle = MathHelper.Sin(angleRadians);
 
-        double rotatedX = x * cosAngle + z * sinAngle;
-        double rotatedZ = z * cosAngle - x * sinAngle;
+        double rotatedX = X * cosAngle + Z * sinAngle;
+        double rotatedZ = Z * cosAngle - X * sinAngle;
 
-        x = rotatedX;
-        z = rotatedZ;
-    }
-
-    public override string ToString()
-    {
-        return "(" + x + ", " + y + ", " + z + ")";
+        X = rotatedX;
+        Z = rotatedZ;
     }
 
-    public string ToString(string format)
-    {
-        return "(" + x.ToString(format) + ", " + y.ToString(format) + ", " + z.ToString(format) + ")";
-    }
+    public override string ToString() => $"({X}, {Y}, {Z})";
 
-    public static Vec3D operator +(Vec3D a, Vec3D b)
-    {
-        return new Vec3D(a.x + b.x, a.y + b.y, a.z + b.z);
-    }
-    public static Vec3D operator -(Vec3D a, Vec3D b)
-    {
-        return new Vec3D(a.x - b.x, a.y - b.y, a.z - b.z);
-    }
+    public string ToString(string format) => $"({X.ToString(format)}, {Y.ToString(format)}, {Z.ToString(format)})";
 
-    public static Vec3D operator *(Vec3D a, Vec3D b)
-    {
-        return new Vec3D(a.x * b.x, a.y * b.y, a.z * b.z);
-    }
+    public static Vec3D operator +(Vec3D a, Vec3D b) => new(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
 
-    public static Vec3D operator /(Vec3D a, Vec3D b)
-    {
-        return new Vec3D(a.x / b.x, a.y / b.y, a.z / b.z);
-    }
+    public static Vec3D operator -(Vec3D a, Vec3D b) => new(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
 
-    public static Vec3D operator *(double a, Vec3D b)
-    {
-        return new Vec3D(a * b.x, a * b.y, a * b.z);
-    }
+    public static Vec3D operator *(Vec3D a, Vec3D b) => new(a.X * b.X, a.Y * b.Y, a.Z * b.Z);
 
-    public static Vec3D operator /(Vec3D a, double b)
-    {
-        return new Vec3D(a.x / b, a.y / b, a.z / b);
-    }
+    public static Vec3D operator /(Vec3D a, Vec3D b) => new(a.X / b.X, a.Y / b.Y, a.Z / b.Z);
+
+    public static Vec3D operator *(double a, Vec3D b) => new(a * b.X, a * b.Y, a * b.Z);
+
+    public static Vec3D operator /(Vec3D a, double b) => new(a.X / b, a.Y / b, a.Z / b);
 }

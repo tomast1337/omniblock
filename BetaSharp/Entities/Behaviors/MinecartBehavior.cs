@@ -663,7 +663,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         Vec3D? currentTrackPosition = GetTrackPosition(self, self.X, self.Y, self.Z);
         if (currentTrackPosition != null && previousTrackPosition != null)
         {
-            double railHeightDeltaForce = (previousTrackPosition.Value.y - currentTrackPosition.Value.y) * 0.05D;
+            double railHeightDeltaForce = (previousTrackPosition.Value.Y - currentTrackPosition.Value.Y) * 0.05D;
             horizontalSpeed = Math.Sqrt(self.VelocityX * self.VelocityX + self.VelocityZ * self.VelocityZ);
             if (horizontalSpeed > 0.0D)
             {
@@ -671,7 +671,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
                 self.VelocityZ = self.VelocityZ / horizontalSpeed * (horizontalSpeed + railHeightDeltaForce);
             }
 
-            SitOnTrack(self, self.X, currentTrackPosition.Value.y, self.Z);
+            SitOnTrack(self, self.X, currentTrackPosition.Value.Y, self.Z);
         }
 
         int currentBlockX = MathHelper.Floor(self.X);

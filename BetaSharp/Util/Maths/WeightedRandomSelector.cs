@@ -22,7 +22,7 @@ public sealed class WeightedRandomSelector<T>
     // Note: You might want to ensure that it's not empty before calling this method, otherwise it will throw an exception.
     public T GetNext(JavaRandom random) => GetNext(random.NextInt(_cumulativeWeight.Last()));
 
-    public T GetNext(int r)
+    private T GetNext(int r)
     {
         if (Empty) throw new InvalidOperationException("No items to select from.");
 

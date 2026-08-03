@@ -95,10 +95,10 @@ public class BedRenderer : IBlockRenderer
         ctx.Tess.addVertexWithUV(minX, bedTopY, maxZ, u4, v4);
 
         // SIDE FACES
-        int forwardDir = Facings.TO_DIR[direction];
+        int forwardDir = Facings.ToDir[direction];
         if (isHead)
         {
-            forwardDir = Facings.TO_DIR[Facings.OPPOSITE[direction]];
+            forwardDir = Facings.ToDir[Facings.Opposite[direction]];
         }
 
         byte textureFlipDir = 4;

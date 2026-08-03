@@ -76,7 +76,7 @@ public class EntityCreature(IWorldContext world, EntityType? type = null) : Enti
             Vec3D? pos = _pathToEntity.GetPosition(this);
             double distance = Width * 2.0F;
 
-            while (pos != null && pos.Value.squareDistanceTo(new Vec3D(X, pos.Value.y, Z)) < distance * distance)
+            while (pos != null && pos.Value.SquareDistanceTo(new Vec3D(X, pos.Value.Y, Z)) < distance * distance)
             {
                 _pathToEntity?.IncrementPathIndex();
                 if (_pathToEntity is { IsFinished: true })
@@ -93,9 +93,9 @@ public class EntityCreature(IWorldContext world, EntityType? type = null) : Enti
             Jumping = false;
             if (pos != null)
             {
-                double dx = pos.Value.x - X;
-                double dz = pos.Value.z - Z;
-                double verticalOffset = pos.Value.y - floorY;
+                double dx = pos.Value.X - X;
+                double dz = pos.Value.Z - Z;
+                double verticalOffset = pos.Value.Y - floorY;
                 float targetYaw = (float)(Math.Atan2(dz, dx) * 180.0D / (float)Math.PI) - 90.0F;
                 float yawDelta = targetYaw - Yaw;
 

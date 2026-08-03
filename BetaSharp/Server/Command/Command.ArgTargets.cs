@@ -62,9 +62,9 @@ public abstract partial class Command
                         else
                         {
                             Vec3D p = c.Server.playerManager.getPlayer(c.SenderName)?.Position ?? throw s_executorNotFound.CreateWithContext(reader);
-                            if (selector.X.HasValue) p.x = selector.X.Value;
-                            if (selector.Y.HasValue) p.y = selector.Y.Value;
-                            if (selector.Z.HasValue) p.z = selector.Z.Value;
+                            if (selector.X.HasValue) p.X = selector.X.Value;
+                            if (selector.Y.HasValue) p.Y = selector.Y.Value;
+                            if (selector.Z.HasValue) p.Z = selector.Z.Value;
                             pos = p;
                         }
                     }

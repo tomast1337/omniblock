@@ -32,15 +32,15 @@ public class MinecartEntityRenderer : EntityRenderer
             Vec3D forwardTrackPos = cart.GetTrackPositionOffset(minecart, interpX, interpY, interpZ, trackOffset) ?? trackPos.Value;
             Vec3D backTrackPos = cart.GetTrackPositionOffset(minecart, interpX, interpY, interpZ, -trackOffset) ?? trackPos.Value;
 
-            x += trackPos.Value.x - interpX;
-            y += (forwardTrackPos.y + backTrackPos.y) / 2.0D - interpY;
-            z += trackPos.Value.z - interpZ;
+            x += trackPos.Value.X - interpX;
+            y += (forwardTrackPos.Y + backTrackPos.Y) / 2.0D - interpY;
+            z += trackPos.Value.Z - interpZ;
             Vec3D trackDirection = backTrackPos - forwardTrackPos;
-            if (trackDirection.magnitude() != 0.0D)
+            if (trackDirection.Magnitude() != 0.0D)
             {
-                trackDirection = trackDirection.normalize();
-                yaw = (float)(Math.Atan2(trackDirection.z, trackDirection.x) * 180.0D / Math.PI);
-                pitch = (float)(Math.Atan(trackDirection.y) * 73.0D);
+                trackDirection = trackDirection.Normalize();
+                yaw = (float)(Math.Atan2(trackDirection.Z, trackDirection.X) * 180.0D / Math.PI);
+                pitch = (float)(Math.Atan(trackDirection.Y) * 73.0D);
             }
         }
 

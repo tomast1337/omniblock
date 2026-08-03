@@ -47,13 +47,13 @@ public class FishingBobberEntityRenderer : EntityRenderer
             float swingProgress = angler.GetSwingProgress(tickDelta);
             float swingOffset = MathHelper.Sin(MathHelper.Sqrt(swingProgress) * (float)Math.PI);
             Vec3D rodOffset = new(-0.5D, 0.03D, 0.8D);
-            rodOffset.rotateAroundX(-(angler.PrevPitch + (angler.Pitch - angler.PrevPitch) * tickDelta) * (float)Math.PI / 180.0F);
-            rodOffset.rotateAroundY(-(angler.PrevYaw + (angler.Yaw - angler.PrevYaw) * tickDelta) * (float)Math.PI / 180.0F);
-            rodOffset.rotateAroundY(swingOffset * 0.5F);
-            rodOffset.rotateAroundX(-swingOffset * 0.7F);
-            double lineStartX = angler.PrevX + (angler.X - angler.PrevX) * (double)tickDelta + rodOffset.x;
-            double lineStartY = angler.PrevY + (angler.Y - angler.PrevY) * (double)tickDelta + rodOffset.y;
-            double lineStartZ = angler.PrevZ + (angler.Z - angler.PrevZ) * (double)tickDelta + rodOffset.z;
+            rodOffset.RotateAroundX(-(angler.PrevPitch + (angler.Pitch - angler.PrevPitch) * tickDelta) * (float)Math.PI / 180.0F);
+            rodOffset.RotateAroundY(-(angler.PrevYaw + (angler.Yaw - angler.PrevYaw) * tickDelta) * (float)Math.PI / 180.0F);
+            rodOffset.RotateAroundY(swingOffset * 0.5F);
+            rodOffset.RotateAroundX(-swingOffset * 0.7F);
+            double lineStartX = angler.PrevX + (angler.X - angler.PrevX) * (double)tickDelta + rodOffset.X;
+            double lineStartY = angler.PrevY + (angler.Y - angler.PrevY) * (double)tickDelta + rodOffset.Y;
+            double lineStartZ = angler.PrevZ + (angler.Z - angler.PrevZ) * (double)tickDelta + rodOffset.Z;
             if (Dispatcher.Options.CameraMode != CameraMode.FirstPerson)
             {
                 anglerYawRadians = (angler.LastBodyYaw + (angler.BodyYaw - angler.LastBodyYaw) * tickDelta) * (float)Math.PI / 180.0F;

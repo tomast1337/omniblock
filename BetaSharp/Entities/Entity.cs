@@ -383,7 +383,7 @@ public abstract partial class Entity : IEntity
     {
     }
 
-    public virtual bool ShouldRender(Vec3D vec) => ShouldRender(GetSquaredDistance(vec.x, vec.y, vec.z));
+    public virtual bool ShouldRender(Vec3D vec) => ShouldRender(GetSquaredDistance(vec.X, vec.Y, vec.Z));
 
     protected virtual bool ShouldRender(double sqDist)
     {
