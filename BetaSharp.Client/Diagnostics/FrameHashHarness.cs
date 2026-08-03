@@ -348,6 +348,15 @@ internal static unsafe class FrameHashHarness
         yield return ("fog-linear", FogLinear);
         yield return ("static-mesh", StaticMeshScene);
 
+        // Same geometry under the fixed-function shader and under the slot's own program. The two
+        // hashes have to match: a slot exists to take state explicitly, not to draw differently.
+        // Nothing else covers this — the game's untextured draws are the selection box and the
+        // chunk-border overlay, and the harness draws neither world nor entities.
+        yield return ("slot-basic-fallback", () => BasicSlotScene(t => t.draw()));
+        yield return ("slot-basic-program", () => BasicSlotScene(t => t.draw(ProgramSlot.Basic)));
+        yield return ("slot-basic-fog-fallback", () => BasicSlotFogScene(t => t.draw()));
+        yield return ("slot-basic-fog-program", () => BasicSlotFogScene(t => t.draw(ProgramSlot.Basic)));
+
         // Each of these is drawn twice, once through the raw calls and once through the state it is
         // meant to be equivalent to. The two hashes have to match, which is the property every
         // migration onto RenderState rests on.
@@ -497,6 +506,87 @@ internal static unsafe class FrameHashHarness
             GLManager.ModelView.Translate(0.0f, 0.0f, -2.0f - i * 2.0f);
             GLManager.Color = new(1.0f, 1.0f, 1.0f, 1.0f);
             Quad(-0.8, -0.8, 1.6, 1.6);
+        }
+    }
+
+    /// <summary>
+    ///     The three shapes untextured geometry comes in, drawn however <paramref name="finish" />
+    ///     says to finish a batch.
+    /// </summary>
+    /// <remarks>
+    ///     The first two differ in where the colour comes from, which is the part most easily got
+    ///     wrong: the Tessellator binds an array to the colour attribute only for geometry built
+    ///     with per-vertex colours, so a quad with one colour throughout is relying on the
+    ///     attribute's default value instead, and a program that reads the attribute the wrong way
+    ///     gets one of the two cases right and looks fine.
+    /// </remarks>
+    private static void BasicSlotScene(Action<Tessellator> finish)
+    {
+        Ortho();
+        Tessellator tessellator = Tessellator.instance;
+
+        GLManager.Color = new(0.2f, 0.7f, 0.9f, 1.0f);
+        tessellator.startDrawingQuads();
+        tessellator.addVertex(24, 104, 0.0);
+        tessellator.addVertex(104, 104, 0.0);
+        tessellator.addVertex(104, 24, 0.0);
+        tessellator.addVertex(24, 24, 0.0);
+        finish(tessellator);
+
+        tessellator.startDrawingQuads();
+        tessellator.setColorRGBA_F(1.0f, 0.0f, 0.0f, 1.0f);
+        tessellator.addVertex(152, 104, 0.0);
+        tessellator.setColorRGBA_F(0.0f, 1.0f, 0.0f, 1.0f);
+        tessellator.addVertex(232, 104, 0.0);
+        tessellator.setColorRGBA_F(0.0f, 0.0f, 1.0f, 1.0f);
+        tessellator.addVertex(232, 24, 0.0);
+        tessellator.setColorRGBA_F(1.0f, 1.0f, 0.0f, 1.0f);
+        tessellator.addVertex(152, 24, 0.0);
+        finish(tessellator);
+
+        // Lines, which is the whole of what the slot draws in the game.
+        tessellator.startDrawing(1);
+        tessellator.setColorRGBA_F(1.0f, 1.0f, 0.0f, 1.0f);
+        for (int i = 0; i <= 8; i++)
+        {
+            tessellator.addVertex(24 + i * 26, 152, 0.0);
+            tessellator.addVertex(24 + i * 26, 232, 0.0);
+        }
+
+        finish(tessellator);
+    }
+
+    /// <summary>The same, under the fog and the alpha test that a slot's program has to carry itself.</summary>
+    private static void BasicSlotFogScene(Action<Tessellator> finish)
+    {
+        GLManager.Projection.Frustum(-1.0, 1.0, -1.0, 1.0, 1.0, 100.0);
+        GLManager.FogEnabled = true;
+        GLManager.Fog = new FogState(
+            FogCurve.Linear,
+            new Vector4D<float>(0.4f, 0.5f, 0.9f, 1.0f),
+            Start: 2.0f,
+            End: 12.0f,
+            Density: 1.0f);
+
+        GLManager.AlphaTestEnabled = true;
+        GLManager.AlphaThreshold = 0.5f;
+
+        Tessellator tessellator = Tessellator.instance;
+
+        for (int i = 0; i < 5; i++)
+        {
+            GLManager.ModelView.LoadIdentity();
+            GLManager.ModelView.Translate(0.0f, 0.0f, -2.0f - i * 2.0f);
+
+            // Alternating either side of the threshold, so half of these have to be discarded.
+            GLManager.Color = new(1.0f, 1.0f, 1.0f, i % 2 == 0 ? 1.0f : 0.25f);
+
+            tessellator.startDrawingQuads();
+            tessellator.addVertex(-0.8, 0.8, 0.0);
+            tessellator.addVertex(0.8, 0.8, 0.0);
+            tessellator.addVertex(0.8, -0.8, 0.0);
+            tessellator.addVertex(-0.8, -0.8, 0.0);
+            finish(tessellator);
         }
     }
 

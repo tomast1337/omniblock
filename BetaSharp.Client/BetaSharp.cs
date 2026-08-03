@@ -261,6 +261,7 @@ public partial class BetaSharp :
             Display.getGlfw().SetWindowSizeLimits(Display.GetWindowHandle(), 850, 480, maximumWidth, maximumHeight);
 
             GLManager.Init(Display.getGL()!);
+            SlotPrograms.Initialize(Options);
             if (GLManager.GL is LegacyGL legacyGl)
             {
                 _debugTelemetry.CaptureSystemInfo(legacyGl);
@@ -533,6 +534,7 @@ public partial class BetaSharp :
 
             WorldRenderer?.Dispose();
             UiBatchRenderer.Dispose();
+            SlotPrograms.Dispose();
             SkinManager.Dispose();
             TextureManager.Dispose();
             SoundManager.Dispose();

@@ -861,14 +861,14 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         tessellator.addVertex(box.MaxX, box.MinY, box.MaxZ);
         tessellator.addVertex(box.MinX, box.MinY, box.MaxZ);
         tessellator.addVertex(box.MinX, box.MinY, box.MinZ);
-        tessellator.draw();
+        tessellator.draw(ProgramSlot.Line);
         tessellator.startDrawing(3);
         tessellator.addVertex(box.MinX, box.MaxY, box.MinZ);
         tessellator.addVertex(box.MaxX, box.MaxY, box.MinZ);
         tessellator.addVertex(box.MaxX, box.MaxY, box.MaxZ);
         tessellator.addVertex(box.MinX, box.MaxY, box.MaxZ);
         tessellator.addVertex(box.MinX, box.MaxY, box.MinZ);
-        tessellator.draw();
+        tessellator.draw(ProgramSlot.Line);
         tessellator.startDrawing(1);
         tessellator.addVertex(box.MinX, box.MinY, box.MinZ);
         tessellator.addVertex(box.MinX, box.MaxY, box.MinZ);
@@ -878,7 +878,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         tessellator.addVertex(box.MaxX, box.MaxY, box.MaxZ);
         tessellator.addVertex(box.MinX, box.MinY, box.MaxZ);
         tessellator.addVertex(box.MinX, box.MaxY, box.MaxZ);
-        tessellator.draw();
+        tessellator.draw(ProgramSlot.Line);
     }
 
     public void MarkBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)

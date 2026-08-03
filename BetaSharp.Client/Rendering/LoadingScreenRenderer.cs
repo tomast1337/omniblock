@@ -118,7 +118,7 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
             tessellator.addVertex(x, y + progressBarHeight, 0.0);
             tessellator.addVertex(x + progress, y + progressBarHeight, 0.0);
             tessellator.addVertex(x + progress, y, 0.0);
-            tessellator.draw();
+            tessellator.draw(ProgramSlot.Basic);
             GLManager.TextureEnabled = true;
         }
 

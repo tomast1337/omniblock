@@ -593,7 +593,7 @@ public class GameRenderer
             tess.addVertex(maxX, 128.0, z);
         }
 
-        tess.draw();
+        tess.draw(ProgramSlot.Line);
         GLManager.ModelView.Pop();
         GLManager.TextureEnabled = true;
     }
