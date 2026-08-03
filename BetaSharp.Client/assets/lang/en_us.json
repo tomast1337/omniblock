@@ -1,4 +1,4 @@
-﻿{
+{
     "gui": {
         "joinServer": "Join Server",
         "rename": "Rename",
@@ -130,7 +130,8 @@
         "backToGame": "Back to Game"
     },
     "sign": {
-        "title": "Edit sign message:"
+        "title": "Edit sign message:",
+        "done": "Done"
     },
     "stats": {
         "title": "Statistics",
@@ -390,7 +391,9 @@
             "name": "Sand",
             "desc": ""
         },
-        "sandStone": { "name": "Sandstone" },
+        "sandStone": {
+            "name": "Sandstone"
+        },
         "gravel": {
             "name": "Gravel",
             "desc": ""

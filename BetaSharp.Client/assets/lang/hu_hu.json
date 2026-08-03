@@ -130,7 +130,8 @@
         "backToGame": "Vissza a játékhoz"
     },
     "sign": {
-        "title": "Tábla szövegének szerkesztése:"
+        "title": "Tábla szövegének szerkesztése:",
+        "done": "Kész"
     },
     "stats": {
         "title": "Statisztikák",
@@ -390,7 +391,9 @@
             "name": "Homok",
             "desc": ""
         },
-        "sandStone": { "name": "Homokkő" },
+        "sandStone": {
+            "name": "Homokkő"
+        },
         "gravel": {
             "name": "Kavics",
             "desc": ""

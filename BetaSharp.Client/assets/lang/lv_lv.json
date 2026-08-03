@@ -1,4 +1,4 @@
-﻿{
+{
     "gui": {
         "joinServer": "Pievienoties serverim",
         "rename": "Pārdēvēt",
@@ -130,7 +130,8 @@
         "backToGame": "Atpakaļ uz spēli"
     },
     "sign": {
-        "title": "Rediģē zīmes tekstu:"
+        "title": "Rediģē zīmes tekstu:",
+        "done": "Gatavs"
     },
     "stats": {
         "title": "Statistika",
@@ -390,7 +391,9 @@
             "name": "Smiltis",
             "desc": ""
         },
-        "sandStone": { "name": "Smilšakmens" },
+        "sandStone": {
+            "name": "Smilšakmens"
+        },
         "gravel": {
             "name": "Grants",
             "desc": ""

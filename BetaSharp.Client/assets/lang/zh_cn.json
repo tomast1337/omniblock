@@ -130,7 +130,8 @@
         "backToGame": "返回游戏"
     },
     "sign": {
-        "title": "编辑告示牌内容："
+        "title": "编辑告示牌内容：",
+        "done": "完成"
     },
     "stats": {
         "title": "统计信息",
@@ -390,7 +391,9 @@
             "name": "沙子",
             "desc": ""
         },
-        "sandStone": { "name": "砂岩" },
+        "sandStone": {
+            "name": "砂岩"
+        },
         "gravel": {
             "name": "沙砾",
             "desc": ""

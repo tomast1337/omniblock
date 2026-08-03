@@ -130,7 +130,8 @@
         "backToGame": "Înapoi la joc"
     },
     "sign": {
-        "title": "Editează mesajul indicatorului:"
+        "title": "Editează mesajul indicatorului:",
+        "done": "Gata"
     },
     "stats": {
         "title": "Statistici",
@@ -390,7 +391,9 @@
             "name": "Nisip",
             "desc": ""
         },
-        "sandStone": { "name": "Gresie" },
+        "sandStone": {
+            "name": "Gresie"
+        },
         "gravel": {
             "name": "Pietriș",
             "desc": ""

@@ -130,7 +130,8 @@
         "backToGame": "Zurück zum Spiel"
     },
     "sign": {
-        "title": "Schildtext bearbeiten:"
+        "title": "Schildtext bearbeiten:",
+        "done": "Fertig"
     },
     "stats": {
         "title": "Statistiken",
@@ -390,7 +391,9 @@
             "name": "Sand",
             "desc": ""
         },
-        "sandStone": { "name": "Sandstein" },
+        "sandStone": {
+            "name": "Sandstein"
+        },
         "gravel": {
             "name": "Kies",
             "desc": ""

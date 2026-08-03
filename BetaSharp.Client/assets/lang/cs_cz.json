@@ -130,7 +130,8 @@
         "backToGame": "Zpět do hry"
     },
     "sign": {
-        "title": "Upravit text cedule:"
+        "title": "Upravit text cedule:",
+        "done": "Hotovo"
     },
     "stats": {
         "title": "Statistiky",
@@ -390,7 +391,9 @@
             "name": "Písek",
             "desc": ""
         },
-        "sandStone": { "name": "Pískovec" },
+        "sandStone": {
+            "name": "Pískovec"
+        },
         "gravel": {
             "name": "Štěrk",
             "desc": ""

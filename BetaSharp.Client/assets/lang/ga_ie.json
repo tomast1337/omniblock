@@ -130,7 +130,8 @@
         "backToGame": "Ar ais go dtí an Cluiche"
     },
     "sign": {
-        "title": "Cuir teachtaireacht an chomhartha in eagar:"
+        "title": "Cuir teachtaireacht an chomhartha in eagar:",
+        "done": "Déanta"
     },
     "stats": {
         "title": "Staitisticí",
@@ -390,7 +391,9 @@
             "name": "Gaineamh",
             "desc": ""
         },
-        "sandStone": { "name": "Cloch Ghainimh" },
+        "sandStone": {
+            "name": "Cloch Ghainimh"
+        },
         "gravel": {
             "name": "Gairbhéal",
             "desc": ""

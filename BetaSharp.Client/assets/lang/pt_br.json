@@ -1,4 +1,4 @@
-﻿{
+{
     "gui": {
         "rename": "Renomear",
         "edit": "Editar",
@@ -108,7 +108,8 @@
         "backToGame": "Voltar ao Jogo"
     },
     "sign": {
-        "title": "Editar mensagem da placa:"
+        "title": "Editar mensagem da placa:",
+        "done": "Concluído"
     },
     "stats": {
         "title": "Estatísticas",
@@ -306,7 +307,9 @@
             "name": "Areia",
             "desc": ""
         },
-        "sandStone": { "name": "Arenito" },
+        "sandStone": {
+            "name": "Arenito"
+        },
         "gravel": {
             "name": "Cascalho",
             "desc": ""

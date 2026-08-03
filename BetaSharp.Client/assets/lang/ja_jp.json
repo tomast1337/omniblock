@@ -108,7 +108,8 @@
         "backToGame": "ゲームに戻る"
     },
     "sign": {
-        "title": "看板を編集:"
+        "title": "看板を編集:",
+        "done": "完了"
     },
     "stats": {
         "title": "統計",
@@ -306,7 +307,9 @@
             "name": "砂",
             "desc": ""
         },
-        "sandStone": { "name": "砂岩" },
+        "sandStone": {
+            "name": "砂岩"
+        },
         "gravel": {
             "name": "砂利",
             "desc": ""

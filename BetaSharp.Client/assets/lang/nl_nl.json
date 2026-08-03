@@ -130,7 +130,8 @@
         "backToGame": "Terug naar spel"
     },
     "sign": {
-        "title": "Bordbericht bewerken:"
+        "title": "Bordbericht bewerken:",
+        "done": "Klaar"
     },
     "stats": {
         "title": "Statistieken",
@@ -390,7 +391,9 @@
             "name": "Zand",
             "desc": ""
         },
-        "sandStone": { "name": "Zandsteen" },
+        "sandStone": {
+            "name": "Zandsteen"
+        },
         "gravel": {
             "name": "Grind",
             "desc": ""

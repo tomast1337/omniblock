@@ -130,7 +130,8 @@
         "backToGame": "Takaisin peliin"
     },
     "sign": {
-        "title": "Muokkaa kyltin tekstiä:"
+        "title": "Muokkaa kyltin tekstiä:",
+        "done": "Valmis"
     },
     "stats": {
         "title": "Tilastot",
@@ -390,7 +391,9 @@
             "name": "Hiekka",
             "desc": ""
         },
-        "sandStone": { "name": "Hiekkakivi" },
+        "sandStone": {
+            "name": "Hiekkakivi"
+        },
         "gravel": {
             "name": "Sora",
             "desc": ""

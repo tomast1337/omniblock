@@ -130,7 +130,8 @@
         "backToGame": "Tilbage til spillet"
     },
     "sign": {
-        "title": "Rediger skiltbesked:"
+        "title": "Rediger skiltbesked:",
+        "done": "Færdig"
     },
     "stats": {
         "title": "Statistik",
@@ -390,7 +391,9 @@
             "name": "Sand",
             "desc": ""
         },
-        "sandStone": { "name": "Sandsten" },
+        "sandStone": {
+            "name": "Sandsten"
+        },
         "gravel": {
             "name": "Grus",
             "desc": ""

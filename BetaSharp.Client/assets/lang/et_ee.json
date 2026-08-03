@@ -130,7 +130,8 @@
         "backToGame": "Tagasi mängu juurde"
     },
     "sign": {
-        "title": "Muuda sildi sõnumit:"
+        "title": "Muuda sildi sõnumit:",
+        "done": "Valmis"
     },
     "stats": {
         "title": "Statistika",
@@ -390,7 +391,9 @@
             "name": "Liiv",
             "desc": ""
         },
-        "sandStone": { "name": "Liivakivi" },
+        "sandStone": {
+            "name": "Liivakivi"
+        },
         "gravel": {
             "name": "Kruus",
             "desc": ""

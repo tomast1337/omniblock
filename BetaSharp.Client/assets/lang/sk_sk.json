@@ -130,7 +130,8 @@
         "backToGame": "Späť do hry"
     },
     "sign": {
-        "title": "Upraviť text tabule:"
+        "title": "Upraviť text tabule:",
+        "done": "Hotovo"
     },
     "stats": {
         "title": "Štatistiky",
@@ -390,7 +391,9 @@
             "name": "Piesok",
             "desc": ""
         },
-        "sandStone": { "name": "Pieskovec" },
+        "sandStone": {
+            "name": "Pieskovec"
+        },
         "gravel": {
             "name": "Štrk",
             "desc": ""
