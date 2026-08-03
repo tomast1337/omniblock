@@ -85,3 +85,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-03 — refactor(rendering): state the pipeline for the framebuffer and post-process passes (Nicolas Vyčas Nery; `e5ee8a7b70adb0f39681a3712c6dbdad1f2e0545`)
 - 2026-08-03 — feat(inventory): refactor inventory system (Nicolas Vyčas Nery; `c2dd1626330ba03fbc5c6aa83eb7eeb2c2ffea76`)
 - 2026-08-03 — refactor(item): standardize naming conventions and improve code readability (Nicolas Vyčas Nery; `d661e263aa196cdedf5efb971c83ecb2ca7f1182`)
+- 2026-08-03 — Refactor item stack methods for consistency and clarity (Nicolas Vyčas Nery; `f67958fb7fe7e2f557352f4ce12e72e61dd30ed3`)

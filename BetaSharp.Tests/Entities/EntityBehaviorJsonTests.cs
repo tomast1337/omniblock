@@ -134,7 +134,7 @@ public sealed class EntityBehaviorJsonTests
         """));
 
         ItemStack stack = Assert.Single(table.Roll(LootContext.ForMob(sheep, null)));
-        Assert.Equal(11, stack.getDamage());
+        Assert.Equal(11, stack.GetDamage());
     }
 
     [Fact]

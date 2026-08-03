@@ -105,7 +105,7 @@ public sealed class DroppedItemBehavior : IEntityTicker, IEntityLifecycle, IEnti
         nbt.SetShort("Age", (short)self.State[_age]);
         if (Stack(self) is { } stack)
         {
-            nbt.SetCompoundTag("Item", stack.writeToNBT(new NBTTagCompound()));
+            nbt.SetCompoundTag("Item", stack.WriteToNbt(new NBTTagCompound()));
         }
     }
 

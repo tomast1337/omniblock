@@ -1142,5 +1142,5 @@ public class EntityLiving : Entity
         }
     }
 
-    public virtual int GetItemStackTextureId(ItemStack item) => item.getTextureId();
+    public virtual int GetItemStackTextureId(ItemStack item) => item.GetTextureId();
 }

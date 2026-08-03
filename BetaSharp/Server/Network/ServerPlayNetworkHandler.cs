@@ -507,11 +507,11 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         }
 
         player.SkipPacketSlotUpdates = true;
-        player.Inventory.Main[player.Inventory.SelectedSlot] = ItemStack.clone(player.Inventory.Main[player.Inventory.SelectedSlot]);
+        player.Inventory.Main[player.Inventory.SelectedSlot] = ItemStack.Clone(player.Inventory.Main[player.Inventory.SelectedSlot]);
         Slot slot = player.CurrentScreenHandler.GetSlot(player.Inventory, player.Inventory.SelectedSlot);
         player.CurrentScreenHandler.SendContentUpdates();
         player.SkipPacketSlotUpdates = false;
-        if (!ItemStack.areEqual(player.Inventory.ItemInHand, packet.Stack))
+        if (!ItemStack.AreEqual(player.Inventory.ItemInHand, packet.Stack))
         {
             SendMessage(new ScreenHandlerSlotMessage
             {
@@ -737,7 +737,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
         if (player.CurrentScreenHandler.SyncId == packet.SyncId && player.CurrentScreenHandler.canOpen(player))
         {
             ItemStack clickedStack = player.CurrentScreenHandler.onSlotClick(packet.Slot, packet.Button, packet.HoldingShift, player);
-            if (ItemStack.areEqual(packet.Stack, clickedStack))
+            if (ItemStack.AreEqual(packet.Stack, clickedStack))
             {
                 player.NetworkHandler.SendMessage(Acknowledge(packet.SyncId, packet.ActionType, accepted: true));
                 player.SkipPacketSlotUpdates = true;

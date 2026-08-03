@@ -617,7 +617,7 @@ public abstract class EntityPlayer : EntityLiving
             return;
         }
 
-        ItemStack.onRemoved(this);
+        ItemStack.OnRemoved(this);
         ClearStackInHand();
     }
 
@@ -658,10 +658,10 @@ public abstract class EntityPlayer : EntityLiving
         ItemStack? itemStackInHand = GetHand();
         if (itemStackInHand != null)
         {
-            itemStackInHand.postHit(living, this);
+            itemStackInHand.PostHit(living, this);
             if (itemStackInHand.Count <= 0)
             {
-                ItemStack.onRemoved(this);
+                ItemStack.OnRemoved(this);
                 ClearStackInHand();
             }
         }
@@ -1006,7 +1006,7 @@ public abstract class EntityPlayer : EntityLiving
         int textureId = base.GetItemStackTextureId(stack);
         if (stack.ItemId == s_fishingRod.Id && FishHook != null)
         {
-            textureId = stack.getTextureId() + 16;
+            textureId = stack.GetTextureId() + 16;
         }
 
         return textureId;

@@ -100,7 +100,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
         for (int slotIndex = 0; slotIndex < Main.Length; ++slotIndex)
         {
             ItemStack? stack = Main[slotIndex];
-            if (stack != null && stack.ItemId == itemId && (meta < 0 || stack.getDamage() == meta))
+            if (stack != null && stack.ItemId == itemId && (meta < 0 || stack.GetDamage() == meta))
             {
                 return slotIndex;
             }
@@ -114,7 +114,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
         for (int slotIndex = 0; slotIndex < Main.Length; ++slotIndex)
         {
             ItemStack? stack = Main[slotIndex];
-            if (stack != null && stack.ItemId == itemStack.ItemId && stack.isStackable() && stack.Count < stack.getMaxCount() && stack.Count < MaxCountPerStack && (!stack.getHasSubtypes() || stack.getDamage() == itemStack.getDamage()))
+            if (stack != null && stack.ItemId == itemStack.ItemId && stack.IsStackable() && stack.Count < stack.GetMaxCount() && stack.Count < MaxCountPerStack && (!stack.GetHasSubtypes() || stack.GetDamage() == itemStack.GetDamage()))
             {
                 return slotIndex;
             }
@@ -229,12 +229,12 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
             return remainingCount;
         }
 
-        ItemStack stack = Main[slotIndex] ??= new ItemStack(itemId, 0, itemStack.getDamage());
+        ItemStack stack = Main[slotIndex] ??= new ItemStack(itemId, 0, itemStack.GetDamage());
 
         int spaceAvailable = remainingCount;
-        if (remainingCount > stack.getMaxCount() - stack.Count)
+        if (remainingCount > stack.GetMaxCount() - stack.Count)
         {
-            spaceAvailable = stack.getMaxCount() - stack.Count;
+            spaceAvailable = stack.GetMaxCount() - stack.Count;
         }
 
         if (spaceAvailable > MaxCountPerStack - stack.Count)
@@ -257,7 +257,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
     {
         for (int slotIndex = 0; slotIndex < Main.Length; ++slotIndex)
         {
-            Main[slotIndex]?.inventoryTick(Player.World, Player, slotIndex, SelectedSlot == slotIndex);
+            Main[slotIndex]?.InventoryTick(Player.World, Player, slotIndex, SelectedSlot == slotIndex);
         }
     }
 
@@ -278,12 +278,12 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
     public bool AddItemStackToInventory(ItemStack itemStack)
     {
         int slotIndex;
-        if (itemStack.isDamaged())
+        if (itemStack.IsDamaged())
         {
             slotIndex = GetFreeSlot();
             if (slotIndex < 0) return false;
 
-            ItemStack stack = Main[slotIndex] = ItemStack.clone(itemStack);
+            ItemStack stack = Main[slotIndex] = ItemStack.Clone(itemStack);
             stack.AnimationTime = 5;
             itemStack.Count = 0;
             return true;
@@ -315,7 +315,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
         ItemStack? stack = Main[SelectedSlot];
         if (stack != null)
         {
-            miningSpeed *= stack.getMiningSpeedMultiplier(block);
+            miningSpeed *= stack.GetMiningSpeedMultiplier(block);
         }
 
         return miningSpeed;
@@ -332,7 +332,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
 
             itemTag = new NBTTagCompound();
             itemTag.SetByte("Slot", (sbyte)slotIndex);
-            stack.writeToNBT(itemTag);
+            stack.WriteToNbt(itemTag);
             nbt.SetTag(itemTag);
         }
 
@@ -344,7 +344,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
 
             itemTag = new NBTTagCompound();
             itemTag.SetByte("Slot", (sbyte)(slotIndex + 100));
-            stack.writeToNBT(itemTag);
+            stack.WriteToNbt(itemTag);
             nbt.SetTag(itemTag);
         }
 
@@ -361,7 +361,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
             NBTTagCompound itemTag = (NBTTagCompound)nbt.TagAt(i);
             int slotIndex = itemTag.GetByte("Slot") & 255;
             ItemStack itemStack = new(itemTag);
-            if (itemStack.getItem() == null)
+            if (itemStack.GetItem() == null)
             {
                 continue;
             }
@@ -381,7 +381,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
     public int GetDamageVsEntity(Entity entity)
     {
         ItemStack? itemStack = GetStack(SelectedSlot);
-        return itemStack != null ? itemStack.getAttackDamage(entity) : 1;
+        return itemStack != null ? itemStack.GetAttackDamage(entity) : 1;
     }
 
     public bool CanHarvestBlock(Block block)
@@ -392,7 +392,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
         }
 
         ItemStack? itemStack = GetStack(SelectedSlot);
-        return itemStack != null && itemStack.isSuitableFor(block);
+        return itemStack != null && itemStack.IsSuitableFor(block);
     }
 
     public ItemStack? ArmorItemBySlot(int slotIndex) => Armor[slotIndex];
@@ -405,13 +405,13 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
 
         foreach (ItemStack? stack in Armor)
         {
-            if (stack?.getItem().GetBehavior<ArmorBehavior>() is not { } armor)
+            if (stack?.GetItem().GetBehavior<ArmorBehavior>() is not { } armor)
             {
                 continue;
             }
 
-            int maxDurability = stack.getMaxDamage();
-            int pieceDamage = stack.getDamage2();
+            int maxDurability = stack.GetMaxDamage();
+            int pieceDamage = stack.GetDamage2();
             int remainingDurability = maxDurability - pieceDamage;
             durabilitySum += remainingDurability;
             totalMaxDurability += maxDurability;
@@ -432,7 +432,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
         for (int slotIndex = 0; slotIndex < Armor.Length; ++slotIndex)
         {
             ItemStack? stack = Armor[slotIndex];
-            if (stack?.getItem().GetBehavior<ArmorBehavior>() == null)
+            if (stack?.GetItem().GetBehavior<ArmorBehavior>() == null)
             {
                 continue;
             }
@@ -443,7 +443,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
                 continue;
             }
 
-            ItemStack.onRemoved(Player);
+            ItemStack.OnRemoved(Player);
             Armor[slotIndex] = null;
         }
     }

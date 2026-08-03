@@ -79,14 +79,14 @@ public class ItemRenderer : EntityRenderer
                     GLManager.GL.Translate(minU, maxU, minV);
                 }
 
-                BlockRenderer.RenderBlockOnInventory(Block.Blocks[stack.ItemId], stack.getDamage(), entityItem.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
+                BlockRenderer.RenderBlockOnInventory(Block.Blocks[stack.ItemId], stack.GetDamage(), entityItem.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
                 GLManager.GL.PopMatrix();
             }
         }
         else
         {
             GLManager.GL.Scale(0.5F, 0.5F, 0.5F);
-            int iconIndex = stack.getTextureId();
+            int iconIndex = stack.GetTextureId();
             if (stack.ItemId < 256)
             {
                 loadTexture("/terrain.png");
@@ -110,7 +110,7 @@ public class ItemRenderer : EntityRenderer
             float blue;
             if (useCustomDisplayColor)
             {
-                colorMultiplier = Item.Items[stack.ItemId].GetColorMultiplier(stack.getDamage());
+                colorMultiplier = Item.Items[stack.ItemId].GetColorMultiplier(stack.GetDamage());
                 red = (colorMultiplier >> 16 & 255) / 255.0F;
                 green = (colorMultiplier >> 8 & 255) / 255.0F;
                 blue = (colorMultiplier & 255) / 255.0F;
@@ -201,7 +201,7 @@ public class ItemRenderer : EntityRenderer
     {
         if (stack != null)
         {
-            drawItemIntoGui(fontRenderer, textureManager, stack.ItemId, stack.getDamage(), stack.getTextureId(), x, y);
+            drawItemIntoGui(fontRenderer, textureManager, stack.ItemId, stack.GetDamage(), stack.GetTextureId(), x, y);
         }
     }
 

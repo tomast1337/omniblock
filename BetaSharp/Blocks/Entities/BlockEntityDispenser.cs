@@ -100,7 +100,7 @@ public class BlockEntityDispenser : BlockEntity, IInventory
 
             NBTTagCompound itemTag = new();
             itemTag.SetByte("Slot", (sbyte)slotIndex);
-            itemStack.writeToNBT(itemTag);
+            itemStack.WriteToNbt(itemTag);
             itemList.SetTag(itemTag);
         }
 

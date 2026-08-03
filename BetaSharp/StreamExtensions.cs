@@ -434,7 +434,7 @@ internal static class StreamExtensions
 
             stream.WriteShort((short)value.ItemId);
             stream.WriteByte((byte)value.Count);
-            stream.WriteShort((short)value.getDamage());
+            stream.WriteShort((short)value.GetDamage());
         }
 
         /// <summary>Writes a run of slots, length-prefixed.</summary>

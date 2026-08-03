@@ -6,7 +6,7 @@ using BetaSharp.Registries.Data;
 
 namespace BetaSharp.Items;
 
-internal sealed class ItemDefinitionJsonLoader : DataAssetLoader, IReadableRegistry<ItemDefinition>
+internal sealed class ItemDefinitionJsonLoader(string path, LoadLocations locations) : DataAssetLoader(locations), IReadableRegistry<ItemDefinition>
 {
     private const string DefaultsFileName = "_defaults.json";
     private static readonly JsonSerializerOptions s_options = new()
@@ -14,15 +14,9 @@ internal sealed class ItemDefinitionJsonLoader : DataAssetLoader, IReadableRegis
         Converters = { new JsonStringEnumConverter() }
     };
 
-    private readonly string _path;
     private readonly Dictionary<ResourceLocation, ItemDefinition> _byLocation = [];
     private readonly Dictionary<int, ItemDefinition> _byId = [];
     private JsonElement? _defaults;
-
-    public ItemDefinitionJsonLoader(string path, LoadLocations locations) : base(locations)
-    {
-        _path = path;
-    }
 
     private protected override void Clear()
     {
@@ -48,7 +42,7 @@ internal sealed class ItemDefinitionJsonLoader : DataAssetLoader, IReadableRegis
 
     private void LoadAssets(Namespace @namespace, string basePath, LoadLocations location)
     {
-        string dir = Path.Join(basePath, _path);
+        string dir = Path.Join(basePath, path);
         if (!Directory.Exists(dir))
         {
             Directory.CreateDirectory(dir);
@@ -119,7 +113,7 @@ internal sealed class ItemDefinitionJsonLoader : DataAssetLoader, IReadableRegis
     {
         if (!Locations.HasFlag(LoadLocations.WorldDatapack)) return null;
 
-        var clone = new ItemDefinitionJsonLoader(_path, Locations);
+        var clone = new ItemDefinitionJsonLoader(path, Locations);
         foreach (KeyValuePair<ResourceLocation, ItemDefinition> pair in _byLocation)
         {
             clone._byLocation[pair.Key] = pair.Value;
@@ -133,7 +127,7 @@ internal sealed class ItemDefinitionJsonLoader : DataAssetLoader, IReadableRegis
         return clone;
     }
 
-    public ResourceLocation RegistryKey => new(Namespace.BetaSharp, _path);
+    public ResourceLocation RegistryKey => new(Namespace.BetaSharp, path);
 
     public Holder<ItemDefinition>? Get(ResourceLocation key) =>
         _byLocation.TryGetValue(key, out ItemDefinition? value) ? new Holder<ItemDefinition>(value) : null;

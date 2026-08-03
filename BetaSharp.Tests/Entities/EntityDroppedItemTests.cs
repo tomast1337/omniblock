@@ -135,7 +135,7 @@ public sealed class EntityDroppedItemTests
         ItemStack stack = Dropped.Stack(restored)!;
         Assert.Equal(BlockRegistry.Get("wool").Id, stack.ItemId);
         Assert.Equal(5, stack.Count);
-        Assert.Equal(11, stack.getDamage());
+        Assert.Equal(11, stack.GetDamage());
     }
 
     /// <summary>The mine-wood achievement is declared data: picking up a log awards it.</summary>

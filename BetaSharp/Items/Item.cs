@@ -94,7 +94,7 @@ public class Item
 
     public virtual int GetTextureId(int damage) => _behavior?.GetTextureId(this, damage) ?? _textureId;
 
-    public int GetTextureId(ItemStack stack) => GetTextureId(stack.getDamage());
+    public int GetTextureId(ItemStack stack) => GetTextureId(stack.GetDamage());
 
     public virtual bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta) => _behavior?.UseOnBlock(this, itemStack, entityPlayer, world, x, y, z, meta) ?? false;
 

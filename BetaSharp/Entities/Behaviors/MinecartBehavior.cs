@@ -232,7 +232,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
                     self.X + offsetX,
                     self.Y + offsetY,
                     self.Z + offsetZ,
-                    new ItemStack(stack.ItemId, dropCount, stack.getDamage()));
+                    new ItemStack(stack.ItemId, dropCount, stack.GetDamage()));
 
                 const float scatterSpeed = 0.05F;
                 dropped.VelocityX = (float)self.Random.NextGaussian() * scatterSpeed;
@@ -266,7 +266,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
 
                 NBTTagCompound itemTag = new();
                 itemTag.SetByte("Slot", (sbyte)slotIndex);
-                stack.writeToNBT(itemTag);
+                stack.WriteToNbt(itemTag);
                 items.SetTag(itemTag);
             }
 

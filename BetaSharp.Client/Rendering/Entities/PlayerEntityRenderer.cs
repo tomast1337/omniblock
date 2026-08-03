@@ -30,7 +30,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
         ItemStack armorStack = playerEntity.Inventory.ArmorItemBySlot(3 - renderPass);
         if (armorStack != null)
         {
-            Item armorItem = armorStack.getItem();
+            Item armorItem = armorStack.GetItem();
             if (armorItem.GetBehavior<ArmorBehavior>() is { } armor)
             {
                 loadTexture("/armor/" + s_armorFilenamePrefix[armor.RenderIndex] + "_" + (renderPass == 2 ? 2 : 1) + ".png");
@@ -134,7 +134,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
     protected void RenderSpecials(EntityPlayer playerEntity, float tickDelta)
     {
         ItemStack helmetStack = playerEntity.Inventory.ArmorItemBySlot(3);
-        if (helmetStack != null && helmetStack.getItem().Id < 256)
+        if (helmetStack != null && helmetStack.GetItem().Id < 256)
         {
             GLManager.GL.PushMatrix();
             _modelBipedMain.BipedHead.Transform(1.0F / 16.0F);

@@ -138,7 +138,7 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
         {
             EntityPlayer? angler = Angler(self);
             ItemStack? heldItem = angler?.GetHand();
-            if (angler != null && (angler.Dead || !angler.IsAlive || heldItem == null || heldItem.getItem() != _rod || self.GetSquaredDistance(angler) > _maxAnglerDistanceSquared))
+            if (angler != null && (angler.Dead || !angler.IsAlive || heldItem == null || heldItem.GetItem() != _rod || self.GetSquaredDistance(angler) > _maxAnglerDistanceSquared))
             {
                 self.MarkDead();
                 angler.FishHook = null;

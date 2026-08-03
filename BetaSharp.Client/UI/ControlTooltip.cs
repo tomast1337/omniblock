@@ -139,7 +139,7 @@ public static class ControlTooltip
         if (s_usabilityCache.TryGetValue(stack.ItemId, out bool usable))
             return usable;
 
-        Item item = stack.getItem();
+        Item item = stack.GetItem();
         if (item == null) return false;
 
         Type type = item.GetType();
@@ -162,7 +162,7 @@ public static class ControlTooltip
         if (stack == null) return "Use";
         if (stack.ItemId < 256) return "Place";
 
-        Item item = stack.getItem();
+        Item item = stack.GetItem();
         if (item == null) return "Use";
 
         string typeName = item.GetType().Name;

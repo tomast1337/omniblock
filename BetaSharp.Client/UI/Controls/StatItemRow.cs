@@ -41,7 +41,7 @@ public class StatItemRow : UIElement
         renderer.DrawItem(itemStack, IconX + 1, IconY + 1);
 
         // don't draw unlocalized names for now
-        string? tileName = itemStack.getItemName();
+        string? tileName = itemStack.GetItemName();
 
         if (tileName.StartsWith("item."))
             tileName = tileName.Replace("item.", "tile.");

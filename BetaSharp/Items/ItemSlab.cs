@@ -17,11 +17,6 @@ internal class ItemSlab : ItemBlock
 
     public override string GetItemNameIs(ItemStack itemStack)
     {
-        if (SlabBehavior.Names.Length > itemStack.getDamage())
-        {
-            return base.GetItemName() + "." + SlabBehavior.Names[itemStack.getDamage()];
-        }
-
-        return "";
+        return SlabBehavior.Names.Length > itemStack.GetDamage() ? $"{base.GetItemName()}.{SlabBehavior.Names[itemStack.GetDamage()]}" : "";
     }
 }

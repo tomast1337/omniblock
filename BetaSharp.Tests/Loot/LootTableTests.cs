@@ -135,7 +135,7 @@ public sealed class LootTableTests
             [new LootEntry(context => new ItemStack(s_arrow.Id, 1, context.BlockMeta))], 1, 1));
 
         ItemStack stack = Assert.Single(table.Roll(new LootContext(null, null, 7, System.Random.Shared)));
-        Assert.Equal(7, stack.getDamage());
+        Assert.Equal(7, stack.GetDamage());
     }
 
     /// <summary>Local stand-in for a gate that never opens; production conditions are all named types.</summary>

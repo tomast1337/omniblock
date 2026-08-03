@@ -152,7 +152,7 @@ public sealed class EntityBehaviorSlotTests
 
         ItemStack wool = Assert.Single(drops);
         Assert.Equal(BlockRegistry.Get("wool").Id, wool.ItemId);
-        Assert.Equal(4, wool.getDamage());
+        Assert.Equal(4, wool.GetDamage());
     }
 
     [Fact]

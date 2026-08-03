@@ -21,7 +21,7 @@ public sealed class MapBehavior : IItemBehavior
             return;
         }
 
-        MapState mapState = GetMapState(itemStack.getDamage(), world);
+        MapState mapState = GetMapState(itemStack.GetDamage(), world);
         if (entity is EntityPlayer player)
         {
             mapState.Update(player, itemStack);
@@ -35,8 +35,8 @@ public sealed class MapBehavior : IItemBehavior
 
     public void OnCraft(Item item, ItemStack itemStack, IWorldContext world, EntityPlayer player)
     {
-        itemStack.setDamage(world.StateManager.GetUniqueDataId("map"));
-        string mapName = "map_" + itemStack.getDamage();
+        itemStack.SetDamage(world.StateManager.GetUniqueDataId("map"));
+        string mapName = "map_" + itemStack.GetDamage();
         MapState mapState = new(mapName);
         world.StateManager.SetData(mapName, mapState);
         mapState.CenterX = MathHelper.Floor(player.X);
@@ -50,11 +50,11 @@ public sealed class MapBehavior : IItemBehavior
 
     public Message? GetUpdatePacket(Item item, ItemStack stack, IWorldContext world, EntityPlayer player)
     {
-        byte[]? updateData = GetMapState(stack.getDamage(), world).GetPlayerMarkerPacket(player);
+        byte[]? updateData = GetMapState(stack.GetDamage(), world).GetPlayerMarkerPacket(player);
         return updateData == null ? null : new MapUpdateMessage
         {
             ItemRawId = (short)item.Id,
-            MapId = (short)stack.getDamage(),
+            MapId = (short)stack.GetDamage(),
             Data = updateData
         };
     }
@@ -75,14 +75,14 @@ public sealed class MapBehavior : IItemBehavior
 
     public static MapState GetSavedMapState(ItemStack stack, IWorldContext world)
     {
-        string mapName = "map_" + stack.getDamage();
+        string mapName = "map_" + stack.GetDamage();
         MapState? mapState = (MapState?)world.StateManager.LoadData(typeof(MapState), mapName);
         if (mapState != null)
         {
             return mapState;
         }
 
-        stack.setDamage(world.StateManager.GetUniqueDataId("map"));
+        stack.SetDamage(world.StateManager.GetUniqueDataId("map"));
         mapState = new MapState(mapName);
         mapState.CenterX = world.Properties.SpawnX;
         mapState.CenterZ = world.Properties.SpawnZ;
