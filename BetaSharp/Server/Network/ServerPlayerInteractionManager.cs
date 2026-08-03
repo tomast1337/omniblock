@@ -182,10 +182,10 @@ public class ServerPlayerInteractionManager
         ItemStack? itemStack = player.GetHand();
         if (itemStack != null)
         {
-            itemStack.postMine(blockId, x, y, z, player);
+            itemStack.PostMine(blockId, x, y, z, player);
             if (itemStack.Count == 0)
             {
-                ItemStack.onRemoved(player);
+                ItemStack.OnRemoved(player);
                 player.ClearStackInHand();
             }
         }
@@ -196,7 +196,7 @@ public class ServerPlayerInteractionManager
     public bool interactItem(EntityPlayer player, IWorldContext world, ItemStack stack)
     {
         int count = stack.Count;
-        ItemStack itemStack = stack.use(world, player);
+        ItemStack itemStack = stack.Use(world, player);
         if (itemStack != stack || itemStack != null && itemStack.Count != count)
         {
             player.Inventory.Main[player.Inventory.SelectedSlot] = itemStack;

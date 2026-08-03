@@ -31,7 +31,7 @@ internal class CraftingResultSlot : Slot
 
     public override void onTakeItem(ItemStack stack)
     {
-        stack.onCraft(thePlayer.World, thePlayer);
+        stack.OnCraft(thePlayer.World, thePlayer);
         if (stack.ItemId == BlockRegistry.Get("crafting_table").Id)
         {
             thePlayer.IncreaseStat(Achievements.BuildWorkbench, 1);
@@ -71,9 +71,9 @@ internal class CraftingResultSlot : Slot
             if (ingredientStack != null)
             {
                 craftMatrix.RemoveStack(slotIndex, 1);
-                if (ingredientStack.getItem().HasContainerItem())
+                if (ingredientStack.GetItem().HasContainerItem())
                 {
-                    craftMatrix.SetStack(slotIndex, new ItemStack(ingredientStack.getItem().GetContainerItem()));
+                    craftMatrix.SetStack(slotIndex, new ItemStack(ingredientStack.GetItem().GetContainerItem()));
                 }
             }
         }

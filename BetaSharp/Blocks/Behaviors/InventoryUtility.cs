@@ -63,7 +63,7 @@ public static class InventoryUtility
                 }
 
                 stack.Count -= amount;
-                Entity entityItem = DroppedItemBehavior.Create(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, amount, stack.getDamage()));
+                Entity entityItem = DroppedItemBehavior.Create(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, amount, stack.GetDamage()));
                 entityItem.VelocityX = (float)random.NextGaussian() * DropSpread;
                 entityItem.VelocityY = (float)random.NextGaussian() * DropSpread + 0.2F;
                 entityItem.VelocityZ = (float)random.NextGaussian() * DropSpread;

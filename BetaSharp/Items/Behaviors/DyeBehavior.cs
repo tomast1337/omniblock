@@ -24,11 +24,11 @@ internal sealed class DyeBehavior : IItemBehavior
         => item._textureId + meta % 8 * 16 + meta / 8;
 
     public string GetItemNameIS(Item item, ItemStack itemStack)
-        => item.GetItemName() + "." + ColorNames[itemStack.getDamage()];
+        => item.GetItemName() + "." + ColorNames[itemStack.GetDamage()];
 
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
-        if (itemStack.getDamage() != 15)
+        if (itemStack.GetDamage() != 15)
         {
             return false;
         }
@@ -107,7 +107,7 @@ internal sealed class DyeBehavior : IItemBehavior
         // Dyeable because it has a fleece, not because it is a sheep.
         if (target.Behaviors.Find<WoolBehavior>() is { } wool)
         {
-            int woolColor = ClothVisualBehavior.GetBlockMeta(itemStack.getDamage());
+            int woolColor = ClothVisualBehavior.GetBlockMeta(itemStack.GetDamage());
             if (!wool.IsShearedOn(target) && wool.ColorOf(target) != woolColor)
             {
                 wool.SetColorOn(target, woolColor);

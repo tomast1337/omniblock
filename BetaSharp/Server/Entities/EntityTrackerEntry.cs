@@ -246,7 +246,7 @@ internal class EntityTrackerEntry
         EntityId = entityId,
         Slot = (short)slot,
         ItemRawId = (short)(stack?.ItemId ?? -1),
-        ItemDamage = (short)(stack?.getDamage() ?? 0),
+        ItemDamage = (short)(stack?.GetDamage() ?? 0),
     };
 
     public void sendToListeners(Packet packet)
@@ -421,7 +421,7 @@ internal class EntityTrackerEntry
                 EntityId = currentTrackedEntity.ID,
                 ItemRawId = (short)stack.ItemId,
                 ItemCount = (sbyte)stack.Count,
-                ItemDamage = (short)stack.getDamage(),
+                ItemDamage = (short)stack.GetDamage(),
                 X = Fixed(currentTrackedEntity.X),
                 Y = Fixed(currentTrackedEntity.Y),
                 Z = Fixed(currentTrackedEntity.Z),

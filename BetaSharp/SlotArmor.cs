@@ -26,9 +26,9 @@ class SlotArmor : Slot
 
     public override bool canInsert(ItemStack stack)
     {
-        ArmorBehavior? armor = stack.getItem().GetBehavior<ArmorBehavior>();
+        ArmorBehavior? armor = stack.GetItem().GetBehavior<ArmorBehavior>();
         return armor != null
             ? armor.ArmorType == armorType
-            : stack.getItem().Id == BlockRegistry.Get("pumpkin").Id && armorType == 0;
+            : stack.GetItem().Id == BlockRegistry.Get("pumpkin").Id && armorType == 0;
     }
 }

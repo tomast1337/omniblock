@@ -53,7 +53,7 @@ public abstract partial class Command
 
             if (ItemLookup.TryGetItem(name, out ItemStack? result) && Block.Blocks.Length > result.ItemId && Block.Blocks[result.ItemId] != null)
             {
-                return (result.ItemId, result.getDamage());
+                return (result.ItemId, result.GetDamage());
             }
 
             throw s_blockNotFound.Create(name);

@@ -52,7 +52,7 @@ public class PlayerController
     public virtual bool SendUseItem(EntityPlayer player, World world, ItemStack stack)
     {
         int originalCount = stack.Count;
-        ItemStack resultStack = stack.use(world, player);
+        ItemStack resultStack = stack.Use(world, player);
         if (resultStack != stack || resultStack != null && resultStack.Count != originalCount)
         {
             player.Inventory.Main[player.Inventory.SelectedSlot] = resultStack;

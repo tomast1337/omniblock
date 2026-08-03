@@ -231,7 +231,7 @@ public sealed class GeneratedMessageTests
         Assert.NotNull(read.Stack);
         Assert.Equal(written.Stack.ItemId, read.Stack.ItemId);
         Assert.Equal(written.Stack.Count, read.Stack.Count);
-        Assert.Equal(written.Stack.getDamage(), read.Stack.getDamage());
+        Assert.Equal(written.Stack.GetDamage(), read.Stack.GetDamage());
     }
 
     /// <summary>

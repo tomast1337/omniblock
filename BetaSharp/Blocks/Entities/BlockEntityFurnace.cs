@@ -99,7 +99,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
             if (stack == null) continue;
             NBTTagCompound slotTag = new();
             slotTag.SetByte("Slot", (sbyte)slotIndex);
-            stack.writeToNBT(slotTag);
+            stack.WriteToNbt(slotTag);
             itemList.SetTag(slotTag);
         }
 
@@ -176,16 +176,16 @@ public class BlockEntityFurnace : BlockEntity, IInventory
         ItemStack? input = _inventory[0];
         if (input is null) return false;
 
-        ItemStack? output = RecipesSmelting.Craft(input.getItem().Id);
+        ItemStack? output = RecipesSmelting.Craft(input.GetItem().Id);
         if (output is null) return false;
 
         ItemStack? slot2 = _inventory[2];
         if (slot2 is null) return true;
-        if (!slot2.isItemEqual(output)) return false;
+        if (!slot2.IsItemEqual(output)) return false;
 
         return slot2.Count < MaxCountPerStack &&
-               slot2.Count < slot2.getMaxCount() &&
-               slot2.Count < output.getMaxCount();
+               slot2.Count < slot2.GetMaxCount() &&
+               slot2.Count < output.GetMaxCount();
     }
 
     private void CraftRecipe()
@@ -196,13 +196,13 @@ public class BlockEntityFurnace : BlockEntity, IInventory
 
         if (item1 is null) return;
 
-        ItemStack? outputStack = RecipesSmelting.Craft(item1.getItem().Id);
+        ItemStack? outputStack = RecipesSmelting.Craft(item1.GetItem().Id);
 
         if (outputStack == null) return;
 
         if (_inventory[2] == null)
         {
-            _inventory[2] = outputStack.copy();
+            _inventory[2] = outputStack.Copy();
         }
         else
         {
@@ -227,7 +227,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
     private static int GetFuelTime(ItemStack? itemStack)
     {
         if (itemStack == null) return 0;
-        int itemId = itemStack.getItem().Id;
+        int itemId = itemStack.GetItem().Id;
         return itemId < 256 && Block.Blocks[itemId].Material == MaterialRegistry.Get("wood") ? 300 : itemId == s_stickId ? 100 : itemId == s_coalId ? 1600 : itemId == s_bucketLavaId ? 20000 : itemId == BlockRegistry.Get("sapling").Id ? 100 : 0;
     }
 }

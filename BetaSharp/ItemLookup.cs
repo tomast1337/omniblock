@@ -108,7 +108,7 @@ internal static class ItemLookup
         TryGetItem(input, out itemId, itemCount, meta, true);
 
     internal static string ResolveItemName(ItemStack item) =>
-        s_itemNameToId.FirstOrDefault(kvp => kvp.Value == item.ItemId).Key ?? item.getItemName();
+        s_itemNameToId.FirstOrDefault(kvp => kvp.Value == item.ItemId).Key ?? item.GetItemName();
 
     /// <summary>
     /// Gets all available item names that start with the given prefix (with underscores)

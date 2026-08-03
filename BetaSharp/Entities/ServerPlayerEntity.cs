@@ -117,7 +117,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         NetworkHandler?.SendMessage(new InventoryMessage
         {
             SyncId = (sbyte)handler.SyncId,
-            Contents = [.. stacks.Select(s => s?.copy())],
+            Contents = [.. stacks.Select(s => s?.Copy())],
         });
         NetworkHandler?.SendMessage(SlotUpdate(-1, -1, Inventory.GetCursorStack()));
     }
@@ -135,7 +135,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     {
         SyncId = (sbyte)syncId,
         Slot = (short)slot,
-        Stack = stack?.copy(),
+        Stack = stack?.Copy(),
     };
 
 

@@ -8,11 +8,11 @@ namespace BetaSharp.Items;
 
 internal class ItemBlock : Item
 {
-    private readonly int blockID;
+    private readonly int _blockId;
 
     public ItemBlock(int id) : base(id)
     {
-        blockID = id + 256;
+        _blockId = id + 256;
         SetTextureId(Block.Blocks[id + 256].GetTexture(2.ToSide()));
     }
 
@@ -24,34 +24,26 @@ internal class ItemBlock : Item
         }
         else
         {
-            if (meta == 0)
+            switch (meta)
             {
-                --y;
-            }
-
-            if (meta == 1)
-            {
-                ++y;
-            }
-
-            if (meta == 2)
-            {
-                --z;
-            }
-
-            if (meta == 3)
-            {
-                ++z;
-            }
-
-            if (meta == 4)
-            {
-                --x;
-            }
-
-            if (meta == 5)
-            {
-                ++x;
+                case 0:
+                    --y;
+                    break;
+                case 1:
+                    ++y;
+                    break;
+                case 2:
+                    --z;
+                    break;
+                case 3:
+                    ++z;
+                    break;
+                case 4:
+                    --x;
+                    break;
+                case 5:
+                    ++x;
+                    break;
             }
         }
 
@@ -71,7 +63,7 @@ internal class ItemBlock : Item
             return false;
         }
 
-        Block block = Block.Blocks[blockID];
+        Block block = Block.Blocks[_blockId];
         Box? collisionBox = block.GetCollisionShape(world.Reader, world.Entities, x, y, z);
         if (collisionBox is { } box)
         {
@@ -83,23 +75,26 @@ internal class ItemBlock : Item
             }
         }
 
-        if (block.CanPlaceAt(new CanPlaceAtContext(world, meta.ToSide(), x, y, z)))
+        if (!block.CanPlaceAt(new CanPlaceAtContext(world, meta.ToSide(), x, y, z)))
         {
-            int placementMeta = GetPlacementMetadata(itemStack.getDamage());
-            if (world.Writer.SetBlockWithoutCallingOnPlaced(x, y, z, blockID, placementMeta))
-            {
-                Block.Blocks[blockID].OnPlaced(new OnPlacedEvent(world, entityPlayer, meta.ToSide(), meta.ToSide(), x, y, z));
-                world.Broadcaster.PlaySoundAtPos(x + 0.5F, y + 0.5F, z + 0.5F, block.SoundGroup.StepSound, (block.SoundGroup.Volume + 1.0F) / 2.0F, block.SoundGroup.Pitch * 0.8F);
-                itemStack.ConsumeItem(entityPlayer);
-            }
+            return false;
+        }
 
+        int placementMeta = GetPlacementMetadata(itemStack.GetDamage());
+        if (!world.Writer.SetBlockWithoutCallingOnPlaced(x, y, z, _blockId, placementMeta))
+        {
             return true;
         }
 
-        return false;
+        Block.Blocks[_blockId].OnPlaced(new OnPlacedEvent(world, entityPlayer, meta.ToSide(), meta.ToSide(), x, y, z));
+        world.Broadcaster.PlaySoundAtPos(x + 0.5F, y + 0.5F, z + 0.5F, block.SoundGroup.StepSound, (block.SoundGroup.Volume + 1.0F) / 2.0F, block.SoundGroup.Pitch * 0.8F);
+        itemStack.ConsumeItem(entityPlayer);
+
+        return true;
+
     }
 
-    public override string GetItemNameIs(ItemStack itemStack) => Block.Blocks[blockID].BlockName;
+    public override string GetItemNameIs(ItemStack itemStack) => Block.Blocks[_blockId].BlockName;
 
-    public override string GetItemName() => Block.Blocks[blockID].BlockName;
+    public override string GetItemName() => Block.Blocks[_blockId].BlockName;
 }

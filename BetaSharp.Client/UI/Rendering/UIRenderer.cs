@@ -408,12 +408,12 @@ public class UIRenderer
         }
         else
         {
-            int iconIndex = stack.getTextureId();
+            int iconIndex = stack.GetTextureId();
             if (iconIndex < 0) return;
 
             TextureHandle texHandle = stack.ItemId < 256 ? _terrainTexture : _itemsTexture;
 
-            int colorMultiplier = Item.Items[stack.ItemId]!.GetColorMultiplier(stack.getDamage());
+            int colorMultiplier = Item.Items[stack.ItemId]!.GetColorMultiplier(stack.GetDamage());
             uint rgba = (uint)Color.FromRgb((uint)colorMultiplier);
 
             float finalX = MathF.Floor(x + _translateX);
@@ -439,10 +439,10 @@ public class UIRenderer
             TextRenderer.DrawStringWithShadow(stackText, textX, by + 9, Color.White, batch: _batch);
         }
 
-        if (stack.isDamaged())
+        if (stack.IsDamaged())
         {
-            int barWidth = (int)Math.Round(13.0 - stack.getDamage2() * 13.0 / stack.getMaxDamage());
-            int damageColor = (int)Math.Round(255.0 - stack.getDamage2() * 255.0 / stack.getMaxDamage());
+            int barWidth = (int)Math.Round(13.0 - stack.GetDamage2() * 13.0 / stack.GetMaxDamage());
+            int damageColor = (int)Math.Round(255.0 - stack.GetDamage2() * 255.0 / stack.GetMaxDamage());
             int barColor = (255 - damageColor) << 16 | damageColor << 8;
             int bgColor = (255 - damageColor) / 4 << 16 | 16128;
 
