@@ -234,7 +234,22 @@ public class Tessellator
         hasNormals = false;
     }
 
-    public unsafe void draw()
+    /// <summary>Draws the accumulated vertices under the fixed-function shader.</summary>
+    /// <remarks>
+    ///     What every call site did before slots existed, and still the majority. Equivalent to
+    ///     naming a slot nothing has claimed; it goes away when the last one has been named.
+    /// </remarks>
+    public void draw() => draw(SlotPrograms.FixedFunction);
+
+    /// <summary>Draws the accumulated vertices under whatever program <paramref name="slot" /> resolves to.</summary>
+    /// <remarks>
+    ///     The slot is an argument rather than ambient state on purpose. Everything this migration
+    ///     has cost was some draw inheriting state a previous one left set, and a draw that has to
+    ///     name what it is cannot inherit the answer.
+    /// </remarks>
+    public void draw(ProgramSlot slot) => draw(SlotPrograms.Resolve(slot));
+
+    private unsafe void draw(ISlotProgram program)
     {
         if (!IsDrawing)
         {
@@ -263,7 +278,13 @@ public class Tessellator
                 GL silkGl = ((LegacyGL)GLManager.GL).SilkGL;
                 silkGl.BindVertexArray(_tessVao);
                 TessellatorVertexLayout.Bind(silkGl, hasTexture, hasColor, hasNormals);
+
+                // Through GLManager rather than Silk, so that a bound program suppresses the
+                // fixed-function shader's own activation and the queued-geometry flush still fires.
+                program.Activate();
                 GLManager.GL.DrawArrays(SubmittedDrawMode, 0, (uint)vertexCount);
+                program.Deactivate();
+
                 TessellatorVertexLayout.Unbind(silkGl, hasTexture, hasColor, hasNormals);
                 silkGl.BindVertexArray(0);
             }
