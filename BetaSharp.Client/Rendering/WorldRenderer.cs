@@ -50,12 +50,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     private int _renderDistance = -1;
     private int _renderEntitiesStartupCounter = 2;
     private readonly Shader _skyShader;
-    private int _skyShaderMvLoc;
-    private int _skyShaderProjLoc;
     private readonly Shader _cloudShader;
-    private int _cloudShaderMvLoc;
-    private int _cloudShaderProjLoc;
-    private int _cloudShaderTexMatLoc;
     private Vector3D<float> _fogColor;
     private int _cloudsQuality = -1;
 
@@ -83,8 +78,6 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     private void OnBuildSkyShader(Shader _)
     {
-        _skyShaderMvLoc = _skyShader.GetUniformLocation("u_ModelView");
-        _skyShaderProjLoc = _skyShader.GetUniformLocation("u_Projection");
     }
 
     private void OnCloudsQualityChanged()
@@ -110,9 +103,6 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     private void OnBuildCloudShader(Shader _)
     {
-        _cloudShaderMvLoc = _cloudShader.GetUniformLocation("u_ModelView");
-        _cloudShaderProjLoc = _cloudShader.GetUniformLocation("u_Projection");
-        _cloudShaderTexMatLoc = _cloudShader.GetUniformLocation("u_TextureMatrix");
     }
 
     public void SetFogColor(float r, float g, float b) => _fogColor = new(r, g, b);
@@ -418,7 +408,11 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         _skyShader.SetUniform1("u_UseTexture", 0);
         _skyShader.SetUniform3("u_SkyColor", new Vector3D<float>(skyRed, skyGreen, skyBlue));
         _skyShader.SetUniform3("u_GroundColor", new Vector3D<float>(groundR, groundG, groundB));
-        GLManager.GL.BeginExternalShader(_skyShaderMvLoc, _skyShaderProjLoc);
+
+        // Tell the shader what the view is now, and again after every model-view mutation below,
+        // because the draws are immediate-mode. The projection does not change in this method.
+        _skyShader.SetUniformMatrix4("u_Projection", GLManager.Projection.Top);
+        _skyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
 
         Tessellator tessellator = Tessellator.instance;
 
@@ -446,6 +440,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             GLManager.ModelView.Rotate(90.0F, 1.0F, 0.0F, 0.0F);
             float celestialAngle = _world.GetTime(tickDelta);
             GLManager.ModelView.Rotate(celestialAngle > 0.5F ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
+            _skyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
             tessellator.startDrawing(6);
             tessellator.setColorRGBA_F(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
             tessellator.addVertex(0.0D, 100.0D, 0.0D);
@@ -460,6 +455,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
             tessellator.draw();
             GLManager.ModelView.Pop();
+            _skyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
             GLManager.GL.ShadeModel(GLEnum.Flat);
         }
 
@@ -473,6 +469,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         float rainFade = 1.0F - _world.Environment.GetRainGradient(tickDelta);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, rainFade);
         GLManager.ModelView.Rotate(_world.GetTime(tickDelta) * 360.0F, 1.0F, 0.0F, 0.0F);
+        _skyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
         float sunQuadSize = 30.0F;
         _textureManager.BindTexture(_textureManager.GetTextureId("/terrain/sun.png"));
         tessellator.startDrawingQuads();
@@ -504,7 +501,6 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         GLManager.GL.Enable(GLEnum.AlphaTest);
         GLManager.ModelView.Pop();
 
-        GLManager.GL.EndExternalShader();
         GLManager.GL.UseProgram(0);
         GLManager.State.Apply(RenderState.Opaque);
     }
@@ -683,14 +679,19 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         _cloudShader.SetUniform1("u_Texture", 0);
         _cloudShader.SetUniform3("u_CloudOffset", new Vector3D<float>(-subCloudOffsetX, cloudY, -subCloudOffsetZ));
         _cloudShader.SetUniform1("u_CloudScale", cloudScale / 2f);
-        GLManager.GL.BeginExternalShader(_cloudShaderMvLoc, _cloudShaderProjLoc, _cloudShaderTexMatLoc);
+        // Upload the matrices now and again after each mutation below — the draws are immediate.
+        _cloudShader.SetUniformMatrix4("u_Projection", GLManager.Projection.Top);
+        _cloudShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
+        _cloudShader.SetUniformMatrix4("u_TextureMatrix", GLManager.TextureMatrix.Top);
 
         GLManager.ModelView.Scale(cloudScale, 1.0F, cloudScale);
         GLManager.ModelView.Push();
         GLManager.ModelView.Translate(-subCloudOffsetX, cloudY, -subCloudOffsetZ);
+        _cloudShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
 
         GLManager.TextureMatrix.Push();
         GLManager.TextureMatrix.Translate(textureOffsetU, textureOffsetV, 0.0F);
+        _cloudShader.SetUniformMatrix4("u_TextureMatrix", GLManager.TextureMatrix.Top);
 
         GLManager.GL.Color4(cloudRed, cloudGreen, cloudBlue, 0.8F);
         _clouds[0].Draw();
@@ -699,7 +700,6 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
         GLManager.ModelView.Pop();
 
-        GLManager.GL.EndExternalShader();
         GLManager.GL.UseProgram(0);
 
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);

@@ -101,3 +101,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-03 — refactor(rendering): steer projection matrices directly (Nicolas Vyčas Nery; `2756b739db2de06f60be9d2d51ceb2ac75bd4262`)
 - 2026-08-03 — refactor(rendering): steer the texture matrix stack directly (Nicolas Vyčas Nery; `7c04ea1911ff9957676f65bd29ed8291b87b8718`)
 - 2026-08-03 — refactor(rendering): delete the matrix-mode forwarding machinery (Nicolas Vyčas Nery; `3f060a4ed0ea64f389636d60645c232068d901e3`)
+- 2026-08-03 — refactor(rendering): upload external-shader matrices explicitly (Nicolas Vyčas Nery; `163b7071238414882f5ad95de91ae997f00f4a66`)

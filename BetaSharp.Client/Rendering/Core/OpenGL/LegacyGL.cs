@@ -429,6 +429,4 @@ public abstract unsafe class LegacyGL : IGL
 
     public void ActiveTexture(GLEnum texture) => SilkGL.ActiveTexture((TextureUnit)texture.ToModern());
 
-    public virtual void BeginExternalShader(int mvLoc, int projLoc, int texMatLoc = -1) { }
-    public virtual void EndExternalShader() { }
 }
