@@ -3,7 +3,6 @@ using System.Numerics;
 using System.Runtime;
 using System.Runtime.InteropServices;
 using BetaSharp.Blocks;
-using BetaSharp.Client.Achievements;
 using BetaSharp.Client.Diagnostics;
 using BetaSharp.Client.DynamicTexture;
 using BetaSharp.Client.Entities;
@@ -335,8 +334,6 @@ public partial class BetaSharp :
         EntityRenderDispatcher.Instance.SkinManager = SkinManager;
         EntityRenderDispatcher.Instance.HeldItemRenderer = new HeldItemRenderer(this);
         StatFileWriter = new StatFileWriter(Session, _gameDataDir);
-
-        StatStringFormatKeyInv format = new(this);
         /*global::BetaSharp.Achievements.OpenInventory.GetTranslatedDescription = () =>
         {
             return format.formatString(global::BetaSharp.Achievements.OpenInventory.TranslationKey);
