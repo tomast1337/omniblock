@@ -205,8 +205,6 @@ public abstract unsafe class LegacyGL : IGL
 
     public abstract void Fog(GLEnum pname, ReadOnlySpan<float> params_);
 
-    public abstract void Frustum(double left, double right, double bottom, double top, double zNear, double zFar);
-
     public uint GenBuffer()
     {
         return SilkGL.GenBuffer();
@@ -302,16 +300,9 @@ public abstract unsafe class LegacyGL : IGL
         SilkGL.LinkProgram(program);
     }
 
-    public abstract void LoadIdentity();
-
-    public abstract void MatrixMode(GLEnum mode);
-
-
     public abstract void Normal3(float nx, float ny, float nz);
 
     public abstract void NormalPointer(NormalPointerType type, uint stride, void* pointer);
-
-    public abstract void Ortho(double left, double right, double bottom, double top, double zNear, double zFar);
 
     public void PixelStore(PixelStoreParameter pname, int param)
     {
@@ -323,20 +314,10 @@ public abstract unsafe class LegacyGL : IGL
         SilkGL.PolygonOffset(factor, units);
     }
 
-    public abstract void PopMatrix();
-
-    public abstract void PushMatrix();
-
     public void ReadPixels(int x, int y, uint width, uint height, PixelFormat format, PixelType type, void* pixels)
     {
         SilkGL.ReadPixels(x, y, width, height, format, type, pixels);
     }
-
-    public abstract void Rotate(float angle, float x, float y, float z);
-
-    public abstract void Scale(float x, float y, float z);
-
-    public abstract void Scale(double x, double y, double z);
 
     public abstract void ShadeModel(GLEnum mode);
 
@@ -376,8 +357,6 @@ public abstract unsafe class LegacyGL : IGL
     {
         SilkGL.TexSubImage2D(target.ToModern(), level, xoffset, yoffset, width, height, format.ToModern(), type.ToModern(), pixels);
     }
-
-    public abstract void Translate(float x, float y, float z);
 
     public void Uniform1(int location, int v0)
     {

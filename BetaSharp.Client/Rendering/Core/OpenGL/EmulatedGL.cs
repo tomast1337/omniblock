@@ -10,8 +10,6 @@ public unsafe class EmulatedGL : LegacyGL
     private readonly MatrixStack _projectionStack = new();
     private readonly MatrixStack _textureStack = new();
 
-    private GLEnum _currentMatrixMode = GLEnum.Modelview;
-
     private readonly FixedFunctionShader _shader;
     private bool _useTexture = false;
     private uint _currentProgram = 0;
@@ -97,14 +95,6 @@ public unsafe class EmulatedGL : LegacyGL
 
     /// <inheritdoc cref="ModelView" />
     public MatrixStack TextureMatrix => _textureStack;
-
-    internal MatrixStack ActiveStack => _currentMatrixMode switch
-    {
-        GLEnum.Modelview => _modelViewStack,
-        GLEnum.Projection => _projectionStack,
-        GLEnum.Texture => _textureStack,
-        _ => _modelViewStack
-    };
 
     /// <summary>
     ///     The stack versions last written to the active program, or <see cref="Unuploaded" /> when
@@ -229,56 +219,6 @@ public unsafe class EmulatedGL : LegacyGL
     public override void BufferData(GLEnum target, nuint size, void* data, GLEnum usage)
     {
         SilkGL.BufferData(target.ToModern(), size, data, usage.ToModern());
-    }
-
-    public override void MatrixMode(GLEnum mode)
-    {
-        _currentMatrixMode = mode;
-    }
-
-    public override void LoadIdentity()
-    {
-        ActiveStack.LoadIdentity();
-    }
-
-    public override void PushMatrix()
-    {
-        ActiveStack.Push();
-    }
-
-    public override void PopMatrix()
-    {
-        ActiveStack.Pop();
-    }
-
-    public override void Translate(float x, float y, float z)
-    {
-        ActiveStack.Translate(x, y, z);
-    }
-
-    public override void Rotate(float angle, float x, float y, float z)
-    {
-        ActiveStack.Rotate(angle, x, y, z);
-    }
-
-    public override void Scale(float x, float y, float z)
-    {
-        ActiveStack.Scale(x, y, z);
-    }
-
-    public override void Scale(double x, double y, double z)
-    {
-        ActiveStack.Scale((float)x, (float)y, (float)z);
-    }
-
-    public override void Ortho(double left, double right, double bottom, double top, double zNear, double zFar)
-    {
-        ActiveStack.Ortho(left, right, bottom, top, zNear, zFar);
-    }
-
-    public override void Frustum(double left, double right, double bottom, double top, double zNear, double zFar)
-    {
-        ActiveStack.Frustum(left, right, bottom, top, zNear, zFar);
     }
 
     public override void Color3(float red, float green, float blue)
