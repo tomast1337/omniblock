@@ -1,26 +1,25 @@
-using BetaSharp.Client.Guis;
+using System.Text;
+using System.Text.RegularExpressions;
 using BetaSharp.Client.UI.Rendering;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Controls.HUD;
 
 public class ChatOverlay : UIElement
 {
     private const int MaxHistoryLines = 20;
-    private int _charactersPerLine = 64;
-    private int _lastCharactersPerLine = 64;
-    private int _lineHeight;
-    private int _chatWidth;
-    private float _scale = 1.0f;
 
     private readonly List<ChatLine> _messages = [];
-    private string? _recordPlaying;
-    private int _recordPlayingTimer;
-    public int ScrollOffset { get; set; }
-    public string? HoveredItemName { get; set; }
-    public bool IsOpen { get; set; }
 
     private readonly Func<float> _scaleFunc;
     private readonly Func<float> _widthFunc;
+    private int _charactersPerLine = 64;
+    private int _chatWidth;
+    private int _lastCharactersPerLine = 64;
+    private int _lineHeight;
+    private string? _recordPlaying;
+    private int _recordPlayingTimer;
+    private float _scale = 1.0f;
 
     public ChatOverlay(Func<float> scaleFunc, Func<float> widthFunc)
     {
@@ -30,6 +29,10 @@ public class ChatOverlay : UIElement
 
         Style.Height = null; // Auto wrap
     }
+
+    public int ScrollOffset { get; set; }
+    public string? HoveredItemName { get; set; }
+    public bool IsOpen { get; set; }
 
     private void UpdateScale()
     {
@@ -44,7 +47,7 @@ public class ChatOverlay : UIElement
         // trim messages if needed
         if (_lastCharactersPerLine > _charactersPerLine)
         {
-            foreach (var m in _messages)
+            foreach (ChatLine m in _messages)
             {
                 int c = m.Message.Where(t => t == '§').Sum(_ => 2);
 
@@ -55,17 +58,18 @@ public class ChatOverlay : UIElement
                 }
             }
         }
+
         _lastCharactersPerLine = _charactersPerLine;
     }
 
     public void AddMessage(string message)
     {
         string currentColor = "";
-        var currentLine = new System.Text.StringBuilder();
+        StringBuilder currentLine = new();
         int visibleLength = 0;
 
         // Split while preserving spaces
-        string[] words = System.Text.RegularExpressions.Regex.Split(message, @"(\s+)");
+        string[] words = Regex.Split(message, @"(\s+)");
 
         foreach (string word in words)
         {
@@ -81,7 +85,9 @@ public class ChatOverlay : UIElement
 
                 // Carry active color to next line
                 if (!string.IsNullOrEmpty(currentColor))
+                {
                     currentLine.Append(currentColor);
+                }
 
                 visibleLength = 0;
             }
@@ -107,11 +113,15 @@ public class ChatOverlay : UIElement
 
         // Add final line
         if (currentLine.Length > 0)
+        {
             _messages.Insert(0, new ChatLine(currentLine.ToString()));
+        }
 
         // Limit history
         while (_messages.Count > 100)
+        {
             _messages.RemoveAt(_messages.Count - 1);
+        }
     }
 
     private int GetVisibleLength(string text)
@@ -136,23 +146,37 @@ public class ChatOverlay : UIElement
 
     public void SetRecordPlaying(string recordName)
     {
-        _recordPlaying = "Now playing: " + recordName;
+        _recordPlaying = $"Now playing: {recordName}";
         _recordPlayingTimer = 120; // 6 seconds
     }
 
     public void ScrollMessages(int amount)
     {
         ScrollOffset += amount;
-        if (ScrollOffset < 0) ScrollOffset = 0;
+        if (ScrollOffset < 0)
+        {
+            ScrollOffset = 0;
+        }
+
         int maxScroll = Math.Max(0, _messages.Count - MaxHistoryLines);
-        if (ScrollOffset > maxScroll) ScrollOffset = maxScroll;
+        if (ScrollOffset > maxScroll)
+        {
+            ScrollOffset = maxScroll;
+        }
     }
 
     public override void Update(float partialTicks)
     {
         base.Update(partialTicks);
-        foreach (ChatLine msg in _messages) msg.UpdateCounter++;
-        if (_recordPlayingTimer > 0) _recordPlayingTimer--;
+        foreach (ChatLine msg in _messages)
+        {
+            msg.UpdateCounter++;
+        }
+
+        if (_recordPlayingTimer > 0)
+        {
+            _recordPlayingTimer--;
+        }
     }
 
     public override void Render(UIRenderer renderer)
@@ -198,7 +222,10 @@ public class ChatOverlay : UIElement
     private void RenderHistory(UIRenderer renderer)
     {
         int visibleCount = Math.Min(MaxHistoryLines, _messages.Count - ScrollOffset);
-        if (visibleCount <= 0) return;
+        if (visibleCount <= 0)
+        {
+            return;
+        }
 
         // Render messages bottom-up
         int yOffset = 0;
@@ -219,6 +246,6 @@ public class ChatOverlay : UIElement
     private class ChatLine(string message)
     {
         public string Message = message;
-        public int UpdateCounter = 0;
+        public int UpdateCounter;
     }
 }

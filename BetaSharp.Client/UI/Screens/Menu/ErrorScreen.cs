@@ -1,7 +1,7 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.Menu;
 
@@ -43,6 +43,7 @@ public class ErrorScreen(
             lblMsg.Style.MarginBottom = 2;
             messageContainer.AddChild(lblMsg);
         }
+
         Root.AddChild(messageContainer);
 
         Button btnRestart = CreateButton();

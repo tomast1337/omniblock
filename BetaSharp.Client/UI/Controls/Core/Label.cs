@@ -1,5 +1,5 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Rendering;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Controls.Core;
 
@@ -15,6 +15,7 @@ public class Label : UIElement
         get;
         set => field = MathF.Round(value);
     } = 1.0f;
+
     public bool HasShadow { get; set; } = true;
 
     public override bool DoTextMeasuring => true;

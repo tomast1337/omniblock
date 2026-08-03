@@ -359,18 +359,18 @@ public class TextRenderer : IDisposable
         }
     }
 
-    public void DrawStringWithShadow(ReadOnlySpan<char> text, float x, float y, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null, float scale = 1f, float cos = 1f, float sin = 0f, float pivotX = 0f, float pivotY = 0f)
+    public void DrawStringWithShadow(ReadOnlySpan<char> text, float x, float y, Client.UI.Colors.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null, float scale = 1f, float cos = 1f, float sin = 0f, float pivotX = 0f, float pivotY = 0f)
     {
         RenderString(text, x + 1, y + 1, color, true, align, batch, scale, cos, sin, pivotX, pivotY);
         DrawString(text, x, y, color, align, batch, scale, cos, sin, pivotX, pivotY);
     }
 
-    public void DrawString(ReadOnlySpan<char> text, float x, float y, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null, float scale = 1f, float cos = 1f, float sin = 0f, float pivotX = 0f, float pivotY = 0f)
+    public void DrawString(ReadOnlySpan<char> text, float x, float y, Client.UI.Colors.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null, float scale = 1f, float cos = 1f, float sin = 0f, float pivotX = 0f, float pivotY = 0f)
     {
         RenderString(text, x, y, color, false, align, batch, scale, cos, sin, pivotX, pivotY);
     }
 
-    public void RenderString(ReadOnlySpan<char> text, float x, float y, Guis.Color color, bool darken, HorizontalAlignment align, UIBatchRenderer? batch = null, float scale = 1f, float cos = 1f, float sin = 0f, float pivotX = 0f, float pivotY = 0f)
+    public void RenderString(ReadOnlySpan<char> text, float x, float y, Client.UI.Colors.Color color, bool darken, HorizontalAlignment align, UIBatchRenderer? batch = null, float scale = 1f, float cos = 1f, float sin = 0f, float pivotX = 0f, float pivotY = 0f)
     {
         if (text.IsEmpty) return;
 
@@ -395,7 +395,7 @@ public class TextRenderer : IDisposable
                 for (; text.Length > i + 1 && text[i] == ColorCodeChar; i += 2)
                 {
                     if (TryHexToDec(text[i + 1], out int colorCode))
-                        currentRgba = (uint)Guis.Color.FromColorCode(colorCode, (byte)color.A, darken);
+                        currentRgba = (uint)Client.UI.Colors.Color.FromColorCode(colorCode, (byte)color.A, darken);
                 }
 
                 if (i < text.Length)
@@ -444,7 +444,7 @@ public class TextRenderer : IDisposable
             {
                 if (TryHexToDec(text[i + 1], out int colorCode))
                 {
-                    tessellator.setColorRGBA(Guis.Color.FromColorCode(colorCode, (byte)color.A, darken));
+                    tessellator.setColorRGBA(Client.UI.Colors.Color.FromColorCode(colorCode, (byte)color.A, darken));
                 }
             }
 
@@ -541,7 +541,7 @@ public class TextRenderer : IDisposable
         return text.Length;
     }
 
-    private void ProcessWrappedText(ReadOnlySpan<char> text, int x, int y, int maxWidth, Guis.Color color, bool draw, ref int outHeight, HorizontalAlignment align, UIBatchRenderer? batch = null)
+    private void ProcessWrappedText(ReadOnlySpan<char> text, int x, int y, int maxWidth, Client.UI.Colors.Color color, bool draw, ref int outHeight, HorizontalAlignment align, UIBatchRenderer? batch = null)
     {
         if (text.IsEmpty) return;
 
@@ -589,7 +589,7 @@ public class TextRenderer : IDisposable
         outHeight = totalHeight;
     }
 
-    public void DrawStringWrapped(ReadOnlySpan<char> text, int x, int y, int maxWidth, Guis.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null)
+    public void DrawStringWrapped(ReadOnlySpan<char> text, int x, int y, int maxWidth, Client.UI.Colors.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null)
     {
         int dummyHeight = 0;
         ProcessWrappedText(text, x, y, maxWidth, color, true, ref dummyHeight, align, batch);
@@ -598,7 +598,7 @@ public class TextRenderer : IDisposable
     public int GetStringHeight(ReadOnlySpan<char> text, int maxWidth)
     {
         int height = 0;
-        ProcessWrappedText(text, 0, 0, maxWidth, Guis.Color.Black, false, ref height, HorizontalAlignment.Left);
+        ProcessWrappedText(text, 0, 0, maxWidth, Client.UI.Colors.Color.Black, false, ref height, HorizontalAlignment.Left);
         return height;
     }
 }

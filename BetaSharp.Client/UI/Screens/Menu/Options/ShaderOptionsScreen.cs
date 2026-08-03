@@ -1,6 +1,4 @@
-using BetaSharp.Client.Input;
 using BetaSharp.Client.Options;
-using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
@@ -11,21 +9,28 @@ public class ShaderOptionsScreen(UIContext context, UIScreen? parent)
     protected override List<OptionSection> GetOptions()
     {
         List<OptionSection> sections = [];
-        foreach (var set in Context.Options.ShaderOptions.Sets)
+        foreach (KeyValuePair<string, ShaderOptionSet> set in Context.Options.ShaderOptions.Sets)
         {
-            if (set.Value.Options.Count == 0) continue;
+            if (set.Value.Options.Count == 0)
+            {
+                continue;
+            }
 
             List<GameOption> options = [];
             if (set.Value.Presets.Count > 0)
+            {
                 options.Add(new ShaderPresetOption(set.Key, set.Value));
+            }
+
             options.AddRange(set.Value.Options.Select(def => def.IsRange
                 ? (GameOption)new ShaderRangeOption(set, def)
                 : new ShaderConstOption(set, def)));
 
-            sections.Add(new(
+            sections.Add(new OptionSection(
                 Translations.Get("options.shader." + set.Key + ".text"),
                 options));
         }
+
         return sections;
     }
 
@@ -35,14 +40,22 @@ public class ShaderOptionsScreen(UIContext context, UIScreen? parent)
         {
             Button btn = CreateButton();
             btn.Text = option.GetDisplayString();
-            btn.OnMouseDown += (e) =>
+            btn.OnMouseDown += e =>
             {
-                if (e.Button == MouseButton.Left) presetOpt.Cycle();
-                else if (e.Button == MouseButton.Right) presetOpt.Cycle(-1);
+                if (e.Button == MouseButton.Left)
+                {
+                    presetOpt.Cycle();
+                }
+                else if (e.Button == MouseButton.Right)
+                {
+                    presetOpt.Cycle(-1);
+                }
+
                 Context.Navigator.Navigate(new ShaderOptionsScreen(Context, Parent));
             };
             return btn;
         }
+
         return base.CreateControlForOption(option);
     }
 }

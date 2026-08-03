@@ -1,4 +1,3 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
@@ -8,6 +7,7 @@ using BetaSharp.Network.Packets;
 using BetaSharp.Server.Internal;
 using BetaSharp.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Net;
 
@@ -19,9 +19,9 @@ public class LevelLoadingScreen(
     IInternalServerHost serverHost) : UIScreen(context)
 {
     private readonly ILogger<LevelLoadingScreen> _logger = Log.Instance.For<LevelLoadingScreen>();
-    private bool _serverStarted;
 
     private Label _lblProgress = null!;
+    private bool _serverStarted;
 
     public override bool PausesGame => false;
 

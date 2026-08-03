@@ -1,5 +1,5 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Layout.Flexbox;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI;
 
@@ -26,15 +26,15 @@ public class FlexStyle
     public float FlexShrink { get; set; } = 1f;
 
     // Spacing
-    public float MarginTop { get; set; } = 0;
-    public float MarginRight { get; set; } = 0;
-    public float MarginBottom { get; set; } = 0;
-    public float MarginLeft { get; set; } = 0;
+    public float MarginTop { get; set; }
+    public float MarginRight { get; set; }
+    public float MarginBottom { get; set; }
+    public float MarginLeft { get; set; }
 
-    public float PaddingTop { get; set; } = 0;
-    public float PaddingRight { get; set; } = 0;
-    public float PaddingBottom { get; set; } = 0;
-    public float PaddingLeft { get; set; } = 0;
+    public float PaddingTop { get; set; }
+    public float PaddingRight { get; set; }
+    public float PaddingBottom { get; set; }
+    public float PaddingLeft { get; set; }
 
     // Positioning when Absolute
     public float? Top { get; set; }
@@ -44,14 +44,20 @@ public class FlexStyle
 
     public void SetMargin(float top, float right, float bottom, float left)
     {
-        MarginTop = top; MarginRight = right; MarginBottom = bottom; MarginLeft = left;
+        MarginTop = top;
+        MarginRight = right;
+        MarginBottom = bottom;
+        MarginLeft = left;
     }
 
     public void SetMargin(float all) => SetMargin(all, all, all, all);
 
     public void SetPadding(float top, float right, float bottom, float left)
     {
-        PaddingTop = top; PaddingRight = right; PaddingBottom = bottom; PaddingLeft = left;
+        PaddingTop = top;
+        PaddingRight = right;
+        PaddingBottom = bottom;
+        PaddingLeft = left;
     }
 
     public void SetPadding(float all) => SetPadding(all, all, all, all);

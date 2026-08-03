@@ -1,7 +1,7 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.UI.Controls.Core;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
@@ -10,7 +10,7 @@ public class OptionsScreen(
     UIScreen? parent,
     TexturePacks texturePacks) : BaseOptionsScreen(context, parent, "options.title")
 {
-    protected override List<OptionSection> GetOptions() => [  ];
+    protected override List<OptionSection> GetOptions() => [];
 
     protected override UIElement CreateContent()
     {
@@ -47,7 +47,7 @@ public class OptionsScreen(
             btn.Style.MarginLeft = 4;
             btn.Style.MarginRight = 4;
             btn.Style.Width = ButtonSize;
-            btn.OnClick += (e) =>
+            btn.OnClick += e =>
             {
                 Options.SaveOptions();
                 onClick();

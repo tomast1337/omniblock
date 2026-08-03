@@ -1,7 +1,8 @@
-using BetaSharp.Client.Guis;
+using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Client.UI.Rendering;
 using BetaSharp.Util.Maths;
 using Microsoft.Extensions.Logging;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Controls.MainMenu;
 
@@ -12,14 +13,14 @@ public class MainMenuSplash : UIElement
 
     private string _splashText = "missingno";
 
-    public override bool DoTextMeasuring => true;
-
     public MainMenuSplash()
     {
         LoadSplashText();
 
-        Style.Position = Layout.Flexbox.PositionType.Absolute;
+        Style.Position = PositionType.Absolute;
     }
+
+    public override bool DoTextMeasuring => true;
 
     private void LoadSplashText()
     {
@@ -47,10 +48,22 @@ public class MainMenuSplash : UIElement
 
             // Special days
             DateTime now = DateTime.Now;
-            if (now.Month == 11 && now.Day == 9) _splashText = "Happy birthday, ez!";
-            else if (now.Month == 6 && now.Day == 1) _splashText = "Happy birthday, Notch!";
-            else if (now.Month == 12 && now.Day == 24) _splashText = "Merry X-mas!";
-            else if (now.Month == 1 && now.Day == 1) _splashText = "Happy new year!";
+            if (now.Month == 11 && now.Day == 9)
+            {
+                _splashText = "Happy birthday, ez!";
+            }
+            else if (now.Month == 6 && now.Day == 1)
+            {
+                _splashText = "Happy birthday, Notch!";
+            }
+            else if (now.Month == 12 && now.Day == 24)
+            {
+                _splashText = "Merry X-mas!";
+            }
+            else if (now.Month == 1 && now.Day == 1)
+            {
+                _splashText = "Happy new year!";
+            }
         }
         catch (Exception ex)
         {
@@ -69,7 +82,7 @@ public class MainMenuSplash : UIElement
         float splashScale = 1.8F - MathHelper.Abs(MathHelper.Sin(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() % 1000L / 1000.0F * (float)Math.PI * 2.0F) * 0.1F);
         splashScale = splashScale * 100.0F / (ComputedWidth + 32);
 
-        renderer.DrawCenteredText(_splashText, 0, -8, Color.Yellow, rotation: -20.0f, scale: splashScale);
+        renderer.DrawCenteredText(_splashText, 0, -8, Color.Yellow, -20.0f, splashScale);
 
         base.Render(renderer);
     }

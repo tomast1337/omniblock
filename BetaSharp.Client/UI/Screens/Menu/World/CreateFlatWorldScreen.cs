@@ -1,9 +1,9 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Controls.ListItems;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Worlds.Gen.Flat;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.Menu.World;
 
@@ -12,12 +12,22 @@ public class CreateFlatWorldScreen(
     CreateWorldScreen parent,
     string generatorOptions) : UIScreen(context)
 {
-    private ScrollView _scrollView = null!;
     private readonly List<FlatLayerListItem> _listItems = [];
-    private int _selectedIndex = -1;
-    private FlatGeneratorInfo _generatorInfo = FlatGeneratorInfo.CreateFromString(generatorOptions);
 
     private Button _btnRemove = null!;
+    private FlatGeneratorInfo _generatorInfo = FlatGeneratorInfo.CreateFromString(generatorOptions);
+    private ScrollView _scrollView = null!;
+    private int _selectedIndex = -1;
+
+    public string GeneratorOptions
+    {
+        get => _generatorInfo.ToString();
+        set
+        {
+            _generatorInfo = FlatGeneratorInfo.CreateFromString(value);
+            PopulateLayerList();
+        }
+    }
 
     protected override void Init()
     {
@@ -25,7 +35,11 @@ public class CreateFlatWorldScreen(
         Root.Style.AlignItems = Align.Center;
         Root.Style.SetPadding(20);
 
-        Label title = new() { Text = Translations.Get("newWorld.customize.superflatWorld.title"), TextColor = Color.White };
+        Label title = new()
+        {
+            Text = Translations.Get("newWorld.customize.superflatWorld.title"),
+            TextColor = Color.White
+        };
         title.Style.MarginBottom = 10;
         Root.AddChild(title);
 
@@ -50,14 +64,14 @@ public class CreateFlatWorldScreen(
         _btnRemove.Style.Width = 150;
         _btnRemove.Style.SetMargin(2);
         _btnRemove.Enabled = false;
-        _btnRemove.OnClick += (e) => RemoveSelected();
+        _btnRemove.OnClick += e => RemoveSelected();
         row1.AddChild(_btnRemove);
 
         Button btnPresets = CreateButton();
         btnPresets.Text = Translations.Get("newWorld.customize.presets");
         btnPresets.Style.Width = 150;
         btnPresets.Style.SetMargin(2);
-        btnPresets.OnClick += (e) => Context.Navigator.Navigate(new FlatPresetsScreen(Context, this));
+        btnPresets.OnClick += e => Context.Navigator.Navigate(new FlatPresetsScreen(Context, this));
         row1.AddChild(btnPresets);
 
         buttonPanel.AddChild(row1);
@@ -69,7 +83,7 @@ public class CreateFlatWorldScreen(
         btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.Width = 150;
         btnDone.Style.SetMargin(2);
-        btnDone.OnClick += (e) =>
+        btnDone.OnClick += e =>
         {
             parent.GeneratorOptions = _generatorInfo.ToString();
             Context.Navigator.Navigate(parent);
@@ -80,7 +94,7 @@ public class CreateFlatWorldScreen(
         btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Context.Navigator.Navigate(parent);
+        btnCancel.OnClick += e => Context.Navigator.Navigate(parent);
         row2.AddChild(btnCancel);
 
         buttonPanel.AddChild(row2);
@@ -97,8 +111,8 @@ public class CreateFlatWorldScreen(
         {
             int index = i;
             FlatLayerInfo layer = _generatorInfo.FlatLayers[_generatorInfo.FlatLayers.Count - i - 1];
-            var item = new FlatLayerListItem(layer);
-            item.OnClick += (e) => SelectItem(index);
+            FlatLayerListItem item = new(layer);
+            item.OnClick += e => SelectItem(index);
             _scrollView.AddContent(item);
             _listItems.Add(item);
         }
@@ -107,8 +121,16 @@ public class CreateFlatWorldScreen(
     private void SelectItem(int index)
     {
         _selectedIndex = index;
-        foreach (FlatLayerListItem item in _listItems) item.IsSelected = false;
-        if (index >= 0 && index < _listItems.Count) _listItems[index].IsSelected = true;
+        foreach (FlatLayerListItem item in _listItems)
+        {
+            item.IsSelected = false;
+        }
+
+        if (index >= 0 && index < _listItems.Count)
+        {
+            _listItems[index].IsSelected = true;
+        }
+
         _btnRemove.Enabled = _selectedIndex >= 0;
     }
 
@@ -120,16 +142,6 @@ public class CreateFlatWorldScreen(
             _generatorInfo.UpdateLayerHeights();
             PopulateLayerList();
             SelectItem(Math.Min(_selectedIndex, _generatorInfo.FlatLayers.Count - 1));
-        }
-    }
-
-    public string GeneratorOptions
-    {
-        get => _generatorInfo.ToString();
-        set
-        {
-            _generatorInfo = FlatGeneratorInfo.CreateFromString(value);
-            PopulateLayerList();
         }
     }
 }

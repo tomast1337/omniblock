@@ -8,15 +8,13 @@ namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
 public class ControlsScreen : BaseOptionsScreen
 {
-    private (KeyBinding key, Button button)? _selectedKey = null;
-
-    protected override int MaxWidth { get; } = 300;
+    private (KeyBinding key, Button button)? _selectedKey;
 
     public ControlsScreen(UIContext context, UIScreen? parent)
-        : base(context, parent, "controls.title")
-    {
+        : base(context, parent, "controls.title") =>
         TitleText = "Controls";
-    }
+
+    protected override int MaxWidth { get; } = 300;
 
     protected override List<OptionSection> GetOptions() => [];
 
@@ -45,7 +43,7 @@ public class ControlsScreen : BaseOptionsScreen
         {
             list.AddChild(CreateSectionHeader(group.Title, first));
 
-            foreach (var bind in group.Bindings)
+            foreach (KeyBinding bind in group.Bindings)
             {
                 Panel row = new()
                 {
@@ -71,8 +69,8 @@ public class ControlsScreen : BaseOptionsScreen
                 Button btn = CreateButton();
                 btn.Text = Options.GetOptionDisplayString(bind);
                 btn.Style.Width = 80;
-                var bind1 = bind;
-                btn.OnClick += (e) =>
+                KeyBinding bind1 = bind;
+                btn.OnClick += e =>
                 {
                     Button button = (e.Target as Button)!;
                     // If seek key is down, reset.
@@ -105,7 +103,10 @@ public class ControlsScreen : BaseOptionsScreen
         {
             // If escape is pressed, set the key to none.
             int keyToSet = key;
-            if (key == Keyboard.KEY_ESCAPE) keyToSet = Keyboard.KEY_NONE;
+            if (key == Keyboard.KEY_ESCAPE)
+            {
+                keyToSet = Keyboard.KEY_NONE;
+            }
 
             Options.SetKeyBinding(_selectedKey.Value.key, keyToSet);
             _selectedKey.Value.button.Text = Options.GetOptionDisplayString(_selectedKey.Value.key);

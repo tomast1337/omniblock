@@ -1,17 +1,17 @@
 using BetaSharp.Client.Entities;
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.InGame.Containers;
 
 public class InventoryScreen : ContainerScreen
 {
-    private EntityPreview _playerPreview = null!;
-    private readonly ClientPlayerEntity _player;
     private readonly Func<UIScreen?> _getCurrentScreen;
+    private readonly ClientPlayerEntity _player;
+    private EntityPreview _playerPreview = null!;
 
     public InventoryScreen(
         UIContext context,
@@ -22,7 +22,7 @@ public class InventoryScreen : ContainerScreen
     {
         _player = player;
         _getCurrentScreen = getCurrentScreen;
-        player.IncreaseStat(global::BetaSharp.Achievements.OpenInventory, 1);
+        player.IncreaseStat(Achievements.OpenInventory, 1);
     }
 
     protected override void Init()
@@ -30,7 +30,7 @@ public class InventoryScreen : ContainerScreen
         base.Init();
 
         // Background Image
-        var background = new Image
+        Image background = new()
         {
             Texture = Renderer.TextureManager.GetTextureId("/gui/inventory.png"),
             U = 0,
@@ -56,7 +56,7 @@ public class InventoryScreen : ContainerScreen
         _containerPanel.AddChild(_playerPreview);
 
         // Labels
-        var lblCrafting = new Label
+        Label lblCrafting = new()
         {
             Text = Translations.Get("gui.container.crafting"),
             HasShadow = false,

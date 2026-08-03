@@ -1,18 +1,10 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.UI.Rendering;
-using Silk.NET.OpenGL;
 
 namespace BetaSharp.Client.UI.Controls.Core;
 
 public class ImageButton : UIElement
 {
-    public TextureHandle Texture { get; set; }
-
-    public float? U { get; set; }
-    public float? V { get; set; }
-    public float? UWidth { get; set; }
-    public float? VHeight { get; set; }
     public Action ClickSound;
 
 
@@ -21,7 +13,7 @@ public class ImageButton : UIElement
         Style.Width = 20;
         Style.Height = 20;
 
-        OnClick += (e) =>
+        OnClick += e =>
         {
             if (Enabled)
             {
@@ -29,18 +21,25 @@ public class ImageButton : UIElement
             }
         };
 
-        OnMouseEnter += (e) =>
+        OnMouseEnter += e =>
         {
             IsHovered = true;
             e.Handled = true;
         };
 
-        OnMouseLeave += (e) =>
+        OnMouseLeave += e =>
         {
             IsHovered = false;
             e.Handled = true;
         };
     }
+
+    public TextureHandle Texture { get; set; }
+
+    public float? U { get; set; }
+    public float? V { get; set; }
+    public float? UWidth { get; set; }
+    public float? VHeight { get; set; }
 
     public override List<string> GetInspectorProperties()
     {
@@ -57,12 +56,13 @@ public class ImageButton : UIElement
         {
             props.Add("Texture:  null");
         }
+
         return props;
     }
 
     public override void Render(UIRenderer renderer)
     {
-        int hoverState = !Enabled ? 0 : (IsHovered ? 2 : 1);
+        int hoverState = !Enabled ? 0 : IsHovered ? 2 : 1;
 
         TextureHandle texture = renderer.TextureManager.GetTextureId("/gui/gui.png");
 
@@ -81,4 +81,3 @@ public class ImageButton : UIElement
         base.Render(renderer);
     }
 }
-

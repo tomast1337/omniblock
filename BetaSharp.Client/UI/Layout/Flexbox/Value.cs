@@ -2,22 +2,16 @@ namespace BetaSharp.Client.UI.Layout.Flexbox;
 
 public class Value
 {
-    public float value;
     public Unit unit;
+    public float value;
 
     public Value(float v, Unit u)
     {
-        this.value = v;
-        this.unit = u;
+        value = v;
+        unit = u;
     }
 
-    public static Value UndefinedValue
-    {
-        get
-        {
-            return new Value(float.NaN, Unit.Undefined);
-        }
-    }
+    public static Value UndefinedValue => new(float.NaN, Unit.Undefined);
 
     public static void CopyValue(Value[] dest, Value[] src)
     {
@@ -28,8 +22,5 @@ public class Value
         }
     }
 
-    public Value Clone()
-    {
-        return new Value(value, unit);
-    }
+    public Value Clone() => new(value, unit);
 }

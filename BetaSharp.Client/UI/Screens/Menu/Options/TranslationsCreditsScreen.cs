@@ -1,7 +1,7 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
@@ -38,7 +38,7 @@ public class TranslationsCreditsScreen(UIContext context, UIScreen parent) : UIS
         Button btnDone = CreateButton();
         btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.MarginBottom = 20;
-        btnDone.OnClick += (e) => Context.Navigator.Navigate(parent);
+        btnDone.OnClick += e => Context.Navigator.Navigate(parent);
         Root.AddChild(btnDone);
     }
 
@@ -48,7 +48,7 @@ public class TranslationsCreditsScreen(UIContext context, UIScreen parent) : UIS
         const int imageWidth = 1000 / scale;
         const int imageHeight = 675 / scale;
 
-        var image = new Image();
+        Image image = new();
         image.Texture = Context.TextureManager.GetTextureId("gui/Logo.png");
         image.Style.Width = imageWidth;
         image.Style.Height = imageHeight;
@@ -56,11 +56,12 @@ public class TranslationsCreditsScreen(UIContext context, UIScreen parent) : UIS
         image.Style.MarginBottom = 10;
         scroll.AddContent(image);
 
-        foreach (var lang in Translations.Instance.Languages.Values) {
-            Label lbl = new Label()
+        foreach (Language lang in Translations.Instance.Languages.Values)
+        {
+            Label lbl = new()
             {
                 Text = lang.Name + ": " + lang.Author,
-                Centered = true,
+                Centered = true
             };
 
             lbl.Style.MarginBottom = 4;

@@ -1,12 +1,57 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.UI.Rendering;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Controls.Core;
 
 public partial class TextField : UIElement
 {
     private readonly TextBuffer _buffer = new();
+    private int _cursorCounter;
+
+    private bool _isDragging;
+    private TextRenderer? _textRenderer;
+    public Action? OnSubmit;
+
+    public Action<string>? OnTextChanged;
+
+    public TextField()
+    {
+        Style.Width = 200;
+        Style.Height = 20;
+
+        OnMouseEnter += _ => IsHovered = true;
+        OnMouseLeave += _ => IsHovered = false;
+
+        OnMouseDown += e =>
+        {
+            if (e.Button != MouseButton.Left) return;
+
+            e.Handled = true;
+            if (_textRenderer is null) return;
+
+            _buffer.MoveTo(GetCursorIndexAt(e.MouseX - ScreenX), false);
+            _isDragging = true;
+        };
+
+        OnMouseMove += e =>
+        {
+            if (_isDragging && _textRenderer is not null)
+            {
+                _buffer.MoveTo(GetCursorIndexAt(e.MouseX - ScreenX), true);
+            }
+        };
+
+        OnMouseUp += e =>
+        {
+            if (e.Button == MouseButton.Left)
+            {
+                _isDragging = false;
+            }
+        };
+
+        OnKeyDown += HandleKeyDown;
+    }
 
     public string Text
     {
@@ -17,7 +62,7 @@ public partial class TextField : UIElement
     public string Placeholder { get; set; } = "";
 
     public override bool DoTextMeasuring => true;
-    
+
     public int MaxLength
     {
         get => _buffer.MaxLength;
@@ -34,53 +79,6 @@ public partial class TextField : UIElement
     {
         get => _buffer.SelectionStart;
         set => _buffer.SelectionStart = value;
-    }
-
-    public Action<string>? OnTextChanged;
-    public Action? OnSubmit;
-
-    private bool _isDragging = false;
-    private TextRenderer? _textRenderer;
-    private int _cursorCounter = 0;
-
-    public TextField()
-    {
-        Style.Width = 200;
-        Style.Height = 20;
-
-        OnMouseEnter += (_) => IsHovered = true;
-        OnMouseLeave += (_) => IsHovered = false;
-
-        OnMouseDown += (e) =>
-        {
-            if (e.Button == MouseButton.Left)
-            {
-                e.Handled = true;
-                if (_textRenderer is not null)
-                {
-                    _buffer.MoveTo(GetCursorIndexAt(e.MouseX - ScreenX), false);
-                    _isDragging = true;
-                }
-            }
-        };
-
-        OnMouseMove += (e) =>
-        {
-            if (_isDragging && _textRenderer is not null)
-            {
-                _buffer.MoveTo(GetCursorIndexAt(e.MouseX - ScreenX), true);
-            }
-        };
-
-        OnMouseUp += (e) =>
-        {
-            if (e.Button == MouseButton.Left)
-            {
-                _isDragging = false;
-            }
-        };
-
-        OnKeyDown += HandleKeyDown;
     }
 
     public override void Update(float partialTicks)
@@ -141,7 +139,7 @@ public partial class TextField : UIElement
     {
         renderer.DrawRect(0, 0, ComputedWidth, ComputedHeight, Color.Black);
 
-        Color borderColor = IsFocused ? Color.White : (IsHovered ? Color.GrayCC : Color.GrayA0);
+        Color borderColor = IsFocused ? Color.White : IsHovered ? Color.GrayCC : Color.GrayA0;
         renderer.DrawRect(0, 0, ComputedWidth, 1, borderColor);
         renderer.DrawRect(0, ComputedHeight - 1, ComputedWidth, 1, borderColor);
         renderer.DrawRect(0, 0, 1, ComputedHeight, borderColor);
@@ -164,7 +162,7 @@ public partial class TextField : UIElement
             return 0;
         }
 
-        float xOffset = 4; // Padding
+        const float xOffset = 4; // Padding
         if (string.IsNullOrEmpty(Text)) return 0;
 
         int bestIndex = 0;
@@ -174,11 +172,10 @@ public partial class TextField : UIElement
         {
             float width = _textRenderer.GetStringWidth(Text.AsSpan(0, i));
             float dist = MathF.Abs(xOffset + width - localX);
-            if (dist < bestDist)
-            {
-                bestDist = dist;
-                bestIndex = i;
-            }
+            if (!(dist < bestDist)) continue;
+
+            bestDist = dist;
+            bestIndex = i;
         }
 
         return bestIndex;

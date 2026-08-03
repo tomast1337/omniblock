@@ -1,4 +1,3 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.UI.Controls;
@@ -7,7 +6,8 @@ using BetaSharp.Client.UI.Controls.MainMenu;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Client.UI.Screens.Menu.Options;
 using BetaSharp.Client.UI.Screens.Menu.World;
-using Silk.NET.OpenGL;
+using Color = BetaSharp.Client.UI.Colors.Color;
+
 namespace BetaSharp.Client.UI.Screens.Menu;
 
 public class MainMenuScreen(
@@ -51,19 +51,20 @@ public class MainMenuScreen(
         // --- Buttons ---
         Button btnSingleplayer = CreateButton();
         btnSingleplayer.Text = Translations.Get("menu.singleplayer");
-        btnSingleplayer.OnClick += (e) => Context.Navigator.Navigate(new WorldScreen(Context, singleplayerHost));
+        btnSingleplayer.OnClick += e => Context.Navigator.Navigate(new WorldScreen(Context, singleplayerHost));
         btnSingleplayer.Style.MarginBottom = 4;
         Root.AddChild(btnSingleplayer);
 
         Button btnMultiplayer = CreateButton();
         btnMultiplayer.Text = Translations.Get("menu.multiplayer");
-        btnMultiplayer.OnClick += (e) => Context.Navigator.Navigate(new MultiplayerScreen(Context, networkContext));
+        btnMultiplayer.OnClick += e => Context.Navigator.Navigate(new MultiplayerScreen(Context, networkContext));
         btnMultiplayer.Style.MarginBottom = 4;
 
         if (session == null || session.sessionId == "-")
         {
             btnMultiplayer.Enabled = false;
         }
+
         Root.AddChild(btnMultiplayer);
 
         // Options and Quit side-by-side
@@ -74,7 +75,7 @@ public class MainMenuScreen(
         footerButtons.Style.MarginLeft = -26;
 
         ImageButton btnLang = CreateImageButton();
-        btnLang.OnClick += (e) => Context.Navigator.Navigate(new LanguageSelectionScreen(Context, this));
+        btnLang.OnClick += e => Context.Navigator.Navigate(new LanguageSelectionScreen(Context, this));
         btnLang.Texture = Renderer.TextureManager.GetTextureId("/gui/Globe.png");
         btnLang.U = 0;
         btnLang.V = 0;
@@ -84,12 +85,12 @@ public class MainMenuScreen(
         Button btnOptions = CreateButton();
         btnOptions.Text = Translations.Get("menu.options");
         btnOptions.Style.Width = 98;
-        btnOptions.OnClick += (e) => Context.Navigator.Navigate(new OptionsScreen(Context, this, texturePackList));
+        btnOptions.OnClick += e => Context.Navigator.Navigate(new OptionsScreen(Context, this, texturePackList));
 
         Button btnQuit = CreateButton();
         btnQuit.Text = Translations.Get("menu.quit");
         btnQuit.Style.Width = 98;
-        btnQuit.OnClick += (e) => shutdown();
+        btnQuit.OnClick += e => shutdown();
 
         footerButtons.AddChild(btnLang);
         footerButtons.AddChild(btnOptions);
@@ -105,7 +106,7 @@ public class MainMenuScreen(
         Link versionLabel = new()
         {
             Text = "BetaSharp " + BetaSharp.Version,
-            TextColor = Guis.Color.White,
+            TextColor = Color.White,
             URL = "https://git.gay/betasharp-official/betasharp"
         };
         versionLabel.Style.Position = PositionType.Absolute;
@@ -121,11 +122,21 @@ public class MainMenuScreen(
         copyrightPanel.Style.Right = 2;
         copyrightPanel.Style.AlignItems = Align.FlexEnd;
 
-        copyrightPanel.AddChild(new Label { Text = "Copyright Mojang Studios. Not an official Minecraft product.", TextColor = Color.White });
-        copyrightPanel.AddChild(new Label { Text = "Not approved by or associated with Mojang Studios or Microsoft.", TextColor = Color.White });
+        copyrightPanel.AddChild(new Label
+        {
+            Text = "Copyright Mojang Studios. Not an official Minecraft product.",
+            TextColor = Color.White
+        });
+        copyrightPanel.AddChild(new Label
+        {
+            Text = "Not approved by or associated with Mojang Studios or Microsoft.",
+            TextColor = Color.White
+        });
 
         Root.AddChild(copyrightPanel);
     }
 
-    public override void KeyTyped(int key, char character) { }
+    public override void KeyTyped(int key, char character)
+    {
+    }
 }

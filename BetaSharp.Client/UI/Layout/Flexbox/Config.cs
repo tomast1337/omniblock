@@ -2,13 +2,12 @@ namespace BetaSharp.Client.UI.Layout.Flexbox;
 
 public class Config
 {
-    public bool UseWebDefaults = false;
-    public object Context = null;
+    internal readonly bool[] experimentalFeatures = new bool[Constant.ExperimentalFeatureCount + 1];
+    public object Context;
     public LoggerFunc Logger = DefaultLog;
-
-    readonly internal bool[] experimentalFeatures = new bool[Constant.ExperimentalFeatureCount + 1];
-    internal bool UseLegacyStretchBehaviour = false;
     internal float PointScaleFactor = 1;
+    internal bool UseLegacyStretchBehaviour;
+    public bool UseWebDefaults;
 
     public static int DefaultLog(Config config, Node node, LogLevel level, string format, params object[] args)
     {
@@ -16,14 +15,14 @@ public class Config
         {
             case LogLevel.Error:
             case LogLevel.Fatal:
-                System.Console.WriteLine(format, args);
+                Console.WriteLine(format, args);
                 return 0;
             case LogLevel.Warn:
             case LogLevel.Info:
             case LogLevel.Debug:
             case LogLevel.Verbose:
             default:
-                System.Console.WriteLine(format, args);
+                Console.WriteLine(format, args);
                 break;
         }
 
@@ -45,16 +44,10 @@ public class Config
     }
 
     // SetExperimentalFeatureEnabled enables experimental feature
-    public void SetExperimentalFeatureEnabled(ExperimentalFeature feature, bool enabled)
-    {
-        this.experimentalFeatures[(int)feature] = enabled;
-    }
+    public void SetExperimentalFeatureEnabled(ExperimentalFeature feature, bool enabled) => experimentalFeatures[(int)feature] = enabled;
 
     // IsExperimentalFeatureEnabled returns if experimental feature is enabled
-    public bool IsExperimentalFeatureEnabled(ExperimentalFeature feature)
-    {
-        return this.experimentalFeatures[(int)feature];
-    }
+    public bool IsExperimentalFeatureEnabled(ExperimentalFeature feature) => experimentalFeatures[(int)feature];
 
 
     // SetPointScaleFactor sets scale factor
@@ -66,11 +59,11 @@ public class Config
         if (pixelsInPoint == 0)
         {
             // Zero is used to skip rounding
-            this.PointScaleFactor = 0;
+            PointScaleFactor = 0;
         }
         else
         {
-            this.PointScaleFactor = pixelsInPoint;
+            PointScaleFactor = pixelsInPoint;
         }
     }
 
@@ -78,7 +71,7 @@ public class Config
     {
         if (!condition)
         {
-            throw new System.Exception(message);
+            throw new Exception(message);
         }
     }
 }

@@ -1,9 +1,9 @@
 using BetaSharp.Blocks;
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Rendering;
 using BetaSharp.Worlds.Gen.Flat;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Controls.ListItems;
 
@@ -27,6 +27,6 @@ public class FlatLayerListItem(FlatLayerInfo layer) : ListItem<FlatLayerInfo>(la
         }
 
         renderer.DrawText(blockName, 26, 4, Color.White);
-        renderer.DrawText(Translations.Get("newWorld.customize.height") + ": " + Value.LayerCount, 26, 16, Color.Gray80);
+        renderer.DrawText($"{Translations.Get("newWorld.customize.height")}: {Value.LayerCount}", 26, 16, Color.Gray80);
     }
 }

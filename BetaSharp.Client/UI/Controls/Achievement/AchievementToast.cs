@@ -1,16 +1,16 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Rendering;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Controls.Achievement;
 
 public class AchievementToast : UIElement
 {
-    private global::BetaSharp.Achievement? _achievement;
-    private string? _title;
-    private string? _description;
-    private long _startTime;
-    private bool _isInfo;
     private const long Duration = 3000L;
+    private global::BetaSharp.Achievement? _achievement;
+    private string? _description;
+    private bool _isInfo;
+    private long _startTime;
+    private string? _title;
 
     public AchievementToast()
     {
@@ -38,7 +38,10 @@ public class AchievementToast : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        if (_achievement == null || _startTime == 0) return;
+        if (_achievement == null || _startTime == 0)
+        {
+            return;
+        }
 
         long elapsed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - _startTime;
         if (!_isInfo && elapsed > Duration)
@@ -71,10 +74,18 @@ public class AchievementToast : UIElement
     private static double CalculateAnim(double progress)
     {
         double p = progress * 2.0;
-        if (p > 1.0) p = 2.0 - p;
+        if (p > 1.0)
+        {
+            p = 2.0 - p;
+        }
+
         p *= 4.0;
         p = 1.0 - p;
-        if (p < 0.0) p = 0.0;
+        if (p < 0.0)
+        {
+            p = 0.0;
+        }
+
         p *= p;
         p *= p;
         return p;

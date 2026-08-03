@@ -1,7 +1,7 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.InGame;
 
@@ -45,7 +45,7 @@ public class GameOverScreen(
 
         Button btnRespawn = CreateButton();
         btnRespawn.Text = Translations.Get("gameover.respawn");
-        btnRespawn.OnClick += (e) =>
+        btnRespawn.OnClick += e =>
         {
             respawn();
             Context.Navigator.Navigate(null);
@@ -56,11 +56,12 @@ public class GameOverScreen(
         {
             btnRespawn.Enabled = false;
         }
+
         Root.AddChild(btnRespawn);
 
         Button btnTitle = CreateButton();
         btnTitle.Text = Translations.Get("gameover.titleMenu");
-        btnTitle.OnClick += (e) =>
+        btnTitle.OnClick += e =>
         {
             exitToTitle();
             Context.Navigator.Navigate(null);

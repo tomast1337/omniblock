@@ -1,12 +1,10 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Rendering;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Controls.Core;
 
 public abstract class ListItem : UIElement
 {
-    public bool IsSelected { get; set; }
-
     protected ListItem()
     {
         Style.Width = null; // Fill parent
@@ -15,9 +13,11 @@ public abstract class ListItem : UIElement
         Style.MarginBottom = 4;
         Style.MarginRight = 10;
 
-        OnMouseEnter += (_) => IsHovered = true;
-        OnMouseLeave += (_) => IsHovered = false;
+        OnMouseEnter += _ => IsHovered = true;
+        OnMouseLeave += _ => IsHovered = false;
     }
+
+    public bool IsSelected { get; set; }
 
     public override void Render(UIRenderer renderer)
     {

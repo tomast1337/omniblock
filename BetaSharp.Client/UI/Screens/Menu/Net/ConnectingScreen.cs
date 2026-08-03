@@ -1,18 +1,14 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.Threading;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Net;
 
 public class ConnectingScreen : UIScreen
 {
-    public ClientNetworkHandler? ClientHandler { get; set; }
-    public bool IsCancelled { get; private set; }
-    public override bool PausesGame => false;
-
     public ConnectingScreen(
         UIContext context,
         ClientNetworkContext networkContext,
@@ -23,10 +19,10 @@ public class ConnectingScreen : UIScreen
         new ThreadConnectToServer(this, networkContext, host, port).Start();
     }
 
-    public ConnectingScreen(UIContext context, ClientNetworkHandler clientHandler) : base(context)
-    {
-        ClientHandler = clientHandler;
-    }
+    public ConnectingScreen(UIContext context, ClientNetworkHandler clientHandler) : base(context) => ClientHandler = clientHandler;
+    public ClientNetworkHandler? ClientHandler { get; set; }
+    public bool IsCancelled { get; private set; }
+    public override bool PausesGame => false;
 
     protected override void Init()
     {
@@ -58,16 +54,14 @@ public class ConnectingScreen : UIScreen
 
         Button btnCancel = CreateButton();
         btnCancel.Text = Translations.Get("gui.cancel");
-        btnCancel.OnClick += (e) => Cancel();
+        btnCancel.OnClick += e => Cancel();
         Root.AddChild(btnCancel);
     }
 
-    private string GetStatusText()
-    {
-        return ClientHandler == null
+    private string GetStatusText() =>
+        ClientHandler == null
             ? Translations.Get("connect.connecting")
             : Translations.Get("connect.authorizing");
-    }
 
     public void Cancel()
     {

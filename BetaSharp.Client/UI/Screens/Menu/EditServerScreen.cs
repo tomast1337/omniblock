@@ -1,8 +1,8 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.Menu;
 
@@ -12,8 +12,8 @@ public class EditServerScreen(
     ServerData serverData,
     bool isEditing) : UIScreen(context)
 {
-    private TextField _txfName = null!;
     private TextField _txfAddress = null!;
+    private TextField _txfName = null!;
 
     protected override void Init()
     {
@@ -22,11 +22,19 @@ public class EditServerScreen(
         Root.Style.JustifyContent = Justify.Center;
         Root.Style.SetPadding(20);
 
-        Label title = new() { Text = isEditing ? Translations.Get("multiplayer.editServerTitle") : Translations.Get("multiplayer.addServerTitle"), TextColor = Color.White };
+        Label title = new()
+        {
+            Text = isEditing ? Translations.Get("multiplayer.editServerTitle") : Translations.Get("multiplayer.addServerTitle"),
+            TextColor = Color.White
+        };
         title.Style.MarginBottom = 10;
         Root.AddChild(title);
 
-        Label lName = new() { Text = Translations.Get("multiplayer.serverName"), TextColor = Color.GrayA0 };
+        Label lName = new()
+        {
+            Text = Translations.Get("multiplayer.serverName"),
+            TextColor = Color.GrayA0
+        };
         lName.Style.MarginBottom = 4;
         Root.AddChild(lName);
 
@@ -36,7 +44,11 @@ public class EditServerScreen(
         _txfName.Text = serverData.Name;
         Root.AddChild(_txfName);
 
-        Label lAddr = new() { Text = Translations.Get("multiplayer.serverAddress"), TextColor = Color.GrayA0 };
+        Label lAddr = new()
+        {
+            Text = Translations.Get("multiplayer.serverAddress"),
+            TextColor = Color.GrayA0
+        };
         lAddr.Style.MarginBottom = 4;
         Root.AddChild(lAddr);
 
@@ -53,7 +65,7 @@ public class EditServerScreen(
         btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.Width = 100;
         btnDone.Style.SetMargin(0, 4, 0, 0);
-        btnDone.OnClick += (e) =>
+        btnDone.OnClick += e =>
         {
             serverData.Name = _txfName.Text;
             serverData.Ip = _txfAddress.Text;
@@ -65,7 +77,7 @@ public class EditServerScreen(
         Button btnCancel = CreateButton();
         btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 100;
-        btnCancel.OnClick += (e) => Context.Navigator.Navigate(parent);
+        btnCancel.OnClick += e => Context.Navigator.Navigate(parent);
         buttonPanel.AddChild(btnCancel);
 
         Root.AddChild(buttonPanel);

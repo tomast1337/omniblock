@@ -20,8 +20,8 @@ public partial class Node
             y = 0;
             width = 0;
             height = 0;
-
         }
+
         internal Layout8D(int left, int right, int top, int bottom, int x, int y, int width, int height)
         {
             this.left = left;
@@ -47,26 +47,22 @@ public partial class Node
         {
             x = layout.x - left;
             y = layout.y - top;
-            width = layout.width + (left + right);
-            height = layout.height + (top + bottom);
+            width = layout.width + left + right;
+            height = layout.height + top + bottom;
         }
 
-        public override readonly string ToString()
-        {
-            return string.Format("(x:{0} y:{1} w:{2} h:{3}) (l:{4} t:{5} r:{6} b:{7}))", x, y, width, height, left, top, right, bottom);
-        }
+        public override readonly string ToString() => string.Format("(x:{0} y:{1} w:{2} h:{3}) (l:{4} t:{5} r:{6} b:{7}))", x, y, width, height, left, top, right, bottom);
 
-        public readonly bool Equals(Layout8D l)
-        {
-            return x == l.x
-                && y == l.y
-                && width == l.width
-                && height == l.height
-                && left == l.left
-                && right == l.right
-                && top == l.top
-                && bottom == l.bottom;
-        }
+        public readonly bool Equals(Layout8D l) =>
+            x == l.x
+            && y == l.y
+            && width == l.width
+            && height == l.height
+            && left == l.left
+            && right == l.right
+            && top == l.top
+            && bottom == l.bottom;
+
         public static bool operator ==(Layout8D a, Layout8D b) => a.Equals(b);
         public static bool operator !=(Layout8D a, Layout8D b) => !a.Equals(b);
 
@@ -80,12 +76,14 @@ public partial class Node
         public override readonly int GetHashCode() =>
             HashCode.Combine(x, y, width, height, left, right, top, bottom);
     }
+
     public struct Layout : IEquatable<Layout>
     {
         //! remake
         public bool setted;
 
         public int left, right, top, bottom;
+
         //Content Edge
         public int x, y, width, height;
 
@@ -96,7 +94,6 @@ public partial class Node
 
         public bool hadOverflow;
         public Direction direction;
-
 
 
         internal Layout(Node node)
@@ -129,41 +126,42 @@ public partial class Node
             direction = node.LayoutGetDirection();
         }
 
-        public override string ToString() { return ToStr(0); }
+        public override string ToString() => ToStr(0);
+
         public string ToStr(int indent)
         {
             string line = "{\n";
             indent++;
-            string tab = new System.String(' ', indent * 2);
+            string tab = new(' ', indent * 2);
             line += tab + "box = " + string.Format("(x:{0} y:{1} w:{2} h:{3}) (l:{4} t:{5} r:{6} b:{7})", x, y, width, height, left, top, right, bottom) + "\n";
-            line += tab + "margin = " + margin.ToString() + "\n";
-            line += tab + "border = " + border.ToString() + "\n";
-            line += tab + "padding = " + padding.ToString() + "\n";
-            line += tab + "content = " + content.ToString() + "\n";
+            line += tab + "margin = " + margin + "\n";
+            line += tab + "border = " + border + "\n";
+            line += tab + "padding = " + padding + "\n";
+            line += tab + "content = " + content + "\n";
             indent--;
-            line += new System.String(' ', indent * 2) + "}";
+            line += new string(' ', indent * 2) + "}";
             return line;
         }
+
         public static bool operator ==(Layout a, Layout b) => a.Equals(b);
         public static bool operator !=(Layout a, Layout b) => !a.Equals(b);
-        public readonly bool Equals(Layout l)
-        {
-            return x == l.x
-                 && y == l.y
-                 && width == l.width
-                 && height == l.height
-                 && left == l.left
-                 && right == l.right
-                 && top == l.top
-                 && bottom == l.bottom
-                 && margin == l.margin
-                 && border == l.border
-                 && padding == l.padding
-                 && content == l.content
-                 && hadOverflow == l.hadOverflow
-                 && direction == l.direction;
 
-        }
+        public readonly bool Equals(Layout l) =>
+            x == l.x
+            && y == l.y
+            && width == l.width
+            && height == l.height
+            && left == l.left
+            && right == l.right
+            && top == l.top
+            && bottom == l.bottom
+            && margin == l.margin
+            && border == l.border
+            && padding == l.padding
+            && content == l.content
+            && hadOverflow == l.hadOverflow
+            && direction == l.direction;
+
         public override readonly bool Equals(object? l) => l is Layout other && Equals(other);
 
         /// <summary>

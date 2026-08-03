@@ -12,7 +12,7 @@ public class PumpkinBlur(Func<ClientPlayerEntity?> getPlayer) : UIElement
         if (player == null) return;
 
         ItemStack? head = player.Inventory.ArmorItemBySlot(3);
-        if (head != null && head.ItemId == 86) // Pumpkin
+        if (head is { ItemId: 86 }) // Pumpkin
         {
             renderer.DrawTexture(renderer.TextureManager.GetTextureId("%blur%%clamp%/misc/pumpkinblur.png"), 0, 0, ComputedWidth, ComputedHeight);
         }

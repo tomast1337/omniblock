@@ -1,18 +1,17 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Stats;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.InGame;
 
 public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter stats) : UIScreen(context)
 {
-    private enum Tab { General, Blocks, Items }
-    private Tab _currentTab = Tab.General;
     private readonly StatFileWriter _stats = stats;
-    private Panel? _contentPanel;
     private Button? _btnGeneral, _btnBlocks, _btnItems;
+    private Panel? _contentPanel;
+    private Tab _currentTab = Tab.General;
 
     protected override void Init()
     {
@@ -21,7 +20,11 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
 
         Root.AddChild(new Background(BackgroundType.World));
 
-        Label title = new() { Text = Translations.Get("stats.title"), TextColor = Color.White };
+        Label title = new()
+        {
+            Text = Translations.Get("stats.title"),
+            TextColor = Color.White
+        };
         title.Style.MarginTop = 20;
         title.Style.MarginBottom = 8;
         Root.AddChild(title);
@@ -44,7 +47,7 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
         Root.AddChild(tabBar);
 
         // Content area
-        _contentPanel = new();
+        _contentPanel = new Panel();
         _contentPanel.Style.Width = 360;
         _contentPanel.Style.FlexGrow = 1;
         _contentPanel.Style.MaxHeight = 164; // 200 - tabBar(36) = aligns Done with options
@@ -58,7 +61,7 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
         btnDone.Style.MarginTop = 10;
         btnDone.Style.MarginBottom = 20;
         btnDone.Style.FlexShrink = 0; // Prevent squeezing
-        btnDone.OnClick += (_) => Context.Navigator.Navigate(parent);
+        btnDone.OnClick += _ => Context.Navigator.Navigate(parent);
         Root.AddChild(btnDone);
 
         UpdateTab(Tab.General);
@@ -71,7 +74,7 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
         btn.Style.Width = 100;
         btn.Style.MarginLeft = 4;
         btn.Style.MarginRight = 4;
-        btn.OnClick += (_) => UpdateTab(tab);
+        btn.OnClick += _ => UpdateTab(tab);
         return btn;
     }
 
@@ -106,7 +109,10 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
                 break;
         }
 
-        Root.OnLayoutApplied(new() { MeasureString = (s) => Context.TextRenderer.GetStringWidth(s) }); // Update layout for the new content
+        Root.OnLayoutApplied(new UIElement.LayoutAppliedContext
+        {
+            MeasureString = s => Context.TextRenderer.GetStringWidth(s)
+        }); // Update layout for the new content
     }
 
     private void PopulateGeneralStats(Panel list)
@@ -125,10 +131,21 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
             row.Style.PaddingLeft = 10;
             row.Style.PaddingRight = 10;
             row.Style.Height = 22;
-            if (i % 2 == 1) row.Style.BackgroundColor = new Color(255, 255, 255, 10);
+            if (i % 2 == 1)
+            {
+                row.Style.BackgroundColor = new Color(255, 255, 255, 10);
+            }
 
-            row.AddChild(new Label { Text = Translations.Get(stat.StatName), TextColor = Color.White });
-            row.AddChild(new Label { Text = formatted, TextColor = Color.White });
+            row.AddChild(new Label
+            {
+                Text = Translations.Get(stat.StatName),
+                TextColor = Color.White
+            });
+            row.AddChild(new Label
+            {
+                Text = formatted,
+                TextColor = Color.White
+            });
             list.AddChild(row);
         }
     }
@@ -137,10 +154,10 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
     {
         AddHeaderRow(list, Translations.Get("stats.blocks.mined"), Translations.Get("stats.blocks.crafted"), Translations.Get("stats.blocks.used"));
 
-        var blockStats = Stats.Stats.BlocksMinedStats
+        List<StatCrafting> blockStats = Stats.Stats.BlocksMinedStats
             .OfType<StatCrafting>()
             .Where(stat =>
-                 _stats.GetStatValue(stat) > 0 ||
+                _stats.GetStatValue(stat) > 0 ||
                 (Stats.Stats.Used[stat.ItemId] is StatCrafting used && _stats.GetStatValue(used) > 0) ||
                 (Stats.Stats.Crafted[stat.ItemId] is StatCrafting crafted && _stats.GetStatValue(crafted) > 0))
             .ToList();
@@ -162,7 +179,7 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
     {
         AddHeaderRow(list, Translations.Get("stats.items.broken"), Translations.Get("stats.items.crafted"), Translations.Get("stats.items.used"));
 
-        var itemStats = Stats.Stats.ItemStats
+        List<StatCrafting> itemStats = Stats.Stats.ItemStats
             .OfType<StatCrafting>()
             .Where(stat =>
                 _stats.GetStatValue(stat) > 0 ||
@@ -195,7 +212,11 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
         row.Style.MarginBottom = 2;
         row.Style.AlignItems = Align.Center; // Align headers
 
-        row.AddChild(new Label { Text = Translations.Get("stats.item"), TextColor = Color.GrayA0 });
+        row.AddChild(new Label
+        {
+            Text = Translations.Get("stats.item"),
+            TextColor = Color.GrayA0
+        });
 
         // Custom panel to align headers to the right
         Panel spacer = new();
@@ -211,8 +232,19 @@ public class StatsScreen(UIContext context, UIScreen? parent, StatFileWriter sta
 
     private static Label CreateHeaderLabel(string text)
     {
-        Label lbl = new() { Text = text, TextColor = Color.GrayA0 };
+        Label lbl = new()
+        {
+            Text = text,
+            TextColor = Color.GrayA0
+        };
         lbl.Style.Width = 50;
         return lbl;
+    }
+
+    private enum Tab
+    {
+        General,
+        Blocks,
+        Items
     }
 }

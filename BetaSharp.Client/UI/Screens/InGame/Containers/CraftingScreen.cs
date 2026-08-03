@@ -1,11 +1,11 @@
 using BetaSharp.Client.Entities;
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Inventories;
 using BetaSharp.Screens;
 using BetaSharp.Worlds.Core.Systems;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.InGame.Containers;
 
@@ -25,7 +25,7 @@ public class CraftingScreen(
         base.Init();
 
         // Background Image
-        var background = new Image
+        Image background = new()
         {
             Texture = Renderer.TextureManager.GetTextureId("/gui/crafting.png"),
             U = 0,
@@ -39,14 +39,22 @@ public class CraftingScreen(
         _containerPanel.AddChild(background);
 
         // Labels
-        var lblCrafting = new Label { Text = Translations.Get("gui.container.crafting"), HasShadow = false };
+        Label lblCrafting = new()
+        {
+            Text = Translations.Get("gui.container.crafting"),
+            HasShadow = false
+        };
         lblCrafting.TextColor = Color.Gray40;
         lblCrafting.Style.Position = PositionType.Absolute;
         lblCrafting.Style.Left = 28;
         lblCrafting.Style.Top = 6;
         _containerPanel.AddChild(lblCrafting);
 
-        var lblInventory = new Label { Text = Translations.Get("gui.container.inventory"), HasShadow = false };
+        Label lblInventory = new()
+        {
+            Text = Translations.Get("gui.container.inventory"),
+            HasShadow = false
+        };
         lblInventory.TextColor = Color.Gray40;
         lblInventory.Style.Position = PositionType.Absolute;
         lblInventory.Style.Left = 8;

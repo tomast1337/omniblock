@@ -1,13 +1,12 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Rendering;
 using BetaSharp.Util.Maths;
-using static System.Net.Mime.MediaTypeNames;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Controls;
 
 public class SavingIndicator(Func<bool> isSavingComplete) : UIElement
 {
-    private float _tickCounter = 0;
+    private float _tickCounter;
 
     public override bool DoTextMeasuring => true;
 
@@ -23,10 +22,10 @@ public class SavingIndicator(Func<bool> isSavingComplete) : UIElement
 
         if (isSavingActive || _tickCounter < 20)
         {
-            float pulse = (_tickCounter % 10) / 10.0F;
+            float pulse = _tickCounter % 10 / 10.0F;
             pulse = MathHelper.Sin(pulse * (float)Math.PI * 2.0F) * 0.2F + 0.8F;
             int colorVal = (int)(255.0F * pulse);
-            Color color = Color.FromRgb((uint)(colorVal << 16 | colorVal << 8 | colorVal));
+            Color color = Color.FromRgb((uint)((colorVal << 16) | (colorVal << 8) | colorVal));
 
             renderer.DrawText("Saving level...", 0, 0, color);
         }

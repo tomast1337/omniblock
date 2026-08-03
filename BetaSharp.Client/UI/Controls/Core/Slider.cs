@@ -1,18 +1,11 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.UI.Rendering;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Controls.Core;
 
 public class Slider : UIElement
 {
-    public float Value { get; set; } = 0f;
-    public string Text { get; set; } = "";
-    /// <summary>
-    /// The normalized step size for one discrete unit (e.g. 0.01 for a 0–100 range).
-    /// Used by controller DPad and stick navigation to move by exactly one value at a time.
-    /// </summary>
-    public float Step { get; set; } = 0.01f;
     public Action<float>? OnValueChanged;
 
     public Slider(Action clickSound)
@@ -20,22 +13,30 @@ public class Slider : UIElement
         Style.Width = 200;
         Style.Height = 20;
 
-        OnMouseDown += (e) =>
+        OnMouseDown += e =>
         {
-            if (e.Button == MouseButton.Left)
-            {
-                clickSound();
-                UpdateValueFromMouse(e.MouseX);
-                e.Handled = true;
-            }
+            if (e.Button != MouseButton.Left) return;
+
+            clickSound();
+            UpdateValueFromMouse(e.MouseX);
+            e.Handled = true;
         };
 
-        OnMouseMove += (e) =>
+        OnMouseMove += e =>
         {
             UpdateValueFromMouse(e.MouseX);
             e.Handled = true;
         };
     }
+
+    public float Value { get; set; }
+    public string Text { get; set; } = "";
+
+    /// <summary>
+    ///     The normalized step size for one discrete unit (e.g. 0.01 for a 0–100 range).
+    ///     Used by controller DPad and stick navigation to move by exactly one value at a time.
+    /// </summary>
+    public float Step { get; set; } = 0.01f;
 
     public override List<string> GetInspectorProperties()
     {
@@ -65,7 +66,7 @@ public class Slider : UIElement
         renderer.DrawTexturedModalRect(texture, 0, 0, 0, 46, ComputedWidth / 2, ComputedHeight);
         renderer.DrawTexturedModalRect(texture, ComputedWidth / 2, 0, 200 - ComputedWidth / 2, 46, ComputedWidth / 2, ComputedHeight);
 
-        int knobWidth = 8;
+        const int knobWidth = 8;
         float knobX = Value * (ComputedWidth - knobWidth);
 
         renderer.DrawTexturedModalRect(texture, knobX, 0, 0, 66, knobWidth / 2f, ComputedHeight);

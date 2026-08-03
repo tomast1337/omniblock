@@ -1,11 +1,11 @@
 using System.Diagnostics;
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Controls.ListItems;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using Microsoft.Extensions.Logging;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.Menu;
 
@@ -14,11 +14,11 @@ public class TexturePacksScreen(
     UIScreen? parent,
     TexturePacks texturePackList) : UIScreen(context)
 {
+    private readonly List<TexturePackListItem> _listItems = [];
     private readonly ILogger<TexturePacksScreen> _logger = Log.Instance.For<TexturePacksScreen>();
     private readonly UIScreen? _parent = parent;
+    private int _refreshTimer;
     private ScrollView _scrollView = null!;
-    private readonly List<TexturePackListItem> _listItems = [];
-    private int _refreshTimer = 0;
     private string _texturePackFolder = "";
 
     protected override void Init()
@@ -67,14 +67,14 @@ public class TexturePacksScreen(
         btnOpen.Text = Translations.Get("texturePack.openFolder");
         btnOpen.Style.Width = 150;
         btnOpen.Style.SetMargin(2);
-        btnOpen.OnClick += (e) => OpenFolder();
+        btnOpen.OnClick += e => OpenFolder();
         buttonContainer.AddChild(btnOpen);
 
         Button btnDone = CreateButton();
         btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.Width = 150;
         btnDone.Style.SetMargin(2);
-        btnDone.OnClick += (e) => OnDone();
+        btnDone.OnClick += e => OnDone();
         buttonContainer.AddChild(btnDone);
 
         Root.AddChild(buttonContainer);
@@ -94,9 +94,9 @@ public class TexturePacksScreen(
             TexturePack pack = packs[i];
             TexturePackListItem item = new(pack)
             {
-                IsSelected = (pack == selectedPack)
+                IsSelected = pack == selectedPack
             };
-            item.OnClick += (e) => SelectPack(item);
+            item.OnClick += e => SelectPack(item);
             _scrollView.AddContent(item);
             _listItems.Add(item);
         }
@@ -108,6 +108,7 @@ public class TexturePacksScreen(
         {
             item.IsSelected = false;
         }
+
         selectedItem.IsSelected = true;
 
         texturePackList.setTexturePack(selectedItem.Value);

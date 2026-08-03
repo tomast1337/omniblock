@@ -1,5 +1,4 @@
 using BetaSharp.Client.Entities;
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
@@ -8,6 +7,7 @@ using BetaSharp.Items;
 using BetaSharp.Screens;
 using BetaSharp.Screens.Slots;
 using Silk.NET.GLFW;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.InGame.Containers;
 
@@ -17,10 +17,10 @@ public abstract class ContainerScreen(
     PlayerController playerController,
     ScreenHandler inventorySlots) : UIScreen(context)
 {
-    public ScreenHandler InventorySlots { get; } = inventorySlots;
+    protected Panel _containerPanel = null!;
     protected int _xSize = 176;
     protected int _ySize = 166;
-    protected Panel _containerPanel = null!;
+    public ScreenHandler InventorySlots { get; } = inventorySlots;
 
     public override bool PausesGame => false;
 
@@ -31,8 +31,8 @@ public abstract class ContainerScreen(
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.Center;
 
-        var background = new Background(BackgroundType.World);
-        background.OnMouseDown += (e) => OnSlotClick(null, e.Button);
+        Background background = new(BackgroundType.World);
+        background.OnMouseDown += e => OnSlotClick(null, e.Button);
         Root.AddChild(background);
 
         _containerPanel = new Panel();
@@ -46,11 +46,11 @@ public abstract class ContainerScreen(
     {
         foreach (Slot slot in InventorySlots.Slots)
         {
-            var uiSlot = new UISlot(slot);
+            UISlot uiSlot = new(slot);
             uiSlot.Style.Position = PositionType.Absolute;
             uiSlot.Style.Left = slot.xDisplayPosition;
             uiSlot.Style.Top = slot.yDisplayPosition;
-            uiSlot.OnMouseDown += (e) => OnSlotClick(uiSlot, e.Button);
+            uiSlot.OnMouseDown += e => OnSlotClick(uiSlot, e.Button);
             _containerPanel.AddChild(uiSlot);
         }
     }
@@ -59,7 +59,7 @@ public abstract class ContainerScreen(
     {
         int slotId = uiSlot == null ? ScreenHandler.NullSlot : uiSlot.Slot.id;
         bool isShiftClick = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
-        int mouseBtn = (button == MouseButton.Right) ? 1 : 0;
+        int mouseBtn = button == MouseButton.Right ? 1 : 0;
 
         playerController.OnSlotClick(InventorySlots.SyncId, slotId, mouseBtn, isShiftClick, player);
     }
@@ -123,7 +123,9 @@ public abstract class ContainerScreen(
                 tips.Add(new ActionTip(ControlIcon.A, "Move"));
                 tips.Add(new ActionTip(ControlIcon.Y, "Quick Move"));
                 if (slotStack.Count > 1)
+                {
                     tips.Add(new ActionTip(ControlIcon.X, "Take Half"));
+                }
             }
             else if (cursorStack != null)
             {
@@ -135,7 +137,7 @@ public abstract class ContainerScreen(
 
     public override void HandleControllerInput()
     {
-        var button = (GamepadButton)Controller.GetEventButton();
+        GamepadButton button = (GamepadButton)Controller.GetEventButton();
         bool isDown = Controller.GetEventButtonState();
 
         if (isDown && (button == GamepadButton.X || button == GamepadButton.Y))
@@ -144,9 +146,14 @@ public abstract class ContainerScreen(
             {
                 int slotId = uiSlot.Slot.id;
                 if (button == GamepadButton.Y)
+                {
                     playerController.OnSlotClick(InventorySlots.SyncId, slotId, 0, true, player);
+                }
                 else
+                {
                     playerController.OnSlotClick(InventorySlots.SyncId, slotId, 1, false, player);
+                }
+
                 return;
             }
         }

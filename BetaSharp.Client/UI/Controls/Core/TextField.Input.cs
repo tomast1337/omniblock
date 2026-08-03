@@ -36,6 +36,7 @@ public partial class TextField
             {
                 OnTextChanged?.Invoke(_buffer.Text);
             }
+
             e.Handled = true;
         }
     }
@@ -49,7 +50,11 @@ public partial class TextField
                 return true;
             case Keyboard.KEY_C:
                 string selectedText = _buffer.SelectedText;
-                if (!string.IsNullOrEmpty(selectedText)) Display.SetClipboardString(selectedText);
+                if (!string.IsNullOrEmpty(selectedText))
+                {
+                    Display.SetClipboardString(selectedText);
+                }
+
                 return true;
             case Keyboard.KEY_X:
                 selectedText = _buffer.SelectedText;
@@ -58,10 +63,15 @@ public partial class TextField
                     Display.SetClipboardString(selectedText);
                     _buffer.DeleteSelection();
                 }
+
                 return true;
             case Keyboard.KEY_V:
                 string clipboardText = Display.GetClipboardString();
-                if (!string.IsNullOrEmpty(clipboardText)) _buffer.Insert(clipboardText);
+                if (!string.IsNullOrEmpty(clipboardText))
+                {
+                    _buffer.Insert(clipboardText);
+                }
+
                 return true;
         }
 
@@ -73,12 +83,13 @@ public partial class TextField
         switch (keyCode)
         {
             case Keyboard.KEY_ESCAPE:
-                if (_buffer.HasSelection)
+                if (!_buffer.HasSelection)
                 {
-                    _buffer.ClearSelection();
-                    return true;
+                    return false;
                 }
-                return false;
+
+                _buffer.ClearSelection();
+                return true;
 
             case Keyboard.KEY_BACK:
                 _buffer.Backspace();

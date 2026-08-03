@@ -1,11 +1,11 @@
-namespace BetaSharp.Client.Guis;
+namespace BetaSharp.Client.UI.Colors;
 
 public readonly partial struct Color
 {
     public static Color Black { get; private set; } = new(0, 0, 0);
 
     /// <summary>
-    /// TextColorTitle
+    ///     TextColorTitle
     /// </summary>
     public static Color White { get; private set; } = new(0xFF, 0xFF, 0xFF);
 
@@ -13,7 +13,7 @@ public readonly partial struct Color
     public static Color BlueAlpha { get; private set; } = new(0x00, 0x00, 0xFF, 130);
 
     /// <summary>
-    /// TextColorNormal
+    ///     TextColorNormal
     /// </summary>
     public static Color GrayE0 { get; private set; } = new(0xE0, 0xE0, 0xE0);
 
@@ -24,7 +24,7 @@ public readonly partial struct Color
     public static Color GrayAA { get; private set; } = new(0xAA, 0xAA, 0xAA);
 
     /// <summary>
-    /// TextColorKey
+    ///     TextColorKey
     /// </summary>
     public static Color GrayA0 { get; private set; } = new(0xA0, 0xA0, 0xA0);
 
@@ -37,12 +37,12 @@ public readonly partial struct Color
     public static Color BlackAlphaC0 { get; private set; } = new(0, 0, 0, 0xC0);
 
     /// <summary>
-    /// BlackAlpha80
+    ///     BlackAlpha80
     /// </summary>
     public static Color BackgroundBlackAlpha { get; private set; } = new(0, 0, 0, 0x80);
 
     /// <summary>
-    /// WhiteAlpha80
+    ///     WhiteAlpha80
     /// </summary>
     public static Color BackgroundWhiteAlpha { get; private set; } = new(0xFF, 0xFF, 0xFF, 0x80);
 

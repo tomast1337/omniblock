@@ -1,6 +1,5 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Blocks;
 using BetaSharp.Client.Rendering.Blocks.Entities;
@@ -14,6 +13,7 @@ using BetaSharp.Items;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using SixLabors.Fonts;
+using Color = BetaSharp.Client.UI.Colors.Color;
 using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 using TextRenderer = BetaSharp.Client.Rendering.TextRenderer;
 
@@ -21,25 +21,6 @@ namespace BetaSharp.Client.UI.Rendering;
 
 public class UIRenderer
 {
-    public TextureManager TextureManager => _context.TextureManager;
-    public TextRenderer TextRenderer => _context.TextRenderer;
-    private readonly ItemRenderer _itemRenderer = new();
-
-    private float _translateX = 0;
-    private float _translateY = 0;
-    private uint _currentTint = 0xFFFFFFFF;
-    private readonly Stack<Vector2D<float>> _translationStack = new();
-
-    private bool _scissorEnabled;
-    private (int X, int Y, int W, int H) _scissorRect;
-    private readonly Stack<(bool Enabled, int X, int Y, int W, int H)> _scissorStack = new();
-    private GameOptions _gameOptions => _context.Options;
-    private Func<Vector2D<int>> _getDisplaySize => _context.DisplaySize;
-    private TextureHandle _terrainTexture => _context.TerrainTexture;
-    private TextureHandle _itemsTexture => _context.ItemsTexture;
-    private UIBatchRenderer _batch => _context.UiBatchRenderer;
-    private readonly UIContext _context;
-
     /// <summary>
     ///     Solid geometry shown inside the interface: a block in a slot, a mob in a preview, a sign.
     /// </summary>
@@ -49,12 +30,32 @@ public class UIRenderer
     ///     entity tree.
     /// </remarks>
     private static readonly RenderState s_preview =
-        RenderState.Interface with { DepthTest = true, DepthWrite = true };
+        RenderState.Interface with
+        {
+            DepthTest = true,
+            DepthWrite = true
+        };
 
-    public UIRenderer(UIContext context)
-    {
-        _context = context;
-    }
+    private readonly UIContext _context;
+    private readonly ItemRenderer _itemRenderer = new();
+    private readonly Stack<(bool Enabled, int X, int Y, int W, int H)> _scissorStack = new();
+    private readonly Stack<Vector2D<float>> _translationStack = new();
+    private uint _currentTint = 0xFFFFFFFF;
+
+    private bool _scissorEnabled;
+    private (int X, int Y, int W, int H) _scissorRect;
+
+    private float _translateX;
+    private float _translateY;
+
+    public UIRenderer(UIContext context) => _context = context;
+    public TextureManager TextureManager => _context.TextureManager;
+    public TextRenderer TextRenderer => _context.TextRenderer;
+    private GameOptions _gameOptions => _context.Options;
+    private Func<Vector2D<int>> _getDisplaySize => _context.DisplaySize;
+    private TextureHandle _terrainTexture => _context.TerrainTexture;
+    private TextureHandle _itemsTexture => _context.ItemsTexture;
+    private UIBatchRenderer _batch => _context.UiBatchRenderer;
 
 
     public void Begin()
@@ -94,6 +95,7 @@ public class UIRenderer
             _batch.Flush();
             _currentTint = newTint;
         }
+
         GLManager.GL.Color4(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f, color.A / 255.0f);
     }
 
@@ -113,8 +115,14 @@ public class UIRenderer
     public void SetAlphaTest(bool flag)
     {
         _batch.Flush();
-        if (flag) GLManager.GL.Enable(GLEnum.AlphaTest);
-        else GLManager.GL.Disable(GLEnum.AlphaTest);
+        if (flag)
+        {
+            GLManager.GL.Enable(GLEnum.AlphaTest);
+        }
+        else
+        {
+            GLManager.GL.Disable(GLEnum.AlphaTest);
+        }
     }
 
     /// <summary>
@@ -127,7 +135,10 @@ public class UIRenderer
     public void PushBlend(BlendMode mode)
     {
         _batch.Flush();
-        GLManager.State.ApplyUntrusted(RenderState.Interface with { Blend = mode });
+        GLManager.State.ApplyUntrusted(RenderState.Interface with
+        {
+            Blend = mode
+        });
     }
 
     public void PopBlend()
@@ -144,14 +155,17 @@ public class UIRenderer
         // write mask, and RenderState.Interface has it off. Clearing without it silently leaves the
         // buffer alone, which is how the item on the cursor ended up losing the depth test against
         // the block previews already drawn in the slots underneath it.
-        GLManager.State.ApplyUntrusted(RenderState.Interface with { DepthWrite = true });
+        GLManager.State.ApplyUntrusted(RenderState.Interface with
+        {
+            DepthWrite = true
+        });
         GLManager.GL.Clear((ClearBufferMask)GLEnum.DepthBufferBit);
         GLManager.State.ApplyUntrusted(RenderState.Interface);
     }
 
     public void PushTranslate(float x, float y)
     {
-        _translationStack.Push(new(_translateX, _translateY));
+        _translationStack.Push(new Vector2D<float>(_translateX, _translateY));
         _translateX += x;
         _translateY += y;
     }
@@ -170,8 +184,15 @@ public class UIRenderer
             _translateY = 0;
         }
 
-        if (MathF.Abs(_translateX) < 0.0001f) _translateX = 0;
-        if (MathF.Abs(_translateY) < 0.0001f) _translateY = 0;
+        if (MathF.Abs(_translateX) < 0.0001f)
+        {
+            _translateX = 0;
+        }
+
+        if (MathF.Abs(_translateY) < 0.0001f)
+        {
+            _translateY = 0;
+        }
     }
 
     public void EnableClipping(int x, int y, int width, int height)
@@ -234,7 +255,7 @@ public class UIRenderer
     public void DisableClipping()
     {
         _batch.Flush();
-        if (_scissorStack.TryPop(out var prev))
+        if (_scissorStack.TryPop(out (bool Enabled, int X, int Y, int W, int H) prev))
         {
             _scissorEnabled = prev.Enabled;
             _scissorRect = (prev.X, prev.Y, prev.W, prev.H);
@@ -249,6 +270,7 @@ public class UIRenderer
         {
             _scissorEnabled = false;
         }
+
         GLManager.GL.Disable(GLEnum.ScissorTest);
     }
 
@@ -275,15 +297,16 @@ public class UIRenderer
         float ix = MathF.Floor(x + _translateX);
         float iy = MathF.Floor(y + _translateY);
         if (shadow)
+        {
             TextRenderer.DrawStringWithShadow(text, ix, iy, color, batch: _batch, scale: scale);
+        }
         else
+        {
             TextRenderer.DrawString(text, ix, iy, color, batch: _batch, scale: scale);
+        }
     }
 
-    public void DrawTextWrapped(string text, float x, float y, float maxWidth, Color color)
-    {
-        TextRenderer.DrawStringWrapped(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), (int)maxWidth, color, batch: _batch);
-    }
+    public void DrawTextWrapped(string text, float x, float y, float maxWidth, Color color) => TextRenderer.DrawStringWrapped(text, (int)MathF.Floor(x + _translateX), (int)MathF.Floor(y + _translateY), (int)maxWidth, color, batch: _batch);
 
     public void DrawCenteredText(string text, float x, float y, Color color, float rotation = 0, float scale = 1.0f, bool shadow = true)
     {
@@ -293,9 +316,14 @@ public class UIRenderer
         if (rotation == 0)
         {
             if (shadow)
+            {
                 TextRenderer.DrawStringWithShadow(text, pivotX, pivotY, color, HorizontalAlignment.Center, _batch, scale);
+            }
             else
+            {
                 TextRenderer.DrawString(text, pivotX, pivotY, color, HorizontalAlignment.Center, _batch, scale);
+            }
+
             return;
         }
 
@@ -304,9 +332,13 @@ public class UIRenderer
         float sin = MathF.Sin(rad);
 
         if (shadow)
+        {
             TextRenderer.DrawStringWithShadow(text, 0f, 0f, color, HorizontalAlignment.Center, _batch, scale, cos, sin, pivotX, pivotY);
+        }
         else
+        {
             TextRenderer.DrawString(text, 0f, 0f, color, HorizontalAlignment.Center, _batch, scale, cos, sin, pivotX, pivotY);
+        }
     }
 
     public void DrawTexture(TextureHandle texture, float x, float y, float width, float height)
@@ -317,15 +349,10 @@ public class UIRenderer
         _batch.AddQuad(finalX, finalY, finalX + width, finalY + height, 0f, 0f, 1f, 1f, _currentTint);
     }
 
-    public void DrawTexturedModalRect(TextureHandle texture, float x, float y, float u, float v, float width, float height)
-    {
-        DrawTexturedModalRect(texture, x, y, u, v, width, height, width, height, 0.0f);
-    }
+    public void DrawTexturedModalRect(TextureHandle texture, float x, float y, float u, float v, float width, float height) => DrawTexturedModalRect(texture, x, y, u, v, width, height, width, height, 0.0f);
 
-    public void DrawTexturedModalRect(TextureHandle texture, float x, float y, float u, float v, float width, float height, float uvWidth, float uvHeight)
-    {
+    public void DrawTexturedModalRect(TextureHandle texture, float x, float y, float u, float v, float width, float height, float uvWidth, float uvHeight) =>
         DrawTexturedModalRect(texture, x, y, u, v, width, height, uvWidth, uvHeight, 0.0f);
-    }
 
     public void DrawTexturedModalRect(TextureHandle texture, float x, float y, float u, float v, float width, float height, float uvWidth, float uvHeight, float z)
     {
@@ -367,22 +394,28 @@ public class UIRenderer
             return;
         }
 
-        if (textureId < 0) return;
+        if (textureId < 0)
+        {
+            return;
+        }
 
         TextureHandle texHandle = itemId < 256 ? _terrainTexture : _itemsTexture;
 
         int colorMultiplier = Item.Items[itemId]!.GetColorMultiplier(itemMeta);
         float finalX = MathF.Floor(x + _translateX);
         float finalY = MathF.Floor(y + _translateY);
-        float u0 = (textureId % 16 * 16) / 256f;
-        float v0 = (textureId / 16 * 16) / 256f;
+        float u0 = textureId % 16 * 16 / 256f;
+        float v0 = textureId / 16 * 16 / 256f;
         _batch.SetTexture((uint)texHandle.Id);
         _batch.AddQuad(finalX, finalY, finalX + 16f, finalY + 16f, u0, v0, u0 + 16f / 256f, v0 + 16f / 256f, (uint)Color.FromRgb((uint)colorMultiplier));
     }
 
     public void DrawItem(ItemStack? stack, float x, float y)
     {
-        if (stack == null) return;
+        if (stack == null)
+        {
+            return;
+        }
 
         bool isBlock = stack.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[stack.ItemId].RenderType);
 
@@ -409,7 +442,10 @@ public class UIRenderer
         else
         {
             int iconIndex = stack.GetTextureId();
-            if (iconIndex < 0) return;
+            if (iconIndex < 0)
+            {
+                return;
+            }
 
             TextureHandle texHandle = stack.ItemId < 256 ? _terrainTexture : _itemsTexture;
 
@@ -418,8 +454,8 @@ public class UIRenderer
 
             float finalX = MathF.Floor(x + _translateX);
             float finalY = MathF.Floor(y + _translateY);
-            float u0 = (iconIndex % 16 * 16) / 256f;
-            float v0 = (iconIndex / 16 * 16) / 256f;
+            float u0 = iconIndex % 16 * 16 / 256f;
+            float v0 = iconIndex / 16 * 16 / 256f;
             _batch.SetTexture((uint)texHandle.Id);
             _batch.AddQuad(finalX, finalY, finalX + 16f, finalY + 16f, u0, v0, u0 + 16f / 256f, v0 + 16f / 256f, rgba);
         }
@@ -427,7 +463,10 @@ public class UIRenderer
 
     public void DrawItemOverlay(ItemStack? stack, float x, float y)
     {
-        if (stack == null) return;
+        if (stack == null)
+        {
+            return;
+        }
 
         int bx = (int)(x + _translateX);
         int by = (int)(y + _translateY);
@@ -443,8 +482,8 @@ public class UIRenderer
         {
             int barWidth = (int)Math.Round(13.0 - stack.GetDamage2() * 13.0 / stack.GetMaxDamage());
             int damageColor = (int)Math.Round(255.0 - stack.GetDamage2() * 255.0 / stack.GetMaxDamage());
-            int barColor = (255 - damageColor) << 16 | damageColor << 8;
-            int bgColor = (255 - damageColor) / 4 << 16 | 16128;
+            int barColor = ((255 - damageColor) << 16) | (damageColor << 8);
+            int bgColor = (((255 - damageColor) / 4) << 16) | 16128;
 
             _batch.AddColoredQuad(bx + 2, by + 13, 13, 2, (uint)Color.FromRgb(0));
             _batch.AddColoredQuad(bx + 2, by + 13, 12, 1, (uint)Color.FromRgb((uint)bgColor));
@@ -480,6 +519,7 @@ public class UIRenderer
         {
             el2.BodyYaw = (float)Math.Atan(lookX / 40.0F) * 20.0F;
         }
+
         entity.Yaw = (float)Math.Atan(lookX / 40.0F) * 40.0F;
         entity.Pitch = -(float)Math.Atan(lookY / 40.0F) * 20.0F;
         entity.MinBrightness = 1.0F;
@@ -493,6 +533,7 @@ public class UIRenderer
         {
             el3.BodyYaw = bodyYaw;
         }
+
         entity.Yaw = headYaw;
         entity.Pitch = headPitch;
 
@@ -551,7 +592,7 @@ public class UIRenderer
 
         long elapsedMs = startMs > 0 ? Environment.TickCount64 - startMs : Environment.TickCount64;
         long periodMs = Math.Max(1L, (long)(period * 1000));
-        float t = (float)(elapsedMs % periodMs) / 1000f;
+        float t = elapsedMs % periodMs / 1000f;
 
         static float Smoothstep(float x) => x * x * (3f - 2f * x);
 
@@ -601,9 +642,20 @@ public class UIRenderer
         {
             int rotationIndex = sign.PushedBlockData;
             float angle = 0.0F;
-            if (rotationIndex == 2) angle = 180.0F;
-            if (rotationIndex == 4) angle = 90.0F;
-            if (rotationIndex == 5) angle = -90.0F;
+            if (rotationIndex == 2)
+            {
+                angle = 180.0F;
+            }
+
+            if (rotationIndex == 4)
+            {
+                angle = 90.0F;
+            }
+
+            if (rotationIndex == 5)
+            {
+                angle = -90.0F;
+            }
 
             GLManager.GL.Rotate(angle, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Translate(0.0F, -1.0625F, 0.0F);

@@ -1,8 +1,8 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
 using Silk.NET.Maths;
+using Color = BetaSharp.Client.UI.Colors.Color;
 using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client.Rendering.Entities.Models;

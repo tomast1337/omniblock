@@ -1,22 +1,21 @@
-using System.ComponentModel;
-using BetaSharp.Client.Guis;
-using BetaSharp.Client.Options;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Controls.ListItems;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Worlds.Storage;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
-public class LanguageSelectionScreen(UIContext context, UIScreen? parent) : BaseOptionsScreen(context, parent, "options.language") {
-
-    protected override List<OptionSection> GetOptions() => [];
+public class LanguageSelectionScreen(UIContext context, UIScreen? parent) : BaseOptionsScreen(context, parent, "options.language")
+{
+    private readonly List<LanguageListItem> _listItems = [];
 
     private readonly List<WorldSaveInfo> _saveList = [];
     private ScrollView _scrollView = null!;
-    private readonly List<LanguageListItem> _listItems = [];
-    private LanguageListItem? _selectedLanguage = null;
+    private LanguageListItem? _selectedLanguage;
+
+    protected override List<OptionSection> GetOptions() => [];
 
     protected override void Init()
     {
@@ -25,7 +24,11 @@ public class LanguageSelectionScreen(UIContext context, UIScreen? parent) : Base
         Root.Style.AlignItems = Align.Center;
         Root.Style.SetPadding(20);
 
-        Label title = new() { Text = Translations.Get("menu.language"), TextColor = Color.White };
+        Label title = new()
+        {
+            Text = Translations.Get("menu.language"),
+            TextColor = Color.White
+        };
         title.Style.MarginBottom = 8;
         Root.AddChild(title);
         AddTitleSpacer();
@@ -60,27 +63,24 @@ public class LanguageSelectionScreen(UIContext context, UIScreen? parent) : Base
         btnCancel.Text = Translations.Get("gui.done");
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Context.Navigator.Navigate(null);
+        btnCancel.OnClick += e => Context.Navigator.Navigate(null);
         row2.AddChild(btnCancel);
 
         buttonContainer.AddChild(row2);
         Root.AddChild(buttonContainer);
     }
 
-    public override void OnEnter()
-    {
-        PopulateWorldList();
-    }
+    public override void OnEnter() => PopulateWorldList();
 
     private void PopulateWorldList()
     {
         _scrollView.ContentContainer.Children.Clear();
         _listItems.Clear();
 
-        foreach (var lang in Translations.Instance.Languages)
+        foreach (KeyValuePair<string, Language> lang in Translations.Instance.Languages)
         {
             LanguageListItem item = new(lang.Value);
-            item.OnClick += (e) => SelectListItem(item, lang.Key);
+            item.OnClick += e => SelectListItem(item, lang.Key);
             _scrollView.AddContent(item);
             _listItems.Add(item);
             if (lang.Key.Remove(5) == Options.Language)
@@ -96,10 +96,11 @@ public class LanguageSelectionScreen(UIContext context, UIScreen? parent) : Base
         Options.Language = key.Split('.')[0];
         Options.SaveOptions();
 
-        if(_selectedLanguage != null)
+        if (_selectedLanguage != null)
         {
             _selectedLanguage.IsSelected = false;
         }
+
         item.IsSelected = true;
         _selectedLanguage = item;
     }

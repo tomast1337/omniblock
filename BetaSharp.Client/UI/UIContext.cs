@@ -25,9 +25,8 @@ public sealed class UIContext(
     Func<bool> hasWorld,
     Func<Vector2D<int>> mouseOffset,
     Func<Vector2D<int>>? renderTargetSize = null
-    )
+)
 {
-
     public GameOptions Options => options;
     public TextRenderer TextRenderer => textRenderer;
     public UIBatchRenderer UiBatchRenderer => batchRenderer;
@@ -49,19 +48,20 @@ public sealed class UIContext(
     public Vector2D<int> MouseOffset => mouseOffset?.Invoke() ?? Vector2D<int>.Zero;
 
     /// <summary>
-    /// The display dimensions used for input scaling. Normally equals <see cref="DisplayWidth"/>/<see cref="DisplayHeight"/>,
-    /// but in debug viewport mode returns the viewport size so that click coordinates match the render coordinate space.
+    ///     The display dimensions used for input scaling. Normally equals <see cref="DisplayWidth" />/
+    ///     <see cref="DisplayHeight" />,
+    ///     but in debug viewport mode returns the viewport size so that click coordinates match the render coordinate space.
     /// </summary>
     public Vector2D<int> InputDisplaySize => inputDisplaySize?.Invoke() ?? displaySize();
 
     /// <summary>
-    /// Pixel size of the framebuffer the UI is currently drawing into. This is the window's
-    /// framebuffer normally, but the smaller offscreen FBO while the F3 overlay hosts the game in
-    /// an ImGui viewport. Scissor rectangles are relative to the bound draw buffer, so they must be
-    /// expressed in this space rather than in window pixels.
+    ///     Pixel size of the framebuffer the UI is currently drawing into. This is the window's
+    ///     framebuffer normally, but the smaller offscreen FBO while the F3 overlay hosts the game in
+    ///     an ImGui viewport. Scissor rectangles are relative to the bound draw buffer, so they must be
+    ///     expressed in this space rather than in window pixels.
     /// </summary>
     public Vector2D<int> RenderTargetSize => renderTargetSize?.Invoke()
-        ?? new Vector2D<int>(Display.getFramebufferWidth(), Display.getFramebufferHeight());
+                                             ?? new Vector2D<int>(Display.getFramebufferWidth(), Display.getFramebufferHeight());
 
     public IControllerState ControllerState => controllerState;
 }

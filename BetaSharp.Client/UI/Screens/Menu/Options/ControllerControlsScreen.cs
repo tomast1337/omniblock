@@ -1,5 +1,4 @@
 using BetaSharp.Client.Input;
-using BetaSharp.Client.Options;
 using BetaSharp.Client.UI.Controls.Core;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
@@ -8,7 +7,8 @@ public class ControllerControlsScreen : BaseOptionsScreen
 {
     public ControllerControlsScreen(UIContext context, UIScreen? parent)
         : base(context, parent, "options.controllerSettings")
-    {}
+    {
+    }
 
     protected override List<OptionSection> GetOptions() => [];
 
@@ -39,10 +39,7 @@ public class ControllerControlsScreen : BaseOptionsScreen
         btnBindings.Style.MarginLeft = ButtonPadding;
         btnBindings.Style.MarginRight = ButtonPadding;
         btnBindings.Style.MarginBottom = 4;
-        btnBindings.OnClick += (e) =>
-        {
-            Context.Navigator.Navigate(new ControllerBindingsScreen(Context, this));
-        };
+        btnBindings.OnClick += e => { Context.Navigator.Navigate(new ControllerBindingsScreen(Context, this)); };
         list.AddChild(btnBindings);
 
         // Reset Button
@@ -52,10 +49,13 @@ public class ControllerControlsScreen : BaseOptionsScreen
         btnReset.Style.MarginRight = ButtonPadding;
         btnReset.Style.MarginBottom = 4;
         btnReset.Text = Translations.Get("options.resetBindings");
-        btnReset.OnClick += (e) =>
+        btnReset.OnClick += e =>
         {
             foreach (ControllerBinding cb in Options.ControllerBindings)
+            {
                 cb.Button = cb.DefaultButton;
+            }
+
             Options.SaveOptions();
         };
         list.AddChild(btnReset);

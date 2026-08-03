@@ -1,18 +1,18 @@
 using BetaSharp.Client.Entities;
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Inventories;
 using BetaSharp.Screens;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.InGame.Containers;
 
 public class ChestScreen : ContainerScreen
 {
-    private readonly IInventory _upperInventory;
-    private readonly IInventory _lowerInventory;
     private readonly int _inventoryRows;
+    private readonly IInventory _lowerInventory;
+    private readonly IInventory _upperInventory;
 
     public ChestScreen(
         UIContext context,
@@ -34,7 +34,7 @@ public class ChestScreen : ContainerScreen
 
         // Background Image split into two parts to handle single/double chests
         int topHeight = _inventoryRows * 18 + 17;
-        var topBg = new Image
+        Image topBg = new()
         {
             Texture = Renderer.TextureManager.GetTextureId("/gui/container.png"),
             U = 0,
@@ -47,7 +47,7 @@ public class ChestScreen : ContainerScreen
         topBg.Style.Position = PositionType.Absolute;
         _containerPanel.AddChild(topBg);
 
-        var bottomBg = new Image
+        Image bottomBg = new()
         {
             Texture = Renderer.TextureManager.GetTextureId("/gui/container.png"),
             U = 0,
@@ -62,7 +62,7 @@ public class ChestScreen : ContainerScreen
         _containerPanel.AddChild(bottomBg);
 
         // Labels
-        var lblUpper = new Label
+        Label lblUpper = new()
         {
             Text = _lowerInventory.Name,
             HasShadow = false,
@@ -73,7 +73,7 @@ public class ChestScreen : ContainerScreen
         lblUpper.Style.Top = 6;
         _containerPanel.AddChild(lblUpper);
 
-        var lblLower = new Label
+        Label lblLower = new()
         {
             Text = _upperInventory.Name,
             HasShadow = false,
