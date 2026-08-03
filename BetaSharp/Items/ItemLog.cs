@@ -6,11 +6,11 @@ internal class ItemLog : ItemBlock
 {
     public ItemLog(int id) : base(id)
     {
-        setMaxDamage(0);
-        setHasSubtypes(true);
+        SetMaxDamage(0);
+        SetHasSubtypes(true);
     }
 
-    public override int getTextureId(int meta) => BlockRegistry.Get("log").GetTexture(2.ToSide(), meta);
+    public override int GetTextureId(int meta) => BlockRegistry.Get("log").GetTexture(2.ToSide(), meta);
 
-    public override int getPlacementMetadata(int meta) => meta;
+    protected override int GetPlacementMetadata(int meta) => meta;
 }

@@ -51,7 +51,7 @@ public sealed class FoodBehaviorDefinition : ItemBehaviorDefinition
         if (ReturnItem != null)
         {
             if (DefaultRegistries.Items.Get(ResourceLocation.Parse(ReturnItem))?.Value is { } def)
-                returnItem = Item.ITEMS[def.ProtocolId];
+                returnItem = Item.Items[def.ProtocolId];
             else
                 throw new ArgumentException($"Unknown item: '{ReturnItem}'", nameof(ReturnItem));
         }

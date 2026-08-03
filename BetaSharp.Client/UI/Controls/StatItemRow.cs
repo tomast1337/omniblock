@@ -31,7 +31,7 @@ public class StatItemRow : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        if (Item.ITEMS[ItemId] == null) return;
+        if (Item.Items[ItemId] == null) return;
 
         DrawBackground(renderer);
 

@@ -14,7 +14,7 @@ internal sealed class SwordBehavior : IItemBehavior
         _weaponDamage = 4 + toolMaterial.DamageBonus * 2;
     }
 
-    public void Apply(Item item) => item.setMaxDamage(_toolMaterial.MaxUses);
+    public void Apply(Item item) => item.SetMaxDamage(_toolMaterial.MaxUses);
 
     public float GetMiningSpeedMultiplier(Item item, ItemStack itemStack, Block block)
         => block.Id == BlockRegistry.Get("cobweb").Id ? 15.0F : 1.5F;

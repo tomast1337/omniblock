@@ -1024,7 +1024,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
                 break;
             case 1005:
-                if (Item.ITEMS[data]?.GetBehavior<RecordBehavior>() is { } record)
+                if (Item.Items[data]?.GetBehavior<RecordBehavior>() is { } record)
                 {
                     _game.SoundManager.PlayStreaming(record.RecordName, x, y, z, 1.0F, 1.0F);
                 }

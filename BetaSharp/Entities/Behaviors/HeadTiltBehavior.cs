@@ -55,7 +55,7 @@ public sealed class HeadTiltBehavior : IEntityPhysics, IEntityTicker
         }
 
         self.State[_interested] = tame.IsTamed(mob)
-            ? Item.ITEMS[held.ItemId]?.GetBehavior<FoodBehavior>() is { IsMeat: true }
+            ? Item.Items[held.ItemId]?.GetBehavior<FoodBehavior>() is { IsMeat: true }
             : held.ItemId == _wantedWhileWild.Id;
     }
 

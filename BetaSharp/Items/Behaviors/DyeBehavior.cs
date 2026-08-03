@@ -24,7 +24,7 @@ internal sealed class DyeBehavior : IItemBehavior
         => item._textureId + meta % 8 * 16 + meta / 8;
 
     public string GetItemNameIS(Item item, ItemStack itemStack)
-        => item.getItemName() + "." + ColorNames[itemStack.getDamage()];
+        => item.GetItemName() + "." + ColorNames[itemStack.getDamage()];
 
     public bool UseOnBlock(Item item, ItemStack itemStack, EntityPlayer player, IWorldContext world, int x, int y, int z, int meta)
     {
@@ -69,9 +69,9 @@ internal sealed class DyeBehavior : IItemBehavior
                     bool validPosition = true;
                     for (int walkStep = 0; walkStep < attempt / 16 && validPosition; ++walkStep)
                     {
-                        spawnX += Item.itemRand.NextInt(3) - 1;
-                        spawnY += (Item.itemRand.NextInt(3) - 1) * Item.itemRand.NextInt(3) / 2;
-                        spawnZ += Item.itemRand.NextInt(3) - 1;
+                        spawnX += Item.s_itemRand.NextInt(3) - 1;
+                        spawnY += (Item.s_itemRand.NextInt(3) - 1) * Item.s_itemRand.NextInt(3) / 2;
+                        spawnZ += Item.s_itemRand.NextInt(3) - 1;
                         if (world.Reader.GetBlockId(spawnX, spawnY - 1, spawnZ) != BlockRegistry.Get("grass_block").Id || world.Reader.ShouldSuffocate(spawnX, spawnY, spawnZ))
                         {
                             validPosition = false;
@@ -80,11 +80,11 @@ internal sealed class DyeBehavior : IItemBehavior
 
                     if (validPosition && world.Reader.GetBlockId(spawnX, spawnY, spawnZ) == 0)
                     {
-                        if (Item.itemRand.NextInt(10) != 0)
+                        if (Item.s_itemRand.NextInt(10) != 0)
                         {
                             world.Writer.SetBlock(spawnX, spawnY, spawnZ, BlockRegistry.Get("grass").Id, 1);
                         }
-                        else if (Item.itemRand.NextInt(3) != 0)
+                        else if (Item.s_itemRand.NextInt(3) != 0)
                         {
                             world.Writer.SetBlock(spawnX, spawnY, spawnZ, BlockRegistry.Get("dandelion").Id);
                         }

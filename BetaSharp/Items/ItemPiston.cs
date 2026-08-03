@@ -6,5 +6,5 @@ internal class ItemPiston : ItemBlock
     {
     }
 
-    public override int getPlacementMetadata(int meta) => 7;
+    protected override int GetPlacementMetadata(int meta) => 7;
 }

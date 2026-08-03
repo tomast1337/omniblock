@@ -46,7 +46,7 @@ internal static class ItemLookup
     {
         if (int.TryParse(input, out itemId))
         {
-            return itemId >= 0 && itemId < Item.ITEMS.Length && Item.ITEMS[itemId] != null;
+            return itemId >= 0 && itemId < Item.Items.Length && Item.Items[itemId] != null;
         }
 
         return s_itemNameToId.TryGetValue(input.ToLower(), out itemId);
@@ -148,7 +148,7 @@ internal static class ItemLookup
                 s_itemNameToId.TryAdd(location.Path, definition.ProtocolId);
             }
 
-            if (Item.ITEMS[definition.ProtocolId] is { } item)
+            if (Item.Items[definition.ProtocolId] is { } item)
             {
                 BuildItemLookupAlias(item);
             }

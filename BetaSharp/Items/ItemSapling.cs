@@ -6,11 +6,11 @@ internal class ItemSapling : ItemBlock
 {
     public ItemSapling(int id) : base(id)
     {
-        setMaxDamage(0);
-        setHasSubtypes(true);
+        SetMaxDamage(0);
+        SetHasSubtypes(true);
     }
 
-    public override int getPlacementMetadata(int meta) => meta;
+    protected override int GetPlacementMetadata(int meta) => meta;
 
-    public override int getTextureId(int meta) => BlockRegistry.Get("sapling").GetTexture(0, meta);
+    public override int GetTextureId(int meta) => BlockRegistry.Get("sapling").GetTexture(0, meta);
 }

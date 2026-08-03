@@ -43,9 +43,9 @@ public sealed class ItemRegistryTests
     {
         Item bucket = Item.ByName("bucket");
 
-        Assert.Same(bucket, Item.ByName("bucket_water").getContainerItem());
-        Assert.Same(bucket, Item.ByName("bucket_lava").getContainerItem());
-        Assert.Same(bucket, Item.ByName("milk").getContainerItem());
+        Assert.Same(bucket, Item.ByName("bucket_water").GetContainerItem());
+        Assert.Same(bucket, Item.ByName("bucket_lava").GetContainerItem());
+        Assert.Same(bucket, Item.ByName("milk").GetContainerItem());
     }
 
     [Fact]
@@ -67,11 +67,11 @@ public sealed class ItemRegistryTests
             ProtocolId = 31901,
         };
 
-        Item.ITEMS[referencing.ProtocolId] = ItemFactory.Create(referencing);
-        Item.ITEMS[target.ProtocolId] = ItemFactory.Create(target);
+        Item.Items[referencing.ProtocolId] = ItemFactory.Create(referencing);
+        Item.Items[target.ProtocolId] = ItemFactory.Create(target);
         ItemFactory.ResolveCrossReferences(referencing);
         ItemFactory.ResolveCrossReferences(target);
 
-        Assert.Same(Item.ITEMS[31901], Item.ITEMS[31900]!.getContainerItem());
+        Assert.Same(Item.Items[31901], Item.Items[31900]!.GetContainerItem());
     }
 }
