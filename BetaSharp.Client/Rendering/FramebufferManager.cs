@@ -159,7 +159,13 @@ public class FramebufferManager
         _mainFbo.Bind();
         gl.Viewport(0, 0, (uint)_mainFbo.Width, (uint)_mainFbo.Height);
         _blurShader.SetUniform1("u_Horizontal", 0);
-        //gl.Enable(GLEnum.Blend);
+
+        // This composite is the one draw in the frame that must blend, and it has to say so
+        // itself. The enable used to be commented out because blending happened to already be on:
+        // RenderCloudsFancy turned it on and never turned it off. Without it the cloud layer is
+        // written straight over the main framebuffer and the world, entities and sky all vanish
+        // behind it.
+        gl.Enable(GLEnum.Blend);
         gl.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
         gl.DrawArrays(GLEnum.Triangles, 0, 6);
 
