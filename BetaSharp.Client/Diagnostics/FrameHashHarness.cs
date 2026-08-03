@@ -356,6 +356,8 @@ internal static unsafe class FrameHashHarness
         yield return ("slot-basic-program", () => BasicSlotScene(t => t.draw(ProgramSlot.Basic)));
         yield return ("slot-basic-fog-fallback", () => BasicSlotFogScene(t => t.draw()));
         yield return ("slot-basic-fog-program", () => BasicSlotFogScene(t => t.draw(ProgramSlot.Basic)));
+        yield return ("slot-textured-fallback", () => TexturedSlotScene(t => t.draw()));
+        yield return ("slot-textured-program", () => TexturedSlotScene(t => t.draw(ProgramSlot.Textured)));
 
         // Each of these is drawn twice, once through the raw calls and once through the state it is
         // meant to be equivalent to. The two hashes have to match, which is the property every
@@ -588,6 +590,66 @@ internal static unsafe class FrameHashHarness
             tessellator.addVertex(-0.8, -0.8, 0.0);
             finish(tessellator);
         }
+    }
+
+    /// <summary>
+    ///     Textured geometry, drawn however <paramref name="finish" /> says to finish a batch.
+    /// </summary>
+    /// <remarks>
+    ///     Covers the two places the tint comes from, the texture matrix, and the alpha test, which
+    ///     for a textured draw is applied after the tint rather than to the sampled texel — a
+    ///     program that tests too early keeps glyphs a caller is fading out.
+    /// </remarks>
+    private static void TexturedSlotScene(Action<Tessellator> finish)
+    {
+        Ortho();
+        GLManager.TextureEnabled = true;
+        GLManager.GL.BindTexture(GLEnum.Texture2D, s_checkerboard);
+
+        Tessellator tessellator = Tessellator.instance;
+
+        GLManager.Color = new(1.0f, 1.0f, 1.0f, 1.0f);
+        tessellator.startDrawingQuads();
+        tessellator.addVertexWithUV(16, 112, 0.0, 0.0, 1.0);
+        tessellator.addVertexWithUV(112, 112, 0.0, 1.0, 1.0);
+        tessellator.addVertexWithUV(112, 16, 0.0, 1.0, 0.0);
+        tessellator.addVertexWithUV(16, 16, 0.0, 0.0, 0.0);
+        finish(tessellator);
+
+        // Per-vertex tint, which binds an array to the colour attribute the quad above left at its
+        // default value.
+        tessellator.startDrawingQuads();
+        tessellator.setColorRGBA_F(1.0f, 0.4f, 0.4f, 1.0f);
+        tessellator.addVertexWithUV(144, 112, 0.0, 0.0, 1.0);
+        tessellator.setColorRGBA_F(0.4f, 1.0f, 0.4f, 1.0f);
+        tessellator.addVertexWithUV(240, 112, 0.0, 1.0, 1.0);
+        tessellator.setColorRGBA_F(0.4f, 0.4f, 1.0f, 1.0f);
+        tessellator.addVertexWithUV(240, 16, 0.0, 1.0, 0.0);
+        tessellator.setColorRGBA_F(1.0f, 1.0f, 0.4f, 1.0f);
+        tessellator.addVertexWithUV(144, 16, 0.0, 0.0, 0.0);
+        finish(tessellator);
+
+        GLManager.TextureMatrix.Translate(0.25f, 0.5f, 0.0f);
+        GLManager.TextureMatrix.Scale(2.0f, 2.0f, 1.0f);
+
+        // Half over the threshold and half under, so the test has to discard some of it.
+        GLManager.AlphaTestEnabled = true;
+        GLManager.AlphaThreshold = 0.5f;
+        GLManager.Color = new(1.0f, 1.0f, 1.0f, 0.25f);
+        tessellator.startDrawingQuads();
+        tessellator.addVertexWithUV(16, 240, 0.0, 0.0, 1.0);
+        tessellator.addVertexWithUV(112, 240, 0.0, 1.0, 1.0);
+        tessellator.addVertexWithUV(112, 144, 0.0, 1.0, 0.0);
+        tessellator.addVertexWithUV(16, 144, 0.0, 0.0, 0.0);
+        finish(tessellator);
+
+        GLManager.Color = new(1.0f, 1.0f, 1.0f, 1.0f);
+        tessellator.startDrawingQuads();
+        tessellator.addVertexWithUV(144, 240, 0.0, 0.0, 1.0);
+        tessellator.addVertexWithUV(240, 240, 0.0, 1.0, 1.0);
+        tessellator.addVertexWithUV(240, 144, 0.0, 1.0, 0.0);
+        tessellator.addVertexWithUV(144, 144, 0.0, 0.0, 0.0);
+        finish(tessellator);
     }
 
     private static void StaticMeshScene()

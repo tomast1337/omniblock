@@ -96,7 +96,7 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
         tessellator.addVertexWithUV(width, height, 0.0, width / textureScale, height / textureScale);
         tessellator.addVertexWithUV(width, 0.0, 0.0, width / textureScale, 0.0);
         tessellator.addVertexWithUV(0.0, 0.0, 0.0, 0.0, 0.0);
-        tessellator.draw();
+        tessellator.draw(ProgramSlot.Textured);
 
         if (progress >= 0)
         {

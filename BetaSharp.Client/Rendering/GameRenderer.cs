@@ -854,7 +854,7 @@ public class GameRenderer
             tess.addVertexWithUV(x + width, y + height, zLevel, 1.0, 1.0);
             tess.addVertexWithUV(x + width, y, zLevel, 1.0, 0.0);
             tess.addVertexWithUV(x, y, zLevel, 0.0, 0.0);
-            tess.draw();
+            tess.draw(ProgramSlot.Textured);
 
             // Nothing reads what is left here: FramebufferManager.End runs next and sets its own
             // blending and depth test. Leaving the interface state named is still better than
