@@ -81,3 +81,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-03 — refactor(rendering): state the pipeline for the virtual cursor (Nicolas Vyčas Nery; `6a1309fb2aae0ad42481b341c287ea76e0292edb`)
 - 2026-08-03 — refactor(rendering): state the pipeline for rain and snow (Nicolas Vyčas Nery; `5850ace8a9affc71dceda9c511c70ca61b6c3acf`)
 - 2026-08-03 — refactor(rendering): state the pipeline for the chunk border overlay (Nicolas Vyčas Nery; `a5b52adbcbcaf621d7673f890e5ebd0e7a5d54fe`)
+- 2026-08-03 — refactor(rendering): state the pipeline for the frame itself (Nicolas Vyčas Nery; `8ca908228d503f886a5fac540b27888399471aa0`)

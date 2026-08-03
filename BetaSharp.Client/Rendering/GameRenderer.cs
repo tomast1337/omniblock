@@ -374,8 +374,11 @@ public class GameRenderer
 
     public void RenderFrame(float tickDelta, long time)
     {
-        GLManager.GL.Enable(GLEnum.CullFace);
-        GLManager.GL.Enable(GLEnum.DepthTest);
+        // The frame's baseline, and the state every renderer below is traced against. It carries
+        // the depth write mask, which the two enables it replaces did not: a depth clear is masked
+        // by that mask, and the interface pass this frame follows leaves it off, so the clear
+        // below only does anything because this turns it back on.
+        GLManager.State.ApplyUntrusted(RenderState.Opaque);
 
         using (Profiler.Begin("GetMouseOver"))
         {
@@ -400,7 +403,6 @@ public class GameRenderer
         }
 
         GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
-        GLManager.GL.Enable(GLEnum.CullFace);
         RenderWorld(tickDelta);
         Frustum.Instance();
         if (_client.Options.RenderDistance >= 8)
@@ -453,10 +455,13 @@ public class GameRenderer
             GLManager.GL.Enable(GLEnum.AlphaTest);
         }
 
-        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
         ApplyFog(0);
-        GLManager.GL.Enable(GLEnum.Blend);
-        GLManager.GL.Disable(GLEnum.CullFace);
+
+        // Water and glass: blended and unculled so the far side of a body of water is drawn, but
+        // still depth writing. The depth write was previously inherited rather than stated — the
+        // entity pass before this leaves it on only because shadows put it back — which is what
+        // the DepthMask below is cleaning up after.
+        GLManager.State.ApplyUntrusted(RenderState.Entity with { Blend = BlendMode.Alpha });
         _client.TextureManager.BindTexture(_client.TextureManager.GetTextureId("/terrain.png"));
 
         using (Profiler.Begin("SortAndRenderTranslucent"))
@@ -468,9 +473,7 @@ public class GameRenderer
 
         //TODO: SELCTION BOX/BLOCK BREAKING VISUALIZATON DON'T APPEAR PROPERLY MOST OF THE TIME, SAME WITH ENTITY SHADOWS. VIEW BOBBING MAKES ENTITES BOB UP AND DOWN
 
-        GLManager.GL.DepthMask(true);
-        GLManager.GL.Enable(GLEnum.CullFace);
-        GLManager.GL.Disable(GLEnum.Blend);
+        GLManager.State.ApplyUntrusted(RenderState.Opaque);
         if (!CameraController.IsZoomActive && entity is EntityPlayer && _client.ObjectMouseOver.Type != HitResultType.MISS && !entity.IsInFluid(Material.Water))
         {
             entityPlayer = (EntityPlayer)entity;
