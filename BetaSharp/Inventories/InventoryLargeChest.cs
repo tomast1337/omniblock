@@ -1,7 +1,7 @@
 using BetaSharp.Entities;
 using BetaSharp.Items;
 
-namespace BetaSharp.Inventorys;
+namespace BetaSharp.Inventories;
 
 internal class InventoryLargeChest(string name, IInventory upperChest, IInventory lowerChest) : IInventory
 {
@@ -9,15 +9,9 @@ internal class InventoryLargeChest(string name, IInventory upperChest, IInventor
 
     public string Name { get; } = name;
 
-    public ItemStack? GetStack(int slotIndex)
-    {
-        return slotIndex >= upperChest.Size ? lowerChest.GetStack(slotIndex - upperChest.Size) : upperChest.GetStack(slotIndex);
-    }
+    public ItemStack? GetStack(int slotIndex) => slotIndex >= upperChest.Size ? lowerChest.GetStack(slotIndex - upperChest.Size) : upperChest.GetStack(slotIndex);
 
-    public ItemStack? RemoveStack(int slotIndex, int amount)
-    {
-        return slotIndex >= upperChest.Size ? lowerChest.RemoveStack(slotIndex - upperChest.Size, amount) : upperChest.RemoveStack(slotIndex, amount);
-    }
+    public ItemStack? RemoveStack(int slotIndex, int amount) => slotIndex >= upperChest.Size ? lowerChest.RemoveStack(slotIndex - upperChest.Size, amount) : upperChest.RemoveStack(slotIndex, amount);
 
     public void SetStack(int slotIndex, ItemStack? itemStack)
     {
@@ -29,8 +23,8 @@ internal class InventoryLargeChest(string name, IInventory upperChest, IInventor
         {
             upperChest.SetStack(slotIndex, itemStack);
         }
-
     }
+
     public int MaxCountPerStack => upperChest.MaxCountPerStack;
 
     public void MarkDirty()
@@ -39,8 +33,5 @@ internal class InventoryLargeChest(string name, IInventory upperChest, IInventor
         lowerChest.MarkDirty();
     }
 
-    public bool CanPlayerUse(EntityPlayer entityPlayer)
-    {
-        return upperChest.CanPlayerUse(entityPlayer) && lowerChest.CanPlayerUse(entityPlayer);
-    }
+    public bool CanPlayerUse(EntityPlayer entityPlayer) => upperChest.CanPlayerUse(entityPlayer) && lowerChest.CanPlayerUse(entityPlayer);
 }

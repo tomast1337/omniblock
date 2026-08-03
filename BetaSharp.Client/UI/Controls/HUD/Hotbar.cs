@@ -2,7 +2,7 @@ using BetaSharp.Blocks.Materials;
 using BetaSharp.Client.Entities;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Rendering;
-using BetaSharp.Inventorys;
+using BetaSharp.Inventories;
 using BetaSharp.Items;
 using BetaSharp.Util.Maths;
 
