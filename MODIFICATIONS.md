@@ -75,3 +75,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-02 — fix(rendering): tell the entity batch which texture a block entity is using (Nicolas Vyčas Nery; `44a1972f330ab5c07a2474fda0c6e3fa92bec613`)
 - 2026-08-03 — refactor(rendering): state the pipeline for the last of the small renderers (Nicolas Vyčas Nery; `6dc87e955bd070e59c26da0268637a475f6d588c`)
 - 2026-08-03 — refactor(block): update field names to follow PascalCase convention (Nicolas Vyčas Nery; `062fea3e02b33dbb1cc263477739438c75382fd9`)
+- 2026-08-03 — refactor(textures): remove unused block texture constants (Nicolas Vyčas Nery; `1b154d1b8965df10af03e5030d40852be5fa3f6d`)
