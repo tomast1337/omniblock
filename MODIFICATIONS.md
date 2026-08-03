@@ -72,3 +72,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-02 — fix(lang): add missing sign.done key to all 30 translation files (Nicolas Vyčas Nery; `8e5ddf73bdefb73fa1a123564cf3891ad68b892e`)
 - 2026-08-02 — fix(rendering): let the interface's depth clear actually clear (Nicolas Vyčas Nery; `d692cdfb18cea3a9ecd43e45d4c8d5423cccbac6`)
 - 2026-08-02 — fix(rendering): draw the sign board where the sign renderer stands, not where the pass ends (Nicolas Vyčas Nery; `3e73c041d71eaba30da6b8d9f35cf5b80c57069d`)
+- 2026-08-02 — fix(rendering): tell the entity batch which texture a block entity is using (Nicolas Vyčas Nery; `44a1972f330ab5c07a2474fda0c6e3fa92bec613`)
