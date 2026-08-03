@@ -178,10 +178,22 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
     public bool IsActive => _active;
 
     /// <summary>
-    /// Forces the legacy per-vertex path even while <see cref="IsActive"/>. No no-texture draw
-    /// mode exists here yet, so <see cref="LivingEntityRenderer"/>'s color-only hurt/death-flash
-    /// overlay sets this instead of submitting an instance (which always samples a texture).
+    /// Forces the legacy per-vertex path even while <see cref="IsActive"/>.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Two reasons so far. There is no no-texture draw mode here, so
+    /// <see cref="LivingEntityRenderer"/>'s color-only hurt and death flash sets this rather than
+    /// submitting an instance, which always samples a texture.
+    /// </para>
+    /// <para>
+    /// And anything drawn under non-default blend, depth or alpha state has to, because an instance
+    /// is not drawn where it is submitted but when the pass ends, by which time that state is gone.
+    /// The legacy batch flushes on every raster state change and so keeps the state each piece of
+    /// geometry was posed under; this one has no equivalent. Bucketing instances by
+    /// <see cref="Core.RenderState"/> would remove the need for both of these.
+    /// </para>
+    /// </remarks>
     public bool ForceLegacyPath { get; set; }
 
     /// <summary>Opens a per-frame instancing pass.</summary>
