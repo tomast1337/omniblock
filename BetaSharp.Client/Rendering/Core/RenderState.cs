@@ -125,6 +125,25 @@ public readonly record struct RenderState
     /// </remarks>
     public static readonly RenderState Entity = Opaque with { Cull = CullMode.None };
 
+    /// <summary>
+    ///     A full-screen pass over an already-rendered image: a blit, a blur, a tone map.
+    /// </summary>
+    /// <remarks>
+    ///     The depth buffer plays no part — the quad covers the screen and stands for no position
+    ///     in the scene — so it neither tests nor writes, and there is no back face to discard.
+    ///     Blending is off because such a pass usually replaces what is under it rather than
+    ///     mixing with it; the ones that do mix say so.
+    /// </remarks>
+    public static readonly RenderState PostProcess = new()
+    {
+        Blend = BlendMode.None,
+        DepthTest = false,
+        DepthWrite = false,
+        DepthCompare = DepthCompare.LessOrEqual,
+        Cull = CullMode.None,
+        ColorWrite = true
+    };
+
     /// <summary>Flat geometry with no meaningful facing, such as interface and text quads.</summary>
     public static readonly RenderState Interface = new()
     {
