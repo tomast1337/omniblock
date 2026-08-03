@@ -33,7 +33,7 @@ public class LivingEntityRenderer : EntityRenderer
 
         // Establishes the state the whole of this method and its passes assume, rather than
         // switching culling off and leaving everything else to whatever drew last.
-        GLManager.State.ApplyUntrusted(RenderState.Entity);
+        GLManager.State.Apply(RenderState.Entity);
         Main.OnGround = func_167_c(entity, tickDelta);
         if (renderPassModel != null)
         {
@@ -76,7 +76,7 @@ public class LivingEntityRenderer : EntityRenderer
                 if (ShouldRenderPass(entity, renderPass, tickDelta))
                 {
                     renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
-                    GLManager.State.ApplyUntrusted(RenderState.Entity);
+                    GLManager.State.Apply(RenderState.Entity);
                     GLManager.GL.Enable(GLEnum.AlphaTest);
                 }
             }
@@ -99,7 +99,7 @@ public class LivingEntityRenderer : EntityRenderer
                     // rather than in front of them. That is why the batch above is flushed first.
                     GLManager.GL.Disable(GLEnum.Texture2D);
                     GLManager.GL.Disable(GLEnum.AlphaTest);
-                    GLManager.State.ApplyUntrusted(RenderState.Entity with
+                    GLManager.State.Apply(RenderState.Entity with
                     {
                         Blend = BlendMode.Alpha,
                         DepthCompare = DepthCompare.Equal
@@ -138,7 +138,7 @@ public class LivingEntityRenderer : EntityRenderer
                         }
                     }
 
-                    GLManager.State.ApplyUntrusted(RenderState.Entity);
+                    GLManager.State.Apply(RenderState.Entity);
                     GLManager.GL.Enable(GLEnum.AlphaTest);
                     GLManager.GL.Enable(GLEnum.Texture2D);
                 }
@@ -245,7 +245,7 @@ public class LivingEntityRenderer : EntityRenderer
             // Drawn twice on purpose. This first pass ignores depth entirely, so the plate and the
             // text behind it show through whatever the label is standing in front of.
             GLManager.GL.Disable(GLEnum.Lighting);
-            GLManager.State.ApplyUntrusted(RenderState.Entity with
+            GLManager.State.Apply(RenderState.Entity with
             {
                 Blend = BlendMode.Alpha,
                 DepthTest = false,
@@ -271,10 +271,10 @@ public class LivingEntityRenderer : EntityRenderer
             fontRenderer.DrawString(label, -fontRenderer.GetStringWidth(label) / 2, yOffset, Color.WhiteAlpha20);
             // And again with depth restored, so the part of the label that is genuinely in front
             // draws solidly over the faint copy laid down above.
-            GLManager.State.ApplyUntrusted(RenderState.Entity with { Blend = BlendMode.Alpha });
+            GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
             fontRenderer.DrawString(label, -fontRenderer.GetStringWidth(label) / 2, yOffset, Color.WhiteAlpha20);
             GLManager.GL.Enable(GLEnum.Lighting);
-            GLManager.State.ApplyUntrusted(RenderState.Entity);
+            GLManager.State.Apply(RenderState.Entity);
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
             GLManager.GL.PopMatrix();
         }

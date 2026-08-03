@@ -58,11 +58,11 @@ public class PrimedBlockEntityRenderer : EntityRenderer
             // against its own alpha, which is the one place that blend mode is used.
             GLManager.GL.Disable(GLEnum.Texture2D);
             GLManager.GL.Disable(GLEnum.Lighting);
-            GLManager.State.ApplyUntrusted(RenderState.Entity with { Blend = BlendMode.SourceToDestinationAlpha });
+            GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.SourceToDestinationAlpha });
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, flashProgress);
             BlockRenderer.RenderBlockOnInventory(_block, 0, 1.0F, Tessellator.instance);
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-            GLManager.State.ApplyUntrusted(RenderState.Entity);
+            GLManager.State.Apply(RenderState.Entity);
             GLManager.GL.Enable(GLEnum.Lighting);
             GLManager.GL.Enable(GLEnum.Texture2D);
         }

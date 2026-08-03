@@ -72,7 +72,7 @@ public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
         // The text sits a hair in front of the board and still writes to the same depth values
         // once rounded, so it is depth tested — a block in front of the sign still hides it — but
         // not depth written.
-        GLManager.State.ApplyUntrusted(RenderState.Entity with { DepthWrite = false });
+        GLManager.State.Apply(RenderState.Entity with { DepthWrite = false });
 
         for (int lineIndex = 0; lineIndex < sign.Texts.Length; ++lineIndex)
         {
@@ -88,7 +88,7 @@ public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
             }
         }
 
-        GLManager.State.ApplyUntrusted(RenderState.Entity);
+        GLManager.State.Apply(RenderState.Entity);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
         GLManager.GL.PopMatrix();
     }

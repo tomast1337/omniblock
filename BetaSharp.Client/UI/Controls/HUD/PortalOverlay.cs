@@ -33,12 +33,10 @@ public class PortalOverlay(Func<ClientPlayerEntity?> getPlayer) : UIElement
             }
 
             renderer.SetAlphaTest(false);
-            renderer.SetDepthMask(false);
             renderer.PushColor(new Color(255, 255, 255, (byte)(255 * portal)));
 
             renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/terrain.png"), 0, 0, 14 * 16, 0 * 16, ComputedWidth, ComputedHeight, 16, 16, -90.0f);
             renderer.PopColor();
-            renderer.SetDepthMask(true);
             renderer.SetAlphaTest(true);
         }
 
