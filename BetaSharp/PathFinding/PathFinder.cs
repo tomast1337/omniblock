@@ -10,13 +10,13 @@ namespace BetaSharp.PathFinding;
 
 internal class PathFinder
 {
-    private IBlockReader _worldMap;
     private readonly Path _path = new();
-    private readonly PathPoint[] _pointMap = new PathPoint[1024];
     private readonly PathPoint[] _pathOptions = new PathPoint[32];
+    private readonly PathPoint[] _pointMap = new PathPoint[1024];
 
     private readonly PathPoint[] _pointPool = new PathPoint[4096];
     private int _poolIndex;
+    private IBlockReader _worldMap;
 
     public PathFinder(IWorldContext world)
     {
@@ -27,16 +27,16 @@ internal class PathFinder
         }
     }
 
-    internal PathEntity? findPath(Entity entity, Entity target, float range)
+    internal PathEntity? FindPath(Entity entity, Entity target, float range)
     {
         PathEntity? result;
         using (Profiler.Begin("FindPathToTarget"))
         {
             result = CreateEntityPathTo(entity, target.X, target.BoundingBox.MinY, target.Z, range);
         }
+
         return result;
     }
-
 
 
     internal PathEntity? findPath(Entity entity, int x, int y, int z, float range)
@@ -46,15 +46,16 @@ internal class PathFinder
         {
             result = CreateEntityPathTo(entity, x + 0.5f, y + 0.5f, z + 0.5f, range);
         }
+
         return result;
     }
 
-    public void SetWorld(IBlockReader worldMap)
-    {
-        _worldMap = worldMap;
-    }
+    public void SetWorld(IBlockReader worldMap) => _worldMap = worldMap;
 
-    /// <summary>Shared by both public findPath overloads, and by PathingCoordinator's batch (background threads use their own PathFinder instance, see PathingCoordinator).</summary>
+    /// <summary>
+    ///     Shared by both public findPath overloads, and by PathingCoordinator's batch (background threads use their own
+    ///     PathFinder instance, see PathingCoordinator).
+    /// </summary>
     internal PathEntity? CreateEntityPathTo(Entity entity, double targetX, double targetY, double targetZ,
         float maxDistance)
     {
@@ -65,8 +66,8 @@ internal class PathFinder
 
         PathPoint startPoint = OpenPoint(MathHelper.Floor(entity.BoundingBox.MinX),
             MathHelper.Floor(entity.BoundingBox.MinY), MathHelper.Floor(entity.BoundingBox.MinZ));
-        PathPoint targetPoint = OpenPoint(MathHelper.Floor(targetX - (entity.Width / 2.0f)), MathHelper.Floor(targetY),
-            MathHelper.Floor(targetZ - (entity.Width / 2.0f)));
+        PathPoint targetPoint = OpenPoint(MathHelper.Floor(targetX - entity.Width / 2.0f), MathHelper.Floor(targetY),
+            MathHelper.Floor(targetZ - entity.Width / 2.0f));
 
         PathPoint sizePoint = new(MathHelper.Floor(entity.Width + 1.0f), MathHelper.Floor(entity.Height + 1.0f),
             MathHelper.Floor(entity.Width + 1.0f));
@@ -90,7 +91,10 @@ internal class PathFinder
 
         while (!_path.IsPathEmpty())
         {
-            if (iterations++ > iterationLimit) break;
+            if (iterations++ > iterationLimit)
+            {
+                break;
+            }
 
             PathPoint current = _path.Dequeue();
 
@@ -131,12 +135,7 @@ internal class PathFinder
             }
         }
 
-        if (closestPoint == start)
-        {
-            return null;
-        }
-
-        return CreateEntityPath(start, closestPoint);
+        return Equals(closestPoint, start) ? null : CreateEntityPath(start, closestPoint);
     }
 
     private int FindPathOptions(Entity entity, PathPoint current, PathPoint size, PathPoint target, float maxDistance)
@@ -154,17 +153,25 @@ internal class PathFinder
         PathPoint? pointEast = GetSafePoint(entity, current.X + 1, current.Y, current.Z, size, stepUp);
         PathPoint? pointNorth = GetSafePoint(entity, current.X, current.Y, current.Z - 1, size, stepUp);
 
-        if (pointSouth != null && !pointSouth.IsFirst && pointSouth.DistanceTo(target) < maxDistance)
+        if (pointSouth is { IsFirst: false } && pointSouth.DistanceTo(target) < maxDistance)
+        {
             _pathOptions[optionCount++] = pointSouth;
+        }
 
-        if (pointWest != null && !pointWest.IsFirst && pointWest.DistanceTo(target) < maxDistance)
+        if (pointWest is { IsFirst: false } && pointWest.DistanceTo(target) < maxDistance)
+        {
             _pathOptions[optionCount++] = pointWest;
+        }
 
-        if (pointEast != null && !pointEast.IsFirst && pointEast.DistanceTo(target) < maxDistance)
+        if (pointEast is { IsFirst: false } && pointEast.DistanceTo(target) < maxDistance)
+        {
             _pathOptions[optionCount++] = pointEast;
+        }
 
-        if (pointNorth != null && !pointNorth.IsFirst && pointNorth.DistanceTo(target) < maxDistance)
+        if (pointNorth is { IsFirst: false } && pointNorth.DistanceTo(target) < maxDistance)
+        {
             _pathOptions[optionCount++] = pointNorth;
+        }
 
         return optionCount;
     }
@@ -222,7 +229,7 @@ internal class PathFinder
     private PathPoint OpenPoint(int x, int y, int z)
     {
         int hash = PathPoint.CalculateHash(x, y, z);
-        int mapIndex = (hash & int.MaxValue) & 1023;
+        int mapIndex = hash & int.MaxValue & 1023;
 
         PathPoint? point = _pointMap[mapIndex];
         while (point != null)
@@ -262,25 +269,41 @@ internal class PathFinder
                     // Fail closed on unloaded chunks instead of reading through them: GetBlockId
                     // would force-load the chunk, which mutates ServerChunkCache's plain
                     // Dictionary/List and isn't safe when called from a background pathing thread.
-                    if (!_worldMap.IsPosLoaded(ix, iy, iz)) return 0;
+                    if (!_worldMap.IsPosLoaded(ix, iy, iz))
+                    {
+                        return 0;
+                    }
 
                     int blockId = _worldMap.GetBlockId(ix, iy, iz);
-                    if (blockId > 0)
+                    if (blockId <= 0)
                     {
-                        if (blockId != BlockRegistry.Get("iron_door").Id && blockId != BlockRegistry.Get("door").Id)
+                        continue;
+                    }
+
+                    if (blockId != BlockRegistry.Get("iron_door").Id && blockId != BlockRegistry.Get("door").Id)
+                    {
+                        Material material = Block.Blocks[blockId].Material;
+                        if (material.BlocksMovement)
                         {
-                            Material material = Block.Blocks[blockId].Material;
-                            if (material.BlocksMovement) return 0;
-                            if (material == Material.Water) return -1;
-                            if (material == Material.Lava) return -2;
+                            return 0;
                         }
-                        else
+
+                        if (material == Material.Water)
                         {
-                            int meta = _worldMap.GetBlockMeta(ix, iy, iz);
-                            if (!DoorBehavior.IsOpen(meta))
-                            {
-                                return 0;
-                            }
+                            return -1;
+                        }
+
+                        if (material == Material.Lava)
+                        {
+                            return -2;
+                        }
+                    }
+                    else
+                    {
+                        int meta = _worldMap.GetBlockMeta(ix, iy, iz);
+                        if (!DoorBehavior.IsOpen(meta))
+                        {
+                            return 0;
                         }
                     }
                 }

@@ -2,8 +2,8 @@ namespace BetaSharp.PathFinding;
 
 internal class Path
 {
-    private PathPoint[] _pathPoints = new PathPoint[1024];
     private int _count;
+    private PathPoint[] _pathPoints = new PathPoint[1024];
 
     public void AddPoint(PathPoint point)
     {
@@ -24,10 +24,7 @@ internal class Path
         SiftUp(_count++);
     }
 
-    public void ClearPath()
-    {
-        _count = 0;
-    }
+    public void ClearPath() => _count = 0;
 
     public PathPoint Dequeue()
     {
@@ -113,7 +110,10 @@ internal class Path
 
             if (leftDistance < rightDistance)
             {
-                if (leftDistance >= distance) break;
+                if (leftDistance >= distance)
+                {
+                    break;
+                }
 
                 _pathPoints[index] = leftChild;
                 leftChild.Index = index;
@@ -121,7 +121,10 @@ internal class Path
             }
             else
             {
-                if (rightDistance >= distance) break;
+                if (rightDistance >= distance)
+                {
+                    break;
+                }
 
                 _pathPoints[index] = rightChild!;
                 rightChild!.Index = index;
@@ -133,8 +136,5 @@ internal class Path
         point.Index = index;
     }
 
-    public bool IsPathEmpty()
-    {
-        return _count == 0;
-    }
+    public bool IsPathEmpty() => _count == 0;
 }

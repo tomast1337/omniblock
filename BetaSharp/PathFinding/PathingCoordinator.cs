@@ -4,19 +4,20 @@ using BetaSharp.Worlds.Core.Systems;
 namespace BetaSharp.PathFinding;
 
 /// <summary>
-/// Per-world owner of AI path requests (EntityCreature, FollowOwnerBehavior), separate from the plain
-/// PathFinder NaturalSpawner uses directly and synchronously. RequestPath just queues; results
-/// get pushed onto the entity (via setPathToEntity) once a batch completes, rather than requiring
-/// the caller to poll for them — a caller that only requests occasionally (e.g. the ~1/80-chance
-/// wander target) would otherwise rarely be the one to collect its own result. RunBatch processes
-/// everything queued since the last call.
+///     Per-world owner of AI path requests (EntityCreature, FollowOwnerBehavior), separate from the plain
+///     PathFinder NaturalSpawner uses directly and synchronously. RequestPath just queues; results
+///     get pushed onto the entity (via setPathToEntity) once a batch completes, rather than requiring
+///     the caller to poll for them — a caller that only requests occasionally (e.g. the ~1/80-chance
+///     wander target) would otherwise rarely be the one to collect its own result. RunBatch processes
+///     everything queued since the last call.
 /// </summary>
 internal sealed class PathingCoordinator(IWorldContext world)
 {
+    private readonly List<PathRequest> _pendingRequests = [];
+
     // One PathFinder per worker thread: PathFinder's open-list/point-pool state is mutable
     // and not reentrant, so threads can't share a single instance.
     private readonly ThreadLocal<PathFinder> _threadFinder = new(() => new PathFinder(world));
-    private readonly List<PathRequest> _pendingRequests = [];
 
     internal void RequestPath(Entity entity, Entity target, float range) =>
         _pendingRequests.Add(new PathRequest(entity, target.X, target.BoundingBox.MinY, target.Z, range));
@@ -27,7 +28,10 @@ internal sealed class PathingCoordinator(IWorldContext world)
     /// <summary>Runs every request queued since the last call. Call once per world tick, after all entities have ticked.</summary>
     internal void RunBatch()
     {
-        if (_pendingRequests.Count == 0) return;
+        if (_pendingRequests.Count == 0)
+        {
+            return;
+        }
 
         PathRequest[] requests = [.. _pendingRequests];
         PathEntity?[] results = new PathEntity?[requests.Length];
