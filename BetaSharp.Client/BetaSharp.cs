@@ -628,9 +628,9 @@ public partial class BetaSharp :
 
                     if (IsGamePaused && World != null)
                     {
-                        float previousRenderPartialTicks = Timer.renderPartialTicks;
+                        float previousRenderPartialTicks = Timer.RenderPartialTicks;
                         Timer.UpdateTimer();
-                        Timer.renderPartialTicks = previousRenderPartialTicks;
+                        Timer.RenderPartialTicks = previousRenderPartialTicks;
                     }
                     else
                     {
@@ -669,17 +669,17 @@ public partial class BetaSharp :
 
                     using (Profiler.Begin("Ticks"))
                     {
-                        for (int tickIndex = 0; tickIndex < Timer.elapsedTicks; ++tickIndex)
+                        for (int tickIndex = 0; tickIndex < Timer.ElapsedTicks; ++tickIndex)
                         {
                             ++TicksRan;
-                            RunTick(Timer.renderPartialTicks);
+                            RunTick(Timer.RenderPartialTicks);
                         }
                     }
 
                     long tickElapsedTime = Stopwatch.GetTimestamp() - tickStartTime;
                     CheckGLError("Pre render");
 
-                    SoundManager.UpdateListener(Player, Timer.renderPartialTicks);
+                    SoundManager.UpdateListener(Player, Timer.RenderPartialTicks);
                     GLManager.GL.Enable(GLEnum.Texture2D);
 
                     if (World != null)
@@ -748,13 +748,13 @@ public partial class BetaSharp :
 
                     if (!SkipRenderWorld)
                     {
-                        PlayerController?.SetPartialTime(Timer.renderPartialTicks);
+                        PlayerController?.SetPartialTime(Timer.RenderPartialTicks);
 
                         TextureStats.StartFrame();
 
                         using (Profiler.Begin("Render"))
                         {
-                            GameRenderer.OnFrameUpdate(Timer.renderPartialTicks);
+                            GameRenderer.OnFrameUpdate(Timer.RenderPartialTicks);
                         }
 
                         TextureStats.EndFrame();
@@ -1257,17 +1257,17 @@ public partial class BetaSharp :
 
 
         ControllerManager.UpdateUI(CurrentScreen);
-        ControllerManager.UpdateInGame(Timer.renderPartialTicks);
+        ControllerManager.UpdateInGame(Timer.RenderPartialTicks);
 
         if (CurrentScreen == null)
         {
-            if (Mouse.isButtonDown(0) && (float)(TicksRan - MouseTicksRan) >= Timer.ticksPerSecond / 4.0F && InGameHasFocus)
+            if (Mouse.isButtonDown(0) && (float)(TicksRan - MouseTicksRan) >= Timer.TicksPerSecond / 4.0F && InGameHasFocus)
             {
                 ClickMouse(0);
                 MouseTicksRan = TicksRan;
             }
 
-            if (Mouse.isButtonDown(1) && (float)(TicksRan - MouseTicksRan) >= Timer.ticksPerSecond / 4.0F && InGameHasFocus)
+            if (Mouse.isButtonDown(1) && (float)(TicksRan - MouseTicksRan) >= Timer.TicksPerSecond / 4.0F && InGameHasFocus)
             {
                 ClickMouse(1);
                 MouseTicksRan = TicksRan;

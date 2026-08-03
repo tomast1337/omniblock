@@ -211,7 +211,7 @@ public abstract class UIScreen
         {
             if (current is ScrollView sv && sv.Enabled && sv.MaxScrollY > 0)
             {
-                sv.ScrollBy(ry * 300f / Context.Timer.ticksPerSecond);
+                sv.ScrollBy(ry * 300f / Context.Timer.TicksPerSecond);
                 break;
             }
             current = current.Parent;
@@ -232,7 +232,7 @@ public abstract class UIScreen
         float lx = Controller.LeftStickX;
         if (lx != 0f)
         {
-            _sliderStickAccumulated += lx * SliderStepsPerSecond / Context.Timer.ticksPerSecond;
+            _sliderStickAccumulated += lx * SliderStepsPerSecond / Context.Timer.TicksPerSecond;
             while (_sliderStickAccumulated >= 1f) { _editingSlider.AdjustValue(step); _sliderStickAccumulated -= 1f; }
             while (_sliderStickAccumulated <= -1f) { _editingSlider.AdjustValue(-step); _sliderStickAccumulated += 1f; }
         }

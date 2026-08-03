@@ -135,7 +135,7 @@ public static class ControllerManager
             s_game.ClickMouse(0);
             s_game.MouseTicksRan = s_game.TicksRan;
         }
-        else if (attackHeld && s_game.TicksRan - s_game.MouseTicksRan >= s_game.Timer.ticksPerSecond / 4.0F)
+        else if (attackHeld && s_game.TicksRan - s_game.MouseTicksRan >= s_game.Timer.TicksPerSecond / 4.0F)
         {
             s_game.ClickMouse(0);
             s_game.MouseTicksRan = s_game.TicksRan;
@@ -147,7 +147,7 @@ public static class ControllerManager
             s_game.ClickMouse(1);
             s_game.MouseTicksRan = s_game.TicksRan;
         }
-        else if (interactHeld && s_game.TicksRan - s_game.MouseTicksRan >= s_game.Timer.ticksPerSecond / 4.0F)
+        else if (interactHeld && s_game.TicksRan - s_game.MouseTicksRan >= s_game.Timer.TicksPerSecond / 4.0F)
         {
             s_game.ClickMouse(1);
             s_game.MouseTicksRan = s_game.TicksRan;

@@ -93,3 +93,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-03 — refactor(blockpos): simplify BlockPos struct by using primary constructor and removing redundant fields (Nicolas Vyčas Nery; `b1526677dc8f8ecf2daddce96495f8e9ece052d9`)
 - 2026-08-03 — refactor(math): standardize naming conventions and improve struct definitions across Vec3i, Vec3I, and Box (Nicolas Vyčas Nery; `06204477f535d08efaf7063bb9cab183df494f7a`)
 - 2026-08-03 — refactor(achievements): remove unused AchievementStatFormatter and related implementation refactor(chunkmap): standardize property naming for ChunkPos in view distance checks (Nicolas Vyčas Nery; `df7a2c703442ce5bb7a6d132bd8d3b6a0840e7d4`)
+- 2026-08-03 — refactor(timer): standardize variable naming and improve encapsulation in Timer class (Nicolas Vyčas Nery; `5fb0ba9f1aef85270b71de7ddedcea146d018fe8`)
