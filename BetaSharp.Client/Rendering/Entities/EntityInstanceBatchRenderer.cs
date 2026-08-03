@@ -85,6 +85,7 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
     private readonly Dictionary<(ModelBase Model, uint TextureId, DrawState Draw), int> _bucketIndexByKey = [];
 
     private bool _active;
+    private bool _flushing;
 
     private EntityInstanceBatchRenderer(GameOptions options)
     {
@@ -103,6 +104,13 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         _silkGL.BufferData(BufferTargetARB.ShaderStorageBuffer, (nuint)(_instanceData.Length * sizeof(float)), null, BufferUsageARB.StreamDraw);
         _silkGL.BindBufferBase(BufferTargetARB.ShaderStorageBuffer, 0, _ssboId);
         _silkGL.BindBuffer(BufferTargetARB.ShaderStorageBuffer, 0);
+
+        // An instance is drawn when the batch is flushed, not where it was submitted, so anything
+        // drawn immediately in between would reach the depth buffer first and reject the geometry
+        // that was logically in front of it. A burning entity is the case that shows it: its flames
+        // are a camera-facing quad drawn straight through the tessellator, so which parts of the
+        // still-queued mob they cover changes as the camera moves.
+        _legacyGL.ImmediateGeometryDrawing += Flush;
 
         ConfigureVertexAttributes();
     }
@@ -294,17 +302,33 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
     }
 
     /// <summary>
-    /// Draws everything queued so far without closing the pass. Call this before anything that
-    /// needs this frame's submitted entities already in the depth buffer, e.g. before
-    /// <see cref="LivingEntityRenderer"/>'s <c>DepthFunc(Equal)</c> hurt/death-flash overlay.
+    /// Draws everything queued so far without closing the pass. Runs by itself before any
+    /// immediate-mode draw, which is what keeps queued geometry in the order its caller issued it;
+    /// calling it directly is only for a caller that needs the depth buffer caught up sooner than
+    /// its next draw.
     /// </summary>
     public void Flush()
     {
-        if (_instanceCount == 0)
+        // Putting the pipeline state back raises RasterStateChanging, which drains the other batch,
+        // and that draw would come back here with this one's buckets half torn down.
+        if (_instanceCount == 0 || _flushing)
         {
             return;
         }
 
+        _flushing = true;
+        try
+        {
+            FlushBuckets();
+        }
+        finally
+        {
+            _flushing = false;
+        }
+    }
+
+    private void FlushBuckets()
+    {
         EnsureStaticBufferUploaded();
 
         uint callerTexture = _legacyGL.BoundTexture2D;
@@ -414,6 +438,7 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
 
     public void Dispose()
     {
+        _legacyGL.ImmediateGeometryDrawing -= Flush;
         _silkGL.DeleteBuffer(_ssboId);
         _silkGL.DeleteBuffer(_staticVboId);
         _silkGL.DeleteVertexArray(_vaoId);

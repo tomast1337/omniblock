@@ -60,6 +60,19 @@ public abstract unsafe class LegacyGL : IGL
         }
     }
 
+    /// <summary>
+    /// Raised just before geometry is drawn through this interface, which is to say drawn
+    /// immediately rather than queued. A renderer holding queued geometry subscribes here so what
+    /// it is holding reaches the depth buffer first, in the order the caller issued it.
+    /// </summary>
+    /// <remarks>
+    /// The batching renderers issue their own draws straight through Silk, below this, so a flush
+    /// raised from here does not re-enter.
+    /// </remarks>
+    public event Action? ImmediateGeometryDrawing;
+
+    protected void OnImmediateGeometryDrawing() => ImmediateGeometryDrawing?.Invoke();
+
     public void BlendFunc(GLEnum sfactor, GLEnum dfactor)
     {
         OnRasterStateChanging();

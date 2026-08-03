@@ -358,6 +358,8 @@ public unsafe class EmulatedGL : LegacyGL
 
     public override void DrawArrays(GLEnum mode, int first, uint count)
     {
+        OnImmediateGeometryDrawing();
+
         if (_currentProgram == 0 || _currentProgram == _shader.Program)
         {
             ActivateShader();

@@ -106,3 +106,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-03 — Add Vietnamese localization for game interface and items (Nicolas Vyčas Nery; `f825fac86d429a06a2562d231633804f329f8a67`)
 - 2026-08-03 — Refactor code structure for improved readability and maintainability (Nicolas Vyčas Nery; `00f6ba7cecd486f342eeafc628228e409e4a8f30`)
 - 2026-08-03 — refactor(rendering): steer fog and the alpha threshold directly (Nicolas Vyčas Nery; `7d595b9ace5d856d085a70c854aa4526aebd909f`)
+- 2026-08-03 — fix(rendering): drain queued entity geometry before an immediate draw (Nicolas Vyčas Nery; `a7f8e90e0e02ccba64a37c330a46eb2653179792`)
