@@ -10,17 +10,17 @@ public class GLManager
 
     /// <summary>The model-view transform stack.</summary>
     /// <remarks>
-    ///     Held directly rather than driven through <c>MatrixMode</c> and the fixed-function entry
-    ///     points. Both reach the same stack, so a renderer can move to this one at a time and
-    ///     everything keeps drawing.
+    ///     Composing transforms on a stack is not the fixed-function part, and survives into any
+    ///     backend; hierarchical models need it. Reaching it through a mode selector and a global
+    ///     was the fixed-function part, and that is gone.
     /// </remarks>
-    public static MatrixStack ModelView => _emulated.ModelView;
+    public static MatrixStack ModelView => _pipeline.ModelView;
 
     /// <inheritdoc cref="ModelView" />
-    public static MatrixStack Projection => _emulated.Projection;
+    public static MatrixStack Projection => _pipeline.Projection;
 
     /// <inheritdoc cref="ModelView" />
-    public static MatrixStack TextureMatrix => _emulated.TextureMatrix;
+    public static MatrixStack TextureMatrix => _pipeline.TextureMatrix;
 
     /// <summary>
     ///     Blend, depth, cull and write masks, said once per draw rather than toggled a global at a
@@ -49,16 +49,16 @@ public class GLManager
     /// </remarks>
     public static Vector4D<float> Color
     {
-        get => _emulated.Color;
-        set => _emulated.Color = value;
+        get => _pipeline.Color;
+        set => _pipeline.Color = value;
     }
 
     /// <summary>The normal geometry is lit by when it carries none of its own.</summary>
     /// <inheritdoc cref="Color" />
     public static Vector3D<float> Normal
     {
-        get => _emulated.Normal;
-        set => _emulated.Normal = value;
+        get => _pipeline.Normal;
+        set => _pipeline.Normal = value;
     }
 
     /// <summary>Whether a draw samples its bound texture, or is coloured alone.</summary>
@@ -69,78 +69,88 @@ public class GLManager
     /// </remarks>
     public static bool TextureEnabled
     {
-        get => _emulated.TextureEnabled;
-        set => _emulated.TextureEnabled = value;
+        get => _pipeline.TextureEnabled;
+        set => _pipeline.TextureEnabled = value;
     }
 
     /// <summary>Whether <see cref="Lighting" /> is applied, or geometry keeps its own colour.</summary>
     /// <inheritdoc cref="TextureEnabled" />
     public static bool LightingEnabled
     {
-        get => _emulated.LightingEnabled;
-        set => _emulated.LightingEnabled = value;
+        get => _pipeline.LightingEnabled;
+        set => _pipeline.LightingEnabled = value;
     }
 
     /// <summary>Whether <see cref="AlphaThreshold" /> is applied.</summary>
     /// <inheritdoc cref="TextureEnabled" />
     public static bool AlphaTestEnabled
     {
-        get => _emulated.AlphaTestEnabled;
-        set => _emulated.AlphaTestEnabled = value;
+        get => _pipeline.AlphaTestEnabled;
+        set => _pipeline.AlphaTestEnabled = value;
     }
 
     /// <summary>Whether <see cref="Fog" /> is applied.</summary>
     /// <inheritdoc cref="TextureEnabled" />
     public static bool FogEnabled
     {
-        get => _emulated.FogEnabled;
-        set => _emulated.FogEnabled = value;
+        get => _pipeline.FogEnabled;
+        set => _pipeline.FogEnabled = value;
     }
+
+    /// <summary>
+    ///     The alpha threshold in the form every shader takes it: below zero when the test is off.
+    /// </summary>
+    /// <remarks>
+    ///     One encoding of two values, so a shader needs one uniform rather than a float and a flag.
+    ///     Kept here rather than at each renderer that uploads it, because it is a contract with the
+    ///     shaders and there are three of them.
+    /// </remarks>
+    public static float EffectiveAlphaThreshold => AlphaTestEnabled ? AlphaThreshold : -1.0f;
 
     /// <summary>The lights everything shaded is lit by.</summary>
     /// <remarks>
     ///     Set through <see cref="Lighting.turnOn" />, which is also where the directions are put
-    ///     into eye space. Whether anything is lit is separate and stays on <c>Enable</c>/
-    ///     <c>Disable</c> of <c>GLEnum.Lighting</c>.
+    ///     into eye space. Whether anything is lit is <see cref="LightingEnabled" />, separately, so
+    ///     that turning it off for one overlay does not disturb the lights.
     /// </remarks>
     public static LightingState Lighting
     {
-        get => _emulated.Lighting;
-        set => _emulated.Lighting = value;
+        get => _pipeline.Lighting;
+        set => _pipeline.Lighting = value;
     }
 
     /// <summary>Whether a shaded colour is taken per vertex or per face.</summary>
     public static ShadeModel ShadeModel
     {
-        get => _emulated.ShadeModel;
-        set => _emulated.ShadeModel = value;
+        get => _pipeline.ShadeModel;
+        set => _pipeline.ShadeModel = value;
     }
 
     /// <summary>What the distance fog looks like, for every pass that draws under it.</summary>
     /// <remarks>
     ///     Set once per pass, in <c>GameRenderer.ApplyFog</c>. Whether fog applies at all is
-    ///     separate and still goes through <c>Enable</c>/<c>Disable</c> of <c>GLEnum.Fog</c>, which
-    ///     renderers flip constantly; this survives that untouched.
+    ///     <see cref="FogEnabled" />, separately, which renderers flip constantly; this survives
+    ///     that untouched.
     /// </remarks>
     public static FogState Fog
     {
-        get => _emulated.Fog;
-        set => _emulated.Fog = value;
+        get => _pipeline.Fog;
+        set => _pipeline.Fog = value;
     }
 
     /// <summary>The alpha a fragment has to exceed to survive, while the alpha test is on.</summary>
     public static float AlphaThreshold
     {
-        get => _emulated.AlphaThreshold;
-        set => _emulated.AlphaThreshold = value;
+        get => _pipeline.AlphaThreshold;
+        set => _pipeline.AlphaThreshold = value;
     }
 
-    private static EmulatedGL _emulated = null!;
+    private static FixedFunctionPipeline _pipeline = null!;
 
     public static void Init(GL silkGl)
     {
-        _emulated = new EmulatedGL(silkGl);
-        GL = _emulated;
+        _pipeline = new FixedFunctionPipeline(silkGl);
+        GL = _pipeline;
         State.Invalidate();
     }
 }

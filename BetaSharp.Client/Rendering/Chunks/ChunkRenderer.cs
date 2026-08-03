@@ -129,18 +129,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         GLManager.GL.Uniform1(_textureSamplerLoc, 0);
         GLManager.GL.Uniform1(_chunkFadeEnabledLoc, renderParams.ChunkFade ? 1 : 0);
 
-        var modelView = new Matrix4X4<float>();
-        var projection = new Matrix4X4<float>();
-
-        unsafe
-        {
-            GLManager.GL.GetFloat(GLEnum.ModelviewMatrix, (float*)&modelView);
-        }
-
-        unsafe
-        {
-            GLManager.GL.GetFloat(GLEnum.ProjectionMatrix, (float*)&projection);
-        }
+        Matrix4X4<float> modelView = GLManager.ModelView.Top;
+        Matrix4X4<float> projection = GLManager.Projection.Top;
 
         _modelView = modelView;
         _projection = projection;

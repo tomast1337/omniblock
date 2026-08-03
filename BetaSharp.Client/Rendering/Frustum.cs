@@ -1,6 +1,7 @@
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Util.Maths;
+using Silk.NET.Maths;
 
 namespace BetaSharp.Client.Rendering;
 
@@ -31,10 +32,19 @@ public class Frustum : FrustumData
         Frustum[offset + 3] /= length;
     }
 
+    /// <summary>Row-major, which is the order the clipping arithmetic below indexes in.</summary>
+    private static void Copy(Matrix4X4<float> matrix, float[] destination)
+    {
+        destination[0] = matrix.M11; destination[1] = matrix.M12; destination[2] = matrix.M13; destination[3] = matrix.M14;
+        destination[4] = matrix.M21; destination[5] = matrix.M22; destination[6] = matrix.M23; destination[7] = matrix.M24;
+        destination[8] = matrix.M31; destination[9] = matrix.M32; destination[10] = matrix.M33; destination[11] = matrix.M34;
+        destination[12] = matrix.M41; destination[13] = matrix.M42; destination[14] = matrix.M43; destination[15] = matrix.M44;
+    }
+
     private void Initialize()
     {
-        GLManager.GL.GetFloat(GLEnum.ProjectionMatrix, ProjectionMatrix);
-        GLManager.GL.GetFloat(GLEnum.ModelviewMatrix, ModelviewMatrix);
+        Copy(GLManager.Projection.Top, ProjectionMatrix);
+        Copy(GLManager.ModelView.Top, ModelviewMatrix);
 
         for (int i = 0; i < 4; i++)
         {

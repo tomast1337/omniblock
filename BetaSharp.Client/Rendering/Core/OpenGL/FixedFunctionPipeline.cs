@@ -4,7 +4,25 @@ using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client.Rendering.Core.OpenGL;
 
-public unsafe class EmulatedGL : LegacyGL
+/// <summary>
+///     The state a draw is shaded by when it brings none of its own, and the shader that applies it.
+/// </summary>
+/// <remarks>
+///     <para>
+///         This was <c>EmulatedGL</c>, and the name was accurate while it emulated fixed-function
+///         entry points over a core context. There are none left to emulate: every one of them is
+///         now a value on <c>GLManager</c>, which is what this holds and what
+///         <see cref="FixedFunctionShader" /> consumes.
+///     </para>
+///     <para>
+///         What keeps it alive is <see cref="DrawArrays" />. Geometry that arrives through
+///         <see cref="Tessellator" /> or <see cref="StaticMesh" /> — terrain, sky, clouds, text, the
+///         interface, held items — carries no shader of its own, so this supplies one and uploads
+///         what it needs on the way past. Giving those their own shader is what would retire this
+///         class, and it is the same work as porting them to a backend that has no such fallback.
+///     </para>
+/// </remarks>
+public unsafe class FixedFunctionPipeline : LegacyGL
 {
     private readonly MatrixStack _modelViewStack = new();
     private readonly MatrixStack _projectionStack = new();
@@ -25,22 +43,14 @@ public unsafe class EmulatedGL : LegacyGL
 
     private DirtyState _dirtyState = new();
 
-    public EmulatedGL(GL gl) : base(gl)
+    public FixedFunctionPipeline(GL gl) : base(gl)
     {
         _shader = new FixedFunctionShader(gl);
         _shader.Use();
         _shader.SetTexture0(0);
     }
 
-    /// <summary>
-    ///     The transform stacks, for callers that hold one rather than steering it through
-    ///     <see cref="MatrixMode" />.
-    /// </summary>
-    /// <remarks>
-    ///     Composing transforms on a stack is not the legacy part; hierarchical models need it and
-    ///     it survives into any backend. What has to go is reaching it through a mode selector and
-    ///     a global, so these are exposed and the fixed-function entry points forward to them.
-    /// </remarks>
+    /// <inheritdoc cref="GLManager.ModelView" />
     public MatrixStack ModelView => _modelViewStack;
 
     /// <inheritdoc cref="ModelView" />
@@ -307,40 +317,6 @@ public unsafe class EmulatedGL : LegacyGL
         _dirtyState.StateDirty = true;
         InvalidateUploadedMatrices();
         base.UseProgram(program);
-    }
-
-    public override void GetFloat(GLEnum pname, float* data)
-    {
-        if (pname == GLEnum.ModelviewMatrix)
-        {
-            Matrix4X4<float> m = _modelViewStack.Top;
-            System.Buffer.MemoryCopy(&m, data, 64, 64);
-        }
-        else if (pname == GLEnum.ProjectionMatrix)
-        {
-            Matrix4X4<float> m = _projectionStack.Top;
-            System.Buffer.MemoryCopy(&m, data, 64, 64);
-        }
-    }
-
-    public override void GetFloat(GLEnum pname, Span<float> data)
-    {
-        if (pname == GLEnum.ModelviewMatrix)
-        {
-            Matrix4X4<float> m = _modelViewStack.Top;
-            fixed (float* dst = data)
-            {
-                System.Buffer.MemoryCopy(&m, dst, 64, 64);
-            }
-        }
-        else if (pname == GLEnum.ProjectionMatrix)
-        {
-            Matrix4X4<float> m = _projectionStack.Top;
-            fixed (float* dst = data)
-            {
-                System.Buffer.MemoryCopy(&m, dst, 64, 64);
-            }
-        }
     }
 
     public override void LineWidth(float width)
