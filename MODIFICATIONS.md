@@ -71,3 +71,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-02 — refactor(rendering): state the pipeline for the interface, and take GL enums out of it (Nicolas Vyčas Nery; `800334b58fa483792f69cd6bd2af7aa84c81ed0a`)
 - 2026-08-02 — fix(lang): add missing sign.done key to all 30 translation files (Nicolas Vyčas Nery; `8e5ddf73bdefb73fa1a123564cf3891ad68b892e`)
 - 2026-08-02 — fix(rendering): let the interface's depth clear actually clear (Nicolas Vyčas Nery; `d692cdfb18cea3a9ecd43e45d4c8d5423cccbac6`)
+- 2026-08-02 — fix(rendering): draw the sign board where the sign renderer stands, not where the pass ends (Nicolas Vyčas Nery; `3e73c041d71eaba30da6b8d9f35cf5b80c57069d`)
