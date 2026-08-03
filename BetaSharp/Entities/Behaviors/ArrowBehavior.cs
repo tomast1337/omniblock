@@ -162,7 +162,7 @@ public sealed class ArrowBehavior : IEntityTicker, IEntityPersistence, IEntityIn
             Vec3D rayStart = new(self.X, self.Y, self.Z);
             Vec3D rayEnd = new(self.X + self.VelocityX, self.Y + self.VelocityY, self.Z + self.VelocityZ);
             HitResult hit = self.World.Reader.Raycast(rayStart, rayEnd, false, true);
-            if (hit.Type != HitResultType.MISS)
+            if (hit.Type != HitResultType.Miss)
             {
                 rayEnd = new Vec3D(hit.Pos.x, hit.Pos.y, hit.Pos.z);
             }
@@ -183,7 +183,7 @@ public sealed class ArrowBehavior : IEntityTicker, IEntityPersistence, IEntityIn
                 expandAmount = 0.3F;
                 Box expandedBox = entity.BoundingBox.Expand(expandAmount, expandAmount, expandAmount);
                 HitResult hitResult = expandedBox.Raycast(rayStart, rayEnd);
-                if (hitResult.Type == HitResultType.MISS)
+                if (hitResult.Type == HitResultType.Miss)
                 {
                     continue;
                 }
@@ -204,7 +204,7 @@ public sealed class ArrowBehavior : IEntityTicker, IEntityPersistence, IEntityIn
             }
 
             float horizontalSpeed;
-            if (hit.Type != HitResultType.MISS)
+            if (hit.Type != HitResultType.Miss)
             {
                 if (hit.Entity != null)
                 {

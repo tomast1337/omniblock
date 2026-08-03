@@ -171,7 +171,7 @@ public class EntityLiving : Entity
     public virtual void PostSpawn() => Behaviors.Lifecycle?.OnPostSpawn(this);
 
 
-    public bool CanSee(Entity entity) => World.Reader.Raycast(new Vec3D(X, Y + EyeHeight, Z), new Vec3D(entity.X, entity.Y + entity.EyeHeight, entity.Z)).Type == HitResultType.MISS;
+    public bool CanSee(Entity entity) => World.Reader.Raycast(new Vec3D(X, Y + EyeHeight, Z), new Vec3D(entity.X, entity.Y + entity.EyeHeight, entity.Z)).Type == HitResultType.Miss;
 
     public virtual string GetTexture() => Texture;
 

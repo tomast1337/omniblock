@@ -122,7 +122,7 @@ public partial class BetaSharp :
     public bool ShowChunkBorders { get; private set; }
     public bool SkipRenderWorld { get; private set; }
     public string DebugText { get; private set; } = "";
-    public HitResult ObjectMouseOver = new(HitResultType.MISS);
+    public HitResult ObjectMouseOver = new(HitResultType.Miss);
 
     public GameRenderer GameRenderer { get; private set; }
     public WorldRenderer WorldRenderer { get; private set; }
@@ -1290,14 +1290,14 @@ public partial class BetaSharp :
             }
 
             bool shouldPerformSecondaryAction = true;
-            if (ObjectMouseOver.Type == HitResultType.MISS)
+            if (ObjectMouseOver.Type == HitResultType.Miss)
             {
                 if (mouseButton == 0)
                 {
                     _leftClickCounter = 10;
                 }
             }
-            else if (ObjectMouseOver.Type == HitResultType.ENTITY)
+            else if (ObjectMouseOver.Type == HitResultType.Entity)
             {
                 if (mouseButton == 0)
                 {
@@ -1309,7 +1309,7 @@ public partial class BetaSharp :
                     PlayerController.InteractWithEntity(Player, ObjectMouseOver.Entity);
                 }
             }
-            else if (ObjectMouseOver.Type == HitResultType.TILE)
+            else if (ObjectMouseOver.Type == HitResultType.Tile)
             {
                 int blockX = ObjectMouseOver.BlockX;
                 int blockY = ObjectMouseOver.BlockY;
@@ -1358,7 +1358,7 @@ public partial class BetaSharp :
 
     public void ClickMiddleMouseButton()
     {
-        if (ObjectMouseOver.Type != HitResultType.MISS)
+        if (ObjectMouseOver.Type != HitResultType.Miss)
         {
             int blockId = World.Reader.GetBlockId(ObjectMouseOver.BlockX, ObjectMouseOver.BlockY, ObjectMouseOver.BlockZ);
             int blockMeta = World.Reader.GetBlockMeta(ObjectMouseOver.BlockX, ObjectMouseOver.BlockY, ObjectMouseOver.BlockZ);
@@ -1381,7 +1381,7 @@ public partial class BetaSharp :
 
             if (mouseButton != 0 || _leftClickCounter <= 0)
             {
-                if (isHoldingMouse && ObjectMouseOver.Type != HitResultType.MISS && ObjectMouseOver.Type == HitResultType.TILE &&
+                if (isHoldingMouse && ObjectMouseOver.Type != HitResultType.Miss && ObjectMouseOver.Type == HitResultType.Tile &&
                     mouseButton == 0)
                 {
                     int blockX = ObjectMouseOver.BlockX;

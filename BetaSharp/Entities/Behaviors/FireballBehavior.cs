@@ -140,7 +140,7 @@ public sealed class FireballBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         HitResult hitResult = self.World.Reader.Raycast(startPos, endPos);
         startPos = new Vec3D(self.X, self.Y, self.Z);
         endPos = new Vec3D(self.X + self.VelocityX, self.Y + self.VelocityY, self.Z + self.VelocityZ);
-        if (hitResult.Type != HitResultType.MISS)
+        if (hitResult.Type != HitResultType.Miss)
         {
             endPos = new Vec3D(hitResult.Pos.x, hitResult.Pos.y, hitResult.Pos.z);
         }
@@ -160,7 +160,7 @@ public sealed class FireballBehavior : IEntityTicker, IEntityLifecycle, IEntityP
             const float collisionMargin = 0.3F;
             Box candidateBox = candidateEntity.BoundingBox.Expand(collisionMargin, collisionMargin, collisionMargin);
             HitResult candidateHit = candidateBox.Raycast(startPos, endPos);
-            if (candidateHit.Type == HitResultType.MISS)
+            if (candidateHit.Type == HitResultType.Miss)
             {
                 continue;
             }
@@ -180,7 +180,7 @@ public sealed class FireballBehavior : IEntityTicker, IEntityLifecycle, IEntityP
             hitResult = new HitResult(hitEntity);
         }
 
-        if (hitResult.Type != HitResultType.MISS)
+        if (hitResult.Type != HitResultType.Miss)
         {
             if (!self.World.IsRemote)
             {

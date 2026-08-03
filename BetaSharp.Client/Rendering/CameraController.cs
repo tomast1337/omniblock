@@ -191,7 +191,7 @@ public class CameraController
                     float offsetY = ((i >> 1 & 1) * 2 - 1) * 0.1F;
                     float offsetZ = ((i >> 2 & 1) * 2 - 1) * 0.1F;
 
-                    HitResult hit = new HitResult(HitResultType.MISS);
+                    HitResult hit = new HitResult(HitResultType.Miss);
 
                     if (_game.Options.CameraMode == CameraMode.FrontThirdPerson)
                     {
@@ -208,7 +208,7 @@ public class CameraController
                         );
                     }
 
-                    if (hit.Type != HitResultType.MISS)
+                    if (hit.Type != HitResultType.Miss)
                     {
                         double dist = hit.Pos.distanceTo(new Vec3D(x, y, z));
                         if (dist < currentDistance)

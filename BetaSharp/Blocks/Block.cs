@@ -360,9 +360,9 @@ public class Block
         UpdateBoundingBox(world, entities, x, y, z);
         Vec3D pos = new(x, y, z);
         HitResult res = BoundingBox.Raycast(startPos - pos, endPos - pos);
-        if (res.Type == HitResultType.MISS)
+        if (res.Type == HitResultType.Miss)
         {
-            return new HitResult(HitResultType.MISS);
+            return new HitResult(HitResultType.Miss);
         }
 
         res.BlockX = x;

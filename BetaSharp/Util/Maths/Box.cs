@@ -133,8 +133,8 @@ public struct Box
         UpdateHit(hitZ, ref finalHit, ref side, start.getIntermediateWithZValue(end, MinZ) == hitZ ? 2 : 3);
 
         return finalHit is null
-            ? new HitResult(HitResultType.MISS)
-            : new HitResult(0, 0, 0, side, finalHit.Value, HitResultType.TILE);
+            ? new HitResult(HitResultType.Miss)
+            : new HitResult(0, 0, 0, side, finalHit.Value, HitResultType.Tile);
 
         void UpdateHit(in Vec3D? candidate, ref Vec3D? current, ref int currentSide, int candidateSide)
         {

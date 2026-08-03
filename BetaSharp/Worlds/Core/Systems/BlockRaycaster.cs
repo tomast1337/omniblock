@@ -19,7 +19,7 @@ public static class BlockRaycaster
         if (double.IsNaN(start.x) || double.IsNaN(start.y) || double.IsNaN(start.z) ||
             double.IsNaN(end.x) || double.IsNaN(end.y) || double.IsNaN(end.z))
         {
-            return new HitResult(HitResultType.MISS);
+            return new HitResult(HitResultType.Miss);
         }
 
         int targetX = MathHelper.Floor(end.x);
@@ -38,7 +38,7 @@ public static class BlockRaycaster
             initialId > 0 && initialBlock!.HasCollision(initialMeta, includeFluids))
         {
             HitResult result = initialBlock.Raycast(reader, entities, currentX, currentY, currentZ, start, end);
-            if (result.Type != HitResultType.MISS)
+            if (result.Type != HitResultType.Miss)
             {
                 return result;
             }
@@ -49,7 +49,7 @@ public static class BlockRaycaster
         {
             if (double.IsNaN(start.x) || double.IsNaN(start.y) || double.IsNaN(start.z) || currentX == targetX && currentY == targetY && currentZ == targetZ)
             {
-                return new HitResult(HitResultType.MISS);
+                return new HitResult(HitResultType.Miss);
             }
 
             bool canMoveX = true, canMoveY = true, canMoveZ = true;
@@ -168,13 +168,13 @@ public static class BlockRaycaster
                 blockIdAtStep > 0 && blockAtStep!.HasCollision(metaAtStep, includeFluids))
             {
                 HitResult hit = blockAtStep.Raycast(reader, entities, currentX, currentY, currentZ, start, end);
-                if (hit.Type != HitResultType.MISS)
+                if (hit.Type != HitResultType.Miss)
                 {
                     return hit;
                 }
             }
         }
 
-        return new HitResult(HitResultType.MISS);
+        return new HitResult(HitResultType.Miss);
     }
 }

@@ -83,7 +83,7 @@ public class GameRenderer
         _client.ObjectMouseOver = _client.Camera.RayTrace(reachDistance, tickDelta);
         Vec3D cameraPosition = _client.Camera.GetPosition(tickDelta);
 
-        if (_client.ObjectMouseOver.Type != HitResultType.MISS)
+        if (_client.ObjectMouseOver.Type != HitResultType.Miss)
         {
             reachDistance = Math.Min(
                     _client.ObjectMouseOver.Pos.distanceTo(cameraPosition),
@@ -117,7 +117,7 @@ public class GameRenderer
                     closestDistance = 0.0D;
                     break;
                 }
-                if (hit.Type != HitResultType.MISS)
+                if (hit.Type != HitResultType.Miss)
                 {
                     double hitDistance = cameraPosition.distanceTo(hit.Pos);
                     if (hitDistance < closestDistance)
@@ -446,7 +446,7 @@ public class GameRenderer
         }
 
         EntityPlayer entityPlayer;
-        if (_client.ObjectMouseOver.Type != HitResultType.MISS && entity.IsInFluid(Material.Water) && entity is EntityPlayer)
+        if (_client.ObjectMouseOver.Type != HitResultType.Miss && entity.IsInFluid(Material.Water) && entity is EntityPlayer)
         {
             entityPlayer = (EntityPlayer)entity;
             GLManager.GL.Disable(GLEnum.AlphaTest);
@@ -474,7 +474,7 @@ public class GameRenderer
         //TODO: SELCTION BOX/BLOCK BREAKING VISUALIZATON DON'T APPEAR PROPERLY MOST OF THE TIME, SAME WITH ENTITY SHADOWS. VIEW BOBBING MAKES ENTITES BOB UP AND DOWN
 
         GLManager.State.ApplyUntrusted(RenderState.Opaque);
-        if (!CameraController.IsZoomActive && entity is EntityPlayer && _client.ObjectMouseOver.Type != HitResultType.MISS && !entity.IsInFluid(Material.Water))
+        if (!CameraController.IsZoomActive && entity is EntityPlayer && _client.ObjectMouseOver.Type != HitResultType.Miss && !entity.IsInFluid(Material.Water))
         {
             entityPlayer = (EntityPlayer)entity;
             GLManager.GL.Disable(GLEnum.AlphaTest);

@@ -41,12 +41,12 @@ internal sealed class BucketBehavior : IItemBehavior
         Vec3D rayEnd = rayStart + new Vec3D(dirX * reach, sinPitch * reach, dirZ * reach);
         HitResult hitResult = world.Reader.Raycast(rayStart, rayEnd, _isFull == 0);
 
-        if (hitResult.Type == HitResultType.MISS)
+        if (hitResult.Type == HitResultType.Miss)
         {
             return itemStack;
         }
 
-        if (hitResult.Type == HitResultType.TILE)
+        if (hitResult.Type == HitResultType.Tile)
         {
             int hitX = hitResult.BlockX;
             int hitY = hitResult.BlockY;
