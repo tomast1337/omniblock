@@ -1,4 +1,3 @@
-using BetaSharp.Client.Guis;
 using Microsoft.Extensions.Logging;
 using Silk.NET.GLFW;
 

@@ -1,5 +1,4 @@
 using BetaSharp.Client.Input;
-using BetaSharp.Client.Options;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using Silk.NET.GLFW;
@@ -9,8 +8,8 @@ namespace BetaSharp.Client.UI.Screens.Menu.Options;
 public class ControllerBindingsScreen(UIContext context, UIScreen? parent)
     : BaseOptionsScreen(context, parent, "options.controllerBindings")
 {
-    private int _listeningIndex = -1;
     private readonly ControllerListener _listener = new();
+    private int _listeningIndex = -1;
 
     protected override List<OptionSection> GetOptions() => [];
 
@@ -35,7 +34,10 @@ public class ControllerBindingsScreen(UIContext context, UIScreen? parent)
             row.Style.Width = TwoButtonSize;
             row.Style.SetMargin(2);
 
-            Label label = new() { Text = bind.Description };
+            Label label = new()
+            {
+                Text = bind.Description
+            };
             label.Style.FlexGrow = 1;
             row.AddChild(label);
 
@@ -43,7 +45,7 @@ public class ControllerBindingsScreen(UIContext context, UIScreen? parent)
             Button btn = CreateButton();
             btn.Text = btnText;
             btn.Style.Width = 80;
-            btn.OnClick += (e) =>
+            btn.OnClick += e =>
             {
                 _listeningIndex = index;
                 _listener.StartListening(OnButtonPressed);
@@ -92,8 +94,10 @@ public class ControllerBindingsScreen(UIContext context, UIScreen? parent)
                 _listeningIndex = -1;
                 Refresh();
             }
+
             return;
         }
+
         base.KeyTyped(key, character);
     }
 }

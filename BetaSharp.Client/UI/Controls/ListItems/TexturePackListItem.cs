@@ -1,8 +1,8 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Rendering;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Controls.ListItems;
 

@@ -1,9 +1,9 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Achievement;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Stats;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.InGame;
 
@@ -22,7 +22,11 @@ public class AchievementsScreen(
         Root.AddChild(new Background(BackgroundType.World));
 
         // Title
-        Label title = new() { Text = Translations.Get("achievements.title"), TextColor = Color.White };
+        Label title = new()
+        {
+            Text = Translations.Get("achievements.title"),
+            TextColor = Color.White
+        };
         title.Style.MarginTop = 20;
         title.Style.MarginBottom = 8;
         Root.AddChild(title);
@@ -30,11 +34,15 @@ public class AchievementsScreen(
         AddTitleSpacer();
 
         // Stats summary
-        int total = global::BetaSharp.Achievements.AllAchievements.Count;
-        int unlockedCount = global::BetaSharp.Achievements.AllAchievements.Count(a => stats.HasAchievementUnlocked(a));
+        int total = Achievements.AllAchievements.Count;
+        int unlockedCount = Achievements.AllAchievements.Count(a => stats.HasAchievementUnlocked(a));
         float progress = (float)unlockedCount / total;
 
-        Label progressLabel = new() { Text = $"{unlockedCount} / {total} ({progress:P0})", TextColor = Color.GrayA0 };
+        Label progressLabel = new()
+        {
+            Text = $"{unlockedCount} / {total} ({progress:P0})",
+            TextColor = Color.GrayA0
+        };
         progressLabel.Style.MarginBottom = 6;
         Root.AddChild(progressLabel);
 
@@ -78,15 +86,15 @@ public class AchievementsScreen(
         btnDone.Style.MarginTop = 10;
         btnDone.Style.MarginBottom = 20;
         btnDone.Style.FlexShrink = 0;
-        btnDone.OnClick += (_) => Context.Navigator.Navigate(parent);
+        btnDone.OnClick += _ => Context.Navigator.Navigate(parent);
         Root.AddChild(btnDone);
     }
 
     private void PopulateAchievementList(Panel list)
     {
-        List<Achievement> all = global::BetaSharp.Achievements.AllAchievements;
+        List<Achievement> all = Achievements.AllAchievements;
 
-        var roots = all.Where(a => a.parent == null).ToList();
+        List<Achievement> roots = all.Where(a => a.parent == null).ToList();
         foreach (Achievement? root in roots)
         {
             AddAchievementRecursively(list, root, 0);
@@ -99,7 +107,7 @@ public class AchievementsScreen(
         card.Style.MarginLeft = indent;
         list.AddChild(card);
 
-        var children = global::BetaSharp.Achievements.AllAchievements.Where(a => a.parent == ach).ToList();
+        List<Achievement> children = Achievements.AllAchievements.Where(a => a.parent == ach).ToList();
         foreach (Achievement? child in children)
         {
             AddAchievementRecursively(list, child, indent + 16);

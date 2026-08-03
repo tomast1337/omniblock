@@ -1,6 +1,6 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Rendering;
 using BetaSharp.Items;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Controls;
 
@@ -10,12 +10,6 @@ public class StatItemRow : UIElement
     private const float IconSize = 18;
     private const float IconX = 4;
     private const float IconY = 3;
-
-    public int ItemId { get; set; }
-    public string Value1 { get; set; } = string.Empty;
-    public string Value2 { get; set; } = string.Empty;
-    public string Value3 { get; set; } = string.Empty;
-    public bool IsAlternate { get; set; }
 
     public StatItemRow(int itemId, string v1, string v2, string v3, bool alternate)
     {
@@ -29,13 +23,22 @@ public class StatItemRow : UIElement
         Style.Width = null; // Fill parent
     }
 
+    public int ItemId { get; set; }
+    public string Value1 { get; set; } = string.Empty;
+    public string Value2 { get; set; } = string.Empty;
+    public string Value3 { get; set; } = string.Empty;
+    public bool IsAlternate { get; set; }
+
     public override void Render(UIRenderer renderer)
     {
-        if (Item.Items[ItemId] == null) return;
+        if (Item.Items[ItemId] == null)
+        {
+            return;
+        }
 
         DrawBackground(renderer);
 
-        ItemStack itemStack = new ItemStack(ItemId, 1, 0);
+        ItemStack itemStack = new(ItemId, 1, 0);
 
         renderer.DrawRect(IconX, IconY, IconSize, IconSize, Color.BackgroundBlackAlpha);
         renderer.DrawItem(itemStack, IconX + 1, IconY + 1);
@@ -44,7 +47,9 @@ public class StatItemRow : UIElement
         string? tileName = itemStack.GetItemName();
 
         if (tileName.StartsWith("item."))
+        {
             tileName = tileName.Replace("item.", "tile.");
+        }
 
         string? name = Translations.Get($"{tileName}.name");
 
@@ -54,11 +59,11 @@ public class StatItemRow : UIElement
         }
         else
         {
-        #if DEBUG
+#if DEBUG
             renderer.DrawText($"{tileName} ({name})", 28, TextY, Color.White);
-        #else
+#else
             renderer.DrawText("???", 28, TextY, Color.White);
-        #endif
+#endif
         }
 
         float rightOffset = ComputedWidth - 10;

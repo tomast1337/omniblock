@@ -1,9 +1,9 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Storage;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.Menu.World;
 
@@ -13,8 +13,8 @@ public class RenameWorldScreen(
     string worldFolderName,
     IWorldStorageSource saveLoader) : UIScreen(context)
 {
-    private TextField _txfName = null!;
     private readonly string _worldFolderName = worldFolderName;
+    private TextField _txfName = null!;
 
     protected override void Init()
     {
@@ -23,11 +23,19 @@ public class RenameWorldScreen(
         Root.Style.JustifyContent = Justify.Center;
         Root.Style.SetPadding(20);
 
-        Label title = new() { Text = Translations.Get("selectWorld.renameTitle"), TextColor = Color.White };
+        Label title = new()
+        {
+            Text = Translations.Get("selectWorld.renameTitle"),
+            TextColor = Color.White
+        };
         title.Style.MarginBottom = 10;
         Root.AddChild(title);
 
-        Label lName = new() { Text = Translations.Get("selectWorld.enterName"), TextColor = Color.GrayA0 };
+        Label lName = new()
+        {
+            Text = Translations.Get("selectWorld.enterName"),
+            TextColor = Color.GrayA0
+        };
         lName.Style.MarginBottom = 4;
         Root.AddChild(lName);
 
@@ -35,7 +43,10 @@ public class RenameWorldScreen(
         WorldProperties? worldProperties = worldStorage.GetProperties(_worldFolderName);
         string currentWorldName = worldProperties?.LevelName ?? string.Empty;
 
-        _txfName = new TextField { Text = currentWorldName };
+        _txfName = new TextField
+        {
+            Text = currentWorldName
+        };
         _txfName.Style.MarginBottom = 20;
         Root.AddChild(_txfName);
 
@@ -46,7 +57,7 @@ public class RenameWorldScreen(
         btnRename.Text = Translations.Get("gui.rename");
         btnRename.Style.Width = 100;
         btnRename.Style.SetMargin(2);
-        btnRename.OnClick += (e) =>
+        btnRename.OnClick += e =>
         {
             if (_txfName.Text.Trim().Length > 0)
             {
@@ -60,7 +71,7 @@ public class RenameWorldScreen(
         btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 100;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Context.Navigator.Navigate(parent);
+        btnCancel.OnClick += e => Context.Navigator.Navigate(parent);
         buttonPanel.AddChild(btnCancel);
 
         Root.AddChild(buttonPanel);

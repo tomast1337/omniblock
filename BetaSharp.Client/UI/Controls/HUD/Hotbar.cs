@@ -10,11 +10,11 @@ namespace BetaSharp.Client.UI.Controls.HUD;
 
 public class Hotbar : UIElement
 {
+    private readonly IControllerState _controllerState;
     private readonly Func<ClientPlayerEntity?> _getPlayer;
     private readonly Func<PlayerController?> _getPlayerController;
-    private readonly IControllerState _controllerState;
     private readonly JavaRandom _rand = new();
-    private int _updateCounter = 0;
+    private int _updateCounter;
 
     public Hotbar(
         Func<ClientPlayerEntity?> getPlayer,
@@ -38,7 +38,10 @@ public class Hotbar : UIElement
     public override void Render(UIRenderer renderer)
     {
         ClientPlayerEntity? player = _getPlayer();
-        if (player == null) return;
+        if (player == null)
+        {
+            return;
+        }
 
         // --- 1. Background (Hotbar itself) ---
         renderer.TextureManager.BindTexture(renderer.TextureManager.GetTextureId("/gui/gui.png"));
@@ -61,8 +64,15 @@ public class Hotbar : UIElement
     private void RenderStats(UIRenderer renderer)
     {
         ClientPlayerEntity? player = _getPlayer();
-        if (player == null) return;
-        if (!(_getPlayerController()?.ShouldDrawHUD() ?? false)) return;
+        if (player == null)
+        {
+            return;
+        }
+
+        if (!(_getPlayerController()?.ShouldDrawHUD() ?? false))
+        {
+            return;
+        }
 
         renderer.TextureManager.BindTexture(renderer.TextureManager.GetTextureId("/gui/icons.png"));
 
@@ -81,17 +91,32 @@ public class Hotbar : UIElement
             if (armorValue > 0)
             {
                 int armorX = 173 - i * 8; // Offset from right
-                if (i * 2 + 1 < armorValue) renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/icons.png"), armorX, statY, 34, 9, 9, 9);
-                else if (i * 2 + 1 == armorValue) renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/icons.png"), armorX, statY, 25, 9, 9, 9);
-                else renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/icons.png"), armorX, statY, 16, 9, 9, 9);
+                if (i * 2 + 1 < armorValue)
+                {
+                    renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/icons.png"), armorX, statY, 34, 9, 9, 9);
+                }
+                else if (i * 2 + 1 == armorValue)
+                {
+                    renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/icons.png"), armorX, statY, 25, 9, 9, 9);
+                }
+                else
+                {
+                    renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/icons.png"), armorX, statY, 16, 9, 9, 9);
+                }
             }
 
             // --- Health ---
-            if (!player.GameMode.CanReceiveDamage) continue;
+            if (!player.GameMode.CanReceiveDamage)
+            {
+                continue;
+            }
 
             int healthX = i * 8;
             int healthY = statY;
-            if (health <= 4) healthY += _rand.NextInt(2);
+            if (health <= 4)
+            {
+                healthY += _rand.NextInt(2);
+            }
 
             byte blinkIndex = (byte)(heartBlink ? 1 : 0);
             // BG
@@ -99,26 +124,37 @@ public class Hotbar : UIElement
             // Blink overlay
             if (heartBlink)
             {
-                if (i * 2 + 1 < lastHealth) renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/icons.png"), healthX, healthY, 70, 0, 9, 9);
-                else if (i * 2 + 1 == lastHealth) renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/icons.png"), healthX, healthY, 79, 0, 9, 9);
+                if (i * 2 + 1 < lastHealth)
+                {
+                    renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/icons.png"), healthX, healthY, 70, 0, 9, 9);
+                }
+                else if (i * 2 + 1 == lastHealth)
+                {
+                    renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/icons.png"), healthX, healthY, 79, 0, 9, 9);
+                }
             }
+
             // Fill
-            if (i * 2 + 1 < health) renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/icons.png"), healthX, healthY, 52, 0, 9, 9);
-            else if (i * 2 + 1 == health) renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/icons.png"), healthX, healthY, 61, 0, 9, 9);
+            if (i * 2 + 1 < health)
+            {
+                renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/icons.png"), healthX, healthY, 52, 0, 9, 9);
+            }
+            else if (i * 2 + 1 == health)
+            {
+                renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/icons.png"), healthX, healthY, 61, 0, 9, 9);
+            }
         }
 
         // --- Air ---
-        if (player.IsInFluid(Material.Water) && player.GameMode.NeedsAir)
-        {
-            int air = player.Air;
-            int fullBubbles = (int)Math.Ceiling((air - 2) * 10.0D / 300.0D);
-            int partialBubbles = (int)Math.Ceiling(air * 10.0D / 300.0D) - fullBubbles;
+        if (!player.IsInFluid(Material.Water) || !player.GameMode.NeedsAir) return;
 
-            for (int k = 0; k < fullBubbles + partialBubbles; ++k)
-            {
-                if (k < fullBubbles) renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/icons.png"), k * 8, -19, 16, 18, 9, 9);
-                else renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/icons.png"), k * 8, -19, 25, 18, 9, 9);
-            }
+        int air = player.Air;
+        int fullBubbles = (int)Math.Ceiling((air - 2) * 10.0D / 300.0D);
+        int partialBubbles = (int)Math.Ceiling(air * 10.0D / 300.0D) - fullBubbles;
+
+        for (int k = 0; k < fullBubbles + partialBubbles; ++k)
+        {
+            renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/gui/icons.png"), k * 8, -19, k < fullBubbles ? 16 : 25, 18, 9, 9);
         }
     }
 

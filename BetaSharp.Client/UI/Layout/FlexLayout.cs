@@ -4,14 +4,6 @@ namespace BetaSharp.Client.UI.Layout;
 
 public static class FlexLayout
 {
-    public struct LayoutContext
-    {
-        public UIElement Root;
-        public float AvailableWidth;
-        public float AvailableHeight;
-        public Func<string, float> MeasureString;
-    }
-
     public static void ApplyLayout(LayoutContext context)
     {
         Node rootNode = BuildTree(context.Root, context.MeasureString);
@@ -34,13 +26,19 @@ public static class FlexLayout
         node.nodeStyle.FlexShrink = element.Style.FlexShrink;
 
         if (element.Style.Width.HasValue)
+        {
             node.nodeStyle.Dimensions[(int)Dimension.Width] = new Value(element.Style.Width.Value, Unit.Point);
+        }
 
         if (element.Style.Height.HasValue)
+        {
             node.nodeStyle.Dimensions[(int)Dimension.Height] = new Value(element.Style.Height.Value, Unit.Point);
+        }
 
         if (element.Style.MaxHeight.HasValue)
+        {
             node.nodeStyle.MaxDimensions[(int)Dimension.Height] = new Value(element.Style.MaxHeight.Value, Unit.Point);
+        }
 
         node.nodeStyle.Margin[(int)Edge.Top] = new Value(element.Style.MarginTop, Unit.Point);
         node.nodeStyle.Margin[(int)Edge.Bottom] = new Value(element.Style.MarginBottom, Unit.Point);
@@ -54,10 +52,25 @@ public static class FlexLayout
 
         // Map absolute positioning
         node.StyleSetPositionType(element.Style.Position);
-        if (element.Style.Top.HasValue) node.StyleSetPosition(Edge.Top, element.Style.Top.Value);
-        if (element.Style.Bottom.HasValue) node.StyleSetPosition(Edge.Bottom, element.Style.Bottom.Value);
-        if (element.Style.Left.HasValue) node.StyleSetPosition(Edge.Left, element.Style.Left.Value);
-        if (element.Style.Right.HasValue) node.StyleSetPosition(Edge.Right, element.Style.Right.Value);
+        if (element.Style.Top.HasValue)
+        {
+            node.StyleSetPosition(Edge.Top, element.Style.Top.Value);
+        }
+
+        if (element.Style.Bottom.HasValue)
+        {
+            node.StyleSetPosition(Edge.Bottom, element.Style.Bottom.Value);
+        }
+
+        if (element.Style.Left.HasValue)
+        {
+            node.StyleSetPosition(Edge.Left, element.Style.Left.Value);
+        }
+
+        if (element.Style.Right.HasValue)
+        {
+            node.StyleSetPosition(Edge.Right, element.Style.Right.Value);
+        }
 
         // Add custom text bounds callbacks for leaves
         if (element.DoTextMeasuring)
@@ -90,7 +103,10 @@ public static class FlexLayout
         element.ComputedX = node.layout.left;
         element.ComputedY = node.layout.top;
 
-        element.OnLayoutApplied(new() { MeasureString = measureString });
+        element.OnLayoutApplied(new UIElement.LayoutAppliedContext
+        {
+            MeasureString = measureString
+        });
 
         for (int i = 0; i < element.Children.Count; i++)
         {
@@ -98,4 +114,11 @@ public static class FlexLayout
         }
     }
 
+    public struct LayoutContext
+    {
+        public UIElement Root;
+        public float AvailableWidth;
+        public float AvailableHeight;
+        public Func<string, float> MeasureString;
+    }
 }

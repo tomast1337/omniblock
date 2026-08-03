@@ -1,19 +1,32 @@
+using BetaSharp.Client.UI.Rendering;
+
 namespace BetaSharp.Client.UI;
 
 public class UIElement
 {
+    public Action<UIMouseEvent>? OnClick;
+    public Action<UIKeyEvent>? OnKeyDown;
+
+    // Events
+    public Action<UIMouseEvent>? OnMouseDown;
+    public Action<UIMouseEvent>? OnMouseEnter;
+    public Action<UIMouseEvent>? OnMouseLeave;
+    public Action<UIMouseEvent>? OnMouseMove;
+    public Action<UIMouseEvent>? OnMouseScroll;
+    public Action<UIMouseEvent>? OnMouseUp;
     public UIElement? Parent { get; set; }
     public List<UIElement> Children { get; } = [];
 
     public bool Visible { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets whether this element can be hit-tested by the mouse.
-    /// If false, the element and its children will be invisible to mouse events (hover, click, etc.),
-    /// allowing events to pass through to the parent or elements behind it.
+    ///     Gets or sets whether this element can be hit-tested by the mouse.
+    ///     If false, the element and its children will be invisible to mouse events (hover, click, etc.),
+    ///     allowing events to pass through to the parent or elements behind it.
     /// </summary>
     public bool IsHitTestVisible { get; set; } = true;
-    public FlexStyle Style { get; set; } = new FlexStyle();
+
+    public FlexStyle Style { get; set; } = new();
 
     // Computed Layout Box
     public float ComputedX { get; set; }
@@ -24,16 +37,6 @@ public class UIElement
     public float ScreenX => (Parent?.ScreenX ?? 0) + ComputedX;
     public float ScreenY => (Parent?.ScreenY ?? 0) + ComputedY;
 
-    // Events
-    public Action<UIMouseEvent>? OnMouseDown;
-    public Action<UIMouseEvent>? OnMouseUp;
-    public Action<UIMouseEvent>? OnClick;
-    public Action<UIMouseEvent>? OnMouseEnter;
-    public Action<UIMouseEvent>? OnMouseLeave;
-    public Action<UIMouseEvent>? OnMouseMove;
-    public Action<UIMouseEvent>? OnMouseScroll;
-    public Action<UIKeyEvent>? OnKeyDown;
-
     public bool IsHovered { get; internal set; }
     public bool IsFocused { get; internal set; }
     public bool Enabled { get; set; } = true;
@@ -41,18 +44,6 @@ public class UIElement
     public bool ClipToBounds { get; set; } = false;
 
     public virtual bool DoTextMeasuring => false;
-
-    public struct MeasureContext
-    {
-        public float AvailableWidth;
-        public float AvailableHeight;
-        public Func<string, float> MeasureString;
-    }
-
-    public struct LayoutAppliedContext
-    {
-        public Func<string, float> MeasureString;
-    }
 
     public void AddChild(UIElement child)
     {
@@ -91,7 +82,7 @@ public class UIElement
         }
     }
 
-    public virtual void Render(Rendering.UIRenderer renderer)
+    public virtual void Render(UIRenderer renderer)
     {
         if (Style.BackgroundColor is { } bg)
         {
@@ -113,7 +104,10 @@ public class UIElement
 
     public virtual UIElement? HitTest(float screenX, float screenY)
     {
-        if (!IsHitTestVisible) return null;
+        if (!IsHitTestVisible)
+        {
+            return null;
+        }
 
         if (ClipToBounds && !ContainsPoint(screenX, screenY))
         {
@@ -123,7 +117,10 @@ public class UIElement
         for (int i = Children.Count - 1; i >= 0; i--)
         {
             UIElement? hit = Children[i].HitTest(screenX, screenY);
-            if (hit != null) return hit;
+            if (hit != null)
+            {
+                return hit;
+            }
         }
 
         if (ContainsPoint(screenX, screenY))
@@ -134,20 +131,17 @@ public class UIElement
         return null;
     }
 
-    public virtual List<string> GetInspectorProperties()
-    {
-        return
-        [
-            $"Type:     {GetType().FullName}",
-            $"Screen:   ({ScreenX:F1}, {ScreenY:F1})",
-            $"Size:     {ComputedWidth:F1} × {ComputedHeight:F1}",
-            $"Local:    ({ComputedX:F1}, {ComputedY:F1})",
-            $"Visible:  {Visible}   Enabled: {Enabled}",
-            $"Focused:  {IsFocused}   Hovered: {IsHovered}",
-            $"HitTest:  {IsHitTestVisible}   Clip: {ClipToBounds}",
-            $"Children: {Children.Count}",
-        ];
-    }
+    public virtual List<string> GetInspectorProperties() =>
+    [
+        $"Type:     {GetType().FullName}",
+        $"Screen:   ({ScreenX:F1}, {ScreenY:F1})",
+        $"Size:     {ComputedWidth:F1} × {ComputedHeight:F1}",
+        $"Local:    ({ComputedX:F1}, {ComputedY:F1})",
+        $"Visible:  {Visible}   Enabled: {Enabled}",
+        $"Focused:  {IsFocused}   Hovered: {IsHovered}",
+        $"HitTest:  {IsHitTestVisible}   Clip: {ClipToBounds}",
+        $"Children: {Children.Count}"
+    ];
 
     public bool ContainsPoint(float screenX, float screenY)
     {
@@ -155,5 +149,17 @@ public class UIElement
         float sy = ScreenY;
         return screenX >= sx && screenX < sx + ComputedWidth &&
                screenY >= sy && screenY < sy + ComputedHeight;
+    }
+
+    public struct MeasureContext
+    {
+        public float AvailableWidth;
+        public float AvailableHeight;
+        public Func<string, float> MeasureString;
+    }
+
+    public struct LayoutAppliedContext
+    {
+        public Func<string, float> MeasureString;
     }
 }

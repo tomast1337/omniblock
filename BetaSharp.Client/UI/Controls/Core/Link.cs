@@ -1,21 +1,19 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Rendering;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Controls.Core;
 
 public class Link : Label
 {
-    public Color HoverColor { get; set; } = Color.HoverYellow;
-    public string URL { get; set; } = "";
     private bool _isHovered;
 
     public Link()
     {
-        OnMouseEnter += (e) => _isHovered = true;
-        OnMouseLeave += (e) => _isHovered = false;
-        OnClick += (e) =>
+        OnMouseEnter += e => _isHovered = true;
+        OnMouseLeave += e => _isHovered = false;
+        OnClick += e =>
         {
             if (!string.IsNullOrEmpty(URL))
             {
@@ -23,6 +21,9 @@ public class Link : Label
             }
         };
     }
+
+    public Color HoverColor { get; set; } = Color.HoverYellow;
+    public string URL { get; set; } = "";
 
     public override void Render(UIRenderer renderer)
     {
@@ -50,7 +51,10 @@ public class Link : Label
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             // Windows requires UseShellExecute to be true for URLs
-            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+            Process.Start(new ProcessStartInfo(url)
+            {
+                UseShellExecute = true
+            });
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {

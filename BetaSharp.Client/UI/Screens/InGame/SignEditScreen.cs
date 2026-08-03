@@ -1,18 +1,18 @@
 using BetaSharp.Blocks.Entities;
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Util;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.InGame;
 
 public class SignEditScreen(UIContext context, BlockEntitySign sign, Action? editCompleted) : UIScreen(context)
 {
     private readonly BlockEntitySign _sign = sign;
-    private int _editLine = 0;
-    private int _updateCounter = 0;
+    private int _editLine;
+    private int _updateCounter;
 
     protected override void Init()
     {
@@ -21,11 +21,18 @@ public class SignEditScreen(UIContext context, BlockEntitySign sign, Action? edi
 
         Root.AddChild(new Background(BackgroundType.World));
 
-        Label title = new() { Text = Translations.Get("sign.title"), TextColor = Color.White };
+        Label title = new()
+        {
+            Text = Translations.Get("sign.title"),
+            TextColor = Color.White
+        };
         title.Style.MarginBottom = 10;
         Root.AddChild(title);
 
-        SignPreview preview = new() { Sign = _sign };
+        SignPreview preview = new()
+        {
+            Sign = _sign
+        };
         preview.Style.Width = 300;
         preview.Style.Height = 150;
         preview.Style.MarginBottom = 40;
@@ -34,7 +41,7 @@ public class SignEditScreen(UIContext context, BlockEntitySign sign, Action? edi
         Button btnDone = CreateButton();
         btnDone.Text = Translations.Get("sign.done");
         btnDone.Style.Width = 200;
-        btnDone.OnClick += (_) => CloseAndSave();
+        btnDone.OnClick += _ => CloseAndSave();
         Root.AddChild(btnDone);
     }
 
@@ -90,8 +97,5 @@ public class SignEditScreen(UIContext context, BlockEntitySign sign, Action? edi
         Context.Navigator.Navigate(null);
     }
 
-    public override void Uninit()
-    {
-        editCompleted?.Invoke();
-    }
+    public override void Uninit() => editCompleted?.Invoke();
 }

@@ -1,6 +1,5 @@
 using System.Reflection;
 using BetaSharp.Blocks;
-using BetaSharp.Entities;
 using BetaSharp.Entities.Behaviors;
 using BetaSharp.Items;
 using BetaSharp.Util.Hit;
@@ -10,12 +9,24 @@ namespace BetaSharp.Client.UI;
 
 public enum ControlIcon
 {
-    A, B, X, Y,
-    Lt, Rt, Lb, Rb,
-    Ls, Rs,
-    LsClick, RsClick,
-    DPadUp, DPadDown, DPadLeft, DPadRight,
-    Start, Back,
+    A,
+    B,
+    X,
+    Y,
+    Lt,
+    Rt,
+    Lb,
+    Rb,
+    Ls,
+    Rs,
+    LsClick,
+    RsClick,
+    DPadUp,
+    DPadDown,
+    DPadLeft,
+    DPadRight,
+    Start,
+    Back,
     TouchPad
 }
 
@@ -44,18 +55,31 @@ public static class ControlTooltip
             int blockZ = hit.BlockZ;
             int blockId = context.WorldReader.GetBlockId(blockX, blockY, blockZ);
 
-            if (blockId == BlockRegistry.Get("chest").Id || blockId == BlockRegistry.Get("furnace").Id || blockId == BlockRegistry.Get("lit_furnace").Id || blockId == BlockRegistry.Get("crafting_table").Id || blockId == BlockRegistry.Get("dispenser").Id)
+            if (blockId == BlockRegistry.Get("chest").Id || blockId == BlockRegistry.Get("furnace").Id || blockId == BlockRegistry.Get("lit_furnace").Id || blockId == BlockRegistry.Get("crafting_table").Id ||
+                blockId == BlockRegistry.Get("dispenser").Id)
+            {
                 useAction = "Interact";
+            }
             else if (blockId == BlockRegistry.Get("door").Id || blockId == BlockRegistry.Get("iron_door").Id || blockId == BlockRegistry.Get("trapdoor").Id)
+            {
                 useAction = "Open/Close";
+            }
             else if (blockId == BlockRegistry.Get("lever").Id || blockId == BlockRegistry.Get("button").Id || blockId == BlockRegistry.Get("repeater").Id || blockId == BlockRegistry.Get("powered_repeater").Id)
+            {
                 useAction = "Use";
+            }
             else if (blockId == BlockRegistry.Get("bed").Id)
+            {
                 useAction = "Sleep";
+            }
             else if (blockId == BlockRegistry.Get("cake").Id)
+            {
                 useAction = "Eat";
+            }
             else if (blockId == BlockRegistry.Get("jukebox").Id)
+            {
                 useAction = "Use";
+            }
             else if (IsItemUsable(held))
             {
                 useAction = GetItemActionLabel(held);
@@ -64,23 +88,35 @@ public static class ControlTooltip
         else if (hit.Type == HitResultType.Entity)
         {
             if (MinecartBehavior.IsMinecart(hit.Entity) || hit.Entity.Behaviors.Find<BoatBehavior>() is not null)
+            {
                 useAction = "Enter";
+            }
             else if (hit.Entity?.Synced<bool>("saddled") is { Value: true })
+            {
                 useAction = "Ride";
+            }
             else if (IsItemUsable(held))
             {
                 string label = GetItemActionLabel(held);
-                if (label != "Place") useAction = label;
+                if (label != "Place")
+                {
+                    useAction = label;
+                }
             }
         }
         else if (IsItemUsable(held))
         {
             string label = GetItemActionLabel(held);
-            if (label != "Place") useAction = label;
+            if (label != "Place")
+            {
+                useAction = label;
+            }
         }
 
         if (useAction != null)
+        {
             tips.Add(new ActionTip(ControlIcon.Lt, useAction));
+        }
 
         if (hit.Type != HitResultType.Miss)
         {
@@ -89,7 +125,9 @@ public static class ControlTooltip
         }
 
         if (held != null)
+        {
             tips.Add(new ActionTip(ControlIcon.B, "Drop"));
+        }
     }
 
     internal static void PopulateGuiTips(UIScreen screen, List<ActionTip> tips)
@@ -99,7 +137,9 @@ public static class ControlTooltip
         screen.GetTooltips(tips);
 
         if (tips.All(t => t.Icon != ControlIcon.A) && screen.HasInteractiveElementUnderCursor())
+        {
             tips.Add(new ActionTip(ControlIcon.A, "Select"));
+        }
     }
 
     internal static string? GetAssetPath(ControlIcon icon)
@@ -133,14 +173,26 @@ public static class ControlTooltip
 
     private static bool IsItemUsable(ItemStack stack)
     {
-        if (stack == null) return false;
-        if (stack.ItemId < 256) return true;
+        if (stack == null)
+        {
+            return false;
+        }
+
+        if (stack.ItemId < 256)
+        {
+            return true;
+        }
 
         if (s_usabilityCache.TryGetValue(stack.ItemId, out bool usable))
+        {
             return usable;
+        }
 
         Item item = stack.GetItem();
-        if (item == null) return false;
+        if (item == null)
+        {
+            return false;
+        }
 
         Type type = item.GetType();
         MethodInfo[] methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
@@ -159,16 +211,37 @@ public static class ControlTooltip
 
     private static string GetItemActionLabel(ItemStack stack)
     {
-        if (stack == null) return "Use";
-        if (stack.ItemId < 256) return "Place";
+        if (stack == null)
+        {
+            return "Use";
+        }
+
+        if (stack.ItemId < 256)
+        {
+            return "Place";
+        }
 
         Item item = stack.GetItem();
-        if (item == null) return "Use";
+        if (item == null)
+        {
+            return "Use";
+        }
 
         string typeName = item.GetType().Name;
-        if (typeName.Contains("Food") || typeName.Contains("Soup") || typeName.Contains("MushroomStew")) return "Eat";
-        if (typeName.Contains("Egg") || typeName.Contains("Snowball")) return "Throw";
-        if (typeName.Contains("Bow")) return "Shoot";
+        if (typeName.Contains("Food") || typeName.Contains("Soup") || typeName.Contains("MushroomStew"))
+        {
+            return "Eat";
+        }
+
+        if (typeName.Contains("Egg") || typeName.Contains("Snowball"))
+        {
+            return "Throw";
+        }
+
+        if (typeName.Contains("Bow"))
+        {
+            return "Shoot";
+        }
 
         return "Use";
     }

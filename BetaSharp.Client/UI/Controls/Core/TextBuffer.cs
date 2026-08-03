@@ -3,21 +3,26 @@ namespace BetaSharp.Client.UI.Controls.Core;
 public class TextBuffer
 {
     private string _text = "";
+
     public string Text
     {
         get => _text;
         set
         {
             _text = value ?? "";
-            if (_text.Length > MaxLength) _text = _text[..MaxLength];
+            if (_text.Length > MaxLength)
+            {
+                _text = _text[..MaxLength];
+            }
+
             CursorPosition = Math.Clamp(CursorPosition, 0, _text.Length);
             SelectionStart = Math.Clamp(SelectionStart, 0, _text.Length);
         }
     }
 
     public int MaxLength { get; set; } = 32;
-    public int CursorPosition { get; set; } = 0;
-    public int SelectionStart { get; set; } = 0;
+    public int CursorPosition { get; set; }
+    public int SelectionStart { get; set; }
 
     public bool HasSelection => SelectionStart != CursorPosition;
 
@@ -26,6 +31,7 @@ public class TextBuffer
         get
         {
             if (!HasSelection) return "";
+
             int start = Math.Min(SelectionStart, CursorPosition);
             int length = Math.Abs(SelectionStart - CursorPosition);
             return _text.Substring(start, length);
@@ -39,7 +45,10 @@ public class TextBuffer
         int remainingSpace = MaxLength - _text.Length;
         if (remainingSpace <= 0) return;
 
-        if (input.Length > remainingSpace) input = input[..remainingSpace];
+        if (input.Length > remainingSpace)
+        {
+            input = input[..remainingSpace];
+        }
 
         _text = _text.Insert(CursorPosition, input);
         CursorPosition += input.Length;
@@ -102,8 +111,5 @@ public class TextBuffer
         CursorPosition = _text.Length;
     }
 
-    public void ClearSelection()
-    {
-        SelectionStart = CursorPosition;
-    }
+    public void ClearSelection() => SelectionStart = CursorPosition;
 }

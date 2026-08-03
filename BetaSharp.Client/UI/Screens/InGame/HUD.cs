@@ -17,13 +17,6 @@ public sealed record HUDContext(
 
 public class HUD : UIScreen
 {
-    public override bool PausesGame => false;
-    protected override bool AutoAddTooltipBar => false;
-
-    public Hotbar Hotbar { get; private set; } = null!;
-    public ChatOverlay Chat { get; private set; } = null!;
-    public AchievementToast AchievementToast { get; private set; } = null!;
-
     private readonly HUDContext _hudContext;
 
     public HUD(UIContext context, HUDContext hudContext) : base(context)
@@ -31,6 +24,13 @@ public class HUD : UIScreen
         _hudContext = hudContext;
         Initialize();
     }
+
+    public override bool PausesGame => false;
+    protected override bool AutoAddTooltipBar => false;
+
+    public Hotbar Hotbar { get; private set; } = null!;
+    public ChatOverlay Chat { get; private set; } = null!;
+    public AchievementToast AchievementToast { get; private set; } = null!;
 
     protected override void Init()
     {
@@ -42,12 +42,12 @@ public class HUD : UIScreen
         // Overlay elements
         Root.AddChild(new Vignette(_hudContext.GetPlayer));
 
-        var portal = new PortalOverlay(_hudContext.GetPlayer);
+        PortalOverlay portal = new(_hudContext.GetPlayer);
         portal.Style.Position = PositionType.Absolute;
         portal.Style.Top = portal.Style.Left = portal.Style.Right = portal.Style.Bottom = 0;
         Root.AddChild(portal);
 
-        var pumpkin = new PumpkinBlur(_hudContext.GetPlayer);
+        PumpkinBlur pumpkin = new(_hudContext.GetPlayer);
         pumpkin.Style.Position = PositionType.Absolute;
         pumpkin.Style.Top = pumpkin.Style.Left = pumpkin.Style.Right = pumpkin.Style.Bottom = 0;
         Root.AddChild(pumpkin);
@@ -67,19 +67,19 @@ public class HUD : UIScreen
         AchievementToast.Style.Right = 0;
         Root.AddChild(AchievementToast);
 
-        var coordinatesDisplay = new CoordinatesDisplay(_hudContext.GetPlayer, () => Context.Options.ShowCoordinates);
+        CoordinatesDisplay coordinatesDisplay = new(_hudContext.GetPlayer, () => Context.Options.ShowCoordinates);
         coordinatesDisplay.Style.Position = PositionType.Absolute;
         coordinatesDisplay.Style.Top = 2;
         coordinatesDisplay.Style.Left = 2;
         Root.AddChild(coordinatesDisplay);
 
         // Foreground elements
-        var crosshair = new Crosshair();
+        Crosshair crosshair = new();
         crosshair.Style.Position = PositionType.Absolute;
         crosshair.Style.Top = crosshair.Style.Left = crosshair.Style.Right = crosshair.Style.Bottom = 0;
         Root.AddChild(crosshair);
 
-        var tooltipBar = new ControlTooltipBar(Context, _hudContext.InGameTipSource);
+        ControlTooltipBar tooltipBar = new(Context, _hudContext.InGameTipSource);
         tooltipBar.Style.Position = PositionType.Absolute;
         tooltipBar.Style.Bottom = 4;
         tooltipBar.Style.Left = 2;

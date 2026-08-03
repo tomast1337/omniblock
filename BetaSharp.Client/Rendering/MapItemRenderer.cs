@@ -6,7 +6,7 @@ using BetaSharp.Entities;
 using BetaSharp.Worlds.Maps;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using Color = BetaSharp.Client.Guis.Color;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.Rendering;
 

@@ -9,31 +9,30 @@ public enum Align
     Stretch,
     Baseline,
     SpaceBetween,
-    SpaceAround,
+    SpaceAround
 }
 
 public enum Dimension
 {
     Width,
-    Height,
+    Height
 }
 
 public enum Direction
 {
-
     Inherit = 0,
     LTR,
     RTL,
-    NeverUsed_1 = -1,
+    NeverUsed_1 = -1
 }
 
 public enum Display
 {
     Flex,
-    None,
+    None
 }
 
-public enum Edge : int
+public enum Edge
 {
     Left,
     Top,
@@ -43,13 +42,12 @@ public enum Edge : int
     End,
     Horizontal,
     Vertical,
-    All,
+    All
 }
-
 
 public enum ExperimentalFeature
 {
-    WebFlexBasis,
+    WebFlexBasis
 }
 
 public enum FlexDirection
@@ -57,7 +55,7 @@ public enum FlexDirection
     Column,
     ColumnReverse,
     Row,
-    RowReverse,
+    RowReverse
 }
 
 public enum Justify
@@ -66,7 +64,7 @@ public enum Justify
     Center,
     FlexEnd,
     SpaceBetween,
-    SpaceAround,
+    SpaceAround
 }
 
 public enum LogLevel
@@ -76,41 +74,41 @@ public enum LogLevel
     Info,
     Debug,
     Verbose,
-    Fatal,
+    Fatal
 }
 
-public enum MeasureMode : int
+public enum MeasureMode
 {
     Undefined = 0,
     Exactly,
     AtMost,
-    NeverUsed_1 = -1,
+    NeverUsed_1 = -1
 }
 
 public enum NodeType
 {
     Default,
-    Text,
+    Text
 }
 
 public enum Overflow
 {
     Visible,
     Hidden,
-    Scroll,
+    Scroll
 }
 
 public enum PositionType
 {
     Relative,
-    Absolute,
+    Absolute
 }
 
 public enum PrintOptions
 {
     Layout,
     Style,
-    Children,
+    Children
 }
 
 public enum Unit
@@ -118,12 +116,12 @@ public enum Unit
     Undefined,
     Point,
     Percent,
-    Auto,
+    Auto
 }
 
 public enum Wrap
 {
     NoWrap,
     Wrap,
-    WrapReverse,
+    WrapReverse
 }

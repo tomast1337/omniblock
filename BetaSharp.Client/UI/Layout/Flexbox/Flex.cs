@@ -2,6 +2,36 @@ namespace BetaSharp.Client.UI.Layout.Flexbox;
 
 public partial class Flex
 {
+    private const string spacerStr = "";
+
+
+    internal static readonly Value ValueZero = new(0, Unit.Point);
+    internal static readonly Value ValueUndefined = new(float.NaN, Unit.Undefined);
+
+    internal static readonly Value ValueAuto = new(float.NaN, Unit.Auto);
+
+    // // see yoga_props.go
+
+    // var (
+    //     currentGenerationCount = 0
+    // )
+    internal static int currentGenerationCount;
+
+    // // see print.go
+
+    // var (
+    // )
+    internal static readonly Edge[] leading = new Edge[4] { Edge.Top, Edge.Bottom, Edge.Left, Edge.Right };
+    internal static readonly Edge[] trailing = new Edge[4] { Edge.Bottom, Edge.Top, Edge.Right, Edge.Left };
+    internal static readonly Edge[] pos = new Edge[4] { Edge.Top, Edge.Bottom, Edge.Left, Edge.Right };
+    internal static readonly Dimension[] dim = new Dimension[4] { Dimension.Height, Dimension.Height, Dimension.Width, Dimension.Width };
+
+    internal static int gDepth;
+    internal static bool gPrintTree = false;
+    internal static bool gPrintChanges = false;
+
+    internal static bool gPrintSkips = false;
+
     //private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
     // FloatsEqual returns true if floats are approx. equal
     public static bool FloatsEqual(float a, float b)
@@ -10,8 +40,10 @@ public partial class Flex
         {
             return FloatIsUndefined(b);
         }
-        return System.Math.Abs(a - b) < 0.0001f;
+
+        return Math.Abs(a - b) < 0.0001f;
     }
+
     // Rockyfi.roundValueToPixelGrid rounds value to pixel grid
     public static float RoundValueToPixelGrid(float value, float pointScaleFactor, bool forceCeil, bool forceFloor)
     {
@@ -43,8 +75,10 @@ public partial class Flex
             {
                 f = 1.0f;
             }
+
             scaledValue = scaledValue - fractial + f;
         }
+
         return scaledValue / pointScaleFactor;
     }
 
@@ -62,47 +96,40 @@ public partial class Flex
     // // Reset resets a node
     public static void Reset(ref Node node)
     {
-        Flex.assertWithNode(node, node.Children.Count == 0, "Cannot reset a node which still has children attached");
-        Flex.assertWithNode(node, node.Parent == null, "Cannot reset a node still attached to a parent");
+        assertWithNode(node, node.Children.Count == 0, "Cannot reset a node which still has children attached");
+        assertWithNode(node, node.Parent == null, "Cannot reset a node still attached to a parent");
         node.Children.Clear();
 
-        var config = node.config;
+        Config config = node.config;
         node = CreateDefaultNode();
         if (config.UseWebDefaults)
         {
             node.nodeStyle.FlexDirection = FlexDirection.Row;
             node.nodeStyle.AlignContent = Align.Stretch;
         }
+
         node.config = config;
     }
 
-    public static Node CreateDefaultNode()
-    {
-        return new Node();
-    }
+    public static Node CreateDefaultNode() => new();
 
 
-    public static Node CreateDefaultNode(Style style)
-    {
-        return new Node(style);
-    }
+    public static Node CreateDefaultNode(Style style) => new(style);
 
     public static Node CreateDefaultNode(Config config)
     {
-        var node = new Node();
+        Node node = new();
         if (config.UseWebDefaults)
         {
             node.nodeStyle.FlexDirection = FlexDirection.Row;
             node.nodeStyle.AlignContent = Align.Stretch;
         }
+
         node.config = config;
         return node;
     }
 
-    public static Config CreateDefaultConfig()
-    {
-        return new Config();
-    }
+    public static Config CreateDefaultConfig() => new();
 
     // CalculateLayout calculates layout
     public static void CalculateLayout(Node node, float parentWidth, float parentHeight, Direction parentDirection)
@@ -120,8 +147,8 @@ public partial class Flex
         calcStartHeight(node, parentWidth, parentHeight, out float height, out MeasureMode heightMeasureMode);
 
         if (layoutNodeInternal(node, width, height, parentDirection,
-            widthMeasureMode, heightMeasureMode, parentWidth, parentHeight,
-            true, "initial", node.config))
+                widthMeasureMode, heightMeasureMode, parentWidth, parentHeight,
+                true, "initial", node.config))
         {
             nodeSetPosition(node, node.nodeLayout.Direction, parentWidth, parentHeight, parentWidth);
             roundToPixelGrid(node, node.config.PointScaleFactor, 0, 0);
@@ -129,21 +156,17 @@ public partial class Flex
             if (gPrintTree)
             {
                 // NodePrint(node, PrintOptionsLayout|PrintOptionsChildren|PrintOptionsStyle);
-                System.Console.WriteLine("NodePrint(node, PrintOptionsLayout|PrintOptionsChildren|PrintOptionsStyle);");
+                Console.WriteLine("NodePrint(node, PrintOptionsLayout|PrintOptionsChildren|PrintOptionsStyle);");
             }
         }
     }
 
-
-    readonly internal static Value ValueZero = new Value(0, Unit.Point);
-    readonly internal static Value ValueUndefined = new Value(float.NaN, Unit.Undefined);
-
-    readonly internal static Value ValueAuto = new Value(float.NaN, Unit.Auto);
-
     internal static bool feq(float a, float b)
     {
         if (float.IsNaN(a) && float.IsNaN(b))
+        {
             return true;
+        }
 
         return a == b;
     }
@@ -151,7 +174,10 @@ public partial class Flex
     internal static bool valueEq(Value v1, Value v2)
     {
         if (v1.unit != v2.unit)
+        {
             return false;
+        }
+
         return feq(v1.value, v2.value);
     }
 
@@ -163,13 +189,13 @@ public partial class Flex
             return edges[(int)edge];
         }
 
-        bool isVertEdge = (edge == Edge.Top || edge == Edge.Bottom);
-        if (isVertEdge && edges[(int)(Edge.Vertical)].unit != Unit.Undefined)
+        bool isVertEdge = edge == Edge.Top || edge == Edge.Bottom;
+        if (isVertEdge && edges[(int)Edge.Vertical].unit != Unit.Undefined)
         {
             return edges[(int)Edge.Vertical];
         }
 
-        bool isHorizEdge = (edge == Edge.Left || edge == Edge.Right || edge == Edge.Start || edge == Edge.End);
+        bool isHorizEdge = edge == Edge.Left || edge == Edge.Right || edge == Edge.Start || edge == Edge.End;
         if (isHorizEdge && edges[(int)Edge.Horizontal].unit != Unit.Undefined)
         {
             return edges[(int)Edge.Horizontal];
@@ -200,6 +226,7 @@ public partial class Flex
             case Unit.Percent:
                 return value.value * parentSize / 100f;
         }
+
         return float.NaN;
     }
 
@@ -217,22 +244,20 @@ public partial class Flex
     // // NewNodeWithConfig creates new node with config
     internal static Node NewNodeWithConfig(Config config)
     {
-        var node = CreateDefaultNode();
+        Node node = CreateDefaultNode();
 
         if (config.UseWebDefaults)
         {
             node.nodeStyle.FlexDirection = FlexDirection.Row;
             node.nodeStyle.AlignContent = Align.Stretch;
         }
+
         node.config = config;
         return node;
     }
 
     // // NewNode creates a new node
-    internal static Node NewNode()
-    {
-        return NewNodeWithConfig(CreateDefaultConfig());
-    }
+    internal static Node NewNode() => NewNodeWithConfig(CreateDefaultConfig());
 
     // internal static int Len(Node[] array)
     // {
@@ -241,22 +266,13 @@ public partial class Flex
 
 
     // ConfigGetDefault returns default config, only for C#
-    internal static Config ConfigGetDefault()
-    {
-        return CreateDefaultConfig();
-    }
+    internal static Config ConfigGetDefault() => CreateDefaultConfig();
 
     // NewConfig creates new config
-    internal static Config NewConfig()
-    {
-        return CreateDefaultConfig();
-    }
+    internal static Config NewConfig() => CreateDefaultConfig();
 
     // ConfigCopy copies a config
-    internal static void ConfigCopy(Config dest, Config src)
-    {
-        Config.Copy(dest, src);
-    }
+    internal static void ConfigCopy(Config dest, Config src) => Config.Copy(dest, src);
 
     internal static void nodeMarkDirtyInternal(Node node)
     {
@@ -282,7 +298,7 @@ public partial class Flex
         }
         else
         {
-            Flex.assertWithNode(
+            assertWithNode(
                 node,
                 node.Children.Count == 0,
                 "Cannot set measure function: Nodes with measure functions cannot have children.");
@@ -295,8 +311,8 @@ public partial class Flex
     // InsertChild inserts a child
     internal static void InsertChild(Node node, Node child, int idx)
     {
-        Flex.assertWithNode(node, child.Parent == null, "Child already has a parent, it must be removed first.");
-        Flex.assertWithNode(node, node.measureFunc == null, "Cannot add child: Nodes with measure functions cannot have children.");
+        assertWithNode(node, child.Parent == null, "Child already has a parent, it must be removed first.");
+        assertWithNode(node, node.measureFunc == null, "Cannot add child: Nodes with measure functions cannot have children.");
 
         node.Children.Insert(idx, child);
         child.Parent = node;
@@ -315,15 +331,12 @@ public partial class Flex
     }
 
     // GetChild returns a child at a given index
-    internal static Node GetChild(Node node, int idx)
-    {
-        return idx < node.Children.Count ? node.Children[idx] : null;
-    }
+    internal static Node GetChild(Node node, int idx) => idx < node.Children.Count ? node.Children[idx] : null;
 
     // MarkDirty marks node as dirty
     internal static void MarkDirty(Node node)
     {
-        Flex.assertWithNode(node, node.measureFunc != null,
+        assertWithNode(node, node.measureFunc != null,
             "Only leaf nodes with custom measure functions should manually mark themselves as dirty");
         nodeMarkDirtyInternal(node);
     }
@@ -346,6 +359,7 @@ public partial class Flex
         {
             return false;
         }
+
         for (int i = 0; i < Constant.EdgeCount; i++)
         {
             if (!valueEq(s1.Margin[i], s2.Margin[i]) ||
@@ -356,6 +370,7 @@ public partial class Flex
                 return false;
             }
         }
+
         for (int i = 0; i < 2; i++)
         {
             if (!valueEq(s1.Dimensions[i], s2.Dimensions[i]) ||
@@ -365,6 +380,7 @@ public partial class Flex
                 return false;
             }
         }
+
         return true;
     }
 
@@ -375,10 +391,12 @@ public partial class Flex
         {
             return 0;
         }
+
         if (!FloatIsUndefined(node.nodeStyle.FlexGrow))
         {
             return node.nodeStyle.FlexGrow;
         }
+
         return Constant.defaultFlexGrow;
     }
 
@@ -389,39 +407,33 @@ public partial class Flex
         {
             return 0;
         }
+
         if (!FloatIsUndefined(node.nodeStyle.FlexShrink))
         {
             return node.nodeStyle.FlexShrink;
         }
+
         if (node.config.UseWebDefaults)
         {
             return Constant.webDefaultFlexShrink;
         }
+
         return Constant.defaultFlexShrink;
     }
 
     internal static Value nodeResolveFlexBasisPtr(Node node)
     {
-        var style = node.nodeStyle;
+        Style style = node.nodeStyle;
         if (style.FlexBasis.unit != Unit.Auto && style.FlexBasis.unit != Unit.Undefined)
         {
             return style.FlexBasis;
         }
+
         return ValueAuto;
     }
 
-    // // see yoga_props.go
-
-    // var (
-    //     currentGenerationCount = 0
-    // )
-    internal static int currentGenerationCount = 0;
-
     // FloatIsUndefined returns true if value is undefined
-    internal static bool FloatIsUndefined(float value)
-    {
-        return float.IsNaN(value);
-    }
+    internal static bool FloatIsUndefined(float value) => float.IsNaN(value);
 
     // ValueEqual returns true if values are equal
     internal static bool ValueEqual(Value a, Value b)
@@ -436,7 +448,7 @@ public partial class Flex
             return true;
         }
 
-        return System.Math.Abs(a.value - b.value) < 0.0001f;
+        return Math.Abs(a.value - b.value) < 0.0001f;
     }
 
     internal static void resolveDimensions(Node node)
@@ -455,24 +467,9 @@ public partial class Flex
         }
     }
 
-    // // see print.go
+    internal static bool flexDirectionIsRow(FlexDirection flexDirection) => flexDirection == FlexDirection.Row || flexDirection == FlexDirection.RowReverse;
 
-    // var (
-    // )
-    readonly internal static Edge[] leading = new Edge[4] { Edge.Top, Edge.Bottom, Edge.Left, Edge.Right };
-    readonly internal static Edge[] trailing = new Edge[4] { Edge.Bottom, Edge.Top, Edge.Right, Edge.Left };
-    readonly internal static Edge[] pos = new Edge[4] { Edge.Top, Edge.Bottom, Edge.Left, Edge.Right };
-    readonly internal static Dimension[] dim = new Dimension[4] { Dimension.Height, Dimension.Height, Dimension.Width, Dimension.Width };
-
-    internal static bool flexDirectionIsRow(FlexDirection flexDirection)
-    {
-        return flexDirection == FlexDirection.Row || flexDirection == FlexDirection.RowReverse;
-    }
-
-    internal static bool flexDirectionIsColumn(FlexDirection flexDirection)
-    {
-        return flexDirection == FlexDirection.Column || flexDirection == FlexDirection.ColumnReverse;
-    }
+    internal static bool flexDirectionIsColumn(FlexDirection flexDirection) => flexDirection == FlexDirection.Column || flexDirection == FlexDirection.ColumnReverse;
 
     internal static float nodeLeadingMargin(Node node, FlexDirection axis, float widthSize)
     {
@@ -481,7 +478,7 @@ public partial class Flex
             return resolveValueMargin(node.nodeStyle.Margin[(int)Edge.Start], widthSize);
         }
 
-        var v = computedEdgeValue(node.nodeStyle.Margin, leading[(int)axis], ValueZero);
+        Value v = computedEdgeValue(node.nodeStyle.Margin, leading[(int)axis], ValueZero);
         return resolveValueMargin(v, widthSize);
     }
 
@@ -540,15 +537,9 @@ public partial class Flex
         return fmaxf(computedEdgeValue(node.nodeStyle.Border, trailing[(int)axis], ValueZero).value, 0);
     }
 
-    internal static float nodeLeadingPaddingAndBorder(Node node, FlexDirection axis, float widthSize)
-    {
-        return nodeLeadingPadding(node, axis, widthSize) + nodeLeadingBorder(node, axis);
-    }
+    internal static float nodeLeadingPaddingAndBorder(Node node, FlexDirection axis, float widthSize) => nodeLeadingPadding(node, axis, widthSize) + nodeLeadingBorder(node, axis);
 
-    internal static float nodeTrailingPaddingAndBorder(Node node, FlexDirection axis, float widthSize)
-    {
-        return nodeTrailingPadding(node, axis, widthSize) + nodeTrailingBorder(node, axis);
-    }
+    internal static float nodeTrailingPaddingAndBorder(Node node, FlexDirection axis, float widthSize) => nodeTrailingPadding(node, axis, widthSize) + nodeTrailingBorder(node, axis);
 
     internal static float nodeMarginForAxis(Node node, FlexDirection axis, float widthSize)
     {
@@ -557,23 +548,23 @@ public partial class Flex
         return leading + trailing;
     }
 
-    internal static float nodePaddingAndBorderForAxis(Node node, FlexDirection axis, float widthSize)
-    {
-        return nodeLeadingPaddingAndBorder(node, axis, widthSize) +
-            nodeTrailingPaddingAndBorder(node, axis, widthSize);
-    }
+    internal static float nodePaddingAndBorderForAxis(Node node, FlexDirection axis, float widthSize) =>
+        nodeLeadingPaddingAndBorder(node, axis, widthSize) +
+        nodeTrailingPaddingAndBorder(node, axis, widthSize);
 
     internal static Align nodeAlignItem(Node node, Node child)
     {
-        var align = child.nodeStyle.AlignSelf;
+        Align align = child.nodeStyle.AlignSelf;
         if (child.nodeStyle.AlignSelf == Align.Auto)
         {
             align = node.nodeStyle.AlignItems;
         }
+
         if (align == Align.Baseline && flexDirectionIsColumn(node.nodeStyle.FlexDirection))
         {
             return Align.FlexStart;
         }
+
         return align;
     }
 
@@ -585,8 +576,10 @@ public partial class Flex
             {
                 return parentDirection;
             }
+
             return Direction.LTR;
         }
+
         return node.nodeStyle.Direction;
     }
 
@@ -596,22 +589,24 @@ public partial class Flex
         if (node.baselineFunc != null)
         {
             float baseline = node.baselineFunc(node, node.nodeLayout.measuredDimensions[(int)Dimension.Width], node.nodeLayout.measuredDimensions[(int)Dimension.Height]);
-            Flex.assertWithNode(node, !FloatIsUndefined(baseline), "Expect custom baseline function to not return NaN");
+            assertWithNode(node, !FloatIsUndefined(baseline), "Expect custom baseline function to not return NaN");
             return baseline;
         }
         else
         {
             Node baselineChild = null;
-            foreach (var child in node.Children)
+            foreach (Node child in node.Children)
             {
                 if (child.lineIndex > 0)
                 {
                     break;
                 }
+
                 if (child.nodeStyle.PositionType == PositionType.Absolute)
                 {
                     continue;
                 }
+
                 if (nodeAlignItem(node, child) == Align.Baseline)
                 {
                     baselineChild = child;
@@ -632,7 +627,6 @@ public partial class Flex
             float baseline = Baseline(baselineChild);
             return baseline + baselineChild.nodeLayout.Position[(int)Edge.Top];
         }
-
     }
 
     internal static FlexDirection resolveFlexDirection(FlexDirection flexDirection, Direction direction)
@@ -643,11 +637,13 @@ public partial class Flex
             {
                 return FlexDirection.RowReverse;
             }
-            else if (flexDirection == FlexDirection.RowReverse)
+
+            if (flexDirection == FlexDirection.RowReverse)
             {
                 return FlexDirection.Row;
             }
         }
+
         return flexDirection;
     }
 
@@ -657,14 +653,13 @@ public partial class Flex
         {
             return resolveFlexDirection(FlexDirection.Row, direction);
         }
+
         return FlexDirection.Column;
     }
 
-    internal static bool nodeIsFlex(Node node)
-    {
-        return (node.nodeStyle.PositionType == PositionType.Relative &&
-            (resolveFlexGrow(node) != 0 || nodeResolveFlexShrink(node) != 0));
-    }
+    internal static bool nodeIsFlex(Node node) =>
+        node.nodeStyle.PositionType == PositionType.Relative &&
+        (resolveFlexGrow(node) != 0 || nodeResolveFlexShrink(node) != 0);
 
     internal static bool isBaselineLayout(Node node)
     {
@@ -672,11 +667,13 @@ public partial class Flex
         {
             return false;
         }
+
         if (node.nodeStyle.AlignItems == Align.Baseline)
         {
             return true;
         }
-        foreach (var child in node.Children)
+
+        foreach (Node child in node.Children)
         {
             if (child.nodeStyle.PositionType == PositionType.Relative &&
                 child.nodeStyle.AlignSelf == Align.Baseline)
@@ -688,51 +685,45 @@ public partial class Flex
         return false;
     }
 
-    internal static float nodeDimWithMargin(Node node, FlexDirection axis, float widthSize)
-    {
-        return node.nodeLayout.measuredDimensions[(int)dim[(int)axis]] + nodeLeadingMargin(node, axis, widthSize) +
-            nodeTrailingMargin(node, axis, widthSize);
-    }
+    internal static float nodeDimWithMargin(Node node, FlexDirection axis, float widthSize) =>
+        node.nodeLayout.measuredDimensions[(int)dim[(int)axis]] + nodeLeadingMargin(node, axis, widthSize) +
+        nodeTrailingMargin(node, axis, widthSize);
 
     internal static bool nodeIsStyleDimDefined(Node node, FlexDirection axis, float parentSize)
     {
-        var v = node.resolvedDimensions[(int)dim[(int)axis]];
-        bool isNotDefined = (v.unit == Unit.Auto ||
-            v.unit == Unit.Undefined ||
-            (v.unit == Unit.Point && v.value < 0) ||
-            (v.unit == Unit.Percent && (v.value < 0 || FloatIsUndefined(parentSize))));
+        Value v = node.resolvedDimensions[(int)dim[(int)axis]];
+        bool isNotDefined = v.unit == Unit.Auto ||
+                            v.unit == Unit.Undefined ||
+                            (v.unit == Unit.Point && v.value < 0) ||
+                            (v.unit == Unit.Percent && (v.value < 0 || FloatIsUndefined(parentSize)));
         return !isNotDefined;
     }
 
     internal static bool nodeIsLayoutDimDefined(Node node, FlexDirection axis)
     {
         float value = node.nodeLayout.measuredDimensions[(int)dim[(int)axis]];
-        return (!FloatIsUndefined(value) && value >= 0);
+        return !FloatIsUndefined(value) && value >= 0;
     }
 
-    internal static bool nodeIsLeadingPosDefined(Node node, FlexDirection axis)
-    {
-        return (flexDirectionIsRow(axis) &&
-            computedEdgeValue(node.nodeStyle.Position, Edge.Start, ValueUndefined).unit !=
-                Unit.Undefined) ||
-            computedEdgeValue(node.nodeStyle.Position, leading[(int)axis], ValueUndefined).unit !=
-                Unit.Undefined;
-    }
+    internal static bool nodeIsLeadingPosDefined(Node node, FlexDirection axis) =>
+        (flexDirectionIsRow(axis) &&
+         computedEdgeValue(node.nodeStyle.Position, Edge.Start, ValueUndefined).unit !=
+         Unit.Undefined) ||
+        computedEdgeValue(node.nodeStyle.Position, leading[(int)axis], ValueUndefined).unit !=
+        Unit.Undefined;
 
-    internal static bool nodeIsTrailingPosDefined(Node node, FlexDirection axis)
-    {
-        return (flexDirectionIsRow(axis) &&
-            computedEdgeValue(node.nodeStyle.Position, Edge.End, ValueUndefined).unit !=
-                Unit.Undefined) ||
-            computedEdgeValue(node.nodeStyle.Position, trailing[(int)axis], ValueUndefined).unit !=
-                Unit.Undefined;
-    }
+    internal static bool nodeIsTrailingPosDefined(Node node, FlexDirection axis) =>
+        (flexDirectionIsRow(axis) &&
+         computedEdgeValue(node.nodeStyle.Position, Edge.End, ValueUndefined).unit !=
+         Unit.Undefined) ||
+        computedEdgeValue(node.nodeStyle.Position, trailing[(int)axis], ValueUndefined).unit !=
+        Unit.Undefined;
 
     internal static float nodeLeadingPosition(Node node, FlexDirection axis, float axisSize)
     {
         if (flexDirectionIsRow(axis))
         {
-            var leadingPosition = computedEdgeValue(node.nodeStyle.Position, Edge.Start, ValueUndefined);
+            Value leadingPosition = computedEdgeValue(node.nodeStyle.Position, Edge.Start, ValueUndefined);
             if (leadingPosition.unit != Unit.Undefined)
             {
                 return resolveValue(leadingPosition, axisSize);
@@ -740,12 +731,13 @@ public partial class Flex
         }
 
         {
-            var leadingPosition = computedEdgeValue(node.nodeStyle.Position, leading[(int)axis], ValueUndefined);
+            Value leadingPosition = computedEdgeValue(node.nodeStyle.Position, leading[(int)axis], ValueUndefined);
 
             if (leadingPosition.unit == Unit.Undefined)
             {
                 return 0;
             }
+
             return resolveValue(leadingPosition, axisSize);
         }
     }
@@ -754,7 +746,7 @@ public partial class Flex
     {
         if (flexDirectionIsRow(axis))
         {
-            var trailingPosition = computedEdgeValue(node.nodeStyle.Position, Edge.End, ValueUndefined);
+            Value trailingPosition = computedEdgeValue(node.nodeStyle.Position, Edge.End, ValueUndefined);
             if (trailingPosition.unit != Unit.Undefined)
             {
                 return resolveValue(trailingPosition, axisSize);
@@ -762,12 +754,13 @@ public partial class Flex
         }
 
         {
-            var trailingPosition = computedEdgeValue(node.nodeStyle.Position, trailing[(int)axis], ValueUndefined);
+            Value trailingPosition = computedEdgeValue(node.nodeStyle.Position, trailing[(int)axis], ValueUndefined);
 
             if (trailingPosition.unit == Unit.Undefined)
             {
                 return 0;
             }
+
             return resolveValue(trailingPosition, axisSize);
         }
     }
@@ -809,6 +802,7 @@ public partial class Flex
         {
             return node.nodeStyle.Margin[(int)Edge.Start];
         }
+
         return node.nodeStyle.Margin[(int)leading[(int)axis]];
     }
 
@@ -818,16 +812,15 @@ public partial class Flex
         {
             return node.nodeStyle.Margin[(int)Edge.End];
         }
+
         return node.nodeStyle.Margin[(int)trailing[(int)axis]];
     }
 
     // nodeBoundAxis is like nodeBoundAxisWithinMinAndMax but also ensures that
     // the value doesn't go below the padding and border amount.
-    internal static float nodeBoundAxis(Node node, FlexDirection axis, float value, float axisSize, float widthSize)
-    {
-        return fmaxf(nodeBoundAxisWithinMinAndMax(node, axis, value, axisSize),
+    internal static float nodeBoundAxis(Node node, FlexDirection axis, float value, float axisSize, float widthSize) =>
+        fmaxf(nodeBoundAxisWithinMinAndMax(node, axis, value, axisSize),
             nodePaddingAndBorderForAxis(node, axis, widthSize));
-    }
 
     internal static void nodeSetChildTrailingPosition(Node node, Node child, FlexDirection axis)
     {
@@ -844,13 +837,14 @@ public partial class Flex
         {
             return nodeLeadingPosition(node, axis, axisSize);
         }
+
         return -nodeTrailingPosition(node, axis, axisSize);
     }
 
     internal static void constrainMaxSizeForMode(Node node, FlexDirection axis, float parentAxisSize, float parentWidth, ref MeasureMode mode, ref float size)
     {
         float maxSize = resolveValue(node.nodeStyle.MaxDimensions[(int)dim[(int)axis]], parentAxisSize) +
-            nodeMarginForAxis(node, axis, parentWidth);
+                        nodeMarginForAxis(node, axis, parentWidth);
         switch (mode)
         {
             case MeasureMode.Exactly:
@@ -864,6 +858,7 @@ public partial class Flex
                 {
                     size = maxSize;
                 }
+
                 break;
             case MeasureMode.Undefined:
                 if (!FloatIsUndefined(maxSize))
@@ -871,6 +866,7 @@ public partial class Flex
                     mode = MeasureMode.AtMost;
                     size = maxSize;
                 }
+
                 break;
         }
     }
@@ -878,14 +874,14 @@ public partial class Flex
     internal static void nodeSetPosition(Node node, Direction direction, float mainSize, float crossSize, float parentWidth)
     {
         /* Root nodes should be always layouted as LTR, so we don't return negative values. */
-        var directionRespectingRoot = Direction.LTR;
+        Direction directionRespectingRoot = Direction.LTR;
         if (node.Parent != null)
         {
             directionRespectingRoot = direction;
         }
 
-        var mainAxis = resolveFlexDirection(node.nodeStyle.FlexDirection, directionRespectingRoot);
-        var crossAxis = flexDirectionCross(mainAxis, directionRespectingRoot);
+        FlexDirection mainAxis = resolveFlexDirection(node.nodeStyle.FlexDirection, directionRespectingRoot);
+        FlexDirection crossAxis = flexDirectionCross(mainAxis, directionRespectingRoot);
 
         float relativePositionMain = nodeRelativePosition(node, mainAxis, mainSize);
         float relativePositionCross = nodeRelativePosition(node, crossAxis, crossSize);
@@ -908,7 +904,7 @@ public partial class Flex
         Direction direction,
         Config config)
     {
-        var mainAxis = resolveFlexDirection(node.nodeStyle.FlexDirection, direction);
+        FlexDirection mainAxis = resolveFlexDirection(node.nodeStyle.FlexDirection, direction);
         bool isMainAxisRow = flexDirectionIsRow(mainAxis);
         float mainAxisSize = height;
         float mainAxisParentSize = parentHeight;
@@ -931,7 +927,7 @@ public partial class Flex
         {
             if (FloatIsUndefined(child.nodeLayout.computedFlexBasis) ||
                 (child.config.IsExperimentalFeatureEnabled(ExperimentalFeature.WebFlexBasis) &&
-                    child.nodeLayout.computedFlexBasisGeneration != currentGenerationCount))
+                 child.nodeLayout.computedFlexBasisGeneration != currentGenerationCount))
             {
                 child.nodeLayout.computedFlexBasis =
                     fmaxf(resolvedFlexBasis, nodePaddingAndBorderForAxis(child, mainAxis, parentWidth));
@@ -969,6 +965,7 @@ public partial class Flex
                     resolveValue(child.resolvedDimensions[(int)Dimension.Width], parentWidth) + marginRow;
                 childWidthMeasureMode = MeasureMode.Exactly;
             }
+
             if (isColumnStyleDimDefined)
             {
                 childHeight =
@@ -1007,6 +1004,7 @@ public partial class Flex
                 childWidth = width;
                 childWidthMeasureMode = MeasureMode.Exactly;
             }
+
             if (isMainAxisRow && !FloatIsUndefined(height) && !isColumnStyleDimDefined &&
                 heightMode == MeasureMode.Exactly && nodeAlignItem(node, child) == Align.Stretch)
             {
@@ -1023,7 +1021,8 @@ public partial class Flex
                             nodePaddingAndBorderForAxis(child, FlexDirection.Column, parentWidth));
                     return;
                 }
-                else if (isMainAxisRow && childHeightMeasureMode == MeasureMode.Exactly)
+
+                if (isMainAxisRow && childHeightMeasureMode == MeasureMode.Exactly)
                 {
                     child.nodeLayout.computedFlexBasis =
                         fmaxf((childHeight - marginColumn) * child.nodeStyle.AspectRatio,
@@ -1064,14 +1063,14 @@ public partial class Flex
 
     internal static void nodeAbsoluteLayoutChild(Node node, Node child, float width, MeasureMode widthMode, float height, Direction direction, Config config)
     {
-        var mainAxis = resolveFlexDirection(node.nodeStyle.FlexDirection, direction);
-        var crossAxis = flexDirectionCross(mainAxis, direction);
+        FlexDirection mainAxis = resolveFlexDirection(node.nodeStyle.FlexDirection, direction);
+        FlexDirection crossAxis = flexDirectionCross(mainAxis, direction);
         bool isMainAxisRow = flexDirectionIsRow(mainAxis);
 
         float childWidth = float.NaN;
         float childHeight = float.NaN;
-        var childWidthMeasureMode = MeasureMode.Undefined;
-        var childHeightMeasureMode = MeasureMode.Undefined;
+        MeasureMode childWidthMeasureMode = MeasureMode.Undefined;
+        MeasureMode childHeightMeasureMode = MeasureMode.Undefined;
 
         float marginRow = nodeMarginForAxis(child, FlexDirection.Row, width);
         float marginColumn = nodeMarginForAxis(child, FlexDirection.Column, width);
@@ -1089,10 +1088,10 @@ public partial class Flex
                 nodeIsTrailingPosDefined(child, FlexDirection.Row))
             {
                 childWidth = node.nodeLayout.measuredDimensions[(int)Dimension.Width] -
-                    (nodeLeadingBorder(node, FlexDirection.Row) +
-                        nodeTrailingBorder(node, FlexDirection.Row)) -
-                    (nodeLeadingPosition(child, FlexDirection.Row, width) +
-                        nodeTrailingPosition(child, FlexDirection.Row, width));
+                             (nodeLeadingBorder(node, FlexDirection.Row) +
+                              nodeTrailingBorder(node, FlexDirection.Row)) -
+                             (nodeLeadingPosition(child, FlexDirection.Row, width) +
+                              nodeTrailingPosition(child, FlexDirection.Row, width));
                 childWidth = nodeBoundAxis(child, FlexDirection.Row, childWidth, width, width);
             }
         }
@@ -1111,10 +1110,10 @@ public partial class Flex
                 nodeIsTrailingPosDefined(child, FlexDirection.Column))
             {
                 childHeight = node.nodeLayout.measuredDimensions[(int)Dimension.Height] -
-                    (nodeLeadingBorder(node, FlexDirection.Column) +
-                        nodeTrailingBorder(node, FlexDirection.Column)) -
-                    (nodeLeadingPosition(child, FlexDirection.Column, height) +
-                        nodeTrailingPosition(child, FlexDirection.Column, height));
+                              (nodeLeadingBorder(node, FlexDirection.Column) +
+                               nodeTrailingBorder(node, FlexDirection.Column)) -
+                              (nodeLeadingPosition(child, FlexDirection.Column, height) +
+                               nodeTrailingPosition(child, FlexDirection.Column, height));
                 childHeight = nodeBoundAxis(child, FlexDirection.Column, childHeight, height, width);
             }
         }
@@ -1148,6 +1147,7 @@ public partial class Flex
             {
                 childWidthMeasureMode = MeasureMode.Undefined;
             }
+
             childHeightMeasureMode = MeasureMode.Exactly;
             if (FloatIsUndefined(childHeight))
             {
@@ -1176,9 +1176,9 @@ public partial class Flex
                 "abs-measure",
                 config);
             childWidth = child.nodeLayout.measuredDimensions[(int)Dimension.Width] +
-                nodeMarginForAxis(child, FlexDirection.Row, width);
+                         nodeMarginForAxis(child, FlexDirection.Row, width);
             childHeight = child.nodeLayout.measuredDimensions[(int)Dimension.Height] +
-                nodeMarginForAxis(child, FlexDirection.Column, width);
+                          nodeMarginForAxis(child, FlexDirection.Column, width);
         }
 
         layoutNodeInternal(child,
@@ -1200,24 +1200,25 @@ public partial class Flex
             {
                 axisSize = width;
             }
+
             child.nodeLayout.Position[(int)leading[(int)mainAxis]] = node.nodeLayout.measuredDimensions[(int)dim[(int)mainAxis]] -
-                child.nodeLayout.measuredDimensions[(int)dim[(int)mainAxis]] -
-                nodeTrailingBorder(node, mainAxis) -
-                nodeTrailingMargin(child, mainAxis, width) -
-                nodeTrailingPosition(child, mainAxis, axisSize);
+                                                                     child.nodeLayout.measuredDimensions[(int)dim[(int)mainAxis]] -
+                                                                     nodeTrailingBorder(node, mainAxis) -
+                                                                     nodeTrailingMargin(child, mainAxis, width) -
+                                                                     nodeTrailingPosition(child, mainAxis, axisSize);
         }
         else if (!nodeIsLeadingPosDefined(child, mainAxis) &&
-          node.nodeStyle.JustifyContent == Justify.Center)
+                 node.nodeStyle.JustifyContent == Justify.Center)
         {
             child.nodeLayout.Position[(int)leading[(int)mainAxis]] = (node.nodeLayout.measuredDimensions[(int)dim[(int)mainAxis]] -
-                child.nodeLayout.measuredDimensions[(int)dim[(int)mainAxis]]) /
-                2.0f;
+                                                                      child.nodeLayout.measuredDimensions[(int)dim[(int)mainAxis]]) /
+                                                                     2.0f;
         }
         else if (!nodeIsLeadingPosDefined(child, mainAxis) &&
-          node.nodeStyle.JustifyContent == Justify.FlexEnd)
+                 node.nodeStyle.JustifyContent == Justify.FlexEnd)
         {
-            child.nodeLayout.Position[(int)leading[(int)mainAxis]] = (node.nodeLayout.measuredDimensions[(int)dim[(int)mainAxis]] -
-                child.nodeLayout.measuredDimensions[(int)dim[(int)mainAxis]]);
+            child.nodeLayout.Position[(int)leading[(int)mainAxis]] = node.nodeLayout.measuredDimensions[(int)dim[(int)mainAxis]] -
+                                                                     child.nodeLayout.measuredDimensions[(int)dim[(int)mainAxis]];
         }
 
         if (nodeIsTrailingPosDefined(child, crossAxis) &&
@@ -1230,31 +1231,31 @@ public partial class Flex
             }
 
             child.nodeLayout.Position[(int)leading[(int)crossAxis]] = node.nodeLayout.measuredDimensions[(int)dim[(int)crossAxis]] -
-                child.nodeLayout.measuredDimensions[(int)dim[(int)crossAxis]] -
-                nodeTrailingBorder(node, crossAxis) -
-                nodeTrailingMargin(child, crossAxis, width) -
-                nodeTrailingPosition(child, crossAxis, axisSize);
+                                                                      child.nodeLayout.measuredDimensions[(int)dim[(int)crossAxis]] -
+                                                                      nodeTrailingBorder(node, crossAxis) -
+                                                                      nodeTrailingMargin(child, crossAxis, width) -
+                                                                      nodeTrailingPosition(child, crossAxis, axisSize);
         }
         else if (!nodeIsLeadingPosDefined(child, crossAxis) &&
-          nodeAlignItem(node, child) == Align.Center)
+                 nodeAlignItem(node, child) == Align.Center)
         {
             child.nodeLayout.Position[(int)leading[(int)crossAxis]] =
                 (node.nodeLayout.measuredDimensions[(int)dim[(int)crossAxis]] -
-                    child.nodeLayout.measuredDimensions[(int)dim[(int)crossAxis]]) /
-                    2.0f;
+                 child.nodeLayout.measuredDimensions[(int)dim[(int)crossAxis]]) /
+                2.0f;
         }
         else if (!nodeIsLeadingPosDefined(child, crossAxis) &&
-          ((nodeAlignItem(node, child) == Align.FlexEnd) != (node.nodeStyle.FlexWrap == Wrap.WrapReverse)))
+                 nodeAlignItem(node, child) == Align.FlexEnd != (node.nodeStyle.FlexWrap == Wrap.WrapReverse))
         {
-            child.nodeLayout.Position[(int)leading[(int)crossAxis]] = (node.nodeLayout.measuredDimensions[(int)dim[(int)crossAxis]] -
-                child.nodeLayout.measuredDimensions[(int)dim[(int)crossAxis]]);
+            child.nodeLayout.Position[(int)leading[(int)crossAxis]] = node.nodeLayout.measuredDimensions[(int)dim[(int)crossAxis]] -
+                                                                      child.nodeLayout.measuredDimensions[(int)dim[(int)crossAxis]];
         }
     }
 
     // nodeWithMeasureFuncSetMeasuredDimensions sets measure dimensions for node with measure func
     internal static void nodeWithMeasureFuncSetMeasuredDimensions(Node node, float availableWidth, float availableHeight, MeasureMode widthMeasureMode, MeasureMode heightMeasureMode, float parentWidth, float parentHeight)
     {
-        Flex.assertWithNode(node, node.measureFunc != null, "Expected node to have custom measure function");
+        assertWithNode(node, node.measureFunc != null, "Expected node to have custom measure function");
 
         float paddingAndBorderAxisRow = nodePaddingAndBorderForAxis(node, FlexDirection.Row, availableWidth);
         float paddingAndBorderAxisColumn = nodePaddingAndBorderForAxis(node, FlexDirection.Column, availableWidth);
@@ -1267,6 +1268,7 @@ public partial class Flex
         {
             innerWidth = availableWidth;
         }
+
         float innerHeight = fmaxf(0, availableHeight - marginAxisColumn - paddingAndBorderAxisColumn);
         if (FloatIsUndefined(availableHeight))
         {
@@ -1284,14 +1286,13 @@ public partial class Flex
         else
         {
             // Measure the text under the current raints.
-            var measuredSize = node.measureFunc(node, innerWidth, widthMeasureMode, innerHeight, heightMeasureMode);
+            Size measuredSize = node.measureFunc(node, innerWidth, widthMeasureMode, innerHeight, heightMeasureMode);
 
             float width = availableWidth - marginAxisRow;
             if (widthMeasureMode == MeasureMode.Undefined ||
                 widthMeasureMode == MeasureMode.AtMost)
             {
                 width = measuredSize.Width + paddingAndBorderAxisRow;
-
             }
 
             node.nodeLayout.measuredDimensions[(int)Dimension.Width] = nodeBoundAxis(node, FlexDirection.Row, width, availableWidth, availableWidth);
@@ -1322,6 +1323,7 @@ public partial class Flex
         {
             width = paddingAndBorderAxisRow;
         }
+
         node.nodeLayout.measuredDimensions[(int)Dimension.Width] = nodeBoundAxis(node, FlexDirection.Row, width, parentWidth, parentWidth);
 
         float height = availableHeight - marginAxisColumn;
@@ -1329,6 +1331,7 @@ public partial class Flex
         {
             height = paddingAndBorderAxisColumn;
         }
+
         node.nodeLayout.measuredDimensions[(int)Dimension.Height] = nodeBoundAxis(node, FlexDirection.Column, height, parentHeight, parentWidth);
     }
 
@@ -1352,6 +1355,7 @@ public partial class Flex
             {
                 width = 0;
             }
+
             node.nodeLayout.measuredDimensions[(int)Dimension.Width] =
                 nodeBoundAxis(node, FlexDirection.Row, width, parentWidth, parentWidth);
 
@@ -1360,6 +1364,7 @@ public partial class Flex
             {
                 height = 0;
             }
+
             node.nodeLayout.measuredDimensions[(int)Dimension.Height] =
                 nodeBoundAxis(node, FlexDirection.Column, height, parentHeight, parentWidth);
 
@@ -1385,7 +1390,7 @@ public partial class Flex
         node.nodeLayout.cachedLayout.computedWidth = 0;
         node.nodeLayout.cachedLayout.computedHeight = 0;
         node.hasNewLayout = true;
-        foreach (var child in node.Children)
+        foreach (Node child in node.Children)
         {
             zeroOutLayoutRecursivly(child);
         }
@@ -1484,11 +1489,11 @@ public partial class Flex
         //Rockyfi.assertWithNode(node, YGFloatIsUndefined(availableHeight) ? heightMeasureMode == YGMeasureModeUndefined : true, "availableHeight is indefinite so heightMeasureMode must be YGMeasureModeUndefined");
 
         // Set the resolved resolution in the node's layout.
-        var direction = nodeResolveDirection(node, parentDirection);
+        Direction direction = nodeResolveDirection(node, parentDirection);
         node.nodeLayout.Direction = direction;
 
-        var flexRowDirection = resolveFlexDirection(FlexDirection.Row, direction);
-        var flexColumnDirection = resolveFlexDirection(FlexDirection.Column, direction);
+        FlexDirection flexRowDirection = resolveFlexDirection(FlexDirection.Row, direction);
+        FlexDirection flexColumnDirection = resolveFlexDirection(FlexDirection.Column, direction);
 
         node.nodeLayout.Margin[(int)Edge.Start] = nodeLeadingMargin(node, flexRowDirection, parentWidth);
         node.nodeLayout.Margin[(int)Edge.End] = nodeTrailingMargin(node, flexRowDirection, parentWidth);
@@ -1529,10 +1534,10 @@ public partial class Flex
         node.nodeLayout.HadOverflow = false;
 
         // STEP 1: CALCULATE VALUES FOR REMAINDER OF ALGORITHM
-        var mainAxis = resolveFlexDirection(node.nodeStyle.FlexDirection, direction);
-        var crossAxis = flexDirectionCross(mainAxis, direction);
+        FlexDirection mainAxis = resolveFlexDirection(node.nodeStyle.FlexDirection, direction);
+        FlexDirection crossAxis = flexDirectionCross(mainAxis, direction);
         bool isMainAxisRow = flexDirectionIsRow(mainAxis);
-        var justifyContent = node.nodeStyle.JustifyContent;
+        Justify justifyContent = node.nodeStyle.JustifyContent;
         bool isNodeFlexWrap = node.nodeStyle.FlexWrap != Wrap.NoWrap;
 
         float mainAxisParentSize = parentHeight;
@@ -1552,8 +1557,8 @@ public partial class Flex
         float paddingAndBorderAxisMain = nodePaddingAndBorderForAxis(node, mainAxis, parentWidth);
         float paddingAndBorderAxisCross = nodePaddingAndBorderForAxis(node, crossAxis, parentWidth);
 
-        var measureModeMainDim = heightMeasureMode;
-        var measureModeCrossDim = widthMeasureMode;
+        MeasureMode measureModeMainDim = heightMeasureMode;
+        MeasureMode measureModeCrossDim = widthMeasureMode;
 
         if (isMainAxisRow)
         {
@@ -1574,13 +1579,13 @@ public partial class Flex
 
         // STEP 2: DETERMINE AVAILABLE SIZE IN MAIN AND CROSS DIRECTIONS
         float minInnerWidth = resolveValue(node.nodeStyle.MinDimensions[(int)Dimension.Width], parentWidth) - marginAxisRow -
-            paddingAndBorderAxisRow;
+                              paddingAndBorderAxisRow;
         float maxInnerWidth = resolveValue(node.nodeStyle.MaxDimensions[(int)Dimension.Width], parentWidth) - marginAxisRow -
-            paddingAndBorderAxisRow;
+                              paddingAndBorderAxisRow;
         float minInnerHeight = resolveValue(node.nodeStyle.MinDimensions[(int)Dimension.Height], parentHeight) -
-            marginAxisColumn - paddingAndBorderAxisColumn;
+                               marginAxisColumn - paddingAndBorderAxisColumn;
         float maxInnerHeight = resolveValue(node.nodeStyle.MaxDimensions[(int)Dimension.Height], parentHeight) -
-            marginAxisColumn - paddingAndBorderAxisColumn;
+                               marginAxisColumn - paddingAndBorderAxisColumn;
 
         float minInnerMainDim = minInnerHeight;
         float maxInnerMainDim = maxInnerHeight;
@@ -1620,7 +1625,7 @@ public partial class Flex
         Node singleFlexChild = null;
         if (measureModeMainDim == MeasureMode.Exactly)
         {
-            foreach (var child in node.Children)
+            foreach (Node child in node.Children)
             {
                 if (singleFlexChild != null)
                 {
@@ -1641,7 +1646,7 @@ public partial class Flex
         float totalOuterFlexBasis = 0;
 
         // STEP 3: DETERMINE FLEX BASIS FOR EACH ITEM
-        foreach (var child in node.Children)
+        foreach (Node child in node.Children)
         {
             if (child.nodeStyle.Display == Display.None)
             {
@@ -1650,11 +1655,12 @@ public partial class Flex
                 child.IsDirty = false;
                 continue;
             }
+
             resolveDimensions(child);
             if (performLayout)
             {
                 // Set the initial position (relative to the parent).
-                var childDirection = nodeResolveDirection(child, direction);
+                Direction childDirection = nodeResolveDirection(child, direction);
                 nodeSetPosition(child,
                     childDirection,
                     availableInnerMainDim,
@@ -1672,10 +1678,12 @@ public partial class Flex
                 {
                     firstAbsoluteChild = child;
                 }
+
                 if (currentAbsoluteChild != null)
                 {
                     currentAbsoluteChild.NextChild = child;
                 }
+
                 currentAbsoluteChild = child;
                 child.NextChild = null;
             }
@@ -1699,12 +1707,12 @@ public partial class Flex
                         direction,
                         config);
                 }
+
                 ;
             }
 
             totalOuterFlexBasis +=
                 child.nodeLayout.computedFlexBasis + nodeMarginForAxis(child, mainAxis, availableInnerWidth);
-
         }
 
         bool flexBasisOverflows = totalOuterFlexBasis > availableInnerMainDim;
@@ -1712,6 +1720,7 @@ public partial class Flex
         {
             flexBasisOverflows = false;
         }
+
         if (isNodeFlexWrap && flexBasisOverflows && measureModeMainDim == MeasureMode.AtMost)
         {
             measureModeMainDim = MeasureMode.Exactly;
@@ -1757,12 +1766,13 @@ public partial class Flex
             // Add items to the current line until it's full or we run out of items.
             for (int i = startOfLineIndex; i < childCount; i++)
             {
-                var child = node.Children[i];
+                Node child = node.Children[i];
                 if (child.nodeStyle.Display == Display.None)
                 {
                     endOfLineIndex++;
                     continue;
                 }
+
                 child.lineIndex = lineCount;
 
                 if (child.nodeStyle.PositionType != PositionType.Absolute)
@@ -1802,13 +1812,16 @@ public partial class Flex
                     {
                         firstRelativeChild = child;
                     }
+
                     if (currentRelativeChild != null)
                     {
                         currentRelativeChild.NextChild = child;
                     }
+
                     currentRelativeChild = child;
                     child.NextChild = null;
                 }
+
                 endOfLineIndex++;
             }
 
@@ -1847,7 +1860,7 @@ public partial class Flex
                     availableInnerMainDim = minInnerMainDim;
                 }
                 else if (!FloatIsUndefined(maxInnerMainDim) &&
-                  sizeConsumedOnCurrentLine > maxInnerMainDim)
+                         sizeConsumedOnCurrentLine > maxInnerMainDim)
                 {
                     availableInnerMainDim = maxInnerMainDim;
                 }
@@ -1918,9 +1931,9 @@ public partial class Flex
                 {
                     childFlexBasis =
                         fminf(resolveValue(currentRelativeChild.nodeStyle.MaxDimensions[(int)dim[(int)mainAxis]],
-                            mainAxisParentSize),
-                            fmaxf(resolveValue(currentRelativeChild.nodeStyle.MinDimensions[(int)dim[(int)mainAxis]],
                                 mainAxisParentSize),
+                            fmaxf(resolveValue(currentRelativeChild.nodeStyle.MinDimensions[(int)dim[(int)mainAxis]],
+                                    mainAxisParentSize),
                                 currentRelativeChild.nodeLayout.computedFlexBasis));
 
                     if (remainingFreeSpace < 0)
@@ -1932,7 +1945,7 @@ public partial class Flex
                         {
                             baseMainSize =
                                 childFlexBasis +
-                                    remainingFreeSpace / totalFlexShrinkScaledFactors * flexShrinkScaledFactor;
+                                remainingFreeSpace / totalFlexShrinkScaledFactors * flexShrinkScaledFactor;
                             boundMainSize = nodeBoundAxis(currentRelativeChild,
                                 mainAxis,
                                 baseMainSize,
@@ -1994,9 +2007,9 @@ public partial class Flex
                 {
                     childFlexBasis =
                         fminf(resolveValue(currentRelativeChild.nodeStyle.MaxDimensions[(int)dim[(int)mainAxis]],
-                            mainAxisParentSize),
-                            fmaxf(resolveValue(currentRelativeChild.nodeStyle.MinDimensions[(int)dim[(int)mainAxis]],
                                 mainAxisParentSize),
+                            fmaxf(resolveValue(currentRelativeChild.nodeStyle.MinDimensions[(int)dim[(int)mainAxis]],
+                                    mainAxisParentSize),
                                 currentRelativeChild.nodeLayout.computedFlexBasis));
                     float updatedMainSize = childFlexBasis;
 
@@ -2016,7 +2029,7 @@ public partial class Flex
                             {
                                 childSize =
                                     childFlexBasis +
-                                        (remainingFreeSpace / totalFlexShrinkScaledFactors) * flexShrinkScaledFactor;
+                                    remainingFreeSpace / totalFlexShrinkScaledFactors * flexShrinkScaledFactor;
                             }
 
                             updatedMainSize = nodeBoundAxis(currentRelativeChild,
@@ -2037,7 +2050,7 @@ public partial class Flex
                                 nodeBoundAxis(currentRelativeChild,
                                     mainAxis,
                                     childFlexBasis +
-                                        remainingFreeSpace / totalFlexGrowFactors * flexGrowFactor,
+                                    remainingFreeSpace / totalFlexGrowFactors * flexGrowFactor,
                                     availableInnerMainDim,
                                     availableInnerWidth);
                         }
@@ -2051,7 +2064,7 @@ public partial class Flex
                     float childCrossSize = 0;
                     float childMainSize = updatedMainSize + marginMain;
                     MeasureMode childCrossMeasureMode = MeasureMode.Undefined; // TODO : no init vaule ?
-                    var childMainMeasureMode = MeasureMode.Exactly;
+                    MeasureMode childMainMeasureMode = MeasureMode.Exactly;
 
                     if (!FloatIsUndefined(availableInnerCrossDim) &&
                         !nodeIsStyleDimDefined(currentRelativeChild, crossAxis, availableInnerCrossDim) &&
@@ -2063,8 +2076,8 @@ public partial class Flex
                         childCrossMeasureMode = MeasureMode.Exactly;
                     }
                     else if (!nodeIsStyleDimDefined(currentRelativeChild,
-                      crossAxis,
-                      availableInnerCrossDim))
+                                 crossAxis,
+                                 availableInnerCrossDim))
                     {
                         childCrossSize = availableInnerCrossDim;
                         childCrossMeasureMode = MeasureMode.AtMost;
@@ -2076,10 +2089,10 @@ public partial class Flex
                     else
                     {
                         childCrossSize = resolveValue(currentRelativeChild.resolvedDimensions[(int)dim[(int)crossAxis]],
-                            availableInnerCrossDim) +
-                            marginCross;
+                                             availableInnerCrossDim) +
+                                         marginCross;
                         bool isLoosePercentageMeasurement = currentRelativeChild.resolvedDimensions[(int)dim[(int)crossAxis]].unit == Unit.Percent &&
-                            measureModeCrossDim != MeasureMode.Exactly;
+                                                            measureModeCrossDim != MeasureMode.Exactly;
                         childCrossMeasureMode = MeasureMode.Exactly;
                         if (FloatIsUndefined(childCrossSize) || isLoosePercentageMeasurement)
                         {
@@ -2094,6 +2107,7 @@ public partial class Flex
                         {
                             v = (childMainSize - marginMain) / currentRelativeChild.nodeStyle.AspectRatio;
                         }
+
                         childCrossSize = fmaxf(v, nodePaddingAndBorderForAxis(currentRelativeChild, crossAxis, availableInnerWidth));
                         childCrossMeasureMode = MeasureMode.Exactly;
 
@@ -2129,25 +2143,27 @@ public partial class Flex
                         ref childCrossSize);
 
                     bool requiresStretchLayout = !nodeIsStyleDimDefined(currentRelativeChild, crossAxis, availableInnerCrossDim) &&
-                        nodeAlignItem(node, currentRelativeChild) == Align.Stretch;
+                                                 nodeAlignItem(node, currentRelativeChild) == Align.Stretch;
 
                     float childWidth = childCrossSize;
                     if (isMainAxisRow)
                     {
                         childWidth = childMainSize;
                     }
+
                     float childHeight = childCrossSize;
                     if (!isMainAxisRow)
                     {
                         childHeight = childMainSize;
                     }
 
-                    var childWidthMeasureMode = childCrossMeasureMode;
+                    MeasureMode childWidthMeasureMode = childCrossMeasureMode;
                     if (isMainAxisRow)
                     {
                         childWidthMeasureMode = childMainMeasureMode;
                     }
-                    var childHeightMeasureMode = childCrossMeasureMode;
+
+                    MeasureMode childHeightMeasureMode = childCrossMeasureMode;
                     if (!isMainAxisRow)
                     {
                         childHeightMeasureMode = childMainMeasureMode;
@@ -2201,7 +2217,7 @@ public partial class Flex
                     remainingFreeSpace =
                         fmaxf(0,
                             resolveValue(node.nodeStyle.MinDimensions[(int)dim[(int)mainAxis]], mainAxisParentSize) -
-                                (availableInnerMainDim - remainingFreeSpace));
+                            (availableInnerMainDim - remainingFreeSpace));
                 }
                 else
                 {
@@ -2212,13 +2228,14 @@ public partial class Flex
             int numberOfAutoMarginsOnCurrentLine = 0;
             for (int i = startOfLineIndex; i < endOfLineIndex; i++)
             {
-                var child = node.Children[i];
+                Node child = node.Children[i];
                 if (child.nodeStyle.PositionType == PositionType.Relative)
                 {
                     if (marginLeadingValue(child, mainAxis).unit == Unit.Auto)
                     {
                         numberOfAutoMarginsOnCurrentLine++;
                     }
+
                     if (marginTrailingValue(child, mainAxis).unit == Unit.Auto)
                     {
                         numberOfAutoMarginsOnCurrentLine++;
@@ -2239,16 +2256,17 @@ public partial class Flex
                     case Justify.SpaceBetween:
                         if (itemsOnLine > 1)
                         {
-                            betweenMainDim = fmaxf(remainingFreeSpace, 0) / (float)(itemsOnLine - 1);
+                            betweenMainDim = fmaxf(remainingFreeSpace, 0) / (itemsOnLine - 1);
                         }
                         else
                         {
                             betweenMainDim = 0;
                         }
+
                         break;
                     case Justify.SpaceAround:
                         // Space on the edges is half of the space between elements
-                        betweenMainDim = remainingFreeSpace / (float)(itemsOnLine);
+                        betweenMainDim = remainingFreeSpace / itemsOnLine;
                         leadingMainDim = betweenMainDim / 2;
                         break;
                     case Justify.FlexStart:
@@ -2261,11 +2279,12 @@ public partial class Flex
 
             for (int i = startOfLineIndex; i < endOfLineIndex; i++)
             {
-                var child = node.Children[i];
+                Node child = node.Children[i];
                 if (child.nodeStyle.Display == Display.None)
                 {
                     continue;
                 }
+
                 if (child.nodeStyle.PositionType == PositionType.Absolute &&
                     nodeIsLeadingPosDefined(child, mainAxis))
                 {
@@ -2276,8 +2295,8 @@ public partial class Flex
                         // (and margin/border).
                         child.nodeLayout.Position[(int)pos[(int)mainAxis]] =
                             nodeLeadingPosition(child, mainAxis, availableInnerMainDim) +
-                                nodeLeadingBorder(node, mainAxis) +
-                                nodeLeadingMargin(child, mainAxis, availableInnerWidth);
+                            nodeLeadingBorder(node, mainAxis) +
+                            nodeLeadingMargin(child, mainAxis, availableInnerWidth);
                     }
                 }
                 else
@@ -2289,7 +2308,7 @@ public partial class Flex
                     {
                         if (marginLeadingValue(child, mainAxis).unit == Unit.Auto)
                         {
-                            mainDim += remainingFreeSpace / (float)(numberOfAutoMarginsOnCurrentLine);
+                            mainDim += remainingFreeSpace / numberOfAutoMarginsOnCurrentLine;
                         }
 
                         if (performLayout)
@@ -2299,7 +2318,7 @@ public partial class Flex
 
                         if (marginTrailingValue(child, mainAxis).unit == Unit.Auto)
                         {
-                            mainDim += remainingFreeSpace / (float)(numberOfAutoMarginsOnCurrentLine);
+                            mainDim += remainingFreeSpace / numberOfAutoMarginsOnCurrentLine;
                         }
 
                         if (canSkipFlex)
@@ -2308,7 +2327,7 @@ public partial class Flex
                             // measuredDims because
                             // they weren't computed. This means we can't call YGNodeDimWithMargin.
                             mainDim += betweenMainDim + nodeMarginForAxis(child, mainAxis, availableInnerWidth) +
-                                child.nodeLayout.computedFlexBasis;
+                                       child.nodeLayout.computedFlexBasis;
                             crossDim = availableInnerCrossDim;
                         }
                         else
@@ -2337,11 +2356,11 @@ public partial class Flex
             {
                 // Compute the cross axis from the max cross dimension of the children.
                 containerCrossAxis = nodeBoundAxis(node,
-                    crossAxis,
-                    crossDim + paddingAndBorderAxisCross,
-                    crossAxisParentSize,
-                    parentWidth) -
-                    paddingAndBorderAxisCross;
+                                         crossAxis,
+                                         crossDim + paddingAndBorderAxisCross,
+                                         crossAxisParentSize,
+                                         parentWidth) -
+                                     paddingAndBorderAxisCross;
             }
 
             // If there's no flex wrap, the cross dimension is defined by the container.
@@ -2352,11 +2371,11 @@ public partial class Flex
 
             // Clamp to the min/max size specified on the container.
             crossDim = nodeBoundAxis(node,
-                crossAxis,
-                crossDim + paddingAndBorderAxisCross,
-                crossAxisParentSize,
-                parentWidth) -
-                paddingAndBorderAxisCross;
+                           crossAxis,
+                           crossDim + paddingAndBorderAxisCross,
+                           crossAxisParentSize,
+                           parentWidth) -
+                       paddingAndBorderAxisCross;
 
             // STEP 7: CROSS-AXIS ALIGNMENT
             // We can skip child alignment if we're just measuring the container.
@@ -2364,11 +2383,12 @@ public partial class Flex
             {
                 for (int i = startOfLineIndex; i < endOfLineIndex; i++)
                 {
-                    var child = node.Children[i];
+                    Node child = node.Children[i];
                     if (child.nodeStyle.Display == Display.None)
                     {
                         continue;
                     }
+
                     if (child.nodeStyle.PositionType == PositionType.Absolute)
                     {
                         // If the child is absolutely positioned and has a
@@ -2379,14 +2399,14 @@ public partial class Flex
                         {
                             child.nodeLayout.Position[(int)pos[(int)crossAxis]] =
                                 nodeLeadingPosition(child, crossAxis, availableInnerCrossDim) +
-                                    nodeLeadingBorder(node, crossAxis) +
-                                    nodeLeadingMargin(child, crossAxis, availableInnerWidth);
+                                nodeLeadingBorder(node, crossAxis) +
+                                nodeLeadingMargin(child, crossAxis, availableInnerWidth);
                         }
                         else
                         {
                             child.nodeLayout.Position[(int)pos[(int)crossAxis]] =
                                 nodeLeadingBorder(node, crossAxis) +
-                                    nodeLeadingMargin(child, crossAxis, availableInnerWidth);
+                                nodeLeadingMargin(child, crossAxis, availableInnerWidth);
                         }
                     }
                     else
@@ -2396,7 +2416,7 @@ public partial class Flex
                         // For a relative children, we're either using alignItems (parent) or
                         // alignSelf (child) in order to determine the position in the cross
                         // axis
-                        var alignItem = nodeAlignItem(node, child);
+                        Align alignItem = nodeAlignItem(node, child);
 
                         // If the child uses align stretch, we need to lay it out one more
                         // time, this time
@@ -2427,8 +2447,8 @@ public partial class Flex
 
                                 childMainSize += nodeMarginForAxis(child, mainAxis, availableInnerWidth);
 
-                                var childMainMeasureMode = MeasureMode.Exactly;
-                                var childCrossMeasureMode = MeasureMode.Exactly;
+                                MeasureMode childMainMeasureMode = MeasureMode.Exactly;
+                                MeasureMode childCrossMeasureMode = MeasureMode.Exactly;
                                 constrainMaxSizeForMode(child,
                                     mainAxis,
                                     availableInnerMainDim,
@@ -2447,19 +2467,20 @@ public partial class Flex
                                 {
                                     childWidth = childMainSize;
                                 }
+
                                 float childHeight = childCrossSize;
                                 if (!isMainAxisRow)
                                 {
                                     childHeight = childMainSize;
                                 }
 
-                                var childWidthMeasureMode = MeasureMode.Exactly;
+                                MeasureMode childWidthMeasureMode = MeasureMode.Exactly;
                                 if (FloatIsUndefined(childWidth))
                                 {
                                     childWidthMeasureMode = MeasureMode.Undefined;
                                 }
 
-                                var childHeightMeasureMode = MeasureMode.Exactly;
+                                MeasureMode childHeightMeasureMode = MeasureMode.Exactly;
                                 if (FloatIsUndefined(childHeight))
                                 {
                                     childHeightMeasureMode = MeasureMode.Undefined;
@@ -2508,6 +2529,7 @@ public partial class Flex
                                 leadingCrossDim += remainingCrossDim;
                             }
                         }
+
                         // And we apply the position
                         child.nodeLayout.Position[(int)pos[(int)crossAxis]] += totalLineCrossDim + leadingCrossDim;
                     }
@@ -2519,7 +2541,6 @@ public partial class Flex
 
             lineCount++;
             startOfLineIndex = endOfLineIndex;
-
         }
 
         // STEP 8: MULTI-LINE CONTENT ALIGNMENT
@@ -2542,28 +2563,31 @@ public partial class Flex
                 case Align.Stretch:
                     if (availableInnerCrossDim > totalLineCrossDim)
                     {
-                        crossDimLead = remainingAlignContentDim / (float)(lineCount);
+                        crossDimLead = remainingAlignContentDim / lineCount;
                     }
+
                     break;
                 case Align.SpaceAround:
                     if (availableInnerCrossDim > totalLineCrossDim)
                     {
-                        currentLead += remainingAlignContentDim / (float)(2 * lineCount);
+                        currentLead += remainingAlignContentDim / (2 * lineCount);
                         if (lineCount > 1)
                         {
-                            crossDimLead = remainingAlignContentDim / (float)(lineCount);
+                            crossDimLead = remainingAlignContentDim / lineCount;
                         }
                     }
                     else
                     {
                         currentLead += remainingAlignContentDim / 2;
                     }
+
                     break;
                 case Align.SpaceBetween:
                     if (availableInnerCrossDim > totalLineCrossDim && lineCount > 1)
                     {
-                        crossDimLead = remainingAlignContentDim / (float)(lineCount - 1);
+                        crossDimLead = remainingAlignContentDim / (lineCount - 1);
                     }
+
                     break;
                 case Align.Auto:
                 case Align.FlexStart:
@@ -2583,23 +2607,26 @@ public partial class Flex
                 float maxDescentForCurrentLine = 0;
                 for (ii = startIndex; ii < childCount; ii++)
                 {
-                    var child = node.Children[ii];
+                    Node child = node.Children[ii];
                     if (child.nodeStyle.Display == Display.None)
                     {
                         continue;
                     }
+
                     if (child.nodeStyle.PositionType == PositionType.Relative)
                     {
                         if (child.lineIndex != i)
                         {
                             break;
                         }
+
                         if (nodeIsLayoutDimDefined(child, crossAxis))
                         {
                             lineHeight = fmaxf(lineHeight,
                                 child.nodeLayout.measuredDimensions[(int)dim[(int)crossAxis]] +
-                                    nodeMarginForAxis(child, crossAxis, availableInnerWidth));
+                                nodeMarginForAxis(child, crossAxis, availableInnerWidth));
                         }
+
                         if (nodeAlignItem(node, child) == Align.Baseline)
                         {
                             float ascent = Baseline(child) + nodeLeadingMargin(child, FlexDirection.Column, availableInnerWidth);
@@ -2610,6 +2637,7 @@ public partial class Flex
                         }
                     }
                 }
+
                 endIndex = ii;
                 lineHeight += crossDimLead;
 
@@ -2617,11 +2645,12 @@ public partial class Flex
                 {
                     for (ii = startIndex; ii < endIndex; ii++)
                     {
-                        var child = node.Children[ii];
+                        Node child = node.Children[ii];
                         if (child.nodeStyle.Display == Display.None)
                         {
                             continue;
                         }
+
                         if (child.nodeStyle.PositionType == PositionType.Relative)
                         {
                             switch (nodeAlignItem(node, child))
@@ -2636,8 +2665,8 @@ public partial class Flex
                                     {
                                         child.nodeLayout.Position[(int)pos[(int)crossAxis]] =
                                             currentLead + lineHeight -
-                                                nodeTrailingMargin(child, crossAxis, availableInnerWidth) -
-                                                child.nodeLayout.measuredDimensions[(int)dim[(int)crossAxis]];
+                                            nodeTrailingMargin(child, crossAxis, availableInnerWidth) -
+                                            child.nodeLayout.measuredDimensions[(int)dim[(int)crossAxis]];
                                     }
                                     break;
                                 case Align.Center:
@@ -2659,20 +2688,20 @@ public partial class Flex
                                             if (isMainAxisRow)
                                             {
                                                 childWidth = child.nodeLayout.measuredDimensions[(int)Dimension.Width] +
-                                                    nodeMarginForAxis(child, mainAxis, availableInnerWidth);
+                                                             nodeMarginForAxis(child, mainAxis, availableInnerWidth);
                                             }
 
                                             float childHeight = lineHeight;
                                             if (!isMainAxisRow)
                                             {
                                                 childHeight = child.nodeLayout.measuredDimensions[(int)Dimension.Height] +
-                                                    nodeMarginForAxis(child, crossAxis, availableInnerWidth);
+                                                              nodeMarginForAxis(child, crossAxis, availableInnerWidth);
                                             }
 
                                             if (!(FloatsEqual(childWidth,
-                                                child.nodeLayout.measuredDimensions[(int)Dimension.Width]) &&
-                                                FloatsEqual(childHeight,
-                                                    child.nodeLayout.measuredDimensions[(int)Dimension.Height])))
+                                                      child.nodeLayout.measuredDimensions[(int)Dimension.Width]) &&
+                                                  FloatsEqual(childHeight,
+                                                      child.nodeLayout.measuredDimensions[(int)Dimension.Height])))
                                             {
                                                 layoutNodeInternal(child,
                                                     childWidth,
@@ -2693,7 +2722,7 @@ public partial class Flex
                                     {
                                         child.nodeLayout.Position[(int)Edge.Top] =
                                             currentLead + maxAscentForCurrentLine - Baseline(child) +
-                                                nodeLeadingPosition(child, FlexDirection.Column, availableInnerCrossDim);
+                                            nodeLeadingPosition(child, FlexDirection.Column, availableInnerCrossDim);
                                     }
                                     break;
                                 case Align.Auto:
@@ -2726,7 +2755,7 @@ public partial class Flex
                 nodeBoundAxis(node, mainAxis, maxLineMainDim, mainAxisParentSize, parentWidth);
         }
         else if (measureModeMainDim == MeasureMode.AtMost &&
-          node.nodeStyle.Overflow == Overflow.Scroll)
+                 node.nodeStyle.Overflow == Overflow.Scroll)
         {
             node.nodeLayout.measuredDimensions[(int)dim[(int)mainAxis]] = fmaxf(
                 fminf(availableInnerMainDim + paddingAndBorderAxisMain,
@@ -2747,27 +2776,27 @@ public partial class Flex
                     parentWidth);
         }
         else if (measureModeCrossDim == MeasureMode.AtMost &&
-          node.nodeStyle.Overflow == Overflow.Scroll)
+                 node.nodeStyle.Overflow == Overflow.Scroll)
         {
             node.nodeLayout.measuredDimensions[(int)dim[(int)crossAxis]] =
                 fmaxf(fminf(availableInnerCrossDim + paddingAndBorderAxisCross,
-                    nodeBoundAxisWithinMinAndMax(node,
-                        crossAxis,
-                        totalLineCrossDim + paddingAndBorderAxisCross,
-                        crossAxisParentSize)),
+                        nodeBoundAxisWithinMinAndMax(node,
+                            crossAxis,
+                            totalLineCrossDim + paddingAndBorderAxisCross,
+                            crossAxisParentSize)),
                     paddingAndBorderAxisCross);
         }
 
         // As we only wrapped in normal direction yet, we need to reverse the positions on wrap-reverse.
         if (performLayout && node.nodeStyle.FlexWrap == Wrap.WrapReverse)
         {
-            foreach (var child in node.Children)
+            foreach (Node child in node.Children)
             {
                 if (child.nodeStyle.PositionType == PositionType.Relative)
                 {
                     child.nodeLayout.Position[(int)pos[(int)crossAxis]] = node.nodeLayout.measuredDimensions[(int)dim[(int)crossAxis]] -
-                        child.nodeLayout.Position[(int)pos[(int)crossAxis]] -
-                        child.nodeLayout.measuredDimensions[(int)dim[(int)crossAxis]];
+                                                                          child.nodeLayout.Position[(int)pos[(int)crossAxis]] -
+                                                                          child.nodeLayout.measuredDimensions[(int)dim[(int)crossAxis]];
                 }
             }
         }
@@ -2777,7 +2806,7 @@ public partial class Flex
             // STEP 10: SIZING AND POSITIONING ABSOLUTE CHILDREN
             for (currentAbsoluteChild = firstAbsoluteChild; currentAbsoluteChild != null; currentAbsoluteChild = currentAbsoluteChild.NextChild)
             {
-                var mode = measureModeCrossDim;
+                MeasureMode mode = measureModeCrossDim;
                 if (isMainAxisRow)
                 {
                     mode = measureModeMainDim;
@@ -2799,12 +2828,13 @@ public partial class Flex
             // Set trailing position if necessary.
             if (needsMainTrailingPos || needsCrossTrailingPos)
             {
-                foreach (var child in node.Children)
+                foreach (Node child in node.Children)
                 {
                     if (child.nodeStyle.Display == Display.None)
                     {
                         continue;
                     }
+
                     if (needsMainTrailingPos)
                     {
                         nodeSetChildTrailingPosition(node, child, mainAxis);
@@ -2819,8 +2849,6 @@ public partial class Flex
         }
     }
 
-    const string spacerStr = "";
-
     // spacer returns spacer string
     internal static string spacer(int level)
     {
@@ -2828,13 +2856,13 @@ public partial class Flex
         {
             level = spacerStr.Length;
         }
+
         return spacerStr.Substring(0, level);
     }
 
     // measureModeName returns name of measure mode
     internal static string measureModeName(MeasureMode mode, bool performLayout)
     {
-
         if ((int)mode >= Constant.measureModeCount)
         {
             return "";
@@ -2844,34 +2872,30 @@ public partial class Flex
         {
             return Constant.layoutModeNames[(int)mode];
         }
+
         return Constant.measureModeNames[(int)mode];
     }
 
-    internal static bool measureModeSizeIsExactAndMatchesOldMeasuredSize(MeasureMode sizeMode, float size, float lastComputedSize)
-    {
-        return sizeMode == MeasureMode.Exactly && FloatsEqual(size, lastComputedSize);
-    }
+    internal static bool measureModeSizeIsExactAndMatchesOldMeasuredSize(MeasureMode sizeMode, float size, float lastComputedSize) => sizeMode == MeasureMode.Exactly && FloatsEqual(size, lastComputedSize);
 
-    internal static bool measureModeOldSizeIsUnspecifiedAndStillFits(MeasureMode sizeMode, float size, MeasureMode lastSizeMode, float lastComputedSize)
-    {
-        return sizeMode == MeasureMode.AtMost && lastSizeMode == MeasureMode.Undefined &&
-            (size >= lastComputedSize || FloatsEqual(size, lastComputedSize));
-    }
+    internal static bool measureModeOldSizeIsUnspecifiedAndStillFits(MeasureMode sizeMode, float size, MeasureMode lastSizeMode, float lastComputedSize) =>
+        sizeMode == MeasureMode.AtMost && lastSizeMode == MeasureMode.Undefined &&
+        (size >= lastComputedSize || FloatsEqual(size, lastComputedSize));
 
-    internal static bool measureModeNewMeasureSizeIsStricterAndStillValid(MeasureMode sizeMode, float size, MeasureMode lastSizeMode, float lastSize, float lastComputedSize)
-    {
-        return lastSizeMode == MeasureMode.AtMost && sizeMode == MeasureMode.AtMost &&
-            lastSize > size && (lastComputedSize <= size || FloatsEqual(size, lastComputedSize));
-    }
+    internal static bool measureModeNewMeasureSizeIsStricterAndStillValid(MeasureMode sizeMode, float size, MeasureMode lastSizeMode, float lastSize, float lastComputedSize) =>
+        lastSizeMode == MeasureMode.AtMost && sizeMode == MeasureMode.AtMost &&
+        lastSize > size && (lastComputedSize <= size || FloatsEqual(size, lastComputedSize));
 
 
     // nodeCanUseCachedMeasurement returns true if can use cached measurement
-    internal static bool nodeCanUseCachedMeasurement(MeasureMode widthMode, float width, MeasureMode heightMode, float height, MeasureMode lastWidthMode, float lastWidth, MeasureMode lastHeightMode, float lastHeight, float lastComputedWidth, float lastComputedHeight, float marginRow, float marginColumn, Config config)
+    internal static bool nodeCanUseCachedMeasurement(MeasureMode widthMode, float width, MeasureMode heightMode, float height, MeasureMode lastWidthMode, float lastWidth, MeasureMode lastHeightMode, float lastHeight,
+        float lastComputedWidth, float lastComputedHeight, float marginRow, float marginColumn, Config config)
     {
         if (lastComputedHeight < 0 || lastComputedWidth < 0)
         {
             return false;
         }
+
         bool useRoundedComparison = config != null && config.PointScaleFactor != 0;
         float effectiveWidth = width;
         float effectiveHeight = height;
@@ -2880,10 +2904,10 @@ public partial class Flex
 
         if (useRoundedComparison)
         {
-            effectiveWidth = Flex.RoundValueToPixelGrid(width, config.PointScaleFactor, false, false);
-            effectiveHeight = Flex.RoundValueToPixelGrid(height, config.PointScaleFactor, false, false);
-            effectiveLastWidth = Flex.RoundValueToPixelGrid(lastWidth, config.PointScaleFactor, false, false);
-            effectiveLastHeight = Flex.RoundValueToPixelGrid(lastHeight, config.PointScaleFactor, false, false);
+            effectiveWidth = RoundValueToPixelGrid(width, config.PointScaleFactor, false, false);
+            effectiveHeight = RoundValueToPixelGrid(height, config.PointScaleFactor, false, false);
+            effectiveLastWidth = RoundValueToPixelGrid(lastWidth, config.PointScaleFactor, false, false);
+            effectiveLastHeight = RoundValueToPixelGrid(lastHeight, config.PointScaleFactor, false, false);
         }
 
         bool hasSameWidthSpec = lastWidthMode == widthMode && FloatsEqual(effectiveLastWidth, effectiveWidth);
@@ -2904,11 +2928,6 @@ public partial class Flex
         return widthIsCompatible && heightIsCompatible;
     }
 
-    internal static int gDepth = 0;
-    internal static bool gPrintTree = false;
-    internal static bool gPrintChanges = false;
-    internal static bool gPrintSkips = false;
-
     // layoutNodeInternal is a wrapper around the YGNodelayoutImpl function. It determines
     // whether the layout request is redundant and can be skipped.
     //
@@ -2920,13 +2939,13 @@ public partial class Flex
         MeasureMode heightMeasureMode, float parentWidth, float parentHeight,
         bool performLayout, string reason, Config config)
     {
-        var layout = node.nodeLayout;
+        Layout layout = node.nodeLayout;
 
         gDepth++;
 
         bool needToVisitNode =
             (node.IsDirty && layout.generationCount != currentGenerationCount) ||
-                layout.lastParentDirection != parentDirection;
+            layout.lastParentDirection != parentDirection;
 
         if (needToVisitNode)
         {
@@ -2959,18 +2978,18 @@ public partial class Flex
 
             // First, try to use the layout cache.
             if (nodeCanUseCachedMeasurement(widthMeasureMode,
-                availableWidth,
-                heightMeasureMode,
-                availableHeight,
-                layout.cachedLayout.widthMeasureMode,
-                layout.cachedLayout.availableWidth,
-                layout.cachedLayout.heightMeasureMode,
-                layout.cachedLayout.availableHeight,
-                layout.cachedLayout.computedWidth,
-                layout.cachedLayout.computedHeight,
-                marginAxisRow,
-                marginAxisColumn,
-                config))
+                    availableWidth,
+                    heightMeasureMode,
+                    availableHeight,
+                    layout.cachedLayout.widthMeasureMode,
+                    layout.cachedLayout.availableWidth,
+                    layout.cachedLayout.heightMeasureMode,
+                    layout.cachedLayout.availableHeight,
+                    layout.cachedLayout.computedWidth,
+                    layout.cachedLayout.computedHeight,
+                    marginAxisRow,
+                    marginAxisColumn,
+                    config))
             {
                 cachedResults = layout.cachedLayout;
             }
@@ -2980,18 +2999,18 @@ public partial class Flex
                 for (int i = 0; i < layout.nextCachedMeasurementsIndex; i++)
                 {
                     if (nodeCanUseCachedMeasurement(widthMeasureMode,
-                        availableWidth,
-                        heightMeasureMode,
-                        availableHeight,
-                        layout.cachedMeasurements[i].widthMeasureMode,
-                        layout.cachedMeasurements[i].availableWidth,
-                        layout.cachedMeasurements[i].heightMeasureMode,
-                        layout.cachedMeasurements[i].availableHeight,
-                        layout.cachedMeasurements[i].computedWidth,
-                        layout.cachedMeasurements[i].computedHeight,
-                        marginAxisRow,
-                        marginAxisColumn,
-                        config))
+                            availableWidth,
+                            heightMeasureMode,
+                            availableHeight,
+                            layout.cachedMeasurements[i].widthMeasureMode,
+                            layout.cachedMeasurements[i].availableWidth,
+                            layout.cachedMeasurements[i].heightMeasureMode,
+                            layout.cachedMeasurements[i].availableHeight,
+                            layout.cachedMeasurements[i].computedWidth,
+                            layout.cachedMeasurements[i].computedHeight,
+                            marginAxisRow,
+                            marginAxisColumn,
+                            config))
                     {
                         cachedResults = layout.cachedMeasurements[i];
                         break;
@@ -3032,11 +3051,12 @@ public partial class Flex
             if (gPrintChanges && gPrintSkips)
             {
                 // fmt.Printf("%s%d.{[skipped] ", spacer(gDepth), gDepth);
-                System.Console.WriteLine($"{spacer(gDepth)}{gDepth}.{{[skipped]");
+                Console.WriteLine($"{spacer(gDepth)}{gDepth}.{{[skipped]");
                 if (node.printFunc != null)
                 {
                     node.printFunc(node);
                 }
+
                 // fmt.Printf("wm: %s, hm: %s, aw: %f ah: %f => d: (%f, %f) %s\n",
                 //     measureModeName(widthMeasureMode, performLayout),
                 //     measureModeName(heightMeasureMode, performLayout),
@@ -3045,7 +3065,7 @@ public partial class Flex
                 //     cachedResults.computedWidth,
                 //     cachedResults.computedHeight,
                 //     reason);
-                System.Console.WriteLine("wm: {0}, hm: {1}, aw: {2} ah: {3} => d: ({4}, {5}) {6}\n",
+                Console.WriteLine("wm: {0}, hm: {1}, aw: {2} ah: {3} => d: ({4}, {5}) {6}\n",
                     measureModeName(widthMeasureMode, performLayout),
                     measureModeName(heightMeasureMode, performLayout),
                     availableWidth,
@@ -3065,19 +3085,21 @@ public partial class Flex
                 {
                     s = "*";
                 }
+
                 // fmt.Printf("%s%d.{%s", spacer(gDepth), gDepth, s);
-                System.Console.WriteLine($"{spacer(gDepth)}{gDepth}.{{{s}");
+                Console.WriteLine($"{spacer(gDepth)}{gDepth}.{{{s}");
                 if (node.printFunc != null)
                 {
                     node.printFunc(node);
                 }
+
                 // fmt.Printf("wm: %s, hm: %s, aw: %f ah: %f %s\n",
                 //     measureModeName(widthMeasureMode, performLayout),
                 //     measureModeName(heightMeasureMode, performLayout),
                 //     availableWidth,
                 //     availableHeight,
                 //     reason);
-                System.Console.WriteLine("wm: {0}, hm: {1}, aw: {2} ah: {3} {4}\n",
+                Console.WriteLine("wm: {0}, hm: {1}, aw: {2} ah: {3} {4}\n",
                     measureModeName(widthMeasureMode, performLayout),
                     measureModeName(heightMeasureMode, performLayout),
                     availableWidth,
@@ -3104,19 +3126,21 @@ public partial class Flex
                 {
                     s = "*";
                 }
+
                 // fmt.Printf("%s%d.}%s", spacer(gDepth), gDepth, s);
-                System.Console.WriteLine($"{spacer(gDepth)}{gDepth}.}}{s}");
+                Console.WriteLine($"{spacer(gDepth)}{gDepth}.}}{s}");
                 if (node.printFunc != null)
                 {
                     node.printFunc(node);
                 }
+
                 // fmt.Printf("wm: %s, hm: %s, d: (%f, %f) %s\n",
                 //     measureModeName(widthMeasureMode, performLayout),
                 //     measureModeName(heightMeasureMode, performLayout),
                 //     layout.measuredDimensions[Dimension.Width],
                 //     layout.measuredDimensions[Dimension.Height],
                 //     reason);
-                System.Console.WriteLine("wm: {0}, hm: {1}, d: ({2}, {3}) {4}\n",
+                Console.WriteLine("wm: {0}, hm: {1}, d: ({2}, {3}) {4}\n",
                     measureModeName(widthMeasureMode, performLayout),
                     measureModeName(heightMeasureMode, performLayout),
                     layout.measuredDimensions[(int)Dimension.Width],
@@ -3133,8 +3157,9 @@ public partial class Flex
                 {
                     if (gPrintChanges)
                     {
-                        System.Console.WriteLine("Out of cache entries!\n");
+                        Console.WriteLine("Out of cache entries!\n");
                     }
+
                     layout.nextCachedMeasurementsIndex = 0;
                 }
 
@@ -3196,32 +3221,32 @@ public partial class Flex
         // lead to unwanted text truncation.
         bool textRounding = node.NodeType == NodeType.Text;
 
-        node.nodeLayout.Position[(int)Edge.Left] = Flex.RoundValueToPixelGrid(nodeLeft, pointScaleFactor, false, textRounding);
-        node.nodeLayout.Position[(int)Edge.Top] = Flex.RoundValueToPixelGrid(nodeTop, pointScaleFactor, false, textRounding);
+        node.nodeLayout.Position[(int)Edge.Left] = RoundValueToPixelGrid(nodeLeft, pointScaleFactor, false, textRounding);
+        node.nodeLayout.Position[(int)Edge.Top] = RoundValueToPixelGrid(nodeTop, pointScaleFactor, false, textRounding);
 
         // We multiply dimension by scale factor and if the result is close to the whole number, we don't have any fraction
         // To verify if the result is close to whole number we want to check both floor and ceil numbers
         bool hasFractionalWidth = !FloatsEqual(fmodf(nodeWidth * pointScaleFactor, 1), 0) &&
-            !FloatsEqual(fmodf(nodeWidth * pointScaleFactor, 1), 1);
+                                  !FloatsEqual(fmodf(nodeWidth * pointScaleFactor, 1), 1);
         bool hasFractionalHeight = !FloatsEqual(fmodf(nodeHeight * pointScaleFactor, 1), 0) &&
-            !FloatsEqual(fmodf(nodeHeight * pointScaleFactor, 1), 1);
+                                   !FloatsEqual(fmodf(nodeHeight * pointScaleFactor, 1), 1);
 
         node.nodeLayout.Dimensions[(int)Dimension.Width] =
-            Flex.RoundValueToPixelGrid(
+            RoundValueToPixelGrid(
                 absoluteNodeRight,
                 pointScaleFactor,
-                (textRounding && hasFractionalWidth),
-                (textRounding && !hasFractionalWidth)) -
-                Flex.RoundValueToPixelGrid(absoluteNodeLeft, pointScaleFactor, false, textRounding);
+                textRounding && hasFractionalWidth,
+                textRounding && !hasFractionalWidth) -
+            RoundValueToPixelGrid(absoluteNodeLeft, pointScaleFactor, false, textRounding);
         node.nodeLayout.Dimensions[(int)Dimension.Height] =
-            Flex.RoundValueToPixelGrid(
+            RoundValueToPixelGrid(
                 absoluteNodeBottom,
                 pointScaleFactor,
-                (textRounding && hasFractionalHeight),
-                (textRounding && !hasFractionalHeight)) -
-                Flex.RoundValueToPixelGrid(absoluteNodeTop, pointScaleFactor, false, textRounding);
+                textRounding && hasFractionalHeight,
+                textRounding && !hasFractionalHeight) -
+            RoundValueToPixelGrid(absoluteNodeTop, pointScaleFactor, false, textRounding);
 
-        foreach (var child in node.Children)
+        foreach (Node child in node.Children)
         {
             roundToPixelGrid(child, pointScaleFactor, absoluteNodeLeft, absoluteNodeTop);
         }
@@ -3237,6 +3262,7 @@ public partial class Flex
             out_measureMode = MeasureMode.Exactly;
             return;
         }
+
         if (resolveValue(node.nodeStyle.MaxDimensions[(int)Dimension.Width], parentWidth) >= 0f)
         {
             out_width = resolveValue(node.nodeStyle.MaxDimensions[(int)Dimension.Width], parentWidth);
@@ -3246,16 +3272,17 @@ public partial class Flex
 
         {
             float width = parentWidth;
-            var widthMeasureMode = MeasureMode.Exactly;
+            MeasureMode widthMeasureMode = MeasureMode.Exactly;
             if (FloatIsUndefined(width))
             {
                 widthMeasureMode = MeasureMode.Undefined;
             }
+
             out_width = width;
             out_measureMode = widthMeasureMode;
-            return;
         }
     }
+
     internal static void calcStartHeight(Node node, float parentWidth, float parentHeight,
         out float out_height, out MeasureMode out_measureMode)
     {
@@ -3267,6 +3294,7 @@ public partial class Flex
             out_measureMode = MeasureMode.Exactly;
             return;
         }
+
         if (resolveValue(node.nodeStyle.MaxDimensions[(int)Dimension.Height], parentHeight) >= 0)
         {
             out_height = resolveValue(node.nodeStyle.MaxDimensions[(int)Dimension.Height], parentHeight);
@@ -3275,76 +3303,73 @@ public partial class Flex
         }
 
         {
-
             float height = parentHeight;
-            var heightMeasureMode = MeasureMode.Exactly;
+            MeasureMode heightMeasureMode = MeasureMode.Exactly;
             if (FloatIsUndefined(height))
             {
                 heightMeasureMode = MeasureMode.Undefined;
             }
+
             out_height = height;
             out_measureMode = heightMeasureMode;
-            return;
         }
     }
 
 
-
-    internal static void log(Node node, LogLevel level, string format, params object[] args)
-    {
-        System.Console.WriteLine(format, args);
-    }
+    internal static void log(Node node, LogLevel level, string format, params object[] args) => Console.WriteLine(format, args);
 
     internal static void assertCond(bool cond, string format, params object[] args)
     {
         if (!cond)
         {
-            throw new System.Exception(string.Format(format, args));
+            throw new Exception(string.Format(format, args));
         }
     }
 
-    internal static void assertWithNode(Node node, bool cond, string format, params object[] args)
-    {
-        assertCond(cond, format, args);
-    }
+    internal static void assertWithNode(Node node, bool cond, string format, params object[] args) => assertCond(cond, format, args);
 
 
-    internal static float fmodf(float a, float b)
-    {
-        return a % b;
-    }
-    static internal float fmaxf(float a, float b)
+    internal static float fmodf(float a, float b) => a % b;
+
+    internal static float fmaxf(float a, float b)
     {
         if (float.IsNaN(a))
         {
             return b;
         }
+
         if (float.IsNaN(b))
         {
             return a;
         }
+
         // TODO: signed zeros
         if (a > b)
         {
             return a;
         }
+
         return b;
     }
-    static internal float fminf(float a, float b)
+
+    internal static float fminf(float a, float b)
     {
         if (float.IsNaN(a))
         {
             return b;
         }
+
         if (float.IsNaN(b))
         {
             return a;
         }
+
         // TODO: signed zeros
         if (a < b)
         {
             return a;
         }
+
         return b;
     }
 }

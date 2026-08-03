@@ -1,11 +1,11 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Entities;
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Inventories;
 using BetaSharp.Screens;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.InGame.Containers;
 
@@ -21,7 +21,7 @@ public class DispenserScreen(
         base.Init();
 
         // Background Image
-        var background = new Image
+        Image background = new()
         {
             Texture = Renderer.TextureManager.GetTextureId("/gui/trap.png"),
             U = 0,
@@ -35,7 +35,7 @@ public class DispenserScreen(
         _containerPanel.AddChild(background);
 
         // Labels
-        var lblDispenser = new Label
+        Label lblDispenser = new()
         {
             Text = Translations.Get("gui.container.dispenser"),
             HasShadow = false,
@@ -46,7 +46,7 @@ public class DispenserScreen(
         lblDispenser.Style.Top = 6;
         _containerPanel.AddChild(lblDispenser);
 
-        var lblInventory = new Label
+        Label lblInventory = new()
         {
             Text = Translations.Get("gui.container.inventory"),
             HasShadow = false,

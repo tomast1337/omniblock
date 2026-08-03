@@ -1,8 +1,10 @@
 using BetaSharp.Client.Entities;
+using BetaSharp.Client.Input;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Network.Messages;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.InGame;
 
@@ -20,7 +22,7 @@ public class SleepScreen(UIContext context, ClientPlayerEntity player) : UIScree
         Button btnStopSleep = CreateButton();
         btnStopSleep.Text = Translations.Get("multiplayer.stopSleeping");
         btnStopSleep.Style.Width = 200;
-        btnStopSleep.OnClick += (_) => SendStopSleepingCommand();
+        btnStopSleep.OnClick += _ => SendStopSleepingCommand();
 
         Root.AddChild(btnStopSleep);
     }
@@ -31,7 +33,7 @@ public class SleepScreen(UIContext context, ClientPlayerEntity player) : UIScree
         if (alpha > 0)
         {
             Renderer.Begin();
-            Renderer.DrawRect(0, 0, Context.DisplayWidth, Context.DisplayHeight, new(0, 0, 0, alpha));
+            Renderer.DrawRect(0, 0, Context.DisplayWidth, Context.DisplayHeight, new Color(0, 0, 0, alpha));
             Renderer.End();
         }
 
@@ -40,7 +42,7 @@ public class SleepScreen(UIContext context, ClientPlayerEntity player) : UIScree
 
     public override void KeyTyped(int key, char character)
     {
-        if (key == Input.Keyboard.KEY_ESCAPE)
+        if (key == Keyboard.KEY_ESCAPE)
         {
             SendStopSleepingCommand();
             Context.Navigator.Navigate(null);
@@ -55,7 +57,11 @@ public class SleepScreen(UIContext context, ClientPlayerEntity player) : UIScree
     {
         if (player is EntityClientPlayerMP playerMP)
         {
-            playerMP.sendQueue.SendMessage(new ClientCommandMessage { EntityId = player.ID, Mode = 3 });
+            playerMP.sendQueue.SendMessage(new ClientCommandMessage
+            {
+                EntityId = player.ID,
+                Mode = 3
+            });
         }
     }
 }

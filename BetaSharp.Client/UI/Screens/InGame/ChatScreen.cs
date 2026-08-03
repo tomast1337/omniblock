@@ -1,10 +1,10 @@
 using System.Text;
 using BetaSharp.Client.Entities;
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Controls.HUD;
 using BetaSharp.Client.UI.Layout.Flexbox;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.InGame;
 
@@ -15,7 +15,7 @@ public class ChatScreen(
     string prefix = "") : UIScreen(context)
 {
     private static readonly List<string> s_history = [];
-    private int _historyIndex = 0;
+    private int _historyIndex;
     private TextField _textField = null!;
 
     public override bool PausesGame => false;
@@ -28,7 +28,7 @@ public class ChatScreen(
         Root.Style.PaddingRight = 2;
         Root.Style.PaddingBottom = 2;
 
-        var inputBar = new UIElement();
+        UIElement inputBar = new();
         inputBar.Style.Height = 12;
         inputBar.Style.BackgroundColor = new Color(0, 0, 0, 150);
         inputBar.Style.FlexDirection = FlexDirection.Row;
@@ -36,7 +36,7 @@ public class ChatScreen(
         inputBar.Style.PaddingLeft = 2;
         Root.AddChild(inputBar);
 
-        var prompt = new Label
+        Label prompt = new()
         {
             Text = "> ",
             TextColor = Color.GrayE0
@@ -56,7 +56,7 @@ public class ChatScreen(
         _textField.OnSubmit = SendMessage;
 
         // Handle history navigation separately since TextField doesn't know about it
-        _textField.OnKeyDown += (e) =>
+        _textField.OnKeyDown += e =>
         {
             if (e.KeyCode == Keyboard.KEY_UP)
             {
@@ -92,13 +92,13 @@ public class ChatScreen(
         FocusedElement = _textField;
 
         // Global mouse events for the screen
-        Root.OnMouseScroll = (e) =>
+        Root.OnMouseScroll = e =>
         {
             chat.ScrollMessages(e.ScrollDelta > 0 ? 1 : -1);
             e.Handled = true;
         };
 
-        Root.OnMouseDown = (e) =>
+        Root.OnMouseDown = e =>
         {
             if (e.Button == MouseButton.Left && chat.HoveredItemName != null)
             {
@@ -114,6 +114,7 @@ public class ChatScreen(
                 {
                     _textField.Text = _textField.Text[..maxLen];
                 }
+
                 _textField.CursorPosition = _textField.Text.Length;
                 e.Handled = true;
             }
@@ -183,9 +184,12 @@ public class ChatScreen(
 
     private static string ConvertAmpersandToSection(string input)
     {
-        if (string.IsNullOrEmpty(input)) return input;
+        if (string.IsNullOrEmpty(input))
+        {
+            return input;
+        }
 
-        var sb = new StringBuilder();
+        StringBuilder sb = new();
         const string colorCodes = "0123456789abcdefklmnor";
 
         for (int i = 0; i < input.Length; i++)

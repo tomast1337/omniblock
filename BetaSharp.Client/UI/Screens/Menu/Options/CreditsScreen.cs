@@ -1,7 +1,7 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
@@ -42,11 +42,11 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
         Button btnDone = CreateButton();
         btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.MarginRight = 4;
-        btnDone.OnClick += (e) => Context.Navigator.Navigate(parent);
+        btnDone.OnClick += e => Context.Navigator.Navigate(parent);
         bottomButtons.AddChild(btnDone);
 
         ImageButton btnLang = CreateImageButton();
-        btnLang.OnClick += (e) => Context.Navigator.Navigate(new TranslationsCreditsScreen(Context, this));
+        btnLang.OnClick += e => Context.Navigator.Navigate(new TranslationsCreditsScreen(Context, this));
         btnLang.Texture = Renderer.TextureManager.GetTextureId("/gui/Globe.png");
         btnLang.U = 0;
         btnLang.V = 0;
@@ -61,12 +61,12 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
     {
         void ColoredTextUntranslated(string text, Color color, float scale)
         {
-            Label lbl = new Label()
+            Label lbl = new()
             {
                 Text = text,
                 Scale = scale,
                 TextColor = color,
-                Centered = true,
+                Centered = true
             };
 
             lbl.Style.MarginBottom = 4;
@@ -84,7 +84,7 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
 
         void Link(string key, string url, float scale = 1.0F)
         {
-            Link lbl = new Link()
+            Link lbl = new()
             {
                 Text = Translations.Get(key),
                 Scale = scale,
@@ -96,8 +96,9 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
             scroll.AddContent(lbl);
         }
 
-        void Seperator() {
-            var ele = new UIElement();
+        void Seperator()
+        {
+            UIElement ele = new();
             ele.Style.Height = 10;
             scroll.AddContent(ele);
         }
@@ -106,7 +107,7 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
         const int imageWidth = 1000 / scale;
         const int imageHeight = 675 / scale;
 
-        var image = new Image();
+        Image image = new();
         image.Texture = Context.TextureManager.GetTextureId("gui/Logo.png");
         image.Style.Width = imageWidth;
         image.Style.Height = imageHeight;

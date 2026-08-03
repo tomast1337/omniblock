@@ -1,57 +1,55 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Layout;
+using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Client.UI.Rendering;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Controls.Core;
 
 public class ScrollView : UIElement
 {
-    public UIElement ContentContainer { get; private set; }
-
-    public float ScrollY { get; set; }
-    public float MaxScrollY => Math.Max(0, ContentContainer.ComputedHeight - ComputedHeight);
+    private float _dragInitialScrollY;
+    private float _dragStartY;
+    private bool _isDraggingContent;
 
     private bool _isDraggingScrollbar;
-    private bool _isDraggingContent;
-    private float _dragStartY;
-    private float _dragInitialScrollY;
 
     public ScrollView()
     {
         ClipToBounds = true;
-        ContentContainer = new UIElement();
-        ContentContainer.Style.FlexDirection = Layout.Flexbox.FlexDirection.Column;
-        ContentContainer.Parent = this;
-
-        OnMouseDown += (e) =>
+        ContentContainer = new UIElement
         {
-            if (e.Button == MouseButton.Left)
+            Style =
             {
-                float relativeX = e.MouseX - ScreenX;
-                float relativeY = e.MouseY - ScreenY;
+                FlexDirection = FlexDirection.Column
+            },
+            Parent = this
+        };
 
-                if (relativeX >= ComputedWidth - 10)
-                {
-                    _isDraggingScrollbar = true;
-                    _dragStartY = e.MouseY;
+        OnMouseDown += e =>
+        {
+            if (e.Button != MouseButton.Left) return;
+            float relativeX = e.MouseX - ScreenX;
+            if (relativeX >= ComputedWidth - 10)
+            {
+                _isDraggingScrollbar = true;
+                _dragStartY = e.MouseY;
 
-                    float viewRatio = Math.Min(1.0f, ComputedHeight / ContentContainer.ComputedHeight);
-                    float barHeight = Math.Max(32f, ComputedHeight * viewRatio);
-                    float maxBarScroll = ComputedHeight - barHeight;
-                    float scrollProgress = MaxScrollY > 0 ? ScrollY / MaxScrollY : 0;
+                float viewRatio = Math.Min(1.0f, ComputedHeight / ContentContainer.ComputedHeight);
+                float barHeight = Math.Max(32f, ComputedHeight * viewRatio);
+                float maxBarScroll = ComputedHeight - barHeight;
+                float scrollProgress = MaxScrollY > 0 ? ScrollY / MaxScrollY : 0;
 
-                    _dragInitialScrollY = scrollProgress * maxBarScroll;
-                }
-                else
-                {
-                    _isDraggingContent = true;
-                    _dragStartY = e.MouseY;
-                    _dragInitialScrollY = ScrollY;
-                }
+                _dragInitialScrollY = scrollProgress * maxBarScroll;
+            }
+            else
+            {
+                _isDraggingContent = true;
+                _dragStartY = e.MouseY;
+                _dragInitialScrollY = ScrollY;
             }
         };
 
-        OnMouseMove += (e) =>
+        OnMouseMove += e =>
         {
             if (_isDraggingScrollbar)
             {
@@ -68,6 +66,7 @@ public class ScrollView : UIElement
                     ScrollY = scrollProgress * MaxScrollY;
                     FixContentOffset();
                 }
+
                 e.Handled = true;
             }
             else if (_isDraggingContent)
@@ -80,23 +79,26 @@ public class ScrollView : UIElement
             }
         };
 
-        OnMouseUp += (e) =>
+        OnMouseUp += e =>
         {
             _isDraggingScrollbar = false;
             _isDraggingContent = false;
         };
 
-        OnMouseScroll += (e) =>
+        OnMouseScroll += e =>
         {
-            if (MaxScrollY > 0)
-            {
-                ScrollY -= e.ScrollDelta / 120.0f * 20.0f;
-                ScrollY = Math.Clamp(ScrollY, 0, MaxScrollY);
-                FixContentOffset();
-                e.Handled = true;
-            }
+            if (!(MaxScrollY > 0)) return;
+            ScrollY -= e.ScrollDelta / 120.0f * 20.0f;
+            ScrollY = Math.Clamp(ScrollY, 0, MaxScrollY);
+            FixContentOffset();
+            e.Handled = true;
         };
     }
+
+    public UIElement ContentContainer { get; }
+
+    public float ScrollY { get; set; }
+    public float MaxScrollY => Math.Max(0, ContentContainer.ComputedHeight - ComputedHeight);
 
     public void ScrollBy(float delta)
     {
@@ -104,10 +106,7 @@ public class ScrollView : UIElement
         FixContentOffset();
     }
 
-    public void AddContent(UIElement child)
-    {
-        ContentContainer.AddChild(child);
-    }
+    public void AddContent(UIElement child) => ContentContainer.AddChild(child);
 
     public override UIElement? HitTest(float screenX, float screenY)
     {
@@ -122,9 +121,7 @@ public class ScrollView : UIElement
             if (hitChild != null) return hitChild;
         }
 
-        if (ContainsPoint(screenX, screenY)) return this;
-
-        return null;
+        return ContainsPoint(screenX, screenY) ? this : null;
     }
 
     public override void OnLayoutApplied(LayoutAppliedContext context)
@@ -146,16 +143,14 @@ public class ScrollView : UIElement
         {
             calculatedHeight = Math.Max(calculatedHeight, child.ComputedY + child.ComputedHeight + child.Style.MarginBottom);
         }
+
         ContentContainer.ComputedHeight = calculatedHeight;
 
         ScrollY = Math.Clamp(ScrollY, 0, MaxScrollY);
         FixContentOffset();
     }
 
-    private void FixContentOffset()
-    {
-        ContentContainer.Arrange(0, -ScrollY, ComputedWidth - 10, ContentContainer.ComputedHeight);
-    }
+    private void FixContentOffset() => ContentContainer.Arrange(0, -ScrollY, ComputedWidth - 10, ContentContainer.ComputedHeight);
 
     public override void Update(float partialTicks)
     {
@@ -180,7 +175,9 @@ public class ScrollView : UIElement
         foreach (UIElement child in ContentContainer.Children)
         {
             if (child.ComputedY + child.ComputedHeight < visibleTop || child.ComputedY > visibleBottom)
+            {
                 continue;
+            }
 
             renderer.PushTranslate(child.ComputedX, child.ComputedY);
             child.Render(renderer);
@@ -191,19 +188,18 @@ public class ScrollView : UIElement
 
         renderer.DisableClipping();
 
-        if (MaxScrollY > 0 && ContentContainer.ComputedHeight > 0)
-        {
-            // track
-            renderer.DrawRect(ComputedWidth - 10, 0, 10, ComputedHeight, Color.BlackAlphaC0);
+        if (!(MaxScrollY > 0) || !(ContentContainer.ComputedHeight > 0)) return;
 
-            float viewRatio = Math.Min(1.0f, ComputedHeight / ContentContainer.ComputedHeight);
-            float barHeight = Math.Max(32f, ComputedHeight * viewRatio);
+        // track
+        renderer.DrawRect(ComputedWidth - 10, 0, 10, ComputedHeight, Color.BlackAlphaC0);
 
-            float scrollProgress = ScrollY / MaxScrollY;
-            float barY = scrollProgress * (ComputedHeight - barHeight);
+        float viewRatio = Math.Min(1.0f, ComputedHeight / ContentContainer.ComputedHeight);
+        float barHeight = Math.Max(32f, ComputedHeight * viewRatio);
 
-            renderer.DrawRect(ComputedWidth - 10, barY, 10, barHeight, Color.Gray80);
-            renderer.DrawRect(ComputedWidth - 10, barY, 9, barHeight - 1, new Color(192, 192, 192, 255));
-        }
+        float scrollProgress = ScrollY / MaxScrollY;
+        float barY = scrollProgress * (ComputedHeight - barHeight);
+
+        renderer.DrawRect(ComputedWidth - 10, barY, 10, barHeight, Color.Gray80);
+        renderer.DrawRect(ComputedWidth - 10, barY, 9, barHeight - 1, new Color(192, 192, 192));
     }
 }

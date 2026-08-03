@@ -1,4 +1,3 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
@@ -7,6 +6,7 @@ using BetaSharp.Util.Maths;
 using BetaSharp.Worlds;
 using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Storage;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.Menu.World;
 
@@ -14,21 +14,18 @@ public class CreateWorldScreen(
     UIContext context,
     ISingleplayerHost singleplayerHost) : UIScreen(context)
 {
-    private bool _moreOptions = false;
-    private string _worldName = Translations.Get("selectWorld.newWorld");
+    private Button _btnCustomize = null!;
+    private Button _btnWorldType = null!;
+    private bool _moreOptions;
     private string _seed = "";
     private WorldType _selectedWorldType = WorldType.Default;
-    public string GeneratorOptions { get; set; } = "";
+    private TextField _txfSeed = null!;
 
     private TextField _txfWorldName = null!;
-    private TextField _txfSeed = null!;
-    private Button _btnWorldType = null!;
-    private Button _btnCustomize = null!;
+    private string _worldName = Translations.Get("selectWorld.newWorld");
+    public string GeneratorOptions { get; set; } = "";
 
-    protected override void Init()
-    {
-        BuildUI();
-    }
+    protected override void Init() => BuildUI();
 
     private void BuildUI()
     {
@@ -38,45 +35,63 @@ public class CreateWorldScreen(
         Root.Style.JustifyContent = Justify.Center;
         Root.Style.SetPadding(20);
 
-        Label title = new() { Text = Translations.Get("selectWorld.create"), TextColor = Color.White };
+        Label title = new()
+        {
+            Text = Translations.Get("selectWorld.create"),
+            TextColor = Color.White
+        };
         title.Style.MarginBottom = 20;
         Root.AddChild(title);
 
         if (!_moreOptions)
         {
             // --- Default View ---
-            Label lName = new() { Text = Translations.Get("selectWorld.enterName"), TextColor = Color.GrayA0 };
+            Label lName = new()
+            {
+                Text = Translations.Get("selectWorld.enterName"),
+                TextColor = Color.GrayA0
+            };
             lName.Style.MarginBottom = 4;
             Root.AddChild(lName);
 
-            _txfWorldName = new TextField { Text = _worldName };
+            _txfWorldName = new TextField
+            {
+                Text = _worldName
+            };
             _txfWorldName.Style.MarginBottom = 10;
-            _txfWorldName.OnTextChanged += (text) => _worldName = text;
+            _txfWorldName.OnTextChanged += text => _worldName = text;
             Root.AddChild(_txfWorldName);
         }
         else
         {
             // --- More Options View ---
-            Label lSeed = new() { Text = Translations.Get("selectWorld.enterSeed"), TextColor = Color.GrayA0 };
+            Label lSeed = new()
+            {
+                Text = Translations.Get("selectWorld.enterSeed"),
+                TextColor = Color.GrayA0
+            };
             lSeed.Style.MarginBottom = 4;
             Root.AddChild(lSeed);
 
-            _txfSeed = new TextField { Text = _seed };
+            _txfSeed = new TextField
+            {
+                Text = _seed
+            };
             _txfSeed.Style.MarginBottom = 10;
-            _txfSeed.OnTextChanged += (text) => _seed = text;
+            _txfSeed.OnTextChanged += text => _seed = text;
             Root.AddChild(_txfSeed);
 
             _btnWorldType = CreateButton();
             _btnWorldType.Text = Translations.Get("selectWorld.worldType") + ": " + Translations.Get($"selectWorld.type.{_selectedWorldType.Name.ToLowerInvariant()}.title");
             _btnWorldType.Style.MarginBottom = 4;
-            _btnWorldType.OnClick += (e) => Context.Navigator.Navigate(new SelectWorldTypeScreen(Context, this, _selectedWorldType));
+            _btnWorldType.OnClick += e => Context.Navigator.Navigate(new SelectWorldTypeScreen(Context, this, _selectedWorldType));
             Root.AddChild(_btnWorldType);
 
             _btnCustomize = CreateButton();
             _btnCustomize.Text = Translations.Get("gui.customize");
             _btnCustomize.Style.MarginBottom = 10;
             _btnCustomize.Enabled = _selectedWorldType == WorldType.Flat;
-            _btnCustomize.OnClick += (e) => Context.Navigator.Navigate(new CreateFlatWorldScreen(Context, this, GeneratorOptions));
+            _btnCustomize.OnClick += e => Context.Navigator.Navigate(new CreateFlatWorldScreen(Context, this, GeneratorOptions));
             Root.AddChild(_btnCustomize);
         }
 
@@ -91,7 +106,7 @@ public class CreateWorldScreen(
         btnCreate.Text = Translations.Get("gui.create");
         btnCreate.Style.Width = 150;
         btnCreate.Style.SetMargin(2);
-        btnCreate.OnClick += (e) => DoCreateWorld();
+        btnCreate.OnClick += e => DoCreateWorld();
         buttonPanel.AddChild(btnCreate);
 
         string moreOptionsText = _moreOptions ? Translations.Get("gui.done") : Translations.Get("selectWorld.moreWorldOptions");
@@ -99,7 +114,7 @@ public class CreateWorldScreen(
         btnToggleMore.Text = moreOptionsText;
         btnToggleMore.Style.Width = 150;
         btnToggleMore.Style.SetMargin(2);
-        btnToggleMore.OnClick += (e) =>
+        btnToggleMore.OnClick += e =>
         {
             _moreOptions = !_moreOptions;
             BuildUI();
@@ -110,7 +125,7 @@ public class CreateWorldScreen(
         btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Context.Navigator.Navigate(new WorldScreen(Context, singleplayerHost));
+        btnCancel.OnClick += e => Context.Navigator.Navigate(new WorldScreen(Context, singleplayerHost));
         buttonPanel.AddChild(btnCancel);
 
         Root.AddChild(buttonPanel);
@@ -151,7 +166,11 @@ public class CreateWorldScreen(
             folderName = folderName.Replace(c, '_');
         }
 
-        if (string.IsNullOrEmpty(folderName)) folderName = "World";
+        if (string.IsNullOrEmpty(folderName))
+        {
+            folderName = "World";
+        }
+
         folderName = GenerateUnusedFolderName(singleplayerHost.SaveLoader, folderName);
 
         WorldSettings settings = new(worldSeed, _selectedWorldType, GeneratorOptions);
@@ -166,6 +185,7 @@ public class CreateWorldScreen(
         {
             hash = 31 * hash + c;
         }
+
         return hash;
     }
 

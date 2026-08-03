@@ -1,14 +1,14 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Net;
 
 public class ConnectFailedScreen : UIScreen
 {
-    private readonly string _errorMessage;
     private readonly string _errorDetail;
+    private readonly string _errorMessage;
 
     public ConnectFailedScreen(
         UIContext context,
@@ -56,7 +56,7 @@ public class ConnectFailedScreen : UIScreen
         Button btnToMenu = CreateButton();
         btnToMenu.Text = Translations.Get("gui.toMenu");
         btnToMenu.Style.Width = 150;
-        btnToMenu.OnClick += (e) => Context.Navigator.Navigate(null);
+        btnToMenu.OnClick += e => Context.Navigator.Navigate(null);
         Root.AddChild(btnToMenu);
     }
 }

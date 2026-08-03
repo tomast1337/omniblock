@@ -1,10 +1,9 @@
-using System.Xml.Linq;
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Input;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.Menu.Options;
 
@@ -13,15 +12,14 @@ public abstract class BaseOptionsScreen(
     UIScreen? parent,
     string titleKey) : UIScreen(context)
 {
-    protected readonly UIScreen? Parent = parent;
-    protected GameOptions Options => Context.Options;
-    protected string TitleText = Translations.Get(titleKey);
-
     protected const int ButtonSize = 150;
     protected const int ButtonPadding = 4;
     protected const int TwoButtonSize = ButtonSize * 2 + ButtonPadding * 2;
     protected const int ScrollContentSize = ButtonSize * 2 + ButtonPadding * 4;
     protected const int ScrollSize = ScrollContentSize + 10;
+    protected readonly UIScreen? Parent = parent;
+    protected string TitleText = Translations.Get(titleKey);
+    protected GameOptions Options => Context.Options;
 
     protected virtual int MaxWidth { get; } = 200;
 
@@ -56,7 +54,7 @@ public abstract class BaseOptionsScreen(
         Button btnDone = CreateButton();
         btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.MarginBottom = 20;
-        btnDone.OnClick += (e) => OnDone();
+        btnDone.OnClick += e => OnDone();
         Root.AddChild(btnDone);
     }
 
@@ -67,11 +65,14 @@ public abstract class BaseOptionsScreen(
         root.Style.AlignItems = Align.Center;
         root.Style.Width = ScrollContentSize;
 
-        var options = GetOptions();
+        List<OptionSection> options = GetOptions();
         bool first = true;
         foreach (OptionSection section in options)
         {
-            if (section.Name is not null) root.AddChild(CreateSectionHeader(section.Name, first));
+            if (section.Name is not null)
+            {
+                root.AddChild(CreateSectionHeader(section.Name, first));
+            }
 
             Panel grid = CreateTwoColumnList();
             foreach (GameOption option in section.Options)
@@ -84,6 +85,7 @@ public abstract class BaseOptionsScreen(
                 control.Style.MarginRight = ButtonPadding;
                 grid.AddChild(control);
             }
+
             root.AddChild(grid);
 
             first = false;
@@ -140,24 +142,6 @@ public abstract class BaseOptionsScreen(
         return header;
     }
 
-    protected struct OptionSection
-    {
-        public string? Name;
-        public IEnumerable<GameOption> Options;
-
-        public OptionSection(string name, IEnumerable<GameOption> options)
-        {
-            Name = name;
-            Options = options;
-        }
-
-        public OptionSection(IEnumerable<GameOption> options)
-        {
-            Name = null;
-            Options = options;
-        }
-    }
-
     protected abstract List<OptionSection> GetOptions();
 
     protected virtual void OnDone()
@@ -180,12 +164,12 @@ public abstract class BaseOptionsScreen(
             Slider slider = CreateSlider();
             slider.Value = floatOpt.Value;
             slider.Text = option.GetDisplayString();
-            slider.OnValueChanged += (v) =>
+            slider.OnValueChanged += v =>
             {
                 floatOpt.Set(v);
                 slider.Text = option.GetDisplayString();
             };
-            slider.OnMouseDown += (e) =>
+            slider.OnMouseDown += e =>
             {
                 if (e.Button == MouseButton.Right || Keyboard.isKeyDown(Options.KeyBindSneak.ScanCode))
                 {
@@ -196,7 +180,8 @@ public abstract class BaseOptionsScreen(
             };
             return slider;
         }
-        else if (option is ShaderRangeOption rangeOpt)
+
+        if (option is ShaderRangeOption rangeOpt)
         {
             Slider slider = CreateSlider();
             slider.Value = rangeOpt.NormalizedValue;
@@ -206,7 +191,7 @@ public abstract class BaseOptionsScreen(
                 rangeOpt.SetNormalized(v);
                 slider.Text = option.GetDisplayString();
             };
-            slider.OnMouseDown += (e) =>
+            slider.OnMouseDown += e =>
             {
                 if (e.Button == MouseButton.Right || Keyboard.isKeyDown(Options.KeyBindSneak.ScanCode))
                 {
@@ -217,31 +202,66 @@ public abstract class BaseOptionsScreen(
             };
             return slider;
         }
-        else
+
+        Button btn = CreateButton();
+        btn.Text = option.GetDisplayString();
+        btn.OnMouseDown += e =>
         {
-            Button btn = CreateButton();
-            btn.Text = option.GetDisplayString();
-            btn.OnMouseDown += (e) =>
+            if (Keyboard.isKeyDown(Options.KeyBindSneak.ScanCode))
             {
-                if (Keyboard.isKeyDown(Options.KeyBindSneak.ScanCode))
+                option.Reset();
+            }
+            else if (e.Button == MouseButton.Right)
+            {
+                if (option is CycleOption cycleOpt)
                 {
-                    option.Reset();
+                    cycleOpt.Cycle(-1);
                 }
-                else if (e.Button == MouseButton.Right)
+                else if (option is ShaderConstOption shaderOpt)
                 {
-                    if (option is CycleOption cycleOpt) cycleOpt.Cycle(-1);
-                    else if (option is ShaderConstOption shaderOpt) shaderOpt.Cycle(-1);
+                    shaderOpt.Cycle(-1);
                 }
-                else if (e.Button == MouseButton.Left)
+            }
+            else if (e.Button == MouseButton.Left)
+            {
+                if (option is BoolOption boolOpt)
                 {
-                    if (option is BoolOption boolOpt) boolOpt.Toggle();
-                    else if (option is CycleOption cycleOpt) cycleOpt.Cycle();
-                    else if (option is ShaderConstOption shaderOpt) shaderOpt.Cycle();
-                    else if (option is NavigationOption navOpt) navOpt.Execute();
+                    boolOpt.Toggle();
                 }
-                btn.Text = option.GetDisplayString();
-            };
-            return btn;
+                else if (option is CycleOption cycleOpt)
+                {
+                    cycleOpt.Cycle();
+                }
+                else if (option is ShaderConstOption shaderOpt)
+                {
+                    shaderOpt.Cycle();
+                }
+                else if (option is NavigationOption navOpt)
+                {
+                    navOpt.Execute();
+                }
+            }
+
+            btn.Text = option.GetDisplayString();
+        };
+        return btn;
+    }
+
+    protected struct OptionSection
+    {
+        public string? Name;
+        public IEnumerable<GameOption> Options;
+
+        public OptionSection(string name, IEnumerable<GameOption> options)
+        {
+            Name = name;
+            Options = options;
+        }
+
+        public OptionSection(IEnumerable<GameOption> options)
+        {
+            Name = null;
+            Options = options;
         }
     }
 }

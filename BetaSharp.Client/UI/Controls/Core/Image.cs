@@ -27,6 +27,7 @@ public class Image : UIElement
         {
             props.Add("Texture:  null");
         }
+
         return props;
     }
 

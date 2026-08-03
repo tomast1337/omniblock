@@ -1,6 +1,5 @@
 using BetaSharp.Blocks;
 using BetaSharp.Client.Entities;
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Blocks;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
@@ -9,6 +8,7 @@ using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Items.Behaviors;
 using BetaSharp.Util.Maths;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.Rendering.Entities;
 

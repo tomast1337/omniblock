@@ -2,56 +2,52 @@ namespace BetaSharp.Client.UI.Layout.Flexbox;
 
 public partial class Node
 {
-    public Style nodeStyle = new();
-    readonly internal Flex.Layout nodeLayout = new();
+    internal readonly List<Node> Children = new();
+    internal readonly Flex.Layout nodeLayout = new();
+
+    internal readonly Value[] resolvedDimensions = new Value[2] { Flex.ValueUndefined, Flex.ValueUndefined };
+
+    private Layout? _layout;
+    internal BaselineFunc baselineFunc;
+    internal Config config = Constant.configDefaults;
+    public object Context;
+    internal bool hasNewLayout = true;
     internal int lineIndex;
 
-    private Layout? _layout = null;
+    internal MeasureFunc measureFunc;
+
+    internal Node NextChild;
+    public Style nodeStyle = new();
+    internal NodeType NodeType = NodeType.Default;
+
+    internal Node Parent = null;
+    internal PrintFunc printFunc;
+
+    public Node()
+    {
+    }
+
+    public Node(Style style) => nodeStyle = style;
+
     public Layout layout
     {
         get
         {
             if (_layout == null)
+            {
                 _layout = new Layout(this);
+            }
+
             return (Layout)_layout;
         }
     }
 
-    internal Node Parent = null;
-    internal readonly List<Node> Children = new();
+    public int ChildrenCount => Children.Count;
 
-    public int ChildrenCount { get { return Children.Count; } }
+    public Node firstChild => Children.Count > 0 ? Children.First() : null;
+    public Node lastChild => Children.Count > 0 ? Children.Last() : null;
 
-    public Node firstChild { get { return Children.Count > 0 ? Children.First() : null; } }
-    public Node lastChild { get { return Children.Count > 0 ? Children.Last() : null; } }
-
-    internal Node NextChild;
-
-    internal MeasureFunc measureFunc;
-    internal BaselineFunc baselineFunc;
-    internal PrintFunc printFunc;
-    internal Config config = Constant.configDefaults;
-
-    public bool IsDirty
-    {
-        get;
-        internal set;
-    }
-    internal bool hasNewLayout = true;
-    internal NodeType NodeType = NodeType.Default;
-
-    internal readonly Value[] resolvedDimensions = new Value[2] { Flex.ValueUndefined, Flex.ValueUndefined };
-    public object Context;
-
-    public Node()
-    {
-
-    }
-
-    public Node(Style style)
-    {
-        nodeStyle = style;
-    }
+    public bool IsDirty { get; internal set; }
 
 
     public void CalculateLayout(float parentWidth, float parentHeight, Direction parentDirection)
@@ -59,65 +55,51 @@ public partial class Node
         _layout = null;
         Flex.CalculateLayout(this, parentWidth, parentHeight, parentDirection);
     }
-    public void MarkAsDirty()
-    {
-        Flex.nodeMarkDirtyInternal(this);
-    }
+
+    public void MarkAsDirty() => Flex.nodeMarkDirtyInternal(this);
 
 
     #region Layout
 
     internal float LayoutGetX()
     {
-        var x = this.nodeLayout.Position[(int)Edge.Left];
-        if (this.Parent != null)
-            x += this.Parent.LayoutGetX();
+        float x = nodeLayout.Position[(int)Edge.Left];
+        if (Parent != null)
+        {
+            x += Parent.LayoutGetX();
+        }
+
         return x;
     }
 
     internal float LayoutGetY()
     {
-        var y = this.nodeLayout.Position[(int)Edge.Top];
-        if (this.Parent != null)
-            y += this.Parent.LayoutGetY();
+        float y = nodeLayout.Position[(int)Edge.Top];
+        if (Parent != null)
+        {
+            y += Parent.LayoutGetY();
+        }
+
         return y;
     }
+
     // LayoutGetLeft gets left
-    internal float LayoutGetLeft()
-    {
-        return this.nodeLayout.Position[(int)Edge.Left];
-    }
+    internal float LayoutGetLeft() => nodeLayout.Position[(int)Edge.Left];
 
     // LayoutGetTop gets top
-    internal float LayoutGetTop()
-    {
-
-        return this.nodeLayout.Position[(int)Edge.Top];
-    }
+    internal float LayoutGetTop() => nodeLayout.Position[(int)Edge.Top];
 
     // LayoutGetRight gets right
-    internal float LayoutGetRight()
-    {
-        return this.nodeLayout.Position[(int)Edge.Right];
-    }
+    internal float LayoutGetRight() => nodeLayout.Position[(int)Edge.Right];
 
     // LayoutGetBottom gets bottom
-    internal float LayoutGetBottom()
-    {
-        return this.nodeLayout.Position[(int)Edge.Bottom];
-    }
+    internal float LayoutGetBottom() => nodeLayout.Position[(int)Edge.Bottom];
 
     // LayoutGetWidth gets width
-    internal float LayoutGetWidth()
-    {
-        return this.nodeLayout.Dimensions[(int)Dimension.Width];
-    }
+    internal float LayoutGetWidth() => nodeLayout.Dimensions[(int)Dimension.Width];
 
     // LayoutGetHeight gets height
-    internal float LayoutGetHeight()
-    {
-        return this.nodeLayout.Dimensions[(int)Dimension.Height];
-    }
+    internal float LayoutGetHeight() => nodeLayout.Dimensions[(int)Dimension.Height];
 
     // LayoutGetMargin gets margin
     internal float LayoutGetMargin(Edge edge)
@@ -125,21 +107,25 @@ public partial class Node
         Flex.assertWithNode(this, edge < Edge.End, "Cannot get layout properties of multi-edge shorthands");
         if (edge == Edge.Left)
         {
-            if (this.nodeLayout.Direction == Direction.RTL)
+            if (nodeLayout.Direction == Direction.RTL)
             {
-                return this.nodeLayout.Margin[(int)Edge.End];
+                return nodeLayout.Margin[(int)Edge.End];
             }
-            return this.nodeLayout.Margin[(int)Edge.Start];
+
+            return nodeLayout.Margin[(int)Edge.Start];
         }
+
         if (edge == Edge.Right)
         {
-            if (this.nodeLayout.Direction == Direction.RTL)
+            if (nodeLayout.Direction == Direction.RTL)
             {
-                return this.nodeLayout.Margin[(int)Edge.Start];
+                return nodeLayout.Margin[(int)Edge.Start];
             }
-            return this.nodeLayout.Margin[(int)Edge.End];
+
+            return nodeLayout.Margin[(int)Edge.End];
         }
-        return this.nodeLayout.Margin[(int)edge];
+
+        return nodeLayout.Margin[(int)edge];
     }
 
     // LayoutGetBorder gets border
@@ -149,21 +135,25 @@ public partial class Node
             "Cannot get layout properties of multi-edge shorthands");
         if (edge == Edge.Left)
         {
-            if (this.nodeLayout.Direction == Direction.RTL)
+            if (nodeLayout.Direction == Direction.RTL)
             {
-                return this.nodeLayout.Border[(int)Edge.End];
+                return nodeLayout.Border[(int)Edge.End];
             }
-            return this.nodeLayout.Border[(int)Edge.Start];
+
+            return nodeLayout.Border[(int)Edge.Start];
         }
+
         if (edge == Edge.Right)
         {
-            if (this.nodeLayout.Direction == Direction.RTL)
+            if (nodeLayout.Direction == Direction.RTL)
             {
-                return this.nodeLayout.Border[(int)Edge.Start];
+                return nodeLayout.Border[(int)Edge.Start];
             }
-            return this.nodeLayout.Border[(int)Edge.End];
+
+            return nodeLayout.Border[(int)Edge.End];
         }
-        return this.nodeLayout.Border[(int)edge];
+
+        return nodeLayout.Border[(int)edge];
     }
 
     // LayoutGetPadding gets padding
@@ -173,86 +163,56 @@ public partial class Node
             "Cannot get layout properties of multi-edge shorthands");
         if (edge == Edge.Left)
         {
-            if (this.nodeLayout.Direction == Direction.RTL)
+            if (nodeLayout.Direction == Direction.RTL)
             {
-                return this.nodeLayout.Padding[(int)Edge.End];
+                return nodeLayout.Padding[(int)Edge.End];
             }
-            return this.nodeLayout.Padding[(int)Edge.Start];
+
+            return nodeLayout.Padding[(int)Edge.Start];
         }
+
         if (edge == Edge.Right)
         {
-            if (this.nodeLayout.Direction == Direction.RTL)
+            if (nodeLayout.Direction == Direction.RTL)
             {
-                return this.nodeLayout.Padding[(int)Edge.Start];
+                return nodeLayout.Padding[(int)Edge.Start];
             }
-            return this.nodeLayout.Padding[(int)Edge.End];
+
+            return nodeLayout.Padding[(int)Edge.End];
         }
-        return this.nodeLayout.Padding[(int)edge];
+
+        return nodeLayout.Padding[(int)edge];
     }
 
-    internal Direction LayoutGetDirection()
-    {
-        return this.nodeLayout.Direction;
-    }
+    internal Direction LayoutGetDirection() => nodeLayout.Direction;
 
-    internal bool LayoutGetHadOverflow()
-    {
-        return this.nodeLayout.HadOverflow;
-    }
+    internal bool LayoutGetHadOverflow() => nodeLayout.HadOverflow;
 
     #endregion
 
     #region other props
 
-    public void SetMeasureFunc(MeasureFunc measureFunc)
-    {
-        Flex.SetMeasureFunc(this, measureFunc);
-    }
+    public void SetMeasureFunc(MeasureFunc measureFunc) => Flex.SetMeasureFunc(this, measureFunc);
 
-    public MeasureFunc GetMeasureFunc()
-    {
-        return this.measureFunc;
-    }
+    public MeasureFunc GetMeasureFunc() => measureFunc;
 
-    public void SetBaselineFunc(BaselineFunc baselineFunc)
-    {
-        this.baselineFunc = baselineFunc;
-    }
+    public void SetBaselineFunc(BaselineFunc baselineFunc) => this.baselineFunc = baselineFunc;
 
-    public BaselineFunc GetBaselineFunc()
-    {
-        return this.baselineFunc;
-    }
+    public BaselineFunc GetBaselineFunc() => baselineFunc;
 
-    public void SetPrintFunc(PrintFunc printFunc)
-    {
-        this.printFunc = printFunc;
-    }
+    public void SetPrintFunc(PrintFunc printFunc) => this.printFunc = printFunc;
 
-    public PrintFunc GetPrintFunc()
-    {
-        return this.printFunc;
-    }
+    public PrintFunc GetPrintFunc() => printFunc;
+
     #endregion
 
     #region tree
-    public Node GetChild(int idx)
-    {
-        return Flex.GetChild(this, idx);
-    }
-    public void AddChild(Node child)
-    {
-        Flex.InsertChild(this, child, ChildrenCount);
-    }
-    public void InsertChild(Node child, int idx)
-    {
-        Flex.InsertChild(this, child, idx);
-    }
-    public void RemoveChild(Node child)
-    {
-        Flex.RemoveChild(this, child);
-    }
+
+    public Node GetChild(int idx) => Flex.GetChild(this, idx);
+    public void AddChild(Node child) => Flex.InsertChild(this, child, ChildrenCount);
+
+    public void InsertChild(Node child, int idx) => Flex.InsertChild(this, child, idx);
+    public void RemoveChild(Node child) => Flex.RemoveChild(this, child);
+
     #endregion
-
-
 }

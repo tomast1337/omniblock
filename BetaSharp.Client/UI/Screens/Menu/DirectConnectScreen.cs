@@ -1,9 +1,9 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Network;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Client.UI.Screens.Menu.Net;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.Menu;
 
@@ -22,11 +22,19 @@ public class DirectConnectScreen(
         Root.Style.JustifyContent = Justify.Center;
         Root.Style.SetPadding(20);
 
-        Label title = new() { Text = Translations.Get("gui.directConnect"), TextColor = Color.White };
+        Label title = new()
+        {
+            Text = Translations.Get("gui.directConnect"),
+            TextColor = Color.White
+        };
         title.Style.MarginBottom = 10;
         Root.AddChild(title);
 
-        Label label = new() { Text = Translations.Get("multiplayer.serverAddress"), TextColor = Color.GrayA0 };
+        Label label = new()
+        {
+            Text = Translations.Get("multiplayer.serverAddress"),
+            TextColor = Color.GrayA0
+        };
         label.Style.MarginBottom = 4;
         Root.AddChild(label);
 
@@ -43,7 +51,7 @@ public class DirectConnectScreen(
         btnJoin.Text = Translations.Get("gui.joinServer");
         btnJoin.Style.Width = 100;
         btnJoin.Style.SetMargin(0, 4, 0, 0);
-        btnJoin.OnClick += (e) =>
+        btnJoin.OnClick += e =>
         {
             serverData.Ip = _txfAddress.Text;
             Context.Options.LastServer = _txfAddress.Text;
@@ -55,7 +63,7 @@ public class DirectConnectScreen(
         Button btnCancel = CreateButton();
         btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 100;
-        btnCancel.OnClick += (e) => Context.Navigator.Navigate(parent);
+        btnCancel.OnClick += e => Context.Navigator.Navigate(parent);
         buttonPanel.AddChild(btnCancel);
 
         Root.AddChild(buttonPanel);
@@ -66,7 +74,11 @@ public class DirectConnectScreen(
         string[] parts = ip.Split(':');
         string host = parts[0];
         int portNum = 25565;
-        if (parts.Length > 1) int.TryParse(parts[1], out portNum);
+        if (parts.Length > 1)
+        {
+            int.TryParse(parts[1], out portNum);
+        }
+
         Context.Navigator.Navigate(new ConnectingScreen(Context, networkContext, host, portNum));
     }
 }

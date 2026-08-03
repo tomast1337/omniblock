@@ -1,23 +1,22 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.UI.Rendering;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Controls.HUD;
 
 public class ControlTooltipBar : UIElement
 {
-    private readonly IControllerState _controllerState;
-    private readonly GameOptions _options;
-    private readonly TextRenderer _textRenderer;
-    private readonly Func<InGameTipContext?>? _inGameSource;
-    private readonly UIScreen? _screen;
-    private readonly List<ActionTip> _tips = [];
-
     private const int IconSize = 16;
     private const int TextVerticalOffset = 4;
     private const int Spacing = 10;
+    private readonly IControllerState _controllerState;
+    private readonly Func<InGameTipContext?>? _inGameSource;
+    private readonly GameOptions _options;
+    private readonly UIScreen? _screen;
+    private readonly TextRenderer _textRenderer;
+    private readonly List<ActionTip> _tips = [];
 
     public ControlTooltipBar(UIContext context, UIScreen screen)
     {
@@ -58,6 +57,7 @@ public class ControlTooltipBar : UIElement
                 base.Render(renderer);
                 return;
             }
+
             ControlTooltip.PopulateInGameTips(ctx, _tips);
         }
         else

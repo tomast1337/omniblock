@@ -1,10 +1,10 @@
 using BetaSharp.Blocks;
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Rendering;
 using BetaSharp.Client.UI.Screens.Menu.World;
 using BetaSharp.Items;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Controls.ListItems;
 

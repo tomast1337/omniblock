@@ -1,7 +1,7 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.UI.Rendering;
 using BetaSharp.Stats;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Controls.Achievement;
 
@@ -43,8 +43,8 @@ public class AchievementCard : UIElement
         DrawAchievementIcon(renderer, unlocked, canUnlock);
 
         // --- Titles and Description ---
-        Color titleColor = unlocked ? (_achievement.isChallenge() ? Color.AchievementChallengeYellow : Color.White)
-                                   : (canUnlock ? Color.GrayE0 : Color.Gray80);
+        Color titleColor = unlocked ? _achievement.isChallenge() ? Color.AchievementChallengeYellow : Color.White
+            : canUnlock ? Color.GrayE0 : Color.Gray80;
 
         string name = Translations.Get(_achievement.StatName);
         renderer.DrawText(name, 46, 8, titleColor);
@@ -78,11 +78,10 @@ public class AchievementCard : UIElement
         TextureHandle bgTexture = renderer.TextureManager.GetTextureId("/achievement/bg.png");
         renderer.TextureManager.BindTexture(bgTexture);
 
-        int iconX = 10;
+        const int iconX = 10;
         int iconY = (int)ComputedHeight / 2 - 13;
 
-        if (_achievement.isChallenge()) renderer.DrawTexturedModalRect(bgTexture, iconX - 2, iconY - 2, 26, 202, 26, 26);
-        else renderer.DrawTexturedModalRect(bgTexture, iconX - 2, iconY - 2, 0, 202, 26, 26);
+        renderer.DrawTexturedModalRect(bgTexture, iconX - 2, iconY - 2, _achievement.isChallenge() ? 26 : 0, 202, 26, 26);
 
         renderer.DrawItem(_achievement.icon, iconX + 3, iconY + 3);
     }

@@ -1,11 +1,11 @@
 using System.Diagnostics;
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Client.UI.Screens.Menu.Options;
 using BetaSharp.Stats;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.InGame;
 
@@ -25,7 +25,11 @@ public class IngameMenuScreen(
 
         Root.AddChild(new Background(BackgroundType.World));
 
-        Label title = new() { Text = Translations.Get("gamemenu.title"), TextColor = Color.White };
+        Label title = new()
+        {
+            Text = Translations.Get("gamemenu.title"),
+            TextColor = Color.White
+        };
         title.Style.MarginTop = 20;
         //title.Style.MarginBottom = 8;
         Root.AddChild(title);
@@ -33,7 +37,7 @@ public class IngameMenuScreen(
 
         Button btnBack = CreateButton();
         btnBack.Text = Translations.Get("gamemenu.backToGame");
-        btnBack.OnClick += (e) =>
+        btnBack.OnClick += e =>
         {
             Context.Navigator.Navigate(null);
             onResume();
@@ -51,12 +55,12 @@ public class IngameMenuScreen(
         Button btnAchievements = CreateButton();
         btnAchievements.Text = Translations.Get("achievements.title");
         btnAchievements.Style.Width = 98;
-        btnAchievements.OnClick += (e) => Context.Navigator.Navigate(new AchievementsScreen(Context, this, statFileWriter));
+        btnAchievements.OnClick += e => Context.Navigator.Navigate(new AchievementsScreen(Context, this, statFileWriter));
 
         Button btnStats = CreateButton();
         btnStats.Text = Translations.Get("gui.stats");
         btnStats.Style.Width = 98;
-        btnStats.OnClick += (e) => Context.Navigator.Navigate(new StatsScreen(Context, this, statFileWriter));
+        btnStats.OnClick += e => Context.Navigator.Navigate(new StatsScreen(Context, this, statFileWriter));
 
         rowStats.AddChild(btnAchievements);
         rowStats.AddChild(btnStats);
@@ -72,12 +76,12 @@ public class IngameMenuScreen(
         Button btnFeedback = CreateButton();
         btnFeedback.Text = Translations.Get("menu.sendFeedback");
         btnFeedback.Style.Width = 98;
-        btnFeedback.OnClick += (e) => OpenLink("https://git.gay/betasharp-official/betasharp/issues/new/choose");
+        btnFeedback.OnClick += e => OpenLink("https://git.gay/betasharp-official/betasharp/issues/new/choose");
 
         Button btnReport = CreateButton();
         btnReport.Text = Translations.Get("menu.reportBugs");
         btnReport.Style.Width = 98;
-        btnReport.OnClick += (e) => OpenLink("https://git.gay/betasharp-official/betasharp/issues/new?template=.github%2fISSUE_TEMPLATE%2fbug_report.yml");
+        btnReport.OnClick += e => OpenLink("https://git.gay/betasharp-official/betasharp/issues/new?template=.github%2fISSUE_TEMPLATE%2fbug_report.yml");
 
         feedbackRow.AddChild(btnFeedback);
         feedbackRow.AddChild(btnReport);
@@ -90,7 +94,7 @@ public class IngameMenuScreen(
         optionsRow.Style.MarginLeft = -26;
 
         ImageButton btnLang = CreateImageButton();
-        btnLang.OnClick += (e) => Context.Navigator.Navigate(new LanguageSelectionScreen(Context, this));
+        btnLang.OnClick += e => Context.Navigator.Navigate(new LanguageSelectionScreen(Context, this));
         btnLang.Texture = Renderer.TextureManager.GetTextureId("/gui/Globe.png");
         btnLang.U = 0;
         btnLang.V = 0;
@@ -100,7 +104,7 @@ public class IngameMenuScreen(
 
         Button btnOptions = CreateButton();
         btnOptions.Text = Translations.Get("menu.options");
-        btnOptions.OnClick += (e) => Context.Navigator.Navigate(new OptionsScreen(Context, this, texturePacks));
+        btnOptions.OnClick += e => Context.Navigator.Navigate(new OptionsScreen(Context, this, texturePacks));
         btnOptions.Style.MarginBottom = 4;
         optionsRow.AddChild(btnOptions);
 
@@ -108,9 +112,9 @@ public class IngameMenuScreen(
 
         Button btnQuit = CreateButton();
         btnQuit.Text = quitButtonText;
-        btnQuit.OnClick += (e) =>
+        btnQuit.OnClick += e =>
         {
-            statFileWriter.ReadStat(global::BetaSharp.Stats.Stats.LeaveGameStat, 1);
+            statFileWriter.ReadStat(Stats.Stats.LeaveGameStat, 1);
             quit();
             Context.Navigator.Navigate(null);
         };
@@ -123,11 +127,10 @@ public class IngameMenuScreen(
         Root.AddChild(savingIndicator);
     }
 
-    private void OpenLink(string url) {
+    private void OpenLink(string url) =>
         Process.Start(new ProcessStartInfo
         {
             FileName = url,
             UseShellExecute = true
         });
-    }
 }

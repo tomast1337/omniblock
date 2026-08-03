@@ -1,9 +1,9 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Controls;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Controls.ListItems;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Worlds;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Screens.Menu.World;
 
@@ -12,10 +12,10 @@ public class SelectWorldTypeScreen(
     CreateWorldScreen parent,
     WorldType currentType) : UIScreen(context)
 {
-    private ScrollView _scrollView = null!;
-    private readonly List<WorldType> _types = [.. WorldType.WorldTypes.Where(t => t != null && t.CanBeCreated)];
-    private int _selectedIndex = -1;
     private readonly List<SelectWorldTypeListItem> _listItems = [];
+    private readonly List<WorldType> _types = [.. WorldType.WorldTypes.Where(t => t != null && t.CanBeCreated)];
+    private ScrollView _scrollView = null!;
+    private int _selectedIndex = -1;
 
     protected override void Init()
     {
@@ -23,7 +23,11 @@ public class SelectWorldTypeScreen(
         Root.Style.AlignItems = Align.Center;
         Root.Style.SetPadding(20);
 
-        Label title = new() { Text = Translations.Get("selectWorld.selectWorldType"), TextColor = Color.White };
+        Label title = new()
+        {
+            Text = Translations.Get("selectWorld.selectWorldType"),
+            TextColor = Color.White
+        };
         title.Style.MarginBottom = 10;
         Root.AddChild(title);
 
@@ -43,7 +47,7 @@ public class SelectWorldTypeScreen(
         btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.Width = 100;
         btnDone.Style.SetMargin(2);
-        btnDone.OnClick += (e) =>
+        btnDone.OnClick += e =>
         {
             if (_selectedIndex >= 0)
             {
@@ -57,13 +61,16 @@ public class SelectWorldTypeScreen(
         btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 100;
         btnCancel.Style.SetMargin(2);
-        btnCancel.OnClick += (e) => Context.Navigator.Navigate(parent);
+        btnCancel.OnClick += e => Context.Navigator.Navigate(parent);
         buttonPanel.AddChild(btnCancel);
 
         Root.AddChild(buttonPanel);
 
         _selectedIndex = _types.IndexOf(currentType);
-        if (_selectedIndex >= 0) SelectItem(_selectedIndex);
+        if (_selectedIndex >= 0)
+        {
+            SelectItem(_selectedIndex);
+        }
     }
 
     private void PopulateTypeList()
@@ -75,8 +82,8 @@ public class SelectWorldTypeScreen(
                 .SetDescription(Translations.Get($"selectWorld.type.{type.Name.ToLowerInvariant()}.description"));
 
             int index = _listItems.Count;
-            var item = new SelectWorldTypeListItem(type);
-            item.OnClick += (e) => SelectItem(index);
+            SelectWorldTypeListItem item = new(type);
+            item.OnClick += e => SelectItem(index);
             _scrollView.AddContent(item);
             _listItems.Add(item);
         }
@@ -85,7 +92,14 @@ public class SelectWorldTypeScreen(
     private void SelectItem(int index)
     {
         _selectedIndex = index;
-        foreach (SelectWorldTypeListItem item in _listItems) item.IsSelected = false;
-        if (index >= 0 && index < _listItems.Count) _listItems[index].IsSelected = true;
+        foreach (SelectWorldTypeListItem item in _listItems)
+        {
+            item.IsSelected = false;
+        }
+
+        if (index >= 0 && index < _listItems.Count)
+        {
+            _listItems[index].IsSelected = true;
+        }
     }
 }

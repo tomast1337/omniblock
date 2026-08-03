@@ -1,6 +1,6 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.UI.Rendering;
 using BetaSharp.Entities;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Controls.HUD;
 

@@ -1,17 +1,12 @@
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.UI.Rendering;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Controls.Core;
 
 public class Button : UIElement
 {
-    public string Text { get; set; } = "";
-    public Color TextColor { get; set; } = Color.GrayE0;
-    public Color HoverTextColor { get; set; } = Color.HoverYellow;
     public Action ClickSound;
-
-    public override bool DoTextMeasuring => true;
 
 
     public Button(Action clickSound)
@@ -19,7 +14,7 @@ public class Button : UIElement
         Style.Width = 200;
         Style.Height = 20;
 
-        OnClick += (e) =>
+        OnClick += e =>
         {
             if (Enabled)
             {
@@ -27,18 +22,24 @@ public class Button : UIElement
             }
         };
 
-        OnMouseEnter += (e) =>
+        OnMouseEnter += e =>
         {
             IsHovered = true;
             e.Handled = true;
         };
 
-        OnMouseLeave += (e) =>
+        OnMouseLeave += e =>
         {
             IsHovered = false;
             e.Handled = true;
         };
     }
+
+    public string Text { get; set; } = "";
+    public Color TextColor { get; set; } = Color.GrayE0;
+    public Color HoverTextColor { get; set; } = Color.HoverYellow;
+
+    public override bool DoTextMeasuring => true;
 
     public override List<string> GetInspectorProperties()
     {
@@ -50,18 +51,18 @@ public class Button : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        int hoverState = !Enabled ? 0 : (IsHovered ? 2 : 1);
+        int hoverState = !Enabled ? 0 : IsHovered ? 2 : 1;
 
         TextureHandle texture = renderer.TextureManager.GetTextureId("/gui/gui.png");
 
         // Use fixed UV height of 20 to avoid reading into the next button in the spritesheet
-        float uvHeight = 20;
+        const float uvHeight = 20;
         float vStart = 46 + hoverState * 20;
 
         renderer.DrawTexturedModalRect(texture, 0, 0, 0, vStart, ComputedWidth / 2, ComputedHeight, ComputedWidth / 2, uvHeight);
         renderer.DrawTexturedModalRect(texture, ComputedWidth / 2, 0, 200 - ComputedWidth / 2, vStart, ComputedWidth / 2, ComputedHeight, ComputedWidth / 2, uvHeight);
 
-        Color tColor = !Enabled ? Color.GrayA0 : (IsHovered ? HoverTextColor : TextColor);
+        Color tColor = !Enabled ? Color.GrayA0 : IsHovered ? HoverTextColor : TextColor;
         float textY = (float)Math.Floor(ComputedHeight / 2.0) - 4;
         renderer.DrawScrollingCenteredText(Text, (int)ComputedWidth, (int)ComputedHeight, textY, tColor);
 

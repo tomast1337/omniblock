@@ -1,9 +1,9 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
-using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Entities.Models;
+using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.Rendering.Blocks.Entities;
 
