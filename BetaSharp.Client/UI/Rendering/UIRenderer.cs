@@ -371,7 +371,7 @@ public class UIRenderer
 
         TextureHandle texHandle = itemId < 256 ? _terrainTexture : _itemsTexture;
 
-        int colorMultiplier = Item.ITEMS[itemId]!.getColorMultiplier(itemMeta);
+        int colorMultiplier = Item.Items[itemId]!.GetColorMultiplier(itemMeta);
         float finalX = MathF.Floor(x + _translateX);
         float finalY = MathF.Floor(y + _translateY);
         float u0 = (textureId % 16 * 16) / 256f;
@@ -413,7 +413,7 @@ public class UIRenderer
 
             TextureHandle texHandle = stack.ItemId < 256 ? _terrainTexture : _itemsTexture;
 
-            int colorMultiplier = Item.ITEMS[stack.ItemId]!.getColorMultiplier(stack.getDamage());
+            int colorMultiplier = Item.Items[stack.ItemId]!.GetColorMultiplier(stack.getDamage());
             uint rgba = (uint)Color.FromRgb((uint)colorMultiplier);
 
             float finalX = MathF.Floor(x + _translateX);

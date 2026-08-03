@@ -110,7 +110,7 @@ public class ItemRenderer : EntityRenderer
             float blue;
             if (useCustomDisplayColor)
             {
-                colorMultiplier = Item.ITEMS[stack.ItemId].getColorMultiplier(stack.getDamage());
+                colorMultiplier = Item.Items[stack.ItemId].GetColorMultiplier(stack.getDamage());
                 red = (colorMultiplier >> 16 & 255) / 255.0F;
                 green = (colorMultiplier >> 8 & 255) / 255.0F;
                 blue = (colorMultiplier & 255) / 255.0F;
@@ -159,7 +159,7 @@ public class ItemRenderer : EntityRenderer
             GLManager.GL.Scale(1.0F, 1.0F, -1.0F);
             GLManager.GL.Rotate(210.0F, 1.0F, 0.0F, 0.0F);
             GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
-            int itemColor = Item.ITEMS[itemId].getColorMultiplier(itemDamage);
+            int itemColor = Item.Items[itemId].GetColorMultiplier(itemDamage);
             blue = (itemColor >> 16 & 255) / 255.0F;
             float greenChannel = (itemColor >> 8 & 255) / 255.0F;
             float blueChannel = (itemColor & 255) / 255.0F;
@@ -184,7 +184,7 @@ public class ItemRenderer : EntityRenderer
                 textureManager.BindTexture(textureManager.GetTextureId("/gui/items.png"));
             }
 
-            int colorMultiplier = Item.ITEMS[itemId].getColorMultiplier(itemDamage);
+            int colorMultiplier = Item.Items[itemId].GetColorMultiplier(itemDamage);
             float red = (colorMultiplier >> 16 & 255) / 255.0F;
             float green = (colorMultiplier >> 8 & 255) / 255.0F;
             blue = (colorMultiplier & 255) / 255.0F;

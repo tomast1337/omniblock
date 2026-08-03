@@ -7,13 +7,13 @@ internal class ItemLeaves : ItemBlock
 {
     public ItemLeaves(int id) : base(id)
     {
-        setMaxDamage(0);
-        setHasSubtypes(true);
+        SetMaxDamage(0);
+        SetHasSubtypes(true);
     }
 
-    public override int getPlacementMetadata(int meta) => meta | 8;
+    protected override int GetPlacementMetadata(int meta) => meta | 8;
 
-    public override int getTextureId(int meta) => BlockRegistry.Get("leaves").GetTexture(0, meta);
+    public override int GetTextureId(int meta) => BlockRegistry.Get("leaves").GetTexture(0, meta);
 
-    public override int getColorMultiplier(int leafType) => (leafType & 1) == 1 ? FoliageColors.getSpruceColor() : (leafType & 2) == 2 ? FoliageColors.getBirchColor() : FoliageColors.getDefaultColor();
+    public override int GetColorMultiplier(int leafType) => (leafType & 1) == 1 ? FoliageColors.getSpruceColor() : (leafType & 2) == 2 ? FoliageColors.getBirchColor() : FoliageColors.getDefaultColor();
 }

@@ -16,7 +16,7 @@ internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
     private BetaSharp _game;
     private int _resolution = 16;
 
-    public CompassSprite(BetaSharp game) : base(Item.ByName("compass").getTextureId(0))
+    public CompassSprite(BetaSharp game) : base(Item.ByName("compass").GetTextureId(0))
     {
         _game = game;
         Atlas = FxImage.Items;

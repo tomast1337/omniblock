@@ -12,7 +12,7 @@ internal sealed class BowBehavior : IItemBehavior
     {
         if (player.Inventory.ConsumeInventoryItem(s_arrow.Id))
         {
-            world.Broadcaster.PlaySoundAtEntity(player, "random.bow", 1.0F, 1.0F / (Item.itemRand.NextFloat() * 0.4F + 0.8F));
+            world.Broadcaster.PlaySoundAtEntity(player, "random.bow", 1.0F, 1.0F / (Item.s_itemRand.NextFloat() * 0.4F + 0.8F));
             if (!world.IsRemote)
             {
                 world.SpawnEntity(ArrowBehavior.Shoot(world, player));

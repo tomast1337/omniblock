@@ -14,8 +14,8 @@ namespace BetaSharp.Items;
 
 public class Item
 {
-    internal static JavaRandom itemRand = new();
-    public static Item?[] ITEMS = new Item[32000];
+    internal static JavaRandom s_itemRand = new();
+    public static Item?[] Items = new Item[32000];
 
     private static Block[]? s_spadeBlocksLazy;
     internal static Block[] s_spadeBlocks => s_spadeBlocksLazy ??=
@@ -38,7 +38,7 @@ public class Item
     public static Item ByName(string name)
     {
         ItemDefinition? def = DefaultRegistries.Items.Get(new ResourceLocation(Namespace.BetaSharp, name))?.Value;
-        if (def is null || ITEMS[def.ProtocolId] is not { } item)
+        if (def is null || Items[def.ProtocolId] is not { } item)
         {
             throw new ArgumentException($"Unknown item: '{name}'", nameof(name));
         }
@@ -53,23 +53,23 @@ public class Item
     private Item _craftingReturnItem;
     public bool Handheld;
     public bool HasSubtypes;
-    private int MaxCount = 64;
+    private int _maxCount = 64;
     private int _maxDamage;
     internal int _textureId;
     private string _translationKey;
 
     internal Item(int id)
     {
-        this.Id = 256 + id;
-        if (ITEMS[256 + id] != null)
+        Id = 256 + id;
+        if (Items[256 + id] != null)
         {
             _logger.LogInformation($"CONFLICT @ {id}");
         }
 
-        ITEMS[256 + id] = this;
+        Items[256 + id] = this;
     }
 
-    public virtual IReadOnlyList<string> GetItemAlias => _behavior?.GetItemAliases(this) ?? [];
+    public IReadOnlyList<string> GetItemAlias => _behavior?.GetItemAliases(this) ?? [];
 
     public Item SetBehavior(IItemBehavior behavior)
     {
@@ -80,89 +80,83 @@ public class Item
 
     public TBehavior? GetBehavior<TBehavior>() where TBehavior : class, IItemBehavior => _behavior as TBehavior;
 
-    public Item setTextureId(int textureId)
+    public Item SetTextureId(int textureId)
     {
-        this._textureId = textureId;
+        _textureId = textureId;
         return this;
     }
 
-    public Item setMaxCount(int maxCount)
+    public Item SetMaxCount(int maxCount)
     {
-        this.MaxCount = maxCount;
+        _maxCount = maxCount;
         return this;
     }
 
-    public Item setTexturePosition(int x, int y)
-    {
-        _textureId = x + y * 16;
-        return this;
-    }
+    public virtual int GetTextureId(int damage) => _behavior?.GetTextureId(this, damage) ?? _textureId;
 
-    public virtual int getTextureId(int damage) => _behavior?.GetTextureId(this, damage) ?? _textureId;
-
-    public int getTextureId(ItemStack stack) => getTextureId(stack.getDamage());
+    public int GetTextureId(ItemStack stack) => GetTextureId(stack.getDamage());
 
     public virtual bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta) => _behavior?.UseOnBlock(this, itemStack, entityPlayer, world, x, y, z, meta) ?? false;
 
-    public virtual float getMiningSpeedMultiplier(ItemStack itemStack, Block block) => _behavior?.GetMiningSpeedMultiplier(this, itemStack, block) ?? 1.0F;
+    public float GetMiningSpeedMultiplier(ItemStack itemStack, Block block) => _behavior?.GetMiningSpeedMultiplier(this, itemStack, block) ?? 1.0F;
 
-    public virtual ItemStack use(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer) => _behavior?.Use(this, itemStack, world, entityPlayer) ?? itemStack;
+    public ItemStack Use(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer) => _behavior?.Use(this, itemStack, world, entityPlayer) ?? itemStack;
 
-    public int getMaxCount() => MaxCount;
+    public int GetMaxCount() => _maxCount;
 
-    public virtual int getPlacementMetadata(int meta) => 0;
+    protected virtual int GetPlacementMetadata(int meta) => 0;
 
-    public bool getHasSubtypes() => HasSubtypes;
+    public bool GetHasSubtypes() => HasSubtypes;
 
-    internal Item setHasSubtypes(bool has)
+    internal Item SetHasSubtypes(bool has)
     {
         HasSubtypes = has;
         return this;
     }
 
-    public int getMaxDamage() => _maxDamage;
+    public int GetMaxDamage() => _maxDamage;
 
-    internal Item setMaxDamage(int dmg)
+    internal Item SetMaxDamage(int dmg)
     {
         _maxDamage = dmg;
         return this;
     }
 
-    public bool isDamagable() => _maxDamage > 0 && !HasSubtypes;
+    public bool IsDamagable() => _maxDamage > 0 && !HasSubtypes;
 
-    public virtual bool postHit(ItemStack itemStack, EntityLiving entityLiving, EntityPlayer entityPlayer) => _behavior?.PostHit(this, itemStack, entityLiving, entityPlayer) ?? false;
+    public bool PostHit(ItemStack itemStack, EntityLiving entityLiving, EntityPlayer entityPlayer) => _behavior?.PostHit(this, itemStack, entityLiving, entityPlayer) ?? false;
 
-    public virtual bool postMine(ItemStack itemStack, int blockId, int x, int y, int z, EntityLiving entityLiving) => _behavior?.PostMine(this, itemStack, blockId, x, y, z, entityLiving) ?? false;
+    public bool PostMine(ItemStack itemStack, int blockId, int x, int y, int z, EntityLiving entityLiving) => _behavior?.PostMine(this, itemStack, blockId, x, y, z, entityLiving) ?? false;
 
-    public virtual int getAttackDamage(Entity entity) => _behavior?.GetAttackDamage(this, entity) ?? 1;
+    public int GetAttackDamage(Entity entity) => _behavior?.GetAttackDamage(this, entity) ?? 1;
 
-    public virtual bool isSuitableFor(Block block) => _behavior?.IsSuitableFor(this, block) ?? false;
+    public bool IsSuitableFor(Block block) => _behavior?.IsSuitableFor(this, block) ?? false;
 
-    public virtual void useOnEntity(ItemStack itemStack, EntityLiving entityLiving, EntityPlayer entityPlayer) => _behavior?.UseOnEntity(this, itemStack, entityLiving, entityPlayer);
+    public void useOnEntity(ItemStack itemStack, EntityLiving entityLiving, EntityPlayer entityPlayer) => _behavior?.UseOnEntity(this, itemStack, entityLiving, entityPlayer);
 
-    public Item setHandheld()
+    public Item SetHandheld()
     {
         Handheld = true;
         return this;
     }
 
-    public virtual bool isHandheld() => _behavior?.IsHandheld(this) ?? Handheld;
+    public bool IsHandheld() => _behavior?.IsHandheld(this) ?? Handheld;
 
-    public virtual bool isHandheldRod() => _behavior?.IsHandheldRod(this) ?? false;
+    public bool IsHandheldRod() => _behavior?.IsHandheldRod(this) ?? false;
 
-    public Item setItemName(string name)
+    public Item SetItemName(string name)
     {
-        _translationKey = "item." + name;
+        _translationKey = $"item.{name}";
         return this;
     }
 
-    public virtual string getItemName() => _translationKey;
+    public virtual string GetItemName() => _translationKey;
 
-    public virtual string getItemNameIS(ItemStack itemStack) => _behavior?.GetItemNameIS(this, itemStack) ?? _translationKey;
+    public virtual string GetItemNameIs(ItemStack itemStack) => _behavior?.GetItemNameIS(this, itemStack) ?? _translationKey;
 
-    public Item setCraftingReturnItem(Item item)
+    public Item SetCraftingReturnItem(Item item)
     {
-        if (MaxCount > 1)
+        if (_maxCount > 1)
         {
             throw new ArgumentException("Max stack size must be 1 for items with crafting results");
         }
@@ -171,22 +165,22 @@ public class Item
         return this;
     }
 
-    public Item getContainerItem() => _craftingReturnItem;
+    public Item GetContainerItem() => _craftingReturnItem;
 
-    public bool hasContainerItem() => _craftingReturnItem != null;
+    public bool HasContainerItem() => _craftingReturnItem != null;
 
-    public string getStatName()
-        => StatCollector.TranslateToLocal(getItemName() + ".name");
+    public string GetStatName()
+        => StatCollector.TranslateToLocal(GetItemName() + ".name");
 
-    public virtual int getColorMultiplier(int color) => 0xFFFFFF;
+    public virtual int GetColorMultiplier(int color) => 0xFFFFFF;
 
-    public virtual void inventoryTick(ItemStack itemStack, IWorldContext world, Entity entity, int slotIndex, bool shouldUpdate) => _behavior?.InventoryTick(this, itemStack, world, entity, slotIndex, shouldUpdate);
+    public void InventoryTick(ItemStack itemStack, IWorldContext world, Entity entity, int slotIndex, bool shouldUpdate) => _behavior?.InventoryTick(this, itemStack, world, entity, slotIndex, shouldUpdate);
 
-    public virtual void onCraft(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer) => _behavior?.OnCraft(this, itemStack, world, entityPlayer);
+    public void OnCraft(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer) => _behavior?.OnCraft(this, itemStack, world, entityPlayer);
 
-    public virtual bool isNetworkSynced() => _behavior?.IsNetworkSynced(this) ?? false;
+    public bool IsNetworkSynced() => _behavior?.IsNetworkSynced(this) ?? false;
 
-    public virtual Message? getUpdatePacket(ItemStack stack, IWorldContext world, EntityPlayer player) => _behavior?.GetUpdatePacket(this, stack, world, player);
+    public Message? GetUpdatePacket(ItemStack stack, IWorldContext world, EntityPlayer player) => _behavior?.GetUpdatePacket(this, stack, world, player);
 
     internal static Func<Block, bool> PickaxeSuitableFor(ToolMaterial material) => block =>
     {

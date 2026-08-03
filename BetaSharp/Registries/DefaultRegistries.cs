@@ -57,7 +57,7 @@ public static class DefaultRegistries
         foreach (ItemDefinition definition in itemBootLoader)
         {
             Items.Register(definition.ProtocolId, new ResourceLocation(definition.Namespace, definition.Name), definition);
-            Item.ITEMS[definition.ProtocolId] = ItemFactory.Create(definition);
+            Item.Items[definition.ProtocolId] = ItemFactory.Create(definition);
         }
 
         foreach (ItemDefinition definition in itemBootLoader)

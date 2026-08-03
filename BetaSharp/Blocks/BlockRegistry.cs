@@ -65,12 +65,12 @@ public static class BlockRegistry
     {
         var specialCased = new Dictionary<string, Func<int, Item>>
         {
-            ["wool"] = id => new ItemCloth(id - 256).setItemName("cloth"),
-            ["log"] = id => new ItemLog(id - 256).setItemName("log"),
-            ["slab"] = id => new ItemSlab(id - 256).setItemName("stoneSlab"),
-            ["sapling"] = id => new ItemSapling(id - 256).setItemName("sapling"),
-            ["grass"] = id => new ItemGrass(id - 256).setItemName("grass"),
-            ["leaves"] = id => new ItemLeaves(id - 256).setItemName("leaves"),
+            ["wool"] = id => new ItemCloth(id - 256).SetItemName("cloth"),
+            ["log"] = id => new ItemLog(id - 256).SetItemName("log"),
+            ["slab"] = id => new ItemSlab(id - 256).SetItemName("stoneSlab"),
+            ["sapling"] = id => new ItemSapling(id - 256).SetItemName("sapling"),
+            ["grass"] = id => new ItemGrass(id - 256).SetItemName("grass"),
+            ["leaves"] = id => new ItemLeaves(id - 256).SetItemName("leaves"),
             ["piston"] = id => new ItemPiston(id - 256),
             ["sticky_piston"] = id => new ItemPiston(id - 256),
         };
@@ -78,7 +78,7 @@ public static class BlockRegistry
         foreach (BlockDefinition def in definitions)
         {
             int id = def.ProtocolId;
-            Item.ITEMS[id] = specialCased.TryGetValue(def.Name, out Func<int, Item>? factory)
+            Item.Items[id] = specialCased.TryGetValue(def.Name, out Func<int, Item>? factory)
                 ? factory(id)
                 : new ItemBlock(id - 256);
 

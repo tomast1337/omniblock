@@ -234,10 +234,10 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                 GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
                 GLManager.GL.Scale(heldItemScale, -heldItemScale, heldItemScale);
             }
-            else if (Item.ITEMS[heldItem.ItemId].isHandheld())
+            else if (Item.Items[heldItem.ItemId].IsHandheld())
             {
                 heldItemScale = 10.0F / 16.0F;
-                if (Item.ITEMS[heldItem.ItemId].isHandheldRod())
+                if (Item.Items[heldItem.ItemId].IsHandheldRod())
                 {
                     GLManager.GL.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
                     GLManager.GL.Translate(0.0F, -(2.0F / 16.0F), 0.0F);

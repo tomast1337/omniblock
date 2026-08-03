@@ -28,6 +28,6 @@ public sealed class MaterialRegistryTests
     public void IronShovel_MaxDamageMatchesIronToolMaterial()
     {
         Item shovel = Item.ByName("shovel_iron");
-        Assert.Equal(250, shovel.getMaxDamage());
+        Assert.Equal(250, shovel.GetMaxDamage());
     }
 }

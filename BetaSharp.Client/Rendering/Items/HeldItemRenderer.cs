@@ -162,7 +162,7 @@ public class HeldItemRenderer
         float sqrtSwing;
         if (itemToRender != null)
         {
-            int itemColor = Item.ITEMS[itemToRender.ItemId].getColorMultiplier(itemToRender.getDamage());
+            int itemColor = Item.Items[itemToRender.ItemId].GetColorMultiplier(itemToRender.getDamage());
             red = (itemColor >> 16 & 255) / 255.0F;
             sineSwing = (itemColor >> 8 & 255) / 255.0F;
             sqrtSwing = (itemColor & 255) / 255.0F;
@@ -263,7 +263,7 @@ public class HeldItemRenderer
             GLManager.GL.Rotate(-sqrtSwing * 80.0F, 1.0F, 0.0F, 0.0F);
             red = 0.4F;
             GLManager.GL.Scale(red, red, red);
-            if (itemToRender.getItem().isHandheldRod())
+            if (itemToRender.getItem().IsHandheldRod())
             {
                 GLManager.GL.Rotate(180.0F, 0.0F, 1.0F, 0.0F);
             }

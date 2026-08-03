@@ -314,7 +314,7 @@ public sealed class TameableBehavior : IEntityInteractable, IEntityPersistence, 
     {
         ItemStack? held = player.Inventory.ItemInHand;
         if (held != null
-            && Item.ITEMS[held.ItemId]?.GetBehavior<FoodBehavior>() is { IsMeat: true }
+            && Item.Items[held.ItemId]?.GetBehavior<FoodBehavior>() is { IsMeat: true }
             && ShownHealth(self) < _tamedHealth)
         {
             Consume(held, player);

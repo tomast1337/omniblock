@@ -13,7 +13,7 @@ internal class ItemBlock : Item
     public ItemBlock(int id) : base(id)
     {
         blockID = id + 256;
-        setTextureId(Block.Blocks[id + 256].GetTexture(2.ToSide()));
+        SetTextureId(Block.Blocks[id + 256].GetTexture(2.ToSide()));
     }
 
     public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
@@ -85,7 +85,7 @@ internal class ItemBlock : Item
 
         if (block.CanPlaceAt(new CanPlaceAtContext(world, meta.ToSide(), x, y, z)))
         {
-            int placementMeta = getPlacementMetadata(itemStack.getDamage());
+            int placementMeta = GetPlacementMetadata(itemStack.getDamage());
             if (world.Writer.SetBlockWithoutCallingOnPlaced(x, y, z, blockID, placementMeta))
             {
                 Block.Blocks[blockID].OnPlaced(new OnPlacedEvent(world, entityPlayer, meta.ToSide(), meta.ToSide(), x, y, z));
@@ -99,7 +99,7 @@ internal class ItemBlock : Item
         return false;
     }
 
-    public override string getItemNameIS(ItemStack itemStack) => Block.Blocks[blockID].BlockName;
+    public override string GetItemNameIs(ItemStack itemStack) => Block.Blocks[blockID].BlockName;
 
-    public override string getItemName() => Block.Blocks[blockID].BlockName;
+    public override string GetItemName() => Block.Blocks[blockID].BlockName;
 }
