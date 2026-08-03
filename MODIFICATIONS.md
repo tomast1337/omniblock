@@ -65,3 +65,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-02 — refactor(rendering): state the pipeline for four more entity renderers (Nicolas Vyčas Nery; `7fce459f64d97ff1f803edb9772319d160f22109`)
 - 2026-08-02 — refactor(rendering): state the pipeline for LivingEntityRenderer, and fix the cull it assumed (Nicolas Vyčas Nery; `5cd808e7496933804378ef728c2833dadb6ca90b`)
 - 2026-08-02 — refactor(chat): update character validation logic and improve file name sanitization (Nicolas Vyčas Nery; `2dbe05b55b4c11a6490a9a7870ec585fc641ea9c`)
+- 2026-08-02 — fix(world): update folder name sanitization to use invalid file name characters (Nicolas Vyčas Nery; `20202a51c0883b7976c78558f90cb065da71cb0e`)

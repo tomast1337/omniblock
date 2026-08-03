@@ -145,7 +145,7 @@ public class CreateWorldScreen(
         }
 
         string folderName = _worldName.Trim();
-        char[] invalidCharacters = ChatAllowedCharacters.allowedCharactersArray;
+        char[] invalidCharacters = ChatAllowedCharacters.InvalidFileNameChars;
         foreach (char c in invalidCharacters)
         {
             folderName = folderName.Replace(c, '_');
