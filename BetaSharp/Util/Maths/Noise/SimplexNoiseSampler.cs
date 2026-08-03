@@ -41,7 +41,7 @@ internal class SimplexNoiseSampler
         return grad.x * dx + grad.y * dy;
     }
 
-    public void sample(double[] buffer, double x, double z, int width, int depth, double xFrequency, double zFrequency, double amplitude)
+    public void Sample(double[] buffer, double x, double z, int width, int depth, double xFrequency, double zFrequency, double amplitude)
     {
         int counter = 0;
 

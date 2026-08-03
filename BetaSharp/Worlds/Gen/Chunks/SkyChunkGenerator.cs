@@ -144,7 +144,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
     public void BuildSurfaces(int chunkX, int chunkZ, byte[] blocks, Biome[] biomes)
     {
         double chunkBiome = 1.0D / 32.0D;
-        _depthBuffer = _depthNoise.create(_depthBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, chunkBiome * 2.0D, chunkBiome * 2.0D, chunkBiome * 2.0D);
+        _depthBuffer = _depthNoise.Create(_depthBuffer, chunkX * 16, chunkZ * 16, 0.0D, 16, 16, 1, chunkBiome * 2.0D, chunkBiome * 2.0D, chunkBiome * 2.0D);
 
         for (int localX = 0; localX < 16; ++localX)
         {
@@ -224,12 +224,12 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
 
         double horizontalScale = 684.412D;
         double verticalScale = 684.412D;
-        _scaleNoiseBuffer = _floatingIslandScale.create(_scaleNoiseBuffer, x, z, sizeX, sizeZ, 1.121D, 1.121D, 0.5D);
-        _depthNoiseBuffer = _floatingIslandNoise.create(_depthNoiseBuffer, x, z, sizeX, sizeZ, 200.0D, 200.0D, 0.5D);
+        _scaleNoiseBuffer = _floatingIslandScale.Create(_scaleNoiseBuffer, x, z, sizeX, sizeZ, 1.121D, 1.121D, 0.5D);
+        _depthNoiseBuffer = _floatingIslandNoise.Create(_depthNoiseBuffer, x, z, sizeX, sizeZ, 200.0D, 200.0D, 0.5D);
         horizontalScale *= 2.0D;
-        _selectorNoiseBuffer = _selectorNoise.create(_selectorNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale / 80.0D, verticalScale / 160.0D, horizontalScale / 80.0D);
-        _minLimitPerlinNoiseBuffer = _minLimitPerlinNoise.create(_minLimitPerlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale, verticalScale, horizontalScale);
-        _maxLimitPerlinNoiseBuffer = _maxLimitPerlinNoise.create(_maxLimitPerlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale, verticalScale, horizontalScale);
+        _selectorNoiseBuffer = _selectorNoise.Create(_selectorNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale / 80.0D, verticalScale / 160.0D, horizontalScale / 80.0D);
+        _minLimitPerlinNoiseBuffer = _minLimitPerlinNoise.Create(_minLimitPerlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale, verticalScale, horizontalScale);
+        _maxLimitPerlinNoiseBuffer = _maxLimitPerlinNoise.Create(_maxLimitPerlinNoiseBuffer, x, y, z, sizeX, sizeY, sizeZ, horizontalScale, verticalScale, horizontalScale);
         int xyzIndex = 0;
         int xzIndex = 0;
 
@@ -403,7 +403,7 @@ internal class SkyChunkGenerator : CommonChunkGenerator, IChunkSource
         }
 
         fraction = 0.5D;
-        int treeDensitySample = (int)((_forestNoise.generateNoise(blockX * fraction, blockZ * fraction) / 8.0D + _random.NextDouble() * 4.0D + 4.0D) / 3.0D);
+        int treeDensitySample = (int)((_forestNoise.GenerateNoise(blockX * fraction, blockZ * fraction) / 8.0D + _random.NextDouble() * 4.0D + 4.0D) / 3.0D);
         int numberOfTrees = 0;
 
         if (_random.NextInt(10) == 0)
