@@ -46,7 +46,7 @@ public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestT
                 for (int offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
                 {
                     int blockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
-                    if (blockId != block.id)
+                    if (blockId != block.Id)
                     {
                         continue;
                     }
@@ -63,15 +63,15 @@ public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestT
         ItemStack? hand = ctx.Player.GetHand();
         if (ctx.World.IsRemote || hand == null || hand.ItemId != harvestToolItem.Id) return;
 
-        ctx.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[block.id], 1);
-        Block.DropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(block.id, 1, ctx.Meta & 3));
+        ctx.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[block.Id], 1);
+        Block.DropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(block.Id, 1, ctx.Meta & 3));
     }
 
     public int GetDroppedItemCount(Block block, int defaultCount) => Random.Shared.Next(20) == 0 ? 1 : 0;
 
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => saplingItem.id;
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => saplingItem.Id;
 
-    public (int primaryMeta, int backupItemId, int backupMeta) GetPickBlockItem(Block block, int blockMeta, int defaultBackupId, int defaultBackupMeta) => (blockMeta & 3, saplingItem.id, blockMeta & 3);
+    public (int primaryMeta, int backupItemId, int backupMeta) GetPickBlockItem(Block block, int blockMeta, int defaultBackupId, int defaultBackupMeta) => (blockMeta & 3, saplingItem.Id, blockMeta & 3);
 
     public void OnTick(Block block, OnTickEvent @event)
     {
@@ -81,7 +81,7 @@ public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestT
         _decayRegion.Value ??= new int[RegionSize * RegionSize * RegionSize];
 
         int[] decayRegion = _decayRegion.Value;
-        int trunkId = trunk.id;
+        int trunkId = trunk.Id;
 
         int distanceToLog;
         if (@event.World.ChunkHost.IsRegionLoaded(@event.X - LoadCheckExtent, @event.Y - LoadCheckExtent, @event.Z - LoadCheckExtent, @event.X + LoadCheckExtent, @event.Y + LoadCheckExtent, @event.Z + LoadCheckExtent))
@@ -99,7 +99,7 @@ public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestT
                         {
                             decayRegion[(distanceToLog + CenterOffset) * PlaneSize + (dx + CenterOffset) * RegionSize + dy + CenterOffset] = 0;
                         }
-                        else if (blockId == block.id)
+                        else if (blockId == block.Id)
                         {
                             decayRegion[(distanceToLog + CenterOffset) * PlaneSize + (dx + CenterOffset) * RegionSize + dy + CenterOffset] = -2;
                         }
@@ -189,7 +189,7 @@ public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestT
     public int GetTexture(Block block, Side side, int meta, int defaultTexture) => (meta & 3) == 1 ? defaultTexture + 80 : defaultTexture;
 
     public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
-        => (_graphicsLevel || reader.GetBlockId(x, y, z) != block.id) && defaultVisibility;
+        => (_graphicsLevel || reader.GetBlockId(x, y, z) != block.Id) && defaultVisibility;
 
     public bool IsOpaque(Block block, bool defaultOpaque) => !_graphicsLevel;
 

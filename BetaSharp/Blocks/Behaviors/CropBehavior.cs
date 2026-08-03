@@ -48,11 +48,11 @@ internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item
     }
 
     public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-        => @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == requiredSoil.id;
+        => @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == requiredSoil.Id;
 
     public bool CanGrow(Block block, OnTickEvent ctx)
         => (ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) >= 8 || ctx.World.Lighting.HasSkyLight(ctx.X, ctx.Y, ctx.Z))
-           && ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z) == requiredSoil.id;
+           && ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z) == requiredSoil.Id;
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
         => BreakIfCannotSurvive(block, @event.World, @event.X, @event.Y, @event.Z);
@@ -87,9 +87,9 @@ internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item
         int blockNorthEast = read.GetBlockId(x + 1, y, z - 1);
         int blockSouthEast = read.GetBlockId(x + 1, y, z + 1);
         int blockSouthWest = read.GetBlockId(x - 1, y, z + 1);
-        bool cropsEastWest = blockWest == block.id || blockEast == block.id;
-        bool cropsNorthSouth = blockNorth == block.id || blockSouth == block.id;
-        bool cropsDiagonals = blockNorthWest == block.id || blockNorthEast == block.id || blockSouthEast == block.id || blockSouthWest == block.id;
+        bool cropsEastWest = blockWest == block.Id || blockEast == block.Id;
+        bool cropsNorthSouth = blockNorth == block.Id || blockSouth == block.Id;
+        bool cropsDiagonals = blockNorthWest == block.Id || blockNorthEast == block.Id || blockSouthEast == block.Id || blockSouthWest == block.Id;
 
         for (int dx = x - 1; dx <= x + 1; ++dx)
         {
@@ -97,7 +97,7 @@ internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item
             {
                 int blockBelow = read.GetBlockId(dx, y - 1, dz);
                 float cellMoisture = 0.0F;
-                if (blockBelow == requiredSoil.id)
+                if (blockBelow == requiredSoil.Id)
                 {
                     cellMoisture = 1.0F;
                     if (read.GetBlockMeta(dx, y - 1, dz) > 0)
@@ -128,7 +128,7 @@ internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item
 
     private static void BreakIfCannotSurvive(Block block, IWorldContext level, int x, int y, int z)
     {
-        if (block.canGrow(new OnTickEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z), level.Reader.GetBlockId(x, y, z))))
+        if (block.CanGrow(new OnTickEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z), level.Reader.GetBlockId(x, y, z))))
             return;
 
         block.DropStacks(new OnDropEvent(level, x, y, z, level.Reader.GetBlockMeta(x, y, z)));

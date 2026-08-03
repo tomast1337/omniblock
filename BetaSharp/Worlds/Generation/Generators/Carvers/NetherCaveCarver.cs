@@ -124,7 +124,7 @@ internal class NetherCaveCarver : Carver
                                 indexOrBlockZ = (blockX * 16 + blockZ) * 128 + blockY;
                                 if (blockY >= 0 && blockY < 128)
                                 {
-                                    if (blocks[indexOrBlockZ] == BlockRegistry.Get("flowing_lava").id || blocks[indexOrBlockZ] == BlockRegistry.Get("lava").id)
+                                    if (blocks[indexOrBlockZ] == BlockRegistry.Get("flowing_lava").Id || blocks[indexOrBlockZ] == BlockRegistry.Get("lava").Id)
                                     {
                                         lavaIsPresent = true;
                                     }
@@ -155,7 +155,7 @@ internal class NetherCaveCarver : Carver
                                     if (localY > -0.7D && localX * localX + localY * localY + localZ * localZ < 1.0D)
                                     {
                                         byte blockType = blocks[blockIndex];
-                                        if (blockType == BlockRegistry.Get("netherrack").id || blockType == BlockRegistry.Get("dirt").id || blockType == BlockRegistry.Get("grass_block").id)
+                                        if (blockType == BlockRegistry.Get("netherrack").Id || blockType == BlockRegistry.Get("dirt").Id || blockType == BlockRegistry.Get("grass_block").Id)
                                         {
                                             blocks[blockIndex] = 0;
                                         }

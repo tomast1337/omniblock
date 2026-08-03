@@ -573,7 +573,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         bool poweredRailActive = false;
         bool poweredRailBraking = false;
 
-        if (railBlockId == BlockRegistry.Get("powered_rail").id)
+        if (railBlockId == BlockRegistry.Get("powered_rail").Id)
         {
             poweredRailActive = (railMeta & 8) != 0;
             poweredRailBraking = !poweredRailActive;

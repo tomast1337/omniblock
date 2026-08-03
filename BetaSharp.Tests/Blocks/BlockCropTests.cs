@@ -16,12 +16,12 @@ public sealed class BlockCropTests
         Item wheat = Item.ByName("wheat");
         Item seeds = Item.ByName("seeds");
 
-        world.ReaderWriter.SetInitial(0, 63, 0, customSoil.id);
+        world.ReaderWriter.SetInitial(0, 63, 0, customSoil.Id);
         CropBehavior behavior = new(customSoil, wheat, seeds, 0.7F, 15, 100);
 
         Assert.True(behavior.CanPlaceAt(BlockRegistry.Get("wheat"), new CanPlaceAtContext(world, Side.Up, 0, 64, 0)));
 
-        world.ReaderWriter.SetInitial(0, 63, 0, vanillaFarmland.id);
+        world.ReaderWriter.SetInitial(0, 63, 0, vanillaFarmland.Id);
         Assert.False(behavior.CanPlaceAt(BlockRegistry.Get("wheat"), new CanPlaceAtContext(world, Side.Up, 0, 64, 0)));
     }
 

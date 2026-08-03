@@ -52,22 +52,22 @@ public sealed class DetectorRailBehavior : IRedstoneComponent, IBlockInteractabl
         if (hasMinecart && !isPowered)
         {
             context.Writer.SetBlockMeta(x, y, z, meta | 8);
-            context.Broadcaster.NotifyNeighbors(x, y, z, block.id);
-            context.Broadcaster.NotifyNeighbors(x, y - 1, z, block.id);
+            context.Broadcaster.NotifyNeighbors(x, y, z, block.Id);
+            context.Broadcaster.NotifyNeighbors(x, y - 1, z, block.Id);
             context.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
         }
 
         if (!hasMinecart && isPowered)
         {
             context.Writer.SetBlockMeta(x, y, z, meta & 7);
-            context.Broadcaster.NotifyNeighbors(x, y, z, block.id);
-            context.Broadcaster.NotifyNeighbors(x, y - 1, z, block.id);
+            context.Broadcaster.NotifyNeighbors(x, y, z, block.Id);
+            context.Broadcaster.NotifyNeighbors(x, y - 1, z, block.Id);
             context.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
         }
 
         if (hasMinecart)
         {
-            context.TickScheduler.ScheduleBlockUpdate(x, y, z, block.id, block.TickRate);
+            context.TickScheduler.ScheduleBlockUpdate(x, y, z, block.Id, block.TickRate);
         }
     }
 }

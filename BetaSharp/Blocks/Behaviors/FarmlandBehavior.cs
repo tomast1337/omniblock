@@ -26,7 +26,7 @@ internal sealed class FarmlandBehavior(Block revertBlock, Block crop, int trampl
     {
         if (Random.Shared.Next(trampleChanceOneIn) == 0)
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, revertBlock.id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, revertBlock.Id);
         }
     }
 
@@ -36,7 +36,7 @@ internal sealed class FarmlandBehavior(Block revertBlock, Block crop, int trampl
     {
         if (@event.World.Reader.GetMaterial(@event.X, @event.Y + 1, @event.Z).IsSolid)
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, revertBlock.id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, revertBlock.Id);
         }
     }
 
@@ -56,7 +56,7 @@ internal sealed class FarmlandBehavior(Block revertBlock, Block crop, int trampl
             }
             else if (!HasCrop(@event.World.Reader, @event.X, @event.Y, @event.Z))
             {
-                @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, revertBlock.id);
+                @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, revertBlock.Id);
             }
         }
         else
@@ -78,7 +78,7 @@ internal sealed class FarmlandBehavior(Block revertBlock, Block crop, int trampl
         {
             for (int dy = z - 0; dy <= z + 0; ++dy)
             {
-                if (world.GetBlockId(dx, y + 1, dy) == crop.id) return true;
+                if (world.GetBlockId(dx, y + 1, dy) == crop.Id) return true;
             }
         }
 

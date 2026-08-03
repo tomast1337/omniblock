@@ -12,7 +12,7 @@ public sealed class BlockCactusTests
         FakeWorldContext world = new();
         Block customStem = BlockRegistry.Get("stone");
         Block customSoil = BlockRegistry.Get("gravel");
-        world.ReaderWriter.SetInitial(0, 63, 0, customSoil.id);
+        world.ReaderWriter.SetInitial(0, 63, 0, customSoil.Id);
 
         CactusBehavior behavior = new(customStem, customSoil, 3);
 
@@ -25,7 +25,7 @@ public sealed class BlockCactusTests
         FakeWorldContext world = new();
         Block customStem = BlockRegistry.Get("stone");
         Block customSoil = BlockRegistry.Get("gravel");
-        world.ReaderWriter.SetInitial(0, 63, 0, customStem.id);
+        world.ReaderWriter.SetInitial(0, 63, 0, customStem.Id);
 
         CactusBehavior behavior = new(customStem, customSoil, 3);
 
@@ -38,7 +38,7 @@ public sealed class BlockCactusTests
         FakeWorldContext world = new();
         Block customStem = BlockRegistry.Get("stone");
         Block customSoil = BlockRegistry.Get("gravel");
-        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("sand").id);
+        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("sand").Id);
 
         CactusBehavior behavior = new(customStem, customSoil, 3);
 
@@ -51,8 +51,8 @@ public sealed class BlockCactusTests
         FakeWorldContext world = new();
         Block cactus = BlockRegistry.Get("cactus");
         Block sand = BlockRegistry.Get("sand");
-        world.ReaderWriter.SetInitial(0, 63, 0, sand.id);
-        world.ReaderWriter.SetInitial(1, 64, 0, BlockRegistry.Get("stone").id);
+        world.ReaderWriter.SetInitial(0, 63, 0, sand.Id);
+        world.ReaderWriter.SetInitial(1, 64, 0, BlockRegistry.Get("stone").Id);
 
         Assert.False(cactus.CanPlaceAt(new CanPlaceAtContext(world, Side.Up, 0, 64, 0)));
     }

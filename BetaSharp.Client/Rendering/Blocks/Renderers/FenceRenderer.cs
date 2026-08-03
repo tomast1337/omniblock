@@ -18,10 +18,10 @@ public class FenceRenderer : IBlockRenderer
         postCtx.DrawBlock(block, pos);
 
         // Check for adjacent fences using 'ctx.World' and 'pos'
-        bool connectsWest = ctx.BlockReader.GetBlockId(pos.x - 1, pos.y, pos.z) == block.id;
-        bool connectsEast = ctx.BlockReader.GetBlockId(pos.x + 1, pos.y, pos.z) == block.id;
-        bool connectsNorth = ctx.BlockReader.GetBlockId(pos.x, pos.y, pos.z - 1) == block.id;
-        bool connectsSouth = ctx.BlockReader.GetBlockId(pos.x, pos.y, pos.z + 1) == block.id;
+        bool connectsWest = ctx.BlockReader.GetBlockId(pos.x - 1, pos.y, pos.z) == block.Id;
+        bool connectsEast = ctx.BlockReader.GetBlockId(pos.x + 1, pos.y, pos.z) == block.Id;
+        bool connectsNorth = ctx.BlockReader.GetBlockId(pos.x, pos.y, pos.z - 1) == block.Id;
+        bool connectsSouth = ctx.BlockReader.GetBlockId(pos.x, pos.y, pos.z + 1) == block.Id;
 
         bool connectsX = connectsWest || connectsEast;
         bool connectsZ = connectsNorth || connectsSouth;

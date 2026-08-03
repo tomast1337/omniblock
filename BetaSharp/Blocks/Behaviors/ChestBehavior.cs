@@ -12,7 +12,7 @@ internal sealed class ChestBehavior : IBlockInteractable, IBlockLifecycle, IBloc
         if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y + 1, @event.Z))
             return true;
 
-        int chestId = block.id;
+        int chestId = block.Id;
 
         if (@event.World.Reader.GetBlockId(@event.X - 1, @event.Y, @event.Z) == chestId && @event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y + 1, @event.Z))
             return true;
@@ -62,7 +62,7 @@ internal sealed class ChestBehavior : IBlockInteractable, IBlockLifecycle, IBloc
 
     public bool CanPlaceAt(Block block, CanPlaceAtContext context)
     {
-        int chestId = block.id;
+        int chestId = block.Id;
         int adjacentChestCount = 0;
         if (context.World.Reader.GetBlockId(context.X - 1, context.Y, context.Z) == chestId)
         {
@@ -99,7 +99,7 @@ internal sealed class ChestBehavior : IBlockInteractable, IBlockLifecycle, IBloc
     {
         if (side is Side.Up or Side.Down) return BlockTextures.ChestTopBottom;
 
-        int chestId = block.id;
+        int chestId = block.Id;
         int blockNorth = reader.GetBlockId(x, y, z - 1);
         int blockSouth = reader.GetBlockId(x, y, z + 1);
         int blockWest = reader.GetBlockId(x - 1, y, z);

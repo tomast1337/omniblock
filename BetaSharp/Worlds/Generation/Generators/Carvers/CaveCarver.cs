@@ -124,7 +124,7 @@ internal class CaveCarver : Carver
                                 int blockIndex = (blockX * 16 + blockZ) * 128 + blockY;
                                 if (blockY >= 0 && blockY < 128)
                                 {
-                                    if (blocks[blockIndex] == BlockRegistry.Get("flowing_water").id || blocks[blockIndex] == BlockRegistry.Get("water").id)
+                                    if (blocks[blockIndex] == BlockRegistry.Get("flowing_water").Id || blocks[blockIndex] == BlockRegistry.Get("water").Id)
                                     {
                                         waterIsPresent = true;
                                     }
@@ -157,23 +157,23 @@ internal class CaveCarver : Carver
                                         if (localY > -0.7D && localX * localX + localY * localY + localZ * localZ < 1.0D)
                                         {
                                             byte blockType = blocks[blockIndex];
-                                            if (blockType == BlockRegistry.Get("grass_block").id)
+                                            if (blockType == BlockRegistry.Get("grass_block").Id)
                                             {
                                                 isGrassBlock = true;
                                             }
 
-                                            if (blockType == BlockRegistry.Get("stone").id || blockType == BlockRegistry.Get("dirt").id || blockType == BlockRegistry.Get("grass_block").id)
+                                            if (blockType == BlockRegistry.Get("stone").Id || blockType == BlockRegistry.Get("dirt").Id || blockType == BlockRegistry.Get("grass_block").Id)
                                             {
                                                 if (blockY < 10)
                                                 {
-                                                    blocks[blockIndex] = (byte)BlockRegistry.Get("flowing_lava").id;
+                                                    blocks[blockIndex] = (byte)BlockRegistry.Get("flowing_lava").Id;
                                                 }
                                                 else
                                                 {
                                                     blocks[blockIndex] = 0;
-                                                    if (isGrassBlock && blocks[blockIndex - 1] == BlockRegistry.Get("dirt").id)
+                                                    if (isGrassBlock && blocks[blockIndex - 1] == BlockRegistry.Get("dirt").Id)
                                                     {
-                                                        blocks[blockIndex - 1] = (byte)BlockRegistry.Get("grass_block").id;
+                                                        blocks[blockIndex - 1] = (byte)BlockRegistry.Get("grass_block").Id;
                                                     }
                                                 }
                                             }

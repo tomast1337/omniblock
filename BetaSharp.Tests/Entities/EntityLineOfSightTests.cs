@@ -14,7 +14,7 @@ namespace BetaSharp.Tests.Entities;
 [Collection("EntityTests")]
 public sealed class EntityLineOfSightTests
 {
-    private static readonly int s_stone = BlockRegistry.Get("stone").id;
+    private static readonly int s_stone = BlockRegistry.Get("stone").Id;
 
     /// <summary>Builds a solid column at (x, z) tall enough to break a standing entity's sightline.</summary>
     private static void Wall(FakeWorldContext world, int x, int z)

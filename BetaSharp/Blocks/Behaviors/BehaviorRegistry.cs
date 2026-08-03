@@ -85,7 +85,7 @@ internal static class BehaviorRegistry
 
     private static Block ResolveBlock(string name) => BlockRegistry.Get(ResolveName(name));
 
-    private static int ResolveBlockOrAir(string name) => ResolveName(name) == "air" ? 0 : ResolveBlock(name).id;
+    private static int ResolveBlockOrAir(string name) => ResolveName(name) == "air" ? 0 : ResolveBlock(name).Id;
 
     private static Item ResolveItem(string name) => Item.ByName(ResolveName(name));
 

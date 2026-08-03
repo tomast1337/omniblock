@@ -107,7 +107,7 @@ public sealed class EntityBehaviorJsonTests
         """));
 
         ItemStack stack = Assert.Single(table.Roll(new LootContext(null, null, 0, System.Random.Shared)));
-        Assert.Equal(BetaSharp.Blocks.BlockRegistry.Get("wool").id, stack.ItemId);
+        Assert.Equal(BetaSharp.Blocks.BlockRegistry.Get("wool").Id, stack.ItemId);
     }
 
     [Fact]

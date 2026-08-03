@@ -17,14 +17,14 @@ namespace BetaSharp.Blocks.Behaviors;
 internal sealed class ReedBehavior(Block[] validGround) : IBlockTicker, IBlockPhysics
 {
     public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-        => CanSurviveAt(@event.World.Reader, block.id, @event.X, @event.Y, @event.Z);
+        => CanSurviveAt(@event.World.Reader, block.Id, @event.X, @event.Y, @event.Z);
 
     public bool CanGrow(Block block, OnTickEvent @event)
-        => CanSurviveAt(@event.World.Reader, block.id, @event.X, @event.Y, @event.Z);
+        => CanSurviveAt(@event.World.Reader, block.Id, @event.X, @event.Y, @event.Z);
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        if (CanSurviveAt(@event.World.Reader, block.id, @event.X, @event.Y, @event.Z)) return;
+        if (CanSurviveAt(@event.World.Reader, block.Id, @event.X, @event.Y, @event.Z)) return;
 
         block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
@@ -34,7 +34,7 @@ internal sealed class ReedBehavior(Block[] validGround) : IBlockTicker, IBlockPh
         if (!@event.World.Reader.IsAir(@event.X, @event.Y + 1, @event.Z)) return;
 
         int heightBelow = 1;
-        while (@event.World.Reader.GetBlockId(@event.X, @event.Y - heightBelow, @event.Z) == block.id)
+        while (@event.World.Reader.GetBlockId(@event.X, @event.Y - heightBelow, @event.Z) == block.Id)
         {
             heightBelow++;
         }
@@ -44,7 +44,7 @@ internal sealed class ReedBehavior(Block[] validGround) : IBlockTicker, IBlockPh
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if (meta == 15)
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y + 1, @event.Z, block.id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y + 1, @event.Z, block.Id);
             @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, 0);
         }
         else
@@ -62,7 +62,7 @@ internal sealed class ReedBehavior(Block[] validGround) : IBlockTicker, IBlockPh
         bool onValidGround = false;
         foreach (Block ground in validGround)
         {
-            if (blockBelowId == ground.id)
+            if (blockBelowId == ground.Id)
             {
                 onValidGround = true;
                 break;

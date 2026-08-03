@@ -5,7 +5,7 @@ namespace BetaSharp.Blocks;
 /// <summary>
 ///     Composable capability for redstone power emission.
 ///     Side values use the engine's face indices (0 = down ... 5 = east), matching
-///     <see cref="Block.isPoweringSide" />.
+///     <see cref="Block.IsPoweringSide" />.
 /// </summary>
 public interface IRedstoneComponent
 {

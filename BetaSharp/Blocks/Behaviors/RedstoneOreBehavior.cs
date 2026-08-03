@@ -25,7 +25,7 @@ public sealed class RedstoneOreBehavior(Block unlitOre, Block litOre) : IBlockIn
     {
         if (IsLit(block))
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, unlitOre.id);
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, unlitOre.Id);
         }
     }
 
@@ -37,14 +37,14 @@ public sealed class RedstoneOreBehavior(Block unlitOre, Block litOre) : IBlockIn
         }
     }
 
-    private bool IsLit(Block block) => block.id == litOre.id;
+    private bool IsLit(Block block) => block.Id == litOre.Id;
 
     private void Light(IBlockWriter worldWriter, IBlockReader worldRead, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
         SpawnParticles(worldRead, broadcaster, x, y, z);
-        if (worldRead.GetBlockId(x, y, z) == unlitOre.id)
+        if (worldRead.GetBlockId(x, y, z) == unlitOre.Id)
         {
-            worldWriter.SetBlock(x, y, z, litOre.id);
+            worldWriter.SetBlock(x, y, z, litOre.Id);
         }
     }
 

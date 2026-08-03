@@ -140,7 +140,7 @@ public class EntityLiving : Entity
             int x = MathHelper.Floor(X);
             int y = MathHelper.Floor(BoundingBox.MinY);
             int z = MathHelper.Floor(Z);
-            return World.Reader.GetBlockId(x, y, z) == BlockRegistry.Get("ladder").id;
+            return World.Reader.GetBlockId(x, y, z) == BlockRegistry.Get("ladder").Id;
         }
     }
 
@@ -662,7 +662,7 @@ public class EntityLiving : Entity
                 int groundBlockId = World.Reader.GetBlockId(MathHelper.Floor(X), MathHelper.Floor(BoundingBox.MinY) - 1, MathHelper.Floor(Z));
                 if (groundBlockId > 0)
                 {
-                    friction = Block.Blocks[groundBlockId].slipperiness * 0.91F;
+                    friction = Block.Blocks[groundBlockId].Slipperiness * 0.91F;
                 }
             }
 
@@ -675,7 +675,7 @@ public class EntityLiving : Entity
                 int groundBlockId = World.Reader.GetBlockId(MathHelper.Floor(X), MathHelper.Floor(BoundingBox.MinY) - 1, MathHelper.Floor(Z));
                 if (groundBlockId > 0)
                 {
-                    friction = Block.Blocks[groundBlockId].slipperiness * 0.91F;
+                    friction = Block.Blocks[groundBlockId].Slipperiness * 0.91F;
                 }
             }
 

@@ -58,7 +58,7 @@ public sealed class BlockTorchTests
         FakeWorldContext world = new();
         if (sx != tx || sy != ty || sz != tz)
         {
-            world.ReaderWriter.SetInitial(sx, sy, sz, BlockRegistry.Get("stone").id);
+            world.ReaderWriter.SetInitial(sx, sy, sz, BlockRegistry.Get("stone").Id);
         }
 
         bool ok = BlockRegistry.Get("torch").CanPlaceAt(new CanPlaceAtContext(world, Side.Up, tx, ty, tz));
@@ -69,7 +69,7 @@ public sealed class BlockTorchTests
     public void CanPlaceAt_AllowsFenceBelowWithoutOpaqueNeighbor()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("fence").id);
+        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("fence").Id);
         Assert.True(BlockRegistry.Get("torch").CanPlaceAt(new CanPlaceAtContext(world, Side.Up, 0, 64, 0)));
     }
 
@@ -80,10 +80,10 @@ public sealed class BlockTorchTests
         int x = 0;
         int y = 65;
         int z = 0;
-        world.ReaderWriter.SetInitial(x, y + 1, z, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(x - 1, y, z, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(x + 1, y, z, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(x, y, z, BlockRegistry.Get("torch").id, 0);
+        world.ReaderWriter.SetInitial(x, y + 1, z, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(x - 1, y, z, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(x + 1, y, z, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(x, y, z, BlockRegistry.Get("torch").Id, 0);
 
         // Placer east of the cell, looking into the gap (−X): wall torch faces is west (meta 1).
         TestPlayer player = new(world)
@@ -106,10 +106,10 @@ public sealed class BlockTorchTests
         int x = 0;
         int y = 65;
         int z = 0;
-        world.ReaderWriter.SetInitial(x, y + 1, z, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(x - 1, y, z, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(x + 1, y, z, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(x, y, z, BlockRegistry.Get("torch").id, 0);
+        world.ReaderWriter.SetInitial(x, y + 1, z, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(x - 1, y, z, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(x + 1, y, z, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(x, y, z, BlockRegistry.Get("torch").Id, 0);
 
         TestPlayer player = new(world)
         {
@@ -131,10 +131,10 @@ public sealed class BlockTorchTests
         int x = 0;
         int y = 65;
         int z = 0;
-        world.ReaderWriter.SetInitial(x, y + 1, z, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(x, y, z - 1, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(x, y, z + 1, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(x, y, z, BlockRegistry.Get("torch").id, 0);
+        world.ReaderWriter.SetInitial(x, y + 1, z, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(x, y, z - 1, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(x, y, z + 1, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(x, y, z, BlockRegistry.Get("torch").Id, 0);
 
         TestPlayer player = new(world)
         {
@@ -156,10 +156,10 @@ public sealed class BlockTorchTests
         int x = 0;
         int y = 65;
         int z = 0;
-        world.ReaderWriter.SetInitial(x, y + 1, z, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(x, y, z - 1, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(x, y, z + 1, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(x, y, z, BlockRegistry.Get("torch").id, 0);
+        world.ReaderWriter.SetInitial(x, y + 1, z, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(x, y, z - 1, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(x, y, z + 1, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(x, y, z, BlockRegistry.Get("torch").Id, 0);
 
         TestPlayer player = new(world)
         {
@@ -181,10 +181,10 @@ public sealed class BlockTorchTests
         int x = 0;
         int y = 65;
         int z = 0;
-        world.ReaderWriter.SetInitial(x, y + 1, z, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(x - 1, y, z, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(x + 1, y, z, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(x, y, z, BlockRegistry.Get("torch").id, 0);
+        world.ReaderWriter.SetInitial(x, y + 1, z, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(x - 1, y, z, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(x + 1, y, z, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(x, y, z, BlockRegistry.Get("torch").Id, 0);
 
         BlockRegistry.Get("torch").OnPlaced(new OnPlacedEvent(world, null, Side.Down, Side.Down, x, y, z));
 
@@ -201,10 +201,10 @@ public sealed class BlockTorchTests
         int x = 0;
         int y = 65;
         int z = 0;
-        world.ReaderWriter.SetInitial(x, y + 1, z, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(x - 1, y, z, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(x + 1, y, z, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(x, y, z, BlockRegistry.Get("torch").id, 0);
+        world.ReaderWriter.SetInitial(x, y + 1, z, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(x - 1, y, z, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(x + 1, y, z, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(x, y, z, BlockRegistry.Get("torch").Id, 0);
 
         TestPlayer player = new(world)
         {
@@ -226,8 +226,8 @@ public sealed class BlockTorchTests
         int x = 0;
         int y = 65;
         int z = 0;
-        world.ReaderWriter.SetInitial(x, y - 1, z, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(x, y, z, BlockRegistry.Get("torch").id, 0);
+        world.ReaderWriter.SetInitial(x, y - 1, z, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(x, y, z, BlockRegistry.Get("torch").Id, 0);
 
         BlockRegistry.Get("torch").OnPlaced(new OnPlacedEvent(world, null, Side.Up, Side.Up, x, y, z));
 
@@ -238,7 +238,7 @@ public sealed class BlockTorchTests
     public void OnPlaced_UpWithNoFloorBelow_KeepsMetaZero()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 65, 0, BlockRegistry.Get("torch").id, 0);
+        world.ReaderWriter.SetInitial(0, 65, 0, BlockRegistry.Get("torch").Id, 0);
 
         BlockRegistry.Get("torch").OnPlaced(new OnPlacedEvent(world, null, Side.Up, Side.Up, 0, 65, 0));
 
@@ -253,8 +253,8 @@ public sealed class BlockTorchTests
     public void OnPlaced_CardinalSides_SetWallMeta(Side direction, int nx, int ny, int nz, int expectedMeta)
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(nx, ny, nz, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(0, 65, 0, BlockRegistry.Get("torch").id, 0);
+        world.ReaderWriter.SetInitial(nx, ny, nz, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(0, 65, 0, BlockRegistry.Get("torch").Id, 0);
 
         BlockRegistry.Get("torch").OnPlaced(new OnPlacedEvent(world, null, direction, direction, 0, 65, 0));
 
@@ -265,10 +265,10 @@ public sealed class BlockTorchTests
     public void OnTick_MetaZeroOnlyWestNeighbor_ResolvesToWestWall()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(-1, 65, 0, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(0, 65, 0, BlockRegistry.Get("torch").id, 0);
+        world.ReaderWriter.SetInitial(-1, 65, 0, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(0, 65, 0, BlockRegistry.Get("torch").Id, 0);
 
-        BlockRegistry.Get("torch").OnTick(new OnTickEvent(world, 0, 65, 0, 0, BlockRegistry.Get("torch").id));
+        BlockRegistry.Get("torch").OnTick(new OnTickEvent(world, 0, 65, 0, 0, BlockRegistry.Get("torch").Id));
 
         Assert.Equal(1, world.Reader.GetBlockMeta(0, 65, 0));
     }
@@ -277,9 +277,9 @@ public sealed class BlockTorchTests
     public void OnTick_MetaZeroNoSupport_RemovesTorch()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 65, 0, BlockRegistry.Get("torch").id, 0);
+        world.ReaderWriter.SetInitial(0, 65, 0, BlockRegistry.Get("torch").Id, 0);
 
-        BlockRegistry.Get("torch").OnTick(new OnTickEvent(world, 0, 65, 0, 0, BlockRegistry.Get("torch").id));
+        BlockRegistry.Get("torch").OnTick(new OnTickEvent(world, 0, 65, 0, 0, BlockRegistry.Get("torch").Id));
 
         Assert.Equal(0, world.Reader.GetBlockId(0, 65, 0));
     }
@@ -288,10 +288,10 @@ public sealed class BlockTorchTests
     public void OnTick_MetaNonZero_DoesNotReResolveFromZero()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(-1, 65, 0, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(0, 65, 0, BlockRegistry.Get("torch").id, 2);
+        world.ReaderWriter.SetInitial(-1, 65, 0, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(0, 65, 0, BlockRegistry.Get("torch").Id, 2);
 
-        BlockRegistry.Get("torch").OnTick(new OnTickEvent(world, 0, 65, 0, 2, BlockRegistry.Get("torch").id));
+        BlockRegistry.Get("torch").OnTick(new OnTickEvent(world, 0, 65, 0, 2, BlockRegistry.Get("torch").Id));
 
         Assert.Equal(2, world.Reader.GetBlockMeta(0, 65, 0));
     }
@@ -300,13 +300,13 @@ public sealed class BlockTorchTests
     public void NeighborUpdate_WallTorchLosesSupportingSide_Drops()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(-1, 65, 0, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(1, 65, 0, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(0, 65, 0, BlockRegistry.Get("torch").id, 1);
+        world.ReaderWriter.SetInitial(-1, 65, 0, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(1, 65, 0, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(0, 65, 0, BlockRegistry.Get("torch").Id, 1);
 
         world.ReaderWriter.SetInitial(-1, 65, 0, 0);
 
-        BlockRegistry.Get("torch").NeighborUpdate(new OnTickEvent(world, 0, 65, 0, 1, BlockRegistry.Get("torch").id));
+        BlockRegistry.Get("torch").NeighborUpdate(new OnTickEvent(world, 0, 65, 0, 1, BlockRegistry.Get("torch").Id));
 
         Assert.Equal(0, world.Reader.GetBlockId(0, 65, 0));
     }
@@ -325,7 +325,7 @@ public sealed class BlockTorchTests
         int x = 2;
         int y = 64;
         int z = 3;
-        world.ReaderWriter.SetInitial(x, y, z, BlockRegistry.Get("torch").id, meta);
+        world.ReaderWriter.SetInitial(x, y, z, BlockRegistry.Get("torch").Id, meta);
 
         (Vec3D start, Vec3D end) = meta switch
         {
@@ -351,9 +351,9 @@ public sealed class BlockTorchTests
     public void RandomDisplayTick_AllMetas_DoesNotThrow(int meta)
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("torch").id, meta);
+        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("torch").Id, meta);
 
-        Exception? ex = Record.Exception(() => BlockRegistry.Get("torch").RandomDisplayTick(new OnTickEvent(world, 0, 64, 0, meta, BlockRegistry.Get("torch").id)));
+        Exception? ex = Record.Exception(() => BlockRegistry.Get("torch").RandomDisplayTick(new OnTickEvent(world, 0, 64, 0, meta, BlockRegistry.Get("torch").Id)));
 
         Assert.Null(ex);
     }

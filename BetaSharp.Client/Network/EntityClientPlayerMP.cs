@@ -168,11 +168,11 @@ public class EntityClientPlayerMP : ClientPlayerEntity
         Health -= amount;
     }
 
-    public override void closeHandledScreen()
+    public override void CloseHandledScreen()
     {
         sendQueue.SendMessage(new CloseScreenMessage { SyncId = (sbyte)CurrentScreenHandler.SyncId });
         Inventory.SetCursorStack(null);
-        base.closeHandledScreen();
+        base.CloseHandledScreen();
     }
 
     public override void setHealth(int amount)

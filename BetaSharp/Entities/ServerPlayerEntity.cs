@@ -245,7 +245,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             {
                 if (CurrentScreenHandler != PlayerScreenHandler)
                 {
-                    closeHandledScreen();
+                    CloseHandledScreen();
                 }
 
                 if (Vehicle != null)
@@ -615,7 +615,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
     {
     }
 
-    public override void closeHandledScreen()
+    public override void CloseHandledScreen()
     {
         NetworkHandler?.SendMessage(new CloseScreenMessage { SyncId = (sbyte)CurrentScreenHandler.SyncId });
         onHandledScreenClosed();

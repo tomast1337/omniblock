@@ -180,9 +180,9 @@ public class ClientPlayerEntity : EntityPlayer
         Score = nbt.GetInteger("Score");
     }
 
-    public override void closeHandledScreen()
+    public override void CloseHandledScreen()
     {
-        base.closeHandledScreen();
+        base.CloseHandledScreen();
         Game.Navigate(null);
     }
 

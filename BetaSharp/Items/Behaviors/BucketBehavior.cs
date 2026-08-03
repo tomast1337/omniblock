@@ -109,7 +109,7 @@ internal sealed class BucketBehavior : IItemBehavior
 
                 if (world.Reader.IsAir(hitX, hitY, hitZ) || !world.Reader.GetMaterial(hitX, hitY, hitZ).IsSolid)
                 {
-                    if (world.Dimension.EvaporatesWater && _isFull == BlockRegistry.Get("flowing_water").id)
+                    if (world.Dimension.EvaporatesWater && _isFull == BlockRegistry.Get("flowing_water").Id)
                     {
                         world.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.5D, z + 0.5D, "random.fizz", 0.5F, 2.6F + (world.Random.NextFloat() - world.Random.NextFloat()) * 0.8F);
                         for (int i = 0; i < 8; ++i)

@@ -267,9 +267,9 @@ internal class PathFinder
                     int blockId = _worldMap.GetBlockId(ix, iy, iz);
                     if (blockId > 0)
                     {
-                        if (blockId != BlockRegistry.Get("iron_door").id && blockId != BlockRegistry.Get("door").id)
+                        if (blockId != BlockRegistry.Get("iron_door").Id && blockId != BlockRegistry.Get("door").Id)
                         {
-                            Material material = Block.Blocks[blockId].material;
+                            Material material = Block.Blocks[blockId].Material;
                             if (material.BlocksMovement) return 0;
                             if (material == Material.Water) return -1;
                             if (material == Material.Lava) return -2;

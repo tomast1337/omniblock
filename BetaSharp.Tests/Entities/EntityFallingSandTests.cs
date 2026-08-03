@@ -19,7 +19,7 @@ public sealed class EntityFallingSandTests
     private static Entity FallingBlock(FakeWorldContext world, string block, double x = 8.5, double y = 70.0, double z = 8.5)
     {
         Entity sand = EntityRegistry.ByName("fallingsand").Create(world);
-        Settle.SetBlock(sand, BlockRegistry.Get(block).id);
+        Settle.SetBlock(sand, BlockRegistry.Get(block).Id);
         sand.SetPositionAndAngles(x, y, z, 0.0F, 0.0F);
         Assert.True(world.Entities.SpawnEntity(sand));
         return sand;
@@ -40,7 +40,7 @@ public sealed class EntityFallingSandTests
     {
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 15, 0, 15, 63);
-        int sandId = BlockRegistry.Get("sand").id;
+        int sandId = BlockRegistry.Get("sand").Id;
         Entity sand = FallingBlock(world, "sand", y: 70.0);
 
         for (int tick = 0; tick < 150 && !sand.Dead; tick++) sand.Tick();
@@ -54,7 +54,7 @@ public sealed class EntityFallingSandTests
     public void It_erases_the_block_it_fell_from()
     {
         FakeWorldContext world = new();
-        int sandId = BlockRegistry.Get("sand").id;
+        int sandId = BlockRegistry.Get("sand").Id;
         world.Writer.SetBlock(8, 70, 8, sandId);
         Entity sand = FallingBlock(world, "sand", y: 70.5);
 
@@ -106,7 +106,7 @@ public sealed class EntityFallingSandTests
         Entity restored = EntityRegistry.ByName("fallingsand").Create(world);
         restored.Read(nbt);
 
-        Assert.Equal(BlockRegistry.Get("gravel").id, Settle.BlockId(restored));
+        Assert.Equal(BlockRegistry.Get("gravel").Id, Settle.BlockId(restored));
     }
 
     /// <summary>
@@ -122,8 +122,8 @@ public sealed class EntityFallingSandTests
 
         Assert.Equal(70, Settle.SpawnObjectId(sand));
         Assert.Equal(71, Settle.SpawnObjectId(gravel));
-        Assert.Equal(BlockRegistry.Get("sand").id, Settle.BlockForSpawnObjectId(70));
-        Assert.Equal(BlockRegistry.Get("gravel").id, Settle.BlockForSpawnObjectId(71));
+        Assert.Equal(BlockRegistry.Get("sand").Id, Settle.BlockForSpawnObjectId(70));
+        Assert.Equal(BlockRegistry.Get("gravel").Id, Settle.BlockForSpawnObjectId(71));
         Assert.Null(Settle.BlockForSpawnObjectId(50));
 
         Assert.Equal(21, EntityRegistry.ByName("fallingsand").RequireDefinition().ProtocolId);

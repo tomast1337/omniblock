@@ -261,7 +261,7 @@ public sealed class EntityWolfTests
 
         Assert.False(shake.IsShaking(wolf));
 
-        world.ReaderWriter.SetBlock(8, 65, 8, BetaSharp.Blocks.BlockRegistry.Get("water").id, 0);
+        world.ReaderWriter.SetBlock(8, 65, 8, BetaSharp.Blocks.BlockRegistry.Get("water").Id, 0);
         wolf.Tick();
 
         Assert.True(shake.IsShaking(wolf), "A wolf standing in water needs a shake.");

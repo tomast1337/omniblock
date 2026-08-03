@@ -10,7 +10,7 @@ public sealed class BlockRailTests
     public void NeighborUpdate_RailWithoutBlockBelow_BreaksIntoAir()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("rail").id);
+        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("rail").Id);
 
         BlockRegistry.Get("rail").NeighborUpdate(Tick(world));
 
@@ -21,8 +21,8 @@ public sealed class BlockRailTests
     public void NeighborUpdate_PoweredRailAscendingEastWithoutSupport_BreaksIntoAir()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("stone").id); // support below
-        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("powered_rail").id, 2); // ascending east needs support at +X
+        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("stone").Id); // support below
+        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("powered_rail").Id, 2); // ascending east needs support at +X
 
         BlockRegistry.Get("powered_rail").NeighborUpdate(Tick(world));
 

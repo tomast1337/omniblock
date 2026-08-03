@@ -21,7 +21,7 @@ public sealed class ChunkBorderLightTests
     /// <summary>Fills one chunk with a solid roof, leaving everything under it in shadow.</summary>
     private static void Roofed(Chunk chunk)
     {
-        int stone = BlockRegistry.Get("stone").id;
+        int stone = BlockRegistry.Get("stone").Id;
 
         for (int localX = 0; localX < 16; localX++)
         {
@@ -75,7 +75,7 @@ public sealed class ChunkBorderLightTests
     [Fact]
     public void A_light_source_already_in_the_terrain_lights_the_chunk_it_loads_with()
     {
-        int glowstone = BlockRegistry.Get("glowstone").id;
+        int glowstone = BlockRegistry.Get("glowstone").Id;
         int luminance = Block.BlocksLightLuminance[glowstone];
         Assert.True(luminance > 0, "test needs an emitting block");
 
@@ -100,7 +100,7 @@ public sealed class ChunkBorderLightTests
     [Fact]
     public void A_light_source_survives_its_chunk_arriving_before_its_neighbors()
     {
-        int glowstone = BlockRegistry.Get("glowstone").id;
+        int glowstone = BlockRegistry.Get("glowstone").Id;
         LightTestWorld world = new();
 
         world.Chunks.Add(1, 0, chunk => chunk.Blocks[ChuckFormat.GetIndex(8, 8) + 40] = (byte)glowstone);

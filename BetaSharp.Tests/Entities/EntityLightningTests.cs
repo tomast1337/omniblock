@@ -60,7 +60,7 @@ public sealed class EntityLightningTests
 
         bolt.Tick();
 
-        Assert.Equal(BlockRegistry.Get("fire").id, world.Reader.GetBlockId(8, 64, 8));
+        Assert.Equal(BlockRegistry.Get("fire").Id, world.Reader.GetBlockId(8, 64, 8));
     }
 
     [Fact]

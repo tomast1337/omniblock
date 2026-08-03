@@ -59,7 +59,7 @@ public sealed class WoolBehavior : IEntityInteractable, IEntityPersistence, IEnt
 
             for (int i = 0; i < count; ++i)
             {
-                Entity wool = self.DropItem(new ItemStack(BlockRegistry.Get("wool").id, 1, ColorOf(self)), 1.0F);
+                Entity wool = self.DropItem(new ItemStack(BlockRegistry.Get("wool").Id, 1, ColorOf(self)), 1.0F);
                 wool.VelocityY += self.Random.NextFloat() * 0.05F;
                 wool.VelocityX += (self.Random.NextFloat() - self.Random.NextFloat()) * 0.1F;
                 wool.VelocityZ += (self.Random.NextFloat() - self.Random.NextFloat()) * 0.1F;

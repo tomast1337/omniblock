@@ -135,7 +135,7 @@ public sealed class LightningStrikeBehavior : IEntityTicker, IEntityLifecycle, I
     {
         if (world.Reader.GetBlockId(x, y, z) == 0 && BlockRegistry.Get("fire").CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
         {
-            world.Writer.SetBlock(x, y, z, BlockRegistry.Get("fire").id);
+            world.Writer.SetBlock(x, y, z, BlockRegistry.Get("fire").Id);
         }
     }
 }

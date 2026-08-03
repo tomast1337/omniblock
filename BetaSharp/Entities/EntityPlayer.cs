@@ -154,7 +154,7 @@ public abstract class EntityPlayer : EntityLiving
             return;
         }
 
-        closeHandledScreen();
+        CloseHandledScreen();
         CurrentScreenHandler = PlayerScreenHandler;
     }
 
@@ -231,7 +231,7 @@ public abstract class EntityPlayer : EntityLiving
 
     protected override bool isMovementBlocked() => Health <= 0 || IsSleeping;
 
-    public virtual void closeHandledScreen() => CurrentScreenHandler = PlayerScreenHandler;
+    public virtual void CloseHandledScreen() => CurrentScreenHandler = PlayerScreenHandler;
 
     public override void UpdateCloak()
     {
@@ -788,7 +788,7 @@ public abstract class EntityPlayer : EntityLiving
         SetBoundingBoxSpacing(0.6F, 1.8F);
         resetEyeHeight();
         Vec3i? bedPos = SleepingPos;
-        if (bedPos is var (x, y, z) && World.Reader.GetBlockId(x, y, z) == BlockRegistry.Get("bed").id)
+        if (bedPos is var (x, y, z) && World.Reader.GetBlockId(x, y, z) == BlockRegistry.Get("bed").Id)
         {
             int bedMeta = World.Reader.GetBlockMeta(x, y, z);
             BedBehavior.UpdateState(World.Writer, x, y, z, bedMeta, false);
@@ -810,7 +810,7 @@ public abstract class EntityPlayer : EntityLiving
         }
     }
 
-    private bool IsSleepingInBed() => SleepingPos != null && World.Reader.GetBlockId(SleepingPos.Value.X, SleepingPos.Value.Y, SleepingPos.Value.Z) == BlockRegistry.Get("bed").id;
+    private bool IsSleepingInBed() => SleepingPos != null && World.Reader.GetBlockId(SleepingPos.Value.X, SleepingPos.Value.Y, SleepingPos.Value.Z) == BlockRegistry.Get("bed").Id;
 
     public static Vec3i? FindRespawnPosition(IWorldContext world, Vec3i? spawnPos)
     {
@@ -826,7 +826,7 @@ public abstract class EntityPlayer : EntityLiving
         chunkSource.LoadChunk((x - 3) >> 4, (z + 3) >> 4);
         chunkSource.LoadChunk((x + 3) >> 4, (z + 3) >> 4);
 
-        return world.Reader.GetBlockId(x, y, z) != BlockRegistry.Get("bed").id ? null : BedBehavior.FindWakeUpPosition(world.Reader, x, y, z, 0);
+        return world.Reader.GetBlockId(x, y, z) != BlockRegistry.Get("bed").Id ? null : BedBehavior.FindWakeUpPosition(world.Reader, x, y, z, 0);
     }
 
     public float GetSleepingRotation()

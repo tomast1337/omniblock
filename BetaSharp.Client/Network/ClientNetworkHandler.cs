@@ -425,7 +425,7 @@ public class ClientNetworkHandler : NetHandler
         MessageHandlers.On<PaintingSpawnMessage>(onPaintingSpawn);
         MessageHandlers.On<PlayerSpawnMessage>(onPlayerSpawn);
         MessageHandlers.On<OpenScreenMessage>(onOpenScreen);
-        MessageHandlers.On<CloseScreenMessage>(_ => _context.PlayerHost.Player.closeHandledScreen());
+        MessageHandlers.On<CloseScreenMessage>(_ => _context.PlayerHost.Player.CloseHandledScreen());
         MessageHandlers.On<InventoryMessage>(onInventory);
         MessageHandlers.On<ScreenHandlerSlotMessage>(onScreenHandlerSlot);
         MessageHandlers.On<ScreenHandlerPropertyMessage>(onScreenHandlerProperty);
