@@ -121,7 +121,7 @@ public sealed class ArrowBehavior : IEntityTicker, IEntityPersistence, IEntityIn
         int blockId = self.World.Reader.GetBlockId(self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
         if (blockId > 0)
         {
-            Block.Blocks[blockId].updateBoundingBox(self.World.Reader, self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
+            Block.Blocks[blockId].UpdateBoundingBox(self.World.Reader, self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
             Box? box = Block.Blocks[blockId].GetCollisionShape(self.World.Reader, self.World.Entities, self.State[_tileX], self.State[_tileY], self.State[_tileZ]);
             if (box != null && box.Value.Contains(new Vec3D(self.X, self.Y, self.Z)))
             {

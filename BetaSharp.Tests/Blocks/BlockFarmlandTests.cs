@@ -22,13 +22,13 @@ public sealed class BlockFarmlandTests
         Block farmlandBlock = BlockRegistry.Get("farmland");
         Block customRevertTarget = BlockRegistry.Get("sand");
 
-        world.ReaderWriter.SetInitial(0, 64, 0, farmlandBlock.id);
-        world.ReaderWriter.SetInitial(0, 65, 0, BlockRegistry.Get("stone").id);
+        world.ReaderWriter.SetInitial(0, 64, 0, farmlandBlock.Id);
+        world.ReaderWriter.SetInitial(0, 65, 0, BlockRegistry.Get("stone").Id);
 
         FarmlandBehavior behavior = new(customRevertTarget, BlockRegistry.Get("wheat"), 4, 5, 4);
-        behavior.NeighborUpdate(farmlandBlock, new OnTickEvent(world, 0, 64, 0, 0, farmlandBlock.id));
+        behavior.NeighborUpdate(farmlandBlock, new OnTickEvent(world, 0, 64, 0, 0, farmlandBlock.Id));
 
-        Assert.Equal(customRevertTarget.id, world.Reader.GetBlockId(0, 64, 0));
+        Assert.Equal(customRevertTarget.Id, world.Reader.GetBlockId(0, 64, 0));
     }
 
     [Fact]

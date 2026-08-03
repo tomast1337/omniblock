@@ -26,7 +26,7 @@ internal sealed class DoorBehavior : IBlockPhysics, IBlockInteractable, IBlockLi
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        int doorId = block.id;
+        int doorId = block.Id;
 
         if ((meta & 8) != 0) // Top half
         {
@@ -34,7 +34,7 @@ internal sealed class DoorBehavior : IBlockPhysics, IBlockInteractable, IBlockLi
             {
                 @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
             }
-            else if (@event.BlockId > 0 && Block.Blocks[@event.BlockId].canEmitRedstonePower())
+            else if (@event.BlockId > 0 && Block.Blocks[@event.BlockId].CanEmitRedstonePower())
             {
                 int bottomMeta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y - 1, @event.Z);
                 NeighborUpdate(block, new OnTickEvent(@event.World, @event.X, @event.Y - 1, @event.Z, bottomMeta, @event.BlockId));
@@ -67,7 +67,7 @@ internal sealed class DoorBehavior : IBlockPhysics, IBlockInteractable, IBlockLi
                     block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, meta));
                 }
             }
-            else if (@event.BlockId > 0 && Block.Blocks[@event.BlockId].canEmitRedstonePower())
+            else if (@event.BlockId > 0 && Block.Blocks[@event.BlockId].CanEmitRedstonePower())
             {
                 bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) ||
                                  @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
@@ -106,7 +106,7 @@ internal sealed class DoorBehavior : IBlockPhysics, IBlockInteractable, IBlockLi
         if (_material == Material.Metal) return true;
 
         int meta = world.Reader.GetBlockMeta(x, y, z);
-        int doorId = block.id;
+        int doorId = block.Id;
 
         if ((meta & 8) != 0)
         {
@@ -147,7 +147,7 @@ internal sealed class DoorBehavior : IBlockPhysics, IBlockInteractable, IBlockLi
         if (world.IsRemote) return;
 
         int meta = world.Reader.GetBlockMeta(x, y, z);
-        int doorId = block.id;
+        int doorId = block.Id;
 
         if ((meta & 8) != 0)
         {

@@ -20,9 +20,9 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
     {
         if (@event.World.IsRemote) return;
         UpdateShape(@event.World, @event.X, @event.Y, @event.Z, true);
-        if (block.id != BlockRegistry.Get("powered_rail").id) return;
+        if (block.Id != BlockRegistry.Get("powered_rail").Id) return;
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        NeighborUpdate(block, new OnTickEvent(@event.World, @event.X, @event.Y, @event.Z, meta, block.id));
+        NeighborUpdate(block, new OnTickEvent(@event.World, @event.X, @event.Y, @event.Z, meta, block.Id));
     }
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
@@ -59,7 +59,7 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
             block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
-        else if (block.id == BlockRegistry.Get("powered_rail").id)
+        else if (block.Id == BlockRegistry.Get("powered_rail").Id)
         {
             bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) || @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
             isPowered = isPowered
@@ -80,14 +80,14 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
 
             if (!stateChanged) return;
 
-            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, block.id);
+            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, block.Id);
 
-            if (railMeta is 2 or 3 or 4 or 5) @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, block.id);
+            if (railMeta is 2 or 3 or 4 or 5) @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, block.Id);
 
-            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.id);
+            @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.Id);
         }
-        else if (block.id > 0 &&
-                 Block.Blocks[block.id].canEmitRedstonePower() &&
+        else if (block.Id > 0 &&
+                 Block.Blocks[block.Id].CanEmitRedstonePower() &&
                  !_isPoweredTrack &&
                  new TrackLogic(@event.World, new Vec3i(@event.X, @event.Y, @event.Z)).GetAdjacentTracks() == 3)
         {
@@ -99,7 +99,7 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
     {
         if (_isPoweredTrack)
         {
-            if (block.id == BlockRegistry.Get("powered_rail").id && (meta & 8) == 0) return BlockTextures.PoweredRailOff;
+            if (block.Id == BlockRegistry.Get("powered_rail").Id && (meta & 8) == 0) return BlockTextures.PoweredRailOff;
         }
         else if (meta >= 6)
         {
@@ -157,7 +157,7 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
     private static bool IsPoweredByRail(IWorldContext level, int x, int y, int z, bool towardsNegative, int depth, int shape)
     {
         int blockId = level.Reader.GetBlockId(x, y, z);
-        if (blockId != BlockRegistry.Get("powered_rail").id) return false;
+        if (blockId != BlockRegistry.Get("powered_rail").Id) return false;
 
         int meta = level.Reader.GetBlockMeta(x, y, z);
         int railMeta = meta & 7;
@@ -182,7 +182,7 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
     }
 
     public static bool IsRail(int blockId)
-        => blockId == BlockRegistry.Get("rail").id || blockId == BlockRegistry.Get("powered_rail").id || blockId == BlockRegistry.Get("detector_rail").id;
+        => blockId == BlockRegistry.Get("rail").Id || blockId == BlockRegistry.Get("powered_rail").Id || blockId == BlockRegistry.Get("detector_rail").Id;
 
     /// <summary>True for powered/detector rail: straight+ramp shapes only, no corners.</summary>
     public static bool IsAlwaysStraight(Block block) => block.Physics is RailBehavior { _isPoweredTrack: true };

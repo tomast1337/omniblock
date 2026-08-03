@@ -28,7 +28,7 @@ internal sealed class SnowBehavior(Item dropItem, float dropSpread) : IBlockPhys
         Entity entityItem = DroppedItemBehavior.Create(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(dropItem.Id, 1, 0), pickupDelay: 10);
         @event.World.Entities.SpawnEntity(entityItem);
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
-        @event.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[block.id], 1);
+        @event.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[block.Id], 1);
     }
 
     public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => dropItem.Id;

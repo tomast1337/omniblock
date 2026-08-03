@@ -54,8 +54,8 @@ public class BlockVisualsTests
         Assert.IsType<Block>(BlockRegistry.Get("glass"));
         Assert.IsType<GlassVisualBehavior>(BlockRegistry.Get("glass").Visuals);
         Assert.False(BlockRegistry.Get("glass").IsOpaque);
-        Assert.False(Block.BlocksOpaque[BlockRegistry.Get("glass").id]);
-        Assert.Equal(0, Block.BlockLightOpacity[BlockRegistry.Get("glass").id]);
+        Assert.False(Block.BlocksOpaque[BlockRegistry.Get("glass").Id]);
+        Assert.Equal(0, Block.BlockLightOpacity[BlockRegistry.Get("glass").Id]);
         Assert.Equal(0, BlockRegistry.Get("glass").GetDroppedItemCount());
 
         // Wool: plain Block composed with ClothVisualBehavior.
@@ -82,7 +82,7 @@ public class BlockVisualsTests
     [Fact]
     public void Grass_TopFaceUsesGrassColor()
     {
-        Assert.NotEqual(0xFFFFFF, BlockRegistry.Get("grass_block").getColorForFace(0, 1));
-        Assert.Equal(0xFFFFFF, BlockRegistry.Get("grass_block").getColorForFace(0, 0));
+        Assert.NotEqual(0xFFFFFF, BlockRegistry.Get("grass_block").GetColorForFace(0, 1));
+        Assert.Equal(0xFFFFFF, BlockRegistry.Get("grass_block").GetColorForFace(0, 0));
     }
 }

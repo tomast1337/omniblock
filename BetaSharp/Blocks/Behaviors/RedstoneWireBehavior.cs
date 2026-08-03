@@ -27,8 +27,8 @@ public sealed class RedstoneWireBehavior(Block wire, Block[] conductors, Block r
         if (@event.World.IsRemote) return;
 
         UpdateAndPropagateCurrentStrength(@event.World, @event.X, @event.Y, @event.Z);
-        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, block.id);
-        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.id);
+        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, block.Id);
+        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.Id);
         NotifySurroundingWires(@event.World, @event.X, @event.Y, @event.Z);
     }
 
@@ -36,8 +36,8 @@ public sealed class RedstoneWireBehavior(Block wire, Block[] conductors, Block r
     {
         if (@event.World.IsRemote) return;
 
-        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, block.id);
-        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.id);
+        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y + 1, @event.Z, block.Id);
+        @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.Id);
         UpdateAndPropagateCurrentStrength(@event.World, @event.X, @event.Y, @event.Z);
         NotifySurroundingWires(@event.World, @event.X, @event.Y, @event.Z);
     }
@@ -153,7 +153,7 @@ public sealed class RedstoneWireBehavior(Block wire, Block[] conductors, Block r
 
         foreach (BlockPos pos in updateList)
         {
-            level.Broadcaster.NotifyNeighbors(pos.x, pos.y, pos.z, wire.id);
+            level.Broadcaster.NotifyNeighbors(pos.x, pos.y, pos.z, wire.Id);
         }
     }
 
@@ -237,19 +237,19 @@ public sealed class RedstoneWireBehavior(Block wire, Block[] conductors, Block r
 
     private void NotifyWireNeighborsOfNeighborChange(IWorldContext level, int x, int y, int z)
     {
-        if (level.Reader.GetBlockId(x, y, z) != wire.id) return;
-        level.Broadcaster.NotifyNeighbors(x, y, z, wire.id);
-        level.Broadcaster.NotifyNeighbors(x - 1, y, z, wire.id);
-        level.Broadcaster.NotifyNeighbors(x + 1, y, z, wire.id);
-        level.Broadcaster.NotifyNeighbors(x, y, z - 1, wire.id);
-        level.Broadcaster.NotifyNeighbors(x, y, z + 1, wire.id);
-        level.Broadcaster.NotifyNeighbors(x, y - 1, z, wire.id);
-        level.Broadcaster.NotifyNeighbors(x, y + 1, z, wire.id);
+        if (level.Reader.GetBlockId(x, y, z) != wire.Id) return;
+        level.Broadcaster.NotifyNeighbors(x, y, z, wire.Id);
+        level.Broadcaster.NotifyNeighbors(x - 1, y, z, wire.Id);
+        level.Broadcaster.NotifyNeighbors(x + 1, y, z, wire.Id);
+        level.Broadcaster.NotifyNeighbors(x, y, z - 1, wire.Id);
+        level.Broadcaster.NotifyNeighbors(x, y, z + 1, wire.Id);
+        level.Broadcaster.NotifyNeighbors(x, y - 1, z, wire.Id);
+        level.Broadcaster.NotifyNeighbors(x, y + 1, z, wire.Id);
     }
 
     private int GetMaxCurrentStrength(IBlockReader reader, int x, int y, int z, int power)
     {
-        if (reader.GetBlockId(x, y, z) != wire.id) return power;
+        if (reader.GetBlockId(x, y, z) != wire.Id) return power;
         int currentStrength = reader.GetBlockMeta(x, y, z);
         return currentStrength > power ? currentStrength : power;
     }
@@ -258,14 +258,14 @@ public sealed class RedstoneWireBehavior(Block wire, Block[] conductors, Block r
     {
         int blockId = reader.GetBlockId(x, y, z);
         if (blockId == 0) return false;
-        if (blockId == wire.id) return true;
+        if (blockId == wire.Id) return true;
 
         foreach (Block conductor in conductors)
         {
-            if (blockId == conductor.id) return true;
+            if (blockId == conductor.Id) return true;
         }
 
-        if (blockId != repeater.id && blockId != poweredRepeater.id) return Block.Blocks[blockId].canEmitRedstonePower();
+        if (blockId != repeater.Id && blockId != poweredRepeater.Id) return Block.Blocks[blockId].CanEmitRedstonePower();
         if (direction < 0) return false;
         int meta = reader.GetBlockMeta(x, y, z);
         int orientation = meta & 3;

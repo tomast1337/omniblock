@@ -46,7 +46,7 @@ public sealed class SettleAsBlockDefinition : EntityBehaviorDefinition
     public override object Build(in EntityBehaviorBuildContext context) =>
         new SettleAsBlockBehavior(
             context.Layout,
-            [.. WireIds.Select(entry => (BlockRegistry.Get(entry.Block).id, entry.Id))]);
+            [.. WireIds.Select(entry => (id: BlockRegistry.Get(entry.Block).Id, entry.Id))]);
 }
 
 public sealed class LightningStrikeDefinition : EntityBehaviorDefinition

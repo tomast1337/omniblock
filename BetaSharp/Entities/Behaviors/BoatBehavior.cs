@@ -416,7 +416,7 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
     /// <summary>A boat ploughs a channel through snow instead of riding over it.</summary>
     private static void ClearSnowUnderfoot(Entity self)
     {
-        int snowId = BlockRegistry.Get("snow").id;
+        int snowId = BlockRegistry.Get("snow").Id;
         for (int i = 0; i < 4; ++i)
         {
             int snowX = MathHelper.Floor(self.X + (i % 2 - 0.5D) * 0.8D);

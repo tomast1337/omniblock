@@ -14,7 +14,7 @@ public sealed class BlockMushroomTests
         FakeWorldContext world = new();
         Block mushroom = BlockRegistry.Get("brown_mushroom");
         Block customGround = BlockRegistry.Get("sand");
-        world.ReaderWriter.SetInitial(0, 63, 0, customGround.id);
+        world.ReaderWriter.SetInitial(0, 63, 0, customGround.Id);
 
         MushroomBehavior behavior = new([customGround], 100, 13);
 
@@ -27,7 +27,7 @@ public sealed class BlockMushroomTests
         FakeWorldContext world = new();
         Block mushroom = BlockRegistry.Get("brown_mushroom");
         Block customGround = BlockRegistry.Get("sand");
-        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("dirt").id);
+        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("dirt").Id);
 
         MushroomBehavior behavior = new([customGround], 100, 13);
 

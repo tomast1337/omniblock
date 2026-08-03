@@ -43,14 +43,14 @@ internal sealed class MushroomBehavior(Block[] validGround, int spreadChanceOneI
             return;
         }
 
-        @event.World.Writer.SetBlock(tryX, tryY, tryZ, block.id);
+        @event.World.Writer.SetBlock(tryX, tryY, tryZ, block.Id);
     }
 
     private bool CanPlantOnTop(int id)
     {
         foreach (Block ground in validGround)
         {
-            if (id == ground.id) return true;
+            if (id == ground.Id) return true;
         }
 
         return false;

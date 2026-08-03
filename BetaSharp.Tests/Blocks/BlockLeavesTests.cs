@@ -19,8 +19,8 @@ public sealed class BlockLeavesTests
     public void OnTick_DecayCheck_ComparesAgainstRealLogAndLeavesIds()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("log").id);
-        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("leaves").id, 8);
+        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("log").Id);
+        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("leaves").Id, 8);
 
         BlockRegistry.Get("leaves").OnTick(Tick(world));
 
@@ -29,7 +29,7 @@ public sealed class BlockLeavesTests
 
     [Fact]
     public void GetDroppedItemId_IsSapling()
-        => Assert.Equal(BlockRegistry.Get("sapling").id, BlockRegistry.Get("leaves").GetDroppedItemId(0));
+        => Assert.Equal(BlockRegistry.Get("sapling").Id, BlockRegistry.Get("leaves").GetDroppedItemId(0));
 
     [Fact]
     public void OnTick_CustomTrunk_DecaysAgainstConfiguredTrunkNotVanillaLog()
@@ -40,8 +40,8 @@ public sealed class BlockLeavesTests
         Block sapling = BlockRegistry.Get("sapling");
         Item shears = Item.ByName("shears");
 
-        world.ReaderWriter.SetInitial(0, 63, 0, customTrunk.id);
-        world.ReaderWriter.SetInitial(0, 64, 0, leavesBlock.id, 8);
+        world.ReaderWriter.SetInitial(0, 63, 0, customTrunk.Id);
+        world.ReaderWriter.SetInitial(0, 64, 0, leavesBlock.Id, 8);
 
         LeavesBehavior behavior = new(customTrunk, sapling, shears);
         behavior.OnTick(leavesBlock, Tick(world));
@@ -57,7 +57,7 @@ public sealed class BlockLeavesTests
         Item shears = Item.ByName("shears");
 
         LeavesBehavior behavior = new(log, sand, shears);
-        Assert.Equal(sand.id, behavior.GetDroppedItemId(BlockRegistry.Get("leaves"), 0, 0));
+        Assert.Equal(sand.Id, behavior.GetDroppedItemId(BlockRegistry.Get("leaves"), 0, 0));
     }
 
     // No built-in default and no null fallback: an omitted or unknown "trunk"/"sapling"/

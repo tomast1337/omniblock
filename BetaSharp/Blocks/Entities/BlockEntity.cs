@@ -73,7 +73,7 @@ public abstract class BlockEntity : IEntity
 
     void IEntity.Tick() => Tick(World!.Entities);
 
-    int IEntity.GetId() => GetBlock().id;
+    int IEntity.GetId() => GetBlock().Id;
 
     IWorldContext IEntity.World => World!;
 

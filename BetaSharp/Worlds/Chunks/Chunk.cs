@@ -370,7 +370,7 @@ public class Chunk
 
             if (sameId)
             {
-                Block.Blocks[rawId].onMetadataChange(new OnMetadataChangeEvent(World, worldX, y, worldZ, meta));
+                Block.Blocks[rawId].OnMetadataChange(new OnMetadataChangeEvent(World, worldX, y, worldZ, meta));
             }
         }
 

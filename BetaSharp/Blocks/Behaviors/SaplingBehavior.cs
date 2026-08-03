@@ -67,7 +67,7 @@ internal sealed class SaplingBehavior : IBlockTicker, IBlockVisuals, IBlockLifec
 
         if (!treeFeature.Generate(world, s_random, x, y, z))
         {
-            world.Writer.SetBlock(x, y, z, BlockRegistry.Get("sapling").id, saplingType);
+            world.Writer.SetBlock(x, y, z, BlockRegistry.Get("sapling").Id, saplingType);
         }
     }
 }

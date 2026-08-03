@@ -23,13 +23,13 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
 {
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        if (@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == portalBase.id && PortalBehavior.Create(@event.World.Reader, @event.World.Writer, @event.X, @event.Y, @event.Z, portalBase, block, portalFill))
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == portalBase.Id && PortalBehavior.Create(@event.World.Reader, @event.World.Writer, @event.X, @event.Y, @event.Z, portalBase, block, portalFill))
             return;
 
         if (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) && !AreBlocksAroundFlammable(@event.World.Reader, @event.X, @event.Y, @event.Z))
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         else
-            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id, block.TickRate);
+            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
     }
 
     public bool HasCollision(Block block, bool defaultHasCollision) => false;
@@ -50,7 +50,7 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
     {
         if (!@event.World.Rules.GetBool(DefaultRules.DoFireTick)) return;
 
-        bool isOnNetherrack = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == eternalFuel.id;
+        bool isOnNetherrack = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == eternalFuel.Id;
         if (!block.CanPlaceAt(new CanPlaceAtContext(@event.World, 0, @event.X, @event.Y, @event.Z)))
         {
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
@@ -70,7 +70,7 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
                 @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, fireAge + @event.World.Random.NextInt(3) / 2);
             }
 
-            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id, block.TickRate);
+            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
             switch (isOnNetherrack)
             {
                 case false when !AreBlocksAroundFlammable(@event.World.Reader, @event.X, @event.Y, @event.Z):
@@ -129,7 +129,7 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
                                         spreadChance = maxAge;
                                     }
 
-                                    @event.World.Writer.SetBlock(checkX, checkY, checkZ, block.id, spreadChance);
+                                    @event.World.Writer.SetBlock(checkX, checkY, checkZ, block.Id, spreadChance);
                                 }
                             }
                         }
@@ -226,7 +226,7 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
     {
         int targetSpreadChance = SpreadChanceAt(level.Reader, x, y, z);
         if (random.NextInt(spreadFactor) >= targetSpreadChance) return;
-        bool isTnt = level.Reader.GetBlockId(x, y, z) == explosive.id;
+        bool isTnt = level.Reader.GetBlockId(x, y, z) == explosive.Id;
         if (random.NextInt(currentAge + 10) < 5 && !level.Environment.IsRainingAt(x, y, z))
         {
             int newFireAge = currentAge + random.NextInt(5) / 4;
@@ -235,7 +235,7 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
                 newFireAge = maxAge;
             }
 
-            level.Writer.SetBlock(x, y, z, block.id, newFireAge);
+            level.Writer.SetBlock(x, y, z, block.Id, newFireAge);
         }
         else
         {
@@ -244,7 +244,7 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
 
         if (isTnt)
         {
-            explosive.onMetadataChange(new OnMetadataChangeEvent(level, x, y, z, 1));
+            explosive.OnMetadataChange(new OnMetadataChangeEvent(level, x, y, z, 1));
         }
     }
 

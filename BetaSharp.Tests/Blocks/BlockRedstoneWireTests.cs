@@ -10,7 +10,7 @@ public sealed class BlockRedstoneWireTests
     public void NeighborUpdate_WhenSupportMissing_BreaksWireIntoAir()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("redstone_wire").id, 7);
+        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("redstone_wire").Id, 7);
 
         BlockRegistry.Get("redstone_wire").NeighborUpdate(Tick(world));
 
@@ -25,12 +25,12 @@ public sealed class BlockRedstoneWireTests
         {
             IsRemote = true
         };
-        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("redstone_wire").id, 4);
-        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("stone").id);
+        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("redstone_wire").Id, 4);
+        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("stone").Id);
 
         BlockRegistry.Get("redstone_wire").NeighborUpdate(Tick(world));
 
-        Assert.Equal(BlockRegistry.Get("redstone_wire").id, world.Reader.GetBlockId(0, 64, 0));
+        Assert.Equal(BlockRegistry.Get("redstone_wire").Id, world.Reader.GetBlockId(0, 64, 0));
         Assert.Equal(4, world.Reader.GetBlockMeta(0, 64, 0));
         Assert.Empty(world.ReaderWriter.SetBlockCalls);
         Assert.Empty(world.ReaderWriter.SetMetaCalls);

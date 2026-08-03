@@ -13,8 +13,8 @@ public sealed class BlockLogTests
         Block logBlock = BlockRegistry.Get("log");
         Block leavesBlock = BlockRegistry.Get("leaves");
 
-        world.ReaderWriter.SetInitial(0, 64, 0, logBlock.id);
-        world.ReaderWriter.SetInitial(1, 64, 0, leavesBlock.id);
+        world.ReaderWriter.SetInitial(0, 64, 0, logBlock.Id);
+        world.ReaderWriter.SetInitial(1, 64, 0, leavesBlock.Id);
 
         logBlock.OnBreak(new OnBreakEvent(world, null, 0, 64, 0));
 
@@ -29,9 +29,9 @@ public sealed class BlockLogTests
         Block customLeaves = BlockRegistry.Get("wool");
         Block vanillaLeaves = BlockRegistry.Get("leaves");
 
-        world.ReaderWriter.SetInitial(0, 64, 0, logBlock.id);
-        world.ReaderWriter.SetInitial(1, 64, 0, customLeaves.id);
-        world.ReaderWriter.SetInitial(2, 64, 0, vanillaLeaves.id);
+        world.ReaderWriter.SetInitial(0, 64, 0, logBlock.Id);
+        world.ReaderWriter.SetInitial(1, 64, 0, customLeaves.Id);
+        world.ReaderWriter.SetInitial(2, 64, 0, vanillaLeaves.Id);
 
         LogBehavior behavior = new(canopy: customLeaves, searchRadius: 4);
         behavior.OnBreak(logBlock, new OnBreakEvent(world, null, 0, 64, 0));

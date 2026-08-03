@@ -61,7 +61,7 @@ public class PlayerControllerMP : PlayerController
             int blockId = Game.World.Reader.GetBlockId(x, y, z);
             if (blockId > 0 && _curBlockDamageMp == 0.0F && Game.Player.GameMode.CanInteract)
             {
-                Block.Blocks[blockId].onBlockBreakStart(new OnBlockBreakStartEvent(Game.World, Game.Player, x, y, z));
+                Block.Blocks[blockId].OnBlockBreakStart(new OnBlockBreakStartEvent(Game.World, Game.Player, x, y, z));
             }
 
             if (!Game.Player.GameMode.CanBreak) return;

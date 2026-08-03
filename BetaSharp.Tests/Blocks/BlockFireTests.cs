@@ -18,8 +18,8 @@ public sealed class BlockFireTests
     public void OnTick_DoesNotThrow()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("fire").id);
+        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("fire").Id);
 
         BlockRegistry.Get("fire").OnTick(Tick(world));
     }
@@ -28,8 +28,8 @@ public sealed class BlockFireTests
     public void OnPlaced_DoesNotThrow()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("stone").id);
-        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("fire").id);
+        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("fire").Id);
 
         BlockRegistry.Get("fire").OnPlaced(new OnPlacedEvent(world, null, Side.Up, Side.Up, 0, 64, 0));
     }

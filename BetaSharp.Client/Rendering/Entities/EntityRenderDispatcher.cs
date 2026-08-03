@@ -98,7 +98,7 @@ public class EntityRenderDispatcher
         if (camera.IsSleeping)
         {
             int blockId = world.Reader.GetBlockId(MathHelper.Floor(camera.X), MathHelper.Floor(camera.Y), MathHelper.Floor(camera.Z));
-            if (blockId == BlockRegistry.Get("bed").id)
+            if (blockId == BlockRegistry.Get("bed").Id)
             {
                 int bedMeta = world.Reader.GetBlockMeta(MathHelper.Floor(camera.X), MathHelper.Floor(camera.Y), MathHelper.Floor(camera.Z));
                 int bedFacing = bedMeta & 3;

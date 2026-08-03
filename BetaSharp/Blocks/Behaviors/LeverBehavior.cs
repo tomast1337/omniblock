@@ -84,25 +84,25 @@ public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlo
         int meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         if ((meta & 8) <= 0) return;
 
-        ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z, block.id);
+        ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z, block.Id);
         int direction = meta & 7;
 
         switch (direction)
         {
             case 1:
-                ctx.World.Broadcaster.NotifyNeighbors(ctx.X - 1, ctx.Y, ctx.Z, block.id);
+                ctx.World.Broadcaster.NotifyNeighbors(ctx.X - 1, ctx.Y, ctx.Z, block.Id);
                 break;
             case 2:
-                ctx.World.Broadcaster.NotifyNeighbors(ctx.X + 1, ctx.Y, ctx.Z, block.id);
+                ctx.World.Broadcaster.NotifyNeighbors(ctx.X + 1, ctx.Y, ctx.Z, block.Id);
                 break;
             case 3:
-                ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z - 1, block.id);
+                ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z - 1, block.Id);
                 break;
             case 4:
-                ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z + 1, block.id);
+                ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z + 1, block.Id);
                 break;
             default:
-                ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y - 1, ctx.Z, block.id);
+                ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y - 1, ctx.Z, block.Id);
                 break;
         }
     }
@@ -198,24 +198,24 @@ public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlo
         world.Writer.SetBlockMeta(x, y, z, direction + powered);
         world.Broadcaster.SetBlocksDirty(x, y, z);
         world.Broadcaster.PlaySoundAtPos(x + 0.5D, y + 0.5D, z + 0.5D, "random.click", 0.3F, powered > 0 ? 0.6F : 0.5F);
-        world.Broadcaster.NotifyNeighbors(x, y, z, block.id);
+        world.Broadcaster.NotifyNeighbors(x, y, z, block.Id);
 
         switch (direction)
         {
             case 1:
-                world.Broadcaster.NotifyNeighbors(x - 1, y, z, block.id);
+                world.Broadcaster.NotifyNeighbors(x - 1, y, z, block.Id);
                 break;
             case 2:
-                world.Broadcaster.NotifyNeighbors(x + 1, y, z, block.id);
+                world.Broadcaster.NotifyNeighbors(x + 1, y, z, block.Id);
                 break;
             case 3:
-                world.Broadcaster.NotifyNeighbors(x, y, z - 1, block.id);
+                world.Broadcaster.NotifyNeighbors(x, y, z - 1, block.Id);
                 break;
             case 4:
-                world.Broadcaster.NotifyNeighbors(x, y, z + 1, block.id);
+                world.Broadcaster.NotifyNeighbors(x, y, z + 1, block.Id);
                 break;
             default:
-                world.Broadcaster.NotifyNeighbors(x, y - 1, z, block.id);
+                world.Broadcaster.NotifyNeighbors(x, y - 1, z, block.Id);
                 break;
         }
     }

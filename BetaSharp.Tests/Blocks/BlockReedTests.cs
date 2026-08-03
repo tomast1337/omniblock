@@ -12,8 +12,8 @@ public sealed class BlockReedTests
         FakeWorldContext world = new();
         Block reeds = BlockRegistry.Get("sugar_cane");
         Block customGround = BlockRegistry.Get("stone");
-        world.ReaderWriter.SetInitial(0, 63, 0, customGround.id);
-        world.ReaderWriter.SetInitial(1, 63, 0, BlockRegistry.Get("water").id);
+        world.ReaderWriter.SetInitial(0, 63, 0, customGround.Id);
+        world.ReaderWriter.SetInitial(1, 63, 0, BlockRegistry.Get("water").Id);
 
         ReedBehavior behavior = new([customGround]);
 
@@ -26,7 +26,7 @@ public sealed class BlockReedTests
         FakeWorldContext world = new();
         Block reeds = BlockRegistry.Get("sugar_cane");
         Block customGround = BlockRegistry.Get("stone");
-        world.ReaderWriter.SetInitial(0, 63, 0, customGround.id);
+        world.ReaderWriter.SetInitial(0, 63, 0, customGround.Id);
 
         ReedBehavior behavior = new([customGround]);
 
@@ -39,8 +39,8 @@ public sealed class BlockReedTests
         FakeWorldContext world = new();
         Block reeds = BlockRegistry.Get("sugar_cane");
         Block customGround = BlockRegistry.Get("stone");
-        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("dirt").id);
-        world.ReaderWriter.SetInitial(1, 63, 0, BlockRegistry.Get("water").id);
+        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("dirt").Id);
+        world.ReaderWriter.SetInitial(1, 63, 0, BlockRegistry.Get("water").Id);
 
         ReedBehavior behavior = new([customGround]);
 

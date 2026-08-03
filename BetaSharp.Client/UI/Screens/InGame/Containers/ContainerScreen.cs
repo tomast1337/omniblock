@@ -69,7 +69,7 @@ public abstract class ContainerScreen(
         base.Update(partialTicks);
         if (!player.IsAlive || player.Dead)
         {
-            player.closeHandledScreen();
+            player.CloseHandledScreen();
         }
     }
 
@@ -158,7 +158,7 @@ public abstract class ContainerScreen(
     {
         if (key == Keyboard.KEY_ESCAPE || key == Context.Options.KeyBindInventory.ScanCode)
         {
-            player.closeHandledScreen();
+            player.CloseHandledScreen();
         }
         else
         {

@@ -6,13 +6,13 @@ namespace BetaSharp.Tests.Blocks;
 public sealed class BlockDropsAndTexturesTests
 {
     [Fact]
-    public void Stone_DropsCobblestone() => Assert.Equal(BlockRegistry.Get("cobblestone").id, BlockRegistry.Get("stone").GetDroppedItemId(0));
+    public void Stone_DropsCobblestone() => Assert.Equal(BlockRegistry.Get("cobblestone").Id, BlockRegistry.Get("stone").GetDroppedItemId(0));
 
     [Fact]
-    public void GoldOre_DropsItself() => Assert.Equal(BlockRegistry.Get("gold_ore").id, BlockRegistry.Get("gold_ore").GetDroppedItemId(0));
+    public void GoldOre_DropsItself() => Assert.Equal(BlockRegistry.Get("gold_ore").Id, BlockRegistry.Get("gold_ore").GetDroppedItemId(0));
 
     [Fact]
-    public void IronOre_DropsItself() => Assert.Equal(BlockRegistry.Get("iron_ore").id, BlockRegistry.Get("iron_ore").GetDroppedItemId(0));
+    public void IronOre_DropsItself() => Assert.Equal(BlockRegistry.Get("iron_ore").Id, BlockRegistry.Get("iron_ore").GetDroppedItemId(0));
 
     [Fact]
     public void CoalOre_DropsCoalItem() => Assert.Equal(Item.ByName("coal").Id, BlockRegistry.Get("coal_ore").GetDroppedItemId(0));
@@ -57,8 +57,8 @@ public sealed class BlockDropsAndTexturesTests
         for (int i = 0; i < 200; i++)
         {
             int itemId = BlockRegistry.Get("gravel").GetDroppedItemId(0);
-            Assert.True(itemId == BlockRegistry.Get("gravel").id || itemId == Item.ByName("flint").Id);
-            sawGravel |= itemId == BlockRegistry.Get("gravel").id;
+            Assert.True(itemId == BlockRegistry.Get("gravel").Id || itemId == Item.ByName("flint").Id);
+            sawGravel |= itemId == BlockRegistry.Get("gravel").Id;
             sawFlint |= itemId == Item.ByName("flint").Id;
         }
 
@@ -72,7 +72,7 @@ public sealed class BlockDropsAndTexturesTests
     [Fact]
     public void Obsidian_DropsItself()
     {
-        Assert.Equal(BlockRegistry.Get("obsidian").id, BlockRegistry.Get("obsidian").GetDroppedItemId(0));
+        Assert.Equal(BlockRegistry.Get("obsidian").Id, BlockRegistry.Get("obsidian").GetDroppedItemId(0));
         Assert.Equal(1, BlockRegistry.Get("obsidian").GetDroppedItemCount());
     }
 
@@ -97,7 +97,7 @@ public sealed class BlockDropsAndTexturesTests
     {
         (int primaryMeta, int backupId, int backupMeta) = BlockRegistry.Get("stone").GetPickBlockItem(0);
         Assert.Equal(0, primaryMeta);
-        Assert.Equal(BlockRegistry.Get("cobblestone").id, backupId);
+        Assert.Equal(BlockRegistry.Get("cobblestone").Id, backupId);
         Assert.Equal(-1, backupMeta);
     }
 
@@ -105,14 +105,14 @@ public sealed class BlockDropsAndTexturesTests
     public void Gravel_PickBlockItem_BackupIsGravelNotFlint()
     {
         (_, int backupId, _) = BlockRegistry.Get("gravel").GetPickBlockItem(0);
-        Assert.Equal(BlockRegistry.Get("gravel").id, backupId);
+        Assert.Equal(BlockRegistry.Get("gravel").Id, backupId);
     }
 
     [Fact]
     public void DoubleSlab_PickBlockItem_BackupPreservesBlockMetaOnSlabItem()
     {
         (_, int backupId, int backupMeta) = BlockRegistry.Get("double_slab").GetPickBlockItem(3);
-        Assert.Equal(BlockRegistry.Get("slab").id, backupId);
+        Assert.Equal(BlockRegistry.Get("slab").Id, backupId);
         Assert.Equal(3, backupMeta);
     }
 
@@ -120,7 +120,7 @@ public sealed class BlockDropsAndTexturesTests
     public void GrassBlock_PickBlockItem_BackupIsDirtWithNoMetaConstraint()
     {
         (_, int backupId, int backupMeta) = BlockRegistry.Get("grass_block").GetPickBlockItem(0);
-        Assert.Equal(BlockRegistry.Get("dirt").id, backupId);
+        Assert.Equal(BlockRegistry.Get("dirt").Id, backupId);
         Assert.Equal(-1, backupMeta);
     }
 
@@ -139,7 +139,7 @@ public sealed class BlockDropsAndTexturesTests
         const int oakWithDecayAndPersistentBits = 0b1101; // oak (bits 0-1 = 01) + check-decay (4) + persistent (8)
         (int primaryMeta, int backupId, int backupMeta) = BlockRegistry.Get("leaves").GetPickBlockItem(oakWithDecayAndPersistentBits);
         Assert.Equal(1, primaryMeta);
-        Assert.Equal(BlockRegistry.Get("sapling").id, backupId);
+        Assert.Equal(BlockRegistry.Get("sapling").Id, backupId);
         Assert.Equal(1, backupMeta);
     }
 }

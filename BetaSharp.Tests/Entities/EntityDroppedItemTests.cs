@@ -124,7 +124,7 @@ public sealed class EntityDroppedItemTests
     public void The_stack_survives_an_nbt_round_trip()
     {
         FakeWorldContext world = new();
-        Entity item = Drop(world, new ItemStack(BlockRegistry.Get("wool").id, 5, 11));
+        Entity item = Drop(world, new ItemStack(BlockRegistry.Get("wool").Id, 5, 11));
 
         NBTTagCompound nbt = new();
         item.Write(nbt);
@@ -133,7 +133,7 @@ public sealed class EntityDroppedItemTests
         restored.Read(nbt);
 
         ItemStack stack = Dropped.Stack(restored)!;
-        Assert.Equal(BlockRegistry.Get("wool").id, stack.ItemId);
+        Assert.Equal(BlockRegistry.Get("wool").Id, stack.ItemId);
         Assert.Equal(5, stack.Count);
         Assert.Equal(11, stack.getDamage());
     }
@@ -143,7 +143,7 @@ public sealed class EntityDroppedItemTests
     public void Picking_up_a_log_awards_the_achievement()
     {
         FakeWorldContext world = new();
-        Entity item = Drop(world, new ItemStack(BlockRegistry.Get("log").id, 1, 0));
+        Entity item = Drop(world, new ItemStack(BlockRegistry.Get("log").Id, 1, 0));
         TestEntityPlayer player = Player(world);
 
         item.OnPlayerInteraction(player);

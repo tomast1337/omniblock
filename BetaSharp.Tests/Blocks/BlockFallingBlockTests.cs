@@ -13,7 +13,7 @@ public sealed class BlockFallingBlockTests
     {
         FakeWorldContext world = new();
         Block customPassable = BlockRegistry.Get("torch");
-        world.ReaderWriter.SetInitial(0, 63, 0, customPassable.id);
+        world.ReaderWriter.SetInitial(0, 63, 0, customPassable.Id);
 
         FallingBlockBehavior behavior = new([customPassable], 32);
 
@@ -25,7 +25,7 @@ public sealed class BlockFallingBlockTests
     {
         FakeWorldContext world = new();
         Block customPassable = BlockRegistry.Get("torch");
-        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("fire").id);
+        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("fire").Id);
 
         FallingBlockBehavior behavior = new([customPassable], 32);
 
@@ -45,7 +45,7 @@ public sealed class BlockFallingBlockTests
     public void CanFallThrough_WaterMaterial_AlwaysReturnsTrue()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("water").id);
+        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("water").Id);
         FallingBlockBehavior behavior = new([], 32);
 
         Assert.True(behavior.CanFallThrough(Tick(world, 0, 63, 0)));

@@ -27,15 +27,15 @@ public sealed class BlockBatch7Tests
             for (int y = 0; y <= 4; y++)
             {
                 bool isFrame = x == 0 || x == 3 || y == 0 || y == 4;
-                if (isFrame) world.ReaderWriter.SetInitial(x, y, 0, obsidian.id);
+                if (isFrame) world.ReaderWriter.SetInitial(x, y, 0, obsidian.Id);
             }
         }
 
         bool created = PortalBehavior.Create(world.Reader, world.Writer, 1, 1, 0, obsidian, fire, netherPortal);
 
         Assert.True(created);
-        Assert.Equal(netherPortal.id, world.Reader.GetBlockId(1, 1, 0));
-        Assert.Equal(netherPortal.id, world.Reader.GetBlockId(2, 3, 0));
+        Assert.Equal(netherPortal.Id, world.Reader.GetBlockId(1, 1, 0));
+        Assert.Equal(netherPortal.Id, world.Reader.GetBlockId(2, 3, 0));
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public sealed class BlockBatch7Tests
         Block customConductor = BlockRegistry.Get("torch");
         Block repeater = BlockRegistry.Get("repeater");
         Block poweredRepeater = BlockRegistry.Get("powered_repeater");
-        world.ReaderWriter.SetInitial(0, 64, 0, customConductor.id);
+        world.ReaderWriter.SetInitial(0, 64, 0, customConductor.Id);
 
         RedstoneWireBehavior behavior = new(wire, [customConductor], repeater, poweredRepeater);
 
@@ -72,7 +72,7 @@ public sealed class BlockBatch7Tests
         Block customConductor = BlockRegistry.Get("torch");
         Block repeater = BlockRegistry.Get("repeater");
         Block poweredRepeater = BlockRegistry.Get("powered_repeater");
-        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("lever").id);
+        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("lever").Id);
 
         RedstoneWireBehavior behavior = new(wire, [customConductor], repeater, poweredRepeater);
 

@@ -28,8 +28,8 @@ public class Biome
 
     public string Name { get; private set; } = "";
     public int GrassColor { get; private set; }
-    public byte TopBlockId = (byte)BlockRegistry.Get("grass_block").id;
-    public byte SoilBlockId = (byte)BlockRegistry.Get("dirt").id;
+    public byte TopBlockId = (byte)BlockRegistry.Get("grass_block").Id;
+    public byte SoilBlockId = (byte)BlockRegistry.Get("dirt").Id;
     public int FoliageColor { get; private set; } = 0x4EE031;
     protected WeightedRandomSelector<SpawnListEntry> MonsterList { get; } = new();
     protected WeightedRandomSelector<SpawnListEntry> CreatureList { get; } = new();
@@ -102,8 +102,8 @@ public class Biome
             }
         }
 
-        Desert.TopBlockId = Desert.SoilBlockId = (byte)BlockRegistry.Get("sand").id;
-        IceDesert.TopBlockId = IceDesert.SoilBlockId = (byte)BlockRegistry.Get("sand").id;
+        Desert.TopBlockId = Desert.SoilBlockId = (byte)BlockRegistry.Get("sand").Id;
+        IceDesert.TopBlockId = IceDesert.SoilBlockId = (byte)BlockRegistry.Get("sand").Id;
     }
 
     public virtual Feature GetRandomWorldGenForTrees(JavaRandom rand)

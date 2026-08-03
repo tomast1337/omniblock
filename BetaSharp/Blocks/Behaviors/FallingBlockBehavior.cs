@@ -29,9 +29,9 @@ public class FallingBlockBehavior(Block[] passable, int regionLoadCheckRadius) :
         set => s_fallInstantly.Value = value;
     }
 
-    public void OnPlaced(Block block, OnPlacedEvent @event) => @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id, block.TickRate);
+    public void OnPlaced(Block block, OnPlacedEvent @event) => @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
 
-    public void NeighborUpdate(Block block, OnTickEvent @event) => @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.id, block.TickRate);
+    public void NeighborUpdate(Block block, OnTickEvent @event) => @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
 
     public void OnTick(Block block, OnTickEvent @event) => ProcessFall(block, @event);
 
@@ -43,7 +43,7 @@ public class FallingBlockBehavior(Block[] passable, int regionLoadCheckRadius) :
         if (!FallInstantly && @event.World.ChunkHost.IsRegionLoaded(x - regionLoadCheckRadius, y - regionLoadCheckRadius, z - regionLoadCheckRadius, x + regionLoadCheckRadius, y + regionLoadCheckRadius, z + regionLoadCheckRadius))
         {
             Entity fallingSand = EntityRegistry.ByName("fallingsand").Create(@event.World);
-            fallingSand.Behaviors.Find<SettleAsBlockBehavior>()!.SetBlock(fallingSand, block.id);
+            fallingSand.Behaviors.Find<SettleAsBlockBehavior>()!.SetBlock(fallingSand, block.Id);
             fallingSand.SetPositionAndAngles(x + 0.5F, y + 0.5F, z + 0.5F, 0.0F, 0.0F);
             @event.World.Entities.SpawnEntity(fallingSand);
         }
@@ -58,7 +58,7 @@ public class FallingBlockBehavior(Block[] passable, int regionLoadCheckRadius) :
 
             if (y > 0)
             {
-                @event.World.Writer.SetBlock(x, y, z, block.id);
+                @event.World.Writer.SetBlock(x, y, z, block.Id);
             }
         }
     }
@@ -70,10 +70,10 @@ public class FallingBlockBehavior(Block[] passable, int regionLoadCheckRadius) :
 
         foreach (Block obstacle in passable)
         {
-            if (blockId == obstacle.id) return true;
+            if (blockId == obstacle.Id) return true;
         }
 
-        Material material = Block.Blocks[blockId].material;
+        Material material = Block.Blocks[blockId].Material;
         return material == Material.Water || material == Material.Lava;
     }
 }

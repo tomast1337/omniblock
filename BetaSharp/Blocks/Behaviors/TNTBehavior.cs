@@ -34,7 +34,7 @@ internal sealed class TNTBehavior(Item igniter) : IBlockPhysics, IBlockLifecycle
 
         if ((@event.Meta & 1) == 0)
         {
-            Block.DropStack(@event.World, @event.X, @event.Y, @event.Z, new ItemStack(block.id, 1, 0));
+            Block.DropStack(@event.World, @event.X, @event.Y, @event.Z, new ItemStack(block.Id, 1, 0));
         }
         else
         {
@@ -59,7 +59,7 @@ internal sealed class TNTBehavior(Item igniter) : IBlockPhysics, IBlockLifecycle
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        if (@event.BlockId <= 0 || !Block.Blocks[@event.BlockId].canEmitRedstonePower() || !@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z))
+        if (@event.BlockId <= 0 || !Block.Blocks[@event.BlockId].CanEmitRedstonePower() || !@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z))
             return;
 
         Ignite(block, @event.World, @event.X, @event.Y, @event.Z);

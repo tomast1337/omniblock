@@ -31,7 +31,7 @@ public sealed class MeltBehavior(Func<int> meltReplacement, bool subtractOpacity
 
     public void OnTick(Block block, OnTickEvent @event)
     {
-        int threshold = subtractOpacity ? 11 - Block.BlockLightOpacity[block.id] : 11;
+        int threshold = subtractOpacity ? 11 - Block.BlockLightOpacity[block.Id] : 11;
         if (@event.World.Lighting.GetBrightness(LightType.Block, @event.X, @event.Y, @event.Z) <= threshold)
         {
             return;

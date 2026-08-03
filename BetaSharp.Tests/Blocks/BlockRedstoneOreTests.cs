@@ -14,12 +14,12 @@ public sealed class BlockRedstoneOreTests
         FakeWorldContext world = new();
         Block customUnlit = BlockRegistry.Get("stone");
         Block customLit = BlockRegistry.Get("glowstone");
-        world.ReaderWriter.SetInitial(0, 64, 0, customLit.id);
+        world.ReaderWriter.SetInitial(0, 64, 0, customLit.Id);
 
         RedstoneOreBehavior behavior = new(customUnlit, customLit);
         behavior.OnTick(customLit, Tick(world));
 
-        Assert.Equal(customUnlit.id, world.Reader.GetBlockId(0, 64, 0));
+        Assert.Equal(customUnlit.Id, world.Reader.GetBlockId(0, 64, 0));
     }
 
     [Fact]
@@ -29,12 +29,12 @@ public sealed class BlockRedstoneOreTests
         Block customUnlit = BlockRegistry.Get("stone");
         Block customLit = BlockRegistry.Get("glowstone");
         Block vanillaLit = BlockRegistry.Get("lit_redstone_ore");
-        world.ReaderWriter.SetInitial(0, 64, 0, vanillaLit.id);
+        world.ReaderWriter.SetInitial(0, 64, 0, vanillaLit.Id);
 
         RedstoneOreBehavior behavior = new(customUnlit, customLit);
         behavior.OnTick(vanillaLit, Tick(world));
 
-        Assert.Equal(vanillaLit.id, world.Reader.GetBlockId(0, 64, 0));
+        Assert.Equal(vanillaLit.Id, world.Reader.GetBlockId(0, 64, 0));
     }
 
     [Fact]
@@ -43,12 +43,12 @@ public sealed class BlockRedstoneOreTests
         FakeWorldContext world = new();
         Block customUnlit = BlockRegistry.Get("stone");
         Block customLit = BlockRegistry.Get("glowstone");
-        world.ReaderWriter.SetInitial(0, 64, 0, customUnlit.id);
+        world.ReaderWriter.SetInitial(0, 64, 0, customUnlit.Id);
 
         RedstoneOreBehavior behavior = new(customUnlit, customLit);
         behavior.OnUse(customUnlit, new OnUseEvent(world, null!, 0, 64, 0));
 
-        Assert.Equal(customLit.id, world.Reader.GetBlockId(0, 64, 0));
+        Assert.Equal(customLit.Id, world.Reader.GetBlockId(0, 64, 0));
     }
 
     // No built-in default and no null fallback: an omitted or unknown "unlit_ore"/"lit_ore" in

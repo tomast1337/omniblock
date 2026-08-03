@@ -21,7 +21,7 @@ internal sealed class SeedsBehavior : IItemBehavior
         }
 
         int blockId = world.Reader.GetBlockId(x, y, z);
-        if (blockId == BlockRegistry.Get("farmland").id && world.Reader.IsAir(x, y + 1, z))
+        if (blockId == BlockRegistry.Get("farmland").Id && world.Reader.IsAir(x, y + 1, z))
         {
             world.Writer.SetBlock(x, y + 1, z, _blockId);
             itemStack.ConsumeItem(player);
