@@ -44,11 +44,6 @@ public unsafe class EmulatedGL : LegacyGL
 
     private LightingState _lightingState = new();
     private DirtyState _dirtyState = new();
-    private Vector4D<float> _currentColorTint = Vector4D<float>.One;
-
-
-
-
 
     public EmulatedGL(GL gl) : base(gl)
     {
@@ -73,6 +68,28 @@ public unsafe class EmulatedGL : LegacyGL
 
     /// <inheritdoc cref="ModelView" />
     public MatrixStack TextureMatrix => _textureStack;
+
+    /// <inheritdoc cref="GLManager.Color" />
+    public Vector4D<float> Color
+    {
+        get;
+        set
+        {
+            field = value;
+            SilkGL.VertexAttrib4(1, value.X, value.Y, value.Z, value.W);
+        }
+    } = Vector4D<float>.One;
+
+    /// <inheritdoc cref="GLManager.Normal" />
+    public Vector3D<float> Normal
+    {
+        get;
+        set
+        {
+            field = value;
+            SilkGL.VertexAttrib3(3, value.X, value.Y, value.Z);
+        }
+    }
 
     /// <inheritdoc cref="GLManager.Fog" />
     public FogState Fog { get; set; } = FogState.Default;
@@ -198,25 +215,6 @@ public unsafe class EmulatedGL : LegacyGL
     public override void BufferData(GLEnum target, nuint size, void* data, GLEnum usage)
     {
         SilkGL.BufferData(target.ToModern(), size, data, usage.ToModern());
-    }
-
-    public override void Color3(float red, float green, float blue)
-    {
-        _currentColorTint = new Vector4D<float>(red, green, blue, 1.0f);
-        SilkGL.VertexAttrib4(1, red, green, blue, 1.0f);
-    }
-
-    public override void Color3(byte red, byte green, byte blue)
-    {
-        float r = red / 255.0f, g = green / 255.0f, b = blue / 255.0f;
-        _currentColorTint = new Vector4D<float>(r, g, b, 1.0f);
-        SilkGL.VertexAttrib4(1, r, g, b, 1.0f);
-    }
-
-    public override void Color4(float red, float green, float blue, float alpha)
-    {
-        _currentColorTint = new Vector4D<float>(red, green, blue, alpha);
-        SilkGL.VertexAttrib4(1, red, green, blue, alpha);
     }
 
     public override void Enable(GLEnum cap)
@@ -351,11 +349,6 @@ public unsafe class EmulatedGL : LegacyGL
         }
     }
 
-    public override void Normal3(float nx, float ny, float nz)
-    {
-        SilkGL.VertexAttrib3(3, nx, ny, nz);
-    }
-
     public override void DrawArrays(GLEnum mode, int first, uint count)
     {
         OnImmediateGeometryDrawing();
@@ -416,7 +409,6 @@ public unsafe class EmulatedGL : LegacyGL
         SilkGL.LineWidth(1.0f); // > 1.0 IS DEPRECATED
     }
 
-    public Vector4D<float> GetCurrentColorTint() => _currentColorTint;
     public float GetCurrentAlphaThreshold() => _alphaTestEnabled ? _alphaThreshold : -1.0f;
 
     /// <summary>Whether <c>Texture2D</c> is enabled, i.e. whether a draw would sample its texture.</summary>

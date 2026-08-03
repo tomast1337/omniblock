@@ -678,7 +678,7 @@ public class GameRenderer
             // Culling off because the rain and snow quads are camera-facing strips with no
             // meaningful back, and still depth writing, which is what they have always done.
             GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
-            GLManager.GL.Normal3(0.0F, 1.0F, 0.0F);
+            GLManager.Normal = new(0.0F, 1.0F, 0.0F);
 
             // Lower than the usual 0.1 so the faint tail of a raindrop is not cut off.
             GLManager.AlphaThreshold = 0.01F;
@@ -743,7 +743,7 @@ public class GameRenderer
                             float distanceFactor = MathHelper.Sqrt(dx * dx + dz * dz) / renderRadius;
                             tessellator.startDrawingQuads();
                             float brightness = world.GetLuminance(sampleX, minY, sampleZ);
-                            GLManager.GL.Color4(brightness, brightness, brightness, ((1.0F - distanceFactor * distanceFactor) * 0.3F + 0.5F) * rainGradient);
+                            GLManager.Color = new(brightness, brightness, brightness, ((1.0F - distanceFactor * distanceFactor) * 0.3F + 0.5F) * rainGradient);
                             tessellator.setTranslationD(-renderX * 1.0D, -renderY * 1.0D, -renderZ * 1.0D);
                             tessellator.addVertexWithUV(sampleX + 0, maxY, sampleZ + 0.5D, (0.0F * textureScroll + textureUDrift), (maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
                             tessellator.addVertexWithUV(sampleX + 1, maxY, sampleZ + 0.5D, (1.0F * textureScroll + textureUDrift), (maxY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
@@ -795,7 +795,7 @@ public class GameRenderer
                             float rainDistanceFactor = MathHelper.Sqrt(rainDx * rainDx + rainDz * rainDz) / renderRadius;
                             tessellator.startDrawingQuads();
                             float rainBrightness = world.GetLuminance(sampleX, 128, sampleZ) * 0.85F + 0.15F;
-                            GLManager.GL.Color4(rainBrightness, rainBrightness, rainBrightness, ((1.0F - rainDistanceFactor * rainDistanceFactor) * 0.5F + 0.5F) * rainGradient);
+                            GLManager.Color = new(rainBrightness, rainBrightness, rainBrightness, ((1.0F - rainDistanceFactor * rainDistanceFactor) * 0.5F + 0.5F) * rainGradient);
                             tessellator.setTranslationD(-renderX * 1.0D, -renderY * 1.0D, -renderZ * 1.0D);
                             tessellator.addVertexWithUV(sampleX + 0, minY, sampleZ + 0.5D, 0, (minY * rainUvScale / 4.0F + textureScroll * rainUvScale));
                             tessellator.addVertexWithUV(sampleX + 1, minY, sampleZ + 0.5D, rainUvScale, (minY * rainUvScale / 4.0F + textureScroll * rainUvScale));
@@ -836,7 +836,7 @@ public class GameRenderer
             // Drawn over the screen the pointer is pointing at, so it takes no part in the depth
             // buffer at all. Same state as everything else in the interface.
             GLManager.State.Apply(RenderState.Interface);
-            GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
+            GLManager.Color = new(1.0f, 1.0f, 1.0f, 1.0f);
 
             TextureHandle textureId = _client.TextureManager.GetTextureId("/gui/Pointer.png");
             _client.TextureManager.BindTexture(textureId);
@@ -934,8 +934,8 @@ public class GameRenderer
     {
         EntityLiving camera = _client.Camera;
         Vector4D<float> color = new(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0f);
-        GLManager.GL.Normal3(0.0F, -1.0F, 0.0F);
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Normal = new(0.0F, -1.0F, 0.0F);
+        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
 
         if (_cloudFog || camera.IsInFluid(Material.Water))
         {

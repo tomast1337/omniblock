@@ -44,7 +44,7 @@ public sealed class SquishyEntityRenderer(ModelBase main, ModelBase shell, float
         if (renderPass == 1)
         {
             GLManager.State.Apply(RenderState.Entity);
-            GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+            GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
         }
 
         return false;

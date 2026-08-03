@@ -342,7 +342,7 @@ public class ModelPart
         System.Numerics.Matrix4x4 normalMatrix = ComputeNormalMatrix(modelView);
 
         EmulatedGL emuGl = (EmulatedGL)GLManager.GL;
-        Vector4D<float> tintSrc = emuGl.GetCurrentColorTint();
+        Vector4D<float> tintSrc = GLManager.Color;
         System.Numerics.Vector4 tint = new(tintSrc.X, tintSrc.Y, tintSrc.Z, tintSrc.W);
         EntityLightingSnapshot lightingSrc = emuGl.GetLightingState();
         System.Numerics.Vector3 light0Dir = new(lightingSrc.Light0Dir.X, lightingSrc.Light0Dir.Y, lightingSrc.Light0Dir.Z);

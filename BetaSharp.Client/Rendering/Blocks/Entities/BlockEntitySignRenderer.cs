@@ -60,7 +60,7 @@ public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
         rotationYaw = (float)(1.0D / 60.0D) * modelScale;
         GLManager.ModelView.Translate(0.0F, 0.5F * modelScale, 0.07F * modelScale);
         GLManager.ModelView.Scale(rotationYaw, -rotationYaw, rotationYaw);
-        GLManager.GL.Normal3(0.0F, 0.0F, -1.0F * rotationYaw);
+        GLManager.Normal = new(0.0F, 0.0F, -1.0F * rotationYaw);
 
         // The text sits a hair in front of the board and still writes to the same depth values
         // once rounded, so it is depth tested — a block in front of the sign still hides it — but
@@ -82,7 +82,7 @@ public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
         }
 
         GLManager.State.Apply(RenderState.Entity);
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
         GLManager.ModelView.Pop();
     }
 

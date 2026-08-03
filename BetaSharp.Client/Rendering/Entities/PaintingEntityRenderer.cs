@@ -123,7 +123,7 @@ public class PaintingEntityRenderer : EntityRenderer
         }
 
         float light = Dispatcher.World.GetLuminance(checkX, checkY, checkZ);
-        GLManager.GL.Color3(light, light, light);
+        GLManager.Color = new(light, light, light, 1.0F);
     }
 
 

@@ -124,7 +124,7 @@ public class EntityRenderDispatcher
         double z = target.LastTickZ + (target.Z - target.LastTickZ) * (double)tickDelta;
         float yaw = target.PrevYaw + (target.Yaw - target.PrevYaw) * tickDelta;
         float brightness = target.GetBrightnessAtEyes(tickDelta);
-        GLManager.GL.Color3(brightness, brightness, brightness);
+        GLManager.Color = new(brightness, brightness, brightness, 1.0F);
         RenderEntityWithPosYaw(target, x - OffsetX, y - OffsetY, z - OffsetZ, yaw, tickDelta);
     }
 

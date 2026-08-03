@@ -120,11 +120,7 @@ public class BlockRenderer
             void SetFaceColor(int face)
             {
                 int c = block.GetColorForFace(metadata, face);
-                GLManager.GL.Color4(
-                    (c >> 16 & 255) / 255.0F * brightness,
-                    (c >> 8 & 255) / 255.0F * brightness,
-                    (c & 255) / 255.0F * brightness,
-                    1.0F);
+                GLManager.Color = new((c >> 16 & 255) / 255.0F * brightness, (c >> 8 & 255) / 255.0F * brightness, (c & 255) / 255.0F * brightness, 1.0F);
             }
 
             block.SetupRenderBoundingBox();
@@ -176,11 +172,7 @@ public class BlockRenderer
         else
         {
             int color = block.GetColor(metadata);
-            GLManager.GL.Color4(
-                (color >> 16 & 255) / 255.0F * brightness,
-                (color >> 8 & 255) / 255.0F * brightness,
-                (color & 255) / 255.0F * brightness,
-                1.0F);
+            GLManager.Color = new((color >> 16 & 255) / 255.0F * brightness, (color >> 8 & 255) / 255.0F * brightness, (color & 255) / 255.0F * brightness, 1.0F);
             GLManager.ModelView.Translate(-0.5F, -0.5F, -0.5F);
             var itemWorld = new ItemRenderBlockAccess(block.Id, metadata, brightness);
             BlockPos itemPos = new(0, 0, 0);

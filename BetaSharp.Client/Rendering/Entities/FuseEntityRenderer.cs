@@ -68,7 +68,7 @@ public sealed class FuseEntityRenderer : LivingEntityRenderer
             setRenderPassModel(_overlay);
 
             GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Additive });
-            GLManager.GL.Color4(0.5F, 0.5F, 0.5F, 1.0F);
+            GLManager.Color = new(0.5F, 0.5F, 0.5F, 1.0F);
             GLManager.GL.Disable(GLEnum.Lighting);
             return true;
         }

@@ -93,7 +93,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                     TextRenderer fontRenderer = TextRenderer;
                     GLManager.ModelView.Push();
                     GLManager.ModelView.Translate((float)x + 0.0F, (float)y + 2.3F, (float)z);
-                    GLManager.GL.Normal3(0.0F, 1.0F, 0.0F);
+                    GLManager.Normal = new(0.0F, 1.0F, 0.0F);
                     GLManager.ModelView.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
                     GLManager.ModelView.Rotate(Dispatcher.PlayerViewX, 1.0F, 0.0F, 0.0F);
                     GLManager.ModelView.Scale(-renderScale, -renderScale, renderScale);
@@ -123,7 +123,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                     fontRenderer.DrawString(displayName, -fontRenderer.GetStringWidth(displayName) / 2, 0, Color.WhiteAlpha20);
                     GLManager.GL.Enable(GLEnum.Lighting);
                     GLManager.State.Apply(RenderState.Entity);
-                    GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+                    GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
                     GLManager.ModelView.Pop();
                 }
             }

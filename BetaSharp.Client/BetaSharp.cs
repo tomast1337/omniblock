@@ -1897,7 +1897,7 @@ public partial class BetaSharp :
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Enable(GLEnum.Texture2D);
         GLManager.GL.Disable(GLEnum.Fog);
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
         TextureManager.BindTexture(TextureManager.GetTextureId("/title/mojang.png"));
         tessellator.startDrawingQuads();
         tessellator.setColorOpaque_I(0xFFFFFF);
@@ -1908,7 +1908,7 @@ public partial class BetaSharp :
         tessellator.draw();
         short logoWidth = 256;
         short logoHeight = 256;
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
         tessellator.setColorOpaque_I(0xFFFFFF);
         DrawTextureRegion((scaledResolution.ScaledWidth - logoWidth) / 2, (scaledResolution.ScaledHeight - logoHeight) / 2, 0, 0, logoWidth, logoHeight);
         GLManager.GL.Disable(GLEnum.Lighting);

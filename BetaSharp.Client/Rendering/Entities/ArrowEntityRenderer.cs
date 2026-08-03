@@ -40,14 +40,14 @@ public class ArrowEntityRenderer : EntityRenderer
             GLManager.ModelView.Rotate(45.0F, 1.0F, 0.0F, 0.0F);
             GLManager.ModelView.Scale(modelScale, modelScale, modelScale);
             GLManager.ModelView.Translate(-4.0F, 0.0F, 0.0F);
-            GLManager.GL.Normal3(modelScale, 0.0F, 0.0F);
+            GLManager.Normal = new(modelScale, 0.0F, 0.0F);
             tessellator.startDrawingQuads();
             tessellator.addVertexWithUV(-7.0D, -2.0D, -2.0D, (double)sideMinU, (double)sideMinV);
             tessellator.addVertexWithUV(-7.0D, -2.0D, 2.0D, (double)sideMaxU, (double)sideMinV);
             tessellator.addVertexWithUV(-7.0D, 2.0D, 2.0D, (double)sideMaxU, (double)sideMaxV);
             tessellator.addVertexWithUV(-7.0D, 2.0D, -2.0D, (double)sideMinU, (double)sideMaxV);
             tessellator.draw();
-            GLManager.GL.Normal3(-modelScale, 0.0F, 0.0F);
+            GLManager.Normal = new(-modelScale, 0.0F, 0.0F);
             tessellator.startDrawingQuads();
             tessellator.addVertexWithUV(-7.0D, 2.0D, -2.0D, (double)sideMinU, (double)sideMinV);
             tessellator.addVertexWithUV(-7.0D, 2.0D, 2.0D, (double)sideMaxU, (double)sideMinV);
@@ -58,7 +58,7 @@ public class ArrowEntityRenderer : EntityRenderer
             for (int quadIndex = 0; quadIndex < 4; ++quadIndex)
             {
                 GLManager.ModelView.Rotate(90.0F, 1.0F, 0.0F, 0.0F);
-                GLManager.GL.Normal3(0.0F, 0.0F, modelScale);
+                GLManager.Normal = new(0.0F, 0.0F, modelScale);
                 tessellator.startDrawingQuads();
                 tessellator.addVertexWithUV(-8.0D, -2.0D, 0.0D, (double)shaftMinU, (double)featherMinV);
                 tessellator.addVertexWithUV(8.0D, -2.0D, 0.0D, (double)shaftMaxU, (double)featherMinV);

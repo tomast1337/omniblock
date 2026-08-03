@@ -129,7 +129,7 @@ internal static unsafe class FrameHashHarness
         GLManager.GL.DepthFunc(GLEnum.Lequal);
         GLManager.GL.DepthMask(true);
         GLManager.GL.ColorMask(true, true, true, true);
-        GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
+        GLManager.Color = new(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     /// <summary>
@@ -211,7 +211,7 @@ internal static unsafe class FrameHashHarness
     /// </summary>
     private static void PrimeDepth()
     {
-        GLManager.GL.Color4(0.15f, 0.15f, 0.15f, 1.0f);
+        GLManager.Color = new(0.15f, 0.15f, 0.15f, 1.0f);
         Quad(0, 0, 128, 256, 5.0);
     }
 
@@ -226,13 +226,13 @@ internal static unsafe class FrameHashHarness
     /// </remarks>
     private static void OverlappingQuads()
     {
-        GLManager.GL.Color4(1.0f, 0.25f, 0.25f, 1.0f);
+        GLManager.Color = new(1.0f, 0.25f, 0.25f, 1.0f);
         Quad(32, 32, 128, 128, 10.0);
 
-        GLManager.GL.Color4(0.25f, 1.0f, 0.35f, 1.0f);
+        GLManager.Color = new(0.25f, 1.0f, 0.35f, 1.0f);
         BackFacingQuad(140, 32, 80, 80, 0.0);
 
-        GLManager.GL.Color4(0.25f, 0.45f, 1.0f, 0.5f);
+        GLManager.Color = new(0.25f, 0.45f, 1.0f, 0.5f);
         Quad(96, 96, 128, 128, 0.0);
     }
 
@@ -369,7 +369,7 @@ internal static unsafe class FrameHashHarness
     private static void FlatQuad()
     {
         Ortho();
-        GLManager.GL.Color4(0.9f, 0.2f, 0.3f, 1.0f);
+        GLManager.Color = new(0.9f, 0.2f, 0.3f, 1.0f);
         Quad(32, 32, 192, 192);
     }
 
@@ -377,7 +377,7 @@ internal static unsafe class FrameHashHarness
     {
         Ortho();
         GLManager.ModelView.Translate(40.0f, 20.0f, 0.0f);
-        GLManager.GL.Color4(0.2f, 0.8f, 0.4f, 1.0f);
+        GLManager.Color = new(0.2f, 0.8f, 0.4f, 1.0f);
         Quad(0, 0, 128, 128);
     }
 
@@ -387,7 +387,7 @@ internal static unsafe class FrameHashHarness
         GLManager.ModelView.Translate(128.0f, 128.0f, 0.0f);
         GLManager.ModelView.Rotate(30.0f, 0.0f, 0.0f, 1.0f);
         GLManager.ModelView.Scale(1.5f, 0.5f, 1.0f);
-        GLManager.GL.Color4(0.3f, 0.5f, 0.9f, 1.0f);
+        GLManager.Color = new(0.3f, 0.5f, 0.9f, 1.0f);
         Quad(-64, -64, 128, 128);
     }
 
@@ -400,11 +400,11 @@ internal static unsafe class FrameHashHarness
         GLManager.ModelView.Push();
         GLManager.ModelView.Translate(64.0f, 0.0f, 0.0f);
         GLManager.ModelView.Rotate(45.0f, 0.0f, 0.0f, 1.0f);
-        GLManager.GL.Color4(1.0f, 0.6f, 0.1f, 1.0f);
+        GLManager.Color = new(1.0f, 0.6f, 0.1f, 1.0f);
         Quad(-24, -24, 48, 48);
         GLManager.ModelView.Pop();
 
-        GLManager.GL.Color4(0.1f, 0.6f, 1.0f, 1.0f);
+        GLManager.Color = new(0.1f, 0.6f, 1.0f, 1.0f);
         Quad(-24, -24, 48, 48);
     }
 
@@ -413,7 +413,7 @@ internal static unsafe class FrameHashHarness
         GLManager.Projection.Frustum(-1.0, 1.0, -1.0, 1.0, 1.0, 100.0);
         GLManager.ModelView.Translate(0.0f, 0.0f, -4.0f);
         GLManager.ModelView.Rotate(35.0f, 1.0f, 1.0f, 0.0f);
-        GLManager.GL.Color4(0.8f, 0.8f, 0.2f, 1.0f);
+        GLManager.Color = new(0.8f, 0.8f, 0.2f, 1.0f);
         Quad(-1, -1, 2, 2);
     }
 
@@ -441,9 +441,9 @@ internal static unsafe class FrameHashHarness
         Ortho();
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.BlendFunc(GLEnum.One, GLEnum.One);
-        GLManager.GL.Color4(0.5f, 0.1f, 0.1f, 1.0f);
+        GLManager.Color = new(0.5f, 0.1f, 0.1f, 1.0f);
         Quad(32, 32, 128, 128);
-        GLManager.GL.Color4(0.1f, 0.1f, 0.5f, 1.0f);
+        GLManager.Color = new(0.1f, 0.1f, 0.5f, 1.0f);
         Quad(96, 96, 128, 128);
     }
 
@@ -452,9 +452,9 @@ internal static unsafe class FrameHashHarness
         Ortho();
         GLManager.GL.Enable(GLEnum.Blend);
         GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-        GLManager.GL.Color4(1.0f, 0.0f, 0.0f, 1.0f);
+        GLManager.Color = new(1.0f, 0.0f, 0.0f, 1.0f);
         Quad(32, 32, 128, 128);
-        GLManager.GL.Color4(0.0f, 0.0f, 1.0f, 0.5f);
+        GLManager.Color = new(0.0f, 0.0f, 1.0f, 0.5f);
         Quad(96, 96, 128, 128);
     }
 
@@ -465,7 +465,7 @@ internal static unsafe class FrameHashHarness
         GLManager.GL.BindTexture(GLEnum.Texture2D, s_checkerboard);
         GLManager.GL.Enable(GLEnum.AlphaTest);
         GLManager.AlphaThreshold = 0.5f;
-        GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 0.75f);
+        GLManager.Color = new(1.0f, 1.0f, 1.0f, 0.75f);
         TexturedQuad(16, 16, 224, 224);
     }
 
@@ -473,10 +473,10 @@ internal static unsafe class FrameHashHarness
     {
         Ortho();
         GLManager.ModelView.Translate(0.0f, 0.0f, 10.0f);
-        GLManager.GL.Color4(0.2f, 0.9f, 0.2f, 1.0f);
+        GLManager.Color = new(0.2f, 0.9f, 0.2f, 1.0f);
         Quad(32, 32, 128, 128);
         GLManager.ModelView.Translate(0.0f, 0.0f, -20.0f);
-        GLManager.GL.Color4(0.9f, 0.2f, 0.9f, 1.0f);
+        GLManager.Color = new(0.9f, 0.2f, 0.9f, 1.0f);
         Quad(96, 96, 128, 128);
     }
 
@@ -495,7 +495,7 @@ internal static unsafe class FrameHashHarness
         {
             GLManager.ModelView.LoadIdentity();
             GLManager.ModelView.Translate(0.0f, 0.0f, -2.0f - i * 2.0f);
-            GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
+            GLManager.Color = new(1.0f, 1.0f, 1.0f, 1.0f);
             Quad(-0.8, -0.8, 1.6, 1.6);
         }
     }
@@ -511,7 +511,7 @@ internal static unsafe class FrameHashHarness
         tessellator.addVertex(48, 48, 0.0);
 
         using StaticMesh mesh = tessellator.captureStatic();
-        GLManager.GL.Color4(0.95f, 0.75f, 0.15f, 1.0f);
+        GLManager.Color = new(0.95f, 0.75f, 0.15f, 1.0f);
         mesh.Draw();
     }
 }

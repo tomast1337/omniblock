@@ -84,7 +84,7 @@ public abstract class EntityRenderer
 
         GLManager.ModelView.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
         GLManager.ModelView.Translate(0.0F, 0.0F, -0.3F + (int)heightRatio * 0.02F);
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
 
         float zOffset = 0.0F;
         int pass = 0;
@@ -182,7 +182,7 @@ public abstract class EntityRenderer
         }
 
         tess.draw();
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
         GLManager.State.Apply(RenderState.Entity);
     }
 
@@ -221,7 +221,7 @@ public abstract class EntityRenderer
     {
         GLManager.GL.Disable(GLEnum.Texture2D);
         Tessellator tess = Tessellator.instance;
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
 
         tess.startDrawingQuads();
         tess.setTranslationD(pos.X, pos.Y, pos.Z);
@@ -333,7 +333,7 @@ public abstract class EntityRenderer
         GLManager.GL.Disable(GLEnum.Texture2D);
         GLManager.ModelView.Push();
         GLManager.ModelView.Translate((float)pos.X, (float)pos.Y, (float)pos.Z);
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
 
         Box bb = target.BoundingBox;
         double minX = bb.MinX - target.X;
@@ -375,7 +375,7 @@ public abstract class EntityRenderer
 
         tess.draw();
         tess.startDrawing(1);
-        GLManager.GL.Color4(1.0F, 1.0F, 0, 1.0F);
+        GLManager.Color = new(1.0F, 1.0F, 0, 1.0F);
 
         tess.addVertex(minX, target.EyeHeight, minZ);
         tess.addVertex(maxX, target.EyeHeight, minZ);
@@ -388,7 +388,7 @@ public abstract class EntityRenderer
 
         tess.draw();
         tess.startDrawing(1);
-        GLManager.GL.Color4(1.0F, 0, 0, 1.0F);
+        GLManager.Color = new(1.0F, 0, 0, 1.0F);
 
         const float toRad = -MathF.PI / 180.0F;
         yaw *= toRad;

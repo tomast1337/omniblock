@@ -1,4 +1,5 @@
 using BetaSharp.Client.Rendering.Core.OpenGL;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 
 namespace BetaSharp.Client.Rendering.Core;
@@ -42,6 +43,34 @@ public class GLManager
     ///     transitional hazard and goes away with the last of those call sites.
     /// </remarks>
     public static RenderStateApplier State { get; } = new();
+
+    /// <summary>The colour geometry is tinted by when it carries none of its own.</summary>
+    /// <remarks>
+    ///     <para>
+    ///         Reaches a draw as the value of vertex attribute 1 when no array is bound to it — the
+    ///         Tessellator binds one only for geometry built with per-vertex colours, and models
+    ///         never do. So for a model this is the whole of its colour, which is why the batching
+    ///         renderers read it at submission rather than at the draw.
+    ///     </para>
+    ///     <para>
+    ///         A default attribute value has no counterpart in WebGPU, where an attribute the buffer
+    ///         does not supply simply does not exist. It becomes a uniform there, which is what this
+    ///         being one value rather than a write-only global is for.
+    ///     </para>
+    /// </remarks>
+    public static Vector4D<float> Color
+    {
+        get => _emulated.Color;
+        set => _emulated.Color = value;
+    }
+
+    /// <summary>The normal geometry is lit by when it carries none of its own.</summary>
+    /// <inheritdoc cref="Color" />
+    public static Vector3D<float> Normal
+    {
+        get => _emulated.Normal;
+        set => _emulated.Normal = value;
+    }
 
     /// <summary>What the distance fog looks like, for every pass that draws under it.</summary>
     /// <remarks>
