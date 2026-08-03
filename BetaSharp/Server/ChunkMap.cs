@@ -58,18 +58,18 @@ internal class ChunkMap
 
                 foreach (var item in GetChunks(player, oldDistance))
                 {
-                    if (isWithinViewDistance(item.x, item.z, px, pz))
+                    if (isWithinViewDistance(item.X, item.Z, px, pz))
                     {
                         continue;
                     }
 
-                    if (GetOrCreateChunk(item.x, item.z, false) is TrackedChunk chunk)
+                    if (GetOrCreateChunk(item.X, item.Z, false) is TrackedChunk chunk)
                     {
                         chunk.removePlayer(player);
                     }
                     else
                     {
-                        loadQueue.Remove(item.x, item.z, player);
+                        loadQueue.Remove(item.X, item.Z, player);
                         player.CancelChunkSend(item);
                     }
                 }
@@ -85,12 +85,12 @@ internal class ChunkMap
 
                 foreach (ChunkPos item in GetChunks(player))
                 {
-                    if (isWithinOldViewDistance(item.x, item.z, px, pz, oldDistance))
+                    if (isWithinOldViewDistance(item.X, item.Z, px, pz, oldDistance))
                     {
                         continue;
                     }
 
-                    if (GetOrCreateChunk(item.x, item.z, false) is TrackedChunk chunk)
+                    if (GetOrCreateChunk(item.X, item.Z, false) is TrackedChunk chunk)
                     {
                         if (!chunk.HasPlayer(player))
                         {
@@ -99,7 +99,7 @@ internal class ChunkMap
                     }
                     else
                     {
-                        loadQueue.Add(item.x, item.z, player);
+                        loadQueue.Add(item.X, item.Z, player);
                     }
                 }
             }
