@@ -8,7 +8,7 @@ public class RepeaterRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
+        int metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
         int direction = metadata & 3;
         int delay = (metadata & 12) >> 2;
         // 1. Base Rendering
@@ -17,7 +17,7 @@ public class RepeaterRenderer : IBlockRenderer
         slabCtx.DrawBlock(block, pos);
 
         // 2. Prepare Torch Rendering
-        float luminance = block.GetLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
+        float luminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z);
         if (Block.BlocksLightLuminance[block.Id] > 0)
         {
             luminance = (luminance + 1.0F) * 0.5F;
@@ -53,8 +53,8 @@ public class RepeaterRenderer : IBlockRenderer
         }
 
         // 3. Render the two torch pins
-        slabCtx.DrawTorch(block, new Vec3D(pos.x + staticTorchX, pos.y + torchVerticalOffset, pos.z + staticTorchZ), 0.0f, 0.0f);
-        slabCtx.DrawTorch(block, new Vec3D(pos.x + delayTorchX, pos.y + torchVerticalOffset, pos.z + delayTorchZ), 0.0f, 0.0f);
+        slabCtx.DrawTorch(block, new Vec3D(pos.X + staticTorchX, pos.Y + torchVerticalOffset, pos.Z + staticTorchZ), 0.0f, 0.0f);
+        slabCtx.DrawTorch(block, new Vec3D(pos.X + delayTorchX, pos.Y + torchVerticalOffset, pos.Z + delayTorchZ), 0.0f, 0.0f);
         return true;
     }
 }

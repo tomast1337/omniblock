@@ -69,17 +69,17 @@ internal static class NaturalSpawner
                     SpawnListEntry toSpawn = spawnSelector.GetNext(world.Random);
 
                     BlockPos spawnPos = GetRandomSpawningPointInChunk(world, pathFinder, chunk.X * 16, chunk.Z * 16);
-                    if (world.Reader.ShouldSuffocate(spawnPos.x, spawnPos.y, spawnPos.z)) continue;
-                    if (world.Reader.GetMaterial(spawnPos.x, spawnPos.y, spawnPos.z) != creatureKind.SpawnMaterial) continue;
+                    if (world.Reader.ShouldSuffocate(spawnPos.X, spawnPos.Y, spawnPos.Z)) continue;
+                    if (world.Reader.GetMaterial(spawnPos.X, spawnPos.Y, spawnPos.Z) != creatureKind.SpawnMaterial) continue;
 
                     int spawnedCount = 0;
                     bool breakToNextChunk = false;
 
                     for (int i = 0; i < 3 && !breakToNextChunk; ++i)
                     {
-                        int x = spawnPos.x;
-                        int y = spawnPos.y;
-                        int z = spawnPos.z;
+                        int x = spawnPos.X;
+                        int y = spawnPos.Y;
+                        int z = spawnPos.Z;
 
                         for (int j = 0; j < 4 && !breakToNextChunk; ++j)
                         {

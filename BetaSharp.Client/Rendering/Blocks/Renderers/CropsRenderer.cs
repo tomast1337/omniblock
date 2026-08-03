@@ -7,15 +7,15 @@ public class CropsRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        float luminance = block.GetLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
+        float luminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z);
         ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
 
-        int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
+        int metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
 
         // Crops are pushed down slightly into the soil block
-        float yOffset = pos.y - (1.0f / 16.0f);
+        float yOffset = pos.Y - (1.0f / 16.0f);
 
-        RenderCropQuads(block, metadata, pos.x, yOffset, pos.z, ref ctx);
+        RenderCropQuads(block, metadata, pos.X, yOffset, pos.Z, ref ctx);
 
         return true;
     }

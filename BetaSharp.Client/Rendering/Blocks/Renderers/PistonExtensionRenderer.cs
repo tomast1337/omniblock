@@ -8,9 +8,9 @@ public class PistonExtensionRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
+        int metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
         Side facing = PistonExtensionBehavior.GetFacing(metadata);
-        float luminance = block.GetLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
+        float luminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z);
 
         // Using CustomFlag to track if this is a ShortArm rendering phase
         bool isShortArm = ctx.CustomFlag;
@@ -92,9 +92,9 @@ public class PistonExtensionRenderer : IBlockRenderer
         bool hasRendered = headCtx.DrawBlock(block, pos);
 
         // 2. Render the custom extension arm geometry
-        float x = pos.x;
-        float y = pos.y;
-        float z = pos.z;
+        float x = pos.X;
+        float y = pos.Y;
+        float z = pos.Z;
 
         switch (facing)
         {

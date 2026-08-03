@@ -8,7 +8,7 @@ public class MinecartTrackRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
+        int metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
 
         int textureId = block.GetTexture(0, metadata);
         if (ctx.OverrideTexture >= 0)
@@ -22,7 +22,7 @@ public class MinecartTrackRenderer : IBlockRenderer
             metadata &= 7;
         }
 
-        float luminance = block.GetLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
+        float luminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z);
         ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
 
         int texU = (textureId & 15) << 4;
@@ -35,49 +35,49 @@ public class MinecartTrackRenderer : IBlockRenderer
         float verticalOffset = 1.0F / 16.0F; // 1 pixel above the ground
 
         // Default vertex positions (flat square)
-        float x1 = pos.x + 1, x2 = pos.x + 1, x3 = pos.x + 0, x4 = pos.x + 0;
-        float z1 = pos.z + 0, z2 = pos.z + 1, z3 = pos.z + 1, z4 = pos.z + 0;
+        float x1 = pos.X + 1, x2 = pos.X + 1, x3 = pos.X + 0, x4 = pos.X + 0;
+        float z1 = pos.Z + 0, z2 = pos.Z + 1, z3 = pos.Z + 1, z4 = pos.Z + 0;
 
-        float h1 = pos.y + verticalOffset;
-        float h2 = pos.y + verticalOffset;
-        float h3 = pos.y + verticalOffset;
-        float h4 = pos.y + verticalOffset;
+        float h1 = pos.Y + verticalOffset;
+        float h2 = pos.Y + verticalOffset;
+        float h3 = pos.Y + verticalOffset;
+        float h4 = pos.Y + verticalOffset;
 
         // Handle coordinate swapping for curves and orientation
         if (metadata != 1 && metadata != 2 && metadata != 3 && metadata != 7)
         {
             if (metadata == 8)
             {
-                x2 = pos.x + 0;
+                x2 = pos.X + 0;
                 x1 = x2;
-                x4 = pos.x + 1;
+                x4 = pos.X + 1;
                 x3 = x4;
-                z4 = pos.z + 1;
+                z4 = pos.Z + 1;
                 z1 = z4;
-                z3 = pos.z + 0;
+                z3 = pos.Z + 0;
                 z2 = z3;
             }
             else if (metadata == 9)
             {
-                x4 = pos.x + 0;
+                x4 = pos.X + 0;
                 x1 = x4;
-                x3 = pos.x + 1;
+                x3 = pos.X + 1;
                 x2 = x3;
-                z2 = pos.z + 0;
+                z2 = pos.Z + 0;
                 z1 = z2;
-                z4 = pos.z + 1;
+                z4 = pos.Z + 1;
                 z3 = z4;
             }
         }
         else
         {
-            x4 = pos.x + 1;
+            x4 = pos.X + 1;
             x1 = x4;
-            x3 = pos.x + 0;
+            x3 = pos.X + 0;
             x2 = x3;
-            z2 = pos.z + 1;
+            z2 = pos.Z + 1;
             z1 = z2;
-            z4 = pos.z + 0;
+            z4 = pos.Z + 0;
             z3 = z4;
         }
 

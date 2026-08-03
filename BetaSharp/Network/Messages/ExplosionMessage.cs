@@ -60,9 +60,9 @@ public sealed class ExplosionMessage : Message
 
         foreach (BlockPos pos in DestroyedBlocks)
         {
-            stream.WriteByte((byte)(pos.x - originX));
-            stream.WriteByte((byte)(pos.y - originY));
-            stream.WriteByte((byte)(pos.z - originZ));
+            stream.WriteByte((byte)(pos.X - originX));
+            stream.WriteByte((byte)(pos.Y - originY));
+            stream.WriteByte((byte)(pos.Z - originZ));
         }
     }
 

@@ -1,15 +1,8 @@
 namespace BetaSharp.Util.Maths;
 
-public readonly record struct BlockPos
+public readonly record struct BlockPos(int X, int Y, int Z)
 {
-    public readonly int x;
-    public readonly int y;
-    public readonly int z;
-
-    public BlockPos(int x, int y, int z)
-    {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
+    public readonly int X = X;
+    public readonly int Y = Y;
+    public readonly int Z = Z;
 }

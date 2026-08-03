@@ -9,7 +9,7 @@ public class StairsRenderer : IBlockRenderer
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
         bool hasRendered = false;
-        int direction = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
+        int direction = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
 
         if (ctx.BlockReader is ItemRenderBlockAccess)
         {

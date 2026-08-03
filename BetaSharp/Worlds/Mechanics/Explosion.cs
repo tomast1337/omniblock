@@ -123,9 +123,9 @@ public class Explosion
         for (int positionIndex = destroyedPositions.Count - 1; positionIndex >= 0; --positionIndex)
         {
             BlockPos blockPos = destroyedPositions[positionIndex];
-            int x = blockPos.x;
-            int y = blockPos.y;
-            int z = blockPos.z;
+            int x = blockPos.X;
+            int y = blockPos.Y;
+            int z = blockPos.Z;
             int blockIdAtPos = _level.Reader.GetBlockId(x, y, z);
             int belowBlockId = _level.Reader.GetBlockId(x, y - 1, z);
             if (blockIdAtPos == 0 && Block.BlocksOpaque[belowBlockId] && ExplosionRNG.NextInt(3) == 0)
@@ -143,9 +143,9 @@ public class Explosion
         for (int positionIndex = destroyedPositions.Count - 1; positionIndex >= 0; --positionIndex)
         {
             BlockPos blockPos = destroyedPositions[positionIndex];
-            int x = blockPos.x;
-            int y = blockPos.y;
-            int z = blockPos.z;
+            int x = blockPos.X;
+            int y = blockPos.Y;
+            int z = blockPos.Z;
             int blockId = _level.Reader.GetBlockId(x, y, z);
             if (spawnParticles)
             {

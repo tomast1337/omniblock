@@ -153,7 +153,7 @@ public sealed class RedstoneWireBehavior(Block wire, Block[] conductors, Block r
 
         foreach (BlockPos pos in updateList)
         {
-            level.Broadcaster.NotifyNeighbors(pos.x, pos.y, pos.z, wire.Id);
+            level.Broadcaster.NotifyNeighbors(pos.X, pos.Y, pos.Z, wire.Id);
         }
     }
 
