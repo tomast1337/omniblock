@@ -53,14 +53,16 @@ public class PrimedBlockEntityRenderer : EntityRenderer
         BlockRenderer.RenderBlockOnInventory(_block, 0, target.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
         if (fuse / 5 % 2 == 0)
         {
+            // Texturing and lighting are shader uniforms rather than pipeline state, so they stay
+            // as they are. The flash weights itself against what is already there rather than
+            // against its own alpha, which is the one place that blend mode is used.
             GLManager.GL.Disable(GLEnum.Texture2D);
             GLManager.GL.Disable(GLEnum.Lighting);
-            GLManager.GL.Enable(GLEnum.Blend);
-            GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.DstAlpha);
+            GLManager.State.ApplyUntrusted(RenderState.Opaque with { Blend = BlendMode.SourceToDestinationAlpha });
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, flashProgress);
             BlockRenderer.RenderBlockOnInventory(_block, 0, 1.0F, Tessellator.instance);
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-            GLManager.GL.Disable(GLEnum.Blend);
+            GLManager.State.ApplyUntrusted(RenderState.Opaque);
             GLManager.GL.Enable(GLEnum.Lighting);
             GLManager.GL.Enable(GLEnum.Texture2D);
         }

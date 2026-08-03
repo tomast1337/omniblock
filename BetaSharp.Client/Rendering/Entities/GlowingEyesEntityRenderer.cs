@@ -31,9 +31,10 @@ public sealed class GlowingEyesEntityRenderer : LivingEntityRenderer
 
         loadTexture(_texture);
         float alpha = (1.0F - entity.GetBrightnessAtEyes(1.0F)) * 0.5F;
-        GLManager.GL.Enable(GLEnum.Blend);
+        // The alpha test is a shader uniform rather than pipeline state, so it stays a separate
+        // call. Depth writing stays on, as it was before: the overlay sits on the model it covers.
         GLManager.GL.Disable(GLEnum.AlphaTest);
-        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+        GLManager.State.ApplyUntrusted(RenderState.Opaque with { Blend = BlendMode.Alpha });
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, alpha);
         return true;
     }
