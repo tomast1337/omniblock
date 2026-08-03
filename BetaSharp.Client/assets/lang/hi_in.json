@@ -1,0 +1,1372 @@
+{
+    "gui": {
+        "joinServer": "सर्वर से जुड़ें",
+        "rename": "नाम बदलें",
+        "edit": "संपादित करें",
+        "refresh": "रीफ़्रेश करें",
+        "done": "हो गया",
+        "cancel": "रद्द करें",
+        "delete": "हटाएं",
+        "toMenu": "शीर्षक स्क्रीन पर वापस जाएं",
+        "up": "ऊपर",
+        "down": "नीचे",
+        "yes": "हाँ",
+        "no": "नहीं",
+        "connect": "कनेक्ट करें",
+        "directConnect": "सीधा कनेक्ट करें",
+        "addServer": "सर्वर जोड़ें",
+        "create": "बनाएं",
+        "customize": "अनुकूलित करें",
+        "achievements": "उपलब्धियां",
+        "stats": "आँकड़े",
+        "container": {
+            "crafting": "क्राफ्टिंग",
+            "inventory": "इन्वेंट्री",
+            "dispenser": "डिस्पेंसर",
+            "furnace": "भट्टी",
+            "tip": {
+                "move": "हटाएं",
+                "quickMove": "जल्दी हटाएं",
+                "takeHalf": "आधा लें",
+                "place": "रखें",
+                "placeOne": "एक रखें"
+            }
+        }
+    },
+    "menu": {
+        "singleplayer": "सिंगलप्लेयर",
+        "multiplayer": "मल्टीप्लेयर",
+        "texturePacks": "टेक्सचर पैक्स",
+        "options": "विकल्प...",
+        "language": "भाषा (Language)",
+        "quit": "गेम छोड़ें",
+        "credits": "क्रेडिट्स",
+        "sendFeedback": "फीडबैक भेजें",
+        "reportBugs": "बग रिपोर्ट करें",
+        "saveAndQuitToTitle": "सेव करें और मुख्य मेनू पर जाएं",
+        "disconnect": "डिस्कनेक्ट करें"
+    },
+    "selectWorld": {
+        "title": "दुनिया चुनें",
+        "empty": "खाली",
+        "world": "दुनिया",
+        "select": "चुनी गई दुनिया खेलें",
+        "create": "नई दुनिया बनाएं",
+        "createDemo": "नई डेमो दुनिया खेलें",
+        "deleteQuestion": "क्या आप वाकई इस दुनिया को हटाना चाहते हैं?",
+        "deleteWarning": "हमेशा के लिए खो जाएगी! (बहुत लंबा समय!)",
+        "renameTitle": "दुनिया का नाम बदलें",
+        "conversion": "कनवर्ट किया जाना चाहिए!",
+        "newWorld": "नई दुनिया",
+        "enterName": "दुनिया का नाम",
+        "resultFolder": "इसमें सेव किया जाएगा:",
+        "enterSeed": "दुनिया बनाने के लिए सीड",
+        "seedInfo": "रैंडम सीड के लिए खाली छोड़ दें",
+        "selectWorldType": "दुनिया का प्रकार चुनें",
+        "worldType": "दुनिया का प्रकार",
+        "customize": "अनुकूलित करें",
+        "moreWorldOptions": "अधिक दुनिया के विकल्प...",
+        "type": {
+            "default": {
+                "title": "डिफ़ॉल्ट",
+                "description": "स्टैंडर्ड माइनक्राफ्ट दुनिया।"
+            },
+            "flat": {
+                "title": "सपाट",
+                "description": "एक पूरी तरह से सपाट दुनिया।"
+            },
+            "sky": {
+                "title": "आसमान",
+                "description": "आसमान में तैरती हुई दुनिया।"
+            }
+        }
+    },
+    "newWorld": {
+        "customize": {
+            "superflatWorld": {
+                "title": "सुपरफ्लैट दुनिया को अनुकूलित करें"
+            },
+            "removeLayer": "लेयर हटाएं",
+            "presets": "प्रीसेट्स",
+            "height": "ऊंचाई",
+            "unknown": "???"
+        }
+    },
+    "world": {
+        "world": "दुनिया",
+        "unsupportedFormat": "असमर्थित प्रारूप!"
+    },
+    "multiplayer": {
+        "title": "मल्टीप्लेयर खेलें",
+        "betasharpServer": "BetaSharp सर्वर",
+        "info1": "माइनक्राफ्ट मल्टीप्लेयर अभी पूरा नहीं हुआ है, लेकिन",
+        "info2": "कुछ शुरुआती बग वाली टेस्टिंग चल रही है।",
+        "ipinfo": "सर्वर से जुड़ने के लिए उसका IP दर्ज करें:",
+        "deleteQuestion": "क्या आप वाकई इस सर्वर को हटाना चाहते हैं?",
+        "deleteWarning": "हमेशा के लिए खो जाएगा! (बहुत लंबा समय!)",
+        "downloadingTerrain": "इलाका डाउनलोड हो रहा है",
+        "stopSleeping": "बिस्तर छोड़ें",
+        "editServerTitle": "सर्वर की जानकारी संपादित करें",
+        "addServerTitle": "सर्वर की जानकारी जोड़ें",
+        "serverName": "सर्वर का नाम",
+        "serverAddress": "सर्वर का पता"
+    },
+    "loading": {
+        "loadingLevel": "लेवल लोड हो रहा है",
+        "startingServer": "सर्वर शुरू हो रहा है...",
+        "preparingSpawnArea": "स्पॉन क्षेत्र तैयार हो रहा है"
+    },
+    "achievements": {
+        "title": "उपलब्धियां"
+    },
+    "gameover": {
+        "title": "गेम ओवर!",
+        "score": "स्कोर",
+        "respawn": "पुनर्जन्म (Respawn)",
+        "titleMenu": "मुख्य मेनू"
+    },
+    "gamemenu": {
+        "title": "गेम मेनू",
+        "backToGame": "गेम पर वापस जाएं"
+    },
+    "sign": {
+        "title": "साइन संदेश संपादित करें:",
+        "done": "हो गया"
+    },
+    "stats": {
+        "title": "आँकड़े",
+        "general": "सामान्य",
+        "blocks": {
+            "name": "ब्लॉक्स",
+            "mined": "खोदे गए",
+            "crafted": "बनाए गए",
+            "used": "इस्तेमाल किए गए"
+        },
+        "items": {
+            "name": "आइटम्स",
+            "broken": "टूटे हुए",
+            "crafted": "बनाए गए",
+            "used": "इस्तेमाल किए गए"
+        },
+        "item": "आइटम"
+    },
+    "connect": {
+        "connecting": "सर्वर से जुड़ रहा है...",
+        "authorizing": "लॉग इन हो रहा है...",
+        "failed": "सर्वर से जुड़ने में विफल"
+    },
+    "disconnect": {
+        "genericReason": "{0}",
+        "disconnected": "सर्वर द्वारा डिस्कनेक्ट किया गया",
+        "lost": "कनेक्शन टूट गया",
+        "kicked": "गेम से बाहर निकाल दिया गया",
+        "timeout": "समय समाप्त (Timed out)",
+        "closed": "कनेक्शन बंद कर दिया गया",
+        "loginFailed": "लॉग इन करने में विफल",
+        "quitting": "गेम छोड़ रहे हैं",
+        "endOfStream": "स्ट्रीम का अंत",
+        "overflow": "बफ़र ओवरफ़्लो"
+    },
+    "options": {
+        "off": "बंद",
+        "on": "चालू",
+        "disabled": "अक्षम",
+        "title": "विकल्प",
+        "controls": "कंट्रोल्स...",
+        "keyboardControls": "कीबोर्ड कंट्रोल्स...",
+        "controllerSettings": "कंट्रोलर सेटिंग्स...",
+        "controllerType": "कंट्रोलर का प्रकार",
+        "video": {
+            "text": "वीडियो सेटिंग्स...",
+            "performance": "प्रदर्शन",
+            "display": "डिस्प्ले"
+        },
+        "uiSettings": "UI सेटिंग्स...",
+        "audioSettings": "ऑडियो सेटिंग्स...",
+        "audioTitle": "ऑडियो सेटिंग्स",
+        "videoTitle": "वीडियो सेटिंग्स",
+        "language": "भाषा (Language)...",
+        "anisoLevel": "एनीसो लेवल",
+        "music": "संगीत",
+        "sound": "आवाज़",
+        "invertMouse": "माउस उल्टा करें",
+        "alternateBlocks": "वैकल्पिक ब्लॉक्स",
+        "chunkFade": "चंक फ़ेड",
+        "sensitivity": {
+            "text": "संवेदनशीलता (Sensitivity)",
+            "controllerText": "कंट्रोलर संवेदनशीलता",
+            "min": "*जम्हाई*",
+            "max": "हाइपरस्पीड!!!"
+        },
+        "renderDistance": {
+            "text": "रेंडर दूरी",
+            "chunks": "चंक्स",
+            "tiny": "बहुत छोटी",
+            "short": "छोटी",
+            "normal": "सामान्य",
+            "far": "दूर"
+        },
+        "viewBobbing": "व्यू बॉबिंग",
+        "ao": "स्मूथ लाइटिंग",
+        "anaglyph": "3D एनाग्लिफ़",
+        "framerateLimit": "प्रदर्शन (Performance)",
+        "difficulty": {
+            "text": "कठिनाई",
+            "peaceful": "शांतिपूर्ण",
+            "easy": "आसान",
+            "normal": "सामान्य",
+            "hard": "कठिन"
+        },
+        "graphics": {
+            "text": "ग्राफ़िक्स",
+            "fancy": "फैंसी",
+            "fast": "तेज़"
+        },
+        "cloudsQuality": {
+            "text": "बादलों की गुणवत्ता",
+            "off": "कोई बादल नहीं",
+            "legacy": "पुराने बादल",
+            "shader": "शेडर"
+        },
+        "softClouds": {
+            "text": "सॉफ़्ट बादल"
+        },
+        "guiScale": {
+            "text": "GUI स्केल",
+            "auto": "ऑटो",
+            "small": "छोटा",
+            "normal": "सामान्य",
+            "large": "बड़ा"
+        },
+        "chatScale": {
+            "text": "चैट स्केल"
+        },
+        "chatWidth": {
+            "text": "चैट की चौड़ाई"
+        },
+        "advancedOpengl": "एडवांस्ड OpenGL",
+        "fps": {
+            "text": "FPS",
+            "maxFps": "अधिकतम FPS",
+            "unlimited": "असीमित"
+        },
+        "showCoordinates": "कोऑर्डिनेट्स दिखाएं",
+        "uiCursors": "UI कर्सर्स",
+        "gamma": "गामा",
+        "vSync": "VSync",
+        "mipmaps": "मिपमैप्स",
+        "menuMusic": "मेनू का संगीत",
+        "msaa": "MSAA",
+        "fov": "FOV",
+        "movement": {
+            "text": "हरकत"
+        },
+        "view": {
+            "text": "नज़ारा (View)"
+        },
+        "other": {
+            "text": "अन्य"
+        },
+        "editBindings": "बाइंडिंग संपादित करें...",
+        "resetBindings": "बाइंडिंग रीसेट करें...",
+        "controllerBindings": "कंट्रोलर बाइंडिंग्स",
+        "shader": {
+            "text": "शेडर विकल्प",
+            "chunkVert": {
+                "text": "दुनिया",
+                "WavyLeavesStrength": "लहराते पत्तों की ताकत",
+                "WavyLeavesSpeed": "लहराते पत्तों की गति",
+                "WavyPlantStrength": "लहराते पौधों की ताकत",
+                "WavyPlantSpeed": "लहराते पौधों की गति",
+                "WavyPlantMode": "लहराते पौधों का मोड"
+            },
+            "cloud": {
+                "text": "बादल",
+                "minParallax": "न्यूनतम लंबन (Parallax)",
+                "maxParallax": "अधिकतम लंबन",
+                "minGradient": "न्यूनतम ग्रेडिएंट",
+                "maxGradient": "अधिकतम ग्रेडिएंट",
+                "cloudHeight": "बादल की ऊंचाई",
+                "shadow": "छाया का रंग",
+                "smoothWidth": "स्मूथ चौड़ाई",
+                "smoothSamples": "स्मूथ सैम्पल्स",
+                "closeFade": "क्लोज़ फ़ेड",
+                "smoothTop": "स्मूथ टॉप",
+                "smoothEdge": "स्मूथ किनारा",
+                "smoothBottom": "स्मूथ बॉटम",
+                "smoothBottomTopDown": "स्मूथ बॉटम टॉप डाउन"
+            },
+            "ui": {
+                "text": "UI",
+                "darkMode": "डार्क मोड"
+            },
+            "preset": {
+                "text": "प्रीसेट",
+                "disabled": "अक्षम",
+                "default": "डिफ़ॉल्ट",
+                "custom": "कस्टम",
+                "2d": "2D",
+                "3d": "3D",
+                "low": "कम",
+                "medium": "मध्यम",
+                "high": "उच्च",
+                "ultra": "अल्ट्रा"
+            }
+        }
+    },
+    "performance": {
+        "max": "अधिकतम FPS",
+        "balanced": "संतुलित",
+        "powersaver": "पावर सेवर"
+    },
+    "controls": {
+        "title": "कंट्रोल्स"
+    },
+    "key": {
+        "forward": "आगे",
+        "left": "बाएं",
+        "back": "पीछे",
+        "right": "दाएं",
+        "jump": "कूदें",
+        "inventory": "इन्वेंट्री",
+        "drop": "गिराएं",
+        "chat": "चैट",
+        "fog": "धुंध टॉगल करें",
+        "sneak": "दबे पांव चलें (Sneak)",
+        "playerlist": "खिलाड़ियों की सूची",
+        "zoom": "ज़ूम करें",
+        "hotbarLeft": "हॉटबार बाएं",
+        "hotbarRight": "हॉटबार दाएं",
+        "pickBlock": "ब्लॉक चुनें",
+        "camera": "कैमरा मोड",
+        "pause": "रोकें (Pause)"
+    },
+    "texturePack": {
+        "openFolder": "टेक्सचर पैक फ़ोल्डर खोलें",
+        "title": "टेक्सचर पैक चुनें",
+        "folderInfo": "(टेक्सचर पैक फ़ाइलें यहां रखें)"
+    },
+    "tile": {
+        "tallgrass": {
+            "name": "लंबी घास",
+            "desc": ""
+        },
+        "stone": {
+            "name": "पत्थर",
+            "desc": ""
+        },
+        "grass": {
+            "name": "घास",
+            "desc": ""
+        },
+        "dirt": {
+            "name": "मिट्टी",
+            "desc": ""
+        },
+        "stonebrick": {
+            "name": "कोबलस्टोन",
+            "desc": ""
+        },
+        "wood": {
+            "name": "लकड़ी के तख्ते",
+            "desc": ""
+        },
+        "sapling": {
+            "name": "पौधा",
+            "desc": ""
+        },
+        "bedrock": {
+            "name": "बेडरॉक",
+            "desc": ""
+        },
+        "water": {
+            "name": "पानी",
+            "desc": ""
+        },
+        "lava": {
+            "name": "लावा",
+            "desc": ""
+        },
+        "sand": {
+            "name": "रेत",
+            "desc": ""
+        },
+        "sandStone": {
+            "name": "सैंडस्टोन"
+        },
+        "gravel": {
+            "name": "बजरी",
+            "desc": ""
+        },
+        "oreGold": {
+            "name": "सोने का अयस्क (Gold Ore)",
+            "desc": ""
+        },
+        "oreIron": {
+            "name": "लोहे का अयस्क (Iron Ore)",
+            "desc": ""
+        },
+        "oreCoal": {
+            "name": "कोयला अयस्क",
+            "desc": ""
+        },
+        "log": {
+            "name": "लकड़ी",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "पत्तियां",
+            "desc": ""
+        },
+        "sponge": {
+            "name": "स्पंज",
+            "desc": ""
+        },
+        "glass": {
+            "name": "कांच",
+            "desc": ""
+        },
+        "cloth": {
+            "name": "ऊन",
+            "desc": "",
+            "black": {
+                "name": "काली ऊन",
+                "desc": ""
+            },
+            "red": {
+                "name": "लाल ऊन",
+                "desc": ""
+            },
+            "green": {
+                "name": "हरी ऊन",
+                "desc": ""
+            },
+            "brown": {
+                "name": "भूरी ऊन",
+                "desc": ""
+            },
+            "blue": {
+                "name": "नीली ऊन",
+                "desc": ""
+            },
+            "purple": {
+                "name": "बैंगनी ऊन",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "सियान ऊन",
+                "desc": ""
+            },
+            "silver": {
+                "name": "हल्की भूरी (Light Gray) ऊन",
+                "desc": ""
+            },
+            "gray": {
+                "name": "भूरी (Gray) ऊन",
+                "desc": ""
+            },
+            "pink": {
+                "name": "गुलाबी ऊन",
+                "desc": ""
+            },
+            "lime": {
+                "name": "लाइम ऊन",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "पीली ऊन",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "हल्की नीली ऊन",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "मैजेंटा ऊन",
+                "desc": ""
+            },
+            "orange": {
+                "name": "नारंगी ऊन",
+                "desc": ""
+            },
+            "white": {
+                "name": "ऊन",
+                "desc": ""
+            }
+        },
+        "flower": {
+            "name": "फूल",
+            "desc": ""
+        },
+        "rose": {
+            "name": "गुलाब",
+            "desc": ""
+        },
+        "mushroom": {
+            "name": "मशरूम",
+            "desc": ""
+        },
+        "blockGold": {
+            "name": "सोने का ब्लॉक",
+            "desc": ""
+        },
+        "blockIron": {
+            "name": "लोहे का ब्लॉक",
+            "desc": ""
+        },
+        "stoneSlab": {
+            "stone": {
+                "name": "पत्थर का स्लैब",
+                "desc": ""
+            },
+            "sand": {
+                "name": "सैंडस्टोन स्लैब",
+                "desc": ""
+            },
+            "wood": {
+                "name": "लकड़ी का स्लैब",
+                "desc": ""
+            },
+            "cobble": {
+                "name": "पत्थर का स्लैब",
+                "desc": ""
+            }
+        },
+        "brick": {
+            "name": "ईंटें",
+            "desc": ""
+        },
+        "tnt": {
+            "name": "TNT",
+            "desc": ""
+        },
+        "bookshelf": {
+            "name": "बुकशेल्फ़",
+            "desc": ""
+        },
+        "stoneMoss": {
+            "name": "काई वाला पत्थर",
+            "desc": ""
+        },
+        "obsidian": {
+            "name": "ऑब्सीडियन",
+            "desc": ""
+        },
+        "torch": {
+            "name": "मशाल",
+            "desc": ""
+        },
+        "fire": {
+            "name": "आग",
+            "desc": ""
+        },
+        "mobSpawner": {
+            "name": "मॉन्स्टर स्पॉनर",
+            "desc": ""
+        },
+        "stairsWood": {
+            "name": "लकड़ी की सीढ़ियां",
+            "desc": ""
+        },
+        "chest": {
+            "name": "चेस्ट",
+            "desc": ""
+        },
+        "redstoneDust": {
+            "name": "रेडस्टोन डस्ट",
+            "desc": ""
+        },
+        "oreDiamond": {
+            "name": "हीरे का अयस्क",
+            "desc": ""
+        },
+        "blockDiamond": {
+            "name": "हीरे का ब्लॉक",
+            "desc": ""
+        },
+        "workbench": {
+            "name": "क्राफ्टिंग टेबल",
+            "desc": ""
+        },
+        "crops": {
+            "name": "फसलें",
+            "desc": ""
+        },
+        "farmland": {
+            "name": "खेत की मिट्टी (Farmland)",
+            "desc": ""
+        },
+        "furnace": {
+            "name": "भट्टी",
+            "desc": ""
+        },
+        "sign": {
+            "name": "साइन",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "लकड़ी का दरवाज़ा",
+            "desc": ""
+        },
+        "ladder": {
+            "name": "सीढ़ी (Ladder)",
+            "desc": ""
+        },
+        "rail": {
+            "name": "रेल",
+            "desc": ""
+        },
+        "goldenRail": {
+            "name": "पावर्ड रेल",
+            "desc": ""
+        },
+        "detectorRail": {
+            "name": "डिटेक्टर रेल",
+            "desc": ""
+        },
+        "stairsStone": {
+            "name": "पत्थर की सीढ़ियां",
+            "desc": ""
+        },
+        "lever": {
+            "name": "लीवर",
+            "desc": ""
+        },
+        "pressurePlate": {
+            "name": "प्रेशर प्लेट",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "लोहे का दरवाज़ा",
+            "desc": ""
+        },
+        "oreRedstone": {
+            "name": "रेडस्टोन अयस्क",
+            "desc": ""
+        },
+        "notGate": {
+            "name": "रेडस्टोन मशाल",
+            "desc": ""
+        },
+        "button": {
+            "name": "बटन",
+            "desc": ""
+        },
+        "snow": {
+            "name": "बर्फ़",
+            "desc": ""
+        },
+        "ice": {
+            "name": "बर्फ़ (Ice)",
+            "desc": ""
+        },
+        "cactus": {
+            "name": "कैक्टस",
+            "desc": ""
+        },
+        "clay": {
+            "name": "मिट्टी (Clay)",
+            "desc": ""
+        },
+        "reeds": {
+            "name": "गन्ना",
+            "desc": ""
+        },
+        "jukebox": {
+            "name": "ज्यूकबॉक्स",
+            "desc": ""
+        },
+        "fence": {
+            "name": "बाड़ (Fence)",
+            "desc": ""
+        },
+        "pumpkin": {
+            "name": "कद्दू",
+            "desc": ""
+        },
+        "litpumpkin": {
+            "name": "जैक-ओ-लैंटर्न",
+            "desc": ""
+        },
+        "hellrock": {
+            "name": "नेदररैक",
+            "desc": ""
+        },
+        "hellsand": {
+            "name": "सोल सैंड",
+            "desc": ""
+        },
+        "lightgem": {
+            "name": "ग्लोस्टोन",
+            "desc": ""
+        },
+        "portal": {
+            "name": "पोर्टल",
+            "desc": ""
+        },
+        "oreLapis": {
+            "name": "लापीस लाजुली अयस्क",
+            "desc": ""
+        },
+        "blockLapis": {
+            "name": "लापीस लाजुली ब्लॉक",
+            "desc": ""
+        },
+        "dispenser": {
+            "name": "डिस्पेंसर",
+            "desc": ""
+        },
+        "musicBlock": {
+            "name": "नोट ब्लॉक",
+            "desc": ""
+        },
+        "cake": {
+            "name": "केक",
+            "desc": ""
+        },
+        "bed": {
+            "name": "बिस्तर",
+            "desc": "",
+            "occupied": "यह बिस्तर भरा हुआ है",
+            "noSleep": "आप केवल रात में सो सकते हैं",
+            "notValid": "आपका घर का बिस्तर गायब था या बाधित था"
+        },
+        "lockedchest": {
+            "name": "बंद चेस्ट",
+            "desc": ""
+        },
+        "trapdoor": {
+            "name": "ट्रैपडोर",
+            "desc": ""
+        },
+        "web": {
+            "name": "मकड़ी का जाला",
+            "desc": ""
+        },
+        "stonebricksmooth": {
+            "name": "पत्थर की ईंटें",
+            "desc": ""
+        },
+        "pistonBase": {
+            "name": "पिस्टन",
+            "desc": ""
+        },
+        "pistonStickyBase": {
+            "name": "स्टिकी पिस्टन",
+            "desc": ""
+        }
+    },
+    "item": {
+        "shovelIron": {
+            "name": "लोहे का फावड़ा",
+            "desc": ""
+        },
+        "pickaxeIron": {
+            "name": "लोहे की गैंती (Pickaxe)",
+            "desc": ""
+        },
+        "hatchetIron": {
+            "name": "लोहे की कुल्हाड़ी",
+            "desc": ""
+        },
+        "flintAndSteel": {
+            "name": "फ्लिंट और स्टील",
+            "desc": ""
+        },
+        "apple": {
+            "name": "सेब",
+            "desc": ""
+        },
+        "cookie": {
+            "name": "कुकी",
+            "desc": ""
+        },
+        "bow": {
+            "name": "धनुष",
+            "desc": ""
+        },
+        "arrow": {
+            "name": "तीर",
+            "desc": ""
+        },
+        "coal": {
+            "name": "कोयला",
+            "desc": ""
+        },
+        "charcoal": {
+            "name": "चारकोल",
+            "desc": ""
+        },
+        "diamond": {
+            "name": "हीरा",
+            "desc": ""
+        },
+        "ingotIron": {
+            "name": "लोहे का पिंड",
+            "desc": ""
+        },
+        "ingotGold": {
+            "name": "सोने का पिंड",
+            "desc": ""
+        },
+        "swordIron": {
+            "name": "लोहे की तलवार",
+            "desc": ""
+        },
+        "swordWood": {
+            "name": "लकड़ी की तलवार",
+            "desc": ""
+        },
+        "shovelWood": {
+            "name": "लकड़ी का फावड़ा",
+            "desc": ""
+        },
+        "pickaxeWood": {
+            "name": "लकड़ी की गैंती (Pickaxe)",
+            "desc": ""
+        },
+        "hatchetWood": {
+            "name": "लकड़ी की कुल्हाड़ी",
+            "desc": ""
+        },
+        "swordStone": {
+            "name": "पत्थर की तलवार",
+            "desc": ""
+        },
+        "shovelStone": {
+            "name": "पत्थर का फावड़ा",
+            "desc": ""
+        },
+        "pickaxeStone": {
+            "name": "पत्थर की गैंती (Pickaxe)",
+            "desc": ""
+        },
+        "hatchetStone": {
+            "name": "पत्थर की कुल्हाड़ी",
+            "desc": ""
+        },
+        "swordDiamond": {
+            "name": "हीरे की तलवार",
+            "desc": ""
+        },
+        "shovelDiamond": {
+            "name": "हीरे का फावड़ा",
+            "desc": ""
+        },
+        "pickaxeDiamond": {
+            "name": "हीरे की गैंती (Pickaxe)",
+            "desc": ""
+        },
+        "hatchetDiamond": {
+            "name": "हीरे की कुल्हाड़ी",
+            "desc": ""
+        },
+        "stick": {
+            "name": "छड़ी (Stick)",
+            "desc": ""
+        },
+        "bowl": {
+            "name": "कटोरा",
+            "desc": ""
+        },
+        "mushroomStew": {
+            "name": "मशरूम स्टू",
+            "desc": ""
+        },
+        "swordGold": {
+            "name": "सोने की तलवार",
+            "desc": ""
+        },
+        "shovelGold": {
+            "name": "सोने का फावड़ा",
+            "desc": ""
+        },
+        "pickaxeGold": {
+            "name": "सोने की गैंती (Pickaxe)",
+            "desc": ""
+        },
+        "hatchetGold": {
+            "name": "सोने की कुल्हाड़ी",
+            "desc": ""
+        },
+        "string": {
+            "name": "धागा",
+            "desc": ""
+        },
+        "feather": {
+            "name": "पंख",
+            "desc": ""
+        },
+        "gunpowder": {
+            "name": "बारूद",
+            "desc": ""
+        },
+        "hoeWood": {
+            "name": "लकड़ी की कुदाल",
+            "desc": ""
+        },
+        "hoeStone": {
+            "name": "पत्थर की कुदाल",
+            "desc": ""
+        },
+        "hoeIron": {
+            "name": "लोहे की कुदाल",
+            "desc": ""
+        },
+        "hoeDiamond": {
+            "name": "हीरे की कुदाल",
+            "desc": ""
+        },
+        "hoeGold": {
+            "name": "सोने की कुदाल",
+            "desc": ""
+        },
+        "seeds": {
+            "name": "बीज",
+            "desc": ""
+        },
+        "wheat": {
+            "name": "गेहूं",
+            "desc": ""
+        },
+        "bread": {
+            "name": "ब्रेड",
+            "desc": ""
+        },
+        "helmetLeather": {
+            "name": "चमड़े की टोपी",
+            "desc": ""
+        },
+        "chestplateLeather": {
+            "name": "चमड़े का अंगरखा",
+            "desc": ""
+        },
+        "leggingsLeather": {
+            "name": "चमड़े की पैंट",
+            "desc": ""
+        },
+        "bootsLeather": {
+            "name": "चमड़े के जूते",
+            "desc": ""
+        },
+        "helmetChain": {
+            "name": "चेन हेलमेट",
+            "desc": ""
+        },
+        "chestplateChain": {
+            "name": "चेन चेस्टप्लेट",
+            "desc": ""
+        },
+        "leggingsChain": {
+            "name": "चेन लेगिंग्स",
+            "desc": ""
+        },
+        "bootsChain": {
+            "name": "चेन बूट्स",
+            "desc": ""
+        },
+        "helmetIron": {
+            "name": "लोहे का हेलमेट",
+            "desc": ""
+        },
+        "chestplateIron": {
+            "name": "लोहे की चेस्टप्लेट",
+            "desc": ""
+        },
+        "leggingsIron": {
+            "name": "लोहे की लेगिंग्स",
+            "desc": ""
+        },
+        "bootsIron": {
+            "name": "लोहे के जूते",
+            "desc": ""
+        },
+        "helmetDiamond": {
+            "name": "हीरे का हेलमेट",
+            "desc": ""
+        },
+        "chestplateDiamond": {
+            "name": "हीरे की चेस्टप्लेट",
+            "desc": ""
+        },
+        "leggingsDiamond": {
+            "name": "हीरे की लेगिंग्स",
+            "desc": ""
+        },
+        "bootsDiamond": {
+            "name": "हीरे के जूते",
+            "desc": ""
+        },
+        "helmetGold": {
+            "name": "सोने का हेलमेट",
+            "desc": ""
+        },
+        "chestplateGold": {
+            "name": "सोने की चेस्टप्लेट",
+            "desc": ""
+        },
+        "leggingsGold": {
+            "name": "सोने की लेगिंग्स",
+            "desc": ""
+        },
+        "bootsGold": {
+            "name": "सोने के जूते",
+            "desc": ""
+        },
+        "flint": {
+            "name": "फ्लिंट",
+            "desc": ""
+        },
+        "porkchopRaw": {
+            "name": "कच्चा पोर्कचॉप",
+            "desc": ""
+        },
+        "porkchopCooked": {
+            "name": "पका हुआ पोर्कचॉप",
+            "desc": ""
+        },
+        "painting": {
+            "name": "पेंटिंग",
+            "desc": ""
+        },
+        "appleGold": {
+            "name": "सुनहरा सेब",
+            "desc": ""
+        },
+        "sign": {
+            "name": "साइन",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "लकड़ी का दरवाज़ा",
+            "desc": ""
+        },
+        "bucket": {
+            "name": "बाल्टी",
+            "desc": ""
+        },
+        "bucketWater": {
+            "name": "पानी की बाल्टी",
+            "desc": ""
+        },
+        "bucketLava": {
+            "name": "लावा की बाल्टी",
+            "desc": ""
+        },
+        "minecart": {
+            "name": "माइनकार्ट",
+            "desc": ""
+        },
+        "saddle": {
+            "name": "काठी (Saddle)",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "लोहे का दरवाज़ा",
+            "desc": ""
+        },
+        "redstone": {
+            "name": "रेडस्टोन",
+            "desc": ""
+        },
+        "snowball": {
+            "name": "स्नोबॉल",
+            "desc": ""
+        },
+        "boat": {
+            "name": "नाव",
+            "desc": ""
+        },
+        "leather": {
+            "name": "चमड़ा",
+            "desc": ""
+        },
+        "milk": {
+            "name": "दूध",
+            "desc": ""
+        },
+        "brick": {
+            "name": "ईंट",
+            "desc": ""
+        },
+        "clay": {
+            "name": "मिट्टी (Clay)",
+            "desc": ""
+        },
+        "sugarCanes": {
+            "name": "गन्ना",
+            "desc": ""
+        },
+        "paper": {
+            "name": "कागज़",
+            "desc": ""
+        },
+        "book": {
+            "name": "किताब",
+            "desc": ""
+        },
+        "slimeball": {
+            "name": "स्लाइमबॉल",
+            "desc": ""
+        },
+        "minecartChest": {
+            "name": "चेस्ट वाली माइनकार्ट",
+            "desc": ""
+        },
+        "minecartFurnace": {
+            "name": "भट्टी वाली माइनकार्ट",
+            "desc": ""
+        },
+        "egg": {
+            "name": "अंडा",
+            "desc": ""
+        },
+        "compass": {
+            "name": "कम्पास",
+            "desc": ""
+        },
+        "fishingRod": {
+            "name": "फिशिंग रॉड",
+            "desc": ""
+        },
+        "clock": {
+            "name": "घड़ी",
+            "desc": ""
+        },
+        "yellowDust": {
+            "name": "ग्लोस्टोन डस्ट",
+            "desc": ""
+        },
+        "fishRaw": {
+            "name": "कच्ची मछली",
+            "desc": ""
+        },
+        "fishCooked": {
+            "name": "पकी हुई मछली",
+            "desc": ""
+        },
+        "record": {
+            "name": "म्यूज़िक डिस्क",
+            "desc": ""
+        },
+        "bone": {
+            "name": "हड्डी",
+            "desc": ""
+        },
+        "dyePowder": {
+            "black": {
+                "name": "इंक सैक",
+                "desc": ""
+            },
+            "red": {
+                "name": "रोज़ रेड",
+                "desc": ""
+            },
+            "green": {
+                "name": "कैक्टस ग्रीन",
+                "desc": ""
+            },
+            "brown": {
+                "name": "कोको बीन्स",
+                "desc": ""
+            },
+            "blue": {
+                "name": "लापीस लाजुली",
+                "desc": ""
+            },
+            "purple": {
+                "name": "बैंगनी रंग",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "सियान रंग",
+                "desc": ""
+            },
+            "silver": {
+                "name": "हल्का भूरा (Light Gray) रंग",
+                "desc": ""
+            },
+            "gray": {
+                "name": "भूरा (Gray) रंग",
+                "desc": ""
+            },
+            "pink": {
+                "name": "गुलाबी रंग",
+                "desc": ""
+            },
+            "lime": {
+                "name": "लाइम रंग",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "डंडेलियन पीला रंग",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "हल्का नीला रंग",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "मैजेंटा रंग",
+                "desc": ""
+            },
+            "orange": {
+                "name": "नारंगी रंग",
+                "desc": ""
+            },
+            "white": {
+                "name": "बोन मील",
+                "desc": ""
+            }
+        },
+        "sugar": {
+            "name": "चीनी",
+            "desc": ""
+        },
+        "cake": {
+            "name": "केक",
+            "desc": ""
+        },
+        "bed": {
+            "name": "बिस्तर",
+            "desc": ""
+        },
+        "redstoneRepeater": {
+            "name": "रेडस्टोन रिपीटर",
+            "desc": ""
+        },
+        "map": {
+            "name": "नक्शा",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "पत्तियां",
+            "desc": ""
+        },
+        "shears": {
+            "name": "कैंची (Shears)",
+            "desc": ""
+        }
+    },
+    "stat": {
+        "generalButton": "सामान्य",
+        "blocksButton": "ब्लॉक्स",
+        "itemsButton": "आइटम्स",
+        "used": "कितनी बार इस्तेमाल हुआ",
+        "mined": "कितनी बार खोदा गया",
+        "depleted": "कितनी बार ख़त्म किया गया",
+        "crafted": "कितनी बार बनाया गया",
+        "startGame": "कितनी बार खेला",
+        "createWorld": "खेली गई दुनिया की संख्या",
+        "loadWorld": "सेव लोड किए गए",
+        "joinMultiplayer": "मल्टीप्लेयर में शामिल हुए",
+        "leaveGame": "गेम छोड़े गए",
+        "playOneMinute": "खेले गए मिनट",
+        "walkOneCm": "पैदल चली गई दूरी",
+        "fallOneCm": "गिरने की दूरी",
+        "swimOneCm": "तैरने की दूरी",
+        "flyOneCm": "उड़ने की दूरी",
+        "climbOneCm": "चढ़ने की दूरी",
+        "diveOneCm": "गोता लगाने की दूरी",
+        "minecartOneCm": "माइनकार्ट से तय की गई दूरी",
+        "boatOneCm": "नाव से तय की गई दूरी",
+        "pigOneCm": "सुअर से तय की गई दूरी",
+        "jump": "कूद",
+        "drop": "गिराए गए आइटम्स",
+        "damageDealt": "दिए गए डैमेज",
+        "damageTaken": "लिए गए डैमेज",
+        "deaths": "मौतों की संख्या",
+        "mobKills": "मॉब किल्स",
+        "playerKills": "प्लेयर किल्स",
+        "fishCaught": "पकड़ी गई मछलियाँ",
+        "mineBlock": "{0} खोदे गए",
+        "craftItem": "{0} बनाए गए",
+        "useItem": "{0} इस्तेमाल किए गए",
+        "breakItem": "{0} ख़त्म किए गए"
+    },
+    "achievements.title": "उपलब्धियां",
+    "achievement": {
+        "get": "उपलब्धि हासिल की!",
+        "taken": "ले ली गई!",
+        "challenge": "चुनौती (CHALLENGE)",
+        "unlocked": "अनलॉक किया गया",
+        "locked": "लॉक किया गया",
+        "requires": "'{0}' की आवश्यकता है",
+        "openInventory": {
+            "title": "इन्वेंट्री खोलना",
+            "desc": "अपनी इन्वेंट्री खोलें।"
+        },
+        "mineWood": {
+            "title": "लकड़ी प्राप्त करना",
+            "desc": "लकड़ी का एक ब्लॉक बाहर आने तक पेड़ पर प्रहार करें"
+        },
+        "buildWorkBench": {
+            "title": "बेंचमार्किंग",
+            "desc": "लकड़ी के तख्तों के चार ब्लॉक्स के साथ एक वर्कबेंच बनाएं"
+        },
+        "buildPickaxe": {
+            "title": "माइन करने का समय!",
+            "desc": "गैंती (pickaxe) बनाने के लिए तख्तों और छड़ियों का उपयोग करें"
+        },
+        "buildFurnace": {
+            "title": "हॉट टॉपिक",
+            "desc": "आठ पत्थर के ब्लॉक्स से भट्टी का निर्माण करें"
+        },
+        "acquireIron": {
+            "title": "हार्डवेयर प्राप्त करें",
+            "desc": "लोहे के पिंड को पिघलाएं"
+        },
+        "buildHoe": {
+            "title": "खेती करने का समय!",
+            "desc": "कुदाल बनाने के लिए तख्तों और छड़ियों का उपयोग करें"
+        },
+        "makeBread": {
+            "title": "ब्रेड बनाएं",
+            "desc": "गेहूं को ब्रेड में बदलें"
+        },
+        "bakeCake": {
+            "title": "झूठ (The Lie)",
+            "desc": "गेहूं, चीनी, दूध और अंडे!"
+        },
+        "buildBetterPickaxe": {
+            "title": "अपग्रेड प्राप्त करना",
+            "desc": "एक बेहतर गैंती (pickaxe) का निर्माण करें"
+        },
+        "cookFish": {
+            "title": "स्वादिष्ट मछली",
+            "desc": "मछली पकड़ें और पकाएं!"
+        },
+        "onARail": {
+            "title": "एक रेल पर",
+            "desc": "जहां से आपने शुरू किया था, वहां से माइनकार्ट द्वारा कम से कम 1 किमी की यात्रा करें "
+        },
+        "buildSword": {
+            "title": "प्रहार करने का समय!",
+            "desc": "तलवार बनाने के लिए तख्तों और छड़ियों का उपयोग करें"
+        },
+        "killEnemy": {
+            "title": "मॉन्स्टर हंटर",
+            "desc": "किसी मॉन्स्टर पर हमला करें और उसे नष्ट करें"
+        },
+        "killCow": {
+            "title": "काउ टिपर",
+            "desc": "कुछ चमड़ा इकट्ठा करें"
+        },
+        "flyPig": {
+            "title": "जब सूअर उड़ेंगे",
+            "desc": "सुअर को किसी चट्टान से नीचे उड़ाएं"
+        }
+    },
+    "credits": {
+        "version": "BetaSharp संस्करण %1$s",
+        "description": "C# में लिखा गया माइनक्राफ्ट Beta 1.7.3 का एक उन्नत संस्करण।",
+        "github": "GitHub पर",
+        "author": "Fazin85 द्वारा निर्मित",
+        "libs": "लाइब्रेरीज़",
+        "slik": "Slik.NET - ग्राफ़िक्स",
+        "imgui": "ImGui - डिबग UI",
+        "sfml": "SFML.NET - ऑडियो",
+        "sixlabors": "SixLabors - फोंट्स, इमेज प्रोसेसिंग",
+        "translations": "अनुवाद क्रेडिट्स"
+    }
+}

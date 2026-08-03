@@ -1,27 +1,27 @@
 {
     "ar_sa": {
         "name": "العربية",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "bg_bg": {
         "name": "Български",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "cs_cz": {
         "name": "Čeština",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "da_dk": {
         "name": "Dansk",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "de_de": {
         "name": "Deutsch",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "el_gr": {
         "name": "Ελληνικά",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "en_us": {
         "name": "English (United States)",
@@ -29,35 +29,35 @@
     },
     "es_es": {
         "name": "Español",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "et_ee": {
         "name": "Eesti",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "fi_fi": {
         "name": "Suomi",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "fr_fr": {
         "name": "Français",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "ga_ie": {
         "name": "Gaeilge",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "hr_hr": {
         "name": "Hrvatski",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "hu_hu": {
         "name": "Magyar",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "it_it": {
         "name": "Italiano",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "ja_jp": {
         "name": "日本語",
@@ -69,15 +69,15 @@
     },
     "lv_lv": {
         "name": "Latviešu",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "mt_mt": {
         "name": "Malti",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "nl_nl": {
         "name": "Nederlands",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "pl_pl": {
         "name": "Polski",
@@ -89,34 +89,106 @@
     },
     "pt_pt": {
         "name": "Português (Portugal)",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "ro_ro": {
         "name": "Română",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "sk_sk": {
         "name": "Slovenčina",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "sl_si": {
         "name": "Slovenščina",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "sv_se": {
         "name": "Svenska",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "uk_ua": {
         "name": "Українська",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "zh_cn": {
         "name": "简体中文",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
     },
     "zh_tw": {
         "name": "繁體中文",
-        "author": "DeepSeek (To be claimed by a human reviewer)"
+        "author": "(To be claimed by a human reviewer)"
+    },
+    "ar_ae": {
+        "name": "العربية (الإمارات)",
+        "author": "(To be claimed by a human reviewer)"
+    },
+    "be_by": {
+        "name": "Беларуская",
+        "author": "(To be claimed by a human reviewer)"
+    },
+    "ca_es": {
+        "name": "Català",
+        "author": "(To be claimed by a human reviewer)"
+    },
+    "en_gb": {
+        "name": "English (United Kingdom)",
+        "author": "(To be claimed by a human reviewer)"
+    },
+    "es_mx": {
+        "name": "Español (México)",
+        "author": "(To be claimed by a human reviewer)"
+    },
+    "eu_es": {
+        "name": "Euskara",
+        "author": "(To be claimed by a human reviewer)"
+    },
+    "fr_ca": {
+        "name": "Français (Canada)",
+        "author": "(To be claimed by a human reviewer)"
+    },
+    "hi_in": {
+        "name": "हिन्दी",
+        "author": "(To be claimed by a human reviewer)"
+    },
+    "id_id": {
+        "name": "Bahasa Indonesia",
+        "author": "(To be claimed by a human reviewer)"
+    },
+    "is_is": {
+        "name": "Íslenska",
+        "author": "(To be claimed by a human reviewer)"
+    },
+    "ko_kr": {
+        "name": "한국어",
+        "author": "(To be claimed by a human reviewer)"
+    },
+    "ms_my": {
+        "name": "Bahasa Melayu",
+        "author": "(To be claimed by a human reviewer)"
+    },
+    "nb_no": {
+        "name": "Norsk Bokmål",
+        "author": "(To be claimed by a human reviewer)"
+    },
+    "ru_ru": {
+        "name": "Русский",
+        "author": "(To be claimed by a human reviewer)"
+    },
+    "sr_rs": {
+        "name": "Српски",
+        "author": "(To be claimed by a human reviewer)"
+    },
+    "th_th": {
+        "name": "ไทย",
+        "author": "(To be claimed by a human reviewer)"
+    },
+    "tr_tr": {
+        "name": "Türkçe",
+        "author": "(To be claimed by a human reviewer)"
+    },
+    "vi_vn": {
+        "name": "Tiếng Việt",
+        "author": "(To be claimed by a human reviewer)"
     }
 }

@@ -1,0 +1,1372 @@
+{
+    "gui": {
+        "joinServer": "Zerbitzarira sartu",
+        "rename": "Berrizendatu",
+        "edit": "Editatu",
+        "refresh": "Freskatu",
+        "done": "Eginda",
+        "cancel": "Utzi",
+        "delete": "Ezabatu",
+        "toMenu": "Izenburuko pantailara itzuli",
+        "up": "Gora",
+        "down": "Behera",
+        "yes": "Bai",
+        "no": "Ez",
+        "connect": "Konektatu",
+        "directConnect": "Zuzeneko konexioa",
+        "addServer": "Gehitu zerbitzaria",
+        "create": "Sortu",
+        "customize": "Pertsonalizatu",
+        "achievements": "Lorpenak",
+        "stats": "Estatistikak",
+        "container": {
+            "crafting": "Artisautza",
+            "inventory": "Inbentarioa",
+            "dispenser": "Banagailua",
+            "furnace": "Labea",
+            "tip": {
+                "move": "Mugitu",
+                "quickMove": "Mugimendu azkarra",
+                "takeHalf": "Erdi hartu",
+                "place": "Jarri",
+                "placeOne": "Bakar bat jarri"
+            }
+        }
+    },
+    "menu": {
+        "singleplayer": "Jokalari bakarra",
+        "multiplayer": "Jokalari anitza",
+        "texturePacks": "Testura-paketeak",
+        "options": "Aukerak...",
+        "language": "Hizkuntza",
+        "quit": "Jokotik irten",
+        "credits": "Kredituak",
+        "sendFeedback": "Iritzia bidali",
+        "reportBugs": "Akatsen berri eman",
+        "saveAndQuitToTitle": "Gorde eta izenburura itzuli",
+        "disconnect": "Deskonektatu"
+    },
+    "selectWorld": {
+        "title": "Aukeratu mundua",
+        "empty": "hutsik",
+        "world": "Mundua",
+        "select": "Aukeratutako munduan jokatu",
+        "create": "Mundu berria sortu",
+        "createDemo": "Demo mundu berrian jokatu",
+        "deleteQuestion": "Ziur mundu hau ezabatu nahi duzula?",
+        "deleteWarning": "betirako galduko da! (Denbora luzez!)",
+        "renameTitle": "Berrizendatu mundua",
+        "conversion": "Bihurtu behar da!",
+        "newWorld": "Mundu berria",
+        "enterName": "Munduaren izena",
+        "resultFolder": "Hemen gordeko da:",
+        "enterSeed": "Mundu sorgailuaren hazia",
+        "seedInfo": "Utzi hutsik ausazko hazi bat lortzeko",
+        "selectWorldType": "Aukeratu mundu mota",
+        "worldType": "Mundu mota",
+        "customize": "Pertsonalizatu",
+        "moreWorldOptions": "Munduaren aukera gehiago...",
+        "type": {
+            "default": {
+                "title": "Lehenetsia",
+                "description": "Minecraft mundu estandarra."
+            },
+            "flat": {
+                "title": "Laua",
+                "description": "Mundu guztiz laua."
+            },
+            "sky": {
+                "title": "Zerua",
+                "description": "Zeruan flotatzen duen mundua."
+            }
+        }
+    },
+    "newWorld": {
+        "customize": {
+            "superflatWorld": {
+                "title": "Pertsonalizatu mundu superlaua"
+            },
+            "removeLayer": "Kendu geruza",
+            "presets": "Aurrezarpenak",
+            "height": "Altuera",
+            "unknown": "???"
+        }
+    },
+    "world": {
+        "world": "Mundua",
+        "unsupportedFormat": "Onartzen ez den formatua!"
+    },
+    "multiplayer": {
+        "title": "Jokalari anitzean jokatu",
+        "betasharpServer": "BetaSharp zerbitzaria",
+        "info1": "Minecraft jokalari anitza ez dago amaituta oraindik, baina",
+        "info2": "akats batzuk dituen proba goiztiar bat dago abian.",
+        "ipinfo": "Idatzi zerbitzari baten IP-a konektatzeko:",
+        "deleteQuestion": "Ziur zerbitzari hau ezabatu nahi duzula?",
+        "deleteWarning": "betirako galduko da! (Denbora luzez!)",
+        "downloadingTerrain": "Lurrazala deskargatzen",
+        "stopSleeping": "Ohetik altxatu",
+        "editServerTitle": "Editatu zerbitzariaren informazioa",
+        "addServerTitle": "Gehitu zerbitzariaren informazioa",
+        "serverName": "Zerbitzariaren izena",
+        "serverAddress": "Zerbitzariaren helbidea"
+    },
+    "loading": {
+        "loadingLevel": "Maila kargatzen",
+        "startingServer": "Zerbitzaria abiarazten...",
+        "preparingSpawnArea": "Sorrera-eremua prestatzen"
+    },
+    "achievements": {
+        "title": "Lorpenak"
+    },
+    "gameover": {
+        "title": "Jokoa amaitu da!",
+        "score": "Puntuazioa",
+        "respawn": "Berragertu",
+        "titleMenu": "Izenburuko menua"
+    },
+    "gamemenu": {
+        "title": "Jokoaren menua",
+        "backToGame": "Jokora itzuli"
+    },
+    "sign": {
+        "title": "Editatu kartelaren mezua:",
+        "done": "Eginda"
+    },
+    "stats": {
+        "title": "Estatistikak",
+        "general": "Orokorra",
+        "blocks": {
+            "name": "Blokeak",
+            "mined": "Meatzaritzan landuta",
+            "crafted": "Artisautzan sortuta",
+            "used": "Erabilita"
+        },
+        "items": {
+            "name": "Objektuak",
+            "broken": "Hautsita",
+            "crafted": "Artisautzan sortuta",
+            "used": "Erabilita"
+        },
+        "item": "Objektua"
+    },
+    "connect": {
+        "connecting": "Zerbitzarira konektatzen...",
+        "authorizing": "Saioa hasten...",
+        "failed": "Ezin izan da zerbitzarira konektatu"
+    },
+    "disconnect": {
+        "genericReason": "{0}",
+        "disconnected": "Zerbitzariak deskonektatuta",
+        "lost": "Konexioa galdu da",
+        "kicked": "Jokotik kaleratu zaituzte",
+        "timeout": "Denbora-muga gainditu da",
+        "closed": "Konexioa itxita",
+        "loginFailed": "Ezin izan da saioa hasi",
+        "quitting": "Irteten",
+        "endOfStream": "Jarioaren amaiera",
+        "overflow": "Buffer-gainezkatzea"
+    },
+    "options": {
+        "off": "EZ",
+        "on": "BAI",
+        "disabled": "Desgaituta",
+        "title": "Aukerak",
+        "controls": "Kontrolak...",
+        "keyboardControls": "Teklatuko kontrolak...",
+        "controllerSettings": "Kontrolagailuaren ezarpenak...",
+        "controllerType": "Kontrolagailu mota",
+        "video": {
+            "text": "Bideo-ezarpenak...",
+            "performance": "Errendimendua",
+            "display": "Pantaila"
+        },
+        "uiSettings": "Erabiltzaile interfazearen ezarpenak...",
+        "audioSettings": "Audio-ezarpenak...",
+        "audioTitle": "Audio-ezarpenak",
+        "videoTitle": "Bideo-ezarpenak",
+        "language": "Hizkuntza...",
+        "anisoLevel": "Maila anisotropikoa",
+        "music": "Musika",
+        "sound": "Soinua",
+        "invertMouse": "Alderantzikatu sagua",
+        "alternateBlocks": "Bloke alternatiboak",
+        "chunkFade": "Zatien lausotzea",
+        "sensitivity": {
+            "text": "Sentikortasuna",
+            "controllerText": "Kontrolagailuaren sentikortasuna",
+            "min": "*aharrausi*",
+            "max": "HIPERABIADURA!!!"
+        },
+        "renderDistance": {
+            "text": "Errendatze-distantzia",
+            "chunks": "Zatiak",
+            "tiny": "Txikia",
+            "short": "Laburra",
+            "normal": "Normala",
+            "far": "Urrutikoa"
+        },
+        "viewBobbing": "Ikuspegi-kulunka",
+        "ao": "Argiztapen leuna",
+        "anaglyph": "3D Anaglifoa",
+        "framerateLimit": "Errendimendua",
+        "difficulty": {
+            "text": "Zailtasuna",
+            "peaceful": "Bakezkoa",
+            "easy": "Erraza",
+            "normal": "Normala",
+            "hard": "Zaila"
+        },
+        "graphics": {
+            "text": "Grafikoak",
+            "fancy": "Xehatua",
+            "fast": "Azkarra"
+        },
+        "cloudsQuality": {
+            "text": "Hodeien kalitatea",
+            "off": "Hodeirik ez",
+            "legacy": "Hodei zaharrak",
+            "shader": "Itzaltzailea"
+        },
+        "softClouds": {
+            "text": "Hodei leunak"
+        },
+        "guiScale": {
+            "text": "Interfazearen eskala",
+            "auto": "Automatikoa",
+            "small": "Txikia",
+            "normal": "Normala",
+            "large": "Handia"
+        },
+        "chatScale": {
+            "text": "Txataren eskala"
+        },
+        "chatWidth": {
+            "text": "Txataren zabalera"
+        },
+        "advancedOpengl": "OpenGL aurreratua",
+        "fps": {
+            "text": "FPS",
+            "maxFps": "Gehienezko FPS",
+            "unlimited": "Mugarik gabe"
+        },
+        "showCoordinates": "Erakutsi koordenatuak",
+        "uiCursors": "Interfazearen kurtsoreak",
+        "gamma": "Gamma",
+        "vSync": "Sinkronizazio bertikala",
+        "mipmaps": "Mipmaps",
+        "menuMusic": "Menuaren musika",
+        "msaa": "MSAA",
+        "fov": "Ikus-eremua (FOV)",
+        "movement": {
+            "text": "Mugimendua"
+        },
+        "view": {
+            "text": "Ikuspegia"
+        },
+        "other": {
+            "text": "Besteak"
+        },
+        "editBindings": "Editatu esleipenak...",
+        "resetBindings": "Berrezarri esleipenak...",
+        "controllerBindings": "Kontrolagailuaren esleipenak",
+        "shader": {
+            "text": "Itzaltzailearen aukerak",
+            "chunkVert": {
+                "text": "Mundua",
+                "WavyLeavesStrength": "Hosto uhintsuen indarra",
+                "WavyLeavesSpeed": "Hosto uhintsuen abiadura",
+                "WavyPlantStrength": "Landare uhintsuen indarra",
+                "WavyPlantSpeed": "Landare uhintsuen abiadura",
+                "WavyPlantMode": "Landare uhintsuen modua"
+            },
+            "cloud": {
+                "text": "Hodeiak",
+                "minParallax": "Gutxieneko paralajea",
+                "maxParallax": "Gehienezko paralajea",
+                "minGradient": "Gutxieneko gradientea",
+                "maxGradient": "Gehienezko gradientea",
+                "cloudHeight": "Hodeien altuera",
+                "shadow": "Itzalaren kolorea",
+                "smoothWidth": "Leuntze-zabalera",
+                "smoothSamples": "Leuntze-laginak",
+                "closeFade": "Hurbileko lausotzea",
+                "smoothTop": "Goiko leuntzea",
+                "smoothEdge": "Ertzaren leuntzea",
+                "smoothBottom": "Beheko leuntzea",
+                "smoothBottomTopDown": "Beheko leuntzea goitik behera"
+            },
+            "ui": {
+                "text": "Interfazea",
+                "darkMode": "Modu iluna"
+            },
+            "preset": {
+                "text": "Aurrezarpena",
+                "disabled": "Desgaituta",
+                "default": "Lehenetsia",
+                "custom": "Pertsonalizatua",
+                "2d": "2D",
+                "3d": "3D",
+                "low": "Baxua",
+                "medium": "Ertaina",
+                "high": "Altua",
+                "ultra": "Ultra"
+            }
+        }
+    },
+    "performance": {
+        "max": "Gehienezko FPS",
+        "balanced": "Orekatu",
+        "powersaver": "Energia aurrezlea"
+    },
+    "controls": {
+        "title": "Kontrolak"
+    },
+    "key": {
+        "forward": "Aurrera",
+        "left": "Ezkerrera",
+        "back": "Atzera",
+        "right": "Eskuinera",
+        "jump": "Salto egin",
+        "inventory": "Inbentarioa",
+        "drop": "Jaregin",
+        "chat": "Txata",
+        "fog": "Txandakatu lainoa",
+        "sneak": "Izkutuan ibili",
+        "playerlist": "Jokalarien zerrenda",
+        "zoom": "Zooma",
+        "hotbarLeft": "Sarbide azkarreko barra ezkerrera",
+        "hotbarRight": "Sarbide azkarreko barra eskuinera",
+        "pickBlock": "Aukeratu blokea",
+        "camera": "Kamera modua",
+        "pause": "Pausatu"
+    },
+    "texturePack": {
+        "openFolder": "Ireki testura-paketeen karpeta",
+        "title": "Aukeratu testura-paketea",
+        "folderInfo": "(Jarri testura-paketeen fitxategiak hemen)"
+    },
+    "tile": {
+        "tallgrass": {
+            "name": "Belar altua",
+            "desc": ""
+        },
+        "stone": {
+            "name": "Harria",
+            "desc": ""
+        },
+        "grass": {
+            "name": "Belarra",
+            "desc": ""
+        },
+        "dirt": {
+            "name": "Lurra",
+            "desc": ""
+        },
+        "stonebrick": {
+            "name": "Harri koxkorra",
+            "desc": ""
+        },
+        "wood": {
+            "name": "Egurrezko oholak",
+            "desc": ""
+        },
+        "sapling": {
+            "name": "Kimetza",
+            "desc": ""
+        },
+        "bedrock": {
+            "name": "Oinarri-harria",
+            "desc": ""
+        },
+        "water": {
+            "name": "Ura",
+            "desc": ""
+        },
+        "lava": {
+            "name": "Laba",
+            "desc": ""
+        },
+        "sand": {
+            "name": "Harea",
+            "desc": ""
+        },
+        "sandStone": {
+            "name": "Hareharria"
+        },
+        "gravel": {
+            "name": "Legarra",
+            "desc": ""
+        },
+        "oreGold": {
+            "name": "Urre-mea",
+            "desc": ""
+        },
+        "oreIron": {
+            "name": "Burdin-mea",
+            "desc": ""
+        },
+        "oreCoal": {
+            "name": "Ikatz-mea",
+            "desc": ""
+        },
+        "log": {
+            "name": "Egurra",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "Hostoak",
+            "desc": ""
+        },
+        "sponge": {
+            "name": "Belakia",
+            "desc": ""
+        },
+        "glass": {
+            "name": "Beira",
+            "desc": ""
+        },
+        "cloth": {
+            "name": "Artilea",
+            "desc": "",
+            "black": {
+                "name": "Artile beltza",
+                "desc": ""
+            },
+            "red": {
+                "name": "Artile gorria",
+                "desc": ""
+            },
+            "green": {
+                "name": "Artile berdea",
+                "desc": ""
+            },
+            "brown": {
+                "name": "Artile marroia",
+                "desc": ""
+            },
+            "blue": {
+                "name": "Artile urdina",
+                "desc": ""
+            },
+            "purple": {
+                "name": "Artile morea",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "Artile ziana",
+                "desc": ""
+            },
+            "silver": {
+                "name": "Artile gris argia",
+                "desc": ""
+            },
+            "gray": {
+                "name": "Artile grisa",
+                "desc": ""
+            },
+            "pink": {
+                "name": "Artile arrosa",
+                "desc": ""
+            },
+            "lime": {
+                "name": "Artile lima",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "Artile horia",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "Artile urdin argia",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "Artile magenta",
+                "desc": ""
+            },
+            "orange": {
+                "name": "Artile laranja",
+                "desc": ""
+            },
+            "white": {
+                "name": "Artilea",
+                "desc": ""
+            }
+        },
+        "flower": {
+            "name": "Lorea",
+            "desc": ""
+        },
+        "rose": {
+            "name": "Arrosa",
+            "desc": ""
+        },
+        "mushroom": {
+            "name": "Perretxikoa",
+            "desc": ""
+        },
+        "blockGold": {
+            "name": "Urrezko blokea",
+            "desc": ""
+        },
+        "blockIron": {
+            "name": "Burdinazko blokea",
+            "desc": ""
+        },
+        "stoneSlab": {
+            "stone": {
+                "name": "Harrizko lauza",
+                "desc": ""
+            },
+            "sand": {
+                "name": "Hareharrizko lauza",
+                "desc": ""
+            },
+            "wood": {
+                "name": "Egurrezko lauza",
+                "desc": ""
+            },
+            "cobble": {
+                "name": "Harri koxkorrezko lauza",
+                "desc": ""
+            }
+        },
+        "brick": {
+            "name": "Adreiluak",
+            "desc": ""
+        },
+        "tnt": {
+            "name": "TNT",
+            "desc": ""
+        },
+        "bookshelf": {
+            "name": "Liburutegia",
+            "desc": ""
+        },
+        "stoneMoss": {
+            "name": "Goroldiodun harria",
+            "desc": ""
+        },
+        "obsidian": {
+            "name": "Obsidiana",
+            "desc": ""
+        },
+        "torch": {
+            "name": "Zuzia",
+            "desc": ""
+        },
+        "fire": {
+            "name": "Sua",
+            "desc": ""
+        },
+        "mobSpawner": {
+            "name": "Munstro-sorgailua",
+            "desc": ""
+        },
+        "stairsWood": {
+            "name": "Egurrezko eskailerak",
+            "desc": ""
+        },
+        "chest": {
+            "name": "Kutxa",
+            "desc": ""
+        },
+        "redstoneDust": {
+            "name": "Redstone hautsa",
+            "desc": ""
+        },
+        "oreDiamond": {
+            "name": "Diamante-mea",
+            "desc": ""
+        },
+        "blockDiamond": {
+            "name": "Diamantezko blokea",
+            "desc": ""
+        },
+        "workbench": {
+            "name": "Artisautza-mahaia",
+            "desc": ""
+        },
+        "crops": {
+            "name": "Laboreak",
+            "desc": ""
+        },
+        "farmland": {
+            "name": "Landu beharreko lurra",
+            "desc": ""
+        },
+        "furnace": {
+            "name": "Labea",
+            "desc": ""
+        },
+        "sign": {
+            "name": "Kartela",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "Egurrezko atea",
+            "desc": ""
+        },
+        "ladder": {
+            "name": "Eskailera",
+            "desc": ""
+        },
+        "rail": {
+            "name": "Erraila",
+            "desc": ""
+        },
+        "goldenRail": {
+            "name": "Errail propultsatzailea",
+            "desc": ""
+        },
+        "detectorRail": {
+            "name": "Errail detektagailua",
+            "desc": ""
+        },
+        "stairsStone": {
+            "name": "Harrizko eskailerak",
+            "desc": ""
+        },
+        "lever": {
+            "name": "Palanka",
+            "desc": ""
+        },
+        "pressurePlate": {
+            "name": "Presio-plaka",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "Burdinazko atea",
+            "desc": ""
+        },
+        "oreRedstone": {
+            "name": "Redstone-mea",
+            "desc": ""
+        },
+        "notGate": {
+            "name": "Redstone zuzia",
+            "desc": ""
+        },
+        "button": {
+            "name": "Botoia",
+            "desc": ""
+        },
+        "snow": {
+            "name": "Elurra",
+            "desc": ""
+        },
+        "ice": {
+            "name": "Izotza",
+            "desc": ""
+        },
+        "cactus": {
+            "name": "Kaktusa",
+            "desc": ""
+        },
+        "clay": {
+            "name": "Buztina",
+            "desc": ""
+        },
+        "reeds": {
+            "name": "Azukre-kainabera",
+            "desc": ""
+        },
+        "jukebox": {
+            "name": "Tukagailua",
+            "desc": ""
+        },
+        "fence": {
+            "name": "Hesia",
+            "desc": ""
+        },
+        "pumpkin": {
+            "name": "Kalabaza",
+            "desc": ""
+        },
+        "litpumpkin": {
+            "name": "Jack-O'-Lantern",
+            "desc": ""
+        },
+        "hellrock": {
+            "name": "Netherrack",
+            "desc": ""
+        },
+        "hellsand": {
+            "name": "Arima-harea",
+            "desc": ""
+        },
+        "lightgem": {
+            "name": "Argi-harria",
+            "desc": ""
+        },
+        "portal": {
+            "name": "Ataria",
+            "desc": ""
+        },
+        "oreLapis": {
+            "name": "Lapis Lazuli-mea",
+            "desc": ""
+        },
+        "blockLapis": {
+            "name": "Lapis Lazuli blokea",
+            "desc": ""
+        },
+        "dispenser": {
+            "name": "Banagailua",
+            "desc": ""
+        },
+        "musicBlock": {
+            "name": "Musika-blokea",
+            "desc": ""
+        },
+        "cake": {
+            "name": "Tarta",
+            "desc": ""
+        },
+        "bed": {
+            "name": "Ohea",
+            "desc": "",
+            "occupied": "Ohe hau lanpetuta dago",
+            "noSleep": "Gauez bakarrik lo egin dezakezu",
+            "notValid": "Zure ohea ez da aurkitu edo oztopatuta dago"
+        },
+        "lockedchest": {
+            "name": "Blokeatutako kutxa",
+            "desc": ""
+        },
+        "trapdoor": {
+            "name": "Tranpola",
+            "desc": ""
+        },
+        "web": {
+            "name": "Amiaraun",
+            "desc": ""
+        },
+        "stonebricksmooth": {
+            "name": "Harrizko adreiluak",
+            "desc": ""
+        },
+        "pistonBase": {
+            "name": "Pistoia",
+            "desc": ""
+        },
+        "pistonStickyBase": {
+            "name": "Pistoi itsaskorra",
+            "desc": ""
+        }
+    },
+    "item": {
+        "shovelIron": {
+            "name": "Burdinazko pala",
+            "desc": ""
+        },
+        "pickaxeIron": {
+            "name": "Burdinazko pikotxa",
+            "desc": ""
+        },
+        "hatchetIron": {
+            "name": "Burdinazko aizkora",
+            "desc": ""
+        },
+        "flintAndSteel": {
+            "name": "Suharria eta altzairua",
+            "desc": ""
+        },
+        "apple": {
+            "name": "Sagarra",
+            "desc": ""
+        },
+        "cookie": {
+            "name": "Galleta",
+            "desc": ""
+        },
+        "bow": {
+            "name": "Arkua",
+            "desc": ""
+        },
+        "arrow": {
+            "name": "Gezia",
+            "desc": ""
+        },
+        "coal": {
+            "name": "Ikatza",
+            "desc": ""
+        },
+        "charcoal": {
+            "name": "Egur-ikatza",
+            "desc": ""
+        },
+        "diamond": {
+            "name": "Diamantea",
+            "desc": ""
+        },
+        "ingotIron": {
+            "name": "Burdin-lingotea",
+            "desc": ""
+        },
+        "ingotGold": {
+            "name": "Urre-lingotea",
+            "desc": ""
+        },
+        "swordIron": {
+            "name": "Burdinazko ezpata",
+            "desc": ""
+        },
+        "swordWood": {
+            "name": "Egurrezko ezpata",
+            "desc": ""
+        },
+        "shovelWood": {
+            "name": "Egurrezko pala",
+            "desc": ""
+        },
+        "pickaxeWood": {
+            "name": "Egurrezko pikotxa",
+            "desc": ""
+        },
+        "hatchetWood": {
+            "name": "Egurrezko aizkora",
+            "desc": ""
+        },
+        "swordStone": {
+            "name": "Harrizko ezpata",
+            "desc": ""
+        },
+        "shovelStone": {
+            "name": "Harrizko pala",
+            "desc": ""
+        },
+        "pickaxeStone": {
+            "name": "Harrizko pikotxa",
+            "desc": ""
+        },
+        "hatchetStone": {
+            "name": "Harrizko aizkora",
+            "desc": ""
+        },
+        "swordDiamond": {
+            "name": "Diamantezko ezpata",
+            "desc": ""
+        },
+        "shovelDiamond": {
+            "name": "Diamantezko pala",
+            "desc": ""
+        },
+        "pickaxeDiamond": {
+            "name": "Diamantezko pikotxa",
+            "desc": ""
+        },
+        "hatchetDiamond": {
+            "name": "Diamantezko aizkora",
+            "desc": ""
+        },
+        "stick": {
+            "name": "Makila",
+            "desc": ""
+        },
+        "bowl": {
+            "name": "Katilua",
+            "desc": ""
+        },
+        "mushroomStew": {
+            "name": "Perretxiko erregosia",
+            "desc": ""
+        },
+        "swordGold": {
+            "name": "Urrezko ezpata",
+            "desc": ""
+        },
+        "shovelGold": {
+            "name": "Urrezko pala",
+            "desc": ""
+        },
+        "pickaxeGold": {
+            "name": "Urrezko pikotxa",
+            "desc": ""
+        },
+        "hatchetGold": {
+            "name": "Urrezko aizkora",
+            "desc": ""
+        },
+        "string": {
+            "name": "Aria",
+            "desc": ""
+        },
+        "feather": {
+            "name": "Luma",
+            "desc": ""
+        },
+        "gunpowder": {
+            "name": "Bolbora",
+            "desc": ""
+        },
+        "hoeWood": {
+            "name": "Egurrezko aitzurra",
+            "desc": ""
+        },
+        "hoeStone": {
+            "name": "Harrizko aitzurra",
+            "desc": ""
+        },
+        "hoeIron": {
+            "name": "Burdinazko aitzurra",
+            "desc": ""
+        },
+        "hoeDiamond": {
+            "name": "Diamantezko aitzurra",
+            "desc": ""
+        },
+        "hoeGold": {
+            "name": "Urrezko aitzurra",
+            "desc": ""
+        },
+        "seeds": {
+            "name": "Haziak",
+            "desc": ""
+        },
+        "wheat": {
+            "name": "Garia",
+            "desc": ""
+        },
+        "bread": {
+            "name": "Ogia",
+            "desc": ""
+        },
+        "helmetLeather": {
+            "name": "Larruzko txanoa",
+            "desc": ""
+        },
+        "chestplateLeather": {
+            "name": "Larruzko tunika",
+            "desc": ""
+        },
+        "leggingsLeather": {
+            "name": "Larruzko prakak",
+            "desc": ""
+        },
+        "bootsLeather": {
+            "name": "Larruzko botak",
+            "desc": ""
+        },
+        "helmetChain": {
+            "name": "Kote-sarezko kaskoa",
+            "desc": ""
+        },
+        "chestplateChain": {
+            "name": "Kote-sarezko bularrekoa",
+            "desc": ""
+        },
+        "leggingsChain": {
+            "name": "Kote-sarezko prakak",
+            "desc": ""
+        },
+        "bootsChain": {
+            "name": "Kote-sarezko botak",
+            "desc": ""
+        },
+        "helmetIron": {
+            "name": "Burdinazko kaskoa",
+            "desc": ""
+        },
+        "chestplateIron": {
+            "name": "Burdinazko bularrekoa",
+            "desc": ""
+        },
+        "leggingsIron": {
+            "name": "Burdinazko prakak",
+            "desc": ""
+        },
+        "bootsIron": {
+            "name": "Burdinazko botak",
+            "desc": ""
+        },
+        "helmetDiamond": {
+            "name": "Diamantezko kaskoa",
+            "desc": ""
+        },
+        "chestplateDiamond": {
+            "name": "Diamantezko bularrekoa",
+            "desc": ""
+        },
+        "leggingsDiamond": {
+            "name": "Diamantezko prakak",
+            "desc": ""
+        },
+        "bootsDiamond": {
+            "name": "Diamantezko botak",
+            "desc": ""
+        },
+        "helmetGold": {
+            "name": "Urrezko kaskoa",
+            "desc": ""
+        },
+        "chestplateGold": {
+            "name": "Urrezko bularrekoa",
+            "desc": ""
+        },
+        "leggingsGold": {
+            "name": "Urrezko prakak",
+            "desc": ""
+        },
+        "bootsGold": {
+            "name": "Urrezko botak",
+            "desc": ""
+        },
+        "flint": {
+            "name": "Suharria",
+            "desc": ""
+        },
+        "porkchopRaw": {
+            "name": "Txerriki gordina",
+            "desc": ""
+        },
+        "porkchopCooked": {
+            "name": "Txerriki errea",
+            "desc": ""
+        },
+        "painting": {
+            "name": "Margolana",
+            "desc": ""
+        },
+        "appleGold": {
+            "name": "Urrezko sagarra",
+            "desc": ""
+        },
+        "sign": {
+            "name": "Kartela",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "Egurrezko atea",
+            "desc": ""
+        },
+        "bucket": {
+            "name": "Ontzia",
+            "desc": ""
+        },
+        "bucketWater": {
+            "name": "Urezko ontzia",
+            "desc": ""
+        },
+        "bucketLava": {
+            "name": "Labazko ontzia",
+            "desc": ""
+        },
+        "minecart": {
+            "name": "Bagoneta",
+            "desc": ""
+        },
+        "saddle": {
+            "name": "Jarlekua",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "Burdinazko atea",
+            "desc": ""
+        },
+        "redstone": {
+            "name": "Redstone",
+            "desc": ""
+        },
+        "snowball": {
+            "name": "Elur-bola",
+            "desc": ""
+        },
+        "boat": {
+            "name": "Txalupa",
+            "desc": ""
+        },
+        "leather": {
+            "name": "Larrua",
+            "desc": ""
+        },
+        "milk": {
+            "name": "Esnea",
+            "desc": ""
+        },
+        "brick": {
+            "name": "Adreilua",
+            "desc": ""
+        },
+        "clay": {
+            "name": "Buztina",
+            "desc": ""
+        },
+        "sugarCanes": {
+            "name": "Azukre-kainabera",
+            "desc": ""
+        },
+        "paper": {
+            "name": "Papera",
+            "desc": ""
+        },
+        "book": {
+            "name": "Liburua",
+            "desc": ""
+        },
+        "slimeball": {
+            "name": "Lohi-bola",
+            "desc": ""
+        },
+        "minecartChest": {
+            "name": "Bagoneta kutxarekin",
+            "desc": ""
+        },
+        "minecartFurnace": {
+            "name": "Bagoneta labearekin",
+            "desc": ""
+        },
+        "egg": {
+            "name": "Arrautza",
+            "desc": ""
+        },
+        "compass": {
+            "name": "Iparrorratza",
+            "desc": ""
+        },
+        "fishingRod": {
+            "name": "Arrantza-kainabera",
+            "desc": ""
+        },
+        "clock": {
+            "name": "Erlojua",
+            "desc": ""
+        },
+        "yellowDust": {
+            "name": "Argi-harri hautsa",
+            "desc": ""
+        },
+        "fishRaw": {
+            "name": "Arrain gordina",
+            "desc": ""
+        },
+        "fishCooked": {
+            "name": "Arrain errea",
+            "desc": ""
+        },
+        "record": {
+            "name": "Musika-diskoa",
+            "desc": ""
+        },
+        "bone": {
+            "name": "Hezurra",
+            "desc": ""
+        },
+        "dyePowder": {
+            "black": {
+                "name": "Tinta zorroa",
+                "desc": ""
+            },
+            "red": {
+                "name": "Arrosa gorria",
+                "desc": ""
+            },
+            "green": {
+                "name": "Kaktus-berdea",
+                "desc": ""
+            },
+            "brown": {
+                "name": "Kakao-aleak",
+                "desc": ""
+            },
+            "blue": {
+                "name": "Lapis Lazulia",
+                "desc": ""
+            },
+            "purple": {
+                "name": "Tindagai morea",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "Tindagai ziana",
+                "desc": ""
+            },
+            "silver": {
+                "name": "Tindagai gris argia",
+                "desc": ""
+            },
+            "gray": {
+                "name": "Tindagai grisa",
+                "desc": ""
+            },
+            "pink": {
+                "name": "Tindagai arrosa",
+                "desc": ""
+            },
+            "lime": {
+                "name": "Tindagai lima",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "Txikoria-belar horia",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "Tindagai urdin argia",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "Tindagai magenta",
+                "desc": ""
+            },
+            "orange": {
+                "name": "Tindagai laranja",
+                "desc": ""
+            },
+            "white": {
+                "name": "Hezur-hautsa",
+                "desc": ""
+            }
+        },
+        "sugar": {
+            "name": "Azukrea",
+            "desc": ""
+        },
+        "cake": {
+            "name": "Tarta",
+            "desc": ""
+        },
+        "bed": {
+            "name": "Ohea",
+            "desc": ""
+        },
+        "redstoneRepeater": {
+            "name": "Redstone errepikagailua",
+            "desc": ""
+        },
+        "map": {
+            "name": "Mapa",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "Hostoak",
+            "desc": ""
+        },
+        "shears": {
+            "name": "Guraizeak",
+            "desc": ""
+        }
+    },
+    "stat": {
+        "generalButton": "Orokorra",
+        "blocksButton": "Blokeak",
+        "itemsButton": "Objektuak",
+        "used": "Erabilitako aldiak",
+        "mined": "Meatzaritzako aldiak",
+        "depleted": "Hutsitako aldiak",
+        "crafted": "Artisautzako aldiak",
+        "startGame": "Jokatutako partidak",
+        "createWorld": "Jokatutako munduak",
+        "loadWorld": "Kargatutako gordetzeak",
+        "joinMultiplayer": "Jokalari anitzeko saioak",
+        "leaveGame": "Utzitako jokoak",
+        "playOneMinute": "Jokatutako minutuak",
+        "walkOneCm": "Oinez egindako distantzia",
+        "fallOneCm": "Eroritako distantzia",
+        "swimOneCm": "Igerian egindako distantzia",
+        "flyOneCm": "Hegaldian egindako distantzia",
+        "climbOneCm": "Eskalatutako distantzia",
+        "diveOneCm": "Urpekaritzako distantzia",
+        "minecartOneCm": "Bagonetan egindako distantzia",
+        "boatOneCm": "Txalupan egindako distantzia",
+        "pigOneCm": "Txerri gainean egindako distantzia",
+        "jump": "Jauziak",
+        "drop": "Jaregindako objektuak",
+        "damageDealt": "Egindako kaltea",
+        "damageTaken": "Jasotako kaltea",
+        "deaths": "Heriotza kopurua",
+        "mobKills": "Hildako munstroak",
+        "playerKills": "Hildako jokalariak",
+        "fishCaught": "Harrapatutako arrainak",
+        "mineBlock": "{0} landuta",
+        "craftItem": "{0} sortuta",
+        "useItem": "{0} erabilita",
+        "breakItem": "{0} hutsita"
+    },
+    "achievements.title": "Lorpenak",
+    "achievement": {
+        "get": "Lorpena lortu da!",
+        "taken": "Hartuta!",
+        "challenge": "ERRONKA",
+        "unlocked": "DESBLOKEATUTA",
+        "locked": "BLOKEATUTA",
+        "requires": "'{0}' behar du",
+        "openInventory": {
+            "title": "Inbentarioa irekitzen",
+            "desc": "Ireki zure inbentarioa."
+        },
+        "mineWood": {
+            "title": "Egurra lortzen",
+            "desc": "Koldar bat jo ezazu egurrezko bloke bat erori arte"
+        },
+        "buildWorkBench": {
+            "title": "Erreferentzia lana",
+            "desc": "Sortu artisautza-mahai bat lau oholekin"
+        },
+        "buildPickaxe": {
+            "title": "Meatzaritzarako ordua!",
+            "desc": "Erabili oholak eta makilak pikotxa bat egiteko"
+        },
+        "buildFurnace": {
+            "title": "Gai beroa",
+            "desc": "Eraiki labe bat zortzi harrizko blokererekin"
+        },
+        "acquireIron": {
+            "title": "Hardwarea eskuratu",
+            "desc": "Burdin-lingote bat urtu"
+        },
+        "buildHoe": {
+            "title": "Nekazaritzarako ordua!",
+            "desc": "Erabili oholak eta makilak aitzur bat egiteko"
+        },
+        "makeBread": {
+            "title": "Ogia laberatu",
+            "desc": "Garia ogi bihurtu"
+        },
+        "bakeCake": {
+            "title": "Gezurra",
+            "desc": "Garia, azukrea, esnea eta arrautzak!"
+        },
+        "buildBetterPickaxe": {
+            "title": "Bertsio-berritzen",
+            "desc": "Pikotxa hobe bat eraiki"
+        },
+        "cookFish": {
+            "title": "Arrain goxoa",
+            "desc": "Harrapatu eta arrain bat erre!"
+        },
+        "onARail": {
+            "title": "Errail baten gainean",
+            "desc": "Bidaia ezazu bagonetan gutxienez 1 km hasi zaren tokitik "
+        },
+        "buildSword": {
+            "title": "Erasotzeko ordua!",
+            "desc": "Erabili oholak eta makilak ezpata bat egiteko"
+        },
+        "killEnemy": {
+            "title": "Munstro-ehiztaria",
+            "desc": "Eraso eta suntsitu munstro bat"
+        },
+        "killCow": {
+            "title": "Behi iraulgarria",
+            "desc": "Larru apur bat bildu"
+        },
+        "flyPig": {
+            "title": "Txerriak hegan doazenean",
+            "desc": "Gidatu txerri bat itsaslabar batetik behera"
+        }
+    },
+    "credits": {
+        "version": "BetaSharp %1$s Bertsioa",
+        "description": "Minecraft Beta 1.7.3-ren bertsio hobetua, C# bidez idatzita.",
+        "github": "GitHub-en",
+        "author": "Fazin85-k egina",
+        "libs": "Liburutegiak",
+        "slik": "Slik.NET - Grafikoak",
+        "imgui": "ImGui - Arazketa-interfazea",
+        "sfml": "SFML.NET - Audioa",
+        "sixlabors": "SixLabors - Letra-tipoak, irudien prozesamendua",
+        "translations": "Itzulpenen kredituak"
+    }
+}

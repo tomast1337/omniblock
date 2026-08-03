@@ -1,0 +1,1372 @@
+{
+    "gui": {
+        "joinServer": "เข้าร่วมเซิร์ฟเวอร์",
+        "rename": "เปลี่ยนชื่อ",
+        "edit": "แก้ไข",
+        "refresh": "รีเฟรช",
+        "done": "เสร็จสิ้น",
+        "cancel": "ยกเลิก",
+        "delete": "ลบ",
+        "toMenu": "กลับไปที่หน้าจอหลัก",
+        "up": "ขึ้น",
+        "down": "ลง",
+        "yes": "ใช่",
+        "no": "ไม่",
+        "connect": "เชื่อมต่อ",
+        "directConnect": "เชื่อมต่อโดยตรง",
+        "addServer": "เพิ่มเซิร์ฟเวอร์",
+        "create": "สร้าง",
+        "customize": "ปรับแต่ง",
+        "achievements": "ความสำเร็จ",
+        "stats": "สถิติ",
+        "container": {
+            "crafting": "การสร้าง",
+            "inventory": "ช่องเก็บของ",
+            "dispenser": "เครื่องแจกจ่าย",
+            "furnace": "เตาเผา",
+            "tip": {
+                "move": "ย้าย",
+                "quickMove": "ย้ายด่วน",
+                "takeHalf": "หยิบครึ่งหนึ่ง",
+                "place": "วาง",
+                "placeOne": "วางหนึ่งชิ้น"
+            }
+        }
+    },
+    "menu": {
+        "singleplayer": "เล่นคนเดียว",
+        "multiplayer": "เล่นหลายคน",
+        "texturePacks": "เทกเจอร์แพ็ก",
+        "options": "ตัวเลือก...",
+        "language": "ภาษา",
+        "quit": "ออกจากเกม",
+        "credits": "เครดิต",
+        "sendFeedback": "ส่งข้อเสนอแนะ",
+        "reportBugs": "รายงานข้อผิดพลาด",
+        "saveAndQuitToTitle": "บันทึกและกลับไปที่หน้าจอหลัก",
+        "disconnect": "ตัดการเชื่อมต่อ"
+    },
+    "selectWorld": {
+        "title": "เลือกโลก",
+        "empty": "ว่าง",
+        "world": "โลก",
+        "select": "เล่นโลกที่เลือก",
+        "create": "สร้างโลกใหม่",
+        "createDemo": "เล่นโลกสาธิตใหม่",
+        "deleteQuestion": "คุณแน่ใจหรือไม่ว่าต้องการลบโลกนี้?",
+        "deleteWarning": "จะสูญหายไปตลอดกาล! (นานมาก!)",
+        "renameTitle": "เปลี่ยนชื่อโลก",
+        "conversion": "ต้องแปลงไฟล์!",
+        "newWorld": "โลกใหม่",
+        "enterName": "ชื่อโลก",
+        "resultFolder": "จะถูกบันทึกไว้ใน:",
+        "enterSeed": "ซี้ด (Seed) สำหรับสร้างโลก",
+        "seedInfo": "เว้นว่างไว้เพื่อสุ่มซี้ด",
+        "selectWorldType": "เลือกประเภทโลก",
+        "worldType": "ประเภทโลก",
+        "customize": "ปรับแต่ง",
+        "moreWorldOptions": "ตัวเลือกโลกเพิ่มเติม...",
+        "type": {
+            "default": {
+                "title": "ค่าเริ่มต้น",
+                "description": "โลก Minecraft มาตรฐาน"
+            },
+            "flat": {
+                "title": "โลกแบน",
+                "description": "โลกที่แบนเรียบสนิท"
+            },
+            "sky": {
+                "title": "ท้องฟ้า",
+                "description": "โลกลอยอยู่ในท้องฟ้า"
+            }
+        }
+    },
+    "newWorld": {
+        "customize": {
+            "superflatWorld": {
+                "title": "ปรับแต่งโลกแบนพิเศษ"
+            },
+            "removeLayer": "ลบเลเยอร์",
+            "presets": "ค่าที่ตั้งไว้",
+            "height": "ความสูง",
+            "unknown": "???"
+        }
+    },
+    "world": {
+        "world": "โลก",
+        "unsupportedFormat": "รูปแบบที่ไม่รองรับ!"
+    },
+    "multiplayer": {
+        "title": "เล่นหลายคน",
+        "betasharpServer": "เซิร์ฟเวอร์ BetaSharp",
+        "info1": "Minecraft เล่นหลายคนยังไม่เสร็จสมบูรณ์ แต่",
+        "info2": "กำลังมีการทดสอบเบื้องต้นที่ยังมีข้อผิดพลาดอยู่",
+        "ipinfo": "ป้อน IP ของเซิร์ฟเวอร์เพื่อเชื่อมต่อ:",
+        "deleteQuestion": "คุณแน่ใจหรือไม่ว่าต้องการลบเซิร์ฟเวอร์นี้?",
+        "deleteWarning": "จะสูญหายไปตลอดกาล! (นานมาก!)",
+        "downloadingTerrain": "กำลังดาวน์โหลดภูมิประเทศ",
+        "stopSleeping": "ลุกจากเตียง",
+        "editServerTitle": "แก้ไขข้อมูลเซิร์ฟเวอร์",
+        "addServerTitle": "เพิ่มข้อมูลเซิร์ฟเวอร์",
+        "serverName": "ชื่อเซิร์ฟเวอร์",
+        "serverAddress": "ที่อยู่เซิร์ฟเวอร์"
+    },
+    "loading": {
+        "loadingLevel": "กำลังโหลดด่าน",
+        "startingServer": "กำลังเริ่มเซิร์ฟเวอร์...",
+        "preparingSpawnArea": "กำลังเตรียมพื้นที่เกิด"
+    },
+    "achievements": {
+        "title": "ความสำเร็จ"
+    },
+    "gameover": {
+        "title": "เกมโอเวอร์!",
+        "score": "คะแนน",
+        "respawn": "เกิดใหม่",
+        "titleMenu": "หน้าจอหลัก"
+    },
+    "gamemenu": {
+        "title": "เมนูเกม",
+        "backToGame": "กลับไปที่เกม"
+    },
+    "sign": {
+        "title": "แก้ไขข้อความป้าย:",
+        "done": "เสร็จสิ้น"
+    },
+    "stats": {
+        "title": "สถิติ",
+        "general": "ทั่วไป",
+        "blocks": {
+            "name": "บล็อก",
+            "mined": "ขุดแล้ว",
+            "crafted": "สร้างแล้ว",
+            "used": "ใช้แล้ว"
+        },
+        "items": {
+            "name": "ไอเทม",
+            "broken": "พังแล้ว",
+            "crafted": "สร้างแล้ว",
+            "used": "ใช้แล้ว"
+        },
+        "item": "ไอเทม"
+    },
+    "connect": {
+        "connecting": "กำลังเชื่อมต่อไปยังเซิร์ฟเวอร์...",
+        "authorizing": "กำลังเข้าสู่ระบบ...",
+        "failed": "ล้มเหลวในการเชื่อมต่อกับเซิร์ฟเวอร์"
+    },
+    "disconnect": {
+        "genericReason": "{0}",
+        "disconnected": "ถูกตัดการเชื่อมต่อโดยเซิร์ฟเวอร์",
+        "lost": "ขาดการเชื่อมต่อ",
+        "kicked": "ถูกเตะออกจากเกม",
+        "timeout": "หมดเวลาเชื่อมต่อ",
+        "closed": "การเชื่อมต่อถูกปิด",
+        "loginFailed": "เข้าสู่ระบบล้มเหลว",
+        "quitting": "กำลังออก",
+        "endOfStream": "สิ้นสุดสตรีม",
+        "overflow": "บัฟเฟอร์ล้น"
+    },
+    "options": {
+        "off": "ปิด",
+        "on": "เปิด",
+        "disabled": "ปิดใช้งาน",
+        "title": "ตัวเลือก",
+        "controls": "การควบคุม...",
+        "keyboardControls": "การควบคุมด้วยแป้นพิมพ์...",
+        "controllerSettings": "การตั้งค่าจอยสติ๊ก...",
+        "controllerType": "ประเภทจอยสติ๊ก",
+        "video": {
+            "text": "การตั้งค่าวิดีโอ...",
+            "performance": "ประสิทธิภาพ",
+            "display": "จอแสดงผล"
+        },
+        "uiSettings": "การตั้งค่า UI...",
+        "audioSettings": "การตั้งค่าเสียง...",
+        "audioTitle": "การตั้งค่าเสียง",
+        "videoTitle": "การตั้งค่าวิดีโอ",
+        "language": "ภาษา...",
+        "anisoLevel": "ระดับ Aniso",
+        "music": "เพลง",
+        "sound": "เสียง",
+        "invertMouse": "กลับด้านเมาส์",
+        "alternateBlocks": "บล็อกแบบสลับ",
+        "chunkFade": "Chunk เฟด",
+        "sensitivity": {
+            "text": "ความไว",
+            "controllerText": "ความไวของจอยสติ๊ก",
+            "min": "*หาว*",
+            "max": "ความเร็วแสง!!!"
+        },
+        "renderDistance": {
+            "text": "ระยะการมองเห็น",
+            "chunks": "Chunk",
+            "tiny": "ใกล้มาก",
+            "short": "ใกล้",
+            "normal": "ปกติ",
+            "far": "ไกล"
+        },
+        "viewBobbing": "มุมมองส่าย",
+        "ao": "แสงนุ่มนวล",
+        "anaglyph": "3D แอนะกลิฟ",
+        "framerateLimit": "ประสิทธิภาพ",
+        "difficulty": {
+            "text": "ความยาก",
+            "peaceful": "สงบสุข",
+            "easy": "ง่าย",
+            "normal": "ปกติ",
+            "hard": "ยาก"
+        },
+        "graphics": {
+            "text": "กราฟิก",
+            "fancy": "สวยงาม",
+            "fast": "เร็ว"
+        },
+        "cloudsQuality": {
+            "text": "คุณภาพเมฆ",
+            "off": "ไม่มีเมฆ",
+            "legacy": "เมฆแบบเก่า",
+            "shader": "เชเดอร์"
+        },
+        "softClouds": {
+            "text": "เมฆนุ่มนวล"
+        },
+        "guiScale": {
+            "text": "ขนาด GUI",
+            "auto": "อัตโนมัติ",
+            "small": "เล็ก",
+            "normal": "ปกติ",
+            "large": "ใหญ่"
+        },
+        "chatScale": {
+            "text": "ขนาดช่องแชท"
+        },
+        "chatWidth": {
+            "text": "ความกว้างช่องแชท"
+        },
+        "advancedOpengl": "OpenGL ขั้นสูง",
+        "fps": {
+            "text": "FPS",
+            "maxFps": "FPS สูงสุด",
+            "unlimited": "ไม่จำกัด"
+        },
+        "showCoordinates": "แสดงพิกัด",
+        "uiCursors": "เคอร์เซอร์ UI",
+        "gamma": "ความสว่าง",
+        "vSync": "VSync",
+        "mipmaps": "Mipmaps",
+        "menuMusic": "เพลงในเมนู",
+        "msaa": "MSAA",
+        "fov": "มุมมอง (FOV)",
+        "movement": {
+            "text": "การเคลื่อนไหว"
+        },
+        "view": {
+            "text": "มุมมอง"
+        },
+        "other": {
+            "text": "อื่นๆ"
+        },
+        "editBindings": "แก้ไขปุ่มควบคุม...",
+        "resetBindings": "รีเซ็ตปุ่มควบคุม...",
+        "controllerBindings": "ปุ่มจอยสติ๊ก",
+        "shader": {
+            "text": "ตัวเลือกเชเดอร์",
+            "chunkVert": {
+                "text": "โลก",
+                "WavyLeavesStrength": "ความแรงของใบไม้พริ้ว",
+                "WavyLeavesSpeed": "ความเร็วของใบไม้พริ้ว",
+                "WavyPlantStrength": "ความแรงของต้นไม้พริ้ว",
+                "WavyPlantSpeed": "ความเร็วของต้นไม้พริ้ว",
+                "WavyPlantMode": "โหมดของต้นไม้พริ้ว"
+            },
+            "cloud": {
+                "text": "เมฆ",
+                "minParallax": "พารัลแลกซ์ต่ำสุด",
+                "maxParallax": "พารัลแลกซ์สูงสุด",
+                "minGradient": "การไล่ระดับสีต่ำสุด",
+                "maxGradient": "การไล่ระดับสีสูงสุด",
+                "cloudHeight": "ความสูงของเมฆ",
+                "shadow": "สีเงา",
+                "smoothWidth": "ความกว้างความนุ่มนวล",
+                "smoothSamples": "ตัวอย่างความนุ่มนวล",
+                "closeFade": "จางในระยะใกล้",
+                "smoothTop": "นุ่มนวลด้านบน",
+                "smoothEdge": "นุ่มนวลขอบ",
+                "smoothBottom": "นุ่มนวลด้านล่าง",
+                "smoothBottomTopDown": "นุ่มนวลด้านล่างจากบนลงล่าง"
+            },
+            "ui": {
+                "text": "UI",
+                "darkMode": "โหมดมืด"
+            },
+            "preset": {
+                "text": "ค่าที่ตั้งไว้",
+                "disabled": "ปิดใช้งาน",
+                "default": "ค่าเริ่มต้น",
+                "custom": "กำหนดเอง",
+                "2d": "2D",
+                "3d": "3D",
+                "low": "ต่ำ",
+                "medium": "ปานกลาง",
+                "high": "สูง",
+                "ultra": "สูงสุด"
+            }
+        }
+    },
+    "performance": {
+        "max": "FPS สูงสุด",
+        "balanced": "สมดุล",
+        "powersaver": "ประหยัดพลังงาน"
+    },
+    "controls": {
+        "title": "การควบคุม"
+    },
+    "key": {
+        "forward": "เดินหน้า",
+        "left": "ซ้าย",
+        "back": "ถอยหลัง",
+        "right": "ขวา",
+        "jump": "กระโดด",
+        "inventory": "ช่องเก็บของ",
+        "drop": "ทิ้งของ",
+        "chat": "แชท",
+        "fog": "เปิด/ปิด หมอก",
+        "sneak": "ย่อง",
+        "playerlist": "รายชื่อผู้เล่น",
+        "zoom": "ซูม",
+        "hotbarLeft": "ฮอตบาร์ซ้าย",
+        "hotbarRight": "ฮอตบาร์ขวา",
+        "pickBlock": "เลือกบล็อก",
+        "camera": "โหมดกล้อง",
+        "pause": "หยุดชั่วคราว"
+    },
+    "texturePack": {
+        "openFolder": "เปิดโฟลเดอร์เทกเจอร์แพ็ก",
+        "title": "เลือกเทกเจอร์แพ็ก",
+        "folderInfo": "(วางไฟล์เทกเจอร์แพ็กที่นี่)"
+    },
+    "tile": {
+        "tallgrass": {
+            "name": "หญ้าสูง",
+            "desc": ""
+        },
+        "stone": {
+            "name": "หิน",
+            "desc": ""
+        },
+        "grass": {
+            "name": "บล็อกหญ้า",
+            "desc": ""
+        },
+        "dirt": {
+            "name": "ดิน",
+            "desc": ""
+        },
+        "stonebrick": {
+            "name": "หินกรวด",
+            "desc": ""
+        },
+        "wood": {
+            "name": "แผ่นไม้",
+            "desc": ""
+        },
+        "sapling": {
+            "name": "ต้นกล้า",
+            "desc": ""
+        },
+        "bedrock": {
+            "name": "หินดาน",
+            "desc": ""
+        },
+        "water": {
+            "name": "น้ำ",
+            "desc": ""
+        },
+        "lava": {
+            "name": "ลาวา",
+            "desc": ""
+        },
+        "sand": {
+            "name": "ทราย",
+            "desc": ""
+        },
+        "sandStone": {
+            "name": "หินทราย"
+        },
+        "gravel": {
+            "name": "กรวด",
+            "desc": ""
+        },
+        "oreGold": {
+            "name": "แร่ทองคำ",
+            "desc": ""
+        },
+        "oreIron": {
+            "name": "แร่เหล็ก",
+            "desc": ""
+        },
+        "oreCoal": {
+            "name": "แร่ถ่านหิน",
+            "desc": ""
+        },
+        "log": {
+            "name": "ไม้",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "ใบไม้",
+            "desc": ""
+        },
+        "sponge": {
+            "name": "ฟองน้ำ",
+            "desc": ""
+        },
+        "glass": {
+            "name": "กระจก",
+            "desc": ""
+        },
+        "cloth": {
+            "name": "ขนแกะ",
+            "desc": "",
+            "black": {
+                "name": "ขนแกะสีดำ",
+                "desc": ""
+            },
+            "red": {
+                "name": "ขนแกะสีแดง",
+                "desc": ""
+            },
+            "green": {
+                "name": "ขนแกะสีเขียว",
+                "desc": ""
+            },
+            "brown": {
+                "name": "ขนแกะสีน้ำตาล",
+                "desc": ""
+            },
+            "blue": {
+                "name": "ขนแกะสีน้ำเงิน",
+                "desc": ""
+            },
+            "purple": {
+                "name": "ขนแกะสีม่วง",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "ขนแกะสีฟ้าอมเขียว",
+                "desc": ""
+            },
+            "silver": {
+                "name": "ขนแกะสีเทาอ่อน",
+                "desc": ""
+            },
+            "gray": {
+                "name": "ขนแกะสีเทา",
+                "desc": ""
+            },
+            "pink": {
+                "name": "ขนแกะสีชมพู",
+                "desc": ""
+            },
+            "lime": {
+                "name": "ขนแกะสีเขียวอ่อน",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "ขนแกะสีเหลือง",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "ขนแกะสีฟ้า",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "ขนแกะสีแดงอมม่วง",
+                "desc": ""
+            },
+            "orange": {
+                "name": "ขนแกะสีส้ม",
+                "desc": ""
+            },
+            "white": {
+                "name": "ขนแกะ",
+                "desc": ""
+            }
+        },
+        "flower": {
+            "name": "ดอกไม้",
+            "desc": ""
+        },
+        "rose": {
+            "name": "กุหลาบ",
+            "desc": ""
+        },
+        "mushroom": {
+            "name": "เห็ด",
+            "desc": ""
+        },
+        "blockGold": {
+            "name": "บล็อกทองคำ",
+            "desc": ""
+        },
+        "blockIron": {
+            "name": "บล็อกเหล็ก",
+            "desc": ""
+        },
+        "stoneSlab": {
+            "stone": {
+                "name": "แผ่นหินครึ่งบล็อก",
+                "desc": ""
+            },
+            "sand": {
+                "name": "แผ่นหินทรายครึ่งบล็อก",
+                "desc": ""
+            },
+            "wood": {
+                "name": "แผ่นไม้ครึ่งบล็อก",
+                "desc": ""
+            },
+            "cobble": {
+                "name": "แผ่นหินครึ่งบล็อก",
+                "desc": ""
+            }
+        },
+        "brick": {
+            "name": "อิฐ",
+            "desc": ""
+        },
+        "tnt": {
+            "name": "TNT",
+            "desc": ""
+        },
+        "bookshelf": {
+            "name": "ชั้นหนังสือ",
+            "desc": ""
+        },
+        "stoneMoss": {
+            "name": "หินมอส",
+            "desc": ""
+        },
+        "obsidian": {
+            "name": "ออบซิเดียน",
+            "desc": ""
+        },
+        "torch": {
+            "name": "คบเพลิง",
+            "desc": ""
+        },
+        "fire": {
+            "name": "ไฟ",
+            "desc": ""
+        },
+        "mobSpawner": {
+            "name": "เครื่องสร้างมอนสเตอร์",
+            "desc": ""
+        },
+        "stairsWood": {
+            "name": "บันไดไม้",
+            "desc": ""
+        },
+        "chest": {
+            "name": "หีบ",
+            "desc": ""
+        },
+        "redstoneDust": {
+            "name": "ผงเรดสโตน",
+            "desc": ""
+        },
+        "oreDiamond": {
+            "name": "แร่เพชร",
+            "desc": ""
+        },
+        "blockDiamond": {
+            "name": "บล็อกเพชร",
+            "desc": ""
+        },
+        "workbench": {
+            "name": "โต๊ะคราฟต์",
+            "desc": ""
+        },
+        "crops": {
+            "name": "พืชผล",
+            "desc": ""
+        },
+        "farmland": {
+            "name": "แปลงเกษตร",
+            "desc": ""
+        },
+        "furnace": {
+            "name": "เตาเผา",
+            "desc": ""
+        },
+        "sign": {
+            "name": "ป้าย",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "ประตูไม้",
+            "desc": ""
+        },
+        "ladder": {
+            "name": "บันไดลิง",
+            "desc": ""
+        },
+        "rail": {
+            "name": "รางรถไฟ",
+            "desc": ""
+        },
+        "goldenRail": {
+            "name": "รางรถไฟเพิ่มความเร็ว",
+            "desc": ""
+        },
+        "detectorRail": {
+            "name": "รางรถไฟตรวจจับ",
+            "desc": ""
+        },
+        "stairsStone": {
+            "name": "บันไดหิน",
+            "desc": ""
+        },
+        "lever": {
+            "name": "คันโยก",
+            "desc": ""
+        },
+        "pressurePlate": {
+            "name": "แผ่นเหยียบ",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "ประตูเหล็ก",
+            "desc": ""
+        },
+        "oreRedstone": {
+            "name": "แร่เรดสโตน",
+            "desc": ""
+        },
+        "notGate": {
+            "name": "คบเพลิงเรดสโตน",
+            "desc": ""
+        },
+        "button": {
+            "name": "ปุ่ม",
+            "desc": ""
+        },
+        "snow": {
+            "name": "หิมะ",
+            "desc": ""
+        },
+        "ice": {
+            "name": "น้ำแข็ง",
+            "desc": ""
+        },
+        "cactus": {
+            "name": "กระบองเพชร",
+            "desc": ""
+        },
+        "clay": {
+            "name": "ดินเหนียว",
+            "desc": ""
+        },
+        "reeds": {
+            "name": "อ้อย",
+            "desc": ""
+        },
+        "jukebox": {
+            "name": "ตู้เพลง",
+            "desc": ""
+        },
+        "fence": {
+            "name": "รั้ว",
+            "desc": ""
+        },
+        "pumpkin": {
+            "name": "ฟักทอง",
+            "desc": ""
+        },
+        "litpumpkin": {
+            "name": "ฟักทองเรืองแสง",
+            "desc": ""
+        },
+        "hellrock": {
+            "name": "เนเธอร์แร็ค",
+            "desc": ""
+        },
+        "hellsand": {
+            "name": "ทรายวิญญาณ",
+            "desc": ""
+        },
+        "lightgem": {
+            "name": "โกลว์สโตน",
+            "desc": ""
+        },
+        "portal": {
+            "name": "พอร์ทัล",
+            "desc": ""
+        },
+        "oreLapis": {
+            "name": "แร่ลาพิสลาซูลี",
+            "desc": ""
+        },
+        "blockLapis": {
+            "name": "บล็อกลาพิสลาซูลี",
+            "desc": ""
+        },
+        "dispenser": {
+            "name": "เครื่องแจกจ่าย",
+            "desc": ""
+        },
+        "musicBlock": {
+            "name": "โน้ตบล็อก",
+            "desc": ""
+        },
+        "cake": {
+            "name": "เค้ก",
+            "desc": ""
+        },
+        "bed": {
+            "name": "เตียง",
+            "desc": "",
+            "occupied": "เตียงนี้มีผู้ใช้งานอยู่",
+            "noSleep": "คุณสามารถนอนได้เฉพาะตอนกลางคืนเท่านั้น",
+            "notValid": "เตียงของคุณหายไปหรือถูกกีดขวาง"
+        },
+        "lockedchest": {
+            "name": "หีบที่ถูกล็อก",
+            "desc": ""
+        },
+        "trapdoor": {
+            "name": "ประตูกล",
+            "desc": ""
+        },
+        "web": {
+            "name": "ใยแมงมุม",
+            "desc": ""
+        },
+        "stonebricksmooth": {
+            "name": "อิฐหิน",
+            "desc": ""
+        },
+        "pistonBase": {
+            "name": "ลูกสูบ",
+            "desc": ""
+        },
+        "pistonStickyBase": {
+            "name": "ลูกสูบเหนียว",
+            "desc": ""
+        }
+    },
+    "item": {
+        "shovelIron": {
+            "name": "พลั่วเหล็ก",
+            "desc": ""
+        },
+        "pickaxeIron": {
+            "name": "ที่ขุดเหล็ก",
+            "desc": ""
+        },
+        "hatchetIron": {
+            "name": "ขวานเหล็ก",
+            "desc": ""
+        },
+        "flintAndSteel": {
+            "name": "หินเหล็กไฟ",
+            "desc": ""
+        },
+        "apple": {
+            "name": "แอปเปิ้ล",
+            "desc": ""
+        },
+        "cookie": {
+            "name": "คุกกี้",
+            "desc": ""
+        },
+        "bow": {
+            "name": "ธนู",
+            "desc": ""
+        },
+        "arrow": {
+            "name": "ลูกธนู",
+            "desc": ""
+        },
+        "coal": {
+            "name": "ถ่านหิน",
+            "desc": ""
+        },
+        "charcoal": {
+            "name": "ถ่านไม้",
+            "desc": ""
+        },
+        "diamond": {
+            "name": "เพชร",
+            "desc": ""
+        },
+        "ingotIron": {
+            "name": "เหล็กแท่ง",
+            "desc": ""
+        },
+        "ingotGold": {
+            "name": "ทองคำแท่ง",
+            "desc": ""
+        },
+        "swordIron": {
+            "name": "ดาบเหล็ก",
+            "desc": ""
+        },
+        "swordWood": {
+            "name": "ดาบไม้",
+            "desc": ""
+        },
+        "shovelWood": {
+            "name": "พลั่วไม้",
+            "desc": ""
+        },
+        "pickaxeWood": {
+            "name": "ที่ขุดไม้",
+            "desc": ""
+        },
+        "hatchetWood": {
+            "name": "ขวานไม้",
+            "desc": ""
+        },
+        "swordStone": {
+            "name": "ดาบหิน",
+            "desc": ""
+        },
+        "shovelStone": {
+            "name": "พลั่วหิน",
+            "desc": ""
+        },
+        "pickaxeStone": {
+            "name": "ที่ขุดหิน",
+            "desc": ""
+        },
+        "hatchetStone": {
+            "name": "ขวานหิน",
+            "desc": ""
+        },
+        "swordDiamond": {
+            "name": "ดาบเพชร",
+            "desc": ""
+        },
+        "shovelDiamond": {
+            "name": "พลั่วเพชร",
+            "desc": ""
+        },
+        "pickaxeDiamond": {
+            "name": "ที่ขุดเพชร",
+            "desc": ""
+        },
+        "hatchetDiamond": {
+            "name": "ขวานเพชร",
+            "desc": ""
+        },
+        "stick": {
+            "name": "แท่งไม้",
+            "desc": ""
+        },
+        "bowl": {
+            "name": "ชาม",
+            "desc": ""
+        },
+        "mushroomStew": {
+            "name": "ซุปเห็ด",
+            "desc": ""
+        },
+        "swordGold": {
+            "name": "ดาบทองคำ",
+            "desc": ""
+        },
+        "shovelGold": {
+            "name": "พลั่วทองคำ",
+            "desc": ""
+        },
+        "pickaxeGold": {
+            "name": "ที่ขุดทองคำ",
+            "desc": ""
+        },
+        "hatchetGold": {
+            "name": "ขวานทองคำ",
+            "desc": ""
+        },
+        "string": {
+            "name": "เส้นด้าย",
+            "desc": ""
+        },
+        "feather": {
+            "name": "ขนนก",
+            "desc": ""
+        },
+        "gunpowder": {
+            "name": "ดินปืน",
+            "desc": ""
+        },
+        "hoeWood": {
+            "name": "จอบไม้",
+            "desc": ""
+        },
+        "hoeStone": {
+            "name": "จอบหิน",
+            "desc": ""
+        },
+        "hoeIron": {
+            "name": "จอบเหล็ก",
+            "desc": ""
+        },
+        "hoeDiamond": {
+            "name": "จอบเพชร",
+            "desc": ""
+        },
+        "hoeGold": {
+            "name": "จอบทองคำ",
+            "desc": ""
+        },
+        "seeds": {
+            "name": "เมล็ดพืช",
+            "desc": ""
+        },
+        "wheat": {
+            "name": "ข้าวสาลี",
+            "desc": ""
+        },
+        "bread": {
+            "name": "ขนมปัง",
+            "desc": ""
+        },
+        "helmetLeather": {
+            "name": "หมวกหนัง",
+            "desc": ""
+        },
+        "chestplateLeather": {
+            "name": "เสื้อหนัง",
+            "desc": ""
+        },
+        "leggingsLeather": {
+            "name": "กางเกงหนัง",
+            "desc": ""
+        },
+        "bootsLeather": {
+            "name": "รองเท้าหนัง",
+            "desc": ""
+        },
+        "helmetChain": {
+            "name": "หมวกโซ่",
+            "desc": ""
+        },
+        "chestplateChain": {
+            "name": "เสื้อโซ่",
+            "desc": ""
+        },
+        "leggingsChain": {
+            "name": "กางเกงโซ่",
+            "desc": ""
+        },
+        "bootsChain": {
+            "name": "รองเท้าโซ่",
+            "desc": ""
+        },
+        "helmetIron": {
+            "name": "หมวกเหล็ก",
+            "desc": ""
+        },
+        "chestplateIron": {
+            "name": "เสื้อเหล็ก",
+            "desc": ""
+        },
+        "leggingsIron": {
+            "name": "กางเกงเหล็ก",
+            "desc": ""
+        },
+        "bootsIron": {
+            "name": "รองเท้าเหล็ก",
+            "desc": ""
+        },
+        "helmetDiamond": {
+            "name": "หมวกเพชร",
+            "desc": ""
+        },
+        "chestplateDiamond": {
+            "name": "เสื้อเพชร",
+            "desc": ""
+        },
+        "leggingsDiamond": {
+            "name": "กางเกงเพชร",
+            "desc": ""
+        },
+        "bootsDiamond": {
+            "name": "รองเท้าเพชร",
+            "desc": ""
+        },
+        "helmetGold": {
+            "name": "หมวกทองคำ",
+            "desc": ""
+        },
+        "chestplateGold": {
+            "name": "เสื้อทองคำ",
+            "desc": ""
+        },
+        "leggingsGold": {
+            "name": "กางเกงทองคำ",
+            "desc": ""
+        },
+        "bootsGold": {
+            "name": "รองเท้าทองคำ",
+            "desc": ""
+        },
+        "flint": {
+            "name": "หินเหล็กไฟ",
+            "desc": ""
+        },
+        "porkchopRaw": {
+            "name": "เนื้อหมูดิบ",
+            "desc": ""
+        },
+        "porkchopCooked": {
+            "name": "เนื้อหมูสุก",
+            "desc": ""
+        },
+        "painting": {
+            "name": "ภาพวาด",
+            "desc": ""
+        },
+        "appleGold": {
+            "name": "แอปเปิ้ลทองคำ",
+            "desc": ""
+        },
+        "sign": {
+            "name": "ป้าย",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "ประตูไม้",
+            "desc": ""
+        },
+        "bucket": {
+            "name": "ถัง",
+            "desc": ""
+        },
+        "bucketWater": {
+            "name": "ถังน้ำ",
+            "desc": ""
+        },
+        "bucketLava": {
+            "name": "ถังลาวา",
+            "desc": ""
+        },
+        "minecart": {
+            "name": "รถราง",
+            "desc": ""
+        },
+        "saddle": {
+            "name": "อานม้า",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "ประตูเหล็ก",
+            "desc": ""
+        },
+        "redstone": {
+            "name": "เรดสโตน",
+            "desc": ""
+        },
+        "snowball": {
+            "name": "ก้อนหิมะ",
+            "desc": ""
+        },
+        "boat": {
+            "name": "เรือ",
+            "desc": ""
+        },
+        "leather": {
+            "name": "หนัง",
+            "desc": ""
+        },
+        "milk": {
+            "name": "นม",
+            "desc": ""
+        },
+        "brick": {
+            "name": "ก้อนอิฐ",
+            "desc": ""
+        },
+        "clay": {
+            "name": "ดินเหนียว",
+            "desc": ""
+        },
+        "sugarCanes": {
+            "name": "อ้อย",
+            "desc": ""
+        },
+        "paper": {
+            "name": "กระดาษ",
+            "desc": ""
+        },
+        "book": {
+            "name": "หนังสือ",
+            "desc": ""
+        },
+        "slimeball": {
+            "name": "สไลม์บอล",
+            "desc": ""
+        },
+        "minecartChest": {
+            "name": "รถรางพร้อมหีบ",
+            "desc": ""
+        },
+        "minecartFurnace": {
+            "name": "รถรางพร้อมเตาเผา",
+            "desc": ""
+        },
+        "egg": {
+            "name": "ไข่",
+            "desc": ""
+        },
+        "compass": {
+            "name": "เข็มทิศ",
+            "desc": ""
+        },
+        "fishingRod": {
+            "name": "เบ็ดตกปลา",
+            "desc": ""
+        },
+        "clock": {
+            "name": "นาฬิกา",
+            "desc": ""
+        },
+        "yellowDust": {
+            "name": "ผงโกลว์สโตน",
+            "desc": ""
+        },
+        "fishRaw": {
+            "name": "ปลาดิบ",
+            "desc": ""
+        },
+        "fishCooked": {
+            "name": "ปลาสุก",
+            "desc": ""
+        },
+        "record": {
+            "name": "แผ่นเสียง",
+            "desc": ""
+        },
+        "bone": {
+            "name": "กระดูก",
+            "desc": ""
+        },
+        "dyePowder": {
+            "black": {
+                "name": "ถุงหมึก",
+                "desc": ""
+            },
+            "red": {
+                "name": "สีกุหลาบแดง",
+                "desc": ""
+            },
+            "green": {
+                "name": "สีเขียวกระบองเพชร",
+                "desc": ""
+            },
+            "brown": {
+                "name": "เมล็ดโกโก้",
+                "desc": ""
+            },
+            "blue": {
+                "name": "ลาพิสลาซูลี",
+                "desc": ""
+            },
+            "purple": {
+                "name": "สีย้อมม่วง",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "สีย้อมฟ้าอมเขียว",
+                "desc": ""
+            },
+            "silver": {
+                "name": "สีย้อมเทาอ่อน",
+                "desc": ""
+            },
+            "gray": {
+                "name": "สีย้อมเทา",
+                "desc": ""
+            },
+            "pink": {
+                "name": "สีย้อมชมพู",
+                "desc": ""
+            },
+            "lime": {
+                "name": "สีย้อมเขียวอ่อน",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "สีเหลืองแดนดิไลออน",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "สีย้อมฟ้า",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "สีย้อมแดงอมม่วง",
+                "desc": ""
+            },
+            "orange": {
+                "name": "สีย้อมส้ม",
+                "desc": ""
+            },
+            "white": {
+                "name": "กระดูกป่น",
+                "desc": ""
+            }
+        },
+        "sugar": {
+            "name": "น้ำตาล",
+            "desc": ""
+        },
+        "cake": {
+            "name": "เค้ก",
+            "desc": ""
+        },
+        "bed": {
+            "name": "เตียง",
+            "desc": ""
+        },
+        "redstoneRepeater": {
+            "name": "ตัวทวนสัญญาณเรดสโตน",
+            "desc": ""
+        },
+        "map": {
+            "name": "แผนที่",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "ใบไม้",
+            "desc": ""
+        },
+        "shears": {
+            "name": "กรรไกรตัดขน",
+            "desc": ""
+        }
+    },
+    "stat": {
+        "generalButton": "ทั่วไป",
+        "blocksButton": "บล็อก",
+        "itemsButton": "ไอเทม",
+        "used": "จำนวนครั้งที่ใช้",
+        "mined": "จำนวนครั้งที่ขุด",
+        "depleted": "จำนวนครั้งที่พัง",
+        "crafted": "จำนวนครั้งที่สร้าง",
+        "startGame": "จำนวนครั้งที่เล่น",
+        "createWorld": "จำนวนโลกที่เล่น",
+        "loadWorld": "จำนวนครั้งที่โหลดเซฟ",
+        "joinMultiplayer": "จำนวนครั้งที่เข้าร่วมผู้เล่นหลายคน",
+        "leaveGame": "จำนวนครั้งที่ออกจากเกม",
+        "playOneMinute": "นาทีที่เล่น",
+        "walkOneCm": "ระยะทางที่เดิน",
+        "fallOneCm": "ระยะทางที่ตก",
+        "swimOneCm": "ระยะทางที่ว่ายน้ำ",
+        "flyOneCm": "ระยะทางที่บิน",
+        "climbOneCm": "ระยะทางที่ปีน",
+        "diveOneCm": "ระยะทางที่ดำน้ำ",
+        "minecartOneCm": "ระยะทางด้วยรถราง",
+        "boatOneCm": "ระยะทางด้วยเรือ",
+        "pigOneCm": "ระยะทางด้วยหมู",
+        "jump": "กระโดด",
+        "drop": "ไอเทมที่ทิ้ง",
+        "damageDealt": "ดาเมจที่ทำ",
+        "damageTaken": "ดาเมจที่ได้รับ",
+        "deaths": "จำนวนครั้งที่ตาย",
+        "mobKills": "จำนวนมอนสเตอร์ที่ฆ่า",
+        "playerKills": "จำนวนผู้เล่นที่ฆ่า",
+        "fishCaught": "ปลาที่ตกได้",
+        "mineBlock": "ขุด {0}",
+        "craftItem": "สร้าง {0}",
+        "useItem": "ใช้ {0}",
+        "breakItem": "ทำ {0} พัง"
+    },
+    "achievements.title": "ความสำเร็จ",
+    "achievement": {
+        "get": "ได้รับความสำเร็จ!",
+        "taken": "รับแล้ว!",
+        "challenge": "คำท้า",
+        "unlocked": "ปลดล็อกแล้ว",
+        "locked": "ล็อกอยู่",
+        "requires": "ต้องการ '{0}'",
+        "openInventory": {
+            "title": "สำรวจช่องเก็บของ",
+            "desc": "เปิดช่องเก็บของของคุณ"
+        },
+        "mineWood": {
+            "title": "หาไม้",
+            "desc": "ต่อยต้นไม้จนกว่าบล็อกไม้จะหลุดออกมา"
+        },
+        "buildWorkBench": {
+            "title": "เตรียมพร้อมสร้าง",
+            "desc": "สร้างโต๊ะคราฟต์โดยใช้แผ่นไม้สี่บล็อก"
+        },
+        "buildPickaxe": {
+            "title": "ได้เวลาขุด!",
+            "desc": "ใช้แผ่นไม้และแท่งไม้เพื่อสร้างที่ขุด"
+        },
+        "buildFurnace": {
+            "title": "เรื่องร้อนแรง",
+            "desc": "สร้างเตาเผาจากบล็อกหินกรวดแปดก้อน"
+        },
+        "acquireIron": {
+            "title": "หาอุปกรณ์",
+            "desc": "หลอมเหล็กแท่ง"
+        },
+        "buildHoe": {
+            "title": "ได้เวลาทำฟาร์ม!",
+            "desc": "ใช้แผ่นไม้และแท่งไม้เพื่อสร้างจอบ"
+        },
+        "makeBread": {
+            "title": "อบขนมปัง",
+            "desc": "เปลี่ยนข้าวสาลีเป็นขนมปัง"
+        },
+        "bakeCake": {
+            "title": "คำลวง",
+            "desc": "ข้าวสาลี, น้ำตาล, นม และไข่!"
+        },
+        "buildBetterPickaxe": {
+            "title": "รับการอัปเกรด",
+            "desc": "สร้างที่ขุดที่ดียิ่งขึ้น"
+        },
+        "cookFish": {
+            "title": "ปลาแสนอร่อย",
+            "desc": "จับและปรุงปลา!"
+        },
+        "onARail": {
+            "title": "บนรางรถไฟ",
+            "desc": "เดินทางด้วยรถรางอย่างน้อย 1 กม. จากจุดเริ่มต้น "
+        },
+        "buildSword": {
+            "title": "ได้เวลาโจมตี!",
+            "desc": "ใช้แผ่นไม้และแท่งไม้เพื่อสร้างดาบ"
+        },
+        "killEnemy": {
+            "title": "นักล่ามอนสเตอร์",
+            "desc": "โจมตีและทำลายมอนสเตอร์"
+        },
+        "killCow": {
+            "title": "นักโค่นวัว",
+            "desc": "เก็บหนังวัวมาบางส่วน"
+        },
+        "flyPig": {
+            "title": "เมื่อหมูบินได้",
+            "desc": "ขี่หมูให้บินตกจากหน้าผา"
+        }
+    },
+    "credits": {
+        "version": "BetaSharp เวอร์ชัน %1$s",
+        "description": "รุ่นปรับปรุงของ Minecraft Beta 1.7.3 เขียนด้วย C#",
+        "github": "บน GitHub",
+        "author": "สร้างโดย Fazin85",
+        "libs": "ไลบรารี",
+        "slik": "Slik.NET - กราฟิก",
+        "imgui": "ImGui - UI ดีบัก",
+        "sfml": "SFML.NET - เสียง",
+        "sixlabors": "SixLabors - ฟอนต์, ประมวลผลภาพ",
+        "translations": "เครดิตนักแปล"
+    }
+}

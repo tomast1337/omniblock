@@ -1,0 +1,1372 @@
+{
+    "gui": {
+        "joinServer": "Pridruži se serveru",
+        "rename": "Preimenuj",
+        "edit": "Izmeni",
+        "refresh": "Osveži",
+        "done": "Gotovo",
+        "cancel": "Otkaži",
+        "delete": "Obriši",
+        "toMenu": "Nazad na naslovni ekran",
+        "up": "Gore",
+        "down": "Dole",
+        "yes": "Da",
+        "no": "Ne",
+        "connect": "Poveži se",
+        "directConnect": "Direktna veza",
+        "addServer": "Dodaj server",
+        "create": "Napravi",
+        "customize": "Prilagodi",
+        "achievements": "Dostignuća",
+        "stats": "Statistika",
+        "container": {
+            "crafting": "Krafteraj",
+            "inventory": "Inventar",
+            "dispenser": "Doza toranj",
+            "furnace": "Peć",
+            "tip": {
+                "move": "Pomeri",
+                "quickMove": "Brzo pomeranje",
+                "takeHalf": "Uzmi pola",
+                "place": "Stavi",
+                "placeOne": "Stavi jedan"
+            }
+        }
+    },
+    "menu": {
+        "singleplayer": "Za jednog igrača",
+        "multiplayer": "Za više igrača",
+        "texturePacks": "Paketi tekstura",
+        "options": "Opcije...",
+        "language": "Jezik",
+        "quit": "Izađi iz igre",
+        "credits": "Zasluge",
+        "sendFeedback": "Pošalji povratne informacije",
+        "reportBugs": "Prijavi greške",
+        "saveAndQuitToTitle": "Sačuvaj i izađi na naslov",
+        "disconnect": "Prekini vezu"
+    },
+    "selectWorld": {
+        "title": "Izbor sveta",
+        "empty": "prazan",
+        "world": "Svet",
+        "select": "Igraj izabrani svet",
+        "create": "Napravi novi svet",
+        "createDemo": "Igraj novi demo svet",
+        "deleteQuestion": "Da li ste sigurni da želite da obrišete ovaj svet?",
+        "deleteWarning": "će biti zauvek izgubljen! (Veoma dugo!)",
+        "renameTitle": "Preimenuj svet",
+        "conversion": "Mora se konvertovati!",
+        "newWorld": "Novi svet",
+        "enterName": "Ime sveta",
+        "resultFolder": "Biće sačuvan u:",
+        "enterSeed": "Seme za generator sveta",
+        "seedInfo": "Ostavite prazno za nasumično seme",
+        "selectWorldType": "Izbor tipa sveta",
+        "worldType": "Tip sveta",
+        "customize": "Prilagodi",
+        "moreWorldOptions": "Više opcija sveta...",
+        "type": {
+            "default": {
+                "title": "Podrazumevani",
+                "description": "Standardni Minecraft svet."
+            },
+            "flat": {
+                "title": "Ravan",
+                "description": "Potpuno ravan svet."
+            },
+            "sky": {
+                "title": "Nebo",
+                "description": "Svet koji lebdi na nebu."
+            }
+        }
+    },
+    "newWorld": {
+        "customize": {
+            "superflatWorld": {
+                "title": "Prilagođavanje super ravnog sveta"
+            },
+            "removeLayer": "Ukloni sloj",
+            "presets": "Unapred podešeno",
+            "height": "Visina",
+            "unknown": "???"
+        }
+    },
+    "world": {
+        "world": "Svet",
+        "unsupportedFormat": "Nepodržan format!"
+    },
+    "multiplayer": {
+        "title": "Igra za više igrača",
+        "betasharpServer": "BetaSharp server",
+        "info1": "Minecraft multiplayer trenutno nije završen, ali",
+        "info2": "postoji neko ranije testiranje koje je bagovito.",
+        "ipinfo": "Unesite IP servera za povezivanje:",
+        "deleteQuestion": "Da li ste sigurni da želite da obrišete ovaj server?",
+        "deleteWarning": "će biti zauvek izgubljen! (Veoma dugo!)",
+        "downloadingTerrain": "Preuzimanje terena",
+        "stopSleeping": "Napusti krevet",
+        "editServerTitle": "Izmena podataka servera",
+        "addServerTitle": "Dodavanje podataka servera",
+        "serverName": "Ime servera",
+        "serverAddress": "Adresa servera"
+    },
+    "loading": {
+        "loadingLevel": "Učitavanje nivoa",
+        "startingServer": "Pokretanje servera...",
+        "preparingSpawnArea": "Priprema zone pojavljivanja"
+    },
+    "achievements": {
+        "title": "Dostignuća"
+    },
+    "gameover": {
+        "title": "Kraj igre!",
+        "score": "Rezultat",
+        "respawn": "Ponovo se pojavi",
+        "titleMenu": "Naslovni meni"
+    },
+    "gamemenu": {
+        "title": "Meni igre",
+        "backToGame": "Nazad na igru"
+    },
+    "sign": {
+        "title": "Izmena poruke na tabli:",
+        "done": "Gotovo"
+    },
+    "stats": {
+        "title": "Statistika",
+        "general": "Opšte",
+        "blocks": {
+            "name": "Blokovi",
+            "mined": "Iskopano",
+            "crafted": "Napravljeno",
+            "used": "Korišćeno"
+        },
+        "items": {
+            "name": "Predmeti",
+            "broken": "Slomljeno",
+            "crafted": "Napravljeno",
+            "used": "Korišćeno"
+        },
+        "item": "Predmet"
+    },
+    "connect": {
+        "connecting": "Povezivanje na server...",
+        "authorizing": "Prijavljivanje...",
+        "failed": "Neuspešno povezivanje na server"
+    },
+    "disconnect": {
+        "genericReason": "{0}",
+        "disconnected": "Prekinuto od strane servera",
+        "lost": "Izgubljena veza",
+        "kicked": "Izbačen iz igre",
+        "timeout": "Isteklo vreme",
+        "closed": "Veza zatvorena",
+        "loginFailed": "Neuspešna prijava",
+        "quitting": "Napuštanje",
+        "endOfStream": "Kraj toka",
+        "overflow": "Prepunjen bafer"
+    },
+    "options": {
+        "off": "ISKLJUČENO",
+        "on": "UKLJUČENO",
+        "disabled": "Onemogućeno",
+        "title": "Opcije",
+        "controls": "Kontrole...",
+        "keyboardControls": "Kontrole tastature...",
+        "controllerSettings": "Postavke kontrolera...",
+        "controllerType": "Tip kontrolera",
+        "video": {
+            "text": "Video postavke...",
+            "performance": "Performanse",
+            "display": "Prikaz"
+        },
+        "uiSettings": "UI postavke...",
+        "audioSettings": "Audio postavke...",
+        "audioTitle": "Audio postavke",
+        "videoTitle": "Video postavke",
+        "language": "Jezik...",
+        "anisoLevel": "Nivo anizotropije",
+        "music": "Muzika",
+        "sound": "Zvuk",
+        "invertMouse": "Obrni miš",
+        "alternateBlocks": "Alternativni blokovi",
+        "chunkFade": "Iščezavanje čankova",
+        "sensitivity": {
+            "text": "Osetljivost",
+            "controllerText": "Osetljivost kontrolera",
+            "min": "*zev*",
+            "max": "HIPERBRZINA!!!"
+        },
+        "renderDistance": {
+            "text": "Daljina prikaza",
+            "chunks": "Čankovi",
+            "tiny": "Sićušno",
+            "short": "Kratko",
+            "normal": "Normalno",
+            "far": "Daleko"
+        },
+        "viewBobbing": "Ljuljanje pogleda",
+        "ao": "Glatko osvetljenje",
+        "anaglyph": "3D anaglyph",
+        "framerateLimit": "Performanse",
+        "difficulty": {
+            "text": "Težina",
+            "peaceful": "Miran",
+            "easy": "Lako",
+            "normal": "Normalno",
+            "hard": "Teško"
+        },
+        "graphics": {
+            "text": "Grafika",
+            "fancy": "Fensi",
+            "fast": "Brzo"
+        },
+        "cloudsQuality": {
+            "text": "Kvalitet oblaka",
+            "off": "Bez oblaka",
+            "legacy": "Stari oblaci",
+            "shader": "Šejder"
+        },
+        "softClouds": {
+            "text": "Meki oblaci"
+        },
+        "guiScale": {
+            "text": "Veličina interfejsa",
+            "auto": "Automatski",
+            "small": "Mala",
+            "normal": "Normalna",
+            "large": "Velika"
+        },
+        "chatScale": {
+            "text": "Veličina četa"
+        },
+        "chatWidth": {
+            "text": "Širina četa"
+        },
+        "advancedOpengl": "Napredni OpenGL",
+        "fps": {
+            "text": "FPS",
+            "maxFps": "Maks. FPS",
+            "unlimited": "Neograničeno"
+        },
+        "showCoordinates": "Prikaži koordinate",
+        "uiCursors": "UI kurzori",
+        "gamma": "Gama",
+        "vSync": "VSync",
+        "mipmaps": "Mip-karte",
+        "menuMusic": "Muzika u meniju",
+        "msaa": "MSAA",
+        "fov": "Vidno polje",
+        "movement": {
+            "text": "Kretanje"
+        },
+        "view": {
+            "text": "Pogled"
+        },
+        "other": {
+            "text": "Ostalo"
+        },
+        "editBindings": "Izmena tastera...",
+        "resetBindings": "Resetovanje tastera...",
+        "controllerBindings": "Tasteri kontrolera",
+        "shader": {
+            "text": "Šejder opcije",
+            "chunkVert": {
+                "text": "Svet",
+                "WavyLeavesStrength": "Jačina talasanja lišća",
+                "WavyLeavesSpeed": "Brzina talasanja lišća",
+                "WavyPlantStrength": "Jačina talasanja biljaka",
+                "WavyPlantSpeed": "Brzina talasanja biljaka",
+                "WavyPlantMode": "Režim talasanja biljaka"
+            },
+            "cloud": {
+                "text": "Oblaci",
+                "minParallax": "Min. paralaksa",
+                "maxParallax": "Maks. paralaksa",
+                "minGradient": "Min. gradijent",
+                "maxGradient": "Maks. gradijent",
+                "cloudHeight": "Visina oblaka",
+                "shadow": "Boja senke",
+                "smoothWidth": "Glatka širina",
+                "smoothSamples": "Glatki uzorci",
+                "closeFade": "Blisko iščezavanje",
+                "smoothTop": "Glatki vrh",
+                "smoothEdge": "Glatka ivica",
+                "smoothBottom": "Glatko dno",
+                "smoothBottomTopDown": "Glatko dno (od vrha ka dnu)"
+            },
+            "ui": {
+                "text": "Interfejs",
+                "darkMode": "Tamni režim"
+            },
+            "preset": {
+                "text": "Unapred podešeno",
+                "disabled": "Onemogućeno",
+                "default": "Podrazumevano",
+                "custom": "Prilagođeno",
+                "2d": "2D",
+                "3d": "3D",
+                "low": "Nisko",
+                "medium": "Srednje",
+                "high": "Visoko",
+                "ultra": "Ultra"
+            }
+        }
+    },
+    "performance": {
+        "max": "Maks. FPS",
+        "balanced": "Uravnoteženo",
+        "powersaver": "Štednja energije"
+    },
+    "controls": {
+        "title": "Kontrole"
+    },
+    "key": {
+        "forward": "Napred",
+        "left": "Levo",
+        "back": "Nazad",
+        "right": "Desno",
+        "jump": "Skok",
+        "inventory": "Inventar",
+        "drop": "Baci",
+        "chat": "Čet",
+        "fog": "Uključi/isključi maglu",
+        "sneak": "Šuljanje",
+        "playerlist": "Spisak igrača",
+        "zoom": "Zum",
+        "hotbarLeft": "Vruća traka levo",
+        "hotbarRight": "Vruća traka desno",
+        "pickBlock": "Izaberi blok",
+        "camera": "Režim kamere",
+        "pause": "Pauza"
+    },
+    "texturePack": {
+        "openFolder": "Otvori fasciklu sa paketima tekstura",
+        "title": "Izbor paketa tekstura",
+        "folderInfo": "(Stavite fajlove paketa tekstura ovde)"
+    },
+    "tile": {
+        "tallgrass": {
+            "name": "Visoka trava",
+            "desc": ""
+        },
+        "stone": {
+            "name": "Kamen",
+            "desc": ""
+        },
+        "grass": {
+            "name": "Trava",
+            "desc": ""
+        },
+        "dirt": {
+            "name": "Zemlja",
+            "desc": ""
+        },
+        "stonebrick": {
+            "name": "Kocka",
+            "desc": ""
+        },
+        "wood": {
+            "name": "Daske",
+            "desc": ""
+        },
+        "sapling": {
+            "name": "Mladica",
+            "desc": ""
+        },
+        "bedrock": {
+            "name": "Temeljna stena",
+            "desc": ""
+        },
+        "water": {
+            "name": "Voda",
+            "desc": ""
+        },
+        "lava": {
+            "name": "Lava",
+            "desc": ""
+        },
+        "sand": {
+            "name": "Pesak",
+            "desc": ""
+        },
+        "sandStone": {
+            "name": "Peščar"
+        },
+        "gravel": {
+            "name": "Šljunak",
+            "desc": ""
+        },
+        "oreGold": {
+            "name": "Zlatna ruda",
+            "desc": ""
+        },
+        "oreIron": {
+            "name": "Gvozdena ruda",
+            "desc": ""
+        },
+        "oreCoal": {
+            "name": "Ruda uglja",
+            "desc": ""
+        },
+        "log": {
+            "name": "Drvo",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "Lišće",
+            "desc": ""
+        },
+        "sponge": {
+            "name": "Sunđer",
+            "desc": ""
+        },
+        "glass": {
+            "name": "Staklo",
+            "desc": ""
+        },
+        "cloth": {
+            "name": "Vuna",
+            "desc": "",
+            "black": {
+                "name": "Crna vuna",
+                "desc": ""
+            },
+            "red": {
+                "name": "Crvena vuna",
+                "desc": ""
+            },
+            "green": {
+                "name": "Zelena vuna",
+                "desc": ""
+            },
+            "brown": {
+                "name": "Smeđa vuna",
+                "desc": ""
+            },
+            "blue": {
+                "name": "Plava vuna",
+                "desc": ""
+            },
+            "purple": {
+                "name": "Ljubičasta vuna",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "Cijan vuna",
+                "desc": ""
+            },
+            "silver": {
+                "name": "Svetlo siva vuna",
+                "desc": ""
+            },
+            "gray": {
+                "name": "Siva vuna",
+                "desc": ""
+            },
+            "pink": {
+                "name": "Roza vuna",
+                "desc": ""
+            },
+            "lime": {
+                "name": "Svetlo zelena vuna",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "Žuta vuna",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "Svetlo plava vuna",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "Magenta vuna",
+                "desc": ""
+            },
+            "orange": {
+                "name": "Narandžasta vuna",
+                "desc": ""
+            },
+            "white": {
+                "name": "Vuna",
+                "desc": ""
+            }
+        },
+        "flower": {
+            "name": "Cvet",
+            "desc": ""
+        },
+        "rose": {
+            "name": "Ruža",
+            "desc": ""
+        },
+        "mushroom": {
+            "name": "Pečurka",
+            "desc": ""
+        },
+        "blockGold": {
+            "name": "Zlatni blok",
+            "desc": ""
+        },
+        "blockIron": {
+            "name": "Gvozdeni blok",
+            "desc": ""
+        },
+        "stoneSlab": {
+            "stone": {
+                "name": "Kamena ploča",
+                "desc": ""
+            },
+            "sand": {
+                "name": "Peščarska ploča",
+                "desc": ""
+            },
+            "wood": {
+                "name": "Drvena ploča",
+                "desc": ""
+            },
+            "cobble": {
+                "name": "Kamena ploča",
+                "desc": ""
+            }
+        },
+        "brick": {
+            "name": "Cigle",
+            "desc": ""
+        },
+        "tnt": {
+            "name": "TNT",
+            "desc": ""
+        },
+        "bookshelf": {
+            "name": "Polica sa knjigama",
+            "desc": ""
+        },
+        "stoneMoss": {
+            "name": "Mahovnati kamen",
+            "desc": ""
+        },
+        "obsidian": {
+            "name": "Opsidijan",
+            "desc": ""
+        },
+        "torch": {
+            "name": "Baklja",
+            "desc": ""
+        },
+        "fire": {
+            "name": "Vatra",
+            "desc": ""
+        },
+        "mobSpawner": {
+            "name": "Spanner čudovišta",
+            "desc": ""
+        },
+        "stairsWood": {
+            "name": "Drvene stepenice",
+            "desc": ""
+        },
+        "chest": {
+            "name": "Sanduk",
+            "desc": ""
+        },
+        "redstoneDust": {
+            "name": "Redstone prašina",
+            "desc": ""
+        },
+        "oreDiamond": {
+            "name": "Ruda dijamanta",
+            "desc": ""
+        },
+        "blockDiamond": {
+            "name": "Dijamantski blok",
+            "desc": ""
+        },
+        "workbench": {
+            "name": "Radni sto",
+            "desc": ""
+        },
+        "crops": {
+            "name": "Usevi",
+            "desc": ""
+        },
+        "farmland": {
+            "name": "Oranica",
+            "desc": ""
+        },
+        "furnace": {
+            "name": "Peć",
+            "desc": ""
+        },
+        "sign": {
+            "name": "Tabla",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "Drvena vrata",
+            "desc": ""
+        },
+        "ladder": {
+            "name": "Merdevine",
+            "desc": ""
+        },
+        "rail": {
+            "name": "Šine",
+            "desc": ""
+        },
+        "goldenRail": {
+            "name": "Šine na struju",
+            "desc": ""
+        },
+        "detectorRail": {
+            "name": "Detektorske šine",
+            "desc": ""
+        },
+        "stairsStone": {
+            "name": "Kamene stepenice",
+            "desc": ""
+        },
+        "lever": {
+            "name": "Poluga",
+            "desc": ""
+        },
+        "pressurePlate": {
+            "name": "Pritisna ploča",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "Gvozdena vrata",
+            "desc": ""
+        },
+        "oreRedstone": {
+            "name": "Redstone ruda",
+            "desc": ""
+        },
+        "notGate": {
+            "name": "Redstone baklja",
+            "desc": ""
+        },
+        "button": {
+            "name": "Dugme",
+            "desc": ""
+        },
+        "snow": {
+            "name": "Sneg",
+            "desc": ""
+        },
+        "ice": {
+            "name": "Led",
+            "desc": ""
+        },
+        "cactus": {
+            "name": "Kaktus",
+            "desc": ""
+        },
+        "clay": {
+            "name": "Glina",
+            "desc": ""
+        },
+        "reeds": {
+            "name": "Šećerna trska",
+            "desc": ""
+        },
+        "jukebox": {
+            "name": "Jukebox",
+            "desc": ""
+        },
+        "fence": {
+            "name": "Ograda",
+            "desc": ""
+        },
+        "pumpkin": {
+            "name": "Bundeva",
+            "desc": ""
+        },
+        "litpumpkin": {
+            "name": "Džek lampa",
+            "desc": ""
+        },
+        "hellrock": {
+            "name": "Nether kamen",
+            "desc": ""
+        },
+        "hellsand": {
+            "name": "Pešak duša",
+            "desc": ""
+        },
+        "lightgem": {
+            "name": "Svetleći kamen",
+            "desc": ""
+        },
+        "portal": {
+            "name": "Portal",
+            "desc": ""
+        },
+        "oreLapis": {
+            "name": "Lapis lazuli ruda",
+            "desc": ""
+        },
+        "blockLapis": {
+            "name": "Lapis lazuli blok",
+            "desc": ""
+        },
+        "dispenser": {
+            "name": "Doza toranj",
+            "desc": ""
+        },
+        "musicBlock": {
+            "name": "Notni blok",
+            "desc": ""
+        },
+        "cake": {
+            "name": "Torta",
+            "desc": ""
+        },
+        "bed": {
+            "name": "Krevet",
+            "desc": "",
+            "occupied": "Ovaj krevet je zauzet",
+            "noSleep": "Možete spavati samo noću",
+            "notValid": "Vaš kućni krevet nedostaje ili je blokiran"
+        },
+        "lockedchest": {
+            "name": "Zaključani sanduk",
+            "desc": ""
+        },
+        "trapdoor": {
+            "name": "Trap vrata",
+            "desc": ""
+        },
+        "web": {
+            "name": "Paukova mreža",
+            "desc": ""
+        },
+        "stonebricksmooth": {
+            "name": "Kameni blokovi",
+            "desc": ""
+        },
+        "pistonBase": {
+            "name": "Klip",
+            "desc": ""
+        },
+        "pistonStickyBase": {
+            "name": "Lepljivi klip",
+            "desc": ""
+        }
+    },
+    "item": {
+        "shovelIron": {
+            "name": "Gvozdena lopata",
+            "desc": ""
+        },
+        "pickaxeIron": {
+            "name": "Gvozdena pijuk",
+            "desc": ""
+        },
+        "hatchetIron": {
+            "name": "Gvozdena sekira",
+            "desc": ""
+        },
+        "flintAndSteel": {
+            "name": "Kremen i čelik",
+            "desc": ""
+        },
+        "apple": {
+            "name": "Jabuka",
+            "desc": ""
+        },
+        "cookie": {
+            "name": "Keks",
+            "desc": ""
+        },
+        "bow": {
+            "name": "Luk",
+            "desc": ""
+        },
+        "arrow": {
+            "name": "Strelica",
+            "desc": ""
+        },
+        "coal": {
+            "name": "Ugalj",
+            "desc": ""
+        },
+        "charcoal": {
+            "name": "Drveni ugalj",
+            "desc": ""
+        },
+        "diamond": {
+            "name": "Dijamant",
+            "desc": ""
+        },
+        "ingotIron": {
+            "name": "Gvozdena poluga",
+            "desc": ""
+        },
+        "ingotGold": {
+            "name": "Zlatna poluga",
+            "desc": ""
+        },
+        "swordIron": {
+            "name": "Gvozdeni mač",
+            "desc": ""
+        },
+        "swordWood": {
+            "name": "Drveni mač",
+            "desc": ""
+        },
+        "shovelWood": {
+            "name": "Drvena lopata",
+            "desc": ""
+        },
+        "pickaxeWood": {
+            "name": "Drveni pijuk",
+            "desc": ""
+        },
+        "hatchetWood": {
+            "name": "Drvena sekira",
+            "desc": ""
+        },
+        "swordStone": {
+            "name": "Kameni mač",
+            "desc": ""
+        },
+        "shovelStone": {
+            "name": "Kamena lopata",
+            "desc": ""
+        },
+        "pickaxeStone": {
+            "name": "Kameni pijuk",
+            "desc": ""
+        },
+        "hatchetStone": {
+            "name": "Kamena sekira",
+            "desc": ""
+        },
+        "swordDiamond": {
+            "name": "Dijamantski mač",
+            "desc": ""
+        },
+        "shovelDiamond": {
+            "name": "Dijamantska lopata",
+            "desc": ""
+        },
+        "pickaxeDiamond": {
+            "name": "Dijamantski pijuk",
+            "desc": ""
+        },
+        "hatchetDiamond": {
+            "name": "Dijamantska sekira",
+            "desc": ""
+        },
+        "stick": {
+            "name": "Štap",
+            "desc": ""
+        },
+        "bowl": {
+            "name": "Činija",
+            "desc": ""
+        },
+        "mushroomStew": {
+            "name": "Čorba od pečuraka",
+            "desc": ""
+        },
+        "swordGold": {
+            "name": "Zlatni mač",
+            "desc": ""
+        },
+        "shovelGold": {
+            "name": "Zlatna lopata",
+            "desc": ""
+        },
+        "pickaxeGold": {
+            "name": "Zlatni pijuk",
+            "desc": ""
+        },
+        "hatchetGold": {
+            "name": "Zlatna sekira",
+            "desc": ""
+        },
+        "string": {
+            "name": "Kanap",
+            "desc": ""
+        },
+        "feather": {
+            "name": "Pero",
+            "desc": ""
+        },
+        "gunpowder": {
+            "name": "Barut",
+            "desc": ""
+        },
+        "hoeWood": {
+            "name": "Drvena motika",
+            "desc": ""
+        },
+        "hoeStone": {
+            "name": "Kamena motika",
+            "desc": ""
+        },
+        "hoeIron": {
+            "name": "Gvozdena motika",
+            "desc": ""
+        },
+        "hoeDiamond": {
+            "name": "Dijamantska motika",
+            "desc": ""
+        },
+        "hoeGold": {
+            "name": "Zlatna motika",
+            "desc": ""
+        },
+        "seeds": {
+            "name": "Seme",
+            "desc": ""
+        },
+        "wheat": {
+            "name": "Pšenica",
+            "desc": ""
+        },
+        "bread": {
+            "name": "Hleb",
+            "desc": ""
+        },
+        "helmetLeather": {
+            "name": "Kožna kapa",
+            "desc": ""
+        },
+        "chestplateLeather": {
+            "name": "Kožna tunika",
+            "desc": ""
+        },
+        "leggingsLeather": {
+            "name": "Kožne pantalone",
+            "desc": ""
+        },
+        "bootsLeather": {
+            "name": "Kožne čizme",
+            "desc": ""
+        },
+        "helmetChain": {
+            "name": "Lančani šlem",
+            "desc": ""
+        },
+        "chestplateChain": {
+            "name": "Lančani oklop",
+            "desc": ""
+        },
+        "leggingsChain": {
+            "name": "Lančane nogavice",
+            "desc": ""
+        },
+        "bootsChain": {
+            "name": "Lančane čizme",
+            "desc": ""
+        },
+        "helmetIron": {
+            "name": "Gvozdeni šlem",
+            "desc": ""
+        },
+        "chestplateIron": {
+            "name": "Gvozdeni oklop",
+            "desc": ""
+        },
+        "leggingsIron": {
+            "name": "Gvozdene nogavice",
+            "desc": ""
+        },
+        "bootsIron": {
+            "name": "Gvozdene čizme",
+            "desc": ""
+        },
+        "helmetDiamond": {
+            "name": "Dijamantski šlem",
+            "desc": ""
+        },
+        "chestplateDiamond": {
+            "name": "Dijamantski oklop",
+            "desc": ""
+        },
+        "leggingsDiamond": {
+            "name": "Dijamantske nogavice",
+            "desc": ""
+        },
+        "bootsDiamond": {
+            "name": "Dijamantske čizme",
+            "desc": ""
+        },
+        "helmetGold": {
+            "name": "Zlatni šlem",
+            "desc": ""
+        },
+        "chestplateGold": {
+            "name": "Zlatni oklop",
+            "desc": ""
+        },
+        "leggingsGold": {
+            "name": "Zlatne nogavice",
+            "desc": ""
+        },
+        "bootsGold": {
+            "name": "Zlatne čizme",
+            "desc": ""
+        },
+        "flint": {
+            "name": "Kremen",
+            "desc": ""
+        },
+        "porkchopRaw": {
+            "name": "Sirova svinjetina",
+            "desc": ""
+        },
+        "porkchopCooked": {
+            "name": "Pečena svinjetina",
+            "desc": ""
+        },
+        "painting": {
+            "name": "Slika",
+            "desc": ""
+        },
+        "appleGold": {
+            "name": "Zlatna jabuka",
+            "desc": ""
+        },
+        "sign": {
+            "name": "Tabla",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "Drvena vrata",
+            "desc": ""
+        },
+        "bucket": {
+            "name": "Kofa",
+            "desc": ""
+        },
+        "bucketWater": {
+            "name": "Kofa vode",
+            "desc": ""
+        },
+        "bucketLava": {
+            "name": "Kofa lave",
+            "desc": ""
+        },
+        "minecart": {
+            "name": "Rudarska kolica",
+            "desc": ""
+        },
+        "saddle": {
+            "name": "Sedlo",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "Gvozdena vrata",
+            "desc": ""
+        },
+        "redstone": {
+            "name": "Redstone",
+            "desc": ""
+        },
+        "snowball": {
+            "name": "Grudva snega",
+            "desc": ""
+        },
+        "boat": {
+            "name": "Čamac",
+            "desc": ""
+        },
+        "leather": {
+            "name": "Koža",
+            "desc": ""
+        },
+        "milk": {
+            "name": "Mleko",
+            "desc": ""
+        },
+        "brick": {
+            "name": "Cigla",
+            "desc": ""
+        },
+        "clay": {
+            "name": "Glina",
+            "desc": ""
+        },
+        "sugarCanes": {
+            "name": "Šećerna trska",
+            "desc": ""
+        },
+        "paper": {
+            "name": "Papir",
+            "desc": ""
+        },
+        "book": {
+            "name": "Knjiga",
+            "desc": ""
+        },
+        "slimeball": {
+            "name": "Sluz lopta",
+            "desc": ""
+        },
+        "minecartChest": {
+            "name": "Rudarska kolica sa sandukom",
+            "desc": ""
+        },
+        "minecartFurnace": {
+            "name": "Rudarska kolica sa peći",
+            "desc": ""
+        },
+        "egg": {
+            "name": "Jaje",
+            "desc": ""
+        },
+        "compass": {
+            "name": "Kompas",
+            "desc": ""
+        },
+        "fishingRod": {
+            "name": "Štap za pecanje",
+            "desc": ""
+        },
+        "clock": {
+            "name": "Sat",
+            "desc": ""
+        },
+        "yellowDust": {
+            "name": "Prah svetlećeg kamena",
+            "desc": ""
+        },
+        "fishRaw": {
+            "name": "Sirova riba",
+            "desc": ""
+        },
+        "fishCooked": {
+            "name": "Pečena riba",
+            "desc": ""
+        },
+        "record": {
+            "name": "Muzički disk",
+            "desc": ""
+        },
+        "bone": {
+            "name": "Kost",
+            "desc": ""
+        },
+        "dyePowder": {
+            "black": {
+                "name": "Mastilo",
+                "desc": ""
+            },
+            "red": {
+                "name": "Ružičasta crvena",
+                "desc": ""
+            },
+            "green": {
+                "name": "Kaktus zelena",
+                "desc": ""
+            },
+            "brown": {
+                "name": "Kakao zrna",
+                "desc": ""
+            },
+            "blue": {
+                "name": "Lapis lazuli",
+                "desc": ""
+            },
+            "purple": {
+                "name": "Ljubičasta boja",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "Cijan boja",
+                "desc": ""
+            },
+            "silver": {
+                "name": "Svetlo siva boja",
+                "desc": ""
+            },
+            "gray": {
+                "name": "Siva boja",
+                "desc": ""
+            },
+            "pink": {
+                "name": "Roza boja",
+                "desc": ""
+            },
+            "lime": {
+                "name": "Svetlo zelena boja",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "Žuta maslačak",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "Svetlo plava boja",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "Magenta boja",
+                "desc": ""
+            },
+            "orange": {
+                "name": "Narandžasta boja",
+                "desc": ""
+            },
+            "white": {
+                "name": "Koštano brašno",
+                "desc": ""
+            }
+        },
+        "sugar": {
+            "name": "Šećer",
+            "desc": ""
+        },
+        "cake": {
+            "name": "Torta",
+            "desc": ""
+        },
+        "bed": {
+            "name": "Krevet",
+            "desc": ""
+        },
+        "redstoneRepeater": {
+            "name": "Redstone repetitor",
+            "desc": ""
+        },
+        "map": {
+            "name": "Mapa",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "Lišće",
+            "desc": ""
+        },
+        "shears": {
+            "name": "Makaze",
+            "desc": ""
+        }
+    },
+    "stat": {
+        "generalButton": "Opšte",
+        "blocksButton": "Blokovi",
+        "itemsButton": "Predmeti",
+        "used": "Korišćeno puta",
+        "mined": "Iskopano puta",
+        "depleted": "Istrošeno puta",
+        "crafted": "Napravljeno puta",
+        "startGame": "Odigrano partija",
+        "createWorld": "Kreiranih svetova",
+        "loadWorld": "Učitanih čuvanja",
+        "joinMultiplayer": "Povezivanja na multiplayer",
+        "leaveGame": "Napuštanja igre",
+        "playOneMinute": "Minuta provedenih u igri",
+        "walkOneCm": "Pređene razdaljine hodanjem",
+        "fallOneCm": "Pređene razdaljine padanjem",
+        "swimOneCm": "Pređene razdaljine plivanjem",
+        "flyOneCm": "Pređene razdaljine letenjem",
+        "climbOneCm": "Pređene razdaljine penjanjem",
+        "diveOneCm": "Pređene razdaljine ronjenjem",
+        "minecartOneCm": "Pređene razdaljine rudarskim kolicima",
+        "boatOneCm": "Pređene razdaljine čamcem",
+        "pigOneCm": "Pređene razdaljine na svinji",
+        "jump": "Skokova",
+        "drop": "Bačenih predmeta",
+        "damageDealt": "Nanesene štete",
+        "damageTaken": "Primljene štete",
+        "deaths": "Broj smrti",
+        "mobKills": "Ubijenih čudovišta",
+        "playerKills": "Ubijenih igrača",
+        "fishCaught": "Uhvaćene ribe",
+        "mineBlock": "{0} iskopano",
+        "craftItem": "{0} napravljeno",
+        "useItem": "{0} korišćeno",
+        "breakItem": "{0} slomljeno"
+    },
+    "achievements.title": "Dostignuća",
+    "achievement": {
+        "get": "Dostignuće ostvareno!",
+        "taken": "Ostvareno!",
+        "challenge": "IZAZOV",
+        "unlocked": "OTKLJUČANO",
+        "locked": "ZAKLJUČANO",
+        "requires": "Zahteva '{0}'",
+        "openInventory": {
+            "title": "Otvaranje inventara",
+            "desc": "Otvori svoj inventar."
+        },
+        "mineWood": {
+            "title": "Dobijanje drveta",
+            "desc": "Udari drvo dok ne ispadne blok drveta"
+        },
+        "buildWorkBench": {
+            "title": "Radni sto",
+            "desc": "Napravi radni sto od četiri daske"
+        },
+        "buildPickaxe": {
+            "title": "Vreme za kopanje!",
+            "desc": "Koristi daske i štapove da napraviš pijuk"
+        },
+        "buildFurnace": {
+            "title": "Vruća tema",
+            "desc": "Napravi peć od osam kamenih blokova"
+        },
+        "acquireIron": {
+            "title": "Dobijanje gvožđa",
+            "desc": "Istopi gvozdenu polugu"
+        },
+        "buildHoe": {
+            "title": "Vreme za poljoprivredu!",
+            "desc": "Koristi daske i štapove da napraviš motiku"
+        },
+        "makeBread": {
+            "title": "Pečenje hleba",
+            "desc": "Pretvori pšenicu u hleb"
+        },
+        "bakeCake": {
+            "title": "Laž",
+            "desc": "Pšenica, šećer, mleko i jaja!"
+        },
+        "buildBetterPickaxe": {
+            "title": "Nadogradnja",
+            "desc": "Napravi bolji pijuk"
+        },
+        "cookFish": {
+            "title": "Ukusna riba",
+            "desc": "Uhvati i skuvaj ribu!"
+        },
+        "onARail": {
+            "title": "Na šinama",
+            "desc": "Putuj rudarskim kolicima najmanje 1 km od mesta starta"
+        },
+        "buildSword": {
+            "title": "Vreme za napad!",
+            "desc": "Koristi daske i štapove da napraviš mač"
+        },
+        "killEnemy": {
+            "title": "Lovac na čudovišta",
+            "desc": "Napadni i uništi čudovište"
+        },
+        "killCow": {
+            "title": "Krava koža",
+            "desc": "Sakupi kožu"
+        },
+        "flyPig": {
+            "title": "Kad svinje polete",
+            "desc": "Poleti na svinji sa litice"
+        }
+    },
+    "credits": {
+        "version": "BetaSharp Verzija %1$s",
+        "description": "Poboljšana verzija Minecraft Beta 1.7.3, napisana u C#.",
+        "github": "Na GitHub-u",
+        "author": "Napravio Fazin85",
+        "libs": "Biblioteke",
+        "slik": "Slik.NET - Grafika",
+        "imgui": "ImGui - Debug UI",
+        "sfml": "SFML.NET - Audio",
+        "sixlabors": "SixLabors - Fontovi, obrada slika",
+        "translations": "Zasluge za prevod"
+    }
+}

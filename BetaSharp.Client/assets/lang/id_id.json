@@ -1,0 +1,1372 @@
+{
+    "gui": {
+        "joinServer": "Bergabung ke Server",
+        "rename": "Ganti Nama",
+        "edit": "Sunting",
+        "refresh": "Segarkan",
+        "done": "Selesai",
+        "cancel": "Batal",
+        "delete": "Hapus",
+        "toMenu": "Kembali ke layar judul",
+        "up": "Naik",
+        "down": "Turun",
+        "yes": "Ya",
+        "no": "Tidak",
+        "connect": "Hubungkan",
+        "directConnect": "Hubungkan Langsung",
+        "addServer": "Tambah Server",
+        "create": "Buat",
+        "customize": "Sesuaikan",
+        "achievements": "Pencapaian",
+        "stats": "Statistik",
+        "container": {
+            "crafting": "Pembuatan",
+            "inventory": "Inventaris",
+            "dispenser": "Penyebar",
+            "furnace": "Tungku",
+            "tip": {
+                "move": "Pindah",
+                "quickMove": "Pindah Cepat",
+                "takeHalf": "Ambil Setengah",
+                "place": "Taruh",
+                "placeOne": "Taruh Satu"
+            }
+        }
+    },
+    "menu": {
+        "singleplayer": "Pemain Tunggal",
+        "multiplayer": "Multipemain",
+        "texturePacks": "Paket Tekstur",
+        "options": "Opsi...",
+        "language": "Bahasa",
+        "quit": "Keluar Game",
+        "credits": "Kredit",
+        "sendFeedback": "Kirim Saran",
+        "reportBugs": "Laporkan Bug",
+        "saveAndQuitToTitle": "Simpan dan keluar ke judul",
+        "disconnect": "Putuskan Koneksi"
+    },
+    "selectWorld": {
+        "title": "Pilih Dunia",
+        "empty": "kosong",
+        "world": "Dunia",
+        "select": "Mainkan Dunia Terpilih",
+        "create": "Buat Dunia Baru",
+        "createDemo": "Mainkan Dunia Demo Baru",
+        "deleteQuestion": "Apakah Anda yakin ingin menghapus dunia ini?",
+        "deleteWarning": "akan hilang selamanya! (Waktu yang lama!)",
+        "renameTitle": "Ganti Nama Dunia",
+        "conversion": "Harus dikonversi!",
+        "newWorld": "Dunia Baru",
+        "enterName": "Nama Dunia",
+        "resultFolder": "Akan disimpan di:",
+        "enterSeed": "Benih untuk Generator Dunia",
+        "seedInfo": "Kosongkan untuk benih acak",
+        "selectWorldType": "Pilih Tipe Dunia",
+        "worldType": "Tipe Dunia",
+        "customize": "Sesuaikan",
+        "moreWorldOptions": "Opsi Dunia Lainnya...",
+        "type": {
+            "default": {
+                "title": "Standar",
+                "description": "Dunia Minecraft standar."
+            },
+            "flat": {
+                "title": "Datar",
+                "description": "Dunia yang benar-benar datar."
+            },
+            "sky": {
+                "title": "Langit",
+                "description": "Dunia yang melayang di langit."
+            }
+        }
+    },
+    "newWorld": {
+        "customize": {
+            "superflatWorld": {
+                "title": "Sesuaikan Dunia Super Datar"
+            },
+            "removeLayer": "Hapus Lapisan",
+            "presets": "Prasetel",
+            "height": "Ketinggian",
+            "unknown": "???"
+        }
+    },
+    "world": {
+        "world": "Dunia",
+        "unsupportedFormat": "Format Tidak Didukung!"
+    },
+    "multiplayer": {
+        "title": "Main Multipemain",
+        "betasharpServer": "Server BetaSharp",
+        "info1": "Multipemain Minecraft saat ini belum selesai, tetapi ada",
+        "info2": "beberapa uji coba awal yang masih bermasalah.",
+        "ipinfo": "Masukkan IP server untuk terhubung:",
+        "deleteQuestion": "Apakah Anda yakin ingin menghapus server ini?",
+        "deleteWarning": "akan hilang selamanya! (Waktu yang lama!)",
+        "downloadingTerrain": "Mengunduh medan",
+        "stopSleeping": "Tinggalkan Tempat Tidur",
+        "editServerTitle": "Sunting Info Server",
+        "addServerTitle": "Tambah Info Server",
+        "serverName": "Nama Server",
+        "serverAddress": "Alamat Server"
+    },
+    "loading": {
+        "loadingLevel": "Memuat level",
+        "startingServer": "Memulai server...",
+        "preparingSpawnArea": "Menyiapkan area kelahiran"
+    },
+    "achievements": {
+        "title": "Pencapaian"
+    },
+    "gameover": {
+        "title": "Permainan Berakhir!",
+        "score": "Skor",
+        "respawn": "Muncul Kembali",
+        "titleMenu": "Menu judul"
+    },
+    "gamemenu": {
+        "title": "Menu Game",
+        "backToGame": "Kembali ke Game"
+    },
+    "sign": {
+        "title": "Sunting pesan papan:",
+        "done": "Selesai"
+    },
+    "stats": {
+        "title": "Statistik",
+        "general": "Umum",
+        "blocks": {
+            "name": "Blok",
+            "mined": "Ditambang",
+            "crafted": "Dibuat",
+            "used": "Digunakan"
+        },
+        "items": {
+            "name": "Barang",
+            "broken": "Rusak",
+            "crafted": "Dibuat",
+            "used": "Digunakan"
+        },
+        "item": "Barang"
+    },
+    "connect": {
+        "connecting": "Menghubungkan ke server...",
+        "authorizing": "Masuk...",
+        "failed": "Gagal terhubung ke server"
+    },
+    "disconnect": {
+        "genericReason": "{0}",
+        "disconnected": "Diputuskan oleh Server",
+        "lost": "Koneksi Hilang",
+        "kicked": "Ditendang dari game",
+        "timeout": "Waktu habis",
+        "closed": "Koneksi ditutup",
+        "loginFailed": "Gagal masuk",
+        "quitting": "Keluar",
+        "endOfStream": "Akhir aliran",
+        "overflow": "Buffer meluap"
+    },
+    "options": {
+        "off": "MATI",
+        "on": "NYALA",
+        "disabled": "Dinonaktifkan",
+        "title": "Opsi",
+        "controls": "Kontrol...",
+        "keyboardControls": "Kontrol Keyboard...",
+        "controllerSettings": "Pengaturan Kontroler...",
+        "controllerType": "Tipe Kontroler",
+        "video": {
+            "text": "Pengaturan Video...",
+            "performance": "Kinerja",
+            "display": "Tampilan"
+        },
+        "uiSettings": "Pengaturan UI...",
+        "audioSettings": "Pengaturan Audio...",
+        "audioTitle": "Pengaturan Audio",
+        "videoTitle": "Pengaturan Video",
+        "language": "Bahasa...",
+        "anisoLevel": "Level Anisotropi",
+        "music": "Musik",
+        "sound": "Suara",
+        "invertMouse": "Balik Mouse",
+        "alternateBlocks": "Blok Alternatif",
+        "chunkFade": "Pudaran Chunk",
+        "sensitivity": {
+            "text": "Sensitivitas",
+            "controllerText": "Sensitivitas Kontroler",
+            "min": "*menguap*",
+            "max": "KECEPATAN TINGGI!!!"
+        },
+        "renderDistance": {
+            "text": "Jarak Render",
+            "chunks": "Chunk",
+            "tiny": "Sangat Pendek",
+            "short": "Pendek",
+            "normal": "Normal",
+            "far": "Jauh"
+        },
+        "viewBobbing": "Goyangan Pandangan",
+        "ao": "Pencahayaan Halus",
+        "anaglyph": "Anaglyph 3D",
+        "framerateLimit": "Kinerja",
+        "difficulty": {
+            "text": "Kesulitan",
+            "peaceful": "Damai",
+            "easy": "Mudah",
+            "normal": "Normal",
+            "hard": "Sulit"
+        },
+        "graphics": {
+            "text": "Grafis",
+            "fancy": "Mewah",
+            "fast": "Cepat"
+        },
+        "cloudsQuality": {
+            "text": "Kualitas Awan",
+            "off": "Tanpa Awan",
+            "legacy": "Awan Lama",
+            "shader": "Shader"
+        },
+        "softClouds": {
+            "text": "Awan Lembut"
+        },
+        "guiScale": {
+            "text": "Skala UI",
+            "auto": "Otomatis",
+            "small": "Kecil",
+            "normal": "Normal",
+            "large": "Besar"
+        },
+        "chatScale": {
+            "text": "Skala Obrolan"
+        },
+        "chatWidth": {
+            "text": "Lebar Obrolan"
+        },
+        "advancedOpengl": "OpenGL Lanjutan",
+        "fps": {
+            "text": "FPS",
+            "maxFps": "FPS Maks",
+            "unlimited": "Tak Terbatas"
+        },
+        "showCoordinates": "Tampilkan Koordinat",
+        "uiCursors": "Kursor UI",
+        "gamma": "Gamma",
+        "vSync": "VSync",
+        "mipmaps": "Mipmap",
+        "menuMusic": "Musik Menu",
+        "msaa": "MSAA",
+        "fov": "FoV",
+        "movement": {
+            "text": "Gerakan"
+        },
+        "view": {
+            "text": "Pandangan"
+        },
+        "other": {
+            "text": "Lainnya"
+        },
+        "editBindings": "Sunting Pengikatan Tombol...",
+        "resetBindings": "Atur Ulang Pengikatan Tombol...",
+        "controllerBindings": "Pengikatan Tombol Kontroler",
+        "shader": {
+            "text": "Opsi Shader",
+            "chunkVert": {
+                "text": "Dunia",
+                "WavyLeavesStrength": "Kekuatan Daun Bergelombang",
+                "WavyLeavesSpeed": "Kecepatan Daun Bergelombang",
+                "WavyPlantStrength": "Kekuatan Tumbuhan Bergelombang",
+                "WavyPlantSpeed": "Kecepatan Tumbuhan Bergelombang",
+                "WavyPlantMode": "Mode Tumbuhan Bergelombang"
+            },
+            "cloud": {
+                "text": "Awan",
+                "minParallax": "Paralaks Min.",
+                "maxParallax": "Paralaks Maks.",
+                "minGradient": "Gradien Min.",
+                "maxGradient": "Gradien Maks.",
+                "cloudHeight": "Ketinggian Awan",
+                "shadow": "Warna Bayangan",
+                "smoothWidth": "Lebar Halus",
+                "smoothSamples": "Sampel Halus",
+                "closeFade": "Pudaran Dekat",
+                "smoothTop": "Puncak Halus",
+                "smoothEdge": "Tepi Halus",
+                "smoothBottom": "Dasar Halus",
+                "smoothBottomTopDown": "Dasar Halus (Atas ke Bawah)"
+            },
+            "ui": {
+                "text": "UI",
+                "darkMode": "Mode Gelap"
+            },
+            "preset": {
+                "text": "Prasetel",
+                "disabled": "Dinonaktifkan",
+                "default": "Default",
+                "custom": "Kustom",
+                "2d": "2D",
+                "3d": "3D",
+                "low": "Rendah",
+                "medium": "Sedang",
+                "high": "Tinggi",
+                "ultra": "Ultra"
+            }
+        }
+    },
+    "performance": {
+        "max": "FPS Maks",
+        "balanced": "Seimbang",
+        "powersaver": "Hemat Daya"
+    },
+    "controls": {
+        "title": "Kontrol"
+    },
+    "key": {
+        "forward": "Maju",
+        "left": "Kiri",
+        "back": "Mundur",
+        "right": "Kanan",
+        "jump": "Lompat",
+        "inventory": "Inventaris",
+        "drop": "Buang",
+        "chat": "Obrolan",
+        "fog": "Alihkan Kabut",
+        "sneak": "Jongkok",
+        "playerlist": "Daftar pemain",
+        "zoom": "Zoom",
+        "hotbarLeft": "Hotbar Kiri",
+        "hotbarRight": "Hotbar Kanan",
+        "pickBlock": "Pilih Blok",
+        "camera": "Mode Kamera",
+        "pause": "Jeda"
+    },
+    "texturePack": {
+        "openFolder": "Buka folder paket tekstur",
+        "title": "Pilih Paket Tekstur",
+        "folderInfo": "(Letakkan file paket tekstur di sini)"
+    },
+    "tile": {
+        "tallgrass": {
+            "name": "Rumput Tinggi",
+            "desc": ""
+        },
+        "stone": {
+            "name": "Batu",
+            "desc": ""
+        },
+        "grass": {
+            "name": "Rumput",
+            "desc": ""
+        },
+        "dirt": {
+            "name": "Tanah",
+            "desc": ""
+        },
+        "stonebrick": {
+            "name": "Batu Pualam",
+            "desc": ""
+        },
+        "wood": {
+            "name": "Papan Kayu",
+            "desc": ""
+        },
+        "sapling": {
+            "name": "Pohon Kecil",
+            "desc": ""
+        },
+        "bedrock": {
+            "name": "Batuan Dasar",
+            "desc": ""
+        },
+        "water": {
+            "name": "Air",
+            "desc": ""
+        },
+        "lava": {
+            "name": "Lava",
+            "desc": ""
+        },
+        "sand": {
+            "name": "Pasir",
+            "desc": ""
+        },
+        "sandStone": {
+            "name": "Batupasir"
+        },
+        "gravel": {
+            "name": "Kerikil",
+            "desc": ""
+        },
+        "oreGold": {
+            "name": "Bijih Emas",
+            "desc": ""
+        },
+        "oreIron": {
+            "name": "Bijih Besi",
+            "desc": ""
+        },
+        "oreCoal": {
+            "name": "Bijih Batu Bara",
+            "desc": ""
+        },
+        "log": {
+            "name": "Kayu",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "Daun",
+            "desc": ""
+        },
+        "sponge": {
+            "name": "Spons",
+            "desc": ""
+        },
+        "glass": {
+            "name": "Kaca",
+            "desc": ""
+        },
+        "cloth": {
+            "name": "Wol",
+            "desc": "",
+            "black": {
+                "name": "Wol Hitam",
+                "desc": ""
+            },
+            "red": {
+                "name": "Wol Merah",
+                "desc": ""
+            },
+            "green": {
+                "name": "Wol Hijau",
+                "desc": ""
+            },
+            "brown": {
+                "name": "Wol Cokelat",
+                "desc": ""
+            },
+            "blue": {
+                "name": "Wol Biru",
+                "desc": ""
+            },
+            "purple": {
+                "name": "Wol Ungu",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "Wol Cyan",
+                "desc": ""
+            },
+            "silver": {
+                "name": "Wol Abu-abu Muda",
+                "desc": ""
+            },
+            "gray": {
+                "name": "Wol Abu-abu",
+                "desc": ""
+            },
+            "pink": {
+                "name": "Wol Merah Muda",
+                "desc": ""
+            },
+            "lime": {
+                "name": "Wol Hijau Muda",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "Wol Kuning",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "Wol Biru Muda",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "Wol Magenta",
+                "desc": ""
+            },
+            "orange": {
+                "name": "Wol Jingga",
+                "desc": ""
+            },
+            "white": {
+                "name": "Wol",
+                "desc": ""
+            }
+        },
+        "flower": {
+            "name": "Bunga",
+            "desc": ""
+        },
+        "rose": {
+            "name": "Mawar",
+            "desc": ""
+        },
+        "mushroom": {
+            "name": "Jamur",
+            "desc": ""
+        },
+        "blockGold": {
+            "name": "Balok Emas",
+            "desc": ""
+        },
+        "blockIron": {
+            "name": "Balok Besi",
+            "desc": ""
+        },
+        "stoneSlab": {
+            "stone": {
+                "name": "Pelat Batu",
+                "desc": ""
+            },
+            "sand": {
+                "name": "Pelat Batupasir",
+                "desc": ""
+            },
+            "wood": {
+                "name": "Pelat Kayu",
+                "desc": ""
+            },
+            "cobble": {
+                "name": "Pelat Batu",
+                "desc": ""
+            }
+        },
+        "brick": {
+            "name": "Batu Bata",
+            "desc": ""
+        },
+        "tnt": {
+            "name": "TNT",
+            "desc": ""
+        },
+        "bookshelf": {
+            "name": "Rak Buku",
+            "desc": ""
+        },
+        "stoneMoss": {
+            "name": "Batu Berlumut",
+            "desc": ""
+        },
+        "obsidian": {
+            "name": "Obsidian",
+            "desc": ""
+        },
+        "torch": {
+            "name": "Obor",
+            "desc": ""
+        },
+        "fire": {
+            "name": "Api",
+            "desc": ""
+        },
+        "mobSpawner": {
+            "name": "Pembuat Monster",
+            "desc": ""
+        },
+        "stairsWood": {
+            "name": "Tangga Kayu",
+            "desc": ""
+        },
+        "chest": {
+            "name": "Peti",
+            "desc": ""
+        },
+        "redstoneDust": {
+            "name": "Debu Redstone",
+            "desc": ""
+        },
+        "oreDiamond": {
+            "name": "Bijih Intan",
+            "desc": ""
+        },
+        "blockDiamond": {
+            "name": "Balok Intan",
+            "desc": ""
+        },
+        "workbench": {
+            "name": "Meja Kerajinan",
+            "desc": ""
+        },
+        "crops": {
+            "name": "Tanaman",
+            "desc": ""
+        },
+        "farmland": {
+            "name": "Lahan Pertanian",
+            "desc": ""
+        },
+        "furnace": {
+            "name": "Tungku",
+            "desc": ""
+        },
+        "sign": {
+            "name": "Papan Tanda",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "Pintu Kayu",
+            "desc": ""
+        },
+        "ladder": {
+            "name": "Tangga",
+            "desc": ""
+        },
+        "rail": {
+            "name": "Rel",
+            "desc": ""
+        },
+        "goldenRail": {
+            "name": "Rel Berdaya",
+            "desc": ""
+        },
+        "detectorRail": {
+            "name": "Rel Detektor",
+            "desc": ""
+        },
+        "stairsStone": {
+            "name": "Tangga Batu",
+            "desc": ""
+        },
+        "lever": {
+            "name": "Tuas",
+            "desc": ""
+        },
+        "pressurePlate": {
+            "name": "Pelat Tekan",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "Pintu Besi",
+            "desc": ""
+        },
+        "oreRedstone": {
+            "name": "Bijih Redstone",
+            "desc": ""
+        },
+        "notGate": {
+            "name": "Obor Redstone",
+            "desc": ""
+        },
+        "button": {
+            "name": "Tombol",
+            "desc": ""
+        },
+        "snow": {
+            "name": "Salju",
+            "desc": ""
+        },
+        "ice": {
+            "name": "Es",
+            "desc": ""
+        },
+        "cactus": {
+            "name": "Kaktus",
+            "desc": ""
+        },
+        "clay": {
+            "name": "Lempung",
+            "desc": ""
+        },
+        "reeds": {
+            "name": "Tebu",
+            "desc": ""
+        },
+        "jukebox": {
+            "name": "Jukebox",
+            "desc": ""
+        },
+        "fence": {
+            "name": "Pagar",
+            "desc": ""
+        },
+        "pumpkin": {
+            "name": "Labu",
+            "desc": ""
+        },
+        "litpumpkin": {
+            "name": "Labu Jack 'o' Lantern",
+            "desc": ""
+        },
+        "hellrock": {
+            "name": "Netherrack",
+            "desc": ""
+        },
+        "hellsand": {
+            "name": "Pasir Jiwa",
+            "desc": ""
+        },
+        "lightgem": {
+            "name": "Batu Bercahaya",
+            "desc": ""
+        },
+        "portal": {
+            "name": "Portal",
+            "desc": ""
+        },
+        "oreLapis": {
+            "name": "Bijih Lapis Lazuli",
+            "desc": ""
+        },
+        "blockLapis": {
+            "name": "Balok Lapis Lazuli",
+            "desc": ""
+        },
+        "dispenser": {
+            "name": "Penyebar",
+            "desc": ""
+        },
+        "musicBlock": {
+            "name": "Balok Nada",
+            "desc": ""
+        },
+        "cake": {
+            "name": "Kue",
+            "desc": ""
+        },
+        "bed": {
+            "name": "Tempat Tidur",
+            "desc": "",
+            "occupied": "Tempat tidur ini ditempati",
+            "noSleep": "Anda hanya bisa tidur di malam hari",
+            "notValid": "Tempat tidur rumah Anda hilang atau terhalang"
+        },
+        "lockedchest": {
+            "name": "Peti Terkunci",
+            "desc": ""
+        },
+        "trapdoor": {
+            "name": "Pintu Jebakan",
+            "desc": ""
+        },
+        "web": {
+            "name": "Sarang Laba-laba",
+            "desc": ""
+        },
+        "stonebricksmooth": {
+            "name": "Batu Bata",
+            "desc": ""
+        },
+        "pistonBase": {
+            "name": "Piston",
+            "desc": ""
+        },
+        "pistonStickyBase": {
+            "name": "Piston Lengket",
+            "desc": ""
+        }
+    },
+    "item": {
+        "shovelIron": {
+            "name": "Sekop Besi",
+            "desc": ""
+        },
+        "pickaxeIron": {
+            "name": "Belincong Besi",
+            "desc": ""
+        },
+        "hatchetIron": {
+            "name": "Kapak Besi",
+            "desc": ""
+        },
+        "flintAndSteel": {
+            "name": "Batu Api dan Baja",
+            "desc": ""
+        },
+        "apple": {
+            "name": "Apel",
+            "desc": ""
+        },
+        "cookie": {
+            "name": "Biskuit",
+            "desc": ""
+        },
+        "bow": {
+            "name": "Busur",
+            "desc": ""
+        },
+        "arrow": {
+            "name": "Anak Panah",
+            "desc": ""
+        },
+        "coal": {
+            "name": "Batu Bara",
+            "desc": ""
+        },
+        "charcoal": {
+            "name": "Arang",
+            "desc": ""
+        },
+        "diamond": {
+            "name": "Intan",
+            "desc": ""
+        },
+        "ingotIron": {
+            "name": "Batang Besi",
+            "desc": ""
+        },
+        "ingotGold": {
+            "name": "Batang Emas",
+            "desc": ""
+        },
+        "swordIron": {
+            "name": "Pedang Besi",
+            "desc": ""
+        },
+        "swordWood": {
+            "name": "Pedang Kayu",
+            "desc": ""
+        },
+        "shovelWood": {
+            "name": "Sekop Kayu",
+            "desc": ""
+        },
+        "pickaxeWood": {
+            "name": "Belincong Kayu",
+            "desc": ""
+        },
+        "hatchetWood": {
+            "name": "Kapak Kayu",
+            "desc": ""
+        },
+        "swordStone": {
+            "name": "Pedang Batu",
+            "desc": ""
+        },
+        "shovelStone": {
+            "name": "Sekop Batu",
+            "desc": ""
+        },
+        "pickaxeStone": {
+            "name": "Belincong Batu",
+            "desc": ""
+        },
+        "hatchetStone": {
+            "name": "Kapak Batu",
+            "desc": ""
+        },
+        "swordDiamond": {
+            "name": "Pedang Intan",
+            "desc": ""
+        },
+        "shovelDiamond": {
+            "name": "Sekop Intan",
+            "desc": ""
+        },
+        "pickaxeDiamond": {
+            "name": "Belincong Intan",
+            "desc": ""
+        },
+        "hatchetDiamond": {
+            "name": "Kapak Intan",
+            "desc": ""
+        },
+        "stick": {
+            "name": "Tongkat",
+            "desc": ""
+        },
+        "bowl": {
+            "name": "Mangkuk",
+            "desc": ""
+        },
+        "mushroomStew": {
+            "name": "Semur Jamur",
+            "desc": ""
+        },
+        "swordGold": {
+            "name": "Pedang Emas",
+            "desc": ""
+        },
+        "shovelGold": {
+            "name": "Sekop Emas",
+            "desc": ""
+        },
+        "pickaxeGold": {
+            "name": "Belincong Emas",
+            "desc": ""
+        },
+        "hatchetGold": {
+            "name": "Kapak Emas",
+            "desc": ""
+        },
+        "string": {
+            "name": "Benang",
+            "desc": ""
+        },
+        "feather": {
+            "name": "Bulu",
+            "desc": ""
+        },
+        "gunpowder": {
+            "name": "Bubuk Mesiu",
+            "desc": ""
+        },
+        "hoeWood": {
+            "name": "Cangkul Kayu",
+            "desc": ""
+        },
+        "hoeStone": {
+            "name": "Cangkul Batu",
+            "desc": ""
+        },
+        "hoeIron": {
+            "name": "Cangkul Besi",
+            "desc": ""
+        },
+        "hoeDiamond": {
+            "name": "Cangkul Intan",
+            "desc": ""
+        },
+        "hoeGold": {
+            "name": "Cangkul Emas",
+            "desc": ""
+        },
+        "seeds": {
+            "name": "Benih",
+            "desc": ""
+        },
+        "wheat": {
+            "name": "Gandum",
+            "desc": ""
+        },
+        "bread": {
+            "name": "Roti",
+            "desc": ""
+        },
+        "helmetLeather": {
+            "name": "Topi Kulit",
+            "desc": ""
+        },
+        "chestplateLeather": {
+            "name": "Jaket Kulit",
+            "desc": ""
+        },
+        "leggingsLeather": {
+            "name": "Celana Kulit",
+            "desc": ""
+        },
+        "bootsLeather": {
+            "name": "Sepatu Bot Kulit",
+            "desc": ""
+        },
+        "helmetChain": {
+            "name": "Helm Rantai",
+            "desc": ""
+        },
+        "chestplateChain": {
+            "name": "Rompi Rantai",
+            "desc": ""
+        },
+        "leggingsChain": {
+            "name": "Celana Rantai",
+            "desc": ""
+        },
+        "bootsChain": {
+            "name": "Sepatu Bot Rantai",
+            "desc": ""
+        },
+        "helmetIron": {
+            "name": "Helm Besi",
+            "desc": ""
+        },
+        "chestplateIron": {
+            "name": "Rompi Besi",
+            "desc": ""
+        },
+        "leggingsIron": {
+            "name": "Celana Besi",
+            "desc": ""
+        },
+        "bootsIron": {
+            "name": "Sepatu Bot Besi",
+            "desc": ""
+        },
+        "helmetDiamond": {
+            "name": "Helm Intan",
+            "desc": ""
+        },
+        "chestplateDiamond": {
+            "name": "Rompi Intan",
+            "desc": ""
+        },
+        "leggingsDiamond": {
+            "name": "Celana Intan",
+            "desc": ""
+        },
+        "bootsDiamond": {
+            "name": "Sepatu Bot Intan",
+            "desc": ""
+        },
+        "helmetGold": {
+            "name": "Helm Emas",
+            "desc": ""
+        },
+        "chestplateGold": {
+            "name": "Rompi Emas",
+            "desc": ""
+        },
+        "leggingsGold": {
+            "name": "Celana Emas",
+            "desc": ""
+        },
+        "bootsGold": {
+            "name": "Sepatu Bot Emas",
+            "desc": ""
+        },
+        "flint": {
+            "name": "Batu Api",
+            "desc": ""
+        },
+        "porkchopRaw": {
+            "name": "Daging Babi Mentah",
+            "desc": ""
+        },
+        "porkchopCooked": {
+            "name": "Daging Babi Matang",
+            "desc": ""
+        },
+        "painting": {
+            "name": "Lukisan",
+            "desc": ""
+        },
+        "appleGold": {
+            "name": "Apel Emas",
+            "desc": ""
+        },
+        "sign": {
+            "name": "Papan Tanda",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "Pintu Kayu",
+            "desc": ""
+        },
+        "bucket": {
+            "name": "Ember",
+            "desc": ""
+        },
+        "bucketWater": {
+            "name": "Ember Air",
+            "desc": ""
+        },
+        "bucketLava": {
+            "name": "Ember Lava",
+            "desc": ""
+        },
+        "minecart": {
+            "name": "Kereta Tambang",
+            "desc": ""
+        },
+        "saddle": {
+            "name": "Pelana",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "Pintu Besi",
+            "desc": ""
+        },
+        "redstone": {
+            "name": "Redstone",
+            "desc": ""
+        },
+        "snowball": {
+            "name": "Bola Salju",
+            "desc": ""
+        },
+        "boat": {
+            "name": "Perahu",
+            "desc": ""
+        },
+        "leather": {
+            "name": "Kulit",
+            "desc": ""
+        },
+        "milk": {
+            "name": "Susu",
+            "desc": ""
+        },
+        "brick": {
+            "name": "Batu Bata",
+            "desc": ""
+        },
+        "clay": {
+            "name": "Lempung",
+            "desc": ""
+        },
+        "sugarCanes": {
+            "name": "Tebu",
+            "desc": ""
+        },
+        "paper": {
+            "name": "Kertas",
+            "desc": ""
+        },
+        "book": {
+            "name": "Buku",
+            "desc": ""
+        },
+        "slimeball": {
+            "name": "Bola Lendir",
+            "desc": ""
+        },
+        "minecartChest": {
+            "name": "Kereta Tambang dengan Peti",
+            "desc": ""
+        },
+        "minecartFurnace": {
+            "name": "Kereta Tambang dengan Tungku",
+            "desc": ""
+        },
+        "egg": {
+            "name": "Telur",
+            "desc": ""
+        },
+        "compass": {
+            "name": "Kompas",
+            "desc": ""
+        },
+        "fishingRod": {
+            "name": "Pancing",
+            "desc": ""
+        },
+        "clock": {
+            "name": "Jam",
+            "desc": ""
+        },
+        "yellowDust": {
+            "name": "Debu Batu Bercahaya",
+            "desc": ""
+        },
+        "fishRaw": {
+            "name": "Ikan Mentah",
+            "desc": ""
+        },
+        "fishCooked": {
+            "name": "Ikan Matang",
+            "desc": ""
+        },
+        "record": {
+            "name": "Cakram Musik",
+            "desc": ""
+        },
+        "bone": {
+            "name": "Tulang",
+            "desc": ""
+        },
+        "dyePowder": {
+            "black": {
+                "name": "Tinta Cumi",
+                "desc": ""
+            },
+            "red": {
+                "name": "Merah Mawar",
+                "desc": ""
+            },
+            "green": {
+                "name": "Hijau Kaktus",
+                "desc": ""
+            },
+            "brown": {
+                "name": "Biji Kakao",
+                "desc": ""
+            },
+            "blue": {
+                "name": "Lapis Lazuli",
+                "desc": ""
+            },
+            "purple": {
+                "name": "Pewarna Ungu",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "Pewarna Cyan",
+                "desc": ""
+            },
+            "silver": {
+                "name": "Pewarna Abu-abu Muda",
+                "desc": ""
+            },
+            "gray": {
+                "name": "Pewarna Abu-abu",
+                "desc": ""
+            },
+            "pink": {
+                "name": "Pewarna Merah Muda",
+                "desc": ""
+            },
+            "lime": {
+                "name": "Pewarna Hijau Muda",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "Kuning Dandelion",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "Pewarna Biru Muda",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "Pewarna Magenta",
+                "desc": ""
+            },
+            "orange": {
+                "name": "Pewarna Jingga",
+                "desc": ""
+            },
+            "white": {
+                "name": "Tepung Tulang",
+                "desc": ""
+            }
+        },
+        "sugar": {
+            "name": "Gula",
+            "desc": ""
+        },
+        "cake": {
+            "name": "Kue",
+            "desc": ""
+        },
+        "bed": {
+            "name": "Tempat Tidur",
+            "desc": ""
+        },
+        "redstoneRepeater": {
+            "name": "Pengulang Redstone",
+            "desc": ""
+        },
+        "map": {
+            "name": "Peta",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "Daun",
+            "desc": ""
+        },
+        "shears": {
+            "name": "Gunting",
+            "desc": ""
+        }
+    },
+    "stat": {
+        "generalButton": "Umum",
+        "blocksButton": "Blok",
+        "itemsButton": "Barang",
+        "used": "Kali Digunakan",
+        "mined": "Kali Ditambang",
+        "depleted": "Kali Habis",
+        "crafted": "Kali Dibuat",
+        "startGame": "Kali dimainkan",
+        "createWorld": "Dunia dimainkan",
+        "loadWorld": "Simpanan dimuat",
+        "joinMultiplayer": "Gabung multipemain",
+        "leaveGame": "Game ditinggalkan",
+        "playOneMinute": "Menit Dimainkan",
+        "walkOneCm": "Jarak Berjalan",
+        "fallOneCm": "Jarak Jatuh",
+        "swimOneCm": "Jarak Berenang",
+        "flyOneCm": "Jarak Terbang",
+        "climbOneCm": "Jarak Memanjat",
+        "diveOneCm": "Jarak Menyelam",
+        "minecartOneCm": "Jarak dengan Kereta Tambang",
+        "boatOneCm": "Jarak dengan Perahu",
+        "pigOneCm": "Jarak dengan Babi",
+        "jump": "Lompatan",
+        "drop": "Barang Dijatuhkan",
+        "damageDealt": "Kerusakan Diberikan",
+        "damageTaken": "Kerusakan Diterima",
+        "deaths": "Jumlah Kematian",
+        "mobKills": "Monster Dibunuh",
+        "playerKills": "Pemain Dibunuh",
+        "fishCaught": "Ikan Ditangkap",
+        "mineBlock": "{0} Ditambang",
+        "craftItem": "{0} Dibuat",
+        "useItem": "{0} Digunakan",
+        "breakItem": "{0} Habis"
+    },
+    "achievements.title": "Pencapaian",
+    "achievement": {
+        "get": "Pencapaian didapat!",
+        "taken": "Didapat!",
+        "challenge": "TANTANGAN",
+        "unlocked": "TERBUKA",
+        "locked": "TERKUNCI",
+        "requires": "Membutuhkan '{0}'",
+        "openInventory": {
+            "title": "Mengambil Inventaris",
+            "desc": "Buka inventaris Anda."
+        },
+        "mineWood": {
+            "title": "Mendapatkan Kayu",
+            "desc": "Serang pohon hingga satu blok kayu keluar"
+        },
+        "buildWorkBench": {
+            "title": "Tolok Ukur",
+            "desc": "Buat meja kerajinan dengan empat blok papan"
+        },
+        "buildPickaxe": {
+            "title": "Waktunya Menambang!",
+            "desc": "Gunakan papan dan tongkat untuk membuat belincong"
+        },
+        "buildFurnace": {
+            "title": "Topik Panas",
+            "desc": "Buat tungku dari delapan blok batu"
+        },
+        "acquireIron": {
+            "title": "Dapatkan Perangkat Keras",
+            "desc": "Lelehkan batang besi"
+        },
+        "buildHoe": {
+            "title": "Waktunya Bertani!",
+            "desc": "Gunakan papan dan tongkat untuk membuat cangkul"
+        },
+        "makeBread": {
+            "title": "Panggang Roti",
+            "desc": "Ubah gandum menjadi roti"
+        },
+        "bakeCake": {
+            "title": "Kebohongan",
+            "desc": "Gandum, gula, susu, dan telur!"
+        },
+        "buildBetterPickaxe": {
+            "title": "Mendapatkan Peningkatan",
+            "desc": "Buat belincong yang lebih baik"
+        },
+        "cookFish": {
+            "title": "Ikan Lezat",
+            "desc": "Tangkap dan masak ikan!"
+        },
+        "onARail": {
+            "title": "Di Atas Rel",
+            "desc": "Bepergian dengan kereta tambang setidaknya 1 km dari tempat Anda memulai"
+        },
+        "buildSword": {
+            "title": "Waktunya Menyerang!",
+            "desc": "Gunakan papan dan tongkat untuk membuat pedang"
+        },
+        "killEnemy": {
+            "title": "Pemburu Monster",
+            "desc": "Serang dan hancurkan monster"
+        },
+        "killCow": {
+            "title": "Penggembala Sapi",
+            "desc": "Panen kulit"
+        },
+        "flyPig": {
+            "title": "Saat Babi Terbang",
+            "desc": "Terbangkan babi dari tebing"
+        }
+    },
+    "credits": {
+        "version": "BetaSharp Versi %1$s",
+        "description": "Versi yang ditingkatkan dari Minecraft Beta 1.7.3, ditulis dalam C#.",
+        "github": "Di GitHub",
+        "author": "Dibuat oleh Fazin85",
+        "libs": "Pustaka",
+        "slik": "Slik.NET - Grafis",
+        "imgui": "ImGui - UI Debug",
+        "sfml": "SFML.NET - Audio",
+        "sixlabors": "SixLabors - Font, pemrosesan gambar",
+        "translations": "Kredit Terjemahan"
+    }
+}

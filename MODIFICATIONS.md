@@ -103,3 +103,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-03 — refactor(rendering): delete the matrix-mode forwarding machinery (Nicolas Vyčas Nery; `3f060a4ed0ea64f389636d60645c232068d901e3`)
 - 2026-08-03 — refactor(rendering): upload external-shader matrices explicitly (Nicolas Vyčas Nery; `163b7071238414882f5ad95de91ae997f00f4a66`)
 - 2026-08-03 — refactor(rendering): use a VAO for tessellated geometry instead of client-state pointers (Nicolas Vyčas Nery; `ed4a709a9a4d7eb00f61f945ac6aacfab46c40e1`)
+- 2026-08-03 — Add Vietnamese localization for game interface and items (Nicolas Vyčas Nery; `f825fac86d429a06a2562d231633804f329f8a67`)
