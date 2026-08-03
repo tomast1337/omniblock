@@ -68,3 +68,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-02 — fix(world): update folder name sanitization to use invalid file name characters (Nicolas Vyčas Nery; `20202a51c0883b7976c78558f90cb065da71cb0e`)
 - 2026-08-02 — fix(rendering): draw the slime's shell under the blending it was posed with (Nicolas Vyčas Nery; `0dd3c12c1a09da49f98ac672463ca76164935e68`)
 - 2026-08-02 — refactor(rendering): finish the entity tree, and fix the charged creeper's glow (Nicolas Vyčas Nery; `3a41723a74dfa6f386199e35aa69b22183807b91`)
+- 2026-08-02 — refactor(rendering): state the pipeline for the interface, and take GL enums out of it (Nicolas Vyčas Nery; `800334b58fa483792f69cd6bd2af7aa84c81ed0a`)
