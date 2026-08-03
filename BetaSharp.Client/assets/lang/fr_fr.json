@@ -130,7 +130,8 @@
         "backToGame": "Retour au jeu"
     },
     "sign": {
-        "title": "Modifier le message du panneau :"
+        "title": "Modifier le message du panneau :",
+        "done": "Terminé"
     },
     "stats": {
         "title": "Statistiques",
@@ -390,7 +391,9 @@
             "name": "Sable",
             "desc": ""
         },
-        "sandStone": { "name": "Grès" },
+        "sandStone": {
+            "name": "Grès"
+        },
         "gravel": {
             "name": "Gravier",
             "desc": ""

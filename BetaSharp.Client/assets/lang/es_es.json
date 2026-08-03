@@ -1,4 +1,4 @@
-﻿{
+{
     "gui": {
         "joinServer": "Unirse al servidor",
         "rename": "Renombrar",
@@ -130,7 +130,8 @@
         "backToGame": "Volver al juego"
     },
     "sign": {
-        "title": "Editar el mensaje del cartel:"
+        "title": "Editar el mensaje del cartel:",
+        "done": "Hecho"
     },
     "stats": {
         "title": "Estadísticas",
@@ -390,7 +391,9 @@
             "name": "Arena",
             "desc": ""
         },
-        "sandStone": { "name": "Arenisca" },
+        "sandStone": {
+            "name": "Arenisca"
+        },
         "gravel": {
             "name": "Grava",
             "desc": ""

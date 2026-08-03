@@ -130,7 +130,8 @@
         "backToGame": "Grįžti į žaidimą"
     },
     "sign": {
-        "title": "Redaguoti ženklo pranešimą:"
+        "title": "Redaguoti ženklo pranešimą:",
+        "done": "Atlikta"
     },
     "stats": {
         "title": "Statistika",
@@ -288,7 +289,6 @@
                 "smoothBottom": "Švelni apačia",
                 "smoothBottomTopDown": "Švelni apačia (iš viršaus į apačią)"
             },
-
             "preset": {
                 "text": "Preset",
                 "disabled": "Disabled",

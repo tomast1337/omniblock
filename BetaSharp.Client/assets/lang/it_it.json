@@ -130,7 +130,8 @@
         "backToGame": "Torna al gioco"
     },
     "sign": {
-        "title": "Modifica il messaggio del cartello:"
+        "title": "Modifica il messaggio del cartello:",
+        "done": "Fatto"
     },
     "stats": {
         "title": "Statistiche",
@@ -390,7 +391,9 @@
             "name": "Sabbia",
             "desc": ""
         },
-        "sandStone": { "name": "Arenaria" },
+        "sandStone": {
+            "name": "Arenaria"
+        },
         "gravel": {
             "name": "Ghiaia",
             "desc": ""

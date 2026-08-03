@@ -130,7 +130,8 @@
         "backToGame": "Povratak u igru"
     },
     "sign": {
-        "title": "Uredi poruku znaka:"
+        "title": "Uredi poruku znaka:",
+        "done": "Gotovo"
     },
     "stats": {
         "title": "Statistike",
@@ -390,7 +391,9 @@
             "name": "Pijesak",
             "desc": ""
         },
-        "sandStone": { "name": "Pješčenjak" },
+        "sandStone": {
+            "name": "Pješčenjak"
+        },
         "gravel": {
             "name": "Šljunak",
             "desc": ""

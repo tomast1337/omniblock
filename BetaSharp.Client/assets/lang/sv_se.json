@@ -130,7 +130,8 @@
         "backToGame": "Tillbaka till spelet"
     },
     "sign": {
-        "title": "Redigera skyltmeddelande:"
+        "title": "Redigera skyltmeddelande:",
+        "done": "Klar"
     },
     "stats": {
         "title": "Statistik",
@@ -390,7 +391,9 @@
             "name": "Sand",
             "desc": ""
         },
-        "sandStone": { "name": "Sandsten" },
+        "sandStone": {
+            "name": "Sandsten"
+        },
         "gravel": {
             "name": "Grus",
             "desc": ""

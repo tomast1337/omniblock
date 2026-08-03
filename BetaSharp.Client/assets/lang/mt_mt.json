@@ -130,7 +130,8 @@
         "backToGame": "Lura għal-Logħba"
     },
     "sign": {
-        "title": "Editja l-messaġġ tas-sinjal:"
+        "title": "Editja l-messaġġ tas-sinjal:",
+        "done": "Lest"
     },
     "stats": {
         "title": "Statistika",
@@ -390,7 +391,9 @@
             "name": "Ramel",
             "desc": ""
         },
-        "sandStone": { "name": "Ġebla tar-Ramel" },
+        "sandStone": {
+            "name": "Ġebla tar-Ramel"
+        },
         "gravel": {
             "name": "Ċagħaq",
             "desc": ""

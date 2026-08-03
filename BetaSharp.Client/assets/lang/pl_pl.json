@@ -1,4 +1,4 @@
-﻿{
+{
     "gui": {
         "joinServer": "Dołącz do serwera",
         "rename": "Zmień nazwę",
@@ -130,7 +130,8 @@
         "backToGame": "Wróc do gry"
     },
     "sign": {
-        "title": "Edytuj wiadomość tabliczki:"
+        "title": "Edytuj wiadomość tabliczki:",
+        "done": "Gotowe"
     },
     "stats": {
         "title": "Statystyki",
@@ -332,7 +333,9 @@
             "name": "Piasek",
             "desc": ""
         },
-        "sandStone": { "name": "Piaskowiec" },
+        "sandStone": {
+            "name": "Piaskowiec"
+        },
         "gravel": {
             "name": "Źwir",
             "desc": ""

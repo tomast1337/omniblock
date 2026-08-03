@@ -130,7 +130,8 @@
         "backToGame": "Nazaj v igro"
     },
     "sign": {
-        "title": "Uredi sporočilo na tabli:"
+        "title": "Uredi sporočilo na tabli:",
+        "done": "Končano"
     },
     "stats": {
         "title": "Statistika",
@@ -390,7 +391,9 @@
             "name": "Pesek",
             "desc": ""
         },
-        "sandStone": { "name": "Peščenjak" },
+        "sandStone": {
+            "name": "Peščenjak"
+        },
         "gravel": {
             "name": "Prod",
             "desc": ""
