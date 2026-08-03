@@ -188,7 +188,7 @@ public class WorldReader : IBlockReader
                     double sampleX = targetBox.MinX + (targetBox.MaxX - targetBox.MinX) * progressX;
                     double sampleY = targetBox.MinY + (targetBox.MaxY - targetBox.MinY) * progressY;
                     double sampleZ = targetBox.MinZ + (targetBox.MaxZ - targetBox.MinZ) * progressZ;
-                    if (Raycast(new Vec3D(sampleX, sampleY, sampleZ), sourcePosition).Type == HitResultType.MISS)
+                    if (Raycast(new Vec3D(sampleX, sampleY, sampleZ), sourcePosition).Type == HitResultType.Miss)
                     {
                         visiblePoints++;
                     }

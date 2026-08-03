@@ -835,7 +835,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public void DrawSelectionBox(EntityPlayer player, HitResult hit, int renderPass, ItemStack itemStack, float tickDelta)
     {
-        if (renderPass == 0 && hit.Type == HitResultType.TILE)
+        if (renderPass == 0 && hit.Type == HitResultType.Tile)
         {
             // Line loops, so the culling this carries is inert; what it is here for is the depth
             // pair — tested, so the outline is hidden by blocks in front of the target, but not

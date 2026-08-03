@@ -64,7 +64,7 @@ internal sealed class LocalPlayerInfoWindow(DebugWindowContext ctx) : DebugWindo
 
     private void DrawTargetedBlockSection()
     {
-        if (ctx.ObjectMouseOver.Type != HitResultType.TILE)
+        if (ctx.ObjectMouseOver.Type != HitResultType.Tile)
         {
             ImGuiTextSafe.TextDisabled("Nothing targeted.");
             return;

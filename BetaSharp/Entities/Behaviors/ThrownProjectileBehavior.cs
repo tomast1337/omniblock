@@ -150,7 +150,7 @@ public sealed class ThrownProjectileBehavior : IEntityTicker, IEntityPersistence
         HitResult hit = self.World.Reader.Raycast(rayStart, rayEnd);
         rayStart = new Vec3D(self.X, self.Y, self.Z);
         rayEnd = new Vec3D(self.X + self.VelocityX, self.Y + self.VelocityY, self.Z + self.VelocityZ);
-        if (hit.Type != HitResultType.MISS)
+        if (hit.Type != HitResultType.Miss)
         {
             rayEnd = new Vec3D(hit.Pos.x, hit.Pos.y, hit.Pos.z);
         }
@@ -172,7 +172,7 @@ public sealed class ThrownProjectileBehavior : IEntityTicker, IEntityPersistence
                 const float expandAmount = 0.3F;
                 Box expandedBox = entity.BoundingBox.Expand(expandAmount, expandAmount, expandAmount);
                 HitResult entityHit = expandedBox.Raycast(rayStart, rayEnd);
-                if (entityHit.Type == HitResultType.MISS)
+                if (entityHit.Type == HitResultType.Miss)
                 {
                     continue;
                 }
@@ -193,7 +193,7 @@ public sealed class ThrownProjectileBehavior : IEntityTicker, IEntityPersistence
             }
         }
 
-        if (hit.Type != HitResultType.MISS)
+        if (hit.Type != HitResultType.Miss)
         {
             OnImpact(self, hit);
             self.MarkDead();

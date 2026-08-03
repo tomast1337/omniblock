@@ -44,11 +44,11 @@ public sealed class EntityLineOfSightTests
         FakeWorldContext world = new();
         Wall(world, 12, 8);
 
-        Assert.Equal(HitResultType.MISS, world.Reader.Raycast(new Vec3D(8.5, 65.5, 8.5), new Vec3D(10.5, 65.5, 8.5)).Type);
+        Assert.Equal(HitResultType.Miss, world.Reader.Raycast(new Vec3D(8.5, 65.5, 8.5), new Vec3D(10.5, 65.5, 8.5)).Type);
 
         HitResult hit = world.Reader.Raycast(new Vec3D(8.5, 65.5, 8.5), new Vec3D(14.5, 65.5, 8.5));
 
-        Assert.Equal(HitResultType.TILE, hit.Type);
+        Assert.Equal(HitResultType.Tile, hit.Type);
         Assert.Equal(12, hit.BlockX);
     }
 

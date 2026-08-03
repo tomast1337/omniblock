@@ -338,7 +338,7 @@ public sealed class BlockTorchTests
 
         HitResult hit = BlockRegistry.Get("torch").Raycast(world.Reader, world.Entities, x, y, z, start, end);
 
-        Assert.NotEqual(HitResultType.MISS, hit.Type);
+        Assert.NotEqual(HitResultType.Miss, hit.Type);
     }
 
     [Theory]

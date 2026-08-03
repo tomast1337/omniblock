@@ -88,3 +88,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-03 — Refactor item stack methods for consistency and clarity (Nicolas Vyčas Nery; `f67958fb7fe7e2f557352f4ce12e72e61dd30ed3`)
 - 2026-08-03 — refactor(pathfinding): improve method naming and streamline code structure (Nicolas Vyčas Nery; `6d3efeb9e0e0dd81daeae78642882969a9f5d77c`)
 - 2026-08-03 — refactor(profiler): make Children dictionary readonly and simplify loop iteration (Nicolas Vyčas Nery; `9ab0b456dbe6f72941225f32a576a31a4b61043f`)
+- 2026-08-03 — refactor(hit): simplify HitResult struct and standardize HitResultType naming (Nicolas Vyčas Nery; `123e8275710253ec69afdc7220e1dc3eb7d9fd86`)

@@ -37,7 +37,7 @@ public static class ControlTooltip
         ItemStack held = context.HeldItem;
         HitResult hit = context.ObjectMouseOver;
 
-        if (hit.Type == HitResultType.TILE)
+        if (hit.Type == HitResultType.Tile)
         {
             int blockX = hit.BlockX;
             int blockY = hit.BlockY;
@@ -61,7 +61,7 @@ public static class ControlTooltip
                 useAction = GetItemActionLabel(held);
             }
         }
-        else if (hit.Type == HitResultType.ENTITY)
+        else if (hit.Type == HitResultType.Entity)
         {
             if (MinecartBehavior.IsMinecart(hit.Entity) || hit.Entity.Behaviors.Find<BoatBehavior>() is not null)
                 useAction = "Enter";
@@ -82,9 +82,9 @@ public static class ControlTooltip
         if (useAction != null)
             tips.Add(new ActionTip(ControlIcon.Lt, useAction));
 
-        if (hit.Type != HitResultType.MISS)
+        if (hit.Type != HitResultType.Miss)
         {
-            string attackAction = hit.Type == HitResultType.ENTITY ? "Attack" : "Mine";
+            string attackAction = hit.Type == HitResultType.Entity ? "Attack" : "Mine";
             tips.Add(new ActionTip(ControlIcon.Rt, attackAction));
         }
 
