@@ -171,7 +171,7 @@ public class EntityCreature(IWorldContext world, EntityType? type = null) : Enti
                 MathHelper.Floor(Y + Random.NextInt(7) - 3.0D),
                 MathHelper.Floor(Z + Random.NextInt(13) - 6.0D)
             );
-            float cost = GetBlockPathWeight(tile.x, tile.y, tile.z);
+            float cost = GetBlockPathWeight(tile.X, tile.Y, tile.Z);
             if (cost <= bestCost)
             {
                 continue;
@@ -184,7 +184,7 @@ public class EntityCreature(IWorldContext world, EntityType? type = null) : Enti
 
         if (foundWanderTarget)
         {
-            World.PathingRequests.RequestPath(this, bestTile.x, bestTile.y, bestTile.z, 10.0F);
+            World.PathingRequests.RequestPath(this, bestTile.X, bestTile.Y, bestTile.Z, 10.0F);
         }
     }
 
@@ -203,7 +203,7 @@ public class EntityCreature(IWorldContext world, EntityType? type = null) : Enti
     protected override bool CanSpawnHere()
     {
         BlockPos tile = new(MathHelper.Floor(X), MathHelper.Floor(BoundingBox.MinY), MathHelper.Floor(Z));
-        return base.CanSpawnHere() && GetBlockPathWeight(tile.x, tile.y, tile.z) >= 0.0F;
+        return base.CanSpawnHere() && GetBlockPathWeight(tile.X, tile.Y, tile.Z) >= 0.0F;
     }
 
     internal void setPathToEntity(PathEntity? pathToEntity) => _pathToEntity = pathToEntity;

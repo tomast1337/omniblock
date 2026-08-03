@@ -7,9 +7,9 @@ public class TorchRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
+        int metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
 
-        float luminance = block.GetLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
+        float luminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z);
         if (Block.BlocksLightLuminance[block.Id] > 0)
         {
             luminance = 1.0F;
@@ -23,23 +23,23 @@ public class TorchRenderer : IBlockRenderer
 
         if (metadata == 1) // Attached to West wall (pointing East)
         {
-            ctx.DrawTorch(block, new Vec3D(pos.x - horizontalOffset, pos.y + verticalOffset, pos.z), -tiltAmount, 0.0f);
+            ctx.DrawTorch(block, new Vec3D(pos.X - horizontalOffset, pos.Y + verticalOffset, pos.Z), -tiltAmount, 0.0f);
         }
         else if (metadata == 2) // Attached to East wall (pointing West)
         {
-            ctx.DrawTorch(block, new Vec3D(pos.x + horizontalOffset, pos.y + verticalOffset, pos.z), tiltAmount, 0.0f);
+            ctx.DrawTorch(block, new Vec3D(pos.X + horizontalOffset, pos.Y + verticalOffset, pos.Z), tiltAmount, 0.0f);
         }
         else if (metadata == 3) // Attached to North wall (pointing South)
         {
-            ctx.DrawTorch(block, new Vec3D(pos.x, pos.y + verticalOffset, pos.z - horizontalOffset), 0.0f, -tiltAmount);
+            ctx.DrawTorch(block, new Vec3D(pos.X, pos.Y + verticalOffset, pos.Z - horizontalOffset), 0.0f, -tiltAmount);
         }
         else if (metadata == 4) // Attached to South wall (pointing North)
         {
-            ctx.DrawTorch(block, new Vec3D(pos.x, pos.y + verticalOffset, pos.z + horizontalOffset), 0.0f, tiltAmount);
+            ctx.DrawTorch(block, new Vec3D(pos.X, pos.Y + verticalOffset, pos.Z + horizontalOffset), 0.0f, tiltAmount);
         }
         else // Standing on floor
         {
-            ctx.DrawTorch(block, new Vec3D(pos.x, pos.y, pos.z), 0.0f, 0.0f);
+            ctx.DrawTorch(block, new Vec3D(pos.X, pos.Y, pos.Z), 0.0f, 0.0f);
         }
 
         return true;

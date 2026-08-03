@@ -7,22 +7,22 @@ public class ReedRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        float luminance = block.GetLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
-        int colorMultiplier = block.GetColorMultiplier(ctx.BlockReader, pos.x, pos.y, pos.z);
+        float luminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z);
+        int colorMultiplier = block.GetColorMultiplier(ctx.BlockReader, pos.X, pos.Y, pos.Z);
         float r = (colorMultiplier >> 16 & 255) / 255.0F;
         float g = (colorMultiplier >> 8 & 255) / 255.0F;
         float b = (colorMultiplier & 255) / 255.0F;
 
         ctx.Tess.setColorOpaque_F(luminance * r, luminance * g, luminance * b);
 
-        float renderX = pos.x;
-        float renderY = pos.y;
-        float renderZ = pos.z;
+        float renderX = pos.X;
+        float renderY = pos.Y;
+        float renderZ = pos.Z;
 
         // Apply random organic offset for grass so it doesn't look grid-aligned
         if (block == BlockRegistry.Get("grass")) // Assuming Block.TallGrass or equivalent
         {
-            long hash = pos.x * 3129871L ^ pos.z * 116129781L ^ pos.y;
+            long hash = pos.X * 3129871L ^ pos.Z * 116129781L ^ pos.Y;
             hash = hash * hash * 42317861L + hash * 11L;
 
             renderX += (((hash >> 16 & 15L) / 15.0F) - 0.5F) * 0.5F;
@@ -30,7 +30,7 @@ public class ReedRenderer : IBlockRenderer
             renderZ += (((hash >> 24 & 15L) / 15.0F) - 0.5F) * 0.5F;
         }
 
-        RenderCrossedSquares(block, ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z), renderX, renderY, renderZ, ref ctx);
+        RenderCrossedSquares(block, ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z), renderX, renderY, renderZ, ref ctx);
         return true;
     }
 

@@ -494,7 +494,7 @@ public ref struct BlockRenderContext
         bool hasRendered = false;
         Box bounds = OverrideBounds ?? block.BoundingBox;
 
-        int colorMultiplier = block.GetColorMultiplier(BlockReader, pos.x, pos.y, pos.z);
+        int colorMultiplier = block.GetColorMultiplier(BlockReader, pos.X, pos.Y, pos.Z);
         float r = (colorMultiplier >> 16 & 255) * 0.0039215686F;
         float g = (colorMultiplier >> 8 & 255) * 0.0039215686F;
         float b = (colorMultiplier & 255) * 0.0039215686F;
@@ -509,24 +509,24 @@ public ref struct BlockRenderContext
 
         float v0, v1, v2, v3;
         bool ao = AoBlendMode > 0;
-        Vec3D vecPos = new(pos.x, pos.y, pos.z); // Allocate struct once
+        Vec3D vecPos = new(pos.X, pos.Y, pos.Z); // Allocate struct once
 
         // BOTTOM FACE (Y - 1)
-        if (RenderAllFaces || bounds.MinY > 0.0F || block.IsSideVisible(BlockReader, pos.x, pos.y - 1, pos.z, Side.Down))
+        if (RenderAllFaces || bounds.MinY > 0.0F || block.IsSideVisible(BlockReader, pos.X, pos.Y - 1, pos.Z, Side.Down))
         {
-            float lYn = block.GetLuminance(Lighting, pos.x, pos.y - 1, pos.z);
+            float lYn = block.GetLuminance(Lighting, pos.X, pos.Y - 1, pos.Z);
             if (!ao) v0 = v1 = v2 = v3 = lYn;
             else
             {
-                float n = block.GetLuminance(Lighting, pos.x, pos.y - 1, pos.z - 1);
-                float s = block.GetLuminance(Lighting, pos.x, pos.y - 1, pos.z + 1);
-                float w = block.GetLuminance(Lighting, pos.x - 1, pos.y - 1, pos.z);
-                float e = block.GetLuminance(Lighting, pos.x + 1, pos.y - 1, pos.z);
+                float n = block.GetLuminance(Lighting, pos.X, pos.Y - 1, pos.Z - 1);
+                float s = block.GetLuminance(Lighting, pos.X, pos.Y - 1, pos.Z + 1);
+                float w = block.GetLuminance(Lighting, pos.X - 1, pos.Y - 1, pos.Z);
+                float e = block.GetLuminance(Lighting, pos.X + 1, pos.Y - 1, pos.Z);
 
-                float nw = (IsOpaque(pos.x - 1, pos.y - 1, pos.z) && IsOpaque(pos.x, pos.y - 1, pos.z - 1)) ? w : block.GetLuminance(Lighting, pos.x - 1, pos.y - 1, pos.z - 1);
-                float sw = (IsOpaque(pos.x - 1, pos.y - 1, pos.z) && IsOpaque(pos.x, pos.y - 1, pos.z + 1)) ? w : block.GetLuminance(Lighting, pos.x - 1, pos.y - 1, pos.z + 1);
-                float ne = (IsOpaque(pos.x + 1, pos.y - 1, pos.z) && IsOpaque(pos.x, pos.y - 1, pos.z - 1)) ? e : block.GetLuminance(Lighting, pos.x + 1, pos.y - 1, pos.z - 1);
-                float se = (IsOpaque(pos.x + 1, pos.y - 1, pos.z) && IsOpaque(pos.x, pos.y - 1, pos.z + 1)) ? e : block.GetLuminance(Lighting, pos.x + 1, pos.y - 1, pos.z + 1);
+                float nw = (IsOpaque(pos.X - 1, pos.Y - 1, pos.Z) && IsOpaque(pos.X, pos.Y - 1, pos.Z - 1)) ? w : block.GetLuminance(Lighting, pos.X - 1, pos.Y - 1, pos.Z - 1);
+                float sw = (IsOpaque(pos.X - 1, pos.Y - 1, pos.Z) && IsOpaque(pos.X, pos.Y - 1, pos.Z + 1)) ? w : block.GetLuminance(Lighting, pos.X - 1, pos.Y - 1, pos.Z + 1);
+                float ne = (IsOpaque(pos.X + 1, pos.Y - 1, pos.Z) && IsOpaque(pos.X, pos.Y - 1, pos.Z - 1)) ? e : block.GetLuminance(Lighting, pos.X + 1, pos.Y - 1, pos.Z - 1);
+                float se = (IsOpaque(pos.X + 1, pos.Y - 1, pos.Z) && IsOpaque(pos.X, pos.Y - 1, pos.Z + 1)) ? e : block.GetLuminance(Lighting, pos.X + 1, pos.Y - 1, pos.Z + 1);
 
                 v0 = (sw + w + s + lYn) * 0.25F;
                 v1 = (w + nw + lYn + n) * 0.25F;
@@ -535,7 +535,7 @@ public ref struct BlockRenderContext
             }
 
             var colors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 0.5F, tintBottom);
-            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.x, pos.y, pos.z, Side.Down);
+            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.Down);
 
             DrawBottomFace(block, in vecPos, colors, textureId, ao && (v0 + v2 > v1 + v3));
 
@@ -543,21 +543,21 @@ public ref struct BlockRenderContext
         }
 
         // TOP FACE (Y + 1)
-        if (RenderAllFaces || bounds.MaxY < 1.0F || block.IsSideVisible(BlockReader, pos.x, pos.y + 1, pos.z, Side.Up))
+        if (RenderAllFaces || bounds.MaxY < 1.0F || block.IsSideVisible(BlockReader, pos.X, pos.Y + 1, pos.Z, Side.Up))
         {
-            float lYp = block.GetLuminance(Lighting, pos.x, pos.y + 1, pos.z);
+            float lYp = block.GetLuminance(Lighting, pos.X, pos.Y + 1, pos.Z);
             if (!ao) v0 = v1 = v2 = v3 = lYp;
             else
             {
-                float n = block.GetLuminance(Lighting, pos.x, pos.y + 1, pos.z - 1);
-                float s = block.GetLuminance(Lighting, pos.x, pos.y + 1, pos.z + 1);
-                float w = block.GetLuminance(Lighting, pos.x - 1, pos.y + 1, pos.z);
-                float e = block.GetLuminance(Lighting, pos.x + 1, pos.y + 1, pos.z);
+                float n = block.GetLuminance(Lighting, pos.X, pos.Y + 1, pos.Z - 1);
+                float s = block.GetLuminance(Lighting, pos.X, pos.Y + 1, pos.Z + 1);
+                float w = block.GetLuminance(Lighting, pos.X - 1, pos.Y + 1, pos.Z);
+                float e = block.GetLuminance(Lighting, pos.X + 1, pos.Y + 1, pos.Z);
 
-                float nw = (IsOpaque(pos.x - 1, pos.y + 1, pos.z) && IsOpaque(pos.x, pos.y + 1, pos.z - 1)) ? w : block.GetLuminance(Lighting, pos.x - 1, pos.y + 1, pos.z - 1);
-                float sw = (IsOpaque(pos.x - 1, pos.y + 1, pos.z) && IsOpaque(pos.x, pos.y + 1, pos.z + 1)) ? w : block.GetLuminance(Lighting, pos.x - 1, pos.y + 1, pos.z + 1);
-                float ne = (IsOpaque(pos.x + 1, pos.y + 1, pos.z) && IsOpaque(pos.x, pos.y + 1, pos.z - 1)) ? e : block.GetLuminance(Lighting, pos.x + 1, pos.y + 1, pos.z - 1);
-                float se = (IsOpaque(pos.x + 1, pos.y + 1, pos.z) && IsOpaque(pos.x, pos.y + 1, pos.z + 1)) ? e : block.GetLuminance(Lighting, pos.x + 1, pos.y + 1, pos.z + 1);
+                float nw = (IsOpaque(pos.X - 1, pos.Y + 1, pos.Z) && IsOpaque(pos.X, pos.Y + 1, pos.Z - 1)) ? w : block.GetLuminance(Lighting, pos.X - 1, pos.Y + 1, pos.Z - 1);
+                float sw = (IsOpaque(pos.X - 1, pos.Y + 1, pos.Z) && IsOpaque(pos.X, pos.Y + 1, pos.Z + 1)) ? w : block.GetLuminance(Lighting, pos.X - 1, pos.Y + 1, pos.Z + 1);
+                float ne = (IsOpaque(pos.X + 1, pos.Y + 1, pos.Z) && IsOpaque(pos.X, pos.Y + 1, pos.Z - 1)) ? e : block.GetLuminance(Lighting, pos.X + 1, pos.Y + 1, pos.Z - 1);
+                float se = (IsOpaque(pos.X + 1, pos.Y + 1, pos.Z) && IsOpaque(pos.X, pos.Y + 1, pos.Z + 1)) ? e : block.GetLuminance(Lighting, pos.X + 1, pos.Y + 1, pos.Z + 1);
 
                 v0 = (s + lYp + se + e) * 0.25F;
                 v1 = (lYp + n + e + ne) * 0.25F;
@@ -566,7 +566,7 @@ public ref struct BlockRenderContext
             }
 
             var colors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 1.0F, tintTop);
-            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.x, pos.y, pos.z, Side.Up);
+            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.Up);
 
             DrawTopFace(block, in vecPos, colors, textureId, ao && (v0 + v2 > v1 + v3));
 
@@ -574,21 +574,21 @@ public ref struct BlockRenderContext
         }
 
         // EAST FACE (Z - 1)
-        if (RenderAllFaces || bounds.MinZ > 0.0F || block.IsSideVisible(BlockReader, pos.x, pos.y, pos.z - 1, Side.North))
+        if (RenderAllFaces || bounds.MinZ > 0.0F || block.IsSideVisible(BlockReader, pos.X, pos.Y, pos.Z - 1, Side.North))
         {
-            float lZn = block.GetLuminance(Lighting, pos.x, pos.y, pos.z - 1);
+            float lZn = block.GetLuminance(Lighting, pos.X, pos.Y, pos.Z - 1);
             if (!ao) v0 = v1 = v2 = v3 = lZn;
             else
             {
-                float u = block.GetLuminance(Lighting, pos.x, pos.y + 1, pos.z - 1);
-                float d = block.GetLuminance(Lighting, pos.x, pos.y - 1, pos.z - 1);
-                float w = block.GetLuminance(Lighting, pos.x - 1, pos.y, pos.z - 1);
-                float e = block.GetLuminance(Lighting, pos.x + 1, pos.y, pos.z - 1);
+                float u = block.GetLuminance(Lighting, pos.X, pos.Y + 1, pos.Z - 1);
+                float d = block.GetLuminance(Lighting, pos.X, pos.Y - 1, pos.Z - 1);
+                float w = block.GetLuminance(Lighting, pos.X - 1, pos.Y, pos.Z - 1);
+                float e = block.GetLuminance(Lighting, pos.X + 1, pos.Y, pos.Z - 1);
 
-                float uw = (IsOpaque(pos.x - 1, pos.y, pos.z - 1) && IsOpaque(pos.x, pos.y + 1, pos.z - 1)) ? w : block.GetLuminance(Lighting, pos.x - 1, pos.y + 1, pos.z - 1);
-                float dw = (IsOpaque(pos.x - 1, pos.y, pos.z - 1) && IsOpaque(pos.x, pos.y - 1, pos.z - 1)) ? w : block.GetLuminance(Lighting, pos.x - 1, pos.y - 1, pos.z - 1);
-                float ue = (IsOpaque(pos.x + 1, pos.y, pos.z - 1) && IsOpaque(pos.x, pos.y + 1, pos.z - 1)) ? e : block.GetLuminance(Lighting, pos.x + 1, pos.y + 1, pos.z - 1);
-                float de = (IsOpaque(pos.x + 1, pos.y, pos.z - 1) && IsOpaque(pos.x, pos.y - 1, pos.z - 1)) ? e : block.GetLuminance(Lighting, pos.x + 1, pos.y - 1, pos.z - 1);
+                float uw = (IsOpaque(pos.X - 1, pos.Y, pos.Z - 1) && IsOpaque(pos.X, pos.Y + 1, pos.Z - 1)) ? w : block.GetLuminance(Lighting, pos.X - 1, pos.Y + 1, pos.Z - 1);
+                float dw = (IsOpaque(pos.X - 1, pos.Y, pos.Z - 1) && IsOpaque(pos.X, pos.Y - 1, pos.Z - 1)) ? w : block.GetLuminance(Lighting, pos.X - 1, pos.Y - 1, pos.Z - 1);
+                float ue = (IsOpaque(pos.X + 1, pos.Y, pos.Z - 1) && IsOpaque(pos.X, pos.Y + 1, pos.Z - 1)) ? e : block.GetLuminance(Lighting, pos.X + 1, pos.Y + 1, pos.Z - 1);
+                float de = (IsOpaque(pos.X + 1, pos.Y, pos.Z - 1) && IsOpaque(pos.X, pos.Y - 1, pos.Z - 1)) ? e : block.GetLuminance(Lighting, pos.X + 1, pos.Y - 1, pos.Z - 1);
 
                 v0 = (w + uw + lZn + u) * 0.25F;
                 v1 = (lZn + u + e + ue) * 0.25F;
@@ -596,7 +596,7 @@ public ref struct BlockRenderContext
                 v3 = (dw + w + d + lZn) * 0.25F;
             }
 
-            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.x, pos.y, pos.z, Side.North);
+            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.North);
             var colors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.8F, tintEast);
             bool flipped = ao && (v1 + v3 > v2 + v0);
 
@@ -612,21 +612,21 @@ public ref struct BlockRenderContext
         }
 
         // WEST FACE (Z + 1)
-        if (RenderAllFaces || bounds.MaxZ < 1.0F || block.IsSideVisible(BlockReader, pos.x, pos.y, pos.z + 1, Side.South))
+        if (RenderAllFaces || bounds.MaxZ < 1.0F || block.IsSideVisible(BlockReader, pos.X, pos.Y, pos.Z + 1, Side.South))
         {
-            float lZp = block.GetLuminance(Lighting, pos.x, pos.y, pos.z + 1);
+            float lZp = block.GetLuminance(Lighting, pos.X, pos.Y, pos.Z + 1);
             if (!ao) v0 = v1 = v2 = v3 = lZp;
             else
             {
-                float u = block.GetLuminance(Lighting, pos.x, pos.y + 1, pos.z + 1);
-                float d = block.GetLuminance(Lighting, pos.x, pos.y - 1, pos.z + 1);
-                float w = block.GetLuminance(Lighting, pos.x - 1, pos.y, pos.z + 1);
-                float e = block.GetLuminance(Lighting, pos.x + 1, pos.y, pos.z + 1);
+                float u = block.GetLuminance(Lighting, pos.X, pos.Y + 1, pos.Z + 1);
+                float d = block.GetLuminance(Lighting, pos.X, pos.Y - 1, pos.Z + 1);
+                float w = block.GetLuminance(Lighting, pos.X - 1, pos.Y, pos.Z + 1);
+                float e = block.GetLuminance(Lighting, pos.X + 1, pos.Y, pos.Z + 1);
 
-                float uw = (IsOpaque(pos.x - 1, pos.y, pos.z + 1) && IsOpaque(pos.x, pos.y + 1, pos.z + 1)) ? w : block.GetLuminance(Lighting, pos.x - 1, pos.y + 1, pos.z + 1);
-                float dw = (IsOpaque(pos.x - 1, pos.y, pos.z + 1) && IsOpaque(pos.x, pos.y - 1, pos.z + 1)) ? w : block.GetLuminance(Lighting, pos.x - 1, pos.y - 1, pos.z + 1);
-                float ue = (IsOpaque(pos.x + 1, pos.y, pos.z + 1) && IsOpaque(pos.x, pos.y + 1, pos.z + 1)) ? e : block.GetLuminance(Lighting, pos.x + 1, pos.y + 1, pos.z + 1);
-                float de = (IsOpaque(pos.x + 1, pos.y, pos.z + 1) && IsOpaque(pos.x, pos.y - 1, pos.z + 1)) ? e : block.GetLuminance(Lighting, pos.x + 1, pos.y - 1, pos.z + 1);
+                float uw = (IsOpaque(pos.X - 1, pos.Y, pos.Z + 1) && IsOpaque(pos.X, pos.Y + 1, pos.Z + 1)) ? w : block.GetLuminance(Lighting, pos.X - 1, pos.Y + 1, pos.Z + 1);
+                float dw = (IsOpaque(pos.X - 1, pos.Y, pos.Z + 1) && IsOpaque(pos.X, pos.Y - 1, pos.Z + 1)) ? w : block.GetLuminance(Lighting, pos.X - 1, pos.Y - 1, pos.Z + 1);
+                float ue = (IsOpaque(pos.X + 1, pos.Y, pos.Z + 1) && IsOpaque(pos.X, pos.Y + 1, pos.Z + 1)) ? e : block.GetLuminance(Lighting, pos.X + 1, pos.Y + 1, pos.Z + 1);
+                float de = (IsOpaque(pos.X + 1, pos.Y, pos.Z + 1) && IsOpaque(pos.X, pos.Y - 1, pos.Z + 1)) ? e : block.GetLuminance(Lighting, pos.X + 1, pos.Y - 1, pos.Z + 1);
 
                 v0 = (w + uw + lZp + u) * 0.25F;
                 v1 = (dw + w + d + lZp) * 0.25F;
@@ -634,7 +634,7 @@ public ref struct BlockRenderContext
                 v3 = (lZp + u + e + ue) * 0.25F;
             }
 
-            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.x, pos.y, pos.z, Side.South);
+            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.South);
             var colors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 0.8F, tintWest);
             bool flipped = ao && (v0 + v2 > v1 + v3);
 
@@ -650,21 +650,21 @@ public ref struct BlockRenderContext
         }
 
         // NORTH FACE (X - 1)
-        if (RenderAllFaces || bounds.MinX > 0.0F || block.IsSideVisible(BlockReader, pos.x - 1, pos.y, pos.z, Side.West))
+        if (RenderAllFaces || bounds.MinX > 0.0F || block.IsSideVisible(BlockReader, pos.X - 1, pos.Y, pos.Z, Side.West))
         {
-            float lXn = block.GetLuminance(Lighting, pos.x - 1, pos.y, pos.z);
+            float lXn = block.GetLuminance(Lighting, pos.X - 1, pos.Y, pos.Z);
             if (!ao) v0 = v1 = v2 = v3 = lXn;
             else
             {
-                float u = block.GetLuminance(Lighting, pos.x - 1, pos.y + 1, pos.z);
-                float d = block.GetLuminance(Lighting, pos.x - 1, pos.y - 1, pos.z);
-                float n = block.GetLuminance(Lighting, pos.x - 1, pos.y, pos.z - 1);
-                float s = block.GetLuminance(Lighting, pos.x - 1, pos.y, pos.z + 1);
+                float u = block.GetLuminance(Lighting, pos.X - 1, pos.Y + 1, pos.Z);
+                float d = block.GetLuminance(Lighting, pos.X - 1, pos.Y - 1, pos.Z);
+                float n = block.GetLuminance(Lighting, pos.X - 1, pos.Y, pos.Z - 1);
+                float s = block.GetLuminance(Lighting, pos.X - 1, pos.Y, pos.Z + 1);
 
-                float un = (IsOpaque(pos.x - 1, pos.y, pos.z - 1) && IsOpaque(pos.x - 1, pos.y + 1, pos.z)) ? n : block.GetLuminance(Lighting, pos.x - 1, pos.y + 1, pos.z - 1);
-                float dn = (IsOpaque(pos.x - 1, pos.y, pos.z - 1) && IsOpaque(pos.x - 1, pos.y - 1, pos.z)) ? n : block.GetLuminance(Lighting, pos.x - 1, pos.y - 1, pos.z - 1);
-                float us = (IsOpaque(pos.x - 1, pos.y, pos.z + 1) && IsOpaque(pos.x - 1, pos.y + 1, pos.z)) ? s : block.GetLuminance(Lighting, pos.x - 1, pos.y + 1, pos.z + 1);
-                float ds = (IsOpaque(pos.x - 1, pos.y, pos.z + 1) && IsOpaque(pos.x - 1, pos.y - 1, pos.z)) ? s : block.GetLuminance(Lighting, pos.x - 1, pos.y - 1, pos.z + 1);
+                float un = (IsOpaque(pos.X - 1, pos.Y, pos.Z - 1) && IsOpaque(pos.X - 1, pos.Y + 1, pos.Z)) ? n : block.GetLuminance(Lighting, pos.X - 1, pos.Y + 1, pos.Z - 1);
+                float dn = (IsOpaque(pos.X - 1, pos.Y, pos.Z - 1) && IsOpaque(pos.X - 1, pos.Y - 1, pos.Z)) ? n : block.GetLuminance(Lighting, pos.X - 1, pos.Y - 1, pos.Z - 1);
+                float us = (IsOpaque(pos.X - 1, pos.Y, pos.Z + 1) && IsOpaque(pos.X - 1, pos.Y + 1, pos.Z)) ? s : block.GetLuminance(Lighting, pos.X - 1, pos.Y + 1, pos.Z + 1);
+                float ds = (IsOpaque(pos.X - 1, pos.Y, pos.Z + 1) && IsOpaque(pos.X - 1, pos.Y - 1, pos.Z)) ? s : block.GetLuminance(Lighting, pos.X - 1, pos.Y - 1, pos.Z + 1);
 
                 v0 = (u + us + lXn + s) * 0.25F;
                 v1 = (u + un + n + lXn) * 0.25F;
@@ -672,7 +672,7 @@ public ref struct BlockRenderContext
                 v3 = (d + ds + lXn + s) * 0.25F;
             }
 
-            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.x, pos.y, pos.z, Side.West);
+            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.West);
             var colors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.6F, tintNorth);
             bool flipped = ao && (v1 + v3 > v2 + v0);
 
@@ -688,21 +688,21 @@ public ref struct BlockRenderContext
         }
 
         // SOUTH FACE (X + 1)
-        if (RenderAllFaces || bounds.MaxX < 1.0F || block.IsSideVisible(BlockReader, pos.x + 1, pos.y, pos.z, Side.East))
+        if (RenderAllFaces || bounds.MaxX < 1.0F || block.IsSideVisible(BlockReader, pos.X + 1, pos.Y, pos.Z, Side.East))
         {
-            float lXp = block.GetLuminance(Lighting, pos.x + 1, pos.y, pos.z);
+            float lXp = block.GetLuminance(Lighting, pos.X + 1, pos.Y, pos.Z);
             if (!ao) v0 = v1 = v2 = v3 = lXp;
             else
             {
-                float u = block.GetLuminance(Lighting, pos.x + 1, pos.y + 1, pos.z);
-                float d = block.GetLuminance(Lighting, pos.x + 1, pos.y - 1, pos.z);
-                float n = block.GetLuminance(Lighting, pos.x + 1, pos.y, pos.z - 1);
-                float s = block.GetLuminance(Lighting, pos.x + 1, pos.y, pos.z + 1);
+                float u = block.GetLuminance(Lighting, pos.X + 1, pos.Y + 1, pos.Z);
+                float d = block.GetLuminance(Lighting, pos.X + 1, pos.Y - 1, pos.Z);
+                float n = block.GetLuminance(Lighting, pos.X + 1, pos.Y, pos.Z - 1);
+                float s = block.GetLuminance(Lighting, pos.X + 1, pos.Y, pos.Z + 1);
 
-                float un = (IsOpaque(pos.x + 1, pos.y, pos.z - 1) && IsOpaque(pos.x + 1, pos.y + 1, pos.z)) ? n : block.GetLuminance(Lighting, pos.x + 1, pos.y + 1, pos.z - 1);
-                float dn = (IsOpaque(pos.x + 1, pos.y, pos.z - 1) && IsOpaque(pos.x + 1, pos.y - 1, pos.z)) ? n : block.GetLuminance(Lighting, pos.x + 1, pos.y - 1, pos.z - 1);
-                float us = (IsOpaque(pos.x + 1, pos.y, pos.z + 1) && IsOpaque(pos.x + 1, pos.y + 1, pos.z)) ? s : block.GetLuminance(Lighting, pos.x + 1, pos.y + 1, pos.z + 1);
-                float ds = (IsOpaque(pos.x + 1, pos.y, pos.z + 1) && IsOpaque(pos.x + 1, pos.y - 1, pos.z)) ? s : block.GetLuminance(Lighting, pos.x + 1, pos.y - 1, pos.z + 1);
+                float un = (IsOpaque(pos.X + 1, pos.Y, pos.Z - 1) && IsOpaque(pos.X + 1, pos.Y + 1, pos.Z)) ? n : block.GetLuminance(Lighting, pos.X + 1, pos.Y + 1, pos.Z - 1);
+                float dn = (IsOpaque(pos.X + 1, pos.Y, pos.Z - 1) && IsOpaque(pos.X + 1, pos.Y - 1, pos.Z)) ? n : block.GetLuminance(Lighting, pos.X + 1, pos.Y - 1, pos.Z - 1);
+                float us = (IsOpaque(pos.X + 1, pos.Y, pos.Z + 1) && IsOpaque(pos.X + 1, pos.Y + 1, pos.Z)) ? s : block.GetLuminance(Lighting, pos.X + 1, pos.Y + 1, pos.Z + 1);
+                float ds = (IsOpaque(pos.X + 1, pos.Y, pos.Z + 1) && IsOpaque(pos.X + 1, pos.Y - 1, pos.Z)) ? s : block.GetLuminance(Lighting, pos.X + 1, pos.Y - 1, pos.Z + 1);
 
                 v0 = (d + ds + lXp + s) * 0.25F;
                 v1 = (n + lXp + dn + d) * 0.25F;
@@ -710,7 +710,7 @@ public ref struct BlockRenderContext
                 v3 = (u + us + lXp + s) * 0.25F;
             }
 
-            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.x, pos.y, pos.z, 5.ToSide());
+            int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, 5.ToSide());
             var colors = FaceColors.AssignVertexColors(v3, v0, v1, v2, r, g, b, 0.6F, tintSouth);
             bool flipped = ao && (v3 + v1 > v0 + v2);
 

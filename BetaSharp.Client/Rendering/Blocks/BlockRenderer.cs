@@ -33,15 +33,15 @@ public class BlockRenderer
     {
         BlockRendererType type = block.RenderType;
 
-        block.UpdateBoundingBox(world, pos.x, pos.y, pos.z);
+        block.UpdateBoundingBox(world, pos.X, pos.Y, pos.Z);
 
         TextureVariance topRule = doVariance ? block.TopVariance : TextureVariance.None;
         TextureVariance botRule = doVariance ? block.BottomVariance : TextureVariance.None;
         TextureVariance sideRule = doVariance ? block.SideVariance : TextureVariance.None;
 
-        int topHash = topRule != TextureVariance.None ? BlockRenderContext.GetTextureVarianceHash(pos.x, pos.y, pos.z) : 0;
-        int botHash = botRule != TextureVariance.None ? BlockRenderContext.GetTextureVarianceHash(pos.x, pos.y - 1, pos.z) : 0;
-        int sideHash = sideRule != TextureVariance.None ? BlockRenderContext.GetTextureVarianceHash(pos.x, pos.y, pos.z) : 0;
+        int topHash = topRule != TextureVariance.None ? BlockRenderContext.GetTextureVarianceHash(pos.X, pos.Y, pos.Z) : 0;
+        int botHash = botRule != TextureVariance.None ? BlockRenderContext.GetTextureVarianceHash(pos.X, pos.Y - 1, pos.Z) : 0;
+        int sideHash = sideRule != TextureVariance.None ? BlockRenderContext.GetTextureVarianceHash(pos.X, pos.Y, pos.Z) : 0;
 
         int topRot = BlockRenderContext.ApplyVariance(topHash, topRule, out int flipTop);
         int botRot = BlockRenderContext.ApplyVariance(botHash, botRule, out int flipBot);

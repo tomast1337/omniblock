@@ -9,7 +9,7 @@ public class BedRenderer : IBlockRenderer
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
         Box bounds = ctx.OverrideBounds ?? block.BoundingBox;
-        int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
+        int metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
         int direction = BedBehavior.GetDirection(metadata);
         bool isHead = BedBehavior.IsHeadOfBed(metadata);
 
@@ -18,13 +18,13 @@ public class BedRenderer : IBlockRenderer
         const float lightZ = 0.8F;
         const float lightX = 0.6F;
 
-        float centerLuminance = block.GetLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
+        float centerLuminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z);
 
         // BOTTOM FACE
         ctx.Tess.setColorOpaque_F(lightBottom * centerLuminance, lightBottom * centerLuminance,
             lightBottom * centerLuminance);
 
-        int texBottom = block.GetTextureId(ctx.BlockReader, pos.x, pos.y, pos.z, 0);
+        int texBottom = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, 0);
         int texU = (texBottom & 15) << 4;
         int texV = texBottom & 240;
 
@@ -33,11 +33,11 @@ public class BedRenderer : IBlockRenderer
         float minV = texV / 256.0F;
         float maxV = (texV + 15.99f) / 256.0f;
 
-        float minX = (float)(pos.x + bounds.MinX);
-        float maxX = (float)(pos.x + bounds.MaxX);
-        float bedBottomY = (float)(pos.y + bounds.MinY + 0.1875f); // Bed legs are 3 pixels tall (3/16 = 0.1875)
-        float minZ = (float)(pos.z + bounds.MinZ);
-        float maxZ = (float)(pos.z + bounds.MaxZ);
+        float minX = (float)(pos.X + bounds.MinX);
+        float maxX = (float)(pos.X + bounds.MaxX);
+        float bedBottomY = (float)(pos.Y + bounds.MinY + 0.1875f); // Bed legs are 3 pixels tall (3/16 = 0.1875)
+        float minZ = (float)(pos.Z + bounds.MinZ);
+        float maxZ = (float)(pos.Z + bounds.MaxZ);
 
         ctx.Tess.addVertexWithUV(minX, bedBottomY, maxZ, minU, maxV);
         ctx.Tess.addVertexWithUV(minX, bedBottomY, minZ, minU, minV);
@@ -45,10 +45,10 @@ public class BedRenderer : IBlockRenderer
         ctx.Tess.addVertexWithUV(maxX, bedBottomY, maxZ, maxU, maxV);
 
         // TOP FACE
-        float topLuminance = block.GetLuminance(ctx.Lighting, pos.x, pos.y + 1, pos.z);
+        float topLuminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y + 1, pos.Z);
         ctx.Tess.setColorOpaque_F(lightTop * topLuminance, lightTop * topLuminance, lightTop * topLuminance);
 
-        int texTop = block.GetTextureId(ctx.BlockReader, pos.x, pos.y, pos.z, Side.Up);
+        int texTop = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.Up);
         texU = (texTop & 15) << 4;
         texV = texTop & 240;
 
@@ -87,7 +87,7 @@ public class BedRenderer : IBlockRenderer
             v3 = minV;
         }
 
-        float bedTopY = (float)(pos.y + bounds.MaxY);
+        float bedTopY = (float)(pos.Y + bounds.MaxY);
 
         ctx.Tess.addVertexWithUV(maxX, bedTopY, maxZ, u3, v3);
         ctx.Tess.addVertexWithUV(maxX, bedTopY, minZ, u1, v1);
@@ -116,55 +116,55 @@ public class BedRenderer : IBlockRenderer
         float faceLuminance;
         var flatCtx = ctx with { EnableAo = false };
         // East Face (Z - 1)
-        if (forwardDir != 2 && (ctx.RenderAllFaces || block.IsSideVisible(ctx.BlockReader, pos.x, pos.y, pos.z - 1, Side.North)))
+        if (forwardDir != 2 && (ctx.RenderAllFaces || block.IsSideVisible(ctx.BlockReader, pos.X, pos.Y, pos.Z - 1, Side.North)))
         {
             faceLuminance = bounds.MinZ > 0.0f
                 ? centerLuminance
-                : block.GetLuminance(ctx.Lighting, pos.x, pos.y, pos.z - 1);
+                : block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z - 1);
             ctx.Tess.setColorOpaque_F(lightZ * faceLuminance, lightZ * faceLuminance, lightZ * faceLuminance);
 
             flatCtx.FlipTexture = textureFlipDir == 2;
-            flatCtx.DrawEastFace(block, new Vec3D(pos.x, pos.y, pos.z), new FaceColors(),
-                block.GetTextureId(ctx.BlockReader, pos.x, pos.y, pos.z, Side.North));
+            flatCtx.DrawEastFace(block, new Vec3D(pos.X, pos.Y, pos.Z), new FaceColors(),
+                block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.North));
         }
 
         // West Face (Z + 1)
-        if (forwardDir != 3 && (ctx.RenderAllFaces || block.IsSideVisible(ctx.BlockReader, pos.x, pos.y, pos.z + 1, Side.South)))
+        if (forwardDir != 3 && (ctx.RenderAllFaces || block.IsSideVisible(ctx.BlockReader, pos.X, pos.Y, pos.Z + 1, Side.South)))
         {
             faceLuminance = bounds.MaxZ < 1.0f
                 ? centerLuminance
-                : block.GetLuminance(ctx.Lighting, pos.x, pos.y, pos.z + 1);
+                : block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z + 1);
             ctx.Tess.setColorOpaque_F(lightZ * faceLuminance, lightZ * faceLuminance, lightZ * faceLuminance);
 
             flatCtx.FlipTexture = textureFlipDir == 3;
-            flatCtx.DrawWestFace(block, new Vec3D(pos.x, pos.y, pos.z), new FaceColors(),
-                block.GetTextureId(ctx.BlockReader, pos.x, pos.y, pos.z, Side.South));
+            flatCtx.DrawWestFace(block, new Vec3D(pos.X, pos.Y, pos.Z), new FaceColors(),
+                block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.South));
         }
 
         // North Face (X - 1)
-        if (forwardDir != 4 && (ctx.RenderAllFaces || block.IsSideVisible(ctx.BlockReader, pos.x - 1, pos.y, pos.z, Side.West)))
+        if (forwardDir != 4 && (ctx.RenderAllFaces || block.IsSideVisible(ctx.BlockReader, pos.X - 1, pos.Y, pos.Z, Side.West)))
         {
             faceLuminance = bounds.MinX > 0.0f
                 ? centerLuminance
-                : block.GetLuminance(ctx.Lighting, pos.x - 1, pos.y, pos.z);
+                : block.GetLuminance(ctx.Lighting, pos.X - 1, pos.Y, pos.Z);
             ctx.Tess.setColorOpaque_F(lightX * faceLuminance, lightX * faceLuminance, lightX * faceLuminance);
 
             flatCtx.FlipTexture = textureFlipDir == 4;
-            flatCtx.DrawNorthFace(block, new Vec3D(pos.x, pos.y, pos.z), new FaceColors(),
-                block.GetTextureId(ctx.BlockReader, pos.x, pos.y, pos.z, Side.West));
+            flatCtx.DrawNorthFace(block, new Vec3D(pos.X, pos.Y, pos.Z), new FaceColors(),
+                block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.West));
         }
 
         // South Face (X + 1)
-        if (forwardDir != 5 && (ctx.RenderAllFaces || block.IsSideVisible(ctx.BlockReader, pos.x + 1, pos.y, pos.z, Side.East)))
+        if (forwardDir != 5 && (ctx.RenderAllFaces || block.IsSideVisible(ctx.BlockReader, pos.X + 1, pos.Y, pos.Z, Side.East)))
         {
             faceLuminance = bounds.MaxX < 1.0f
                 ? centerLuminance
-                : block.GetLuminance(ctx.Lighting, pos.x + 1, pos.y, pos.z);
+                : block.GetLuminance(ctx.Lighting, pos.X + 1, pos.Y, pos.Z);
             ctx.Tess.setColorOpaque_F(lightX * faceLuminance, lightX * faceLuminance, lightX * faceLuminance);
 
             flatCtx.FlipTexture = textureFlipDir == 5;
-            flatCtx.DrawSouthFace(block, new Vec3D(pos.x, pos.y, pos.z), new FaceColors(),
-                block.GetTextureId(ctx.BlockReader, pos.x, pos.y, pos.z, Side.East));
+            flatCtx.DrawSouthFace(block, new Vec3D(pos.X, pos.Y, pos.Z), new FaceColors(),
+                block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.East));
         }
 
         return true;

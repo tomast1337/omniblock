@@ -7,7 +7,7 @@ public class LeverRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
+        int metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
         int orientation = metadata & 7;
         bool isActivated = (metadata & 8) > 0;
 
@@ -123,25 +123,25 @@ public class LeverRenderer : IBlockRenderer
                 if (orientation == 2) vertices[i].rotateAroundY((float)Math.PI * 0.5F);
                 if (orientation == 1) vertices[i].rotateAroundY((float)Math.PI * -0.5F);
 
-                vertices[i].x += pos.x + 0.5D; // Fixed .X to .x
-                vertices[i].y += pos.y + 0.5D;
-                vertices[i].z += pos.z + 0.5D;
+                vertices[i].x += pos.X + 0.5D; // Fixed .X to .x
+                vertices[i].y += pos.Y + 0.5D;
+                vertices[i].z += pos.Z + 0.5D;
             }
             else
             {
-                vertices[i].x += pos.x + 0.5D; // Fixed .X to .x
-                vertices[i].y += pos.y + 2.0F / 16.0F;
-                vertices[i].z += pos.z + 0.5D;
+                vertices[i].x += pos.X + 0.5D; // Fixed .X to .x
+                vertices[i].y += pos.Y + 2.0F / 16.0F;
+                vertices[i].z += pos.Z + 0.5D;
             }
         }
 
         // --- 4. Draw the Handle Faces ---
-        int colorMultiplier = block.GetColorMultiplier(ctx.BlockReader, pos.x, pos.y, pos.z);
+        int colorMultiplier = block.GetColorMultiplier(ctx.BlockReader, pos.X, pos.Y, pos.Z);
         float r = (colorMultiplier >> 16 & 255) * 0.0039215686F;
         float g = (colorMultiplier >> 8 & 255) * 0.0039215686F;
         float b = (colorMultiplier & 255) * 0.0039215686F;
 
-        float luminance = block.GetLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
+        float luminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z);
 
         handleCtx.Tess.setColorOpaque_F(r * luminance, g * luminance, b * luminance);
 

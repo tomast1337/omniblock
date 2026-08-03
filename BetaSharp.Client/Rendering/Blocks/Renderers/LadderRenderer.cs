@@ -13,7 +13,7 @@ public class LadderRenderer : IBlockRenderer
             textureId = ctx.OverrideTexture;
         }
 
-        float luminance = block.GetLuminance(ctx.Lighting, pos.x, pos.y, pos.z);
+        float luminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z);
         ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
 
         int texU = (textureId & 15) << 4;
@@ -23,38 +23,38 @@ public class LadderRenderer : IBlockRenderer
         float minV = texV / 256.0f;
         float maxV = (texV + 15.99f) / 256.0f;
 
-        int metadata = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
+        int metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
 
         // Push the ladder slightly off the wall
         float offset = 0.05f;
 
         if (metadata == 5)
         {
-            ctx.Tess.addVertexWithUV(pos.x + offset, pos.y + 1.0D, pos.z + 1.0D, minU, minV);
-            ctx.Tess.addVertexWithUV(pos.x + offset, pos.y + 0.0D, pos.z + 1.0D, minU, maxV);
-            ctx.Tess.addVertexWithUV(pos.x + offset, pos.y + 0.0D, pos.z + 0.0D, maxU, maxV);
-            ctx.Tess.addVertexWithUV(pos.x + offset, pos.y + 1.0D, pos.z + 0.0D, maxU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + offset, pos.Y + 1.0D, pos.Z + 1.0D, minU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + offset, pos.Y + 0.0D, pos.Z + 1.0D, minU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + offset, pos.Y + 0.0D, pos.Z + 0.0D, maxU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + offset, pos.Y + 1.0D, pos.Z + 0.0D, maxU, minV);
         }
         else if (metadata == 4)
         {
-            ctx.Tess.addVertexWithUV(pos.x + 1.0D - offset, pos.y + 0.0D, pos.z + 1.0D, maxU, maxV);
-            ctx.Tess.addVertexWithUV(pos.x + 1.0D - offset, pos.y + 1.0D, pos.z + 1.0D, maxU, minV);
-            ctx.Tess.addVertexWithUV(pos.x + 1.0D - offset, pos.y + 1.0D, pos.z + 0.0D, minU, minV);
-            ctx.Tess.addVertexWithUV(pos.x + 1.0D - offset, pos.y + 0.0D, pos.z + 0.0D, minU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + 1.0D - offset, pos.Y + 0.0D, pos.Z + 1.0D, maxU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + 1.0D - offset, pos.Y + 1.0D, pos.Z + 1.0D, maxU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + 1.0D - offset, pos.Y + 1.0D, pos.Z + 0.0D, minU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + 1.0D - offset, pos.Y + 0.0D, pos.Z + 0.0D, minU, maxV);
         }
         else if (metadata == 3)
         {
-            ctx.Tess.addVertexWithUV(pos.x + 1.0D, pos.y + 0.0D, pos.z + offset, maxU, maxV);
-            ctx.Tess.addVertexWithUV(pos.x + 1.0D, pos.y + 1.0D, pos.z + offset, maxU, minV);
-            ctx.Tess.addVertexWithUV(pos.x + 0.0D, pos.y + 1.0D, pos.z + offset, minU, minV);
-            ctx.Tess.addVertexWithUV(pos.x + 0.0D, pos.y + 0.0D, pos.z + offset, minU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + 1.0D, pos.Y + 0.0D, pos.Z + offset, maxU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + 1.0D, pos.Y + 1.0D, pos.Z + offset, maxU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + 0.0D, pos.Y + 1.0D, pos.Z + offset, minU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + 0.0D, pos.Y + 0.0D, pos.Z + offset, minU, maxV);
         }
         else if (metadata == 2)
         {
-            ctx.Tess.addVertexWithUV(pos.x + 1.0D, pos.y + 1.0D, pos.z + 1.0D - offset, minU, minV);
-            ctx.Tess.addVertexWithUV(pos.x + 1.0D, pos.y + 0.0D, pos.z + 1.0D - offset, minU, maxV);
-            ctx.Tess.addVertexWithUV(pos.x + 0.0D, pos.y + 0.0D, pos.z + 1.0D - offset, maxU, maxV);
-            ctx.Tess.addVertexWithUV(pos.x + 0.0D, pos.y + 1.0D, pos.z + 1.0D - offset, maxU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + 1.0D, pos.Y + 1.0D, pos.Z + 1.0D - offset, minU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + 1.0D, pos.Y + 0.0D, pos.Z + 1.0D - offset, minU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + 0.0D, pos.Y + 0.0D, pos.Z + 1.0D - offset, maxU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + 0.0D, pos.Y + 1.0D, pos.Z + 1.0D - offset, maxU, minV);
         }
 
         return true;

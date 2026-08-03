@@ -16,12 +16,12 @@ public class RedstoneWireRenderer : IBlockRenderer
         // block itself, so `block` here already IS that instance's owning Block.
         RedstoneWireBehavior wireBehavior = (RedstoneWireBehavior)block.Redstone!;
 
-        int powerLevel = ctx.BlockReader.GetBlockMeta(pos.x, pos.y, pos.z);
+        int powerLevel = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
         int textureId = block.GetTexture(Side.Up, powerLevel);
         if (ctx.OverrideTexture >= 0) textureId = ctx.OverrideTexture;
 
         // --- 1. Calculate the Glow Color & Emissive Lighting ---
-        float baseLuminance = block.GetLuminance(ctx.Lighting, pos.x, pos.y + 1, pos.z);
+        float baseLuminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y + 1, pos.Z);
         float powerPercent = powerLevel / 15.0F;
 
         float luminance = Math.Max(baseLuminance, powerPercent * 0.4F);
@@ -45,38 +45,38 @@ public class RedstoneWireRenderer : IBlockRenderer
         float maxV = (texV + 15.99F) / 256.0F;
 
         // --- 3. Connection Logic ---
-        bool connectsWest = wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x - 1, pos.y, pos.z, 1) ||
-                            (!ctx.BlockReader.ShouldSuffocate(pos.x - 1, pos.y, pos.z) &&
-                             wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x - 1, pos.y - 1, pos.z, -1));
-        bool connectsEast = wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x + 1, pos.y, pos.z, 3) ||
-                            (!ctx.BlockReader.ShouldSuffocate(pos.x + 1, pos.y, pos.z) &&
-                             wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x + 1, pos.y - 1, pos.z, -1));
-        bool connectsNorth = wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y, pos.z - 1, 2) ||
-                             (!ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z - 1) &&
-                              wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y - 1, pos.z - 1, -1));
-        bool connectsSouth = wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y, pos.z + 1, 0) ||
-                             (!ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z + 1) &&
-                              wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y - 1, pos.z + 1, -1));
+        bool connectsWest = wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X - 1, pos.Y, pos.Z, 1) ||
+                            (!ctx.BlockReader.ShouldSuffocate(pos.X - 1, pos.Y, pos.Z) &&
+                             wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X - 1, pos.Y - 1, pos.Z, -1));
+        bool connectsEast = wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X + 1, pos.Y, pos.Z, 3) ||
+                            (!ctx.BlockReader.ShouldSuffocate(pos.X + 1, pos.Y, pos.Z) &&
+                             wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X + 1, pos.Y - 1, pos.Z, -1));
+        bool connectsNorth = wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X, pos.Y, pos.Z - 1, 2) ||
+                             (!ctx.BlockReader.ShouldSuffocate(pos.X, pos.Y, pos.Z - 1) &&
+                              wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X, pos.Y - 1, pos.Z - 1, -1));
+        bool connectsSouth = wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X, pos.Y, pos.Z + 1, 0) ||
+                             (!ctx.BlockReader.ShouldSuffocate(pos.X, pos.Y, pos.Z + 1) &&
+                              wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X, pos.Y - 1, pos.Z + 1, -1));
 
-        if (!ctx.BlockReader.ShouldSuffocate(pos.x, pos.y + 1, pos.z))
+        if (!ctx.BlockReader.ShouldSuffocate(pos.X, pos.Y + 1, pos.Z))
         {
-            if (ctx.BlockReader.ShouldSuffocate(pos.x - 1, pos.y, pos.z) &&
-                wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x - 1, pos.y + 1, pos.z, -1))
+            if (ctx.BlockReader.ShouldSuffocate(pos.X - 1, pos.Y, pos.Z) &&
+                wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X - 1, pos.Y + 1, pos.Z, -1))
                 connectsWest = true;
-            if (ctx.BlockReader.ShouldSuffocate(pos.x + 1, pos.y, pos.z) &&
-                wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x + 1, pos.y + 1, pos.z, -1))
+            if (ctx.BlockReader.ShouldSuffocate(pos.X + 1, pos.Y, pos.Z) &&
+                wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X + 1, pos.Y + 1, pos.Z, -1))
                 connectsEast = true;
-            if (ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z - 1) &&
-                wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y + 1, pos.z - 1, -1))
+            if (ctx.BlockReader.ShouldSuffocate(pos.X, pos.Y, pos.Z - 1) &&
+                wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X, pos.Y + 1, pos.Z - 1, -1))
                 connectsNorth = true;
-            if (ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z + 1) &&
-                wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.x, pos.y + 1, pos.z + 1, -1))
+            if (ctx.BlockReader.ShouldSuffocate(pos.X, pos.Y, pos.Z + 1) &&
+                wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X, pos.Y + 1, pos.Z + 1, -1))
                 connectsSouth = true;
         }
 
         // --- 4. Determine Shape ---
-        float renderMinX = pos.x, renderMaxX = pos.x + 1;
-        float renderMinZ = pos.z, renderMaxZ = pos.z + 1;
+        float renderMinX = pos.X, renderMaxX = pos.X + 1;
+        float renderMinZ = pos.Z, renderMaxZ = pos.Z + 1;
         int shapeType = 0; // 0 = Cross, 1 = East/West, 2 = North/South
 
         if ((connectsWest || connectsEast) && !connectsNorth && !connectsSouth) shapeType = 1;
@@ -119,7 +119,7 @@ public class RedstoneWireRenderer : IBlockRenderer
         }
 
         // --- 5. Render Horizontal Ground Quad ---
-        float shadowY = pos.y + QuarterPixel;
+        float shadowY = pos.Y + QuarterPixel;
         float wireY = shadowY + 0.001F;
 
         // Handle UV Rotation for North/South (Shape 2)
@@ -153,7 +153,7 @@ public class RedstoneWireRenderer : IBlockRenderer
         ctx.Tess.addVertexWithUV(renderMinX, shadowY, renderMaxZ, u4, v4 + ShroudVOffset);
 
         // --- 6. Render Slopes ---
-        if (ctx.BlockReader.ShouldSuffocate(pos.x, pos.y + 1, pos.z)) return true;
+        if (ctx.BlockReader.ShouldSuffocate(pos.X, pos.Y + 1, pos.Z)) return true;
 
         // Reset to the straight texture variant for slopes
         minU = (texU + 16) / 256.0F;
@@ -161,74 +161,74 @@ public class RedstoneWireRenderer : IBlockRenderer
         minV = texV / 256.0F;
         maxV = (texV + 15.99F) / 256.0F;
 
-        float slopeHeight = pos.y + 1.021875F;
+        float slopeHeight = pos.Y + 1.021875F;
 
         // West Slope
-        if (ctx.BlockReader.ShouldSuffocate(pos.x - 1, pos.y, pos.z) &&
-            ctx.BlockReader.GetBlockId(pos.x - 1, pos.y + 1, pos.z) == block.Id)
+        if (ctx.BlockReader.ShouldSuffocate(pos.X - 1, pos.Y, pos.Z) &&
+            ctx.BlockReader.GetBlockId(pos.X - 1, pos.Y + 1, pos.Z) == block.Id)
         {
             ctx.Tess.setColorOpaque_F(luminance * r, luminance * g, luminance * b);
-            ctx.Tess.addVertexWithUV(pos.x + QuarterPixel, slopeHeight, pos.z + 1, maxU, minV);
-            ctx.Tess.addVertexWithUV(pos.x + QuarterPixel, pos.y, pos.z + 1, minU, minV);
-            ctx.Tess.addVertexWithUV(pos.x + QuarterPixel, pos.y, pos.z + 0, minU, maxV);
-            ctx.Tess.addVertexWithUV(pos.x + QuarterPixel, slopeHeight, pos.z + 0, maxU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + QuarterPixel, slopeHeight, pos.Z + 1, maxU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + QuarterPixel, pos.Y, pos.Z + 1, minU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + QuarterPixel, pos.Y, pos.Z + 0, minU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + QuarterPixel, slopeHeight, pos.Z + 0, maxU, maxV);
 
             ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
-            ctx.Tess.addVertexWithUV(pos.x + QuarterPixel, slopeHeight, pos.z + 1, maxU, minV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.x + QuarterPixel, pos.y, pos.z + 1, minU, minV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.x + QuarterPixel, pos.y, pos.z + 0, minU, maxV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.x + QuarterPixel, slopeHeight, pos.z + 0, maxU, maxV + ShroudVOffset);
+            ctx.Tess.addVertexWithUV(pos.X + QuarterPixel, slopeHeight, pos.Z + 1, maxU, minV + ShroudVOffset);
+            ctx.Tess.addVertexWithUV(pos.X + QuarterPixel, pos.Y, pos.Z + 1, minU, minV + ShroudVOffset);
+            ctx.Tess.addVertexWithUV(pos.X + QuarterPixel, pos.Y, pos.Z + 0, minU, maxV + ShroudVOffset);
+            ctx.Tess.addVertexWithUV(pos.X + QuarterPixel, slopeHeight, pos.Z + 0, maxU, maxV + ShroudVOffset);
         }
 
         // East Slope
-        if (ctx.BlockReader.ShouldSuffocate(pos.x + 1, pos.y, pos.z) &&
-            ctx.BlockReader.GetBlockId(pos.x + 1, pos.y + 1, pos.z) == block.Id)
+        if (ctx.BlockReader.ShouldSuffocate(pos.X + 1, pos.Y, pos.Z) &&
+            ctx.BlockReader.GetBlockId(pos.X + 1, pos.Y + 1, pos.Z) == block.Id)
         {
             ctx.Tess.setColorOpaque_F(luminance * r, luminance * g, luminance * b);
-            ctx.Tess.addVertexWithUV(pos.x + 1 - QuarterPixel, pos.y, pos.z + 1, minU, maxV);
-            ctx.Tess.addVertexWithUV(pos.x + 1 - QuarterPixel, slopeHeight, pos.z + 1, maxU, maxV);
-            ctx.Tess.addVertexWithUV(pos.x + 1 - QuarterPixel, slopeHeight, pos.z + 0, maxU, minV);
-            ctx.Tess.addVertexWithUV(pos.x + 1 - QuarterPixel, pos.y, pos.z + 0, minU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + 1 - QuarterPixel, pos.Y, pos.Z + 1, minU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + 1 - QuarterPixel, slopeHeight, pos.Z + 1, maxU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + 1 - QuarterPixel, slopeHeight, pos.Z + 0, maxU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + 1 - QuarterPixel, pos.Y, pos.Z + 0, minU, minV);
 
             ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
-            ctx.Tess.addVertexWithUV(pos.x + 1 - QuarterPixel, pos.y, pos.z + 1, minU, maxV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.x + 1 - QuarterPixel, slopeHeight, pos.z + 1, maxU, maxV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.x + 1 - QuarterPixel, slopeHeight, pos.z + 0, maxU, minV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.x + 1 - QuarterPixel, pos.y, pos.z + 0, minU, minV + ShroudVOffset);
+            ctx.Tess.addVertexWithUV(pos.X + 1 - QuarterPixel, pos.Y, pos.Z + 1, minU, maxV + ShroudVOffset);
+            ctx.Tess.addVertexWithUV(pos.X + 1 - QuarterPixel, slopeHeight, pos.Z + 1, maxU, maxV + ShroudVOffset);
+            ctx.Tess.addVertexWithUV(pos.X + 1 - QuarterPixel, slopeHeight, pos.Z + 0, maxU, minV + ShroudVOffset);
+            ctx.Tess.addVertexWithUV(pos.X + 1 - QuarterPixel, pos.Y, pos.Z + 0, minU, minV + ShroudVOffset);
         }
 
         // North Slope
-        if (ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z - 1) &&
-            ctx.BlockReader.GetBlockId(pos.x, pos.y + 1, pos.z - 1) == block.Id)
+        if (ctx.BlockReader.ShouldSuffocate(pos.X, pos.Y, pos.Z - 1) &&
+            ctx.BlockReader.GetBlockId(pos.X, pos.Y + 1, pos.Z - 1) == block.Id)
         {
             ctx.Tess.setColorOpaque_F(luminance * r, luminance * g, luminance * b);
-            ctx.Tess.addVertexWithUV(pos.x + 1, pos.y, pos.z + QuarterPixel, minU, maxV);
-            ctx.Tess.addVertexWithUV(pos.x + 1, slopeHeight, pos.z + QuarterPixel, maxU, maxV);
-            ctx.Tess.addVertexWithUV(pos.x + 0, slopeHeight, pos.z + QuarterPixel, maxU, minV);
-            ctx.Tess.addVertexWithUV(pos.x + 0, pos.y, pos.z + QuarterPixel, minU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + 1, pos.Y, pos.Z + QuarterPixel, minU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + 1, slopeHeight, pos.Z + QuarterPixel, maxU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + 0, slopeHeight, pos.Z + QuarterPixel, maxU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + 0, pos.Y, pos.Z + QuarterPixel, minU, minV);
 
             ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
-            ctx.Tess.addVertexWithUV(pos.x + 1, pos.y, pos.z + QuarterPixel, minU, maxV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.x + 1, slopeHeight, pos.z + QuarterPixel, maxU, maxV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.x + 0, slopeHeight, pos.z + QuarterPixel, maxU, minV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.x + 0, pos.y, pos.z + QuarterPixel, minU, minV + ShroudVOffset);
+            ctx.Tess.addVertexWithUV(pos.X + 1, pos.Y, pos.Z + QuarterPixel, minU, maxV + ShroudVOffset);
+            ctx.Tess.addVertexWithUV(pos.X + 1, slopeHeight, pos.Z + QuarterPixel, maxU, maxV + ShroudVOffset);
+            ctx.Tess.addVertexWithUV(pos.X + 0, slopeHeight, pos.Z + QuarterPixel, maxU, minV + ShroudVOffset);
+            ctx.Tess.addVertexWithUV(pos.X + 0, pos.Y, pos.Z + QuarterPixel, minU, minV + ShroudVOffset);
         }
 
         // South Slope
-        if (ctx.BlockReader.ShouldSuffocate(pos.x, pos.y, pos.z + 1) &&
-            ctx.BlockReader.GetBlockId(pos.x, pos.y + 1, pos.z + 1) == block.Id)
+        if (ctx.BlockReader.ShouldSuffocate(pos.X, pos.Y, pos.Z + 1) &&
+            ctx.BlockReader.GetBlockId(pos.X, pos.Y + 1, pos.Z + 1) == block.Id)
         {
             ctx.Tess.setColorOpaque_F(luminance * r, luminance * g, luminance * b);
-            ctx.Tess.addVertexWithUV(pos.x + 1, slopeHeight, pos.z + 1 - QuarterPixel, maxU, minV);
-            ctx.Tess.addVertexWithUV(pos.x + 1, pos.y, pos.z + 1 - QuarterPixel, minU, minV);
-            ctx.Tess.addVertexWithUV(pos.x + 0, pos.y, pos.z + 1 - QuarterPixel, minU, maxV);
-            ctx.Tess.addVertexWithUV(pos.x + 0, slopeHeight, pos.z + 1 - QuarterPixel, maxU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + 1, slopeHeight, pos.Z + 1 - QuarterPixel, maxU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + 1, pos.Y, pos.Z + 1 - QuarterPixel, minU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + 0, pos.Y, pos.Z + 1 - QuarterPixel, minU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + 0, slopeHeight, pos.Z + 1 - QuarterPixel, maxU, maxV);
 
             ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
-            ctx.Tess.addVertexWithUV(pos.x + 1, slopeHeight, pos.z + 1 - QuarterPixel, maxU, minV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.x + 1, pos.y, pos.z + 1 - QuarterPixel, minU, minV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.x + 0, pos.y, pos.z + 1 - QuarterPixel, minU, maxV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.x + 0, slopeHeight, pos.z + 1 - QuarterPixel, maxU, maxV + ShroudVOffset);
+            ctx.Tess.addVertexWithUV(pos.X + 1, slopeHeight, pos.Z + 1 - QuarterPixel, maxU, minV + ShroudVOffset);
+            ctx.Tess.addVertexWithUV(pos.X + 1, pos.Y, pos.Z + 1 - QuarterPixel, minU, minV + ShroudVOffset);
+            ctx.Tess.addVertexWithUV(pos.X + 0, pos.Y, pos.Z + 1 - QuarterPixel, minU, maxV + ShroudVOffset);
+            ctx.Tess.addVertexWithUV(pos.X + 0, slopeHeight, pos.Z + 1 - QuarterPixel, maxU, maxV + ShroudVOffset);
         }
 
         return true;
