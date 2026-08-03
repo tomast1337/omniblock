@@ -27,9 +27,13 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
             Tessellator tess = Tessellator.instance;
             bindTextureByName("/terrain.png");
             Lighting.turnOff();
-            GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-            GLManager.GL.Enable(GLEnum.Blend);
-            GLManager.GL.Disable(GLEnum.CullFace);
+
+            // Culling off because the moving block is drawn with every face, including the ones
+            // facing away. RenderState.Entity is that plus the depth behaviour a solid block
+            // wants, and unlike the enables it replaces it is put back at the end: this used to
+            // leave blending on for whatever block entity drew next, so a sign behind a moving
+            // piston came out blended and a sign anywhere else did not.
+            GLManager.State.ApplyUntrusted(RenderState.Entity with { Blend = BlendMode.Alpha });
 
             GLManager.GL.ShadeModel(GLEnum.Smooth);
 
@@ -75,6 +79,7 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
 
             tess.setTranslationD(0.0D, 0.0D, 0.0D);
             tess.draw();
+            GLManager.State.ApplyUntrusted(RenderState.Entity);
             Lighting.turnOn();
         }
     }

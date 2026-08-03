@@ -62,7 +62,14 @@ public class MapItemRenderer
         if (_textureId.Texture != null) textureManager.Bind(colors, 128, 128, _textureId.Texture);
         Tessellator tess = Tessellator.instance;
         _textureId.Bind();
-        GLManager.GL.Enable(GLEnum.Blend);
+        // This used to enable blending without saying which one, inheriting whichever factors the
+        // last thing to draw happened to leave behind. Ordinary transparency is what it wants and
+        // what it got, so it says so now.
+        GLManager.State.ApplyUntrusted(RenderState.Entity with { Blend = BlendMode.Alpha });
+
+        // Paired with the alpha test off, not on: the unexplored parts of the sheet are the
+        // translucent checkerboard built above, and the alpha test would throw them away before
+        // blending ever saw them.
         GLManager.GL.Disable(GLEnum.AlphaTest);
         tess.startDrawingQuads();
         tess.addVertexWithUV(0, 128, -0.01F, 0.0D, 1.0D);
@@ -71,7 +78,7 @@ public class MapItemRenderer
         tess.addVertexWithUV(0, 0, -0.01F, 0.0D, 0.0D);
         tess.draw();
         GLManager.GL.Enable(GLEnum.AlphaTest);
-        GLManager.GL.Disable(GLEnum.Blend);
+        GLManager.State.ApplyUntrusted(RenderState.Entity);
         textureManager.BindTexture(textureManager.GetTextureId("/misc/mapicons.png"));
         foreach (var icon in mapState.Icons)
         {

@@ -430,11 +430,17 @@ public partial class BetaSharp :
         GLManager.GL.Enable(GLEnum.Texture2D);
         GLManager.GL.ShadeModel(GLEnum.Smooth);
         GLManager.GL.ClearDepth(1.0D);
-        GLManager.GL.Enable(GLEnum.DepthTest);
-        GLManager.GL.DepthFunc(GLEnum.Lequal);
+
+        // The state every frame starts from, and the one the rest of the renderer is traced
+        // against. It is named here rather than assembled from a handful of enables so that the
+        // applier's cache starts out true instead of empty: depth tested and written, compared
+        // Lequal, nothing blended, nothing culled. Culling being off is not an oversight — GL
+        // starts with it disabled and the old code only ever set which face to cull, never turned
+        // it on, which is the same thing RenderState.Entity settles on for the entity pass.
+        GLManager.State.Apply(RenderState.Entity);
+
         GLManager.GL.Enable(GLEnum.AlphaTest);
         GLManager.GL.AlphaFunc(GLEnum.Greater, 0.1F);
-        GLManager.GL.CullFace(GLEnum.Back);
         GLManager.GL.MatrixMode(GLEnum.Projection);
         GLManager.GL.LoadIdentity();
         GLManager.GL.MatrixMode(GLEnum.Modelview);

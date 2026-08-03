@@ -391,8 +391,11 @@ public class HeldItemRenderer
         Tessellator tessellator = Tessellator.instance;
         float brightness = _game.Player.GetBrightnessAtEyes(tickDelta);
         GLManager.GL.Color4(brightness, brightness, brightness, 0.5F);
-        GLManager.GL.Enable(GLEnum.Blend);
-        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+
+        // Blended, but still depth tested and written, which is what a screen-filling quad drawn
+        // right after the hand has always been. The depth buffer was cleared before the hand pass,
+        // so the only thing this can be occluded by is the hand itself.
+        GLManager.State.ApplyUntrusted(RenderState.Entity with { Blend = BlendMode.Alpha });
         GLManager.GL.PushMatrix();
         float uvScale = 4.0F;
         float minX = -1.0F;
@@ -410,15 +413,14 @@ public class HeldItemRenderer
         tessellator.draw();
         GLManager.GL.PopMatrix();
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        GLManager.GL.Disable(GLEnum.Blend);
+        GLManager.State.ApplyUntrusted(RenderState.Entity);
     }
 
     private void renderFireInFirstPerson(float tickDelta)
     {
         Tessellator tessellator = Tessellator.instance;
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 0.9F);
-        GLManager.GL.Enable(GLEnum.Blend);
-        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+        GLManager.State.ApplyUntrusted(RenderState.Entity with { Blend = BlendMode.Alpha });
         float quadSize = 1.0F;
 
         for (int layerIndex = 0; layerIndex < 2; ++layerIndex)
@@ -448,7 +450,7 @@ public class HeldItemRenderer
         }
 
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        GLManager.GL.Disable(GLEnum.Blend);
+        GLManager.State.ApplyUntrusted(RenderState.Entity);
     }
 
     public void updateEquippedItem()
