@@ -8,17 +8,6 @@ public class GLManager
 {
     public static IGL GL { get; private set; }
 
-    /// <summary>
-    ///     The same object as <see cref="GL" />, seen through the fixed-function half of the API.
-    /// </summary>
-    /// <remarks>
-    ///     A call site that reaches for this is one that still needs something GL 4.3 core does not
-    ///     have, so the count of references is the size of what is left to port. Nothing changes at
-    ///     runtime by moving a call here; it is the same instance, and the emulation was already
-    ///     what was executing.
-    /// </remarks>
-    public static IFixedFunctionGL Legacy => GL;
-
     /// <summary>The model-view transform stack.</summary>
     /// <remarks>
     ///     Held directly rather than driven through <c>MatrixMode</c> and the fixed-function entry
@@ -70,6 +59,25 @@ public class GLManager
     {
         get => _emulated.Normal;
         set => _emulated.Normal = value;
+    }
+
+    /// <summary>The lights everything shaded is lit by.</summary>
+    /// <remarks>
+    ///     Set through <see cref="Lighting.turnOn" />, which is also where the directions are put
+    ///     into eye space. Whether anything is lit is separate and stays on <c>Enable</c>/
+    ///     <c>Disable</c> of <c>GLEnum.Lighting</c>.
+    /// </remarks>
+    public static LightingState Lighting
+    {
+        get => _emulated.Lighting;
+        set => _emulated.Lighting = value;
+    }
+
+    /// <summary>Whether a shaded colour is taken per vertex or per face.</summary>
+    public static ShadeModel ShadeModel
+    {
+        get => _emulated.ShadeModel;
+        set => _emulated.ShadeModel = value;
     }
 
     /// <summary>What the distance fog looks like, for every pass that draws under it.</summary>

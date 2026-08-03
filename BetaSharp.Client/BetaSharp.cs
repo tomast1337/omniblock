@@ -425,7 +425,7 @@ public partial class BetaSharp :
 
         CheckGLError("Pre startup");
         GLManager.GL.Enable(GLEnum.Texture2D);
-        GLManager.GL.ShadeModel(GLEnum.Smooth);
+        GLManager.ShadeModel = ShadeModel.Smooth;
         GLManager.GL.ClearDepth(1.0D);
 
         // The state every frame starts from, and the one the rest of the renderer is traced

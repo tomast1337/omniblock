@@ -16,25 +16,10 @@ public unsafe class EmulatedGL : LegacyGL
     private bool _alphaTestEnabled = false;
     private float _alphaThreshold = 0.1f;
     private bool _fogEnabled = false;
-    private int _shadeModel = 1;
-
-    private struct LightingState
-    {
-        public bool LightingEnabled = false;
-        public float Light0DirX, Light0DirY, Light0DirZ;
-        public float Light0DiffR, Light0DiffG, Light0DiffB;
-        public float Light1DirX, Light1DirY, Light1DirZ;
-        public float Light1DiffR, Light1DiffG, Light1DiffB;
-        public float AmbientR = 0.2f, AmbientG = 0.2f, AmbientB = 0.2f;
-
-        public LightingState()
-        {
-        }
-    }
+    private bool _lightingEnabled = false;
 
     private struct DirtyState
     {
-        public bool DirtyLighting = true;
         public bool StateDirty = true;
 
         public DirtyState()
@@ -42,7 +27,6 @@ public unsafe class EmulatedGL : LegacyGL
         }
     }
 
-    private LightingState _lightingState = new();
     private DirtyState _dirtyState = new();
 
     public EmulatedGL(GL gl) : base(gl)
@@ -94,6 +78,25 @@ public unsafe class EmulatedGL : LegacyGL
     /// <inheritdoc cref="GLManager.Fog" />
     public FogState Fog { get; set; } = FogState.Default;
 
+    /// <inheritdoc cref="GLManager.Lighting" />
+    public LightingState Lighting { get; set; } = LightingState.Default;
+
+    /// <inheritdoc cref="GLManager.ShadeModel" />
+    public ShadeModel ShadeModel
+    {
+        get;
+        set
+        {
+            if (field == value)
+            {
+                return;
+            }
+
+            field = value;
+            _dirtyState.StateDirty = true;
+        }
+    } = ShadeModel.Smooth;
+
     /// <inheritdoc cref="GLManager.AlphaThreshold" />
     public float AlphaThreshold
     {
@@ -134,6 +137,11 @@ public unsafe class EmulatedGL : LegacyGL
 
     private bool _fogUploaded;
 
+    /// <inheritdoc cref="_uploadedFog" />
+    private LightingState _uploadedLighting;
+
+    private bool _lightingUploaded;
+
     /// <summary>Forces every matrix uniform to be written again on the next draw.</summary>
     private void InvalidateUploadedMatrices()
     {
@@ -150,7 +158,7 @@ public unsafe class EmulatedGL : LegacyGL
             _currentProgram = _shader.Program;
             InvalidateUploadedMatrices();
             _dirtyState.StateDirty = true;
-            if (_lightingState.LightingEnabled) _dirtyState.DirtyLighting = true;
+            _lightingUploaded = false;
             _fogUploaded = false;
         }
 
@@ -161,9 +169,9 @@ public unsafe class EmulatedGL : LegacyGL
         {
             _shader.SetUseTexture(_useTexture);
             _shader.SetAlphaThreshold(_alphaTestEnabled ? _alphaThreshold : -1.0f);
-            _shader.SetEnableLighting(_lightingState.LightingEnabled);
+            _shader.SetEnableLighting(_lightingEnabled);
             _shader.SetEnableFog(_fogEnabled);
-            _shader.SetShadeModel(_shadeModel);
+            _shader.SetShadeModel((int)ShadeModel);
             _dirtyState.StateDirty = false;
         }
 
@@ -171,7 +179,7 @@ public unsafe class EmulatedGL : LegacyGL
         {
             _shader.SetModelView(_modelViewStack.Top);
 
-            if (_lightingState.LightingEnabled)
+            if (_lightingEnabled)
             {
                 Matrix4X4<float> mv = _modelViewStack.Top;
                 if (Matrix4X4.Invert(mv, out Matrix4X4<float> invMv))
@@ -191,12 +199,14 @@ public unsafe class EmulatedGL : LegacyGL
             _uploadedModelView = _modelViewStack.Version;
         }
 
-        if (_lightingState.LightingEnabled && _dirtyState.DirtyLighting)
+        if (_lightingEnabled && (!_lightingUploaded || _uploadedLighting != Lighting))
         {
-            _shader.SetLight0(_lightingState.Light0DirX, _lightingState.Light0DirY, _lightingState.Light0DirZ, _lightingState.Light0DiffR, _lightingState.Light0DiffG, _lightingState.Light0DiffB);
-            _shader.SetLight1(_lightingState.Light1DirX, _lightingState.Light1DirY, _lightingState.Light1DirZ, _lightingState.Light1DiffR, _lightingState.Light1DiffG, _lightingState.Light1DiffB);
-            _shader.SetAmbientLight(_lightingState.AmbientR, _lightingState.AmbientG, _lightingState.AmbientB);
-            _dirtyState.DirtyLighting = false;
+            LightingState lighting = Lighting;
+            _shader.SetLight0(lighting.Light0Direction.X, lighting.Light0Direction.Y, lighting.Light0Direction.Z, lighting.Light0Diffuse.X, lighting.Light0Diffuse.Y, lighting.Light0Diffuse.Z);
+            _shader.SetLight1(lighting.Light1Direction.X, lighting.Light1Direction.Y, lighting.Light1Direction.Z, lighting.Light1Diffuse.X, lighting.Light1Diffuse.Y, lighting.Light1Diffuse.Z);
+            _shader.SetAmbientLight(lighting.Ambient.X, lighting.Ambient.Y, lighting.Ambient.Z);
+            _uploadedLighting = lighting;
+            _lightingUploaded = true;
         }
 
         if (_fogEnabled && (!_fogUploaded || _uploadedFog != Fog))
@@ -237,8 +247,8 @@ public unsafe class EmulatedGL : LegacyGL
                 OnRasterStateChanging(cap);
                 return;
             case GLEnum.Lighting:
-                if (_lightingState.LightingEnabled) return;
-                _lightingState.LightingEnabled = true; _dirtyState.StateDirty = true; _dirtyState.DirtyLighting = true;
+                if (_lightingEnabled) return;
+                _lightingEnabled = true; _dirtyState.StateDirty = true;
                 OnRasterStateChanging(cap);
                 return;
             case GLEnum.Fog:
@@ -270,8 +280,8 @@ public unsafe class EmulatedGL : LegacyGL
                 OnRasterStateChanging(cap);
                 return;
             case GLEnum.Lighting:
-                if (!_lightingState.LightingEnabled) return;
-                _lightingState.LightingEnabled = false; _dirtyState.StateDirty = true;
+                if (!_lightingEnabled) return;
+                _lightingEnabled = false; _dirtyState.StateDirty = true;
                 OnRasterStateChanging(cap);
                 return;
             case GLEnum.Fog:
@@ -291,62 +301,6 @@ public unsafe class EmulatedGL : LegacyGL
     public override void Disable(EnableCap cap)
     {
         Disable((GLEnum)cap);
-    }
-
-    private void TransformLightPosition(float* params_, out float tx, out float ty, out float tz)
-    {
-        float x = params_[0], y = params_[1], z = params_[2], w = params_[3];
-
-        Matrix4X4<float> mv = _modelViewStack.Top;
-        tx = x * mv.M11 + y * mv.M21 + z * mv.M31 + w * mv.M41;
-        ty = x * mv.M12 + y * mv.M22 + z * mv.M32 + w * mv.M42;
-        tz = x * mv.M13 + y * mv.M23 + z * mv.M33 + w * mv.M43;
-
-        float len = MathF.Sqrt(tx * tx + ty * ty + tz * tz);
-        if (len > 0) { tx /= len; ty /= len; tz /= len; }
-    }
-
-    public override void Light(GLEnum light, GLEnum pname, float* params_)
-    {
-        if (pname == GLEnum.Position)
-        {
-            TransformLightPosition(params_, out float tx, out float ty, out float tz);
-
-            if (light == GLEnum.Light0) { _lightingState.Light0DirX = tx; _lightingState.Light0DirY = ty; _lightingState.Light0DirZ = tz; }
-            else if (light == GLEnum.Light1) { _lightingState.Light1DirX = tx; _lightingState.Light1DirY = ty; _lightingState.Light1DirZ = tz; }
-            _dirtyState.DirtyLighting = true;
-        }
-        else if (pname == GLEnum.Diffuse)
-        {
-            if (light == GLEnum.Light0) { _lightingState.Light0DiffR = params_[0]; _lightingState.Light0DiffG = params_[1]; _lightingState.Light0DiffB = params_[2]; }
-            else if (light == GLEnum.Light1) { _lightingState.Light1DiffR = params_[0]; _lightingState.Light1DiffG = params_[1]; _lightingState.Light1DiffB = params_[2]; }
-            _dirtyState.DirtyLighting = true;
-        }
-    }
-
-    public override void LightModel(GLEnum pname, float* params_)
-    {
-        if (pname == GLEnum.LightModelAmbient)
-        {
-            _lightingState.AmbientR = params_[0];
-            _lightingState.AmbientG = params_[1];
-            _lightingState.AmbientB = params_[2];
-            _dirtyState.DirtyLighting = true;
-        }
-    }
-
-    public override void ColorMaterial(GLEnum face, GLEnum mode)
-    {
-    }
-
-    public override void ShadeModel(GLEnum mode)
-    {
-        int newModel = mode == GLEnum.Smooth ? 1 : 0;
-        if (_shadeModel != newModel)
-        {
-            _shadeModel = newModel;
-            _dirtyState.StateDirty = true;
-        }
     }
 
     public override void DrawArrays(GLEnum mode, int first, uint count)
@@ -417,19 +371,6 @@ public unsafe class EmulatedGL : LegacyGL
     /// <summary>Whether fog is applied at all, i.e. whether <see cref="Fog" /> is being used.</summary>
     public bool GetFogEnabled() => _fogEnabled;
 
-    public EntityLightingSnapshot GetLightingState() => new(
-        _lightingState.LightingEnabled,
-        new Vector3D<float>(_lightingState.Light0DirX, _lightingState.Light0DirY, _lightingState.Light0DirZ),
-        new Vector3D<float>(_lightingState.Light0DiffR, _lightingState.Light0DiffG, _lightingState.Light0DiffB),
-        new Vector3D<float>(_lightingState.Light1DirX, _lightingState.Light1DirY, _lightingState.Light1DirZ),
-        new Vector3D<float>(_lightingState.Light1DiffR, _lightingState.Light1DiffG, _lightingState.Light1DiffB),
-        new Vector3D<float>(_lightingState.AmbientR, _lightingState.AmbientG, _lightingState.AmbientB));
+    /// <summary>Whether anything is lit at all, i.e. whether <see cref="Lighting" /> is being used.</summary>
+    public bool GetLightingEnabled() => _lightingEnabled;
 }
-
-public readonly record struct EntityLightingSnapshot(
-    bool Enabled,
-    Vector3D<float> Light0Dir,
-    Vector3D<float> Light0Diffuse,
-    Vector3D<float> Light1Dir,
-    Vector3D<float> Light1Diffuse,
-    Vector3D<float> Ambient);

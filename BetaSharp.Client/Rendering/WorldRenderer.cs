@@ -435,7 +435,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         float[] backgroundColor = _world.Dimension.GetBackgroundColor(_world.GetTime(tickDelta), tickDelta);
         if (backgroundColor != null)
         {
-            GLManager.GL.ShadeModel(GLEnum.Smooth);
+            GLManager.ShadeModel = ShadeModel.Smooth;
             GLManager.ModelView.Push();
             GLManager.ModelView.Rotate(90.0F, 1.0F, 0.0F, 0.0F);
             float celestialAngle = _world.GetTime(tickDelta);
@@ -456,7 +456,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             tessellator.draw();
             GLManager.ModelView.Pop();
             _skyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
-            GLManager.GL.ShadeModel(GLEnum.Flat);
+            GLManager.ShadeModel = ShadeModel.Flat;
         }
 
         // Sun and Moon (textured)

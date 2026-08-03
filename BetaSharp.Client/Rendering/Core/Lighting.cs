@@ -1,18 +1,14 @@
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Util.Maths;
+using Silk.NET.Maths;
 
 namespace BetaSharp.Client.Rendering.Core;
 
-public unsafe class Lighting
+public class Lighting
 {
-    private static readonly float[] s_buffer = new float[4];
-
     public static void turnOff()
     {
         GLManager.GL.Disable(GLEnum.Lighting);
-        GLManager.GL.Disable(GLEnum.Light0);
-        GLManager.GL.Disable(GLEnum.Light1);
-        GLManager.GL.Disable(GLEnum.ColorMaterial);
     }
 
     public static void turnOnGui()
@@ -25,43 +21,41 @@ public unsafe class Lighting
 
     public static void turnOn(bool mirrored = false)
     {
-        GLManager.GL.Enable(GLEnum.Lighting);
-        GLManager.GL.Enable(GLEnum.Light0);
-        GLManager.GL.Enable(GLEnum.Light1);
-        GLManager.GL.Enable(GLEnum.ColorMaterial);
-        GLManager.GL.ColorMaterial(GLEnum.FrontAndBack, GLEnum.AmbientAndDiffuse);
-        float ambientLight = 0.4F;
-        float diffuseLight = 0.6F;
-        float specularLight = 0.0F;
+        const float ambient = 0.4F;
+        const float diffuse = 0.6F;
         float mx = mirrored ? -1.0f : 1.0f;
-        Vec3D lightDirection = new Vec3D((double)(0.2F * mx), 1.0D, (double)-0.7F).Normalize();
-        fixed (float* buf = s_buffer)
-        {
-            GLManager.GL.Light(GLEnum.Light0, GLEnum.Position, getBuffer(buf, lightDirection.X, lightDirection.Y, lightDirection.Z, 0.0D));
-            GLManager.GL.Light(GLEnum.Light0, GLEnum.Diffuse, getBuffer(buf, diffuseLight, diffuseLight, diffuseLight, 1.0F));
-            GLManager.GL.Light(GLEnum.Light0, GLEnum.Ambient, getBuffer(buf, 0.0F, 0.0F, 0.0F, 1.0F));
-            GLManager.GL.Light(GLEnum.Light0, GLEnum.Specular, getBuffer(buf, specularLight, specularLight, specularLight, 1.0F));
-            lightDirection = new Vec3D((double)(-0.2F * mx), 1.0D, (double)0.7F).Normalize();
-            GLManager.GL.Light(GLEnum.Light1, GLEnum.Position, getBuffer(buf, lightDirection.X, lightDirection.Y, lightDirection.Z, 0.0D));
-            GLManager.GL.Light(GLEnum.Light1, GLEnum.Diffuse, getBuffer(buf, diffuseLight, diffuseLight, diffuseLight, 1.0F));
-            GLManager.GL.Light(GLEnum.Light1, GLEnum.Ambient, getBuffer(buf, 0.0F, 0.0F, 0.0F, 1.0F));
-            GLManager.GL.Light(GLEnum.Light1, GLEnum.Specular, getBuffer(buf, specularLight, specularLight, specularLight, 1.0F));
-            GLManager.GL.ShadeModel(GLEnum.Flat);
-            GLManager.GL.LightModel(GLEnum.LightModelAmbient, getBuffer(buf, ambientLight, ambientLight, ambientLight, 1.0F));
-        }
+
+        GLManager.GL.Enable(GLEnum.Lighting);
+        GLManager.ShadeModel = ShadeModel.Flat;
+        GLManager.Lighting = new LightingState(
+            EyeSpace(new Vec3D((double)(0.2F * mx), 1.0D, (double)-0.7F)),
+            new Vector3D<float>(diffuse, diffuse, diffuse),
+            EyeSpace(new Vec3D((double)(-0.2F * mx), 1.0D, (double)0.7F)),
+            new Vector3D<float>(diffuse, diffuse, diffuse),
+            new Vector3D<float>(ambient, ambient, ambient));
     }
 
-    private static float* getBuffer(float* buffer, double x, double y, double z, double w)
+    /// <summary>
+    ///     A world-space light direction through the model-view, which is what the two lights are
+    ///     stated in.
+    /// </summary>
+    /// <remarks>
+    ///     The fixed-function pipeline did this inside <c>glLight(GL_POSITION)</c>, and it is why
+    ///     <see cref="turnOnGui" /> can light an inventory model differently by wrapping a rotation
+    ///     around its call. A direction, so the translation row plays no part.
+    /// </remarks>
+    private static Vector3D<float> EyeSpace(Vec3D direction)
     {
-        return getBuffer(buffer, (float)x, (float)y, (float)z, (float)w);
-    }
+        Vec3D unit = direction.Normalize();
+        float x = (float)unit.X, y = (float)unit.Y, z = (float)unit.Z;
 
-    private static float* getBuffer(float* buffer, float x, float y, float z, float w)
-    {
-        buffer[0] = x;
-        buffer[1] = y;
-        buffer[2] = z;
-        buffer[3] = w;
-        return buffer;
+        Matrix4X4<float> mv = GLManager.ModelView.Top;
+        Vector3D<float> eye = new(
+            x * mv.M11 + y * mv.M21 + z * mv.M31,
+            x * mv.M12 + y * mv.M22 + z * mv.M32,
+            x * mv.M13 + y * mv.M23 + z * mv.M33);
+
+        float length = MathF.Sqrt(eye.X * eye.X + eye.Y * eye.Y + eye.Z * eye.Z);
+        return length > 0 ? eye / length : eye;
     }
 }
