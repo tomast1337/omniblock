@@ -55,7 +55,6 @@ public class LivingEntityRenderer : EntityRenderer
             float animationProgress = getAnimationProgress(entity, tickDelta);
             RotateCorpse(entity, animationProgress, bodyYaw, tickDelta);
             float modelScale = 1.0F / 16.0F;
-            GLManager.GL.Enable(GLEnum.RescaleNormal);
             GLManager.ModelView.Scale(-1.0F, -1.0F, 1.0F);
             PreRenderCallback(entity, tickDelta);
             GLManager.ModelView.Translate(0.0F, -24.0F * modelScale - (1 / 128f), 0.0F);
@@ -67,7 +66,7 @@ public class LivingEntityRenderer : EntityRenderer
             }
 
             LoadDownloadableImageTexture((entity as EntityPlayer)?.Name, entity.GetTexture());
-            GLManager.GL.Enable(GLEnum.AlphaTest);
+            GLManager.AlphaTestEnabled = true;
             Main.SetLivingAnimations(entity, walkPhase, walkSpeed, tickDelta);
             Main.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
 
@@ -77,7 +76,7 @@ public class LivingEntityRenderer : EntityRenderer
                 {
                     renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
                     GLManager.State.Apply(RenderState.Entity);
-                    GLManager.GL.Enable(GLEnum.AlphaTest);
+                    GLManager.AlphaTestEnabled = true;
                 }
             }
 
@@ -93,8 +92,8 @@ public class LivingEntityRenderer : EntityRenderer
                 // front of them. Nothing is flushed to arrange that — the body was submitted first,
                 // so its bucket is drawn first, and the overlay's is a separate bucket because the
                 // depth comparison it carries differs.
-                GLManager.GL.Disable(GLEnum.Texture2D);
-                GLManager.GL.Disable(GLEnum.AlphaTest);
+                GLManager.TextureEnabled = false;
+                GLManager.AlphaTestEnabled = false;
                 GLManager.State.Apply(RenderState.Entity with
                 {
                     Blend = BlendMode.Alpha,
@@ -135,11 +134,10 @@ public class LivingEntityRenderer : EntityRenderer
                 }
 
                 GLManager.State.Apply(RenderState.Entity);
-                GLManager.GL.Enable(GLEnum.AlphaTest);
-                GLManager.GL.Enable(GLEnum.Texture2D);
+                GLManager.AlphaTestEnabled = true;
+                GLManager.TextureEnabled = true;
             }
 
-            GLManager.GL.Disable(GLEnum.RescaleNormal);
         }
         catch (Exception e)
         {
@@ -235,7 +233,7 @@ public class LivingEntityRenderer : EntityRenderer
             GLManager.ModelView.Scale(-renderScale, -renderScale, renderScale);
             // Drawn twice on purpose. This first pass ignores depth entirely, so the plate and the
             // text behind it show through whatever the label is standing in front of.
-            GLManager.GL.Disable(GLEnum.Lighting);
+            GLManager.LightingEnabled = false;
             GLManager.State.Apply(RenderState.Entity with
             {
                 Blend = BlendMode.Alpha,
@@ -249,7 +247,7 @@ public class LivingEntityRenderer : EntityRenderer
                 yOffset = -10;
             }
 
-            GLManager.GL.Disable(GLEnum.Texture2D);
+            GLManager.TextureEnabled = false;
             tessellator.startDrawingQuads();
             int labelHalfWidth = fontRenderer.GetStringWidth(label) / 2;
             tessellator.setColorRGBA_F(0.0F, 0.0F, 0.0F, 0.25F);
@@ -258,13 +256,13 @@ public class LivingEntityRenderer : EntityRenderer
             tessellator.addVertex(labelHalfWidth + 1, 8 + yOffset, 0.0D);
             tessellator.addVertex(labelHalfWidth + 1, -1 + yOffset, 0.0D);
             tessellator.draw();
-            GLManager.GL.Enable(GLEnum.Texture2D);
+            GLManager.TextureEnabled = true;
             fontRenderer.DrawString(label, -fontRenderer.GetStringWidth(label) / 2, yOffset, Color.WhiteAlpha20);
             // And again with depth restored, so the part of the label that is genuinely in front
             // draws solidly over the faint copy laid down above.
             GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
             fontRenderer.DrawString(label, -fontRenderer.GetStringWidth(label) / 2, yOffset, Color.WhiteAlpha20);
-            GLManager.GL.Enable(GLEnum.Lighting);
+            GLManager.LightingEnabled = true;
             GLManager.State.Apply(RenderState.Entity);
             GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
             GLManager.ModelView.Pop();

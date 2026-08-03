@@ -50,7 +50,6 @@ public class ItemRenderer : EntityRenderer
         }
 
         GLManager.ModelView.Translate((float)x, (float)y + bobOffset, (float)z);
-        GLManager.GL.Enable(GLEnum.RescaleNormal);
         float minU;
         float maxU;
         float minV;
@@ -140,7 +139,6 @@ public class ItemRenderer : EntityRenderer
             }
         }
 
-        GLManager.GL.Disable(GLEnum.RescaleNormal);
         GLManager.ModelView.Pop();
     }
 
@@ -173,7 +171,7 @@ public class ItemRenderer : EntityRenderer
         }
         else if (iconIndex >= 0)
         {
-            GLManager.GL.Disable(GLEnum.Lighting);
+            GLManager.LightingEnabled = false;
             if (itemId < 256)
             {
                 textureManager.BindTexture(textureManager.GetTextureId("/terrain.png"));

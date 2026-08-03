@@ -120,11 +120,11 @@ internal static unsafe class FrameHashHarness
         GLManager.TextureMatrix.LoadIdentity();
 
         GLManager.GL.Disable(GLEnum.Blend);
-        GLManager.GL.Disable(GLEnum.Fog);
-        GLManager.GL.Disable(GLEnum.AlphaTest);
-        GLManager.GL.Disable(GLEnum.Lighting);
+        GLManager.FogEnabled = false;
+        GLManager.AlphaTestEnabled = false;
+        GLManager.LightingEnabled = false;
         GLManager.GL.Disable(GLEnum.CullFace);
-        GLManager.GL.Disable(GLEnum.Texture2D);
+        GLManager.TextureEnabled = false;
         GLManager.GL.Enable(GLEnum.DepthTest);
         GLManager.GL.DepthFunc(GLEnum.Lequal);
         GLManager.GL.DepthMask(true);
@@ -420,7 +420,7 @@ internal static unsafe class FrameHashHarness
     private static void TexturedScene()
     {
         Ortho();
-        GLManager.GL.Enable(GLEnum.Texture2D);
+        GLManager.TextureEnabled = true;
         GLManager.GL.BindTexture(GLEnum.Texture2D, s_checkerboard);
         TexturedQuad(16, 16, 224, 224);
     }
@@ -429,7 +429,7 @@ internal static unsafe class FrameHashHarness
     private static void TextureMatrixScene()
     {
         Ortho();
-        GLManager.GL.Enable(GLEnum.Texture2D);
+        GLManager.TextureEnabled = true;
         GLManager.GL.BindTexture(GLEnum.Texture2D, s_checkerboard);
         GLManager.TextureMatrix.Translate(0.25f, 0.5f, 0.0f);
         GLManager.TextureMatrix.Scale(2.0f, 2.0f, 1.0f);
@@ -461,9 +461,9 @@ internal static unsafe class FrameHashHarness
     private static void AlphaTest()
     {
         Ortho();
-        GLManager.GL.Enable(GLEnum.Texture2D);
+        GLManager.TextureEnabled = true;
         GLManager.GL.BindTexture(GLEnum.Texture2D, s_checkerboard);
-        GLManager.GL.Enable(GLEnum.AlphaTest);
+        GLManager.AlphaTestEnabled = true;
         GLManager.AlphaThreshold = 0.5f;
         GLManager.Color = new(1.0f, 1.0f, 1.0f, 0.75f);
         TexturedQuad(16, 16, 224, 224);
@@ -483,7 +483,7 @@ internal static unsafe class FrameHashHarness
     private static void FogLinear()
     {
         GLManager.Projection.Frustum(-1.0, 1.0, -1.0, 1.0, 1.0, 100.0);
-        GLManager.GL.Enable(GLEnum.Fog);
+        GLManager.FogEnabled = true;
         GLManager.Fog = new FogState(
             FogCurve.Linear,
             new Vector4D<float>(0.4f, 0.5f, 0.9f, 1.0f),

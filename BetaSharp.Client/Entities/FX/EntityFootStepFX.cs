@@ -31,7 +31,7 @@ public class EntityFootStepFX : EntityFX
         }
 
         alpha *= 0.2F;
-        GLManager.GL.Disable(GLEnum.Lighting);
+        GLManager.LightingEnabled = false;
         float footprintSize = 2.0F / 16.0F;
         float renderX = (float)(X - interpPosX);
         float renderY = (float)(Y - interpPosY);
@@ -47,7 +47,7 @@ public class EntityFootStepFX : EntityFX
         t.addVertexWithUV((double)(renderX - footprintSize), (double)renderY, (double)(renderZ - footprintSize), 0.0D, 0.0D);
         t.draw();
         GLManager.State.Apply(RenderState.Entity);
-        GLManager.GL.Enable(GLEnum.Lighting);
+        GLManager.LightingEnabled = true;
     }
 
     public override void Tick()

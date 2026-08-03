@@ -404,14 +404,14 @@ public class GameRenderer
             worldRenderer.RenderSky(tickDelta);
         }
 
-        GLManager.GL.Enable(GLEnum.Fog);
+        GLManager.FogEnabled = true;
         ApplyFog(1);
 
         FrustrumCuller frustrumCuller = new();
         frustrumCuller.SetPosition(entX, entY, entZ);
 
         ApplyFog(0);
-        GLManager.GL.Enable(GLEnum.Fog);
+        GLManager.FogEnabled = true;
         _client.TextureManager.BindTexture(_client.TextureManager.GetTextureId("/terrain.png"));
         Lighting.turnOff();
 
@@ -442,10 +442,10 @@ public class GameRenderer
         if (_client.ObjectMouseOver.Type != HitResultType.Miss && entity.IsInFluid(Material.Water) && entity is EntityPlayer)
         {
             entityPlayer = (EntityPlayer)entity;
-            GLManager.GL.Disable(GLEnum.AlphaTest);
+            GLManager.AlphaTestEnabled = false;
             worldRenderer.DrawBlockBreaking(entityPlayer, _client.ObjectMouseOver, entityPlayer.Inventory.ItemInHand, tickDelta);
             worldRenderer.DrawSelectionBox(entityPlayer, _client.ObjectMouseOver, 0, entityPlayer.Inventory.ItemInHand, tickDelta);
-            GLManager.GL.Enable(GLEnum.AlphaTest);
+            GLManager.AlphaTestEnabled = true;
         }
 
         ApplyFog(0);
@@ -470,18 +470,18 @@ public class GameRenderer
         if (!CameraController.IsZoomActive && entity is EntityPlayer && _client.ObjectMouseOver.Type != HitResultType.Miss && !entity.IsInFluid(Material.Water))
         {
             entityPlayer = (EntityPlayer)entity;
-            GLManager.GL.Disable(GLEnum.AlphaTest);
+            GLManager.AlphaTestEnabled = false;
             worldRenderer.DrawBlockBreaking(entityPlayer, _client.ObjectMouseOver, entityPlayer.Inventory.ItemInHand, tickDelta);
             worldRenderer.DrawSelectionBox(entityPlayer, _client.ObjectMouseOver, 0, entityPlayer.Inventory.ItemInHand, tickDelta);
-            GLManager.GL.Enable(GLEnum.AlphaTest);
+            GLManager.AlphaTestEnabled = true;
         }
 
         RenderSnow(tickDelta);
-        GLManager.GL.Disable(GLEnum.Fog);
+        GLManager.FogEnabled = false;
         if (_targetedEntity != null) { }
 
         ApplyFog(0);
-        GLManager.GL.Enable(GLEnum.Fog);
+        GLManager.FogEnabled = true;
 
         if (_client.ShowChunkBorders)
         {
@@ -492,7 +492,7 @@ public class GameRenderer
         if (cloudBlurPass) _client.FramebufferManager.BeginCloudPass();
         worldRenderer.RenderClouds(tickDelta);
         if (cloudBlurPass) _client.FramebufferManager.EndCloudPass();
-        GLManager.GL.Disable(GLEnum.Fog);
+        GLManager.FogEnabled = false;
         ApplyFog(1);
 
         if (!CameraController.IsZoomActive)
@@ -515,9 +515,9 @@ public class GameRenderer
         GLManager.ModelView.Push();
         GLManager.ModelView.Translate((float)-camX, (float)-camY, (float)-camZ);
 
-        GLManager.GL.Disable(GLEnum.Texture2D);
-        GLManager.GL.Disable(GLEnum.Lighting);
-        GLManager.GL.Disable(GLEnum.Fog);
+        GLManager.TextureEnabled = false;
+        GLManager.LightingEnabled = false;
+        GLManager.FogEnabled = false;
 
         // What the world pass already left set — this only ever asserted half of it, and the half
         // it left out is what decided whether the lines were blended.
@@ -595,7 +595,7 @@ public class GameRenderer
 
         tess.draw();
         GLManager.ModelView.Pop();
-        GLManager.GL.Enable(GLEnum.Texture2D);
+        GLManager.TextureEnabled = true;
     }
 
     private void RenderRain()
@@ -831,7 +831,7 @@ public class GameRenderer
     {
         if (_client.IsControllerMode && _client.CurrentScreen?.IsEditingSlider != true)
         {
-            GLManager.GL.Disable(GLEnum.Lighting);
+            GLManager.LightingEnabled = false;
 
             // Drawn over the screen the pointer is pointing at, so it takes no part in the depth
             // buffer at all. Same state as everything else in the interface.

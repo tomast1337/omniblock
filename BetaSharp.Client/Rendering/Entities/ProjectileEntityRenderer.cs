@@ -20,7 +20,6 @@ public class ProjectileEntityRenderer : EntityRenderer
     {
         GLManager.ModelView.Push();
         GLManager.ModelView.Translate((float)x, (float)y, (float)z);
-        GLManager.GL.Enable(GLEnum.RescaleNormal);
         GLManager.ModelView.Scale(scale, scale, scale);
         loadTexture("/gui/items.png");
         Tessellator tessellator = Tessellator.instance;
@@ -40,7 +39,6 @@ public class ProjectileEntityRenderer : EntityRenderer
         tessellator.addVertexWithUV((double)(quadWidth - xOffset), (double)(1.0F - yOffset), 0.0D, (double)maxU, (double)minV);
         tessellator.addVertexWithUV((double)(0.0F - xOffset), (double)(1.0F - yOffset), 0.0D, (double)minU, (double)minV);
         tessellator.draw();
-        GLManager.GL.Disable(GLEnum.RescaleNormal);
         GLManager.ModelView.Pop();
     }
 }

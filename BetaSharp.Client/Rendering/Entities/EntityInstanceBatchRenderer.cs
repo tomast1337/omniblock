@@ -269,9 +269,9 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         EmulatedGL gl = (EmulatedGL)GLManager.GL;
         DrawState draw = new(
             GLManager.State.Current,
-            gl.GetTextureEnabled(),
+            GLManager.TextureEnabled,
             gl.GetCurrentAlphaThreshold(),
-            gl.GetLightingEnabled(),
+            GLManager.LightingEnabled,
             GLManager.Lighting,
             GLManager.TextureMatrix.Top);
 
@@ -413,7 +413,7 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         _shader.SetUniformMatrix4("projectionMatrix", projection);
         _shader.SetUniform1("textureSampler", 0);
 
-        _shader.SetUniform1("fogEnabled", gl.GetFogEnabled() ? 1 : 0);
+        _shader.SetUniform1("fogEnabled", GLManager.FogEnabled ? 1 : 0);
         _shader.SetUniform1("fogMode", (int)fog.Curve);
         _shader.SetUniform1("fogStart", fog.Start);
         _shader.SetUniform1("fogEnd", fog.End);

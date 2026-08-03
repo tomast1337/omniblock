@@ -30,9 +30,9 @@ public class FallingBlockEntityRenderer : EntityRenderer
         loadTexture("/terrain.png");
         Block block = Block.Blocks[blockId];
         IWorldContext world = target.World;
-        GLManager.GL.Disable(GLEnum.Lighting);
+        GLManager.LightingEnabled = false;
         BlockRenderer.RenderBlockFallingSand(block, world, MathHelper.Floor(target.X), MathHelper.Floor(target.Y), MathHelper.Floor(target.Z), Tessellator.instance);
-        GLManager.GL.Enable(GLEnum.Lighting);
+        GLManager.LightingEnabled = true;
         GLManager.ModelView.Pop();
     }
 }

@@ -53,7 +53,6 @@ public class HeldItemRenderer
             float quadWidth = 1.0F;
             float xOffset = 0.0F;
             float yOffset = 0.3F;
-            GLManager.GL.Enable(GLEnum.RescaleNormal);
             GLManager.ModelView.Translate(-xOffset, -yOffset, 0.0F);
             float itemScale = 1.5F;
             GLManager.ModelView.Scale(itemScale, itemScale, itemScale);
@@ -139,7 +138,6 @@ public class HeldItemRenderer
             }
 
             tessellator.draw();
-            GLManager.GL.Disable(GLEnum.RescaleNormal);
         }
 
         GLManager.ModelView.Pop();
@@ -197,7 +195,6 @@ public class HeldItemRenderer
             GLManager.ModelView.Translate(0.0F, 0.0F * baseScale - (1.0F - equipProgress) * 1.2F - swingProgress * 0.5F + 0.04F, -0.9F * baseScale);
             GLManager.ModelView.Rotate(90.0F, 0.0F, 1.0F, 0.0F);
             GLManager.ModelView.Rotate(swingProgress * -85.0F, 0.0F, 0.0F, 1.0F);
-            GLManager.GL.Enable(GLEnum.RescaleNormal);
             bindSkinTexture();
 
             for (int i = 0; i < 2; i++)
@@ -254,7 +251,6 @@ public class HeldItemRenderer
             GLManager.ModelView.Translate(-sqrtSwing * 0.4F, MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI * 2.0F) * 0.2F, -sineSwing * 0.2F);
             GLManager.ModelView.Translate(0.7F * baseScale, -0.65F * baseScale - (1.0F - equipProgress) * 0.6F, -0.9F * baseScale);
             GLManager.ModelView.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Enable(GLEnum.RescaleNormal);
             red = player.GetSwingProgress(tickDelta);
             sineSwing = MathHelper.Sin(red * red * (float)Math.PI);
             sqrtSwing = MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI);
@@ -281,7 +277,6 @@ public class HeldItemRenderer
             GLManager.ModelView.Translate(-sqrtSwing * 0.3F, MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI * 2.0F) * 0.4F, -sineSwing * 0.4F);
             GLManager.ModelView.Translate(0.8F * baseScale, -(12.0F / 16.0F) * baseScale - (1.0F - equipProgress) * 0.6F, -0.9F * baseScale);
             GLManager.ModelView.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
-            GLManager.GL.Enable(GLEnum.RescaleNormal);
             red = player.GetSwingProgress(tickDelta);
             sineSwing = MathHelper.Sin(red * red * (float)Math.PI);
             sqrtSwing = MathHelper.Sin(MathHelper.Sqrt(red) * (float)Math.PI);
@@ -302,13 +297,12 @@ public class HeldItemRenderer
             GLManager.ModelView.Pop();
         }
 
-        GLManager.GL.Disable(GLEnum.RescaleNormal);
         Lighting.turnOff();
     }
 
     public void renderOverlays(float tickDelta)
     {
-        GLManager.GL.Disable(GLEnum.AlphaTest);
+        GLManager.AlphaTestEnabled = false;
         int blockX;
         if (_game.Player.IsOnFire)
         {
@@ -356,7 +350,7 @@ public class HeldItemRenderer
             renderWarpedTextureOverlay(tickDelta);
         }
 
-        GLManager.GL.Enable(GLEnum.AlphaTest);
+        GLManager.AlphaTestEnabled = true;
     }
 
     private void renderInsideOfBlock(float tickDelta, int textureId)

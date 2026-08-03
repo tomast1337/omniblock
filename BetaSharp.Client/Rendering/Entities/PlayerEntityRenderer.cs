@@ -97,7 +97,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                     GLManager.ModelView.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
                     GLManager.ModelView.Rotate(Dispatcher.PlayerViewX, 1.0F, 0.0F, 0.0F);
                     GLManager.ModelView.Scale(-renderScale, -renderScale, renderScale);
-                    GLManager.GL.Disable(GLEnum.Lighting);
+                    GLManager.LightingEnabled = false;
                     GLManager.ModelView.Translate(0.0F, 0.25F / renderScale, 0.0F);
                     // The plate behind the name is depth tested but does not write depth, so the
                     // text drawn over it a moment later is not rejected for being at the same
@@ -109,7 +109,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                     });
 
                     Tessellator tessellator = Tessellator.instance;
-                    GLManager.GL.Disable(GLEnum.Texture2D);
+                    GLManager.TextureEnabled = false;
                     tessellator.startDrawingQuads();
                     int nameHalfWidth = fontRenderer.GetStringWidth(displayName) / 2;
                     tessellator.setColorRGBA_F(0.0F, 0.0F, 0.0F, 0.25F);
@@ -118,10 +118,10 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                     tessellator.addVertex(nameHalfWidth + 1, 8.0D, 0.0D);
                     tessellator.addVertex(nameHalfWidth + 1, -1.0D, 0.0D);
                     tessellator.draw();
-                    GLManager.GL.Enable(GLEnum.Texture2D);
+                    GLManager.TextureEnabled = true;
                     GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
                     fontRenderer.DrawString(displayName, -fontRenderer.GetStringWidth(displayName) / 2, 0, Color.WhiteAlpha20);
-                    GLManager.GL.Enable(GLEnum.Lighting);
+                    GLManager.LightingEnabled = true;
                     GLManager.State.Apply(RenderState.Entity);
                     GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
                     GLManager.ModelView.Pop();
