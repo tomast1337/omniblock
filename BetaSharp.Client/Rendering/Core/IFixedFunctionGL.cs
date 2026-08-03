@@ -30,12 +30,6 @@ namespace BetaSharp.Client.Rendering.Core;
 /// </remarks>
 public unsafe interface IFixedFunctionGL
 {
-    // Immediate-mode vertex attributes.
-    void Color3(float red, float green, float blue);
-    void Color3(byte red, byte green, byte blue);
-    void Color4(float red, float green, float blue, float alpha);
-    void Normal3(float nx, float ny, float nz);
-
     // Fixed pipeline state, all of it expressible as shader uniforms.
     void ColorMaterial(GLEnum face, GLEnum mode);
     void Light(GLEnum light, GLEnum pname, float* params_);

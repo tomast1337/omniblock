@@ -166,11 +166,11 @@ public class HeldItemRenderer
             red = (itemColor >> 16 & 255) / 255.0F;
             sineSwing = (itemColor >> 8 & 255) / 255.0F;
             sqrtSwing = (itemColor & 255) / 255.0F;
-            GLManager.GL.Color4(brightness * red, brightness * sineSwing, brightness * sqrtSwing, 1.0F);
+            GLManager.Color = new(brightness * red, brightness * sineSwing, brightness * sqrtSwing, 1.0F);
         }
         else
         {
-            GLManager.GL.Color4(brightness, brightness, brightness, 1.0F);
+            GLManager.Color = new(brightness, brightness, brightness, 1.0F);
         }
 
         float baseScale;
@@ -232,7 +232,7 @@ public class HeldItemRenderer
             GLManager.ModelView.Scale(sqrtSwing, sqrtSwing, sqrtSwing);
             _game.TextureManager.BindTexture(_game.TextureManager.GetTextureId("/misc/mapbg.png"));
             Tessellator tessellator = Tessellator.instance;
-            GLManager.GL.Normal3(0.0F, 0.0F, -1.0F);
+            GLManager.Normal = new(0.0F, 0.0F, -1.0F);
             tessellator.startDrawingQuads();
             byte mapBorder = 7;
             tessellator.addVertexWithUV(0 - mapBorder, 128 + mapBorder, 0.0D, 0.0D, 1.0D);
@@ -364,7 +364,7 @@ public class HeldItemRenderer
         Tessellator tessellator = Tessellator.instance;
         _game.Player.GetBrightnessAtEyes(tickDelta);
         float brightness = 0.1F;
-        GLManager.GL.Color4(brightness, brightness, brightness, 0.5F);
+        GLManager.Color = new(brightness, brightness, brightness, 0.5F);
         GLManager.ModelView.Push();
         float minX = -1.0F;
         float maxX = 1.0F;
@@ -383,14 +383,14 @@ public class HeldItemRenderer
         tessellator.addVertexWithUV((double)minX, (double)maxY, (double)z, (double)maxU, (double)minV);
         tessellator.draw();
         GLManager.ModelView.Pop();
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     private void renderWarpedTextureOverlay(float tickDelta)
     {
         Tessellator tessellator = Tessellator.instance;
         float brightness = _game.Player.GetBrightnessAtEyes(tickDelta);
-        GLManager.GL.Color4(brightness, brightness, brightness, 0.5F);
+        GLManager.Color = new(brightness, brightness, brightness, 0.5F);
 
         // Blended, but still depth tested and written, which is what a screen-filling quad drawn
         // right after the hand has always been. The depth buffer was cleared before the hand pass,
@@ -412,14 +412,14 @@ public class HeldItemRenderer
         tessellator.addVertexWithUV((double)minX, (double)maxY, (double)z, (double)(uvScale + uOffset), (double)(0.0F + vOffset));
         tessellator.draw();
         GLManager.ModelView.Pop();
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
         GLManager.State.Apply(RenderState.Entity);
     }
 
     private void renderFireInFirstPerson(float tickDelta)
     {
         Tessellator tessellator = Tessellator.instance;
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 0.9F);
+        GLManager.Color = new(1.0F, 1.0F, 1.0F, 0.9F);
         GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
         float quadSize = 1.0F;
 
@@ -449,7 +449,7 @@ public class HeldItemRenderer
             GLManager.ModelView.Pop();
         }
 
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
         GLManager.State.Apply(RenderState.Entity);
     }
 

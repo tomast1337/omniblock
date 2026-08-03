@@ -102,14 +102,14 @@ public class LivingEntityRenderer : EntityRenderer
                 });
                 if (entity.HurtTime > 0 || entity.DeathTime > 0)
                 {
-                    GLManager.GL.Color4(brightness, 0.0F, 0.0F, 0.4F);
+                    GLManager.Color = new(brightness, 0.0F, 0.0F, 0.4F);
                     Main.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
 
                     for (int damagePass = 0; damagePass < 4; ++damagePass)
                     {
                         if (func_27005_b(entity, damagePass, tickDelta))
                         {
-                            GLManager.GL.Color4(brightness, 0.0F, 0.0F, 0.4F);
+                            GLManager.Color = new(brightness, 0.0F, 0.0F, 0.4F);
                             renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
                         }
                     }
@@ -121,14 +121,14 @@ public class LivingEntityRenderer : EntityRenderer
                     float green = (colorMultiplier >> 8 & 255) / 255.0F;
                     float blue = (colorMultiplier & 255) / 255.0F;
                     float alpha = (colorMultiplier >> 24 & 255) / 255.0F;
-                    GLManager.GL.Color4(red, green, blue, alpha);
+                    GLManager.Color = new(red, green, blue, alpha);
                     Main.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
 
                     for (int overlayPass = 0; overlayPass < 4; ++overlayPass)
                     {
                         if (func_27005_b(entity, overlayPass, tickDelta))
                         {
-                            GLManager.GL.Color4(red, green, blue, alpha);
+                            GLManager.Color = new(red, green, blue, alpha);
                             renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
                         }
                     }
@@ -229,7 +229,7 @@ public class LivingEntityRenderer : EntityRenderer
             float renderScale = (float)(1.0D / 60.0D) * labelScale;
             GLManager.ModelView.Push();
             GLManager.ModelView.Translate((float)x + 0.0F, (float)y + 2.3F, (float)z);
-            GLManager.GL.Normal3(0.0F, 1.0F, 0.0F);
+            GLManager.Normal = new(0.0F, 1.0F, 0.0F);
             GLManager.ModelView.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
             GLManager.ModelView.Rotate(Dispatcher.PlayerViewX, 1.0F, 0.0F, 0.0F);
             GLManager.ModelView.Scale(-renderScale, -renderScale, renderScale);
@@ -266,7 +266,7 @@ public class LivingEntityRenderer : EntityRenderer
             fontRenderer.DrawString(label, -fontRenderer.GetStringWidth(label) / 2, yOffset, Color.WhiteAlpha20);
             GLManager.GL.Enable(GLEnum.Lighting);
             GLManager.State.Apply(RenderState.Entity);
-            GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+            GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
             GLManager.ModelView.Pop();
         }
     }

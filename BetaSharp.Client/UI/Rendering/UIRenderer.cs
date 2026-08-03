@@ -63,7 +63,7 @@ public class UIRenderer
         // Lighting is a shader uniform rather than pipeline state, so it stays a separate call.
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.State.Apply(RenderState.Interface);
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
+        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
         GLManager.ModelView.Push();
 
         _translateX = 0;
@@ -83,7 +83,7 @@ public class UIRenderer
     {
         _batch.End();
         GLManager.ModelView.Pop();
-        GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
+        GLManager.Color = new(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
 
@@ -96,14 +96,14 @@ public class UIRenderer
             _currentTint = newTint;
         }
 
-        GLManager.GL.Color4(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f, color.A / 255.0f);
+        GLManager.Color = new(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f, color.A / 255.0f);
     }
 
     public void PopColor()
     {
         _batch.Flush();
         _currentTint = 0xFFFFFFFF;
-        GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
+        GLManager.Color = new(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     public void SetAlphaTest(bool flag)

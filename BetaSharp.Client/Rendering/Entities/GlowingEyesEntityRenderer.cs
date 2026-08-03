@@ -35,7 +35,7 @@ public sealed class GlowingEyesEntityRenderer : LivingEntityRenderer
         // call. Depth writing stays on, as it was before: the overlay sits on the model it covers.
         GLManager.GL.Disable(GLEnum.AlphaTest);
         GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
-        GLManager.GL.Color4(1.0F, 1.0F, 1.0F, alpha);
+        GLManager.Color = new(1.0F, 1.0F, 1.0F, alpha);
         return true;
     }
 }

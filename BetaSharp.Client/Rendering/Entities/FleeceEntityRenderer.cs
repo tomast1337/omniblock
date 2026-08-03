@@ -29,7 +29,7 @@ public sealed class FleeceEntityRenderer : LivingEntityRenderer
         loadTexture(_texture);
         float brightness = entity.GetBrightnessAtEyes(tickDelta);
         float[] tint = WoolBehavior.ColorTable[wool.ColorOf(entity)];
-        GLManager.GL.Color3(brightness * tint[0], brightness * tint[1], brightness * tint[2]);
+        GLManager.Color = new(brightness * tint[0], brightness * tint[1], brightness * tint[2], 1.0F);
         return true;
     }
 }

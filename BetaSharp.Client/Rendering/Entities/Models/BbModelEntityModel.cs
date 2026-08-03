@@ -92,7 +92,7 @@ public class BbModelEntityModel : ModelBase
             }
 
             LegacyGL legacyGl = (LegacyGL)GLManager.GL;
-            Vector4D<float> tint = ((EmulatedGL)legacyGl).GetCurrentColorTint();
+            Vector4D<float> tint = GLManager.Color;
             EntityInstanceBatchRenderer.Instance.SubmitInstance(this, legacyGl.BoundTexture2D, poseMatrices, tint);
         }
         else

@@ -103,12 +103,6 @@ public abstract unsafe class LegacyGL : IGL
         SilkGL.ClearDepth(depth);
     }
 
-    public abstract void Color3(float red, float green, float blue);
-
-    public abstract void Color3(byte red, byte green, byte blue);
-
-    public abstract void Color4(float red, float green, float blue, float alpha);
-
     public void ColorMask(bool red, bool green, bool blue, bool alpha)
     {
         SilkGL.ColorMask(red, green, blue, alpha);
@@ -299,8 +293,6 @@ public abstract unsafe class LegacyGL : IGL
     {
         SilkGL.LinkProgram(program);
     }
-
-    public abstract void Normal3(float nx, float ny, float nz);
 
 
     public void PixelStore(PixelStoreParameter pname, int param)

@@ -114,7 +114,7 @@ public class ItemRenderer : EntityRenderer
                 green = (colorMultiplier >> 8 & 255) / 255.0F;
                 blue = (colorMultiplier & 255) / 255.0F;
                 float brightness = entityItem.GetBrightnessAtEyes(tickDelta);
-                GLManager.GL.Color4(red * brightness, green * brightness, blue * brightness, 1.0F);
+                GLManager.Color = new(red * brightness, green * brightness, blue * brightness, 1.0F);
             }
 
             for (colorMultiplier = 0; colorMultiplier < renderCount; ++colorMultiplier)
@@ -164,7 +164,7 @@ public class ItemRenderer : EntityRenderer
             float blueChannel = (itemColor & 255) / 255.0F;
             if (useCustomDisplayColor)
             {
-                GLManager.GL.Color4(blue, greenChannel, blueChannel, 1.0F);
+                GLManager.Color = new(blue, greenChannel, blueChannel, 1.0F);
             }
 
             GLManager.ModelView.Rotate(-90.0F, 0.0F, 1.0F, 0.0F);
@@ -189,7 +189,7 @@ public class ItemRenderer : EntityRenderer
             blue = (colorMultiplier & 255) / 255.0F;
             if (useCustomDisplayColor)
             {
-                GLManager.GL.Color4(red, green, blue, 1.0F);
+                GLManager.Color = new(red, green, blue, 1.0F);
             }
 
             renderTexturedQuad(x, y, iconIndex % 16 * 16, iconIndex / 16 * 16, 16, 16);
