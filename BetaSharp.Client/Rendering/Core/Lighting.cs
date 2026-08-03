@@ -17,10 +17,10 @@ public unsafe class Lighting
 
     public static void turnOnGui()
     {
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Rotate(120.0F, 1.0F, 0.0F, 0.0F);
+        GLManager.ModelView.Push();
+        GLManager.ModelView.Rotate(120.0F, 1.0F, 0.0F, 0.0F);
         turnOn();
-        GLManager.GL.PopMatrix();
+        GLManager.ModelView.Pop();
     }
 
     public static void turnOn(bool mirrored = false)

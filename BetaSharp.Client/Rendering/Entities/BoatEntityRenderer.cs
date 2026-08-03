@@ -19,9 +19,9 @@ public class BoatEntityRenderer : EntityRenderer
     public void render(Entity boatEntity, double x, double y, double z, float yaw, float tickDelta)
     {
         BoatBehavior hull = boatEntity.Behaviors.Find<BoatBehavior>()!;
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Translate((float)x, (float)y, (float)z);
-        GLManager.GL.Rotate(180.0F - yaw, 0.0F, 1.0F, 0.0F);
+        GLManager.ModelView.Push();
+        GLManager.ModelView.Translate((float)x, (float)y, (float)z);
+        GLManager.ModelView.Rotate(180.0F - yaw, 0.0F, 1.0F, 0.0F);
         float timeSinceHit = hull.TimeSinceHit(boatEntity) - tickDelta;
         float damageTaken = hull.Damage(boatEntity) - tickDelta;
         if (damageTaken < 0.0F)
@@ -31,17 +31,17 @@ public class BoatEntityRenderer : EntityRenderer
 
         if (timeSinceHit > 0.0F)
         {
-            GLManager.GL.Rotate(MathHelper.Sin(timeSinceHit) * timeSinceHit * damageTaken / 10.0F * hull.RockDirection(boatEntity), 1.0F, 0.0F, 0.0F);
+            GLManager.ModelView.Rotate(MathHelper.Sin(timeSinceHit) * timeSinceHit * damageTaken / 10.0F * hull.RockDirection(boatEntity), 1.0F, 0.0F, 0.0F);
         }
 
         loadTexture("/terrain.png");
         float modelScale = 12.0F / 16.0F;
-        GLManager.GL.Scale(modelScale, modelScale, modelScale);
-        GLManager.GL.Scale(1.0F / modelScale, 1.0F / modelScale, 1.0F / modelScale);
+        GLManager.ModelView.Scale(modelScale, modelScale, modelScale);
+        GLManager.ModelView.Scale(1.0F / modelScale, 1.0F / modelScale, 1.0F / modelScale);
         loadTexture("/item/boat.png");
-        GLManager.GL.Scale(-1.0F, -1.0F, 1.0F);
+        GLManager.ModelView.Scale(-1.0F, -1.0F, 1.0F);
         _modelBoat.Render(0.0F, 0.0F, -0.1F, 0.0F, 0.0F, 1.0F / 16.0F);
-        GLManager.GL.PopMatrix();
+        GLManager.ModelView.Pop();
     }
 
     public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)

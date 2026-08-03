@@ -13,10 +13,10 @@ public class FishingBobberEntityRenderer : EntityRenderer
     public void render(Entity bobberEntity, double x, double y, double z, float yaw, float tickDelta)
     {
         EntityPlayer? angler = bobberEntity.Behaviors.Find<FishingBobberBehavior>()!.Angler(bobberEntity);
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Translate((float)x, (float)y, (float)z);
+        GLManager.ModelView.Push();
+        GLManager.ModelView.Translate((float)x, (float)y, (float)z);
         GLManager.GL.Enable(GLEnum.RescaleNormal);
-        GLManager.GL.Scale(0.5F, 0.5F, 0.5F);
+        GLManager.ModelView.Scale(0.5F, 0.5F, 0.5F);
         byte particleUIndex = 1;
         byte particleVIndex = 2;
         loadTexture("/particles.png");
@@ -28,8 +28,8 @@ public class FishingBobberEntityRenderer : EntityRenderer
         float quadWidth = 1.0F;
         float xOffset = 0.5F;
         float yOffset = 0.5F;
-        GLManager.GL.Rotate(180.0F - Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
-        GLManager.GL.Rotate(-Dispatcher.PlayerViewX, 1.0F, 0.0F, 0.0F);
+        GLManager.ModelView.Rotate(180.0F - Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
+        GLManager.ModelView.Rotate(-Dispatcher.PlayerViewX, 1.0F, 0.0F, 0.0F);
         tessellator.startDrawingQuads();
         tessellator.setNormal(0.0F, 1.0F, 0.0F);
         tessellator.addVertexWithUV((double)(0.0F - xOffset), (double)(0.0F - yOffset), 0.0D, (double)minU, (double)maxV);
@@ -38,7 +38,7 @@ public class FishingBobberEntityRenderer : EntityRenderer
         tessellator.addVertexWithUV((double)(0.0F - xOffset), (double)(1.0F - yOffset), 0.0D, (double)minU, (double)minV);
         tessellator.draw();
         GLManager.GL.Disable(GLEnum.RescaleNormal);
-        GLManager.GL.PopMatrix();
+        GLManager.ModelView.Pop();
         if (angler != null)
         {
             float anglerYawRadians = (angler.PrevYaw + (angler.Yaw - angler.PrevYaw) * tickDelta) * (float)Math.PI / 180.0F;

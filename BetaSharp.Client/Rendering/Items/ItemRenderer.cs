@@ -30,7 +30,7 @@ public class ItemRenderer : EntityRenderer
 
         float bobPhase = dropped.BobPhase(entityItem);
         int itemAge = dropped.ItemAge(entityItem);
-        GLManager.GL.PushMatrix();
+        GLManager.ModelView.Push();
         float bobOffset = MathHelper.Sin((itemAge + tickDelta) / 10.0F + bobPhase) * 0.1F + 0.1F;
         float spinAngle = ((itemAge + tickDelta) / 20.0F + bobPhase) * (180.0F / (float)Math.PI);
         byte renderCount = 1;
@@ -49,14 +49,14 @@ public class ItemRenderer : EntityRenderer
             renderCount = 4;
         }
 
-        GLManager.GL.Translate((float)x, (float)y + bobOffset, (float)z);
+        GLManager.ModelView.Translate((float)x, (float)y + bobOffset, (float)z);
         GLManager.GL.Enable(GLEnum.RescaleNormal);
         float minU;
         float maxU;
         float minV;
         if (stack.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[stack.ItemId].RenderType))
         {
-            GLManager.GL.Rotate(spinAngle, 0.0F, 1.0F, 0.0F);
+            GLManager.ModelView.Rotate(spinAngle, 0.0F, 1.0F, 0.0F);
             loadTexture("/terrain.png");
             float blockScale = 0.25F;
             if (!Block.Blocks[stack.ItemId].IsFullCube() && stack.ItemId != BlockRegistry.Get("slab").Id
@@ -65,26 +65,26 @@ public class ItemRenderer : EntityRenderer
                 blockScale = 0.5F;
             }
 
-            GLManager.GL.Scale(blockScale, blockScale, blockScale);
+            GLManager.ModelView.Scale(blockScale, blockScale, blockScale);
 
             for (int copyIndex = 0; copyIndex < renderCount; ++copyIndex)
             {
-                GLManager.GL.PushMatrix();
+                GLManager.ModelView.Push();
                 if (copyIndex > 0)
                 {
                     minU = (random.NextFloat() * 2.0F - 1.0F) * 0.2F / blockScale;
                     maxU = (random.NextFloat() * 2.0F - 1.0F) * 0.2F / blockScale;
                     minV = (random.NextFloat() * 2.0F - 1.0F) * 0.2F / blockScale;
-                    GLManager.GL.Translate(minU, maxU, minV);
+                    GLManager.ModelView.Translate(minU, maxU, minV);
                 }
 
                 BlockRenderer.RenderBlockOnInventory(Block.Blocks[stack.ItemId], stack.GetDamage(), entityItem.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
-                GLManager.GL.PopMatrix();
+                GLManager.ModelView.Pop();
             }
         }
         else
         {
-            GLManager.GL.Scale(0.5F, 0.5F, 0.5F);
+            GLManager.ModelView.Scale(0.5F, 0.5F, 0.5F);
             int iconIndex = stack.GetTextureId();
             if (stack.ItemId < 256)
             {
@@ -119,16 +119,16 @@ public class ItemRenderer : EntityRenderer
 
             for (colorMultiplier = 0; colorMultiplier < renderCount; ++colorMultiplier)
             {
-                GLManager.GL.PushMatrix();
+                GLManager.ModelView.Push();
                 if (colorMultiplier > 0)
                 {
                     red = (random.NextFloat() * 2.0F - 1.0F) * 0.3F;
                     green = (random.NextFloat() * 2.0F - 1.0F) * 0.3F;
                     blue = (random.NextFloat() * 2.0F - 1.0F) * 0.3F;
-                    GLManager.GL.Translate(red, green, blue);
+                    GLManager.ModelView.Translate(red, green, blue);
                 }
 
-                GLManager.GL.Rotate(180.0F - Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
+                GLManager.ModelView.Rotate(180.0F - Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
                 tessellator.startDrawingQuads();
                 tessellator.setNormal(0.0F, 1.0F, 0.0F);
                 tessellator.addVertexWithUV((double)(0.0F - xOffset), (double)(0.0F - yOffset), 0.0D, (double)minU, (double)maxV);
@@ -136,12 +136,12 @@ public class ItemRenderer : EntityRenderer
                 tessellator.addVertexWithUV((double)(quadWidth - xOffset), (double)(1.0F - yOffset), 0.0D, (double)maxU, (double)minV);
                 tessellator.addVertexWithUV((double)(0.0F - xOffset), (double)(1.0F - yOffset), 0.0D, (double)minU, (double)minV);
                 tessellator.draw();
-                GLManager.GL.PopMatrix();
+                GLManager.ModelView.Pop();
             }
         }
 
         GLManager.GL.Disable(GLEnum.RescaleNormal);
-        GLManager.GL.PopMatrix();
+        GLManager.ModelView.Pop();
     }
 
     public void drawItemIntoGui(TextRenderer fontRenderer, TextureManager textureManager, int itemId, int itemDamage, int iconIndex, int x, int y)
@@ -151,13 +151,13 @@ public class ItemRenderer : EntityRenderer
         {
             textureManager.BindTexture(textureManager.GetTextureId("/terrain.png"));
             Block block = Block.Blocks[itemId];
-            GLManager.GL.PushMatrix();
-            GLManager.GL.Translate(x - 2, y + 3, -3.0F);
-            GLManager.GL.Scale(10.0F, 10.0F, 10.0F);
-            GLManager.GL.Translate(1.0F, 0.5F, 1.0F);
-            GLManager.GL.Scale(1.0F, 1.0F, -1.0F);
-            GLManager.GL.Rotate(210.0F, 1.0F, 0.0F, 0.0F);
-            GLManager.GL.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
+            GLManager.ModelView.Push();
+            GLManager.ModelView.Translate(x - 2, y + 3, -3.0F);
+            GLManager.ModelView.Scale(10.0F, 10.0F, 10.0F);
+            GLManager.ModelView.Translate(1.0F, 0.5F, 1.0F);
+            GLManager.ModelView.Scale(1.0F, 1.0F, -1.0F);
+            GLManager.ModelView.Rotate(210.0F, 1.0F, 0.0F, 0.0F);
+            GLManager.ModelView.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
             int itemColor = Item.Items[itemId].GetColorMultiplier(itemDamage);
             blue = (itemColor >> 16 & 255) / 255.0F;
             float greenChannel = (itemColor >> 8 & 255) / 255.0F;
@@ -167,9 +167,9 @@ public class ItemRenderer : EntityRenderer
                 GLManager.GL.Color4(blue, greenChannel, blueChannel, 1.0F);
             }
 
-            GLManager.GL.Rotate(-90.0F, 0.0F, 1.0F, 0.0F);
+            GLManager.ModelView.Rotate(-90.0F, 0.0F, 1.0F, 0.0F);
             BlockRenderer.RenderBlockOnInventory(block, itemDamage, 1.0F, Tessellator.instance);
-            GLManager.GL.PopMatrix();
+            GLManager.ModelView.Pop();
         }
         else if (iconIndex >= 0)
         {

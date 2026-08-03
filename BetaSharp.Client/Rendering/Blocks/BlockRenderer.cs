@@ -128,7 +128,7 @@ public class BlockRenderer
             }
 
             block.SetupRenderBoundingBox();
-            GLManager.GL.Translate(-0.5F, -0.5F, -0.5F);
+            GLManager.ModelView.Translate(-0.5F, -0.5F, -0.5F);
 
             tess.startDrawingQuads();
             tess.setNormal(0.0F, -1.0F, 0.0F);
@@ -171,7 +171,7 @@ public class BlockRenderer
                 isPiston ? block.GetTexture(Side.East) : block.GetTexture(Side.East, metadata));
             tess.draw();
 
-            GLManager.GL.Translate(0.5F, 0.5F, 0.5F);
+            GLManager.ModelView.Translate(0.5F, 0.5F, 0.5F);
         }
         else
         {
@@ -181,14 +181,14 @@ public class BlockRenderer
                 (color >> 8 & 255) / 255.0F * brightness,
                 (color & 255) / 255.0F * brightness,
                 1.0F);
-            GLManager.GL.Translate(-0.5F, -0.5F, -0.5F);
+            GLManager.ModelView.Translate(-0.5F, -0.5F, -0.5F);
             var itemWorld = new ItemRenderBlockAccess(block.Id, metadata, brightness);
             BlockPos itemPos = new(0, 0, 0);
             tess.startDrawingQuads();
             tess.setNormal(0.0F, 1.0F, 0.0F);
             RenderBlockByRenderType(itemWorld, itemWorld, block, itemPos, tess, uiCtx.OverrideTexture, true);
             tess.draw();
-            GLManager.GL.Translate(0.5F, 0.5F, 0.5F);
+            GLManager.ModelView.Translate(0.5F, 0.5F, 0.5F);
         }
     }
 

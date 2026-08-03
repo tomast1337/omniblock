@@ -25,14 +25,14 @@ public class FallingBlockEntityRenderer : EntityRenderer
         int blockId = target.Behaviors.Find<SettleAsBlockBehavior>()?.BlockId(target) ?? 0;
         if (blockId == 0) return;
 
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Translate((float)x, (float)y, (float)z);
+        GLManager.ModelView.Push();
+        GLManager.ModelView.Translate((float)x, (float)y, (float)z);
         loadTexture("/terrain.png");
         Block block = Block.Blocks[blockId];
         IWorldContext world = target.World;
         GLManager.GL.Disable(GLEnum.Lighting);
         BlockRenderer.RenderBlockFallingSand(block, world, MathHelper.Floor(target.X), MathHelper.Floor(target.Y), MathHelper.Floor(target.Z), Tessellator.instance);
         GLManager.GL.Enable(GLEnum.Lighting);
-        GLManager.GL.PopMatrix();
+        GLManager.ModelView.Pop();
     }
 }

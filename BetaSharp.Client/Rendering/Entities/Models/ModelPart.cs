@@ -192,32 +192,32 @@ public class ModelPart
             }
             else
             {
-                GLManager.GL.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
+                GLManager.ModelView.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
                 CaptureCurrentMatrix(scale);
-                GLManager.GL.Translate(-RotationPointX * scale, -RotationPointY * scale, -RotationPointZ * scale);
+                GLManager.ModelView.Translate(-RotationPointX * scale, -RotationPointY * scale, -RotationPointZ * scale);
             }
         }
         else
         {
-            GLManager.GL.PushMatrix();
-            GLManager.GL.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
+            GLManager.ModelView.Push();
+            GLManager.ModelView.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
             if (RotateAngleZ != 0.0F)
             {
-                GLManager.GL.Rotate(RotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
+                GLManager.ModelView.Rotate(RotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
             }
 
             if (RotateAngleY != 0.0F)
             {
-                GLManager.GL.Rotate(RotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
+                GLManager.ModelView.Rotate(RotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
             }
 
             if (RotateAngleX != 0.0F)
             {
-                GLManager.GL.Rotate(RotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
+                GLManager.ModelView.Rotate(RotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
             }
 
             CaptureCurrentMatrix(scale);
-            GLManager.GL.PopMatrix();
+            GLManager.ModelView.Pop();
         }
     }
 
@@ -249,32 +249,32 @@ public class ModelPart
             }
             else
             {
-                GLManager.GL.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
+                GLManager.ModelView.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
                 SubmitBakedVertices(scale);
-                GLManager.GL.Translate(-RotationPointX * scale, -RotationPointY * scale, -RotationPointZ * scale);
+                GLManager.ModelView.Translate(-RotationPointX * scale, -RotationPointY * scale, -RotationPointZ * scale);
             }
         }
         else
         {
-            GLManager.GL.PushMatrix();
-            GLManager.GL.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
+            GLManager.ModelView.Push();
+            GLManager.ModelView.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
             if (RotateAngleZ != 0.0F)
             {
-                GLManager.GL.Rotate(RotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
+                GLManager.ModelView.Rotate(RotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
             }
 
             if (RotateAngleY != 0.0F)
             {
-                GLManager.GL.Rotate(RotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
+                GLManager.ModelView.Rotate(RotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
             }
 
             if (RotateAngleX != 0.0F)
             {
-                GLManager.GL.Rotate(RotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
+                GLManager.ModelView.Rotate(RotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
             }
 
             SubmitBakedVertices(scale);
-            GLManager.GL.PopMatrix();
+            GLManager.ModelView.Pop();
         }
     }
 
@@ -288,25 +288,25 @@ public class ModelPart
         {
             if (RotationPointX != 0.0F || RotationPointY != 0.0F || RotationPointZ != 0.0F)
             {
-                GLManager.GL.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
+                GLManager.ModelView.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
             }
         }
         else
         {
-            GLManager.GL.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
+            GLManager.ModelView.Translate(RotationPointX * scale, RotationPointY * scale, RotationPointZ * scale);
             if (RotateAngleZ != 0.0F)
             {
-                GLManager.GL.Rotate(RotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
+                GLManager.ModelView.Rotate(RotateAngleZ * (180.0F / (float)Math.PI), 0.0F, 0.0F, 1.0F);
             }
 
             if (RotateAngleY != 0.0F)
             {
-                GLManager.GL.Rotate(RotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
+                GLManager.ModelView.Rotate(RotateAngleY * (180.0F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
             }
 
             if (RotateAngleX != 0.0F)
             {
-                GLManager.GL.Rotate(RotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
+                GLManager.ModelView.Rotate(RotateAngleX * (180.0F / (float)Math.PI), 1.0F, 0.0F, 0.0F);
             }
         }
     }

@@ -68,11 +68,11 @@ public abstract class EntityRenderer
         float minV;
         float maxV;
 
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Translate((float)pos.X, (float)pos.Y, (float)pos.Z);
+        GLManager.ModelView.Push();
+        GLManager.ModelView.Translate((float)pos.X, (float)pos.Y, (float)pos.Z);
 
         float scale = ent.Width * 1.4F;
-        GLManager.GL.Scale(scale, scale, scale);
+        GLManager.ModelView.Scale(scale, scale, scale);
 
         loadTexture("/terrain.png");
         Tessellator tess = Tessellator.instance;
@@ -82,8 +82,8 @@ public abstract class EntityRenderer
         float heightRatio = ent.Height / scale;
         float yOffset = (float)(ent.Y - ent.BoundingBox.MinY);
 
-        GLManager.GL.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
-        GLManager.GL.Translate(0.0F, 0.0F, -0.3F + (int)heightRatio * 0.02F);
+        GLManager.ModelView.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
+        GLManager.ModelView.Translate(0.0F, 0.0F, -0.3F + (int)heightRatio * 0.02F);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
 
         float zOffset = 0.0F;
@@ -126,7 +126,7 @@ public abstract class EntityRenderer
         }
 
         tess.draw();
-        GLManager.GL.PopMatrix();
+        GLManager.ModelView.Pop();
         GLManager.GL.Enable(GLEnum.Lighting);
     }
 
@@ -331,8 +331,8 @@ public abstract class EntityRenderer
 
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Disable(GLEnum.Texture2D);
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Translate((float)pos.X, (float)pos.Y, (float)pos.Z);
+        GLManager.ModelView.Push();
+        GLManager.ModelView.Translate((float)pos.X, (float)pos.Y, (float)pos.Z);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
 
         Box bb = target.BoundingBox;
@@ -398,7 +398,7 @@ public abstract class EntityRenderer
         tess.addVertex(MathHelper.Sin(yaw) * pitchCos, target.EyeHeight + MathHelper.Sin(target.Pitch * toRad), MathHelper.Cos(yaw) * pitchCos);
 
         tess.draw();
-        GLManager.GL.PopMatrix();
+        GLManager.ModelView.Pop();
         GLManager.GL.Enable(GLEnum.Texture2D);
         GLManager.GL.Enable(GLEnum.Lighting);
     }
