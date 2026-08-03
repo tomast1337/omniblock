@@ -344,13 +344,13 @@ public class ModelPart
         EmulatedGL emuGl = (EmulatedGL)GLManager.GL;
         Vector4D<float> tintSrc = GLManager.Color;
         System.Numerics.Vector4 tint = new(tintSrc.X, tintSrc.Y, tintSrc.Z, tintSrc.W);
-        EntityLightingSnapshot lightingSrc = emuGl.GetLightingState();
-        System.Numerics.Vector3 light0Dir = new(lightingSrc.Light0Dir.X, lightingSrc.Light0Dir.Y, lightingSrc.Light0Dir.Z);
+        LightingState lightingSrc = GLManager.Lighting;
+        System.Numerics.Vector3 light0Dir = new(lightingSrc.Light0Direction.X, lightingSrc.Light0Direction.Y, lightingSrc.Light0Direction.Z);
         System.Numerics.Vector3 light0Diffuse = new(lightingSrc.Light0Diffuse.X, lightingSrc.Light0Diffuse.Y, lightingSrc.Light0Diffuse.Z);
-        System.Numerics.Vector3 light1Dir = new(lightingSrc.Light1Dir.X, lightingSrc.Light1Dir.Y, lightingSrc.Light1Dir.Z);
+        System.Numerics.Vector3 light1Dir = new(lightingSrc.Light1Direction.X, lightingSrc.Light1Direction.Y, lightingSrc.Light1Direction.Z);
         System.Numerics.Vector3 light1Diffuse = new(lightingSrc.Light1Diffuse.X, lightingSrc.Light1Diffuse.Y, lightingSrc.Light1Diffuse.Z);
         System.Numerics.Vector3 ambient = new(lightingSrc.Ambient.X, lightingSrc.Ambient.Y, lightingSrc.Ambient.Z);
-        bool lightingEnabled = lightingSrc.Enabled;
+        bool lightingEnabled = emuGl.GetLightingEnabled();
 
         float a = Math.Clamp(tint.W, 0f, 1f);
 

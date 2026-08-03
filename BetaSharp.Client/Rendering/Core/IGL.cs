@@ -7,12 +7,21 @@ namespace BetaSharp.Client.Rendering.Core;
 ///     The rendering API the client calls.
 /// </summary>
 /// <remarks>
-///     Everything declared here exists in a GL 4.3 core context. The fixed-function calls live in
-///     <see cref="IFixedFunctionGL" />, which this still inherits so that call sites can move over a
-///     directory at a time; dropping that base is what will make the split enforced rather than
-///     advisory.
+///     <para>
+///         Everything declared here exists in a GL 4.3 core context. The fixed-function calls used
+///         to sit alongside it in an <c>IFixedFunctionGL</c> this inherited, so that call sites
+///         could move over a directory at a time; that interface emptied out and went, and the
+///         compiler now refuses a fixed-function call rather than merely marking it.
+///     </para>
+///     <para>
+///         <see cref="Enable" /> and <see cref="Disable" /> still take capabilities a core context
+///         does not have — <c>Lighting</c>, <c>Fog</c>, <c>AlphaTest</c>, <c>Texture2D</c>. They are
+///         the same calls modern code uses and only some of the values passed to them are legacy,
+///         which is not something an interface can express. <c>EmulatedGL</c> routes those to
+///         shader uniforms, and they are the last of it.
+///     </para>
 /// </remarks>
-public unsafe interface IGL : IFixedFunctionGL
+public unsafe interface IGL
 {
     void AttachShader(uint program, uint shader);
     void BindBuffer(GLEnum target, uint buffer);

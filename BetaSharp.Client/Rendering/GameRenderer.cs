@@ -420,7 +420,7 @@ public class GameRenderer
             worldRenderer.SortAndRender(entity, 0, tickDelta, frustrumCuller);
         }
 
-        GLManager.GL.ShadeModel(GLEnum.Flat);
+        GLManager.ShadeModel = ShadeModel.Flat;
         Lighting.turnOn();
 
         using (Profiler.Begin("RenderEntities"))
@@ -461,7 +461,7 @@ public class GameRenderer
         {
             worldRenderer.SortAndRender(entity, 1, tickDelta, frustrumCuller);
 
-            GLManager.GL.ShadeModel(GLEnum.Flat);
+            GLManager.ShadeModel = ShadeModel.Flat;
         }
 
         //TODO: SELCTION BOX/BLOCK BREAKING VISUALIZATON DON'T APPEAR PROPERLY MOST OF THE TIME, SAME WITH ENTITY SHADOWS. VIEW BOBBING MAKES ENTITES BOB UP AND DOWN
@@ -980,7 +980,5 @@ public class GameRenderer
             };
         }
 
-        GLManager.GL.Enable(GLEnum.ColorMaterial);
-        GLManager.GL.ColorMaterial(GLEnum.Front, GLEnum.Ambient);
     }
 }

@@ -491,7 +491,6 @@ public class UIRenderer
 
         GLManager.State.Apply(s_preview);
         GLManager.GL.Enable(GLEnum.RescaleNormal);
-        GLManager.GL.Enable(GLEnum.ColorMaterial);
         GLManager.ModelView.Push();
         GLManager.ModelView.Translate(x + _translateX, y + _translateY, 50.0F);
 
@@ -535,7 +534,6 @@ public class UIRenderer
         Lighting.turnOff();
         GLManager.State.Apply(RenderState.Interface);
         GLManager.GL.Disable(GLEnum.RescaleNormal);
-        GLManager.GL.Disable(GLEnum.ColorMaterial);
     }
 
     public void DrawScrollingText(string text, float x, float y, int containerWidth, int containerHeight, Color color, long scrollStartMs, int rightPadding = 2)

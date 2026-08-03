@@ -75,7 +75,8 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         RenderState Raster,
         bool UseTexture,
         float AlphaThreshold,
-        EntityLightingSnapshot Lighting,
+        bool LightingEnabled,
+        LightingState Lighting,
         Matrix4X4<float> TextureMatrix);
 
     // One bucket per (model, texture, draw state) seen this frame.
@@ -270,7 +271,8 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
             GLManager.State.Current,
             gl.GetTextureEnabled(),
             gl.GetCurrentAlphaThreshold(),
-            gl.GetLightingState(),
+            gl.GetLightingEnabled(),
+            GLManager.Lighting,
             GLManager.TextureMatrix.Top);
 
         // A colour-only draw samples nothing, so the bound texture is not part of what it looks
@@ -428,11 +430,11 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         _shader.SetUniform1("alphaThreshold", draw.AlphaThreshold);
         _shader.SetUniformMatrix4("textureMatrix", draw.TextureMatrix);
 
-        _shader.SetUniform1("lightingEnabled", draw.Lighting.Enabled ? 1 : 0);
+        _shader.SetUniform1("lightingEnabled", draw.LightingEnabled ? 1 : 0);
         _shader.SetUniform3("ambient", draw.Lighting.Ambient);
-        _shader.SetUniform3("light0Dir", draw.Lighting.Light0Dir);
+        _shader.SetUniform3("light0Dir", draw.Lighting.Light0Direction);
         _shader.SetUniform3("light0Diffuse", draw.Lighting.Light0Diffuse);
-        _shader.SetUniform3("light1Dir", draw.Lighting.Light1Dir);
+        _shader.SetUniform3("light1Dir", draw.Lighting.Light1Direction);
         _shader.SetUniform3("light1Diffuse", draw.Lighting.Light1Diffuse);
     }
 

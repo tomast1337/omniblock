@@ -35,7 +35,7 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
             // piston came out blended and a sign anywhere else did not.
             GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
 
-            GLManager.GL.ShadeModel(GLEnum.Smooth);
+            GLManager.ShadeModel = ShadeModel.Smooth;
 
             tess.startDrawingQuads();
             tess.setTranslationD(

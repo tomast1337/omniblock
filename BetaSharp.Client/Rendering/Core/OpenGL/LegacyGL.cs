@@ -108,8 +108,6 @@ public abstract unsafe class LegacyGL : IGL
         SilkGL.ColorMask(red, green, blue, alpha);
     }
 
-    public abstract void ColorMaterial(GLEnum face, GLEnum mode);
-
     public void CompileShader(uint shader)
     {
         SilkGL.CompileShader(shader);
@@ -280,10 +278,6 @@ public abstract unsafe class LegacyGL : IGL
         return SilkGL.IsExtensionPresent(extension);
     }
 
-    public abstract void Light(GLEnum light, GLEnum pname, float* params_);
-
-    public abstract void LightModel(GLEnum pname, float* params_);
-
     public virtual void LineWidth(float width)
     {
         SilkGL.LineWidth(width);
@@ -309,8 +303,6 @@ public abstract unsafe class LegacyGL : IGL
     {
         SilkGL.ReadPixels(x, y, width, height, format, type, pixels);
     }
-
-    public abstract void ShadeModel(GLEnum mode);
 
     public void ShaderSource(uint shader, string string_)
     {
