@@ -5,23 +5,20 @@ namespace BetaSharp.PathFinding;
 internal class PathPoint
 {
     private int _hash;
+    public float DistanceToNext;
+    public float DistanceToTarget;
+
+    public int Index = -1;
+    public bool IsFirst;
+
+    public PathPoint? NextMapNode;
+    public PathPoint? Previous;
+    public float TotalPathDistance;
     public int X;
     public int Y;
     public int Z;
 
-    public int Index = -1;
-    public float TotalPathDistance;
-    public float DistanceToNext;
-    public float DistanceToTarget;
-    public PathPoint? Previous;
-    public bool IsFirst = false;
-
-    public PathPoint? NextMapNode;
-
-    public PathPoint(int x, int y, int z)
-    {
-        Init(x, y, z);
-    }
+    public PathPoint(int x, int y, int z) => Init(x, y, z);
 
     public void Init(int x, int y, int z)
     {
@@ -60,27 +57,16 @@ internal class PathPoint
         return MathHelper.Sqrt(dx * dx + dy * dy + dz * dz);
     }
 
-    public override bool Equals(object? obj)
-    {
-        return obj is PathPoint other &&
-               _hash == other._hash &&
-               X == other.X &&
-               Y == other.Y &&
-               Z == other.Z;
-    }
+    public override bool Equals(object? obj) =>
+        obj is PathPoint other &&
+        _hash == other._hash &&
+        X == other.X &&
+        Y == other.Y &&
+        Z == other.Z;
 
-    public override int GetHashCode()
-    {
-        return _hash;
-    }
+    public override int GetHashCode() => _hash;
 
-    public bool IsAssigned()
-    {
-        return Index >= 0;
-    }
+    public bool IsAssigned() => Index >= 0;
 
-    public override string ToString()
-    {
-        return $"{X}, {Y}, {Z}";
-    }
+    public override string ToString() => $"{X}, {Y}, {Z}";
 }

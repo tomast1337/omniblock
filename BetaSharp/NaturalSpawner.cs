@@ -163,7 +163,7 @@ internal static class NaturalSpawner
                         world.Random.NextFloat() * 360.0F, 0.0F);
                     if (entity.CanSpawn())
                     {
-                        var pathEntity = world.Pathing.findPath(entity, player, 32.0F);
+                        var pathEntity = world.Pathing.FindPath(entity, player, 32.0F);
                         if (pathEntity != null && pathEntity.PathLength > 1)
                         {
                             PathPoint? pathPoint = pathEntity.GetFinalPoint();
