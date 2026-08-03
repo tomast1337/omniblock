@@ -41,7 +41,7 @@ public sealed class FuseEntityRenderer : LivingEntityRenderer
 
         float scaleX = (1.0F + progress * 0.4F) * pulse;
         float scaleY = (1.0F + progress * 0.1F) / pulse;
-        GLManager.GL.Scale(scaleX, scaleY, scaleX);
+        GLManager.ModelView.Scale(scaleX, scaleY, scaleX);
     }
 
     protected override int getColorMultiplier(EntityLiving entity, float brightness, float tickDelta)
@@ -63,11 +63,9 @@ public sealed class FuseEntityRenderer : LivingEntityRenderer
         {
             float animationTime = entity.Age + tickDelta;
             loadTexture(_overlayTexture);
-            GLManager.GL.MatrixMode(GLEnum.Texture);
-            GLManager.GL.LoadIdentity();
-            GLManager.GL.Translate(animationTime * 0.01F, animationTime * 0.01F, 0.0F);
+            GLManager.TextureMatrix.LoadIdentity();
+            GLManager.TextureMatrix.Translate(animationTime * 0.01F, animationTime * 0.01F, 0.0F);
             setRenderPassModel(_overlay);
-            GLManager.GL.MatrixMode(GLEnum.Modelview);
 
             GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Additive });
             GLManager.GL.Color4(0.5F, 0.5F, 0.5F, 1.0F);
@@ -77,9 +75,7 @@ public sealed class FuseEntityRenderer : LivingEntityRenderer
 
         if (renderPass == 2)
         {
-            GLManager.GL.MatrixMode(GLEnum.Texture);
-            GLManager.GL.LoadIdentity();
-            GLManager.GL.MatrixMode(GLEnum.Modelview);
+            GLManager.TextureMatrix.LoadIdentity();
             GLManager.GL.Enable(GLEnum.Lighting);
             GLManager.State.Apply(RenderState.Entity);
         }

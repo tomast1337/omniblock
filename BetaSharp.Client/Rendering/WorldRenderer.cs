@@ -442,10 +442,10 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         if (backgroundColor != null)
         {
             GLManager.GL.ShadeModel(GLEnum.Smooth);
-            GLManager.GL.PushMatrix();
-            GLManager.GL.Rotate(90.0F, 1.0F, 0.0F, 0.0F);
+            GLManager.ModelView.Push();
+            GLManager.ModelView.Rotate(90.0F, 1.0F, 0.0F, 0.0F);
             float celestialAngle = _world.GetTime(tickDelta);
-            GLManager.GL.Rotate(celestialAngle > 0.5F ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
+            GLManager.ModelView.Rotate(celestialAngle > 0.5F ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
             tessellator.startDrawing(6);
             tessellator.setColorRGBA_F(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
             tessellator.addVertex(0.0D, 100.0D, 0.0D);
@@ -459,7 +459,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             }
 
             tessellator.draw();
-            GLManager.GL.PopMatrix();
+            GLManager.ModelView.Pop();
             GLManager.GL.ShadeModel(GLEnum.Flat);
         }
 
@@ -469,10 +469,10 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         // Sun, moon and the stars after them only ever brighten what is behind them, faded in by
         // their own alpha so the rain gradient can dim them.
         GLManager.State.Apply(RenderState.Translucent with { Blend = BlendMode.AdditiveByAlpha });
-        GLManager.GL.PushMatrix();
+        GLManager.ModelView.Push();
         float rainFade = 1.0F - _world.Environment.GetRainGradient(tickDelta);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, rainFade);
-        GLManager.GL.Rotate(_world.GetTime(tickDelta) * 360.0F, 1.0F, 0.0F, 0.0F);
+        GLManager.ModelView.Rotate(_world.GetTime(tickDelta) * 360.0F, 1.0F, 0.0F, 0.0F);
         float sunQuadSize = 30.0F;
         _textureManager.BindTexture(_textureManager.GetTextureId("/terrain/sun.png"));
         tessellator.startDrawingQuads();
@@ -502,7 +502,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
         GLManager.GL.Enable(GLEnum.AlphaTest);
-        GLManager.GL.PopMatrix();
+        GLManager.ModelView.Pop();
 
         GLManager.GL.EndExternalShader();
         GLManager.GL.UseProgram(0);
@@ -685,23 +685,19 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         _cloudShader.SetUniform1("u_CloudScale", cloudScale / 2f);
         GLManager.GL.BeginExternalShader(_cloudShaderMvLoc, _cloudShaderProjLoc, _cloudShaderTexMatLoc);
 
-        GLManager.GL.Scale(cloudScale, 1.0F, cloudScale);
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Translate(-subCloudOffsetX, cloudY, -subCloudOffsetZ);
+        GLManager.ModelView.Scale(cloudScale, 1.0F, cloudScale);
+        GLManager.ModelView.Push();
+        GLManager.ModelView.Translate(-subCloudOffsetX, cloudY, -subCloudOffsetZ);
 
-        GLManager.GL.MatrixMode(GLEnum.Texture);
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Translate(textureOffsetU, textureOffsetV, 0.0F);
-        GLManager.GL.MatrixMode(GLEnum.Modelview);
+        GLManager.TextureMatrix.Push();
+        GLManager.TextureMatrix.Translate(textureOffsetU, textureOffsetV, 0.0F);
 
         GLManager.GL.Color4(cloudRed, cloudGreen, cloudBlue, 0.8F);
         _clouds[0].Draw();
 
-        GLManager.GL.MatrixMode(GLEnum.Texture);
-        GLManager.GL.PopMatrix();
-        GLManager.GL.MatrixMode(GLEnum.Modelview);
+        GLManager.TextureMatrix.Pop();
 
-        GLManager.GL.PopMatrix();
+        GLManager.ModelView.Pop();
 
         GLManager.GL.EndExternalShader();
         GLManager.GL.UseProgram(0);
@@ -742,7 +738,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         float subCloudOffsetX = (float)(cloudOffsetX - MathHelper.Floor(cloudOffsetX));
         float subCloudOffsetZ = (float)(cloudOffsetZ - MathHelper.Floor(cloudOffsetZ));
 
-        GLManager.GL.Scale(cloudScale, 1.0F, cloudScale);
+        GLManager.ModelView.Scale(cloudScale, 1.0F, cloudScale);
 
         for (int passIndex = 0; passIndex < 2; ++passIndex)
         {
@@ -751,13 +747,11 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             // leaves pass 1 blending each surface exactly once.
             GLManager.State.Apply(cloudState with { ColorWrite = passIndex != 0 });
 
-            GLManager.GL.PushMatrix();
-            GLManager.GL.Translate(-subCloudOffsetX, cloudY, -subCloudOffsetZ);
+            GLManager.ModelView.Push();
+            GLManager.ModelView.Translate(-subCloudOffsetX, cloudY, -subCloudOffsetZ);
 
-            GLManager.GL.MatrixMode(GLEnum.Texture);
-            GLManager.GL.PushMatrix();
-            GLManager.GL.Translate(textureOffsetU, textureOffsetV, 0.0F);
-            GLManager.GL.MatrixMode(GLEnum.Modelview);
+            GLManager.TextureMatrix.Push();
+            GLManager.TextureMatrix.Translate(textureOffsetU, textureOffsetV, 0.0F);
 
             if (cloudY > -cloudHeight - 1.0F)
             {
@@ -777,11 +771,9 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             GLManager.GL.Color4(cloudRed * 0.8F, cloudGreen * 0.8F, cloudBlue * 0.8F, 0.8F);
             _clouds[3].Draw(); // Side Z
 
-            GLManager.GL.MatrixMode(GLEnum.Texture);
-            GLManager.GL.PopMatrix();
-            GLManager.GL.MatrixMode(GLEnum.Modelview);
+            GLManager.TextureMatrix.Pop();
 
-            GLManager.GL.PopMatrix();
+            GLManager.ModelView.Pop();
         }
 
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
@@ -794,7 +786,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
         Tessellator tessellator = Tessellator.instance;
 
-        GLManager.GL.PushMatrix();
+        GLManager.ModelView.Push();
         GLManager.GL.Enable(GLEnum.AlphaTest);
         GLManager.GL.Enable(GLEnum.PolygonOffsetFill);
 
@@ -830,7 +822,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         GLManager.GL.Disable(GLEnum.PolygonOffsetFill);
         GLManager.GL.Disable(GLEnum.AlphaTest);
         GLManager.State.Apply(RenderState.Opaque);
-        GLManager.GL.PopMatrix();
+        GLManager.ModelView.Pop();
     }
 
     public void DrawSelectionBox(EntityPlayer player, HitResult hit, int renderPass, ItemStack itemStack, float tickDelta)

@@ -99,3 +99,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-03 — refactor(rendering): give an instance the state it was posed under (Nicolas Vyčas Nery; `8f67a1f1e2402531bfcfd8e46e6822a1eef3cf71`)
 - 2026-08-03 — refactor(rendering): steer the model-view stack directly (Nicolas Vyčas Nery; `1f24c74dce5d66f38ef06282be9028f7a19efa0f`)
 - 2026-08-03 — refactor(rendering): steer projection matrices directly (Nicolas Vyčas Nery; `2756b739db2de06f60be9d2d51ceb2ac75bd4262`)
+- 2026-08-03 — refactor(rendering): steer the texture matrix stack directly (Nicolas Vyčas Nery; `7c04ea1911ff9957676f65bd29ed8291b87b8718`)
