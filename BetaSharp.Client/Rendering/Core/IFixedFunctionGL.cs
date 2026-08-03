@@ -30,18 +30,6 @@ namespace BetaSharp.Client.Rendering.Core;
 /// </remarks>
 public unsafe interface IFixedFunctionGL
 {
-    // Matrix stack.
-    void LoadIdentity();
-    void MatrixMode(GLEnum mode);
-    void PopMatrix();
-    void PushMatrix();
-    void Rotate(float angle, float x, float y, float z);
-    void Scale(float x, float y, float z);
-    void Scale(double x, double y, double z);
-    void Translate(float x, float y, float z);
-    void Frustum(double left, double right, double bottom, double top, double zNear, double zFar);
-    void Ortho(double left, double right, double bottom, double top, double zNear, double zFar);
-
     // Immediate-mode vertex attributes.
     void Color3(float red, float green, float blue);
     void Color3(byte red, byte green, byte blue);
