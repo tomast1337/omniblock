@@ -68,10 +68,16 @@ public sealed class FuseEntityRenderer : LivingEntityRenderer
             GLManager.GL.Translate(animationTime * 0.01F, animationTime * 0.01F, 0.0F);
             setRenderPassModel(_overlay);
             GLManager.GL.MatrixMode(GLEnum.Modelview);
-            GLManager.GL.Enable(GLEnum.Blend);
+
+            // Same reason the slime's shell does it: an instanced submission is drawn when the pass
+            // ends, by which point this blending is gone, and an additive glow that is not blended
+            // is just a grey shell.
+            EntityInstanceBatchRenderer.Instance.ForceLegacyPath = true;
+            EntityInstanceBatchRenderer.Instance.Flush();
+
+            GLManager.State.ApplyUntrusted(RenderState.Entity with { Blend = BlendMode.Additive });
             GLManager.GL.Color4(0.5F, 0.5F, 0.5F, 1.0F);
             GLManager.GL.Disable(GLEnum.Lighting);
-            GLManager.GL.BlendFunc(GLEnum.One, GLEnum.One);
             return true;
         }
 
@@ -80,8 +86,9 @@ public sealed class FuseEntityRenderer : LivingEntityRenderer
             GLManager.GL.MatrixMode(GLEnum.Texture);
             GLManager.GL.LoadIdentity();
             GLManager.GL.MatrixMode(GLEnum.Modelview);
+            EntityInstanceBatchRenderer.Instance.ForceLegacyPath = false;
             GLManager.GL.Enable(GLEnum.Lighting);
-            GLManager.GL.Disable(GLEnum.Blend);
+            GLManager.State.ApplyUntrusted(RenderState.Entity);
         }
 
         return false;

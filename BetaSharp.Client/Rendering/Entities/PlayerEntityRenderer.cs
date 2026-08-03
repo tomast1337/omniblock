@@ -99,9 +99,15 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                     GLManager.GL.Scale(-renderScale, -renderScale, renderScale);
                     GLManager.GL.Disable(GLEnum.Lighting);
                     GLManager.GL.Translate(0.0F, 0.25F / renderScale, 0.0F);
-                    GLManager.GL.DepthMask(false);
-                    GLManager.GL.Enable(GLEnum.Blend);
-                    GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+                    // The plate behind the name is depth tested but does not write depth, so the
+                    // text drawn over it a moment later is not rejected for being at the same
+                    // distance.
+                    GLManager.State.ApplyUntrusted(RenderState.Entity with
+                    {
+                        Blend = BlendMode.Alpha,
+                        DepthWrite = false
+                    });
+
                     Tessellator tessellator = Tessellator.instance;
                     GLManager.GL.Disable(GLEnum.Texture2D);
                     tessellator.startDrawingQuads();
@@ -113,10 +119,10 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                     tessellator.addVertex(nameHalfWidth + 1, -1.0D, 0.0D);
                     tessellator.draw();
                     GLManager.GL.Enable(GLEnum.Texture2D);
-                    GLManager.GL.DepthMask(true);
+                    GLManager.State.ApplyUntrusted(RenderState.Entity with { Blend = BlendMode.Alpha });
                     fontRenderer.DrawString(displayName, -fontRenderer.GetStringWidth(displayName) / 2, 0, Color.WhiteAlpha20);
                     GLManager.GL.Enable(GLEnum.Lighting);
-                    GLManager.GL.Disable(GLEnum.Blend);
+                    GLManager.State.ApplyUntrusted(RenderState.Entity);
                     GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
                     GLManager.GL.PopMatrix();
                 }
