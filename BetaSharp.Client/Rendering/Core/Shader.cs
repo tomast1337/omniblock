@@ -106,9 +106,10 @@ public class Shader : IDisposable
 
     public void SetCommonUniforms(CommonShaderInfo info)
     {
-        GLManager.GL.Uniform1(_fogModeLoc, info.FogMode);
-        GLManager.GL.Uniform3(_fogLoc, info.FogStart, info.FogEnd, info.FogDensity);
-        GLManager.GL.Uniform4(_fogColorLoc, info.FogColor.X, info.FogColor.Y, info.FogColor.Z, info.FogColor.W);
+        FogState fog = GLManager.Fog;
+        GLManager.GL.Uniform1(_fogModeLoc, (int)fog.Curve);
+        GLManager.GL.Uniform3(_fogLoc, fog.Start, fog.End, fog.Density);
+        GLManager.GL.Uniform4(_fogColorLoc, fog.Color.X, fog.Color.Y, fog.Color.Z, fog.Color.W);
         GLManager.GL.Uniform3(_timeLoc, info.Time, info.DeltaTime, info.DayTime);
     }
 

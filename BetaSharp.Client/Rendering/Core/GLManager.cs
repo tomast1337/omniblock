@@ -43,6 +43,25 @@ public class GLManager
     /// </remarks>
     public static RenderStateApplier State { get; } = new();
 
+    /// <summary>What the distance fog looks like, for every pass that draws under it.</summary>
+    /// <remarks>
+    ///     Set once per pass, in <c>GameRenderer.ApplyFog</c>. Whether fog applies at all is
+    ///     separate and still goes through <c>Enable</c>/<c>Disable</c> of <c>GLEnum.Fog</c>, which
+    ///     renderers flip constantly; this survives that untouched.
+    /// </remarks>
+    public static FogState Fog
+    {
+        get => _emulated.Fog;
+        set => _emulated.Fog = value;
+    }
+
+    /// <summary>The alpha a fragment has to exceed to survive, while the alpha test is on.</summary>
+    public static float AlphaThreshold
+    {
+        get => _emulated.AlphaThreshold;
+        set => _emulated.AlphaThreshold = value;
+    }
+
     private static EmulatedGL _emulated = null!;
 
     public static void Init(GL silkGl)

@@ -37,10 +37,7 @@ public unsafe interface IFixedFunctionGL
     void Normal3(float nx, float ny, float nz);
 
     // Fixed pipeline state, all of it expressible as shader uniforms.
-    void AlphaFunc(GLEnum func, float refValue);
     void ColorMaterial(GLEnum face, GLEnum mode);
-    void Fog(GLEnum pname, float param);
-    void Fog(GLEnum pname, ReadOnlySpan<float> params_);
     void Light(GLEnum light, GLEnum pname, float* params_);
     void LightModel(GLEnum pname, float* params_);
     void ShadeModel(GLEnum mode);

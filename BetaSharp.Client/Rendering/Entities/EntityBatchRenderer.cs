@@ -199,7 +199,7 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
             projectionData[8], projectionData[9], projectionData[10], projectionData[11],
             projectionData[12], projectionData[13], projectionData[14], projectionData[15]);
 
-        EntityFogSnapshot fog = gl.GetFogState();
+        FogState fog = GLManager.Fog;
 
         _shader.SetUniformMatrix4("projectionMatrix", projection);
         _shader.SetUniform1("textureSampler", 0);
@@ -207,8 +207,8 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
         _shader.SetUniform1("entityId",
             _useTexture ? _glTexToLogicalId.GetValueOrDefault(_currentTextureId) : 0);
         _shader.SetUniform1("alphaThreshold", gl.GetCurrentAlphaThreshold());
-        _shader.SetUniform1("fogEnabled", fog.Enabled ? 1 : 0);
-        _shader.SetUniform1("fogMode", fog.Mode);
+        _shader.SetUniform1("fogEnabled", gl.GetFogEnabled() ? 1 : 0);
+        _shader.SetUniform1("fogMode", (int)fog.Curve);
         _shader.SetUniform1("fogStart", fog.Start);
         _shader.SetUniform1("fogEnd", fog.End);
         _shader.SetUniform1("fogDensity", fog.Density);
