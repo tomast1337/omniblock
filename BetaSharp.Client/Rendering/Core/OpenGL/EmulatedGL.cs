@@ -64,10 +64,7 @@ public unsafe class EmulatedGL : LegacyGL
     private readonly uint _immediateVao;
 
 
-    private bool _externalShaderActive;
-    private int _externalMvUniform = -1;
-    private int _externalProjUniform = -1;
-    private int _externalTexMatUniform = -1;
+
 
     public EmulatedGL(GL gl) : base(gl)
     {
@@ -121,29 +118,6 @@ public unsafe class EmulatedGL : LegacyGL
 
     internal void ActivateShader()
     {
-        if (_externalShaderActive)
-        {
-            if (_uploadedModelView != _modelViewStack.Version && _externalMvUniform >= 0)
-            {
-                Matrix4X4<float> m = _modelViewStack.Top;
-                unsafe { SilkGL.UniformMatrix4(_externalMvUniform, 1, false, (float*)&m); }
-                _uploadedModelView = _modelViewStack.Version;
-            }
-            if (_uploadedProjection != _projectionStack.Version && _externalProjUniform >= 0)
-            {
-                Matrix4X4<float> m = _projectionStack.Top;
-                unsafe { SilkGL.UniformMatrix4(_externalProjUniform, 1, false, (float*)&m); }
-                _uploadedProjection = _projectionStack.Version;
-            }
-            if (_uploadedTextureMatrix != _textureStack.Version && _externalTexMatUniform >= 0)
-            {
-                Matrix4X4<float> m = _textureStack.Top;
-                unsafe { SilkGL.UniformMatrix4(_externalTexMatUniform, 1, false, (float*)&m); }
-                _uploadedTextureMatrix = _textureStack.Version;
-            }
-            return;
-        }
-
         if (_currentProgram != _shader.Program)
         {
             SilkGL.UseProgram(_shader.Program);
@@ -453,7 +427,7 @@ public unsafe class EmulatedGL : LegacyGL
 
     public override void DrawArrays(GLEnum mode, int first, uint count)
     {
-        if (_currentProgram == 0 || _currentProgram == _shader.Program || _externalShaderActive)
+        if (_currentProgram == 0 || _currentProgram == _shader.Program)
         {
             ActivateShader();
         }
@@ -501,20 +475,6 @@ public unsafe class EmulatedGL : LegacyGL
                 System.Buffer.MemoryCopy(&m, dst, 64, 64);
             }
         }
-    }
-
-    public override void BeginExternalShader(int mvLoc, int projLoc, int texMatLoc = -1)
-    {
-        _externalShaderActive = true;
-        _externalMvUniform = mvLoc;
-        _externalProjUniform = projLoc;
-        _externalTexMatUniform = texMatLoc;
-        InvalidateUploadedMatrices();
-    }
-
-    public override void EndExternalShader()
-    {
-        _externalShaderActive = false;
     }
 
     public override void LineWidth(float width)

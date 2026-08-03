@@ -53,12 +53,4 @@ public unsafe interface IFixedFunctionGL
     void LightModel(GLEnum pname, float* params_);
     void ShadeModel(GLEnum mode);
 
-    /// <summary>
-    ///     Hands the emulated matrix state to a shader the caller binds itself, and takes it back
-    ///     afterwards. Exists only because the two worlds coexist; it goes when they stop.
-    /// </summary>
-    void BeginExternalShader(int mvLoc, int projLoc, int texMatLoc = -1);
-
-    /// <inheritdoc cref="BeginExternalShader" />
-    void EndExternalShader();
 }
