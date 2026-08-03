@@ -94,6 +94,25 @@ public readonly record struct RenderState
     /// <summary>Glows, drawn over the scene without occluding it.</summary>
     public static readonly RenderState Additive = Translucent with { Blend = BlendMode.Additive };
 
+    /// <summary>
+    ///     Entity models, drawn without culling.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Their boxes are not reliably wound outwards, which is why
+    ///         <c>LivingEntityRenderer.DoRenderLiving</c> turns culling off before drawing one.
+    ///     </para>
+    ///     <para>
+    ///         It never turns it back on. Nothing else in the entity tree does either, so culling
+    ///         stays off until the next frame resets it, and whether it was on when some other
+    ///         entity drew depended on whether a mob happened to draw first. Naming the state makes
+    ///         that answer the same every frame. It settles on off, which is both what the models
+    ///         want and the direction that cannot lose geometry: culling wrongly left on hides
+    ///         faces, wrongly left off only draws ones that were already there.
+    ///     </para>
+    /// </remarks>
+    public static readonly RenderState Entity = Opaque with { Cull = CullMode.None };
+
     /// <summary>Flat geometry with no meaningful facing, such as interface and text quads.</summary>
     public static readonly RenderState Interface = new()
     {

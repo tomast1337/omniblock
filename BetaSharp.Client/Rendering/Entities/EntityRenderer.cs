@@ -132,9 +132,9 @@ public abstract class EntityRenderer
 
     private void RenderShadow(Entity target, Vec3D pos, float shadowiness, float tickDelta)
     {
-        // Blended and depth tested but not depth writing, which is what Translucent is: several
-        // shadows can overlap on the ground without the first one drawn hiding the rest.
-        GLManager.State.ApplyUntrusted(RenderState.Translucent);
+        // Blended and depth tested but not depth writing, and unculled like the models it sits under:
+        // several shadows can overlap on the ground without the first one drawn hiding the rest.
+        GLManager.State.ApplyUntrusted(RenderState.Entity with { Blend = BlendMode.Alpha, DepthWrite = false });
 
         TextureManager textureManager = Dispatcher.TextureManager;
         textureManager.BindTexture(textureManager.GetTextureId("%clamp%/misc/shadow.png"));
@@ -183,7 +183,7 @@ public abstract class EntityRenderer
 
         tess.draw();
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        GLManager.State.ApplyUntrusted(RenderState.Opaque);
+        GLManager.State.ApplyUntrusted(RenderState.Entity);
     }
 
     private void renderShadowOnBlock(Block block, Vec3D pos, int blockX, int blockY, int blockZ, float shadowiness, float radius, Vec3D offset)

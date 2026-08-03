@@ -34,7 +34,7 @@ public sealed class GlowingEyesEntityRenderer : LivingEntityRenderer
         // The alpha test is a shader uniform rather than pipeline state, so it stays a separate
         // call. Depth writing stays on, as it was before: the overlay sits on the model it covers.
         GLManager.GL.Disable(GLEnum.AlphaTest);
-        GLManager.State.ApplyUntrusted(RenderState.Opaque with { Blend = BlendMode.Alpha });
+        GLManager.State.ApplyUntrusted(RenderState.Entity with { Blend = BlendMode.Alpha });
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, alpha);
         return true;
     }

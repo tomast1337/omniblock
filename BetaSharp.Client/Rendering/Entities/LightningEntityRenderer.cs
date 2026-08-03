@@ -12,13 +12,12 @@ public class LightningEntityRenderer : EntityRenderer
     ///     The bolt, which only ever brightens what is behind it.
     /// </summary>
     /// <remarks>
-    ///     Everything but the blending is what the entity pass already has in effect, spelled out
-    ///     rather than inherited: culling and the depth test are switched on for the frame in
-    ///     <c>GameRenderer.RenderFrame</c>, and the compare function and cull face are set once at
-    ///     startup and never changed. Saying all of it is the point, since a pipeline is selected
-    ///     whole rather than adjusted a field at a time.
+    ///     Everything but the blending comes from <see cref="RenderState.Entity" />, so the bolt is
+    ///     unculled like the rest of the entity tree and depth tested against the world in front of
+    ///     it. Saying all of it is the point, since a pipeline is selected whole rather than
+    ///     adjusted a field at a time.
     /// </remarks>
-    private static readonly RenderState s_bolt = RenderState.Opaque with { Blend = BlendMode.AdditiveByAlpha };
+    private static readonly RenderState s_bolt = RenderState.Entity with { Blend = BlendMode.AdditiveByAlpha };
 
     public void render(long renderSeed, double x, double y, double z)
     {
@@ -129,7 +128,7 @@ public class LightningEntityRenderer : EntityRenderer
             }
         }
 
-        GLManager.State.ApplyUntrusted(RenderState.Opaque);
+        GLManager.State.ApplyUntrusted(RenderState.Entity);
         GLManager.GL.Enable(GLEnum.Lighting);
         GLManager.GL.Enable(GLEnum.Texture2D);
     }
