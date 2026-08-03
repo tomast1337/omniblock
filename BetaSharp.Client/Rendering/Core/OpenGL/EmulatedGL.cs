@@ -15,6 +15,7 @@ public unsafe class EmulatedGL : LegacyGL
     private uint _currentProgram = 0;
     private bool _alphaTestEnabled = false;
     private float _alphaThreshold = 0.1f;
+    private bool _fogEnabled = false;
     private int _shadeModel = 1;
 
     private struct LightingState
@@ -31,25 +32,10 @@ public unsafe class EmulatedGL : LegacyGL
         }
     }
 
-    private struct FogState
-    {
-        public bool FogEnabled = false;
-        public int FogMode = 0; // 0=linear, 1=exp
-        public float FogColorR, FogColorG, FogColorB, FogColorA;
-        public float FogStart = 0f;
-        public float FogEnd = 1f;
-        public float FogDensity = 1f;
-
-        public FogState()
-        {
-        }
-    }
-
     private struct DirtyState
     {
         public bool DirtyLighting = true;
         public bool StateDirty = true;
-        public bool DirtyFog = true;
 
         public DirtyState()
         {
@@ -57,7 +43,6 @@ public unsafe class EmulatedGL : LegacyGL
     }
 
     private LightingState _lightingState = new();
-    private FogState _fogState = new();
     private DirtyState _dirtyState = new();
     private Vector4D<float> _currentColorTint = Vector4D<float>.One;
 
@@ -89,6 +74,25 @@ public unsafe class EmulatedGL : LegacyGL
     /// <inheritdoc cref="ModelView" />
     public MatrixStack TextureMatrix => _textureStack;
 
+    /// <inheritdoc cref="GLManager.Fog" />
+    public FogState Fog { get; set; } = FogState.Default;
+
+    /// <inheritdoc cref="GLManager.AlphaThreshold" />
+    public float AlphaThreshold
+    {
+        get => _alphaThreshold;
+        set
+        {
+            if (_alphaThreshold == value)
+            {
+                return;
+            }
+
+            _alphaThreshold = value;
+            _dirtyState.StateDirty = true;
+        }
+    }
+
     /// <summary>
     ///     The stack versions last written to the active program, or <see cref="Unuploaded" /> when
     ///     nothing has been.
@@ -103,6 +107,15 @@ public unsafe class EmulatedGL : LegacyGL
     private uint _uploadedModelView = Unuploaded;
     private uint _uploadedProjection = Unuploaded;
     private uint _uploadedTextureMatrix = Unuploaded;
+
+    /// <summary>The fog last written to the active program, and whether any has been.</summary>
+    /// <remarks>
+    ///     Compared rather than tracked as a dirty flag, for the same reason the matrix stacks are:
+    ///     <see cref="Fog" /> is assigned from outside and a writer there cannot raise a flag here.
+    /// </remarks>
+    private FogState _uploadedFog;
+
+    private bool _fogUploaded;
 
     /// <summary>Forces every matrix uniform to be written again on the next draw.</summary>
     private void InvalidateUploadedMatrices()
@@ -121,7 +134,7 @@ public unsafe class EmulatedGL : LegacyGL
             InvalidateUploadedMatrices();
             _dirtyState.StateDirty = true;
             if (_lightingState.LightingEnabled) _dirtyState.DirtyLighting = true;
-            if (_fogState.FogEnabled) _dirtyState.DirtyFog = true;
+            _fogUploaded = false;
         }
 
         if (_uploadedProjection != _projectionStack.Version) { _shader.SetProjection(_projectionStack.Top); _uploadedProjection = _projectionStack.Version; }
@@ -132,7 +145,7 @@ public unsafe class EmulatedGL : LegacyGL
             _shader.SetUseTexture(_useTexture);
             _shader.SetAlphaThreshold(_alphaTestEnabled ? _alphaThreshold : -1.0f);
             _shader.SetEnableLighting(_lightingState.LightingEnabled);
-            _shader.SetEnableFog(_fogState.FogEnabled);
+            _shader.SetEnableFog(_fogEnabled);
             _shader.SetShadeModel(_shadeModel);
             _dirtyState.StateDirty = false;
         }
@@ -169,21 +182,17 @@ public unsafe class EmulatedGL : LegacyGL
             _dirtyState.DirtyLighting = false;
         }
 
-        if (_fogState.FogEnabled && _dirtyState.DirtyFog)
+        if (_fogEnabled && (!_fogUploaded || _uploadedFog != Fog))
         {
-            _shader.SetFogMode(_fogState.FogMode);
-            _shader.SetFogColor(_fogState.FogColorR, _fogState.FogColorG, _fogState.FogColorB, _fogState.FogColorA);
-            _shader.SetFogStart(_fogState.FogStart);
-            _shader.SetFogEnd(_fogState.FogEnd);
-            _shader.SetFogDensity(_fogState.FogDensity);
-            _dirtyState.DirtyFog = false;
+            FogState fog = Fog;
+            _shader.SetFogMode((int)fog.Curve);
+            _shader.SetFogColor(fog.Color.X, fog.Color.Y, fog.Color.Z, fog.Color.W);
+            _shader.SetFogStart(fog.Start);
+            _shader.SetFogEnd(fog.End);
+            _shader.SetFogDensity(fog.Density);
+            _uploadedFog = fog;
+            _fogUploaded = true;
         }
-    }
-
-    public override void AlphaFunc(GLEnum func, float refValue)
-    {
-        _alphaThreshold = refValue;
-        _dirtyState.StateDirty = true;
     }
 
     public override void BufferData(GLEnum target, nuint size, void* data, GLEnum usage)
@@ -235,8 +244,8 @@ public unsafe class EmulatedGL : LegacyGL
                 OnRasterStateChanging(cap);
                 return;
             case GLEnum.Fog:
-                if (_fogState.FogEnabled) return;
-                _fogState.FogEnabled = true; _dirtyState.StateDirty = true; _dirtyState.DirtyFog = true;
+                if (_fogEnabled) return;
+                _fogEnabled = true; _dirtyState.StateDirty = true;
                 OnRasterStateChanging(cap);
                 return;
             case GLEnum.Light0: return;
@@ -268,8 +277,8 @@ public unsafe class EmulatedGL : LegacyGL
                 OnRasterStateChanging(cap);
                 return;
             case GLEnum.Fog:
-                if (!_fogState.FogEnabled) return;
-                _fogState.FogEnabled = false; _dirtyState.StateDirty = true;
+                if (!_fogEnabled) return;
+                _fogEnabled = false; _dirtyState.StateDirty = true;
                 OnRasterStateChanging(cap);
                 return;
             case GLEnum.Light0: return;
@@ -314,30 +323,6 @@ public unsafe class EmulatedGL : LegacyGL
             if (light == GLEnum.Light0) { _lightingState.Light0DiffR = params_[0]; _lightingState.Light0DiffG = params_[1]; _lightingState.Light0DiffB = params_[2]; }
             else if (light == GLEnum.Light1) { _lightingState.Light1DiffR = params_[0]; _lightingState.Light1DiffG = params_[1]; _lightingState.Light1DiffB = params_[2]; }
             _dirtyState.DirtyLighting = true;
-        }
-    }
-
-    public override void Fog(GLEnum pname, float param)
-    {
-        switch (pname)
-        {
-            case GLEnum.FogMode: _fogState.FogMode = (int)param == (int)GLEnum.Linear ? 0 : 1; break;
-            case GLEnum.FogStart: _fogState.FogStart = param; break;
-            case GLEnum.FogEnd: _fogState.FogEnd = param; break;
-            case GLEnum.FogDensity: _fogState.FogDensity = param; break;
-        }
-        _dirtyState.DirtyFog = true;
-    }
-
-    public override void Fog(GLEnum pname, ReadOnlySpan<float> params_)
-    {
-        if (pname == GLEnum.FogColor && params_.Length >= 4)
-        {
-            _fogState.FogColorR = params_[0];
-            _fogState.FogColorG = params_[1];
-            _fogState.FogColorB = params_[2];
-            _fogState.FogColorA = params_[3];
-            _dirtyState.DirtyFog = true;
         }
     }
 
@@ -435,13 +420,8 @@ public unsafe class EmulatedGL : LegacyGL
     /// <summary>Whether <c>Texture2D</c> is enabled, i.e. whether a draw would sample its texture.</summary>
     public bool GetTextureEnabled() => _useTexture;
 
-    public EntityFogSnapshot GetFogState() => new(
-        _fogState.FogEnabled,
-        _fogState.FogMode,
-        _fogState.FogStart,
-        _fogState.FogEnd,
-        _fogState.FogDensity,
-        new Vector4D<float>(_fogState.FogColorR, _fogState.FogColorG, _fogState.FogColorB, _fogState.FogColorA));
+    /// <summary>Whether fog is applied at all, i.e. whether <see cref="Fog" /> is being used.</summary>
+    public bool GetFogEnabled() => _fogEnabled;
 
     public EntityLightingSnapshot GetLightingState() => new(
         _lightingState.LightingEnabled,
@@ -459,11 +439,3 @@ public readonly record struct EntityLightingSnapshot(
     Vector3D<float> Light1Dir,
     Vector3D<float> Light1Diffuse,
     Vector3D<float> Ambient);
-
-public readonly record struct EntityFogSnapshot(
-    bool Enabled,
-    int Mode,
-    float Start,
-    float End,
-    float Density,
-    Vector4D<float> Color);

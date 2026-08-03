@@ -11,8 +11,6 @@ public abstract unsafe class LegacyGL : IGL
         SilkGL = gl;
     }
 
-    public abstract void AlphaFunc(GLEnum func, float refValue);
-
     public void AttachShader(uint program, uint shader)
     {
         SilkGL.AttachShader(program, shader);
@@ -193,11 +191,6 @@ public abstract unsafe class LegacyGL : IGL
     {
         SilkGL.EnableVertexAttribArray(index);
     }
-
-
-    public abstract void Fog(GLEnum pname, float param);
-
-    public abstract void Fog(GLEnum pname, ReadOnlySpan<float> params_);
 
     public uint GenBuffer()
     {

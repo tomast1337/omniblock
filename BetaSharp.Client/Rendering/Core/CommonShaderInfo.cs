@@ -1,19 +1,17 @@
-using Silk.NET.Maths;
-
 namespace BetaSharp.Client.Rendering.Core;
 
+/// <summary>
+///     Where the frame is in time, for the shaders that animate from it.
+/// </summary>
+/// <remarks>
+///     Fog used to live here too, written alongside every <c>Fog</c> call so both the emulated
+///     fixed-function shader and the hand-written ones would agree. They now read
+///     <see cref="GLManager.Fog" />, which is the same value rather than a copy that has to be kept
+///     in step.
+/// </remarks>
 public class CommonShaderInfo
 {
-    /// <summary>
-    /// 0 = Linear
-    /// 1 = Exp
-    /// </summary>
-    public int FogMode;
-    public float FogDensity;
-    public float FogStart;
-    public float FogEnd;
     public float Time;
     public float DeltaTime;
     public float DayTime;
-    public Vector4D<float> FogColor = new();
 }

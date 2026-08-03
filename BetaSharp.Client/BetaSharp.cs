@@ -437,7 +437,7 @@ public partial class BetaSharp :
         GLManager.State.Apply(RenderState.Entity);
 
         GLManager.GL.Enable(GLEnum.AlphaTest);
-        GLManager.GL.AlphaFunc(GLEnum.Greater, 0.1F);
+        GLManager.AlphaThreshold = 0.1F;
         // Both stacks to identity. The model-view holds the default from process start, but
         // stating it explicitly means a later stack-owner change doesn't silently infect this.
         GLManager.Projection.LoadIdentity();
@@ -1914,7 +1914,7 @@ public partial class BetaSharp :
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Disable(GLEnum.Fog);
         GLManager.GL.Enable(GLEnum.AlphaTest);
-        GLManager.GL.AlphaFunc(GLEnum.Greater, 0.1F);
+        GLManager.AlphaThreshold = 0.1F;
         Display.swapBuffers();
     }
 

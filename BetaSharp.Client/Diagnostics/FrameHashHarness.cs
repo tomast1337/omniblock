@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using BetaSharp.Client.Rendering.Core;
 using Microsoft.Extensions.Logging;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
@@ -463,7 +464,7 @@ internal static unsafe class FrameHashHarness
         GLManager.GL.Enable(GLEnum.Texture2D);
         GLManager.GL.BindTexture(GLEnum.Texture2D, s_checkerboard);
         GLManager.GL.Enable(GLEnum.AlphaTest);
-        GLManager.Legacy.AlphaFunc(GLEnum.Greater, 0.5f);
+        GLManager.AlphaThreshold = 0.5f;
         GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 0.75f);
         TexturedQuad(16, 16, 224, 224);
     }
@@ -483,10 +484,12 @@ internal static unsafe class FrameHashHarness
     {
         GLManager.Projection.Frustum(-1.0, 1.0, -1.0, 1.0, 1.0, 100.0);
         GLManager.GL.Enable(GLEnum.Fog);
-        GLManager.Legacy.Fog(GLEnum.FogMode, (float)GLEnum.Linear);
-        GLManager.Legacy.Fog(GLEnum.FogStart, 2.0f);
-        GLManager.Legacy.Fog(GLEnum.FogEnd, 12.0f);
-        GLManager.Legacy.Fog(GLEnum.FogColor, [0.4f, 0.5f, 0.9f, 1.0f]);
+        GLManager.Fog = new FogState(
+            FogCurve.Linear,
+            new Vector4D<float>(0.4f, 0.5f, 0.9f, 1.0f),
+            Start: 2.0f,
+            End: 12.0f,
+            Density: 1.0f);
 
         for (int i = 0; i < 5; i++)
         {

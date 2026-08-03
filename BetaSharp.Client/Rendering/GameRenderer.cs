@@ -36,7 +36,6 @@ public class GameRenderer
     private long _prevFrameTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     private readonly JavaRandom _random = new();
     private int _rainSoundCounter;
-    private readonly float[] _fogColorBuffer = new float[16];
     private float _fogColorRed;
     private float _fogColorGreen;
     private float _fogColorBlue;
@@ -682,7 +681,7 @@ public class GameRenderer
             GLManager.GL.Normal3(0.0F, 1.0F, 0.0F);
 
             // Lower than the usual 0.1 so the faint tail of a raindrop is not cut off.
-            GLManager.GL.AlphaFunc(GLEnum.Greater, 0.01F);
+            GLManager.AlphaThreshold = 0.01F;
             _client.TextureManager.BindTexture(_client.TextureManager.GetTextureId("/environment/snow.png"));
             double renderX = camera.LastTickX + (camera.X - camera.LastTickX) * tickDelta;
             double renderY = camera.LastTickY + (camera.Y - camera.LastTickY) * tickDelta;
@@ -814,7 +813,7 @@ public class GameRenderer
             }
 
             GLManager.State.Apply(RenderState.Opaque);
-            GLManager.GL.AlphaFunc(GLEnum.Greater, 0.1F);
+            GLManager.AlphaThreshold = 0.1F;
         }
     }
 
@@ -934,64 +933,54 @@ public class GameRenderer
     private void ApplyFog(int mode)
     {
         EntityLiving camera = _client.Camera;
-        GLManager.GL.Fog(GLEnum.FogColor, UpdateFogColorBuffer(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0F));
-        ShaderInfo.FogColor = new Vector4D<float>(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0f);
+        Vector4D<float> color = new(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0f);
         GLManager.GL.Normal3(0.0F, -1.0F, 0.0F);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        if (_cloudFog)
+
+        if (_cloudFog || camera.IsInFluid(Material.Water))
         {
-            GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
-            GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
-            ShaderInfo.FogMode = 1;
-            ShaderInfo.FogDensity = 0.1f;
-        }
-        else if (camera.IsInFluid(Material.Water))
-        {
-            GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
-            GLManager.GL.Fog(GLEnum.FogDensity, 0.1F);
-            ShaderInfo.FogMode = 1;
-            ShaderInfo.FogDensity = 0.1f;
+            GLManager.Fog = GLManager.Fog with
+            {
+                Color = color,
+                Curve = FogCurve.Exponential,
+                Density = 0.1f,
+            };
         }
         else if (camera.IsInFluid(Material.Lava))
         {
-            GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Exp);
-            GLManager.GL.Fog(GLEnum.FogDensity, 2.0F);
-            ShaderInfo.FogMode = 1;
-            ShaderInfo.FogDensity = 2f;
+            GLManager.Fog = GLManager.Fog with
+            {
+                Color = color,
+                Curve = FogCurve.Exponential,
+                Density = 2.0f,
+            };
         }
         else
         {
-            GLManager.GL.Fog(GLEnum.FogMode, (int)GLEnum.Linear);
-            GLManager.GL.Fog(GLEnum.FogStart, _viewDistance * 0.25F);
-            GLManager.GL.Fog(GLEnum.FogEnd, _viewDistance);
-            ShaderInfo.FogMode = 0;
-            ShaderInfo.FogStart = _viewDistance * 0.25f;
-            ShaderInfo.FogEnd = _viewDistance;
+            float start = _viewDistance * 0.25F;
+            float end = _viewDistance;
+
             if (mode < 0)
             {
-                GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
-                GLManager.GL.Fog(GLEnum.FogEnd, _viewDistance * 0.8F);
-                ShaderInfo.FogStart = 0;
-                ShaderInfo.FogEnd = _viewDistance * 0.8f;
+                start = 0.0F;
+                end = _viewDistance * 0.8F;
             }
 
             if (_client.World.Dimension.IsNether)
             {
-                GLManager.GL.Fog(GLEnum.FogStart, 0.0F);
-                ShaderInfo.FogStart = 0;
+                start = 0.0F;
             }
+
+            GLManager.Fog = GLManager.Fog with
+            {
+                Color = color,
+                Curve = FogCurve.Linear,
+                Start = start,
+                End = end,
+            };
         }
 
         GLManager.GL.Enable(GLEnum.ColorMaterial);
         GLManager.GL.ColorMaterial(GLEnum.Front, GLEnum.Ambient);
-    }
-
-    private float[] UpdateFogColorBuffer(float red, float green, float blue, float alpha)
-    {
-        _fogColorBuffer[0] = red;
-        _fogColorBuffer[1] = green;
-        _fogColorBuffer[2] = blue;
-        _fogColorBuffer[3] = alpha;
-        return _fogColorBuffer;
     }
 }
