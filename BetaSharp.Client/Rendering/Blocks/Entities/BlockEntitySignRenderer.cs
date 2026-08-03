@@ -1,7 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Entities.Models;
 using Color = BetaSharp.Client.UI.Colors.Color;
 
@@ -55,12 +54,6 @@ public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
         GLManager.ModelView.Scale(modelScale, -modelScale, -modelScale);
 
         _modelSign.Render();
-
-        // Block entities are drawn inside the instancing pass (WorldRenderer opens it around them)
-        // and ModelSign is a BbModelEntityModel, so the board is queued rather than drawn. The text
-        // below is not — it goes through the tessellator, straight to the screen — and it sits a
-        // hair in front of the board, so the board has to reach the depth buffer first.
-        EntityInstanceBatchRenderer.Instance.Flush();
 
         GLManager.ModelView.Pop();
         TextRenderer fontRenderer = getFontRenderer();
