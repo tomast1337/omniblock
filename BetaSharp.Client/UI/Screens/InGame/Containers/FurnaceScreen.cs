@@ -6,7 +6,7 @@ using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.UI.Controls.Core;
 using BetaSharp.Client.UI.Layout.Flexbox;
 using BetaSharp.Client.UI.Rendering;
-using BetaSharp.Inventorys;
+using BetaSharp.Inventories;
 using BetaSharp.Screens;
 
 namespace BetaSharp.Client.UI.Screens.InGame.Containers;

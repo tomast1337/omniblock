@@ -6,7 +6,7 @@ using BetaSharp.Client.Rendering.Particles;
 using BetaSharp.Client.UI.Screens.InGame;
 using BetaSharp.Client.UI.Screens.InGame.Containers;
 using BetaSharp.Entities;
-using BetaSharp.Inventorys;
+using BetaSharp.Inventories;
 using BetaSharp.NBT;
 using BetaSharp.Network.Messages;
 using BetaSharp.Stats;

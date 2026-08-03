@@ -11,7 +11,7 @@ using BetaSharp.Client.Worlds;
 using BetaSharp.Diagnostics;
 using BetaSharp.Entities;
 using BetaSharp.Entities.Behaviors;
-using BetaSharp.Inventorys;
+using BetaSharp.Inventories;
 using BetaSharp.Items;
 using BetaSharp.Items.Behaviors;
 using BetaSharp.Network;

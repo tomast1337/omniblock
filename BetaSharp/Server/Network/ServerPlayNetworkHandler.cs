@@ -1,7 +1,7 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
-using BetaSharp.Inventorys;
+using BetaSharp.Inventories;
 using BetaSharp.Items;
 using BetaSharp.Network;
 using BetaSharp.Network.Messages;

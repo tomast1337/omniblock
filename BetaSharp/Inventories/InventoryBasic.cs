@@ -1,47 +1,38 @@
 using BetaSharp.Entities;
 using BetaSharp.Items;
 
-namespace BetaSharp.Inventorys;
+namespace BetaSharp.Inventories;
 
 public class InventoryBasic(string inventoryTitle, int slotsCount) : IInventory
 {
     private readonly ItemStack?[] _inventoryContents = new ItemStack[slotsCount];
 
-    public ItemStack? GetStack(int slotIndex)
-    {
-        return _inventoryContents[slotIndex];
-    }
+    public ItemStack? GetStack(int slotIndex) => _inventoryContents[slotIndex];
 
     public ItemStack? RemoveStack(int slotIndex, int amount)
     {
         ItemStack? inSlot = _inventoryContents[slotIndex];
 
-        if (inSlot != null)
-        {
-            ItemStack removeStack;
-            if (inSlot.Count <= amount)
-            {
-                removeStack = inSlot;
-                _inventoryContents[slotIndex] = null;
-                MarkDirty();
-                return removeStack;
-            }
-            else
-            {
-                removeStack = inSlot.Split(amount);
-                if (inSlot.Count == 0)
-                {
-                    _inventoryContents[slotIndex] = null;
-                }
+        if (inSlot == null) return null;
 
-                MarkDirty();
-                return removeStack;
-            }
-        }
-        else
+        ItemStack removeStack;
+        if (inSlot.Count <= amount)
         {
-            return null;
+            removeStack = inSlot;
+            _inventoryContents[slotIndex] = null;
+            MarkDirty();
+            return removeStack;
         }
+
+        removeStack = inSlot.Split(amount);
+        if (inSlot.Count == 0)
+        {
+            _inventoryContents[slotIndex] = null;
+        }
+
+        MarkDirty();
+        return removeStack;
+
     }
 
     public void SetStack(int slotIndex, ItemStack? itemStack)
@@ -65,8 +56,5 @@ public class InventoryBasic(string inventoryTitle, int slotsCount) : IInventory
     {
     }
 
-    public bool CanPlayerUse(EntityPlayer entityPlayer)
-    {
-        return true;
-    }
+    public bool CanPlayerUse(EntityPlayer entityPlayer) => true;
 }

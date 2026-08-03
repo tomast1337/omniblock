@@ -1,7 +1,7 @@
 using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
-using BetaSharp.Inventorys;
+using BetaSharp.Inventories;
 using BetaSharp.Items;
 using BetaSharp.NBT;
 using BetaSharp.Recipes;

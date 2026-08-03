@@ -83,3 +83,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-03 — refactor(rendering): state the pipeline for the chunk border overlay (Nicolas Vyčas Nery; `a5b52adbcbcaf621d7673f890e5ebd0e7a5d54fe`)
 - 2026-08-03 — refactor(rendering): state the pipeline for the frame itself (Nicolas Vyčas Nery; `8ca908228d503f886a5fac540b27888399471aa0`)
 - 2026-08-03 — refactor(rendering): state the pipeline for the framebuffer and post-process passes (Nicolas Vyčas Nery; `e5ee8a7b70adb0f39681a3712c6dbdad1f2e0545`)
+- 2026-08-03 — feat(inventory): refactor inventory system (Nicolas Vyčas Nery; `c2dd1626330ba03fbc5c6aa83eb7eeb2c2ffea76`)

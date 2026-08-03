@@ -1,6 +1,6 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
-using BetaSharp.Inventorys;
+using BetaSharp.Inventories;
 using BetaSharp.Server.Command;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
