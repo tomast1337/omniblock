@@ -190,5 +190,13 @@
     "vi_vn": {
         "name": "Tiếng Việt",
         "author": "(To be claimed by a human reviewer)"
+    },
+    "sux_aa": {
+        "name": "Sumerian (𒅴𒂠)",
+        "author": "(To be claimed by a human reviewer)"
+    },
+    "egy_aa": {
+        "name": "Ancient Egyptian (𓂋𓏤𓈖𓆎𓅓𓏏𓊖)",
+        "author": "(To be claimed by a human reviewer)"
     }
 }
