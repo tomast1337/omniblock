@@ -7,7 +7,7 @@ public static class ProfilerRenderer
     private class ProfilerNode(string name)
     {
         public string Name = name;
-        public Dictionary<string, ProfilerNode> Children = new();
+        public readonly Dictionary<string, ProfilerNode> Children = new();
         public double Last;
         public double Avg;
         public double Max;
@@ -60,9 +60,8 @@ public static class ProfilerRenderer
         {
             string[] parts = name.Split('/');
             ProfilerNode current = root;
-            for (int i = 0; i < parts.Length; i++)
+            foreach (string part in parts)
             {
-                string part = parts[i];
                 if (!current.Children.TryGetValue(part, out ProfilerNode? child))
                 {
                     child = new ProfilerNode(part);
