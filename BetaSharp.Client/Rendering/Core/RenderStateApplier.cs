@@ -114,6 +114,8 @@ public sealed class RenderStateApplier
             BlendMode.AdditiveByAlpha => (GLEnum.SrcAlpha, GLEnum.One),
             BlendMode.SourceToDestinationAlpha => (GLEnum.SrcAlpha, GLEnum.DstAlpha),
             BlendMode.Multiply => (GLEnum.DstColor, GLEnum.SrcColor),
+            BlendMode.Invert => (GLEnum.OneMinusDstColor, GLEnum.OneMinusSrcColor),
+            BlendMode.Darken => (GLEnum.Zero, GLEnum.OneMinusSrcColor),
             _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unhandled blend mode.")
         };
 

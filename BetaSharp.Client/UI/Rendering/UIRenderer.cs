@@ -40,6 +40,17 @@ public class UIRenderer
     private UIBatchRenderer _batch => _context.UiBatchRenderer;
     private readonly UIContext _context;
 
+    /// <summary>
+    ///     Solid geometry shown inside the interface: a block in a slot, a mob in a preview, a sign.
+    /// </summary>
+    /// <remarks>
+    ///     Unlike the flat panels around it these need the depth buffer, both tested and written, so
+    ///     a model occludes its own far side. Culling stays off for the same reason it does in the
+    ///     entity tree.
+    /// </remarks>
+    private static readonly RenderState s_preview =
+        RenderState.Interface with { DepthTest = true, DepthWrite = true };
+
     public UIRenderer(UIContext context)
     {
         _context = context;
@@ -48,12 +59,10 @@ public class UIRenderer
 
     public void Begin()
     {
+        // Lighting is a shader uniform rather than pipeline state, so it stays a separate call.
         GLManager.GL.Disable(GLEnum.Lighting);
-        GLManager.GL.Disable(GLEnum.DepthTest);
-        GLManager.GL.Disable(GLEnum.CullFace);
+        GLManager.State.ApplyUntrusted(RenderState.Interface);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        GLManager.GL.Enable(GLEnum.Blend);
-        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
         GLManager.GL.PushMatrix();
 
         _translateX = 0;
@@ -108,16 +117,23 @@ public class UIRenderer
         else GLManager.GL.Disable(GLEnum.AlphaTest);
     }
 
-    public void PushBlend(GLEnum s, GLEnum d)
+    /// <summary>
+    ///     Draws the next thing with a different blend mode, until <see cref="PopBlend" />.
+    /// </summary>
+    /// <remarks>
+    ///     Takes a <see cref="BlendMode" /> rather than a pair of GL factors, so a control says what
+    ///     it wants rather than how the current backend spells it.
+    /// </remarks>
+    public void PushBlend(BlendMode mode)
     {
         _batch.Flush();
-        GLManager.GL.BlendFunc(s, d);
+        GLManager.State.ApplyUntrusted(RenderState.Interface with { Blend = mode });
     }
 
     public void PopBlend()
     {
         _batch.Flush();
-        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+        GLManager.State.ApplyUntrusted(RenderState.Interface);
     }
 
     public void ClearDepth()
@@ -369,16 +385,17 @@ public class UIRenderer
             GLManager.GL.PushMatrix();
             GLManager.GL.Translate(0, 0, 32.0f);
 
-            GLManager.GL.Disable(GLEnum.CullFace);
+            // Depth writing as well as testing: the block is solid geometry that has to occlude
+            // its own far faces. RenderState.Interface does neither, which is right for flat panels
+            // and wrong here.
+            GLManager.State.ApplyUntrusted(s_preview);
             GLManager.GL.Enable(GLEnum.RescaleNormal);
-            GLManager.GL.Enable(GLEnum.DepthTest);
 
             Lighting.turnOnGui();
             _itemRenderer.renderItemIntoGUI(TextRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
             Lighting.turnOff();
 
-            GLManager.GL.Disable(GLEnum.CullFace);
-            GLManager.GL.Disable(GLEnum.DepthTest);
+            GLManager.State.ApplyUntrusted(RenderState.Interface);
             GLManager.GL.Disable(GLEnum.RescaleNormal);
             GLManager.GL.PopMatrix();
         }
@@ -432,15 +449,14 @@ public class UIRenderer
     {
         _batch.Flush();
 
+        GLManager.State.ApplyUntrusted(s_preview);
         GLManager.GL.Enable(GLEnum.RescaleNormal);
         GLManager.GL.Enable(GLEnum.ColorMaterial);
-        GLManager.GL.Enable(GLEnum.DepthTest);
         GLManager.GL.PushMatrix();
         GLManager.GL.Translate(x + _translateX, y + _translateY, 50.0F);
 
         GLManager.GL.Scale(-scale, scale, scale);
         GLManager.GL.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
-        GLManager.GL.Disable(GLEnum.CullFace);
 
         float bodyYaw = entity is EntityLiving el ? el.BodyYaw : entity.Yaw;
         float headYaw = entity.Yaw;
@@ -475,8 +491,7 @@ public class UIRenderer
 
         GLManager.GL.PopMatrix();
         Lighting.turnOff();
-        GLManager.GL.Disable(GLEnum.CullFace);
-        GLManager.GL.Disable(GLEnum.DepthTest);
+        GLManager.State.ApplyUntrusted(RenderState.Interface);
         GLManager.GL.Disable(GLEnum.RescaleNormal);
         GLManager.GL.Disable(GLEnum.ColorMaterial);
     }
@@ -560,8 +575,8 @@ public class UIRenderer
     {
         _batch.Flush();
 
+        GLManager.State.ApplyUntrusted(s_preview);
         GLManager.GL.Enable(GLEnum.RescaleNormal);
-        GLManager.GL.Enable(GLEnum.DepthTest);
         GLManager.GL.PushMatrix();
         GLManager.GL.Translate(x + _translateX, y + _translateY, 50.0F);
 
@@ -589,7 +604,7 @@ public class UIRenderer
 
         BlockEntityRenderer.Instance.RenderTileEntityAt(sign, -0.5D, -0.75D, -0.5D, 0.0F);
         GLManager.GL.PopMatrix();
-        GLManager.GL.Disable(GLEnum.DepthTest);
+        GLManager.State.ApplyUntrusted(RenderState.Interface);
         GLManager.GL.Disable(GLEnum.RescaleNormal);
     }
 }

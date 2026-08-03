@@ -27,7 +27,19 @@ public enum BlendMode
     SourceToDestinationAlpha,
 
     /// <summary>Darkens by multiplying, which is how the world is tinted. <c>DstColor, SrcColor</c>.</summary>
-    Multiply
+    Multiply,
+
+    /// <summary>
+    ///     Inverts what is behind it, so the crosshair stays visible against any background.
+    ///     <c>OneMinusDstColor, OneMinusSrcColor</c>.
+    /// </summary>
+    Invert,
+
+    /// <summary>
+    ///     Scales the destination down without adding anything, which is how the vignette darkens
+    ///     the edges of the screen. <c>Zero, OneMinusSrcColor</c>.
+    /// </summary>
+    Darken
 }
 
 /// <summary>Which faces are discarded before rasterisation.</summary>
