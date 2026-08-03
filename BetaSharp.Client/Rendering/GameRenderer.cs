@@ -523,8 +523,10 @@ public class GameRenderer
         GLManager.GL.Disable(GLEnum.Texture2D);
         GLManager.GL.Disable(GLEnum.Lighting);
         GLManager.GL.Disable(GLEnum.Fog);
-        GLManager.GL.Enable(GLEnum.DepthTest);
-        GLManager.GL.DepthMask(true);
+
+        // What the world pass already left set — this only ever asserted half of it, and the half
+        // it left out is what decided whether the lines were blended.
+        GLManager.State.ApplyUntrusted(RenderState.Opaque);
 
         double minX = playerChunkX * 16.0;
         double maxX = (playerChunkX + 1) * 16.0;
