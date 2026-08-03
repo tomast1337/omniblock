@@ -438,9 +438,10 @@ public partial class BetaSharp :
 
         GLManager.GL.Enable(GLEnum.AlphaTest);
         GLManager.GL.AlphaFunc(GLEnum.Greater, 0.1F);
-        GLManager.GL.MatrixMode(GLEnum.Projection);
-        GLManager.GL.LoadIdentity();
-        GLManager.GL.MatrixMode(GLEnum.Modelview);
+        // Both stacks to identity. The model-view holds the default from process start, but
+        // stating it explicitly means a later stack-owner change doesn't silently infect this.
+        GLManager.Projection.LoadIdentity();
+        GLManager.ModelView.LoadIdentity();
         CheckGLError("Startup");
     }
 
@@ -1886,12 +1887,10 @@ public partial class BetaSharp :
     {
         ScaledResolution scaledResolution = new(Options, DisplayWidth, DisplayHeight);
         GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
-        GLManager.GL.MatrixMode(GLEnum.Projection);
-        GLManager.GL.LoadIdentity();
-        GLManager.GL.Ortho(0.0D, scaledResolution.ScaledWidth, scaledResolution.ScaledHeight, 0.0D, 1000.0D, 3000.0D);
-        GLManager.GL.MatrixMode(GLEnum.Modelview);
-        GLManager.GL.LoadIdentity();
-        GLManager.GL.Translate(0.0F, 0.0F, -2000.0F);
+        GLManager.Projection.LoadIdentity();
+        GLManager.Projection.Ortho(0.0D, scaledResolution.ScaledWidth, scaledResolution.ScaledHeight, 0.0D, 1000.0D, 3000.0D);
+        GLManager.ModelView.LoadIdentity();
+        GLManager.ModelView.Translate(0.0F, 0.0F, -2000.0F);
         GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
         GLManager.GL.ClearColor(0.0F, 0.0F, 0.0F, 0.0F);
         Tessellator tessellator = Tessellator.instance;

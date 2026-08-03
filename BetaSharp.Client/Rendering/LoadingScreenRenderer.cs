@@ -38,12 +38,10 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
             ScaledResolution resolution = new(game.Options, game.DisplayWidth, game.DisplayHeight);
 
             GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
-            GLManager.GL.MatrixMode(GLEnum.Projection);
-            GLManager.GL.LoadIdentity();
-            GLManager.GL.Ortho(0.0, resolution.ScaledWidth, resolution.ScaledHeight, 0.0, 100.0, 300.0);
-            GLManager.GL.MatrixMode(GLEnum.Modelview);
-            GLManager.GL.LoadIdentity();
-            GLManager.GL.Translate(0.0f, 0.0f, -200.0f);
+            GLManager.Projection.LoadIdentity();
+            GLManager.Projection.Ortho(0.0, resolution.ScaledWidth, resolution.ScaledHeight, 0.0, 100.0, 300.0);
+            GLManager.ModelView.LoadIdentity();
+            GLManager.ModelView.Translate(0.0f, 0.0f, -200.0f);
         }
     }
 
@@ -81,12 +79,10 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
         int height = resolution.ScaledHeight;
 
         GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
-        GLManager.GL.MatrixMode(GLEnum.Projection);
-        GLManager.GL.LoadIdentity();
-        GLManager.GL.Ortho(0.0, width, height, 0.0, 100.0, 300.0);
-        GLManager.GL.MatrixMode(GLEnum.Modelview);
-        GLManager.GL.LoadIdentity();
-        GLManager.GL.Translate(0.0f, 0.0f, -200.0f);
+        GLManager.Projection.LoadIdentity();
+        GLManager.Projection.Ortho(0.0, width, height, 0.0, 100.0, 300.0);
+        GLManager.ModelView.LoadIdentity();
+        GLManager.ModelView.Translate(0.0f, 0.0f, -200.0f);
         GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
 
         Tessellator tessellator = Tessellator.instance;

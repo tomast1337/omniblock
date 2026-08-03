@@ -139,13 +139,12 @@ public class GameRenderer
     private void RenderWorld(float tickDelta)
     {
         _viewDistance = _client.Options.RenderDistance * 16.0f;
-        GLManager.GL.MatrixMode(GLEnum.Projection);
-        GLManager.GL.LoadIdentity();
+        GLManager.Projection.LoadIdentity();
 
         if (CameraController.CameraZoom != 1.0D)
         {
-            GLManager.GL.Translate((float)CameraController.CameraYaw, (float)-CameraController.CameraPitch, 0.0F);
-            GLManager.GL.Scale(CameraController.CameraZoom, CameraController.CameraZoom, 1.0D);
+            GLManager.Projection.Translate((float)CameraController.CameraYaw, (float)-CameraController.CameraPitch, 0.0F);
+            GLManager.Projection.Scale((float)CameraController.CameraZoom, (float)CameraController.CameraZoom, 1.0F);
             GLU.gluPerspective(CameraController.GetFov(tickDelta), _client.DisplayWidth / (float)_client.DisplayHeight, 0.05F, _viewDistance * 2.0F);
         }
         else
@@ -153,8 +152,7 @@ public class GameRenderer
             GLU.gluPerspective(CameraController.GetFov(tickDelta), _client.DisplayWidth / (float)_client.DisplayHeight, 0.05F, _viewDistance * 2.0F);
         }
 
-        GLManager.GL.MatrixMode(GLEnum.Modelview);
-        GLManager.GL.LoadIdentity();
+        GLManager.ModelView.LoadIdentity();
 
         CameraController.ApplyDamageTiltEffect(tickDelta);
         if (_client.Options.ViewBobbing)
@@ -167,9 +165,9 @@ public class GameRenderer
         {
             float distortionScale = 5.0F / (screenDistortion * screenDistortion + 5.0F) - screenDistortion * 0.04F;
             distortionScale *= distortionScale;
-            GLManager.GL.Rotate((_ticks + tickDelta) * 20.0F, 0.0F, 1.0F, 1.0F);
-            GLManager.GL.Scale(1.0F / distortionScale, 1.0F, 1.0F);
-            GLManager.GL.Rotate(-(_ticks + tickDelta) * 20.0F, 0.0F, 1.0F, 1.0F);
+            GLManager.ModelView.Rotate((_ticks + tickDelta) * 20.0F, 0.0F, 1.0F, 1.0F);
+            GLManager.ModelView.Scale(1.0F / distortionScale, 1.0F, 1.0F);
+            GLManager.ModelView.Rotate(-(_ticks + tickDelta) * 20.0F, 0.0F, 1.0F, 1.0F);
         }
 
         CameraController.ApplyCameraTransform(tickDelta);
@@ -177,19 +175,17 @@ public class GameRenderer
 
     private void RenderFirstPersonHand(float tickDelta)
     {
-        GLManager.GL.MatrixMode(GLEnum.Projection);
-        GLManager.GL.LoadIdentity();
+        GLManager.Projection.LoadIdentity();
         if (CameraController.CameraZoom != 1.0D)
         {
-            GLManager.GL.Translate((float)CameraController.CameraYaw, (float)-CameraController.CameraPitch, 0.0F);
-            GLManager.GL.Scale(CameraController.CameraZoom, CameraController.CameraZoom, 1.0D);
+            GLManager.Projection.Translate((float)CameraController.CameraYaw, (float)-CameraController.CameraPitch, 0.0F);
+            GLManager.Projection.Scale((float)CameraController.CameraZoom, (float)CameraController.CameraZoom, 1.0F);
         }
 
         GLU.gluPerspective(CameraController.GetFov(tickDelta, true), _client.DisplayWidth / (float)_client.DisplayHeight, 0.05F, _viewDistance * 2.0F);
-        GLManager.GL.MatrixMode(GLEnum.Modelview);
-        GLManager.GL.LoadIdentity();
+        GLManager.ModelView.LoadIdentity();
 
-        GLManager.GL.PushMatrix();
+        GLManager.ModelView.Push();
         CameraController.ApplyDamageTiltEffect(tickDelta);
         if (_client.Options.ViewBobbing)
         {
@@ -201,7 +197,7 @@ public class GameRenderer
             ItemRenderer.renderItemInFirstPerson(tickDelta);
         }
 
-        GLManager.GL.PopMatrix();
+        GLManager.ModelView.Pop();
         if (_client.Options.CameraMode == CameraMode.FirstPerson && !_client.Camera.IsSleeping)
         {
             ItemRenderer.renderOverlays(tickDelta);
@@ -315,10 +311,8 @@ public class GameRenderer
             else
             {
                 GLManager.GL.Viewport(0, 0, (uint)_client.FramebufferManager.FramebufferWidth, (uint)_client.FramebufferManager.FramebufferHeight);
-                GLManager.GL.MatrixMode(GLEnum.Projection);
-                GLManager.GL.LoadIdentity();
-                GLManager.GL.MatrixMode(GLEnum.Modelview);
-                GLManager.GL.LoadIdentity();
+                GLManager.Projection.LoadIdentity();
+                GLManager.ModelView.LoadIdentity();
                 SetupHudRender();
             }
 
@@ -519,9 +513,8 @@ public class GameRenderer
         int playerChunkX = _client.Player.ChunkX;
         int playerChunkZ = _client.Player.ChunkZ;
 
-        GLManager.GL.MatrixMode(GLEnum.Modelview);
-        GLManager.GL.PushMatrix();
-        GLManager.GL.Translate((float)-camX, (float)-camY, (float)-camZ);
+        GLManager.ModelView.Push();
+        GLManager.ModelView.Translate((float)-camX, (float)-camY, (float)-camZ);
 
         GLManager.GL.Disable(GLEnum.Texture2D);
         GLManager.GL.Disable(GLEnum.Lighting);
@@ -602,7 +595,7 @@ public class GameRenderer
         }
 
         tess.draw();
-        GLManager.GL.PopMatrix();
+        GLManager.ModelView.Pop();
         GLManager.GL.Enable(GLEnum.Texture2D);
     }
 
@@ -829,12 +822,10 @@ public class GameRenderer
     {
         ScaledResolution sr = new(_client.Options, _client.DisplayWidth, _client.DisplayHeight);
         GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
-        GLManager.GL.MatrixMode(GLEnum.Projection);
-        GLManager.GL.LoadIdentity();
-        GLManager.GL.Ortho(0.0D, sr.ScaledWidthDouble, sr.ScaledHeightDouble, 0.0D, 1000.0D, 3000.0D);
-        GLManager.GL.MatrixMode(GLEnum.Modelview);
-        GLManager.GL.LoadIdentity();
-        GLManager.GL.Translate(0.0F, 0.0F, -2000.0F);
+        GLManager.Projection.LoadIdentity();
+        GLManager.Projection.Ortho(0.0D, sr.ScaledWidthDouble, sr.ScaledHeightDouble, 0.0D, 1000.0D, 3000.0D);
+        GLManager.ModelView.LoadIdentity();
+        GLManager.ModelView.Translate(0.0F, 0.0F, -2000.0F);
     }
 
     public void DrawVirtualCursor(int x, int y)
