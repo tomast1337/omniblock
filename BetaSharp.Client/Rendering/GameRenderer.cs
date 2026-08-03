@@ -378,7 +378,7 @@ public class GameRenderer
         // the depth write mask, which the two enables it replaces did not: a depth clear is masked
         // by that mask, and the interface pass this frame follows leaves it off, so the clear
         // below only does anything because this turns it back on.
-        GLManager.State.ApplyUntrusted(RenderState.Opaque);
+        GLManager.State.Apply(RenderState.Opaque);
 
         using (Profiler.Begin("GetMouseOver"))
         {
@@ -461,7 +461,7 @@ public class GameRenderer
         // still depth writing. The depth write was previously inherited rather than stated — the
         // entity pass before this leaves it on only because shadows put it back — which is what
         // the DepthMask below is cleaning up after.
-        GLManager.State.ApplyUntrusted(RenderState.Entity with { Blend = BlendMode.Alpha });
+        GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
         _client.TextureManager.BindTexture(_client.TextureManager.GetTextureId("/terrain.png"));
 
         using (Profiler.Begin("SortAndRenderTranslucent"))
@@ -473,7 +473,7 @@ public class GameRenderer
 
         //TODO: SELCTION BOX/BLOCK BREAKING VISUALIZATON DON'T APPEAR PROPERLY MOST OF THE TIME, SAME WITH ENTITY SHADOWS. VIEW BOBBING MAKES ENTITES BOB UP AND DOWN
 
-        GLManager.State.ApplyUntrusted(RenderState.Opaque);
+        GLManager.State.Apply(RenderState.Opaque);
         if (!CameraController.IsZoomActive && entity is EntityPlayer && _client.ObjectMouseOver.Type != HitResultType.Miss && !entity.IsInFluid(Material.Water))
         {
             entityPlayer = (EntityPlayer)entity;
@@ -529,7 +529,7 @@ public class GameRenderer
 
         // What the world pass already left set — this only ever asserted half of it, and the half
         // it left out is what decided whether the lines were blended.
-        GLManager.State.ApplyUntrusted(RenderState.Opaque);
+        GLManager.State.Apply(RenderState.Opaque);
 
         double minX = playerChunkX * 16.0;
         double maxX = (playerChunkX + 1) * 16.0;
@@ -685,7 +685,7 @@ public class GameRenderer
 
             // Culling off because the rain and snow quads are camera-facing strips with no
             // meaningful back, and still depth writing, which is what they have always done.
-            GLManager.State.ApplyUntrusted(RenderState.Entity with { Blend = BlendMode.Alpha });
+            GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
             GLManager.GL.Normal3(0.0F, 1.0F, 0.0F);
 
             // Lower than the usual 0.1 so the faint tail of a raindrop is not cut off.
@@ -820,7 +820,7 @@ public class GameRenderer
                 }
             }
 
-            GLManager.State.ApplyUntrusted(RenderState.Opaque);
+            GLManager.State.Apply(RenderState.Opaque);
             GLManager.GL.AlphaFunc(GLEnum.Greater, 0.1F);
         }
     }
@@ -845,7 +845,7 @@ public class GameRenderer
 
             // Drawn over the screen the pointer is pointing at, so it takes no part in the depth
             // buffer at all. Same state as everything else in the interface.
-            GLManager.State.ApplyUntrusted(RenderState.Interface);
+            GLManager.State.Apply(RenderState.Interface);
             GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
 
             TextureHandle textureId = _client.TextureManager.GetTextureId("/gui/Pointer.png");
@@ -869,7 +869,7 @@ public class GameRenderer
             // Nothing reads what is left here: FramebufferManager.End runs next and sets its own
             // blending and depth test. Leaving the interface state named is still better than
             // leaving half of it toggled back.
-            GLManager.State.ApplyUntrusted(RenderState.Interface);
+            GLManager.State.Apply(RenderState.Interface);
         }
     }
 

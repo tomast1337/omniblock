@@ -27,8 +27,6 @@ public class Vignette(Func<ClientPlayerEntity?> getPlayer) : FullscreenElement
     public override void Render(UIRenderer renderer)
     {
         renderer.SetAlphaTest(false);
-        renderer.SetDepthMask(false);
-
         renderer.PushBlend(BlendMode.Darken);
         renderer.PushColor(new Color((byte)(255 * _prevVignetteBrightness), (byte)(255 * _prevVignetteBrightness), (byte)(255 * _prevVignetteBrightness)));
 
@@ -36,7 +34,6 @@ public class Vignette(Func<ClientPlayerEntity?> getPlayer) : FullscreenElement
 
         renderer.PopColor();
         renderer.PopBlend();
-        renderer.SetDepthMask(true);
         renderer.SetAlphaTest(true);
 
         base.Render(renderer);

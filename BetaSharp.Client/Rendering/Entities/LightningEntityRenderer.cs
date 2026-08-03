@@ -27,7 +27,7 @@ public class LightningEntityRenderer : EntityRenderer
         // stay as they are and are not part of the state above.
         GLManager.GL.Disable(GLEnum.Texture2D);
         GLManager.GL.Disable(GLEnum.Lighting);
-        GLManager.State.ApplyUntrusted(s_bolt);
+        GLManager.State.Apply(s_bolt);
         double[] xOffsets = new double[8];
         double[] zOffsets = new double[8];
         double offsetX = 0.0D;
@@ -128,7 +128,7 @@ public class LightningEntityRenderer : EntityRenderer
             }
         }
 
-        GLManager.State.ApplyUntrusted(RenderState.Entity);
+        GLManager.State.Apply(RenderState.Entity);
         GLManager.GL.Enable(GLEnum.Lighting);
         GLManager.GL.Enable(GLEnum.Texture2D);
     }

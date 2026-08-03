@@ -7,15 +7,19 @@ namespace BetaSharp.Client.Rendering.Core;
 /// </summary>
 /// <remarks>
 ///     <para>
-///         The diffing is not an optimisation, it is what makes adoption safe. A renderer that says
-///         what it wants rather than which globals to toggle would otherwise re-issue the whole
-///         block on every draw, and the surrounding code still sets these globals itself.
+///         The cache is only correct because nothing else in the client writes these six pieces of
+///         state. Every blend, depth, cull and write mask the renderer wants now comes through here,
+///         so what was last applied is what is actually set, and a field can safely be skipped when
+///         it already holds the value being asked for.
 ///     </para>
 ///     <para>
-///         Which is also why <see cref="Invalidate" /> exists. Anything still calling
-///         <c>Enable</c>, <c>BlendFunc</c> or <c>DepthMask</c> directly changes state this has no
-///         way to observe, so what is cached here stops being true. Until the last of those call
-///         sites is gone, a caller that mixes the two has to say so.
+///         That invariant is the whole thing. Reintroducing a bare <c>Enable</c>, <c>BlendFunc</c>
+///         or <c>DepthMask</c> anywhere in the client breaks it silently: the cache keeps claiming a
+///         value the driver no longer holds, and the next <see cref="Apply" /> asking for that value
+///         issues nothing. The symptom is not a wrong colour in the renderer that cheated, it is a
+///         wrong colour in some unrelated one drawn afterwards. Foreign code that sets this state
+///         out of our reach — the ImGui backend, the frame-hash harness — has to say so by calling
+///         <see cref="Invalidate" />.
 ///     </para>
 /// </remarks>
 public sealed class RenderStateApplier
@@ -27,23 +31,6 @@ public sealed class RenderStateApplier
     ///     Forgets what is believed to be set, so the next <see cref="Apply" /> writes every field.
     /// </summary>
     public void Invalidate() => _known = false;
-
-    /// <summary>
-    ///     Applies a state without trusting what is cached.
-    /// </summary>
-    /// <remarks>
-    ///     What every migrated caller needs until the last unmigrated one is gone. The cache is only
-    ///     updated by <see cref="Apply" />, so while most of the renderer still sets these globals
-    ///     directly it describes the state at some earlier <c>Apply</c> rather than the state now.
-    ///     Trusting it would let a field be skipped because the cache says it already holds a value
-    ///     that raw calls have since overwritten. Every use of this is a call site waiting to become
-    ///     <see cref="Apply" />.
-    /// </remarks>
-    public void ApplyUntrusted(in RenderState state)
-    {
-        Invalidate();
-        Apply(state);
-    }
 
     public void Apply(in RenderState state)
     {

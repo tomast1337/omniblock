@@ -75,7 +75,7 @@ public sealed class FuseEntityRenderer : LivingEntityRenderer
             EntityInstanceBatchRenderer.Instance.ForceLegacyPath = true;
             EntityInstanceBatchRenderer.Instance.Flush();
 
-            GLManager.State.ApplyUntrusted(RenderState.Entity with { Blend = BlendMode.Additive });
+            GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Additive });
             GLManager.GL.Color4(0.5F, 0.5F, 0.5F, 1.0F);
             GLManager.GL.Disable(GLEnum.Lighting);
             return true;
@@ -88,7 +88,7 @@ public sealed class FuseEntityRenderer : LivingEntityRenderer
             GLManager.GL.MatrixMode(GLEnum.Modelview);
             EntityInstanceBatchRenderer.Instance.ForceLegacyPath = false;
             GLManager.GL.Enable(GLEnum.Lighting);
-            GLManager.State.ApplyUntrusted(RenderState.Entity);
+            GLManager.State.Apply(RenderState.Entity);
         }
 
         return false;

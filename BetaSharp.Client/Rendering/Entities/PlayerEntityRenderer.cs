@@ -102,7 +102,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                     // The plate behind the name is depth tested but does not write depth, so the
                     // text drawn over it a moment later is not rejected for being at the same
                     // distance.
-                    GLManager.State.ApplyUntrusted(RenderState.Entity with
+                    GLManager.State.Apply(RenderState.Entity with
                     {
                         Blend = BlendMode.Alpha,
                         DepthWrite = false
@@ -119,10 +119,10 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                     tessellator.addVertex(nameHalfWidth + 1, -1.0D, 0.0D);
                     tessellator.draw();
                     GLManager.GL.Enable(GLEnum.Texture2D);
-                    GLManager.State.ApplyUntrusted(RenderState.Entity with { Blend = BlendMode.Alpha });
+                    GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
                     fontRenderer.DrawString(displayName, -fontRenderer.GetStringWidth(displayName) / 2, 0, Color.WhiteAlpha20);
                     GLManager.GL.Enable(GLEnum.Lighting);
-                    GLManager.State.ApplyUntrusted(RenderState.Entity);
+                    GLManager.State.Apply(RenderState.Entity);
                     GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
                     GLManager.GL.PopMatrix();
                 }

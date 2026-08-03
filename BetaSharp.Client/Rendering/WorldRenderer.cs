@@ -426,7 +426,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         // already in the buffer covers it — while writing no depth of its own, or a dome at
         // distance 100 would reject everything drawn later. That is RenderState.Translucent, and
         // it holds for the whole pass; only the blend changes below.
-        GLManager.State.ApplyUntrusted(RenderState.Translucent);
+        GLManager.State.Apply(RenderState.Translucent);
 
         // Sky dome (top + bottom) — angle-based gradient
         _skyShader.SetUniform1("u_GradientMode", 1);
@@ -468,7 +468,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
         // Sun, moon and the stars after them only ever brighten what is behind them, faded in by
         // their own alpha so the rain gradient can dim them.
-        GLManager.State.ApplyUntrusted(RenderState.Translucent with { Blend = BlendMode.AdditiveByAlpha });
+        GLManager.State.Apply(RenderState.Translucent with { Blend = BlendMode.AdditiveByAlpha });
         GLManager.GL.PushMatrix();
         float rainFade = 1.0F - _world.Environment.GetRainGradient(tickDelta);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, rainFade);
@@ -506,7 +506,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
         GLManager.GL.EndExternalShader();
         GLManager.GL.UseProgram(0);
-        GLManager.State.ApplyUntrusted(RenderState.Opaque);
+        GLManager.State.Apply(RenderState.Opaque);
     }
 
     public void RenderClouds(float tickDelta)
@@ -665,7 +665,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
         // Culling off because the cloud sheet is a single plane seen from either side, depending
         // on whether the camera is above or below the cloud layer.
-        GLManager.State.ApplyUntrusted(RenderState.Entity with { Blend = BlendMode.Alpha });
+        GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
 
         Vector3D<double> cloudColor = _world.Environment.GetCloudColor(tickDelta);
         float cloudRed = (float)cloudColor.X;
@@ -710,7 +710,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
         // This used to put culling back and leave blending on, so the first-person hand pass drew
         // blended or not depending on whether clouds were enabled and the camera was in the Nether.
-        GLManager.State.ApplyUntrusted(RenderState.Opaque);
+        GLManager.State.Apply(RenderState.Opaque);
     }
 
     private void RenderLegacyCloudsFancy(float tickDelta)
@@ -749,7 +749,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             // Pass 0 writes only depth. With culling off, a box's near and far faces would both
             // blend into the same pixel and come out twice as opaque; laying depth down first
             // leaves pass 1 blending each surface exactly once.
-            GLManager.State.ApplyUntrusted(cloudState with { ColorWrite = passIndex != 0 });
+            GLManager.State.Apply(cloudState with { ColorWrite = passIndex != 0 });
 
             GLManager.GL.PushMatrix();
             GLManager.GL.Translate(-subCloudOffsetX, cloudY, -subCloudOffsetZ);
@@ -785,7 +785,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         }
 
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-        GLManager.State.ApplyUntrusted(RenderState.Opaque);
+        GLManager.State.Apply(RenderState.Opaque);
     }
 
     public void DrawBlockBreaking(EntityPlayer entityPlayer, HitResult hit, ItemStack itemStack, float tickDelta)
@@ -803,7 +803,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         // a second time and the crack comes out twice as dark. GameRenderer calls this from two
         // places — once for the underwater case, straight after the entity pass has left culling
         // off, and once with it on — which is why the crack looked different underwater.
-        GLManager.State.ApplyUntrusted(RenderState.Opaque with { Blend = BlendMode.Multiply });
+        GLManager.State.Apply(RenderState.Opaque with { Blend = BlendMode.Multiply });
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 0.5F);
         GLManager.GL.PolygonOffset(-3.0F, -50.0F);
 
@@ -829,7 +829,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
         GLManager.GL.Disable(GLEnum.PolygonOffsetFill);
         GLManager.GL.Disable(GLEnum.AlphaTest);
-        GLManager.State.ApplyUntrusted(RenderState.Opaque);
+        GLManager.State.Apply(RenderState.Opaque);
         GLManager.GL.PopMatrix();
     }
 
@@ -840,7 +840,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             // Line loops, so the culling this carries is inert; what it is here for is the depth
             // pair — tested, so the outline is hidden by blocks in front of the target, but not
             // written, so a line lying exactly on a block face does not fight with it.
-            GLManager.State.ApplyUntrusted(RenderState.Translucent);
+            GLManager.State.Apply(RenderState.Translucent);
             GLManager.GL.Color4(0.0F, 0.0F, 0.0F, 0.4F);
             GLManager.GL.LineWidth(2.0F);
             GLManager.GL.Disable(GLEnum.Texture2D);
@@ -856,7 +856,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             }
 
             GLManager.GL.Enable(GLEnum.Texture2D);
-            GLManager.State.ApplyUntrusted(RenderState.Opaque);
+            GLManager.State.Apply(RenderState.Opaque);
         }
     }
 

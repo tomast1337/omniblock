@@ -780,6 +780,12 @@ public partial class BetaSharp :
                         {
                             ImGui.Render();
                             ImGuiImplOpenGL3.RenderDrawData(ImGui.GetDrawData());
+
+                            // ImGui's backend sets blending, depth and culling itself and puts
+                            // back only what it saved, which is not what the applier last wrote.
+                            // Nothing else in the client changes these behind its back, so this
+                            // is the one place the cache has to be told it no longer knows.
+                            GLManager.State.Invalidate();
                         }
                     }
 

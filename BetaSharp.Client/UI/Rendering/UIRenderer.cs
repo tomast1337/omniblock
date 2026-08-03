@@ -62,7 +62,7 @@ public class UIRenderer
     {
         // Lighting is a shader uniform rather than pipeline state, so it stays a separate call.
         GLManager.GL.Disable(GLEnum.Lighting);
-        GLManager.State.ApplyUntrusted(RenderState.Interface);
+        GLManager.State.Apply(RenderState.Interface);
         GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
         GLManager.GL.PushMatrix();
 
@@ -106,12 +106,6 @@ public class UIRenderer
         GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public void SetDepthMask(bool flag)
-    {
-        _batch.Flush();
-        GLManager.GL.DepthMask(flag);
-    }
-
     public void SetAlphaTest(bool flag)
     {
         _batch.Flush();
@@ -135,7 +129,7 @@ public class UIRenderer
     public void PushBlend(BlendMode mode)
     {
         _batch.Flush();
-        GLManager.State.ApplyUntrusted(RenderState.Interface with
+        GLManager.State.Apply(RenderState.Interface with
         {
             Blend = mode
         });
@@ -144,7 +138,7 @@ public class UIRenderer
     public void PopBlend()
     {
         _batch.Flush();
-        GLManager.State.ApplyUntrusted(RenderState.Interface);
+        GLManager.State.Apply(RenderState.Interface);
     }
 
     public void ClearDepth()
@@ -155,12 +149,12 @@ public class UIRenderer
         // write mask, and RenderState.Interface has it off. Clearing without it silently leaves the
         // buffer alone, which is how the item on the cursor ended up losing the depth test against
         // the block previews already drawn in the slots underneath it.
-        GLManager.State.ApplyUntrusted(RenderState.Interface with
+        GLManager.State.Apply(RenderState.Interface with
         {
             DepthWrite = true
         });
         GLManager.GL.Clear((ClearBufferMask)GLEnum.DepthBufferBit);
-        GLManager.State.ApplyUntrusted(RenderState.Interface);
+        GLManager.State.Apply(RenderState.Interface);
     }
 
     public void PushTranslate(float x, float y)
@@ -428,14 +422,14 @@ public class UIRenderer
             // Depth writing as well as testing: the block is solid geometry that has to occlude
             // its own far faces. RenderState.Interface does neither, which is right for flat panels
             // and wrong here.
-            GLManager.State.ApplyUntrusted(s_preview);
+            GLManager.State.Apply(s_preview);
             GLManager.GL.Enable(GLEnum.RescaleNormal);
 
             Lighting.turnOnGui();
             _itemRenderer.renderItemIntoGUI(TextRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
             Lighting.turnOff();
 
-            GLManager.State.ApplyUntrusted(RenderState.Interface);
+            GLManager.State.Apply(RenderState.Interface);
             GLManager.GL.Disable(GLEnum.RescaleNormal);
             GLManager.GL.PopMatrix();
         }
@@ -495,7 +489,7 @@ public class UIRenderer
     {
         _batch.Flush();
 
-        GLManager.State.ApplyUntrusted(s_preview);
+        GLManager.State.Apply(s_preview);
         GLManager.GL.Enable(GLEnum.RescaleNormal);
         GLManager.GL.Enable(GLEnum.ColorMaterial);
         GLManager.GL.PushMatrix();
@@ -539,7 +533,7 @@ public class UIRenderer
 
         GLManager.GL.PopMatrix();
         Lighting.turnOff();
-        GLManager.State.ApplyUntrusted(RenderState.Interface);
+        GLManager.State.Apply(RenderState.Interface);
         GLManager.GL.Disable(GLEnum.RescaleNormal);
         GLManager.GL.Disable(GLEnum.ColorMaterial);
     }
@@ -623,7 +617,7 @@ public class UIRenderer
     {
         _batch.Flush();
 
-        GLManager.State.ApplyUntrusted(s_preview);
+        GLManager.State.Apply(s_preview);
         GLManager.GL.Enable(GLEnum.RescaleNormal);
         GLManager.GL.PushMatrix();
         GLManager.GL.Translate(x + _translateX, y + _translateY, 50.0F);
@@ -663,7 +657,7 @@ public class UIRenderer
 
         BlockEntityRenderer.Instance.RenderTileEntityAt(sign, -0.5D, -0.75D, -0.5D, 0.0F);
         GLManager.GL.PopMatrix();
-        GLManager.State.ApplyUntrusted(RenderState.Interface);
+        GLManager.State.Apply(RenderState.Interface);
         GLManager.GL.Disable(GLEnum.RescaleNormal);
     }
 }

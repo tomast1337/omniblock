@@ -86,7 +86,7 @@ public class FramebufferManager
         // Stated before the clear rather than left to whatever ran last, because the depth half of
         // this clear is masked by the depth write mask, and the interface pass the previous frame
         // ended on leaves that off.
-        GLManager.State.ApplyUntrusted(RenderState.Opaque);
+        GLManager.State.Apply(RenderState.Opaque);
         GLManager.GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
     }
 
@@ -97,7 +97,7 @@ public class FramebufferManager
         IGL gl = GLManager.GL;
         gl.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
 
-        GLManager.State.ApplyUntrusted(RenderState.PostProcess);
+        GLManager.State.Apply(RenderState.PostProcess);
         gl.Clear(ClearBufferMask.ColorBufferBit);
 
         if (!SkipBlit)
@@ -123,7 +123,7 @@ public class FramebufferManager
 
         // Nothing here reads this: either ImGui draws next and sets its own state wholesale, or
         // the frame ends and the next one opens with Begin above.
-        GLManager.State.ApplyUntrusted(RenderState.Opaque);
+        GLManager.State.Apply(RenderState.Opaque);
     }
 
     /// <summary>Binds the cloud FBO for cloud rendering. Clouds rendered after this call are captured separately for blurring.</summary>
@@ -144,7 +144,7 @@ public class FramebufferManager
         // The floor the clouds draw onto: depth tested, so the depth just blitted in from the main
         // buffer occludes them. RenderCloudsFancy states its own pipeline over this, so this is
         // what anything drawing into the cloud buffer gets if it does not.
-        GLManager.State.ApplyUntrusted(RenderState.Opaque);
+        GLManager.State.Apply(RenderState.Opaque);
     }
 
     /// <summary>Applies a separable Gaussian blur to the captured cloud layer and composites it over the main FBO.</summary>
@@ -167,7 +167,7 @@ public class FramebufferManager
         gl.ActiveTexture(GLEnum.Texture0);
         gl.BindTexture(GLEnum.Texture2D, _cloudTexId);
         gl.BindVertexArray(_vao);
-        GLManager.State.ApplyUntrusted(blur);
+        GLManager.State.Apply(blur);
         gl.DrawArrays(GLEnum.Triangles, 0, 6);
 
         // Vertical blur -> main FBO with premultiplied blend (soft glow)
@@ -179,12 +179,12 @@ public class FramebufferManager
         // has to say so: the enable was once commented out because RenderCloudsFancy turned
         // blending on and never turned it off, and when that leak was fixed this wrote the cloud
         // layer straight over the frame and the world vanished behind it.
-        GLManager.State.ApplyUntrusted(blur with { Blend = BlendMode.Alpha });
+        GLManager.State.Apply(blur with { Blend = BlendMode.Alpha });
         gl.DrawArrays(GLEnum.Triangles, 0, 6);
 
         gl.BindVertexArray(0);
         gl.UseProgram(0);
-        GLManager.State.ApplyUntrusted(RenderState.Opaque);
+        GLManager.State.Apply(RenderState.Opaque);
     }
 
     public void Resize(int width, int height)
