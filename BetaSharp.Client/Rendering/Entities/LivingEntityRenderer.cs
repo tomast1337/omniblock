@@ -30,7 +30,10 @@ public class LivingEntityRenderer : EntityRenderer
     public virtual void DoRenderLiving(EntityLiving entity, double x, double y, double z, float yaw, float tickDelta)
     {
         GLManager.GL.PushMatrix();
-        GLManager.GL.Disable(GLEnum.CullFace);
+
+        // Establishes the state the whole of this method and its passes assume, rather than
+        // switching culling off and leaving everything else to whatever drew last.
+        GLManager.State.ApplyUntrusted(RenderState.Entity);
         Main.OnGround = func_167_c(entity, tickDelta);
         if (renderPassModel != null)
         {
@@ -73,7 +76,7 @@ public class LivingEntityRenderer : EntityRenderer
                 if (ShouldRenderPass(entity, renderPass, tickDelta))
                 {
                     renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
-                    GLManager.GL.Disable(GLEnum.Blend);
+                    GLManager.State.ApplyUntrusted(RenderState.Entity);
                     GLManager.GL.Enable(GLEnum.AlphaTest);
                 }
             }
@@ -86,16 +89,21 @@ public class LivingEntityRenderer : EntityRenderer
                 EntityBatchRenderer.Instance.SetNoTexture();
                 // No instanced no-texture mode, so force this overlay onto the legacy path.
                 EntityInstanceBatchRenderer.Instance.ForceLegacyPath = true;
-                // Flush the queued body now: it draws with DepthFunc(Equal) below, which needs
-                // the depth buffer already written.
+                // Flush the queued body now: the overlay below compares depths for equality, which
+                // needs the depth buffer already written.
                 EntityInstanceBatchRenderer.Instance.Flush();
                 try
                 {
+                    // Equal, not the usual LessOrEqual: the overlay is the same geometry drawn a
+                    // second time, so it must land on exactly the depths the body already wrote
+                    // rather than in front of them. That is why the batch above is flushed first.
                     GLManager.GL.Disable(GLEnum.Texture2D);
                     GLManager.GL.Disable(GLEnum.AlphaTest);
-                    GLManager.GL.Enable(GLEnum.Blend);
-                    GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
-                    GLManager.GL.DepthFunc(GLEnum.Equal);
+                    GLManager.State.ApplyUntrusted(RenderState.Entity with
+                    {
+                        Blend = BlendMode.Alpha,
+                        DepthCompare = DepthCompare.Equal
+                    });
                     if (entity.HurtTime > 0 || entity.DeathTime > 0)
                     {
                         GLManager.GL.Color4(brightness, 0.0F, 0.0F, 0.4F);
@@ -130,8 +138,7 @@ public class LivingEntityRenderer : EntityRenderer
                         }
                     }
 
-                    GLManager.GL.DepthFunc(GLEnum.Lequal);
-                    GLManager.GL.Disable(GLEnum.Blend);
+                    GLManager.State.ApplyUntrusted(RenderState.Entity);
                     GLManager.GL.Enable(GLEnum.AlphaTest);
                     GLManager.GL.Enable(GLEnum.Texture2D);
                 }
@@ -235,11 +242,15 @@ public class LivingEntityRenderer : EntityRenderer
             GLManager.GL.Rotate(-Dispatcher.PlayerViewY, 0.0F, 1.0F, 0.0F);
             GLManager.GL.Rotate(Dispatcher.PlayerViewX, 1.0F, 0.0F, 0.0F);
             GLManager.GL.Scale(-renderScale, -renderScale, renderScale);
+            // Drawn twice on purpose. This first pass ignores depth entirely, so the plate and the
+            // text behind it show through whatever the label is standing in front of.
             GLManager.GL.Disable(GLEnum.Lighting);
-            GLManager.GL.DepthMask(false);
-            GLManager.GL.Disable(GLEnum.DepthTest);
-            GLManager.GL.Enable(GLEnum.Blend);
-            GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+            GLManager.State.ApplyUntrusted(RenderState.Entity with
+            {
+                Blend = BlendMode.Alpha,
+                DepthTest = false,
+                DepthWrite = false
+            });
             Tessellator tessellator = Tessellator.instance;
             int yOffset = 0;
             if (label.Equals("deadmau5"))
@@ -258,11 +269,12 @@ public class LivingEntityRenderer : EntityRenderer
             tessellator.draw();
             GLManager.GL.Enable(GLEnum.Texture2D);
             fontRenderer.DrawString(label, -fontRenderer.GetStringWidth(label) / 2, yOffset, Color.WhiteAlpha20);
-            GLManager.GL.Enable(GLEnum.DepthTest);
-            GLManager.GL.DepthMask(true);
+            // And again with depth restored, so the part of the label that is genuinely in front
+            // draws solidly over the faint copy laid down above.
+            GLManager.State.ApplyUntrusted(RenderState.Entity with { Blend = BlendMode.Alpha });
             fontRenderer.DrawString(label, -fontRenderer.GetStringWidth(label) / 2, yOffset, Color.WhiteAlpha20);
             GLManager.GL.Enable(GLEnum.Lighting);
-            GLManager.GL.Disable(GLEnum.Blend);
+            GLManager.State.ApplyUntrusted(RenderState.Entity);
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
             GLManager.GL.PopMatrix();
         }

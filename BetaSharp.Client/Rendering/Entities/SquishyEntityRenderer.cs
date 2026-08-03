@@ -32,13 +32,13 @@ public sealed class SquishyEntityRenderer(ModelBase main, ModelBase shell, float
 
             // Blended, but still writing depth. That is what the shell has always done rather than
             // a choice made here, and it is not RenderState.Translucent, which does not.
-            GLManager.State.ApplyUntrusted(RenderState.Opaque with { Blend = BlendMode.Alpha });
+            GLManager.State.ApplyUntrusted(RenderState.Entity with { Blend = BlendMode.Alpha });
             return true;
         }
 
         if (renderPass == 1)
         {
-            GLManager.State.ApplyUntrusted(RenderState.Opaque);
+            GLManager.State.ApplyUntrusted(RenderState.Entity);
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
         }
 
