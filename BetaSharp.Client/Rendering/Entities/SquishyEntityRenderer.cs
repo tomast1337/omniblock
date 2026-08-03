@@ -20,7 +20,7 @@ public sealed class SquishyEntityRenderer(ModelBase main, ModelBase shell, float
 
         // Squashing flattens and widens by the same factor, so the mob keeps its volume as it lands.
         float widen = 1.0F / (squish + 1.0F);
-        GLManager.GL.Scale(widen * size, 1.0F / widen * size, widen * size);
+        GLManager.ModelView.Scale(widen * size, 1.0F / widen * size, widen * size);
     }
 
     /// <summary>
