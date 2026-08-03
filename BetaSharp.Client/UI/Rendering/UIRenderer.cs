@@ -139,7 +139,14 @@ public class UIRenderer
     public void ClearDepth()
     {
         _batch.Flush();
+
+        // Depth writing has to be on for this to do anything: a depth clear is masked by the depth
+        // write mask, and RenderState.Interface has it off. Clearing without it silently leaves the
+        // buffer alone, which is how the item on the cursor ended up losing the depth test against
+        // the block previews already drawn in the slots underneath it.
+        GLManager.State.ApplyUntrusted(RenderState.Interface with { DepthWrite = true });
         GLManager.GL.Clear((ClearBufferMask)GLEnum.DepthBufferBit);
+        GLManager.State.ApplyUntrusted(RenderState.Interface);
     }
 
     public void PushTranslate(float x, float y)
