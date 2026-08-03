@@ -87,65 +87,56 @@ public class LivingEntityRenderer : EntityRenderer
             if ((colorMultiplier >> 24 & 255) > 0 || entity.HurtTime > 0 || entity.DeathTime > 0)
             {
                 EntityBatchRenderer.Instance.SetNoTexture();
-                // No instanced no-texture mode, so force this overlay onto the legacy path.
-                EntityInstanceBatchRenderer.Instance.ForceLegacyPath = true;
-                // Flush the queued body now: the overlay below compares depths for equality, which
-                // needs the depth buffer already written.
-                EntityInstanceBatchRenderer.Instance.Flush();
-                try
-                {
-                    // Equal, not the usual LessOrEqual: the overlay is the same geometry drawn a
-                    // second time, so it must land on exactly the depths the body already wrote
-                    // rather than in front of them. That is why the batch above is flushed first.
-                    GLManager.GL.Disable(GLEnum.Texture2D);
-                    GLManager.GL.Disable(GLEnum.AlphaTest);
-                    GLManager.State.Apply(RenderState.Entity with
-                    {
-                        Blend = BlendMode.Alpha,
-                        DepthCompare = DepthCompare.Equal
-                    });
-                    if (entity.HurtTime > 0 || entity.DeathTime > 0)
-                    {
-                        GLManager.GL.Color4(brightness, 0.0F, 0.0F, 0.4F);
-                        Main.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
 
-                        for (int damagePass = 0; damagePass < 4; ++damagePass)
+                // Equal, not the usual LessOrEqual: the overlay is the same geometry drawn a second
+                // time, so it must land on exactly the depths the body already wrote rather than in
+                // front of them. Nothing is flushed to arrange that — the body was submitted first,
+                // so its bucket is drawn first, and the overlay's is a separate bucket because the
+                // depth comparison it carries differs.
+                GLManager.GL.Disable(GLEnum.Texture2D);
+                GLManager.GL.Disable(GLEnum.AlphaTest);
+                GLManager.State.Apply(RenderState.Entity with
+                {
+                    Blend = BlendMode.Alpha,
+                    DepthCompare = DepthCompare.Equal
+                });
+                if (entity.HurtTime > 0 || entity.DeathTime > 0)
+                {
+                    GLManager.GL.Color4(brightness, 0.0F, 0.0F, 0.4F);
+                    Main.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
+
+                    for (int damagePass = 0; damagePass < 4; ++damagePass)
+                    {
+                        if (func_27005_b(entity, damagePass, tickDelta))
                         {
-                            if (func_27005_b(entity, damagePass, tickDelta))
-                            {
-                                GLManager.GL.Color4(brightness, 0.0F, 0.0F, 0.4F);
-                                renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
-                            }
+                            GLManager.GL.Color4(brightness, 0.0F, 0.0F, 0.4F);
+                            renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
                         }
                     }
+                }
 
-                    if ((colorMultiplier >> 24 & 255) > 0)
+                if ((colorMultiplier >> 24 & 255) > 0)
+                {
+                    float red = (colorMultiplier >> 16 & 255) / 255.0F;
+                    float green = (colorMultiplier >> 8 & 255) / 255.0F;
+                    float blue = (colorMultiplier & 255) / 255.0F;
+                    float alpha = (colorMultiplier >> 24 & 255) / 255.0F;
+                    GLManager.GL.Color4(red, green, blue, alpha);
+                    Main.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
+
+                    for (int overlayPass = 0; overlayPass < 4; ++overlayPass)
                     {
-                        float red = (colorMultiplier >> 16 & 255) / 255.0F;
-                        float green = (colorMultiplier >> 8 & 255) / 255.0F;
-                        float blue = (colorMultiplier & 255) / 255.0F;
-                        float alpha = (colorMultiplier >> 24 & 255) / 255.0F;
-                        GLManager.GL.Color4(red, green, blue, alpha);
-                        Main.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
-
-                        for (int overlayPass = 0; overlayPass < 4; ++overlayPass)
+                        if (func_27005_b(entity, overlayPass, tickDelta))
                         {
-                            if (func_27005_b(entity, overlayPass, tickDelta))
-                            {
-                                GLManager.GL.Color4(red, green, blue, alpha);
-                                renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
-                            }
+                            GLManager.GL.Color4(red, green, blue, alpha);
+                            renderPassModel.Render(walkPhase, walkSpeed, animationProgress, headYaw - bodyYaw, pitch, modelScale);
                         }
                     }
+                }
 
-                    GLManager.State.Apply(RenderState.Entity);
-                    GLManager.GL.Enable(GLEnum.AlphaTest);
-                    GLManager.GL.Enable(GLEnum.Texture2D);
-                }
-                finally
-                {
-                    EntityInstanceBatchRenderer.Instance.ForceLegacyPath = false;
-                }
+                GLManager.State.Apply(RenderState.Entity);
+                GLManager.GL.Enable(GLEnum.AlphaTest);
+                GLManager.GL.Enable(GLEnum.Texture2D);
             }
 
             GLManager.GL.Disable(GLEnum.RescaleNormal);

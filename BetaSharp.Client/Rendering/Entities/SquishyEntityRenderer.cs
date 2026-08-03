@@ -33,25 +33,16 @@ public sealed class SquishyEntityRenderer(ModelBase main, ModelBase shell, float
         {
             setRenderPassModel(shell);
 
-            // The shell has to draw on the legacy path. An instanced submission is only drawn when
-            // the pass ends, by which time the blending set up here has long since been turned off
-            // again, so the shell came out solid. The legacy batch flushes whenever raster state
-            // changes and therefore draws it under the state it was posed with.
-            EntityInstanceBatchRenderer.Instance.ForceLegacyPath = true;
-
-            // And the body has to be in the depth buffer before a translucent shell is drawn over
-            // it, which it is not while it sits queued.
-            EntityInstanceBatchRenderer.Instance.Flush();
-
             // Blended, but still writing depth. That is what the shell has always done rather than
-            // a choice made here, and it is not RenderState.Translucent, which does not.
+            // a choice made here, and it is not RenderState.Translucent, which does not. The shell
+            // is submitted under this state and drawn under it, which it was not until instances
+            // started carrying the state they were posed with.
             GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
             return true;
         }
 
         if (renderPass == 1)
         {
-            EntityInstanceBatchRenderer.Instance.ForceLegacyPath = false;
             GLManager.State.Apply(RenderState.Entity);
             GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
         }
