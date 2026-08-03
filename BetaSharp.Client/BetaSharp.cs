@@ -424,7 +424,7 @@ public partial class BetaSharp :
         };
 
         CheckGLError("Pre startup");
-        GLManager.GL.Enable(GLEnum.Texture2D);
+        GLManager.TextureEnabled = true;
         GLManager.ShadeModel = ShadeModel.Smooth;
         GLManager.GL.ClearDepth(1.0D);
 
@@ -436,7 +436,7 @@ public partial class BetaSharp :
         // it on, which is the same thing RenderState.Entity settles on for the entity pass.
         GLManager.State.Apply(RenderState.Entity);
 
-        GLManager.GL.Enable(GLEnum.AlphaTest);
+        GLManager.AlphaTestEnabled = true;
         GLManager.AlphaThreshold = 0.1F;
         // Both stacks to identity. The model-view holds the default from process start, but
         // stating it explicitly means a later stack-owner change doesn't silently infect this.
@@ -681,7 +681,7 @@ public partial class BetaSharp :
                     CheckGLError("Pre render");
 
                     SoundManager.UpdateListener(Player, Timer.RenderPartialTicks);
-                    GLManager.GL.Enable(GLEnum.Texture2D);
+                    GLManager.TextureEnabled = true;
 
                     if (World != null)
                     {
@@ -1894,9 +1894,9 @@ public partial class BetaSharp :
         GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
         GLManager.GL.ClearColor(0.0F, 0.0F, 0.0F, 0.0F);
         Tessellator tessellator = Tessellator.instance;
-        GLManager.GL.Disable(GLEnum.Lighting);
-        GLManager.GL.Enable(GLEnum.Texture2D);
-        GLManager.GL.Disable(GLEnum.Fog);
+        GLManager.LightingEnabled = false;
+        GLManager.TextureEnabled = true;
+        GLManager.FogEnabled = false;
         GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
         TextureManager.BindTexture(TextureManager.GetTextureId("/title/mojang.png"));
         tessellator.startDrawingQuads();
@@ -1911,9 +1911,9 @@ public partial class BetaSharp :
         GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
         tessellator.setColorOpaque_I(0xFFFFFF);
         DrawTextureRegion((scaledResolution.ScaledWidth - logoWidth) / 2, (scaledResolution.ScaledHeight - logoHeight) / 2, 0, 0, logoWidth, logoHeight);
-        GLManager.GL.Disable(GLEnum.Lighting);
-        GLManager.GL.Disable(GLEnum.Fog);
-        GLManager.GL.Enable(GLEnum.AlphaTest);
+        GLManager.LightingEnabled = false;
+        GLManager.FogEnabled = false;
+        GLManager.AlphaTestEnabled = true;
         GLManager.AlphaThreshold = 0.1F;
         Display.swapBuffers();
     }

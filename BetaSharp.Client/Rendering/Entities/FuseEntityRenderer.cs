@@ -69,14 +69,14 @@ public sealed class FuseEntityRenderer : LivingEntityRenderer
 
             GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Additive });
             GLManager.Color = new(0.5F, 0.5F, 0.5F, 1.0F);
-            GLManager.GL.Disable(GLEnum.Lighting);
+            GLManager.LightingEnabled = false;
             return true;
         }
 
         if (renderPass == 2)
         {
             GLManager.TextureMatrix.LoadIdentity();
-            GLManager.GL.Enable(GLEnum.Lighting);
+            GLManager.LightingEnabled = true;
             GLManager.State.Apply(RenderState.Entity);
         }
 

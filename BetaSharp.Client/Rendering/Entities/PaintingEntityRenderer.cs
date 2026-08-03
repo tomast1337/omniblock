@@ -18,7 +18,6 @@ public class PaintingEntityRenderer : EntityRenderer
         GLManager.ModelView.Push();
         GLManager.ModelView.Translate((float)x, (float)y, (float)z);
         GLManager.ModelView.Rotate(yaw, 0.0F, 1.0F, 0.0F);
-        GLManager.GL.Enable(GLEnum.RescaleNormal);
 
         loadTexture("/art/kz.png");
 
@@ -28,7 +27,6 @@ public class PaintingEntityRenderer : EntityRenderer
 
         RenderPaintingQuads(paintingEntity, art.SizeX, art.SizeY, art.OffsetX, art.OffsetY);
 
-        GLManager.GL.Disable(GLEnum.RescaleNormal);
         GLManager.ModelView.Pop();
     }
 

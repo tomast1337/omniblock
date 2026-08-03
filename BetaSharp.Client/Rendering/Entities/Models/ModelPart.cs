@@ -350,7 +350,7 @@ public class ModelPart
         System.Numerics.Vector3 light1Dir = new(lightingSrc.Light1Direction.X, lightingSrc.Light1Direction.Y, lightingSrc.Light1Direction.Z);
         System.Numerics.Vector3 light1Diffuse = new(lightingSrc.Light1Diffuse.X, lightingSrc.Light1Diffuse.Y, lightingSrc.Light1Diffuse.Z);
         System.Numerics.Vector3 ambient = new(lightingSrc.Ambient.X, lightingSrc.Ambient.Y, lightingSrc.Ambient.Z);
-        bool lightingEnabled = emuGl.GetLightingEnabled();
+        bool lightingEnabled = GLManager.LightingEnabled;
 
         float a = Math.Clamp(tint.W, 0f, 1f);
 

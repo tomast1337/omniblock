@@ -61,7 +61,7 @@ public class UIRenderer
     public void Begin()
     {
         // Lighting is a shader uniform rather than pipeline state, so it stays a separate call.
-        GLManager.GL.Disable(GLEnum.Lighting);
+        GLManager.LightingEnabled = false;
         GLManager.State.Apply(RenderState.Interface);
         GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
         GLManager.ModelView.Push();
@@ -111,11 +111,11 @@ public class UIRenderer
         _batch.Flush();
         if (flag)
         {
-            GLManager.GL.Enable(GLEnum.AlphaTest);
+            GLManager.AlphaTestEnabled = true;
         }
         else
         {
-            GLManager.GL.Disable(GLEnum.AlphaTest);
+            GLManager.AlphaTestEnabled = false;
         }
     }
 
@@ -380,11 +380,9 @@ public class UIRenderer
         if (isBlock3D)
         {
             _batch.Flush();
-            GLManager.GL.Enable(GLEnum.RescaleNormal);
             Lighting.turnOnGui();
             itemRenderer.drawItemIntoGui(TextRenderer, TextureManager, itemId, itemMeta, textureId, (int)(x + _translateX), (int)(y + _translateY));
             Lighting.turnOff();
-            GLManager.GL.Disable(GLEnum.RescaleNormal);
             return;
         }
 
@@ -423,14 +421,12 @@ public class UIRenderer
             // its own far faces. RenderState.Interface does neither, which is right for flat panels
             // and wrong here.
             GLManager.State.Apply(s_preview);
-            GLManager.GL.Enable(GLEnum.RescaleNormal);
 
             Lighting.turnOnGui();
             _itemRenderer.renderItemIntoGUI(TextRenderer, TextureManager, stack, (int)(x + _translateX), (int)(y + _translateY));
             Lighting.turnOff();
 
             GLManager.State.Apply(RenderState.Interface);
-            GLManager.GL.Disable(GLEnum.RescaleNormal);
             GLManager.ModelView.Pop();
         }
         else
@@ -490,7 +486,6 @@ public class UIRenderer
         _batch.Flush();
 
         GLManager.State.Apply(s_preview);
-        GLManager.GL.Enable(GLEnum.RescaleNormal);
         GLManager.ModelView.Push();
         GLManager.ModelView.Translate(x + _translateX, y + _translateY, 50.0F);
 
@@ -533,7 +528,6 @@ public class UIRenderer
         GLManager.ModelView.Pop();
         Lighting.turnOff();
         GLManager.State.Apply(RenderState.Interface);
-        GLManager.GL.Disable(GLEnum.RescaleNormal);
     }
 
     public void DrawScrollingText(string text, float x, float y, int containerWidth, int containerHeight, Color color, long scrollStartMs, int rightPadding = 2)
@@ -616,7 +610,6 @@ public class UIRenderer
         _batch.Flush();
 
         GLManager.State.Apply(s_preview);
-        GLManager.GL.Enable(GLEnum.RescaleNormal);
         GLManager.ModelView.Push();
         GLManager.ModelView.Translate(x + _translateX, y + _translateY, 50.0F);
 
@@ -656,6 +649,5 @@ public class UIRenderer
         BlockEntityRenderer.Instance.RenderTileEntityAt(sign, -0.5D, -0.75D, -0.5D, 0.0F);
         GLManager.ModelView.Pop();
         GLManager.State.Apply(RenderState.Interface);
-        GLManager.GL.Disable(GLEnum.RescaleNormal);
     }
 }

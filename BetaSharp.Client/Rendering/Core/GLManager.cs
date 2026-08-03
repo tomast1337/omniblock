@@ -61,6 +61,42 @@ public class GLManager
         set => _emulated.Normal = value;
     }
 
+    /// <summary>Whether a draw samples its bound texture, or is coloured alone.</summary>
+    /// <remarks>
+    ///     These four were <c>Enable</c>/<c>Disable</c> of capabilities a GL 4.3 core context does
+    ///     not have. Nothing was switching a fixed pipeline on and off — each is one shader uniform,
+    ///     and always was.
+    /// </remarks>
+    public static bool TextureEnabled
+    {
+        get => _emulated.TextureEnabled;
+        set => _emulated.TextureEnabled = value;
+    }
+
+    /// <summary>Whether <see cref="Lighting" /> is applied, or geometry keeps its own colour.</summary>
+    /// <inheritdoc cref="TextureEnabled" />
+    public static bool LightingEnabled
+    {
+        get => _emulated.LightingEnabled;
+        set => _emulated.LightingEnabled = value;
+    }
+
+    /// <summary>Whether <see cref="AlphaThreshold" /> is applied.</summary>
+    /// <inheritdoc cref="TextureEnabled" />
+    public static bool AlphaTestEnabled
+    {
+        get => _emulated.AlphaTestEnabled;
+        set => _emulated.AlphaTestEnabled = value;
+    }
+
+    /// <summary>Whether <see cref="Fog" /> is applied.</summary>
+    /// <inheritdoc cref="TextureEnabled" />
+    public static bool FogEnabled
+    {
+        get => _emulated.FogEnabled;
+        set => _emulated.FogEnabled = value;
+    }
+
     /// <summary>The lights everything shaded is lit by.</summary>
     /// <remarks>
     ///     Set through <see cref="Lighting.turnOn" />, which is also where the directions are put

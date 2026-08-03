@@ -430,7 +430,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
         // Sunrise/sunset fan
         _skyShader.SetUniform1("u_GradientMode", 0);
-        GLManager.GL.Disable(GLEnum.AlphaTest);
+        GLManager.AlphaTestEnabled = false;
         Lighting.turnOff();
         float[] backgroundColor = _world.Dimension.GetBackgroundColor(_world.GetTime(tickDelta), tickDelta);
         if (backgroundColor != null)
@@ -498,7 +498,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         }
 
         GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
-        GLManager.GL.Enable(GLEnum.AlphaTest);
+        GLManager.AlphaTestEnabled = true;
         GLManager.ModelView.Pop();
 
         GLManager.GL.UseProgram(0);
@@ -787,7 +787,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         Tessellator tessellator = Tessellator.instance;
 
         GLManager.ModelView.Push();
-        GLManager.GL.Enable(GLEnum.AlphaTest);
+        GLManager.AlphaTestEnabled = true;
         GLManager.GL.Enable(GLEnum.PolygonOffsetFill);
 
         // Culling matters here and was previously inherited: this redraws the block's own faces
@@ -820,7 +820,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
 
         GLManager.GL.Disable(GLEnum.PolygonOffsetFill);
-        GLManager.GL.Disable(GLEnum.AlphaTest);
+        GLManager.AlphaTestEnabled = false;
         GLManager.State.Apply(RenderState.Opaque);
         GLManager.ModelView.Pop();
     }
@@ -835,7 +835,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             GLManager.State.Apply(RenderState.Translucent);
             GLManager.Color = new(0.0F, 0.0F, 0.0F, 0.4F);
             GLManager.GL.LineWidth(2.0F);
-            GLManager.GL.Disable(GLEnum.Texture2D);
+            GLManager.TextureEnabled = false;
             float outlinePadding = 0.002F;
             int blockId = _world.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
             if (blockId > 0)
@@ -847,7 +847,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                 DrawOutlinedBoundingBox(Block.Blocks[blockId].GetBoundingBox(_world.Reader, _world.Entities, hit.BlockX, hit.BlockY, hit.BlockZ).Expand(outlinePadding, outlinePadding, outlinePadding).Offset(-renderX, -renderY, -renderZ));
             }
 
-            GLManager.GL.Enable(GLEnum.Texture2D);
+            GLManager.TextureEnabled = true;
             GLManager.State.Apply(RenderState.Opaque);
         }
     }

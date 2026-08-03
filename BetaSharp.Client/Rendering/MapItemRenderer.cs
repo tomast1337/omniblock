@@ -70,14 +70,14 @@ public class MapItemRenderer
         // Paired with the alpha test off, not on: the unexplored parts of the sheet are the
         // translucent checkerboard built above, and the alpha test would throw them away before
         // blending ever saw them.
-        GLManager.GL.Disable(GLEnum.AlphaTest);
+        GLManager.AlphaTestEnabled = false;
         tess.startDrawingQuads();
         tess.addVertexWithUV(0, 128, -0.01F, 0.0D, 1.0D);
         tess.addVertexWithUV(128, 128, -0.01F, 1.0D, 1.0D);
         tess.addVertexWithUV(128, 0, -0.01F, 1.0D, 0.0D);
         tess.addVertexWithUV(0, 0, -0.01F, 0.0D, 0.0D);
         tess.draw();
-        GLManager.GL.Enable(GLEnum.AlphaTest);
+        GLManager.AlphaTestEnabled = true;
         GLManager.State.Apply(RenderState.Entity);
         textureManager.BindTexture(textureManager.GetTextureId("/misc/mapicons.png"));
         foreach (var icon in mapState.Icons)

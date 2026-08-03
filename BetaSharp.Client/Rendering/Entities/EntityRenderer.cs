@@ -57,7 +57,7 @@ public abstract class EntityRenderer
 
     private void RenderOnFire(Entity ent, Vec3D pos, float tickDelta)
     {
-        GLManager.GL.Disable(GLEnum.Lighting);
+        GLManager.LightingEnabled = false;
 
         int textureId = BlockRegistry.Get("fire").TextureId;
         int texX = (textureId & 15) << 4;
@@ -127,7 +127,7 @@ public abstract class EntityRenderer
 
         tess.draw();
         GLManager.ModelView.Pop();
-        GLManager.GL.Enable(GLEnum.Lighting);
+        GLManager.LightingEnabled = true;
     }
 
     private void RenderShadow(Entity target, Vec3D pos, float shadowiness, float tickDelta)
@@ -219,7 +219,7 @@ public abstract class EntityRenderer
 
     public static void renderShape(Box aabb, Vec3D pos)
     {
-        GLManager.GL.Disable(GLEnum.Texture2D);
+        GLManager.TextureEnabled = false;
         Tessellator tess = Tessellator.instance;
         GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
 
@@ -265,7 +265,7 @@ public abstract class EntityRenderer
 
         tess.setTranslationD(0.0D, 0.0D, 0.0D);
         tess.draw();
-        GLManager.GL.Enable(GLEnum.Texture2D);
+        GLManager.TextureEnabled = true;
     }
 
     public static void renderShapeFlat(Box aabb)
@@ -329,8 +329,8 @@ public abstract class EntityRenderer
     {
         if (!Dispatcher.Options.ShowDebugInfo) return;
 
-        GLManager.GL.Disable(GLEnum.Lighting);
-        GLManager.GL.Disable(GLEnum.Texture2D);
+        GLManager.LightingEnabled = false;
+        GLManager.TextureEnabled = false;
         GLManager.ModelView.Push();
         GLManager.ModelView.Translate((float)pos.X, (float)pos.Y, (float)pos.Z);
         GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
@@ -399,7 +399,7 @@ public abstract class EntityRenderer
 
         tess.draw();
         GLManager.ModelView.Pop();
-        GLManager.GL.Enable(GLEnum.Texture2D);
-        GLManager.GL.Enable(GLEnum.Lighting);
+        GLManager.TextureEnabled = true;
+        GLManager.LightingEnabled = true;
     }
 }

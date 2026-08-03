@@ -29,7 +29,6 @@ public class ArrowEntityRenderer : EntityRenderer
             float sideMinV = (5 + arrowType * 10) / 32.0F;
             float sideMaxV = (10 + arrowType * 10) / 32.0F;
             float modelScale = 0.05625F;
-            GLManager.GL.Enable(GLEnum.RescaleNormal);
             float shakeTime = arrowEntity.Behaviors.Find<ArrowBehavior>()!.Shake(arrowEntity) - tickDelta;
             if (shakeTime > 0.0F)
             {
@@ -67,7 +66,6 @@ public class ArrowEntityRenderer : EntityRenderer
                 tessellator.draw();
             }
 
-            GLManager.GL.Disable(GLEnum.RescaleNormal);
             GLManager.ModelView.Pop();
         }
     }

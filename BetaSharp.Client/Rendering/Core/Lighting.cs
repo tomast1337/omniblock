@@ -8,7 +8,7 @@ public class Lighting
 {
     public static void turnOff()
     {
-        GLManager.GL.Disable(GLEnum.Lighting);
+        GLManager.LightingEnabled = false;
     }
 
     public static void turnOnGui()
@@ -25,7 +25,7 @@ public class Lighting
         const float diffuse = 0.6F;
         float mx = mirrored ? -1.0f : 1.0f;
 
-        GLManager.GL.Enable(GLEnum.Lighting);
+        GLManager.LightingEnabled = true;
         GLManager.ShadeModel = ShadeModel.Flat;
         GLManager.Lighting = new LightingState(
             EyeSpace(new Vec3D((double)(0.2F * mx), 1.0D, (double)-0.7F)),

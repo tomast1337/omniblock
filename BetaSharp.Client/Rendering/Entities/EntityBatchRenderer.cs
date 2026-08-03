@@ -207,7 +207,7 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
         _shader.SetUniform1("entityId",
             _useTexture ? _glTexToLogicalId.GetValueOrDefault(_currentTextureId) : 0);
         _shader.SetUniform1("alphaThreshold", gl.GetCurrentAlphaThreshold());
-        _shader.SetUniform1("fogEnabled", gl.GetFogEnabled() ? 1 : 0);
+        _shader.SetUniform1("fogEnabled", GLManager.FogEnabled ? 1 : 0);
         _shader.SetUniform1("fogMode", (int)fog.Curve);
         _shader.SetUniform1("fogStart", fog.Start);
         _shader.SetUniform1("fogEnd", fog.End);

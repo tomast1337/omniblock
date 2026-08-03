@@ -190,7 +190,11 @@ public abstract unsafe class LegacyGL : IGL
 
     public abstract void DrawArrays(GLEnum mode, int first, uint count);
 
-    public abstract void Enable(GLEnum cap);
+    public virtual void Enable(GLEnum cap)
+    {
+        OnRasterStateChanging(cap);
+        SilkGL.Enable(cap.ToModern());
+    }
 
     public virtual void EnableVertexAttribArray(uint index)
     {

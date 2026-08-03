@@ -105,7 +105,7 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
             int x = width / 2 - progressBarWidth / 2;
             int y = height / 2 + 16;
 
-            GLManager.GL.Disable(GLEnum.Texture2D);
+            GLManager.TextureEnabled = false;
             tessellator.startDrawingQuads();
             tessellator.setColorOpaque_I(0x808080);
             tessellator.addVertex(x, y, 0.0);
@@ -119,7 +119,7 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
             tessellator.addVertex(x + progress, y + progressBarHeight, 0.0);
             tessellator.addVertex(x + progress, y, 0.0);
             tessellator.draw();
-            GLManager.GL.Enable(GLEnum.Texture2D);
+            GLManager.TextureEnabled = true;
         }
 
         int titleX = (width - game.TextRenderer.GetStringWidth(_titleText)) / 2;

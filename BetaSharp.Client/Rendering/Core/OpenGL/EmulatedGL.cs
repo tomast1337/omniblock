@@ -11,12 +11,8 @@ public unsafe class EmulatedGL : LegacyGL
     private readonly MatrixStack _textureStack = new();
 
     private readonly FixedFunctionShader _shader;
-    private bool _useTexture = false;
     private uint _currentProgram = 0;
-    private bool _alphaTestEnabled = false;
     private float _alphaThreshold = 0.1f;
-    private bool _fogEnabled = false;
-    private bool _lightingEnabled = false;
 
     private struct DirtyState
     {
@@ -80,6 +76,72 @@ public unsafe class EmulatedGL : LegacyGL
 
     /// <inheritdoc cref="GLManager.Lighting" />
     public LightingState Lighting { get; set; } = LightingState.Default;
+
+    /// <summary>
+    ///     The four capabilities a core context does not have, which are shader uniforms here.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Each one deduplicates, because redundant assignments are extremely common — every
+    ///         entity re-asserts the alpha test on unconditionally — and two of them cost a batch
+    ///         flush.
+    ///     </para>
+    ///     <para>
+    ///         Only the alpha test and fog raise <see cref="LegacyGL.RasterStateChanging" />, which
+    ///         is what drains <c>EntityBatchRenderer</c>. That batch bakes lighting into vertex
+    ///         colours and tracks its own texture, so those two it already accounts for; the alpha
+    ///         threshold and the fog it does not, and queued geometry would draw under the wrong
+    ///         one.
+    ///     </para>
+    /// </remarks>
+    public bool TextureEnabled
+    {
+        get;
+        set
+        {
+            if (field == value) return;
+            field = value;
+            _dirtyState.StateDirty = true;
+        }
+    }
+
+    /// <inheritdoc cref="TextureEnabled" />
+    public bool LightingEnabled
+    {
+        get;
+        set
+        {
+            if (field == value) return;
+            field = value;
+            _dirtyState.StateDirty = true;
+        }
+    }
+
+    /// <inheritdoc cref="TextureEnabled" />
+    public bool AlphaTestEnabled
+    {
+        get;
+        set
+        {
+            if (field == value) return;
+            field = value;
+            _dirtyState.StateDirty = true;
+            OnRasterStateChanging();
+        }
+    }
+
+    /// <inheritdoc cref="TextureEnabled" />
+    public bool FogEnabled
+    {
+        get;
+        set
+        {
+            if (field == value) return;
+            field = value;
+            _dirtyState.StateDirty = true;
+            OnRasterStateChanging();
+        }
+    }
 
     /// <inheritdoc cref="GLManager.ShadeModel" />
     public ShadeModel ShadeModel
@@ -167,10 +229,10 @@ public unsafe class EmulatedGL : LegacyGL
 
         if (_dirtyState.StateDirty)
         {
-            _shader.SetUseTexture(_useTexture);
-            _shader.SetAlphaThreshold(_alphaTestEnabled ? _alphaThreshold : -1.0f);
-            _shader.SetEnableLighting(_lightingEnabled);
-            _shader.SetEnableFog(_fogEnabled);
+            _shader.SetUseTexture(TextureEnabled);
+            _shader.SetAlphaThreshold(AlphaTestEnabled ? _alphaThreshold : -1.0f);
+            _shader.SetEnableLighting(LightingEnabled);
+            _shader.SetEnableFog(FogEnabled);
             _shader.SetShadeModel((int)ShadeModel);
             _dirtyState.StateDirty = false;
         }
@@ -179,7 +241,7 @@ public unsafe class EmulatedGL : LegacyGL
         {
             _shader.SetModelView(_modelViewStack.Top);
 
-            if (_lightingEnabled)
+            if (LightingEnabled)
             {
                 Matrix4X4<float> mv = _modelViewStack.Top;
                 if (Matrix4X4.Invert(mv, out Matrix4X4<float> invMv))
@@ -199,7 +261,7 @@ public unsafe class EmulatedGL : LegacyGL
             _uploadedModelView = _modelViewStack.Version;
         }
 
-        if (_lightingEnabled && (!_lightingUploaded || _uploadedLighting != Lighting))
+        if (LightingEnabled && (!_lightingUploaded || _uploadedLighting != Lighting))
         {
             LightingState lighting = Lighting;
             _shader.SetLight0(lighting.Light0Direction.X, lighting.Light0Direction.Y, lighting.Light0Direction.Z, lighting.Light0Diffuse.X, lighting.Light0Diffuse.Y, lighting.Light0Diffuse.Z);
@@ -209,7 +271,7 @@ public unsafe class EmulatedGL : LegacyGL
             _lightingUploaded = true;
         }
 
-        if (_fogEnabled && (!_fogUploaded || _uploadedFog != Fog))
+        if (FogEnabled && (!_fogUploaded || _uploadedFog != Fog))
         {
             FogState fog = Fog;
             _shader.SetFogMode((int)fog.Curve);
@@ -225,82 +287,6 @@ public unsafe class EmulatedGL : LegacyGL
     public override void BufferData(GLEnum target, nuint size, void* data, GLEnum usage)
     {
         SilkGL.BufferData(target.ToModern(), size, data, usage.ToModern());
-    }
-
-    public override void Enable(GLEnum cap)
-    {
-        // Redundant Enable(AlphaTest)/Enable(Fog) calls are extremely common (e.g. every
-        // entity re-asserts AlphaTest on unconditionally) and RasterStateChanging forces
-        // batched renderers (EntityBatchRenderer) to flush, so only fire it on a real
-        // state transition - otherwise every one of those calls flushes the batch for
-        // nothing.
-        switch (cap)
-        {
-            case GLEnum.Texture2D:
-                if (_useTexture) return;
-                _useTexture = true; _dirtyState.StateDirty = true;
-                OnRasterStateChanging(cap);
-                return;
-            case GLEnum.AlphaTest:
-                if (_alphaTestEnabled) return;
-                _alphaTestEnabled = true; _dirtyState.StateDirty = true;
-                OnRasterStateChanging(cap);
-                return;
-            case GLEnum.Lighting:
-                if (_lightingEnabled) return;
-                _lightingEnabled = true; _dirtyState.StateDirty = true;
-                OnRasterStateChanging(cap);
-                return;
-            case GLEnum.Fog:
-                if (_fogEnabled) return;
-                _fogEnabled = true; _dirtyState.StateDirty = true;
-                OnRasterStateChanging(cap);
-                return;
-            case GLEnum.Light0: return;
-            case GLEnum.Light1: return;
-            case GLEnum.ColorMaterial: return;
-            case GLEnum.RescaleNormal: return;
-        }
-        OnRasterStateChanging(cap);
-        SilkGL.Enable(cap.ToModern());
-    }
-
-    public override void Disable(GLEnum cap)
-    {
-        switch (cap)
-        {
-            case GLEnum.Texture2D:
-                if (!_useTexture) return;
-                _useTexture = false; _dirtyState.StateDirty = true;
-                OnRasterStateChanging(cap);
-                return;
-            case GLEnum.AlphaTest:
-                if (!_alphaTestEnabled) return;
-                _alphaTestEnabled = false; _dirtyState.StateDirty = true;
-                OnRasterStateChanging(cap);
-                return;
-            case GLEnum.Lighting:
-                if (!_lightingEnabled) return;
-                _lightingEnabled = false; _dirtyState.StateDirty = true;
-                OnRasterStateChanging(cap);
-                return;
-            case GLEnum.Fog:
-                if (!_fogEnabled) return;
-                _fogEnabled = false; _dirtyState.StateDirty = true;
-                OnRasterStateChanging(cap);
-                return;
-            case GLEnum.Light0: return;
-            case GLEnum.Light1: return;
-            case GLEnum.ColorMaterial: return;
-            case GLEnum.RescaleNormal: return;
-        }
-        OnRasterStateChanging(cap);
-        SilkGL.Disable(cap.ToModern());
-    }
-
-    public override void Disable(EnableCap cap)
-    {
-        Disable((GLEnum)cap);
     }
 
     public override void DrawArrays(GLEnum mode, int first, uint count)
@@ -363,14 +349,6 @@ public unsafe class EmulatedGL : LegacyGL
         SilkGL.LineWidth(1.0f); // > 1.0 IS DEPRECATED
     }
 
-    public float GetCurrentAlphaThreshold() => _alphaTestEnabled ? _alphaThreshold : -1.0f;
+    public float GetCurrentAlphaThreshold() => AlphaTestEnabled ? _alphaThreshold : -1.0f;
 
-    /// <summary>Whether <c>Texture2D</c> is enabled, i.e. whether a draw would sample its texture.</summary>
-    public bool GetTextureEnabled() => _useTexture;
-
-    /// <summary>Whether fog is applied at all, i.e. whether <see cref="Fog" /> is being used.</summary>
-    public bool GetFogEnabled() => _fogEnabled;
-
-    /// <summary>Whether anything is lit at all, i.e. whether <see cref="Lighting" /> is being used.</summary>
-    public bool GetLightingEnabled() => _lightingEnabled;
 }

@@ -15,7 +15,6 @@ public class FishingBobberEntityRenderer : EntityRenderer
         EntityPlayer? angler = bobberEntity.Behaviors.Find<FishingBobberBehavior>()!.Angler(bobberEntity);
         GLManager.ModelView.Push();
         GLManager.ModelView.Translate((float)x, (float)y, (float)z);
-        GLManager.GL.Enable(GLEnum.RescaleNormal);
         GLManager.ModelView.Scale(0.5F, 0.5F, 0.5F);
         byte particleUIndex = 1;
         byte particleVIndex = 2;
@@ -37,7 +36,6 @@ public class FishingBobberEntityRenderer : EntityRenderer
         tessellator.addVertexWithUV((double)(quadWidth - xOffset), (double)(1.0F - yOffset), 0.0D, (double)maxU, (double)minV);
         tessellator.addVertexWithUV((double)(0.0F - xOffset), (double)(1.0F - yOffset), 0.0D, (double)minU, (double)minV);
         tessellator.draw();
-        GLManager.GL.Disable(GLEnum.RescaleNormal);
         GLManager.ModelView.Pop();
         if (angler != null)
         {
@@ -70,8 +68,8 @@ public class FishingBobberEntityRenderer : EntityRenderer
             double lineDeltaX = (double)(float)(lineStartX - bobberX);
             double lineDeltaY = (double)(float)(lineStartY - bobberY);
             double lineDeltaZ = (double)(float)(lineStartZ - bobberZ);
-            GLManager.GL.Disable(GLEnum.Texture2D);
-            GLManager.GL.Disable(GLEnum.Lighting);
+            GLManager.TextureEnabled = false;
+            GLManager.LightingEnabled = false;
             tessellator.startDrawing(3);
             tessellator.setColorOpaque_I(0x000000);
             byte segmentCount = 16;
@@ -83,8 +81,8 @@ public class FishingBobberEntityRenderer : EntityRenderer
             }
 
             tessellator.draw();
-            GLManager.GL.Enable(GLEnum.Lighting);
-            GLManager.GL.Enable(GLEnum.Texture2D);
+            GLManager.LightingEnabled = true;
+            GLManager.TextureEnabled = true;
         }
 
     }
