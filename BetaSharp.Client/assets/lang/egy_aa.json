@@ -1,0 +1,1372 @@
+{
+    "gui": {
+        "joinServer": "𓆓𓅱𓇋𓈖 𓋴𓇋𓂋𓃀𓇋𓂋",
+        "rename": "𓂋𓇋𓈖𓄿𓅓𓇋",
+        "edit": "𓇋𓂧𓇋𓏏",
+        "refresh": "𓂋𓇋𓆑𓂋𓇋𓋴𓉔",
+        "done": "𓂧𓅱𓈖",
+        "cancel": "𓎡𓄿𓈖𓋴𓇋𓃭",
+        "delete": "𓂧𓇋𓃭𓇋𓏏",
+        "toMenu": "𓎡𓃀𓅱𓆑 𓏏𓅱 𓏏𓇋𓏏𓃭𓇋",
+        "up": "𓅱𓊪",
+        "down": "𓂧𓅱𓈖",
+        "yes": "𓇋𓇋𓋴",
+        "no": "𓈖𓅱",
+        "connect": "𓎡𓅱𓈖𓇋𓎡𓏏",
+        "directConnect": "𓂧𓇋𓂋𓇋𓎡𓏏 𓎡𓅱𓈖𓇋𓎡𓏏",
+        "addServer": "𓄿𓂧𓂧 𓋴𓇋𓂋𓃀𓇋𓂋",
+        "create": "𓎡𓂋𓇋𓄿𓏏",
+        "customize": "𓎡𓅱𓋴𓏏𓅱𓅓𓇋𓊃𓇋",
+        "achievements": "𓄿𓎡𓉔𓇋𓃀𓅱𓂋",
+        "stats": "𓋴𓏏𓄿𓏏𓋴",
+        "container": {
+            "crafting": "𓎡𓂋𓄿𓆑𓏏𓇋𓈖",
+            "inventory": "𓇋𓈖𓃀𓇋𓈖𓏏𓅱𓂋𓇋",
+            "dispenser": "𓂧𓇋𓋴𓊪𓇋𓈖𓋴𓇋𓂋",
+            "furnace": "𓆑𓅱𓂋𓈖𓄿𓋴",
+            "tip": {
+                "move": "𓅓𓅱𓃀",
+                "quickMove": "𓎡𓅱𓇋𓎡 𓅓𓅱𓃀",
+                "takeHalf": "𓏏𓄿𓎡 �𓉔𓄿𓆑",
+                "place": "𓊪𓃭𓄿𓋴",
+                "placeOne": "𓊪𓃭𓄿𓋴 𓅱𓈖"
+            }
+        }
+    },
+    "menu": {
+        "singleplayer": "𓋴𓇋𓈖𓎼𓃭𓇋 𓊪𓃭𓄿𓇋𓂋",
+        "multiplayer": "𓅓𓅱𓃭𓏏𓇋 𓊪𓃭𓄿𓇋𓂋",
+        "texturePacks": "𓏏𓇋𓎡𓋴𓏏𓅱𓂋 𓊪𓄿𓎡𓋴",
+        "options": "𓅱𓊪𓏏𓇋𓅱𓈖",
+        "language": "𓃭𓄿𓈖𓎼𓅱𓄿𓎼𓇋",
+        "quit": "𓎡𓅱𓇋𓏏",
+        "credits": "𓎡𓂋𓇋𓂧𓇋𓏏𓋴",
+        "sendFeedback": "𓋴𓇋𓈖𓂧 𓆑𓇋𓇋𓂧𓃀𓄿𓎡",
+        "reportBugs": "𓂋𓇋𓊪𓅱𓂋𓏏 𓃀𓅱𓎼𓋴",
+        "saveAndQuitToTitle": "𓋴𓄿𓃀 𓄿𓈖𓂧 𓎡𓅱𓇋𓏏 𓏏𓅱 𓏏𓇋𓏏𓃭𓇋",
+        "disconnect": "𓂧𓇋𓋴𓎡𓅱𓈖𓇋𓎡𓏏"
+    },
+    "selectWorld": {
+        "title": "𓋴𓇋𓃭𓇋𓎡𓏏 𓅱𓂋𓃭𓂧",
+        "empty": "𓇋𓅓𓊪𓏏𓇋",
+        "world": "𓅱𓂋𓃭𓂧",
+        "select": "𓊪𓃭𓄿𓇋 𓋴𓇋𓃭𓇋𓎡𓏏𓇋𓂧 𓅱𓂋𓃭𓂧",
+        "create": "𓎡𓂋𓇋𓄿𓏏 𓈖𓅱 𓅱𓂋𓃭𓂧",
+        "createDemo": "𓊪𓃭𓄿𓇋 𓈖𓅱 𓂧𓇋𓅓𓅱 𓅱𓂋𓃭𓂧",
+        "deleteQuestion": "𓄿𓂋𓇋 𓅱𓅱 𓋴𓅱𓂋 𓇌𓅱 𓅱𓄿𓈖𓏏 𓏏𓅱 𓂧𓇋𓃭𓇋𓏏𓇋 𓏏𓉔𓇋𓋴 𓅱𓂋𓃭𓂧",
+        "deleteWarning": "𓅱𓇋𓃭 𓃀𓇋 𓃭𓅱𓋴𓏏 𓆑𓅱𓂋𓇋𓃀𓂋",
+        "renameTitle": "𓂋𓇋𓈖𓄿𓅓𓇋 𓅱𓂋𓃭𓂧",
+        "conversion": "𓅓𓅱𓋴𓏏 𓃀𓇋 𓎡𓅱𓈖𓃀𓂋𓏏𓇋𓂧",
+        "newWorld": "𓈖𓅱 𓅱𓂋𓃭𓂧",
+        "enterName": "𓅱𓂋𓃭𓂧 𓈖𓄿𓅓𓇋",
+        "resultFolder": "𓅱𓇋𓃭 𓃀𓇋 𓋴𓄿𓃀𓇋𓂧 𓇋𓈖",
+        "enterSeed": "𓋴𓇋𓇋𓂧 𓆑𓅱𓂋 𓏏𓉔𓇋 𓅱𓂋𓃭𓂧 𓎼𓇋𓈖𓇋𓂋𓄿𓏏𓅱𓂋",
+        "seedInfo": "𓃭𓇋𓄿𓃀 𓃀𓃭𓄿𓈖𓎡 𓆑𓅱𓂋 𓄿 𓂋𓄿𓈖𓂧𓅱𓅓 𓋴𓇋𓇋𓂧",
+        "selectWorldType": "𓋴𓇋𓃭𓇋𓎡𓏏 𓅱𓂋𓃭𓂧 𓏏𓇋𓊪",
+        "worldType": "𓅱𓂋𓃭𓂧 𓏏𓇋𓊪",
+        "customize": "𓎡𓅱𓋴𓏏𓅱𓅓𓇋𓊃",
+        "moreWorldOptions": "𓅓𓅱𓂋 𓅱𓂋𓃭𓂧 𓅱𓊪𓏏𓇋𓅱𓈖",
+        "type": {
+            "default": {
+                "title": "𓂧𓇋𓆑𓄿𓅱𓃭𓏏",
+                "description": "𓏏𓉔𓇋 𓋴𓏏𓄿𓈖𓂧𓄿𓂋𓂧 𓅓𓇋𓈖𓇋𓎡𓃭𓄿𓆑𓏏 𓅱𓂋𓃭𓂧"
+            },
+            "flat": {
+                "title": "𓆑𓃭𓄿𓏏",
+                "description": "𓄿 𓎡𓅱𓅓𓊪𓃭𓇋𓏏𓇋𓃭𓇋 𓃀𓃭𓄿𓈖𓎡 𓅱𓂋𓃭𓂧"
+            },
+            "sky": {
+                "title": "𓋴𓎡𓇌",
+                "description": "𓄿 𓅱𓂋𓃭𓂧 𓆑𓃭𓅱𓅱𓏏𓇋𓈖 𓇋𓈖 𓏏𓉔𓇋 𓋴𓎡𓇌"
+            }
+        }
+    },
+    "newWorld": {
+        "customize": {
+            "superflatWorld": {
+                "title": "𓋴𓅱𓊪𓇋𓂋 𓆑𓃭𓄿𓏏 𓅱𓂋𓃭𓂧 𓎡𓅱𓋴𓏏𓅱𓅓𓇋𓊃"
+            },
+            "removeLayer": "𓂋𓇋𓅓𓅱𓃀 𓃭𓄿𓇌𓇋𓂋",
+            "presets": "𓊪𓂋𓇋𓋴𓇋𓏏𓋴",
+            "height": "𓉔𓇋𓇋𓎼𓉔𓏏",
+            "unknown": "𓅱𓈖𓎡𓈖𓅱𓅱𓈖"
+        }
+    },
+    "world": {
+        "world": "𓅱𓂋𓃭𓂧",
+        "unsupportedFormat": "𓅱𓈖𓋴𓅱𓊪𓊪𓅱𓂋𓏏𓇋𓂧 𓆑𓅱𓂋𓅓𓄿𓏏"
+    },
+    "multiplayer": {
+        "title": "𓊪𓃭𓄿𓇌 𓅓𓅱𓃭𓏏𓇋𓊪𓃭𓄿𓇌𓇋𓂋",
+        "betasharpServer": "𓃀𓇋𓏏𓄿 𓋴𓉔𓄿𓂋𓊪 𓋴𓇋𓂋𓃀𓇋𓂋",
+        "info1": "𓅓𓇋𓈖𓇋𓎡𓃭𓄿𓆑𓏏 𓅓𓅱𓃭𓏏𓇋𓊪𓃭𓄿𓇌𓇋𓂋 𓇋𓋴 𓎡𓅱𓂋𓂋𓇋𓈖𓏏𓃭𓇌 𓈖𓅱𓏏 𓆑𓇋𓈖𓇋𓋴𓉔𓇋𓂧",
+        "info2": "𓃀𓅱𓏏 𓏏𓉔𓇋𓂋𓇋 𓇋𓋴 𓋴𓅱𓅓𓇋 𓃀𓅱𓎼𓇌 𓇋𓄿𓂋𓃭𓇌 𓏏𓇋𓋴𓏏𓇋𓈖",
+        "ipinfo": "𓇋𓈖𓏏𓇋𓂋 𓏏𓉔𓇋 𓇋𓊪 𓅱𓆑 𓄿 𓋴𓇋𓂋𓃀𓇋𓂋 𓏏𓅱 𓎡𓅱𓈖𓇋𓎡𓏏 𓏏𓅱 𓇋𓏏",
+        "deleteQuestion": "𓄿𓂋𓇋 𓅱𓅱 𓋴𓅱𓂋 𓇌𓅱 𓅱𓄿𓈖𓏏 𓏏𓅱 𓂧𓇋𓃭𓇋𓏏𓇋 𓏏𓉔𓇋𓋴 𓋴𓇋𓂋𓃀𓇋𓂋",
+        "deleteWarning": "𓅱𓇋𓃭 𓃀𓇋 𓃭𓅱𓋴𓏏 𓆑𓅱𓂋𓇋𓃀𓂋",
+        "downloadingTerrain": "𓂧𓅱𓈖𓃭𓅱𓄿𓂧𓇋𓈖 𓏏𓇋𓂋𓂋𓄿𓇋𓈖",
+        "stopSleeping": "𓋴𓏏𓅱𓊪 𓋴𓃭𓇋𓊪𓇋𓈖",
+        "editServerInfo": "𓇋𓂧𓇋𓏏 𓋴𓇋𓂋𓃀𓇋𓂋 𓇋𓈖𓆑𓅱",
+        "addServerInfo": "𓄿𓂧𓂧 𓋴𓇋𓂋𓃀𓇋𓂋 𓇋𓈖𓆑𓅱",
+        "serverName": "𓋴𓇋𓂋𓃀𓇋𓂋 𓈖𓄿𓅓𓇋",
+        "serverAddress": "𓋴𓇋𓂋𓃀𓇋𓂋 𓄿𓂧𓂧𓂋𓇋𓋴𓋴"
+    },
+    "loading": {
+        "loadingLevel": "𓃭𓅱𓄿𓂧𓇋𓈖 𓃭𓇋𓃀𓇋𓃭",
+        "startingServer": "𓋴𓏏𓄿𓂋𓏏𓇋𓈖 𓋴𓇋𓂋𓃀𓇋𓂋",
+        "preparingSpawnArea": "𓊪𓂋𓇋𓊪𓄿𓂋𓇋𓈖 𓋴𓊪𓄿𓅱𓈖 𓄿𓂋𓇋𓄿"
+    },
+    "achievements": {
+        "title": "𓄿𓎡𓉔𓇋𓃀𓅱𓂋"
+    },
+    "gameover": {
+        "title": "𓎼𓄿𓅓𓇋 𓅱𓃀𓇋𓂋",
+        "score": "𓋴𓎡𓅱𓂋",
+        "respawn": "𓂋𓇋𓋴𓊪𓅱𓈖",
+        "titleMenu": "𓏏𓇋𓏏𓃭𓇋 𓅓𓇋𓈖𓅱"
+    },
+    "gamemenu": {
+        "title": "𓎼𓄿𓅓𓇋 𓅓𓇋𓈖𓅱",
+        "backToGame": "𓃀𓄿𓎡 𓏏𓅱 𓎼𓄿𓅓𓇋"
+    },
+    "sign": {
+        "title": "𓇋𓂧𓇋𓏏 𓋴𓇋𓎼𓈖 𓅓𓇋𓋴𓋴𓄿𓎼𓇋",
+        "done": "𓂧𓅱𓈖"
+    },
+    "stats": {
+        "title": "𓋴𓏏𓄿𓏏𓋴",
+        "general": "𓎼𓇋𓈖𓇋𓂋𓄿𓃭",
+        "blocks": {
+            "name": "𓃀𓃭𓅱𓎡𓋴",
+            "mined": "𓅓𓇋𓈖𓂧",
+            "crafted": "𓎡𓂋𓄿𓆑𓏏𓇋𓂧",
+            "used": "𓅱𓋴𓇋𓂧"
+        },
+        "items": {
+            "name": "𓇋𓏏𓇋𓅓𓋴",
+            "broken": "𓃀𓂋𓅱𓎡𓇋𓈖",
+            "crafted": "𓎡𓂋𓄿𓆑𓏏𓇋𓂧",
+            "used": "𓅱𓋴𓇋𓂧"
+        },
+        "item": "𓇋𓏏𓇋𓅓"
+    },
+    "connect": {
+        "connecting": "𓎡𓅱𓈖𓇋𓎡𓏏𓇋𓈖 𓏏𓅱 𓏏𓉔𓇋 𓋴𓇋𓂋𓃀𓇋𓂋",
+        "authorizing": "𓃭𓅱𓎼𓇋𓈖 𓇋𓈖",
+        "failed": "𓆑𓄿𓇋𓃭𓇋𓂧 𓏏𓅱 𓎡𓅱𓈖𓇋𓎡𓏏 𓏏𓅱 𓏏𓉔𓇋 𓋴𓇋𓂋𓃀𓇋𓂋"
+    },
+    "disconnect": {
+        "genericReason": "{0}",
+        "disconnected": "𓂧𓇋𓋴𓎡𓅱𓈖𓇋𓎡𓏏𓇋𓂧 𓃀𓇌 𓋴𓇋𓂋𓃀𓇋𓂋",
+        "lost": "𓎡𓅱𓈖𓇋𓎡𓏏𓇋𓅱𓈖 𓃭𓅱𓋴𓏏",
+        "kicked": "𓅱𓄿𓋴 𓎡𓇋𓎡𓇋𓂧 𓆑𓂋𓅱𓅓 𓏏𓉔𓇋 𓎼𓄿𓅓𓇋",
+        "timeout": "𓏏𓇋𓅓𓇋 𓅱𓅱𓏏",
+        "closed": "𓎡𓅱𓈖𓇋𓎡𓏏𓇋𓅱𓈖 𓃭𓅱𓋴𓏏",
+        "loginFailed": "𓃭𓅱𓎼𓇋𓈖 𓆑𓄿𓇋𓃭𓇋𓂧",
+        "quitting": "𓎡𓅱𓇋𓏏𓏏𓇋𓈖",
+        "endOfStream": "𓇋𓈖𓂧 𓅱𓆑 𓋴𓏏𓂋𓇋𓄿𓅓",
+        "overflow": "𓃀𓅱𓆑𓇋𓂋 𓅱𓃀𓂋𓆑𓃭𓅱𓅱"
+    },
+    "options": {
+        "off": "𓅱𓆑𓆑",
+        "on": "𓅱𓈖",
+        "disabled": "𓂧𓇋𓋴𓄿𓃀𓃭𓇋𓂧",
+        "title": "𓅱𓊪𓏏𓇋𓅱𓈖𓋴",
+        "controls": "𓎡𓅱𓈖𓏏𓂋𓅱𓃭𓋴",
+        "keyboardControls": "𓎡𓇋𓇌𓃀𓅱𓄿𓂋𓂧 𓎡𓅱𓈖𓏏𓂋𓅱𓃭𓋴",
+        "controllerSettings": "𓎡𓅱𓈖𓏏𓂋𓅱𓃭𓋴 𓋴𓇋𓏏𓏇𓇋𓈖",
+        "controllerType": "𓎡𓅱𓈖𓏏𓂋𓅱𓃭𓋴 𓏏𓇋𓊪",
+        "video": {
+            "text": "𓃀𓇋𓂧𓇋𓅱 𓋴𓇋𓏏𓏇𓇋𓈖",
+            "performance": "𓊪𓇋𓂋𓆑𓅱𓂋𓅓𓄿𓈖",
+            "display": "𓂧𓇋𓋴𓊪𓃭𓄿𓇌"
+        },
+        "uiSettings": "𓅱𓇋 𓋴𓇋𓏏𓏇𓇋𓈖",
+        "audioSettings": "𓄿𓅱𓂧𓇋𓅱 𓋴𓇋𓏏𓏇𓇋𓈖",
+        "audioTitle": "𓄿𓅱𓂧𓇋𓅱 𓋴𓇋𓏏𓏇𓇋𓈖",
+        "videoTitle": "𓃀𓇋𓂧𓇋𓅱 𓋴𓇋𓏏𓏇𓇋𓈖",
+        "language": "𓃭𓄿𓈖𓎼𓅱𓄿𓎼𓇋",
+        "anisoLevel": "𓄿𓈖𓇋𓋴𓅱 𓃭𓇋𓃀𓇋𓃭",
+        "music": "𓅓𓅱𓋴𓇋𓎡",
+        "sound": "𓋴𓅱𓈖𓂧",
+        "invertMouse": "𓇋𓈖𓃀𓇋𓂋𓏏 𓅓𓅱𓋴",
+        "alternateBlocks": "𓄿𓃭𓏏𓇋𓂋𓈖𓄿𓏏𓇋 𓃀𓃭𓅱𓎡𓋴",
+        "chunkFade": "𓎡𓉔𓅱𓈖𓎡 𓆑𓄿𓂧𓇋",
+        "sensitivity": {
+            "text": "𓋴𓇋𓈖𓋴𓇋𓏏𓇋𓃀𓇋𓃭𓇋𓏏𓇌",
+            "controllerText": "𓎡𓅱𓈖𓏏𓂋𓅱𓃭𓋴 𓋴𓇋𓈖𓋴𓇋𓏏𓇋𓃀𓇋𓃭𓇋𓏏𓇌",
+            "min": "𓅓𓇋𓈖",
+            "max": "𓅓𓄿𓎡"
+        },
+        "renderDistance": {
+            "text": "𓂋𓇋𓈖𓂧𓇋𓂋 𓂧𓇋𓋴𓏏𓄿𓈖",
+            "chunks": "𓎡𓉔𓅱𓈖𓎡",
+            "tiny": "𓏏𓇋𓈖𓇌",
+            "short": "𓋴𓉔𓅱𓂋𓏏",
+            "normal": "𓈖𓅱𓂋𓅓𓄿𓃭",
+            "far": "𓆑𓄿𓂋"
+        },
+        "viewBobbing": "𓃀𓅱𓃀𓃀𓇋𓈖",
+        "ao": "𓋴𓅱𓅓𓅱𓂋 𓃭𓇋𓎼𓉔𓏏𓇋𓈖",
+        "anaglyph": "𓄿𓈖𓄿𓎼𓃭𓇋𓆑",
+        "framerateLimit": "𓆑𓂋𓄿𓅓𓇋 𓂋𓄿𓏏𓇋 𓃭𓇋𓅓𓇋𓏏",
+        "difficulty": {
+            "text": "𓂧𓇋𓆑𓇋𓎡𓅱𓃭𓏏𓇌",
+            "peaceful": "𓊪𓇋𓋴𓆑𓅱𓃭",
+            "easy": "𓇋𓋴𓇋",
+            "normal": "𓈖𓅱𓂋𓅓𓄿𓃭",
+            "hard": "𓉔𓄿𓂋𓂧"
+        },
+        "graphics": {
+            "text": "𓎼𓂋𓄿𓆑𓇋𓎡𓋴",
+            "fancy": "𓆑𓄿𓈖𓋴𓇌",
+            "fast": "𓆑𓄿𓋴𓏏"
+        },
+        "cloudsQuality": {
+            "text": "𓎡𓃭𓅱𓂧 𓎡𓅱𓄿𓃭𓇋𓏏𓇌",
+            "off": "𓈖𓅱 𓎡𓃭𓅱𓂧",
+            "legacy": "𓃭𓇋𓎼𓄿𓋴𓇌",
+            "shader": "𓋴𓉔𓄿𓂧𓇋𓂋"
+        },
+        "softClouds": {
+            "text": "𓋴𓅱𓆑𓏏 𓎡𓃭𓅱𓂧"
+        },
+        "guiScale": {
+            "text": "𓎼𓅱𓇋 𓋴𓎡𓄿𓃭𓇋",
+            "auto": "𓄿𓅱𓏏𓅱",
+            "small": "𓋴𓅓𓄿𓃭𓃭",
+            "normal": "𓈖𓅱𓂋𓅓𓄿𓃭",
+            "large": "𓃭𓄿𓂋𓎼𓇋"
+        },
+        "chatScale": {
+            "text": "𓎡𓉔𓄿𓏏 𓋴𓎡𓄿𓃭𓇋"
+        },
+        "chatWidth": {
+            "text": "𓎡𓉔𓄿𓏏 𓅱𓇋𓂧𓏏𓉔"
+        },
+        "advancedOpengl": "𓄿𓂧𓃀𓄿𓈖𓎡𓇋𓂧 𓅱𓊪𓇋𓈖",
+        "fps": {
+            "text": "𓆑𓊪𓋴",
+            "maxFps": "𓅓𓄿𓎡 𓆑𓊪𓋴",
+            "unlimited": "𓅱𓈖𓃭𓇋𓅓𓇋𓏏𓇋𓂧"
+        },
+        "showCoordinates": "𓋴𓉔𓅱 𓎡𓅱𓅱𓂋𓂧𓇋𓈖𓄿𓏏𓇋",
+        "uiCursors": "𓅱𓇋 𓎡𓅱𓂋𓋴𓅱𓂋",
+        "gamma": "𓎼𓄿𓅓𓅓𓄿",
+        "vSync": "𓃀𓇌𓋴𓇌𓈖",
+        "mipmaps": "𓅓𓇋𓊪 𓅓𓄿𓊪𓋴",
+        "menuMusic": "𓅓𓇋𓈖𓅱 𓅓𓅱𓋴𓇋𓎡",
+        "msaa": "𓅓𓋴𓄿𓄿",
+        "fov": "𓆑𓅱𓃀",
+        "movement": {
+            "text": "𓅓𓅱𓃀𓇋𓅓𓇋𓈖𓏏"
+        },
+        "view": {
+            "text": "𓃀𓇋𓅱"
+        },
+        "other": {
+            "text": "𓅱𓏏𓉔𓇋𓂋"
+        },
+        "editBindings": "𓇋𓂧𓇋𓏏 𓃀𓇋𓈖𓂧𓇋𓈖",
+        "resetBindings": "𓂋𓇋𓋴𓇋𓏏 𓃀𓇋𓈖𓂧𓇋𓈖",
+        "controllerBindings": "𓎡𓅱𓈖𓏏𓂋𓅱𓃭𓋴 𓃀𓇋𓈖𓂧𓇋𓈖",
+        "shader": {
+            "text": "𓋴𓉔𓄿𓂧𓇋𓂋 𓅱𓊪𓏏𓇋𓅱𓈖",
+            "chunkVert": {
+                "text": "𓅱𓂋𓃭𓂧",
+                "WavyLeavesStrength": "𓅱𓄿𓃀𓇌 𓃭𓇋𓃀𓋴 𓋴𓏏𓂋𓇋𓈖",
+                "WavyLeavesSpeed": "𓅱𓄿𓃀𓇌 𓃭𓇋𓃀𓋴 𓋴𓊪𓇋𓂧",
+                "WavyPlantStrength": "𓅱𓄿𓃀𓇌 𓊪𓃭𓄿𓈖 𓋴𓏏𓂋𓇋𓈖",
+                "WavyPlantSpeed": "𓅱𓄿𓃀𓇌 𓊪𓃭𓄿𓈖 𓋴𓊪𓇋𓂧",
+                "WavyPlantMode": "𓅱𓄿𓃀𓇌 𓊪𓃭𓄿𓈖 𓅓𓅱𓂧"
+            },
+            "cloud": {
+                "text": "𓎡𓃭𓅱𓂧",
+                "minParallax": "𓅓𓇋𓈖 𓊪𓄿𓂋𓄿𓃭𓃭𓄿𓎡",
+                "maxParallax": "𓅓𓄿𓎡 𓊪𓄿𓂋𓄿𓃭𓃭𓄿𓎡",
+                "minGradient": "𓅓𓇋𓈖 𓎼𓂋𓄿𓂧𓇋𓇋𓈖𓏏",
+                "maxGradient": "𓅓𓄿𓎡 𓎼𓂋𓄿𓂧𓇋𓇋𓈖𓏏",
+                "cloudHeight": "𓎡𓃭𓅱𓂧 𓉔𓇋𓇋𓎼",
+                "shadow": "𓋴𓉔𓄿𓂧𓅱",
+                "smoothWidth": "𓋴𓅓𓅱𓏏𓉔 𓅱𓇋𓂧",
+                "smoothSamples": "𓋴𓅓𓅱𓏏𓉔 𓋴𓄿𓅓𓊪𓃭",
+                "closeFade": "𓎡𓃭𓅱𓋴 𓆑𓄿𓂧",
+                "smoothTop": "𓋴𓅓𓅱𓏏𓉔 𓏏𓅱𓊪",
+                "smoothEdge": "𓋴𓅓𓅱𓏏𓉔 𓇋𓂧",
+                "smoothBottom": "𓋴𓅓𓅱𓏏𓉔 𓃀𓅱𓏏",
+                "smoothBottomTopDown": "𓋴𓅓𓅱𓏏𓉔 𓃀𓅱𓏏 𓏏𓅱𓊪 𓂧𓅱𓈖"
+            },
+            "ui": {
+                "text": "𓅱𓇋",
+                "darkMode": "𓂧𓄿𓂋𓎡 𓅓𓅱𓂧"
+            },
+            "preset": {
+                "text": "𓊪𓂋𓇋𓋴𓇋𓏏",
+                "disabled": "𓂧𓇋𓋴𓄿𓃀𓃭𓇋𓂧",
+                "default": "𓂧𓇋𓆑𓄿𓅱𓃭𓏏",
+                "custom": "𓎡𓅱𓋴𓏏𓅱𓅓",
+                "2d": "𓋴𓇋𓂧 𓂧",
+                "3d": "𓋴𓇋𓂧 𓂧 𓂧",
+                "low": "𓃭𓅱",
+                "medium": "𓅓𓇋𓂧𓇋𓅱𓅓",
+                "high": "𓉔𓇋",
+                "ultra": "𓅱𓃭𓏏𓂋𓄿"
+            }
+        }
+    },
+    "performance": {
+        "max": "𓅓𓄿𓎡 𓆑𓊪𓋴",
+        "balanced": "𓃀𓄿𓃭𓄿𓈖",
+        "powersaver": "𓊪𓅱𓅱𓂋 𓋴𓄿𓃀𓇋"
+    },
+    "controls": {
+        "title": "𓎡𓅱𓈖𓏏𓂋𓅱𓃭"
+    },
+    "key": {
+        "forward": "𓆑𓅱𓂋𓅱𓄿",
+        "left": "𓃭𓇋𓆑𓏏",
+        "back": "𓃀𓄿𓎡",
+        "right": "𓂋𓇋",
+        "jump": "𓆓𓅱𓅓",
+        "inventory": "𓇋𓈖𓃀𓇋𓈖",
+        "drop": "𓂧𓂋𓅱",
+        "chat": "𓎡𓉔𓄿",
+        "fog": "𓆑𓅱",
+        "sneak": "𓋴𓈖𓇋𓎡",
+        "playerlist": "𓊪𓃭𓄿𓇌𓇋𓂋 𓃭𓇋𓋴",
+        "zoom": "𓊃𓅱𓅓",
+        "hotbarLeft": "𓉔𓅱𓏏 𓃀𓄿𓂋 𓃭𓇋𓆑",
+        "hotbarRight": "𓉔𓅱𓏏 𓃀𓄿𓂋 𓂋",
+        "pickBlock": "𓊪𓇋𓎡 𓃀𓃭𓅱",
+        "camera": "𓎡𓄿𓅓𓇋",
+        "pause": "𓊪𓄿𓅱"
+    },
+    "texturePack": {
+        "openFolder": "𓅱𓊪𓇋𓈖 𓏏𓇋𓎡 𓊪𓄿 𓆑𓅱",
+        "title": "𓋴𓇋𓃭 𓏏𓇋𓎡",
+        "folderInfo": "𓊪𓃭 𓏏𓇋𓎡 𓆑 𓈖𓅱"
+    },
+    "tile": {
+        "tallgrass": {
+            "name": "𓏏𓄿𓃭𓃭 𓎼𓂋𓄿",
+            "desc": ""
+        },
+        "stone": {
+            "name": "𓋴𓏏𓅱",
+            "desc": ""
+        },
+        "grass": {
+            "name": "𓎼𓂋",
+            "desc": ""
+        },
+        "dirt": {
+            "name": "𓂧𓇋",
+            "desc": ""
+        },
+        "stonebrick": {
+            "name": "𓋴𓏏𓅱 𓃀𓂋",
+            "desc": ""
+        },
+        "wood": {
+            "name": "𓅱𓅱",
+            "desc": ""
+        },
+        "sapling": {
+            "name": "𓋴",
+            "desc": ""
+        },
+        "bedrock": {
+            "name": "𓃀",
+            "desc": ""
+        },
+        "water": {
+            "name": "𓅱",
+            "desc": ""
+        },
+        "lava": {
+            "name": "𓃭",
+            "desc": ""
+        },
+        "sand": {
+            "name": "𓋴",
+            "desc": ""
+        },
+        "sandStone": {
+            "name": "𓋴 𓋴"
+        },
+        "gravel": {
+            "name": "𓎼",
+            "desc": ""
+        },
+        "oreGold": {
+            "name": "𓅱 𓎼",
+            "desc": ""
+        },
+        "oreIron": {
+            "name": "𓅱 𓇋",
+            "desc": ""
+        },
+        "oreCoal": {
+            "name": "𓅱 𓎡",
+            "desc": ""
+        },
+        "log": {
+            "name": "𓃭",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "𓃭",
+            "desc": ""
+        },
+        "sponge": {
+            "name": "𓋴",
+            "desc": ""
+        },
+        "glass": {
+            "name": "𓎼",
+            "desc": ""
+        },
+        "cloth": {
+            "name": "𓎡",
+            "desc": "",
+            "black": {
+                "name": "𓃀 𓎡",
+                "desc": ""
+            },
+            "red": {
+                "name": "𓂋 𓎡",
+                "desc": ""
+            },
+            "green": {
+                "name": "𓎼 𓎡",
+                "desc": ""
+            },
+            "brown": {
+                "name": "𓃀 𓎡",
+                "desc": ""
+            },
+            "blue": {
+                "name": "𓃀 𓎡",
+                "desc": ""
+            },
+            "purple": {
+                "name": "𓊪 𓎡",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "𓎡 𓎡",
+                "desc": ""
+            },
+            "silver": {
+                "name": "𓋴 𓎡",
+                "desc": ""
+            },
+            "gray": {
+                "name": "𓎼 𓎡",
+                "desc": ""
+            },
+            "pink": {
+                "name": "𓊪 𓎡",
+                "desc": ""
+            },
+            "lime": {
+                "name": "𓃭 𓎡",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "𓇌 𓎡",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "𓃭 𓃀 𓎡",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "𓅓 𓎡",
+                "desc": ""
+            },
+            "orange": {
+                "name": "𓅱 𓎡",
+                "desc": ""
+            },
+            "white": {
+                "name": "𓅱 𓎡",
+                "desc": ""
+            }
+        },
+        "flower": {
+            "name": "𓆑",
+            "desc": ""
+        },
+        "rose": {
+            "name": "𓂋",
+            "desc": ""
+        },
+        "mushroom": {
+            "name": "𓅓",
+            "desc": ""
+        },
+        "blockGold": {
+            "name": "𓃀 𓎼",
+            "desc": ""
+        },
+        "blockIron": {
+            "name": "𓃀 𓇋",
+            "desc": ""
+        },
+        "stoneSlab": {
+            "stone": {
+                "name": "𓋴 𓃀",
+                "desc": ""
+            },
+            "sand": {
+                "name": "𓋴 𓃀",
+                "desc": ""
+            },
+            "wood": {
+                "name": "𓅱 𓃀",
+                "desc": ""
+            },
+            "cobble": {
+                "name": "𓎡 𓃀",
+                "desc": ""
+            }
+        },
+        "brick": {
+            "name": "𓃀",
+            "desc": ""
+        },
+        "tnt": {
+            "name": "𓏏",
+            "desc": ""
+        },
+        "bookshelf": {
+            "name": "𓃀",
+            "desc": ""
+        },
+        "stoneMoss": {
+            "name": "𓋴 𓅓",
+            "desc": ""
+        },
+        "obsidian": {
+            "name": "𓅱",
+            "desc": ""
+        },
+        "torch": {
+            "name": "𓏏",
+            "desc": ""
+        },
+        "fire": {
+            "name": "𓆑",
+            "desc": ""
+        },
+        "mobSpawner": {
+            "name": "𓅓 𓋴",
+            "desc": ""
+        },
+        "stairsWood": {
+            "name": "𓋴 𓅱",
+            "desc": ""
+        },
+        "chest": {
+            "name": "𓎡",
+            "desc": ""
+        },
+        "redstoneDust": {
+            "name": "𓂋 𓂧",
+            "desc": ""
+        },
+        "oreDiamond": {
+            "name": "𓅱 𓂧",
+            "desc": ""
+        },
+        "blockDiamond": {
+            "name": "𓃀 𓂧",
+            "desc": ""
+        },
+        "workbench": {
+            "name": "𓅱 𓃀",
+            "desc": ""
+        },
+        "crops": {
+            "name": "𓎡",
+            "desc": ""
+        },
+        "farmland": {
+            "name": "𓆑 𓃭",
+            "desc": ""
+        },
+        "furnace": {
+            "name": "𓆑 𓂋",
+            "desc": ""
+        },
+        "sign": {
+            "name": "𓋴",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "𓂧 𓅱",
+            "desc": ""
+        },
+        "ladder": {
+            "name": "𓃭",
+            "desc": ""
+        },
+        "rail": {
+            "name": "𓂋",
+            "desc": ""
+        },
+        "goldenRail": {
+            "name": "𓎼 𓂋",
+            "desc": ""
+        },
+        "detectorRail": {
+            "name": "𓂧 𓂋",
+            "desc": ""
+        },
+        "stairsStone": {
+            "name": "𓋴 𓋴",
+            "desc": ""
+        },
+        "lever": {
+            "name": "𓃭",
+            "desc": ""
+        },
+        "pressurePlate": {
+            "name": "𓊪 𓃭",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "𓂧 𓇋",
+            "desc": ""
+        },
+        "oreRedstone": {
+            "name": "𓅱 𓂋",
+            "desc": ""
+        },
+        "notGate": {
+            "name": "𓈖 𓎼",
+            "desc": ""
+        },
+        "button": {
+            "name": "𓃀",
+            "desc": ""
+        },
+        "snow": {
+            "name": "𓋴",
+            "desc": ""
+        },
+        "ice": {
+            "name": "𓇋",
+            "desc": ""
+        },
+        "cactus": {
+            "name": "𓎡",
+            "desc": ""
+        },
+        "clay": {
+            "name": "𓎡",
+            "desc": ""
+        },
+        "reeds": {
+            "name": "𓂋",
+            "desc": ""
+        },
+        "jukebox": {
+            "name": "𓆓",
+            "desc": ""
+        },
+        "fence": {
+            "name": "𓆑",
+            "desc": ""
+        },
+        "pumpkin": {
+            "name": "𓊪",
+            "desc": ""
+        },
+        "litpumpkin": {
+            "name": "𓃭 𓊪",
+            "desc": ""
+        },
+        "hellrock": {
+            "name": "𓉔 𓂋",
+            "desc": ""
+        },
+        "hellsand": {
+            "name": "𓉔 𓋴",
+            "desc": ""
+        },
+        "lightgem": {
+            "name": "𓃭 𓎼",
+            "desc": ""
+        },
+        "portal": {
+            "name": "𓊪",
+            "desc": ""
+        },
+        "oreLapis": {
+            "name": "𓅱 𓃭",
+            "desc": ""
+        },
+        "blockLapis": {
+            "name": "𓃀 𓃭",
+            "desc": ""
+        },
+        "dispenser": {
+            "name": "𓂧 𓋴",
+            "desc": ""
+        },
+        "musicBlock": {
+            "name": "𓅓 𓃀",
+            "desc": ""
+        },
+        "cake": {
+            "name": "𓎡",
+            "desc": ""
+        },
+        "bed": {
+            "name": "𓃀",
+            "desc": "",
+            "occupied": "𓃀 𓅱",
+            "noSleep": "𓈖 𓋴",
+            "notValid": "𓈖 𓃀"
+        },
+        "lockedchest": {
+            "name": "𓃭 𓎡",
+            "desc": ""
+        },
+        "trapdoor": {
+            "name": "𓏏 𓂧",
+            "desc": ""
+        },
+        "web": {
+            "name": "𓅱",
+            "desc": ""
+        },
+        "stonebricksmooth": {
+            "name": "𓋴 𓃀",
+            "desc": ""
+        },
+        "pistonBase": {
+            "name": "𓊪 𓃀",
+            "desc": ""
+        },
+        "pistonStickyBase": {
+            "name": "𓊪 𓋴 𓃀",
+            "desc": ""
+        }
+    },
+    "item": {
+        "shovelIron": {
+            "name": "𓋴 𓇋",
+            "desc": ""
+        },
+        "pickaxeIron": {
+            "name": "𓊪 𓇋",
+            "desc": ""
+        },
+        "hatchetIron": {
+            "name": "𓉔 𓇋",
+            "desc": ""
+        },
+        "flintAndSteel": {
+            "name": "𓆑 𓋴",
+            "desc": ""
+        },
+        "apple": {
+            "name": "𓄿",
+            "desc": ""
+        },
+        "cookie": {
+            "name": "𓎡",
+            "desc": ""
+        },
+        "bow": {
+            "name": "𓃀",
+            "desc": ""
+        },
+        "arrow": {
+            "name": "𓄿",
+            "desc": ""
+        },
+        "coal": {
+            "name": "𓎡",
+            "desc": ""
+        },
+        "charcoal": {
+            "name": "𓎡",
+            "desc": ""
+        },
+        "diamond": {
+            "name": "𓂧",
+            "desc": ""
+        },
+        "ingotIron": {
+            "name": "𓇋",
+            "desc": ""
+        },
+        "ingotGold": {
+            "name": "𓇋 𓎼",
+            "desc": ""
+        },
+        "swordIron": {
+            "name": "𓋴 𓇋",
+            "desc": ""
+        },
+        "swordWood": {
+            "name": "𓋴 𓅱",
+            "desc": ""
+        },
+        "shovelWood": {
+            "name": "𓋴 𓅱",
+            "desc": ""
+        },
+        "pickaxeWood": {
+            "name": "𓊪 𓅱",
+            "desc": ""
+        },
+        "hatchetWood": {
+            "name": "𓉔 𓅱",
+            "desc": ""
+        },
+        "swordStone": {
+            "name": "𓋴 𓋴",
+            "desc": ""
+        },
+        "shovelStone": {
+            "name": "𓋴 𓋴",
+            "desc": ""
+        },
+        "pickaxeStone": {
+            "name": "𓊪 𓋴",
+            "desc": ""
+        },
+        "hatchetStone": {
+            "name": "𓉔 𓋴",
+            "desc": ""
+        },
+        "swordDiamond": {
+            "name": "𓋴 𓂧",
+            "desc": ""
+        },
+        "shovelDiamond": {
+            "name": "𓋴 𓂧",
+            "desc": ""
+        },
+        "pickaxeDiamond": {
+            "name": "𓊪 𓂧",
+            "desc": ""
+        },
+        "hatchetDiamond": {
+            "name": "𓉔 𓂧",
+            "desc": ""
+        },
+        "stick": {
+            "name": "𓋴",
+            "desc": ""
+        },
+        "bowl": {
+            "name": "𓃀",
+            "desc": ""
+        },
+        "mushroomStew": {
+            "name": "𓅓 𓋴",
+            "desc": ""
+        },
+        "swordGold": {
+            "name": "𓋴 𓎼",
+            "desc": ""
+        },
+        "shovelGold": {
+            "name": "𓋴 𓎼",
+            "desc": ""
+        },
+        "pickaxeGold": {
+            "name": "𓊪 𓎼",
+            "desc": ""
+        },
+        "hatchetGold": {
+            "name": "𓉔 𓎼",
+            "desc": ""
+        },
+        "string": {
+            "name": "𓋴",
+            "desc": ""
+        },
+        "feather": {
+            "name": "𓆑",
+            "desc": ""
+        },
+        "gunpowder": {
+            "name": "𓎼",
+            "desc": ""
+        },
+        "hoeWood": {
+            "name": "𓉔 𓅱",
+            "desc": ""
+        },
+        "hoeStone": {
+            "name": "𓉔 𓋴",
+            "desc": ""
+        },
+        "hoeIron": {
+            "name": "𓉔 𓇋",
+            "desc": ""
+        },
+        "hoeDiamond": {
+            "name": "𓉔 𓂧",
+            "desc": ""
+        },
+        "hoeGold": {
+            "name": "𓉔 𓎼",
+            "desc": ""
+        },
+        "seeds": {
+            "name": "𓋴",
+            "desc": ""
+        },
+        "wheat": {
+            "name": "𓅱",
+            "desc": ""
+        },
+        "bread": {
+            "name": "𓃀",
+            "desc": ""
+        },
+        "helmetLeather": {
+            "name": "𓉔 𓃭",
+            "desc": ""
+        },
+        "chestplateLeather": {
+            "name": "𓎡 𓃭",
+            "desc": ""
+        },
+        "leggingsLeather": {
+            "name": "𓃭 𓃭",
+            "desc": ""
+        },
+        "bootsLeather": {
+            "name": "𓃀 𓃭",
+            "desc": ""
+        },
+        "helmetChain": {
+            "name": "𓉔 𓎡",
+            "desc": ""
+        },
+        "chestplateChain": {
+            "name": "𓎡 𓎡",
+            "desc": ""
+        },
+        "leggingsChain": {
+            "name": "𓃭 𓎡",
+            "desc": ""
+        },
+        "bootsChain": {
+            "name": "𓃀 𓎡",
+            "desc": ""
+        },
+        "helmetIron": {
+            "name": "𓉔 𓇋",
+            "desc": ""
+        },
+        "chestplateIron": {
+            "name": "𓎡 𓇋",
+            "desc": ""
+        },
+        "leggingsIron": {
+            "name": "𓃭 𓇋",
+            "desc": ""
+        },
+        "bootsIron": {
+            "name": "𓃀 𓇋",
+            "desc": ""
+        },
+        "helmetDiamond": {
+            "name": "𓉔 𓂧",
+            "desc": ""
+        },
+        "chestplateDiamond": {
+            "name": "𓎡 𓂧",
+            "desc": ""
+        },
+        "leggingsDiamond": {
+            "name": "𓃭 𓂧",
+            "desc": ""
+        },
+        "bootsDiamond": {
+            "name": "𓃀 𓂧",
+            "desc": ""
+        },
+        "helmetGold": {
+            "name": "𓉔 𓎼",
+            "desc": ""
+        },
+        "chestplateGold": {
+            "name": "𓎡 𓎼",
+            "desc": ""
+        },
+        "leggingsGold": {
+            "name": "𓃭 𓎼",
+            "desc": ""
+        },
+        "bootsGold": {
+            "name": "𓃀 𓎼",
+            "desc": ""
+        },
+        "flint": {
+            "name": "𓆑",
+            "desc": ""
+        },
+        "porkchopRaw": {
+            "name": "𓊪 𓂋",
+            "desc": ""
+        },
+        "porkchopCooked": {
+            "name": "𓊪 𓎡",
+            "desc": ""
+        },
+        "painting": {
+            "name": "𓊪",
+            "desc": ""
+        },
+        "appleGold": {
+            "name": "𓄿 𓎼",
+            "desc": ""
+        },
+        "sign": {
+            "name": "𓋴",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "𓂧 𓅱",
+            "desc": ""
+        },
+        "bucket": {
+            "name": "𓃀",
+            "desc": ""
+        },
+        "bucketWater": {
+            "name": "𓃀 𓅱",
+            "desc": ""
+        },
+        "bucketLava": {
+            "name": "𓃀 𓃭",
+            "desc": ""
+        },
+        "minecart": {
+            "name": "𓅓 𓎡",
+            "desc": ""
+        },
+        "saddle": {
+            "name": "𓋴",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "𓂧 𓇋",
+            "desc": ""
+        },
+        "redstone": {
+            "name": "𓂋",
+            "desc": ""
+        },
+        "snowball": {
+            "name": "𓋴 𓃀",
+            "desc": ""
+        },
+        "boat": {
+            "name": "𓃀",
+            "desc": ""
+        },
+        "leather": {
+            "name": "𓃭",
+            "desc": ""
+        },
+        "milk": {
+            "name": "𓅓",
+            "desc": ""
+        },
+        "brick": {
+            "name": "𓃀",
+            "desc": ""
+        },
+        "clay": {
+            "name": "𓎡",
+            "desc": ""
+        },
+        "sugarCanes": {
+            "name": "𓋴 𓎡",
+            "desc": ""
+        },
+        "paper": {
+            "name": "𓊪",
+            "desc": ""
+        },
+        "book": {
+            "name": "𓃀",
+            "desc": ""
+        },
+        "slimeball": {
+            "name": "𓋴 𓃀",
+            "desc": ""
+        },
+        "minecartChest": {
+            "name": "𓅓 𓎡",
+            "desc": ""
+        },
+        "minecartFurnace": {
+            "name": "𓅓 𓆑",
+            "desc": ""
+        },
+        "egg": {
+            "name": "𓇋",
+            "desc": ""
+        },
+        "compass": {
+            "name": "𓎡",
+            "desc": ""
+        },
+        "fishingRod": {
+            "name": "𓆑 𓂋",
+            "desc": ""
+        },
+        "clock": {
+            "name": "𓎡",
+            "desc": ""
+        },
+        "yellowDust": {
+            "name": "𓇌 𓂧",
+            "desc": ""
+        },
+        "fishRaw": {
+            "name": "𓆑 𓂋",
+            "desc": ""
+        },
+        "fishCooked": {
+            "name": "𓆑 𓎡",
+            "desc": ""
+        },
+        "record": {
+            "name": "𓂋",
+            "desc": ""
+        },
+        "bone": {
+            "name": "𓃀",
+            "desc": ""
+        },
+        "dyePowder": {
+            "black": {
+                "name": "𓃀 𓂧",
+                "desc": ""
+            },
+            "red": {
+                "name": "𓂋 𓂧",
+                "desc": ""
+            },
+            "green": {
+                "name": "𓎼 𓂧",
+                "desc": ""
+            },
+            "brown": {
+                "name": "𓃀 𓂧",
+                "desc": ""
+            },
+            "blue": {
+                "name": "𓃀 𓂧",
+                "desc": ""
+            },
+            "purple": {
+                "name": "𓊪 𓂧",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "𓎡 𓂧",
+                "desc": ""
+            },
+            "silver": {
+                "name": "𓋴 𓂧",
+                "desc": ""
+            },
+            "gray": {
+                "name": "𓎼 𓂧",
+                "desc": ""
+            },
+            "pink": {
+                "name": "𓊪 𓂧",
+                "desc": ""
+            },
+            "lime": {
+                "name": "𓃭 𓂧",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "𓇌 𓂧",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "𓃭 𓃀 𓂧",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "𓅓 𓂧",
+                "desc": ""
+            },
+            "orange": {
+                "name": "𓅱 𓂧",
+                "desc": ""
+            },
+            "white": {
+                "name": "𓅱 𓂧",
+                "desc": ""
+            }
+        },
+        "sugar": {
+            "name": "𓋴",
+            "desc": ""
+        },
+        "cake": {
+            "name": "𓎡",
+            "desc": ""
+        },
+        "bed": {
+            "name": "𓃀",
+            "desc": ""
+        },
+        "redstoneRepeater": {
+            "name": "𓂋 𓂋",
+            "desc": ""
+        },
+        "map": {
+            "name": "𓅓",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "𓃭",
+            "desc": ""
+        },
+        "shears": {
+            "name": "𓋴",
+            "desc": ""
+        }
+    },
+    "stat": {
+        "generalButton": "𓎼 𓃀",
+        "blocksButton": "𓃀 𓃀",
+        "itemsButton": "𓇋 𓃀",
+        "used": "𓅱 𓋴",
+        "mined": "𓅓 𓇋",
+        "depleted": "𓂧 𓊪",
+        "crafted": "𓎡 𓂋",
+        "startGame": "𓋴 𓎼",
+        "createWorld": "𓎡 𓅱",
+        "loadWorld": "𓃭 𓅱",
+        "joinMultiplayer": "𓆓 𓅓",
+        "leaveGame": "𓃭 𓎼",
+        "playOneMinute": "𓊪 𓅓",
+        "walkOneCm": "𓅱 𓎡",
+        "fallOneCm": "𓆑 𓎡",
+        "swimOneCm": "𓋴 𓎡",
+        "flyOneCm": "𓆑 𓃭",
+        "climbOneCm": "𓎡 𓃭",
+        "diveOneCm": "𓂧 𓃭",
+        "minecartOneCm": "𓅓 𓎡",
+        "boatOneCm": "𓃀 𓎡",
+        "pigOneCm": "𓊪 𓎡",
+        "jump": "𓆓 𓅓",
+        "drop": "𓂧 𓂋",
+        "damageDealt": "𓂧 𓂧",
+        "damageTaken": "𓂧 𓏏",
+        "deaths": "𓂧 𓏏",
+        "mobKills": "𓅓 𓎡",
+        "playerKills": "𓊪 𓎡",
+        "fishCaught": "𓆑 𓎡",
+        "mineBlock": "{0} 𓅓",
+        "craftItem": "{0} 𓎡",
+        "useItem": "{0} 𓅱",
+        "breakItem": "{0} 𓃀"
+    },
+    "achievements.title": "𓄿𓎡",
+    "achievement": {
+        "get": "𓎼 𓏏",
+        "taken": "𓏏 𓎡",
+        "challenge": "𓎡 𓃭",
+        "unlocked": "𓅱 𓃭",
+        "locked": "𓃭 𓎡",
+        "requires": "{0} 𓂋",
+        "openInventory": {
+            "title": "𓅱 𓇋",
+            "desc": "𓅱 𓇋 𓂧"
+        },
+        "mineWood": {
+            "title": "𓅓 𓅱",
+            "desc": "𓅓 𓅱 𓂧"
+        },
+        "buildWorkBench": {
+            "title": "𓃀 𓅱",
+            "desc": "𓃀 𓅱 𓂧"
+        },
+        "buildPickaxe": {
+            "title": "𓃀 𓊪",
+            "desc": "𓃀 𓊪 𓂧"
+        },
+        "buildFurnace": {
+            "title": "𓃀 𓆑",
+            "desc": "𓃀 𓆑 𓂧"
+        },
+        "acquireIron": {
+            "title": "𓄿 𓇋",
+            "desc": "𓄿 𓇋 𓂧"
+        },
+        "buildHoe": {
+            "title": "𓃀 𓉔",
+            "desc": "𓃀 𓉔 𓂧"
+        },
+        "makeBread": {
+            "title": "𓅓 𓃀",
+            "desc": "𓅓 𓃀 𓂧"
+        },
+        "bakeCake": {
+            "title": "𓃀 𓎡",
+            "desc": "𓃀 𓎡 𓂧"
+        },
+        "buildBetterPickaxe": {
+            "title": "𓃀 𓊪",
+            "desc": "𓃀 𓊪 𓂧"
+        },
+        "cookFish": {
+            "title": "𓎡 𓆑",
+            "desc": "𓎡 𓆑 𓂧"
+        },
+        "onARail": {
+            "title": "𓅱 𓂋",
+            "desc": "𓅱 𓂋 𓂧"
+        },
+        "buildSword": {
+            "title": "𓃀 𓋴",
+            "desc": "𓃀 𓋴 𓂧"
+        },
+        "killEnemy": {
+            "title": "𓎡 𓇋",
+            "desc": "𓎡 𓇋 𓂧"
+        },
+        "killCow": {
+            "title": "𓎡 𓎡",
+            "desc": "𓎡 𓎡 𓂧"
+        },
+        "flyPig": {
+            "title": "𓆑 𓊪",
+            "desc": "𓆑 𓊪 𓂧"
+        }
+    },
+    "credits": {
+        "version": "𓃀 𓋴 𓀀 %1$s",
+        "description": "𓄿 𓃀 𓎡 𓂋",
+        "github": "𓎼 𓉔",
+        "author": "𓄿 𓃀 𓂋",
+        "libs": "𓃭 𓃀",
+        "slik": "𓋴 𓃭",
+        "imgui": "𓇋 𓅓",
+        "sfml": "𓋴 𓆑",
+        "sixlabors": "𓋴 𓇋",
+        "translations": "𓏏 𓂋"
+    }
+}
