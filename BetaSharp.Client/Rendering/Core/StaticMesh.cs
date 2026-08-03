@@ -1,3 +1,4 @@
+using BetaSharp.Client.Rendering.Core.OpenGL;
 using Silk.NET.OpenGL;
 using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
@@ -20,47 +21,55 @@ internal static unsafe class TessellatorVertexLayout
     private const int ColorOffset = 20;
     private const int NormalOffset = 24;
 
-    public static void Bind(bool hasTexture, bool hasColor, bool hasNormals)
+    /// <summary>
+    ///     Sets the vertex attribute pointers on the currently bound VAO and buffer.
+    /// </summary>
+    /// <remarks>
+    ///     The caller binds its own VAO and VBO first, then calls this to configure which offsets
+    ///     map to which shader inputs. The same attribute locations the FixedFunctionShader expects:
+    ///     0=position, 1=color, 2=texcoord, 3=normal.
+    /// </remarks>
+    public static void Bind(GL gl, bool hasTexture, bool hasColor, bool hasNormals)
     {
         if (hasTexture)
         {
-            GLManager.GL.TexCoordPointer(2, GLEnum.Float, Stride, (void*)TextureOffset);
-            GLManager.GL.EnableClientState(GLEnum.TextureCoordArray);
+            gl.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, Stride, (void*)TextureOffset);
+            gl.EnableVertexAttribArray(2);
         }
 
         if (hasColor)
         {
-            GLManager.GL.ColorPointer(4, ColorPointerType.UnsignedByte, Stride, (void*)ColorOffset);
-            GLManager.GL.EnableClientState(GLEnum.ColorArray);
+            gl.VertexAttribPointer(1, 4, VertexAttribPointerType.UnsignedByte, true, Stride, (void*)ColorOffset);
+            gl.EnableVertexAttribArray(1);
         }
 
         if (hasNormals)
         {
-            GLManager.GL.NormalPointer(NormalPointerType.Byte, Stride, (void*)NormalOffset);
-            GLManager.GL.EnableClientState(GLEnum.NormalArray);
+            gl.VertexAttribPointer(3, 3, VertexAttribPointerType.Byte, true, Stride, (void*)NormalOffset);
+            gl.EnableVertexAttribArray(3);
         }
 
-        GLManager.GL.VertexPointer(3, GLEnum.Float, Stride, (void*)PositionOffset);
-        GLManager.GL.EnableClientState(GLEnum.VertexArray);
+        gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, Stride, (void*)PositionOffset);
+        gl.EnableVertexAttribArray(0);
     }
 
-    public static void Unbind(bool hasTexture, bool hasColor, bool hasNormals)
+    public static void Unbind(GL gl, bool hasTexture, bool hasColor, bool hasNormals)
     {
-        GLManager.GL.DisableClientState(GLEnum.VertexArray);
+        gl.DisableVertexAttribArray(0);
 
         if (hasTexture)
         {
-            GLManager.GL.DisableClientState(GLEnum.TextureCoordArray);
+            gl.DisableVertexAttribArray(2);
         }
 
         if (hasColor)
         {
-            GLManager.GL.DisableClientState(GLEnum.ColorArray);
+            gl.DisableVertexAttribArray(1);
         }
 
         if (hasNormals)
         {
-            GLManager.GL.DisableClientState(GLEnum.NormalArray);
+            gl.DisableVertexAttribArray(3);
         }
     }
 }
@@ -90,6 +99,7 @@ public sealed class StaticMesh(
     bool hasNormals) : IDisposable
 {
     private uint _buffer = buffer;
+    private uint _vao;
 
     public void Draw()
     {
@@ -98,14 +108,30 @@ public sealed class StaticMesh(
             return;
         }
 
-        GLManager.GL.BindBuffer(GLEnum.ArrayBuffer, _buffer);
-        TessellatorVertexLayout.Bind(hasTexture, hasColor, hasNormals);
+        GL gl = ((LegacyGL)GLManager.GL).SilkGL;
+
+        if (_vao == 0)
+        {
+            _vao = gl.GenVertexArray();
+            gl.BindVertexArray(_vao);
+            gl.BindBuffer(BufferTargetARB.ArrayBuffer, _buffer);
+            TessellatorVertexLayout.Bind(gl, hasTexture, hasColor, hasNormals);
+            gl.BindVertexArray(0);
+        }
+
+        gl.BindVertexArray(_vao);
         GLManager.GL.DrawArrays(drawMode, 0, (uint)vertexCount);
-        TessellatorVertexLayout.Unbind(hasTexture, hasColor, hasNormals);
+        gl.BindVertexArray(0);
     }
 
     public void Dispose()
     {
+        if (_vao != 0)
+        {
+            ((LegacyGL)GLManager.GL).SilkGL.DeleteVertexArray(_vao);
+            _vao = 0;
+        }
+
         if (_buffer == 0)
         {
             return;

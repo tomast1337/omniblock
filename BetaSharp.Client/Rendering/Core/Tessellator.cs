@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Util;
 using Silk.NET.OpenGL;
 using Color = BetaSharp.Client.UI.Colors.Color;
@@ -136,6 +137,7 @@ public class Tessellator
     public static readonly Tessellator instance = new(2097152);
     public bool IsDrawing { get; private set; }
     private readonly uint[] _vboIds;
+    private readonly uint _tessVao;
     private int vboIndex;
     private readonly int vboCount = 10;
     private readonly int bufferSize;
@@ -154,6 +156,7 @@ public class Tessellator
         rawBuffer = new int[bufferSize];
         _vboIds = new uint[vboCount];
         GLManager.GL.GenBuffers((uint)vboCount, _vboIds);
+        _tessVao = GLManager.GL.GenVertexArray();
     }
 
     public Tessellator()
@@ -257,9 +260,12 @@ public class Tessellator
                     GLManager.GL.BufferData(GLEnum.ArrayBuffer, (nuint)(rawBufferIndex * 4), ptr, GLEnum.StreamDraw);
                 }
 
-                TessellatorVertexLayout.Bind(hasTexture, hasColor, hasNormals);
+                GL silkGl = ((LegacyGL)GLManager.GL).SilkGL;
+                silkGl.BindVertexArray(_tessVao);
+                TessellatorVertexLayout.Bind(silkGl, hasTexture, hasColor, hasNormals);
                 GLManager.GL.DrawArrays(SubmittedDrawMode, 0, (uint)vertexCount);
-                TessellatorVertexLayout.Unbind(hasTexture, hasColor, hasNormals);
+                TessellatorVertexLayout.Unbind(silkGl, hasTexture, hasColor, hasNormals);
+                silkGl.BindVertexArray(0);
             }
 
             reset();
