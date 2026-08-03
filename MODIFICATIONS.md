@@ -78,3 +78,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-03 — refactor(textures): remove unused block texture constants (Nicolas Vyčas Nery; `1b154d1b8965df10af03e5030d40852be5fa3f6d`)
 - 2026-08-03 — refactor(rendering): state the pipeline for the sky, clouds and block highlight (Nicolas Vyčas Nery; `5722084036d99ca0e85d2d1e7270c58f9d0d23d2`)
 - 2026-08-03 — fix(rendering): enable blending for the soft-cloud composite instead of inheriting it (Nicolas Vyčas Nery; `c627abe15b814d749ce19dbe04d8bfa83bd2ef61`)
+- 2026-08-03 — refactor(rendering): state the pipeline for the virtual cursor (Nicolas Vyčas Nery; `6a1309fb2aae0ad42481b341c287ea76e0292edb`)

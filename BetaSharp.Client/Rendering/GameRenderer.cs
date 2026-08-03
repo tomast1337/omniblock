@@ -835,9 +835,10 @@ public class GameRenderer
         if (_client.IsControllerMode && _client.CurrentScreen?.IsEditingSlider != true)
         {
             GLManager.GL.Disable(GLEnum.Lighting);
-            GLManager.GL.Disable(GLEnum.DepthTest);
-            GLManager.GL.Enable(GLEnum.Blend);
-            GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+
+            // Drawn over the screen the pointer is pointing at, so it takes no part in the depth
+            // buffer at all. Same state as everything else in the interface.
+            GLManager.State.ApplyUntrusted(RenderState.Interface);
             GLManager.GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
 
             TextureHandle textureId = _client.TextureManager.GetTextureId("/gui/Pointer.png");
@@ -858,8 +859,10 @@ public class GameRenderer
             tess.addVertexWithUV(x, y, zLevel, 0.0, 0.0);
             tess.draw();
 
-            GLManager.GL.Disable(GLEnum.Blend);
-            GLManager.GL.Enable(GLEnum.DepthTest);
+            // Nothing reads what is left here: FramebufferManager.End runs next and sets its own
+            // blending and depth test. Leaving the interface state named is still better than
+            // leaving half of it toggled back.
+            GLManager.State.ApplyUntrusted(RenderState.Interface);
         }
     }
 
