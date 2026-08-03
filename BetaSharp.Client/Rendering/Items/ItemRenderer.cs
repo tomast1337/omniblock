@@ -205,49 +205,6 @@ public class ItemRenderer : EntityRenderer
         }
     }
 
-    public void renderItemOverlayIntoGUI(TextRenderer fontRenderer, TextureManager textureManager, ItemStack stack, int x, int y)
-    {
-        if (stack != null)
-        {
-            if (stack.Count > 1)
-            {
-                string stackText = "" + stack.Count;
-                GLManager.GL.Disable(GLEnum.Lighting);
-                GLManager.GL.Disable(GLEnum.DepthTest);
-                fontRenderer.DrawStringWithShadow(stackText, x + 19 - 2 - fontRenderer.GetStringWidth(stackText), y + 6 + 3, Color.White);
-            }
-
-            if (stack.isDamaged())
-            {
-                int barWidth = (int)MathHelper.Round(13.0D - stack.getDamage2() * 13.0D / stack.getMaxDamage());
-                int damageColor = (int)MathHelper.Round(255.0D - stack.getDamage2() * 255.0D / stack.getMaxDamage());
-                GLManager.GL.Disable(GLEnum.Lighting);
-                GLManager.GL.Disable(GLEnum.DepthTest);
-                GLManager.GL.Disable(GLEnum.Texture2D);
-                Tessellator tessellator = Tessellator.instance;
-                int barColor = 255 - damageColor << 16 | damageColor << 8;
-                int backgroundColor = (255 - damageColor) / 4 << 16 | 16128;
-                renderQuad(tessellator, x + 2, y + 13, 13, 2, 0);
-                renderQuad(tessellator, x + 2, y + 13, 12, 1, backgroundColor);
-                renderQuad(tessellator, x + 2, y + 13, barWidth, 1, barColor);
-                GLManager.GL.Enable(GLEnum.Texture2D);
-                GLManager.GL.Color4(1.0F, 1.0F, 1.0F, 1.0F);
-            }
-
-        }
-    }
-
-    private void renderQuad(Tessellator tessellator, int x, int y, int width, int height, int color)
-    {
-        tessellator.startDrawingQuads();
-        tessellator.setColorOpaque_I(color);
-        tessellator.addVertex(x + 0, y + 0, 0.0D);
-        tessellator.addVertex(x + 0, y + height, 0.0D);
-        tessellator.addVertex(x + width, y + height, 0.0D);
-        tessellator.addVertex(x + width, y + 0, 0.0D);
-        tessellator.draw();
-    }
-
     public void renderTexturedQuad(int x, int y, int u, int v, int width, int height)
     {
         float z = 0.0F;

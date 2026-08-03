@@ -38,8 +38,7 @@ public class EntityFootStepFX : EntityFX
         float renderZ = (float)(Z - interpPosZ);
         float brightness = World.Lighting.GetLuminance(MathHelper.Floor(X), MathHelper.Floor(Y), MathHelper.Floor(Z));
         textureManager.BindTexture(textureManager.GetTextureId("/misc/footprint.png"));
-        GLManager.GL.Enable(GLEnum.Blend);
-        GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+        GLManager.State.ApplyUntrusted(RenderState.Entity with { Blend = BlendMode.Alpha });
         t.startDrawingQuads();
         t.setColorRGBA_F(brightness, brightness, brightness, alpha);
         t.addVertexWithUV((double)(renderX - footprintSize), (double)renderY, (double)(renderZ + footprintSize), 0.0D, 1.0D);
@@ -47,7 +46,7 @@ public class EntityFootStepFX : EntityFX
         t.addVertexWithUV((double)(renderX + footprintSize), (double)renderY, (double)(renderZ - footprintSize), 1.0D, 0.0D);
         t.addVertexWithUV((double)(renderX - footprintSize), (double)renderY, (double)(renderZ - footprintSize), 0.0D, 0.0D);
         t.draw();
-        GLManager.GL.Disable(GLEnum.Blend);
+        GLManager.State.ApplyUntrusted(RenderState.Entity);
         GLManager.GL.Enable(GLEnum.Lighting);
     }
 
