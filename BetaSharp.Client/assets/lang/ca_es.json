@@ -1,0 +1,1372 @@
+{
+    "gui": {
+        "joinServer": "Uneix-te al servidor",
+        "rename": "Reanomena",
+        "edit": "Edita",
+        "refresh": "Actualitza",
+        "done": "Fet",
+        "cancel": "Cancel·la",
+        "delete": "Suprimeix",
+        "toMenu": "Torna a la pantalla principal",
+        "up": "Amunt",
+        "down": "Avall",
+        "yes": "Sí",
+        "no": "No",
+        "connect": "Connecta",
+        "directConnect": "Connexió directa",
+        "addServer": "Afegeix un servidor",
+        "create": "Crea",
+        "customize": "Personalitza",
+        "achievements": "Assoliments",
+        "stats": "Estadístiques",
+        "container": {
+            "crafting": "Fabricació",
+            "inventory": "Inventari",
+            "dispenser": "Dispensador",
+            "furnace": "Forn",
+            "tip": {
+                "move": "Mou",
+                "quickMove": "Moviment ràpid",
+                "takeHalf": "Agafa'n la meitat",
+                "place": "Col·loca",
+                "placeOne": "Col·loca'n un"
+            }
+        }
+    },
+    "menu": {
+        "singleplayer": "Un jugador",
+        "multiplayer": "Multijugador",
+        "texturePacks": "Packs de textures",
+        "options": "Opcions...",
+        "language": "Idioma",
+        "quit": "Surt del joc",
+        "credits": "Crèdits",
+        "sendFeedback": "Envia comentaris",
+        "reportBugs": "Informa d'errors",
+        "saveAndQuitToTitle": "Desa i surt al títol",
+        "disconnect": "Desconnecta"
+    },
+    "selectWorld": {
+        "title": "Selecciona un món",
+        "empty": "buit",
+        "world": "Món",
+        "select": "Juga al món seleccionat",
+        "create": "Crea un món nou",
+        "createDemo": "Juga a un nou món de demostració",
+        "deleteQuestion": "Segur que vols suprimir aquest món?",
+        "deleteWarning": "es perdrà per sempre! (Molt de temps!)",
+        "renameTitle": "Reanomena el món",
+        "conversion": "S'ha de convertir!",
+        "newWorld": "Món nou",
+        "enterName": "Nom del món",
+        "resultFolder": "Es desarà a:",
+        "enterSeed": "Llavor pel generador del món",
+        "seedInfo": "Deixa-ho en blanc per a una llavor aleatòria",
+        "selectWorldType": "Selecciona el tipus de món",
+        "worldType": "Tipus de món",
+        "customize": "Personalitza",
+        "moreWorldOptions": "Més opcions del món...",
+        "type": {
+            "default": {
+                "title": "Per defecte",
+                "description": "El món estàndard de Minecraft."
+            },
+            "flat": {
+                "title": "Pla",
+                "description": "Un món completament pla."
+            },
+            "sky": {
+                "title": "Cel",
+                "description": "Un món flotant al cel."
+            }
+        }
+    },
+    "newWorld": {
+        "customize": {
+            "superflatWorld": {
+                "title": "Personalitza el món superpla"
+            },
+            "removeLayer": "Elimina la capa",
+            "presets": "Preajustos",
+            "height": "Alçada",
+            "unknown": "???"
+        }
+    },
+    "world": {
+        "world": "Món",
+        "unsupportedFormat": "Format no compatible!"
+    },
+    "multiplayer": {
+        "title": "Juga en multijugador",
+        "betasharpServer": "Servidor BetaSharp",
+        "info1": "El multijugador de Minecraft no està acabat,",
+        "info2": "però hi ha algunes proves inicials amb errors.",
+        "ipinfo": "Introdueix la IP d'un servidor per connectar-t'hi:",
+        "deleteQuestion": "Segur que vols suprimir aquest servidor?",
+        "deleteWarning": "es perdrà per sempre! (Molt de temps!)",
+        "downloadingTerrain": "S'està descarregant el terreny",
+        "stopSleeping": "Lleva't del llit",
+        "editServerTitle": "Edita la informació del servidor",
+        "addServerTitle": "Afegeix informació del servidor",
+        "serverName": "Nom del servidor",
+        "serverAddress": "Adreça del servidor"
+    },
+    "loading": {
+        "loadingLevel": "S'està carregant el nivell",
+        "startingServer": "S'està iniciant el servidor...",
+        "preparingSpawnArea": "S'està preparant l'àrea d'aparició"
+    },
+    "achievements": {
+        "title": "Assoliments"
+    },
+    "gameover": {
+        "title": "Fi de la partida!",
+        "score": "Puntuació",
+        "respawn": "Reapareix",
+        "titleMenu": "Menú principal"
+    },
+    "gamemenu": {
+        "title": "Menú del joc",
+        "backToGame": "Torna al joc"
+    },
+    "sign": {
+        "title": "Edita el missatge del rètol:",
+        "done": "Fet"
+    },
+    "stats": {
+        "title": "Estadístiques",
+        "general": "General",
+        "blocks": {
+            "name": "Blocs",
+            "mined": "Minats",
+            "crafted": "Fabricats",
+            "used": "Utilitzats"
+        },
+        "items": {
+            "name": "Objectes",
+            "broken": "Trencats",
+            "crafted": "Fabricats",
+            "used": "Utilitzats"
+        },
+        "item": "Objecte"
+    },
+    "connect": {
+        "connecting": "S'està connectant al servidor...",
+        "authorizing": "S'està iniciant la sessió...",
+        "failed": "No s'ha pogut connectar al servidor"
+    },
+    "disconnect": {
+        "genericReason": "{0}",
+        "disconnected": "Desconnectat pel servidor",
+        "lost": "S'ha perdut la connexió",
+        "kicked": "T'han expulsat de la partida",
+        "timeout": "S'ha esgotat el temps d'espera",
+        "closed": "S'ha tancat la connexió",
+        "loginFailed": "No s'ha pogut iniciar la sessió",
+        "quitting": "S'està sortint",
+        "endOfStream": "Fi de la transmissió",
+        "overflow": "Desbordament de la memòria intermèdia"
+    },
+    "options": {
+        "off": "DESACTIVAT",
+        "on": "ACTIVAT",
+        "disabled": "Desactivat",
+        "title": "Opcions",
+        "controls": "Controls...",
+        "keyboardControls": "Controls de teclat...",
+        "controllerSettings": "Configuració del comandament...",
+        "controllerType": "Tipus de comandament",
+        "video": {
+            "text": "Configuració de vídeo...",
+            "performance": "Rendiment",
+            "display": "Pantalla"
+        },
+        "uiSettings": "Configuració de la interfície...",
+        "audioSettings": "Configuració d'àudio...",
+        "audioTitle": "Configuració d'àudio",
+        "videoTitle": "Configuració de vídeo",
+        "language": "Idioma...",
+        "anisoLevel": "Nivell anisotròpic",
+        "music": "Música",
+        "sound": "So",
+        "invertMouse": "Inverteix el ratolí",
+        "alternateBlocks": "Blocs alternatius",
+        "chunkFade": "Esvaïment de chunks",
+        "sensitivity": {
+            "text": "Sensibilitat",
+            "controllerText": "Sensibilitat del comandament",
+            "min": "*badall*",
+            "max": "HIPERVELOCITAT!!!"
+        },
+        "renderDistance": {
+            "text": "Distància de renderitzat",
+            "chunks": "Chunks",
+            "tiny": "Mínima",
+            "short": "Curta",
+            "normal": "Normal",
+            "far": "Llunyana"
+        },
+        "viewBobbing": "Balanceig de la vista",
+        "ao": "Il·luminació suau",
+        "anaglyph": "Anàglif 3D",
+        "framerateLimit": "Rendiment",
+        "difficulty": {
+            "text": "Dificultat",
+            "peaceful": "Pacífica",
+            "easy": "Fàcil",
+            "normal": "Normal",
+            "hard": "Difícil"
+        },
+        "graphics": {
+            "text": "Gràfics",
+            "fancy": "Detallats",
+            "fast": "Ràpids"
+        },
+        "cloudsQuality": {
+            "text": "Qualitat dels núvols",
+            "off": "Sense núvols",
+            "legacy": "Núvols antics",
+            "shader": "Ombrejador"
+        },
+        "softClouds": {
+            "text": "Núvols suaus"
+        },
+        "guiScale": {
+            "text": "Mida de la interfície",
+            "auto": "Automàtica",
+            "small": "Petita",
+            "normal": "Normal",
+            "large": "Gran"
+        },
+        "chatScale": {
+            "text": "Mida del xat"
+        },
+        "chatWidth": {
+            "text": "Amplada del xat"
+        },
+        "advancedOpengl": "OpenGL avançat",
+        "fps": {
+            "text": "FPS",
+            "maxFps": "FPS màxims",
+            "unlimited": "Il·limitats"
+        },
+        "showCoordinates": "Mostra les coordenades",
+        "uiCursors": "Cursors de la interfície",
+        "gamma": "Gamma",
+        "vSync": "Sincronització vertical",
+        "mipmaps": "Mipmaps",
+        "menuMusic": "Música del menú",
+        "msaa": "MSAA",
+        "fov": "Camp de visió (FOV)",
+        "movement": {
+            "text": "Moviment"
+        },
+        "view": {
+            "text": "Vista"
+        },
+        "other": {
+            "text": "Altres"
+        },
+        "editBindings": "Edita les assignacions...",
+        "resetBindings": "Restableix les assignacions...",
+        "controllerBindings": "Assignacions del comandament",
+        "shader": {
+            "text": "Opcions de l'ombrejador",
+            "chunkVert": {
+                "text": "Món",
+                "WavyLeavesStrength": "Força de les fulles ondulants",
+                "WavyLeavesSpeed": "Velocitat de les fulles ondulants",
+                "WavyPlantStrength": "Força de les plantes ondulants",
+                "WavyPlantSpeed": "Velocitat de les plantes ondulants",
+                "WavyPlantMode": "Mode de les plantes ondulants"
+            },
+            "cloud": {
+                "text": "Núvols",
+                "minParallax": "Paral·laxi mínima",
+                "maxParallax": "Paral·laxi màxima",
+                "minGradient": "Gradient mínim",
+                "maxGradient": "Gradient màxim",
+                "cloudHeight": "Alçada dels núvols",
+                "shadow": "Color de l'ombra",
+                "smoothWidth": "Amplada del suavitzat",
+                "smoothSamples": "Mostres del suavitzat",
+                "closeFade": "Esvaïment de prop",
+                "smoothTop": "Suavitzat superior",
+                "smoothEdge": "Suavitzat de la vora",
+                "smoothBottom": "Suavitzat inferior",
+                "smoothBottomTopDown": "Suavitzat inferior (de dalt a baix)"
+            },
+            "ui": {
+                "text": "Interfície",
+                "darkMode": "Mode fosc"
+            },
+            "preset": {
+                "text": "Preajust",
+                "disabled": "Desactivat",
+                "default": "Per defecte",
+                "custom": "Personalitzat",
+                "2d": "2D",
+                "3d": "3D",
+                "low": "Baix",
+                "medium": "Mitjà",
+                "high": "Alt",
+                "ultra": "Ultra"
+            }
+        }
+    },
+    "performance": {
+        "max": "FPS màxims",
+        "balanced": "Equilibrat",
+        "powersaver": "Estalvi d'energia"
+    },
+    "controls": {
+        "title": "Controls"
+    },
+    "key": {
+        "forward": "Endavant",
+        "left": "Esquerra",
+        "back": "Enrere",
+        "right": "Dreta",
+        "jump": "Salta",
+        "inventory": "Inventari",
+        "drop": "Deixa anar",
+        "chat": "Xat",
+        "fog": "Activa/Desactiva la boira",
+        "sneak": "Sigil",
+        "playerlist": "Llista de jugadors",
+        "zoom": "Zoom",
+        "hotbarLeft": "Barra d'accés ràpid (esquerra)",
+        "hotbarRight": "Barra d'accés ràpid (dreta)",
+        "pickBlock": "Tria el bloc",
+        "camera": "Mode de càmera",
+        "pause": "Pausa"
+    },
+    "texturePack": {
+        "openFolder": "Obre la carpeta de packs de textures",
+        "title": "Selecciona un pack de textures",
+        "folderInfo": "(Col·loca els arxius de packs de textures aquí)"
+    },
+    "tile": {
+        "tallgrass": {
+            "name": "Herba alta",
+            "desc": ""
+        },
+        "stone": {
+            "name": "Pedra",
+            "desc": ""
+        },
+        "grass": {
+            "name": "Bloc d'herba",
+            "desc": ""
+        },
+        "dirt": {
+            "name": "Terra",
+            "desc": ""
+        },
+        "stonebrick": {
+            "name": "Llamborda",
+            "desc": ""
+        },
+        "wood": {
+            "name": "Taulons de fusta",
+            "desc": ""
+        },
+        "sapling": {
+            "name": "Esqueix",
+            "desc": ""
+        },
+        "bedrock": {
+            "name": "Roca base",
+            "desc": ""
+        },
+        "water": {
+            "name": "Aigua",
+            "desc": ""
+        },
+        "lava": {
+            "name": "Lava",
+            "desc": ""
+        },
+        "sand": {
+            "name": "Sorra",
+            "desc": ""
+        },
+        "sandStone": {
+            "name": "Gres"
+        },
+        "gravel": {
+            "name": "Grava",
+            "desc": ""
+        },
+        "oreGold": {
+            "name": "Mena d'or",
+            "desc": ""
+        },
+        "oreIron": {
+            "name": "Mena de ferro",
+            "desc": ""
+        },
+        "oreCoal": {
+            "name": "Mena de carbó",
+            "desc": ""
+        },
+        "log": {
+            "name": "Tronc",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "Fulles",
+            "desc": ""
+        },
+        "sponge": {
+            "name": "Esponja",
+            "desc": ""
+        },
+        "glass": {
+            "name": "Vidre",
+            "desc": ""
+        },
+        "cloth": {
+            "name": "Llana",
+            "desc": "",
+            "black": {
+                "name": "Llana negra",
+                "desc": ""
+            },
+            "red": {
+                "name": "Llana vermella",
+                "desc": ""
+            },
+            "green": {
+                "name": "Llana verda",
+                "desc": ""
+            },
+            "brown": {
+                "name": "Llana marró",
+                "desc": ""
+            },
+            "blue": {
+                "name": "Llana blava",
+                "desc": ""
+            },
+            "purple": {
+                "name": "Llana lila",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "Llana cian",
+                "desc": ""
+            },
+            "silver": {
+                "name": "Llana gris clar",
+                "desc": ""
+            },
+            "gray": {
+                "name": "Llana gris",
+                "desc": ""
+            },
+            "pink": {
+                "name": "Llana rosa",
+                "desc": ""
+            },
+            "lime": {
+                "name": "Llana verd llima",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "Llana groga",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "Llana blau cel",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "Llana magenta",
+                "desc": ""
+            },
+            "orange": {
+                "name": "Llana taronja",
+                "desc": ""
+            },
+            "white": {
+                "name": "Llana",
+                "desc": ""
+            }
+        },
+        "flower": {
+            "name": "Flor",
+            "desc": ""
+        },
+        "rose": {
+            "name": "Rosa",
+            "desc": ""
+        },
+        "mushroom": {
+            "name": "Xampinyó",
+            "desc": ""
+        },
+        "blockGold": {
+            "name": "Bloc d'or",
+            "desc": ""
+        },
+        "blockIron": {
+            "name": "Bloc de ferro",
+            "desc": ""
+        },
+        "stoneSlab": {
+            "stone": {
+                "name": "Llosa de pedra",
+                "desc": ""
+            },
+            "sand": {
+                "name": "Llosa de gres",
+                "desc": ""
+            },
+            "wood": {
+                "name": "Llosa de fusta",
+                "desc": ""
+            },
+            "cobble": {
+                "name": "Llosa de pedra",
+                "desc": ""
+            }
+        },
+        "brick": {
+            "name": "Maons",
+            "desc": ""
+        },
+        "tnt": {
+            "name": "Dinamita",
+            "desc": ""
+        },
+        "bookshelf": {
+            "name": "Llibreria",
+            "desc": ""
+        },
+        "stoneMoss": {
+            "name": "Pedra molsosa",
+            "desc": ""
+        },
+        "obsidian": {
+            "name": "Obsidiana",
+            "desc": ""
+        },
+        "torch": {
+            "name": "Torxa",
+            "desc": ""
+        },
+        "fire": {
+            "name": "Foc",
+            "desc": ""
+        },
+        "mobSpawner": {
+            "name": "Generador de monstres",
+            "desc": ""
+        },
+        "stairsWood": {
+            "name": "Escales de fusta",
+            "desc": ""
+        },
+        "chest": {
+            "name": "Cofre",
+            "desc": ""
+        },
+        "redstoneDust": {
+            "name": "Pols de redstone",
+            "desc": ""
+        },
+        "oreDiamond": {
+            "name": "Mena de diamant",
+            "desc": ""
+        },
+        "blockDiamond": {
+            "name": "Bloc de diamant",
+            "desc": ""
+        },
+        "workbench": {
+            "name": "Taula de treball",
+            "desc": ""
+        },
+        "crops": {
+            "name": "Cultius",
+            "desc": ""
+        },
+        "farmland": {
+            "name": "Terra de conreu",
+            "desc": ""
+        },
+        "furnace": {
+            "name": "Forn",
+            "desc": ""
+        },
+        "sign": {
+            "name": "Rètol",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "Porta de fusta",
+            "desc": ""
+        },
+        "ladder": {
+            "name": "Escala de mà",
+            "desc": ""
+        },
+        "rail": {
+            "name": "Raïl",
+            "desc": ""
+        },
+        "goldenRail": {
+            "name": "Raïl propulsor",
+            "desc": ""
+        },
+        "detectorRail": {
+            "name": "Raïl detector",
+            "desc": ""
+        },
+        "stairsStone": {
+            "name": "Escales de pedra",
+            "desc": ""
+        },
+        "lever": {
+            "name": "Palanca",
+            "desc": ""
+        },
+        "pressurePlate": {
+            "name": "Placa de pressió",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "Porta de ferro",
+            "desc": ""
+        },
+        "oreRedstone": {
+            "name": "Mena de redstone",
+            "desc": ""
+        },
+        "notGate": {
+            "name": "Torxa de redstone",
+            "desc": ""
+        },
+        "button": {
+            "name": "Botó",
+            "desc": ""
+        },
+        "snow": {
+            "name": "Neu",
+            "desc": ""
+        },
+        "ice": {
+            "name": "Gel",
+            "desc": ""
+        },
+        "cactus": {
+            "name": "Cactus",
+            "desc": ""
+        },
+        "clay": {
+            "name": "Argila",
+            "desc": ""
+        },
+        "reeds": {
+            "name": "Canya de sucre",
+            "desc": ""
+        },
+        "jukebox": {
+            "name": "Tocadiscos",
+            "desc": ""
+        },
+        "fence": {
+            "name": "Tanca",
+            "desc": ""
+        },
+        "pumpkin": {
+            "name": "Carabassa",
+            "desc": ""
+        },
+        "litpumpkin": {
+            "name": "Llanterna de carabassa",
+            "desc": ""
+        },
+        "hellrock": {
+            "name": "Pedra del Nether",
+            "desc": ""
+        },
+        "hellsand": {
+            "name": "Sorra d'ànimes",
+            "desc": ""
+        },
+        "lightgem": {
+            "name": "Pedra lluminosa",
+            "desc": ""
+        },
+        "portal": {
+            "name": "Portal",
+            "desc": ""
+        },
+        "oreLapis": {
+            "name": "Mena de lapislàtzuli",
+            "desc": ""
+        },
+        "blockLapis": {
+            "name": "Bloc de lapislàtzuli",
+            "desc": ""
+        },
+        "dispenser": {
+            "name": "Dispensador",
+            "desc": ""
+        },
+        "musicBlock": {
+            "name": "Bloc musical",
+            "desc": ""
+        },
+        "cake": {
+            "name": "Pastís",
+            "desc": ""
+        },
+        "bed": {
+            "name": "Llit",
+            "desc": "",
+            "occupied": "Aquest llit està ocupat",
+            "noSleep": "Només pots dormir a la nit",
+            "notValid": "El teu llit no es troba o està obstruït"
+        },
+        "lockedchest": {
+            "name": "Cofre tancat",
+            "desc": ""
+        },
+        "trapdoor": {
+            "name": "Trampeta",
+            "desc": ""
+        },
+        "web": {
+            "name": "Teranyina",
+            "desc": ""
+        },
+        "stonebricksmooth": {
+            "name": "Maons de pedra",
+            "desc": ""
+        },
+        "pistonBase": {
+            "name": "Pistó",
+            "desc": ""
+        },
+        "pistonStickyBase": {
+            "name": "Pistó enganxifós",
+            "desc": ""
+        }
+    },
+    "item": {
+        "shovelIron": {
+            "name": "Pala de ferro",
+            "desc": ""
+        },
+        "pickaxeIron": {
+            "name": "Pic de ferro",
+            "desc": ""
+        },
+        "hatchetIron": {
+            "name": "Destral de ferro",
+            "desc": ""
+        },
+        "flintAndSteel": {
+            "name": "Encenedor",
+            "desc": ""
+        },
+        "apple": {
+            "name": "Poma",
+            "desc": ""
+        },
+        "cookie": {
+            "name": "Galeta",
+            "desc": ""
+        },
+        "bow": {
+            "name": "Arc",
+            "desc": ""
+        },
+        "arrow": {
+            "name": "Fletxa",
+            "desc": ""
+        },
+        "coal": {
+            "name": "Carbó",
+            "desc": ""
+        },
+        "charcoal": {
+            "name": "Carbó vegetal",
+            "desc": ""
+        },
+        "diamond": {
+            "name": "Diamant",
+            "desc": ""
+        },
+        "ingotIron": {
+            "name": "Lingot de ferro",
+            "desc": ""
+        },
+        "ingotGold": {
+            "name": "Lingot d'or",
+            "desc": ""
+        },
+        "swordIron": {
+            "name": "Espasa de ferro",
+            "desc": ""
+        },
+        "swordWood": {
+            "name": "Espasa de fusta",
+            "desc": ""
+        },
+        "shovelWood": {
+            "name": "Pala de fusta",
+            "desc": ""
+        },
+        "pickaxeWood": {
+            "name": "Pic de fusta",
+            "desc": ""
+        },
+        "hatchetWood": {
+            "name": "Destral de fusta",
+            "desc": ""
+        },
+        "swordStone": {
+            "name": "Espasa de pedra",
+            "desc": ""
+        },
+        "shovelStone": {
+            "name": "Pala de pedra",
+            "desc": ""
+        },
+        "pickaxeStone": {
+            "name": "Pic de pedra",
+            "desc": ""
+        },
+        "hatchetStone": {
+            "name": "Destral de pedra",
+            "desc": ""
+        },
+        "swordDiamond": {
+            "name": "Espasa de diamant",
+            "desc": ""
+        },
+        "shovelDiamond": {
+            "name": "Pala de diamant",
+            "desc": ""
+        },
+        "pickaxeDiamond": {
+            "name": "Pic de diamant",
+            "desc": ""
+        },
+        "hatchetDiamond": {
+            "name": "Destral de diamant",
+            "desc": ""
+        },
+        "stick": {
+            "name": "Pal",
+            "desc": ""
+        },
+        "bowl": {
+            "name": "Bol",
+            "desc": ""
+        },
+        "mushroomStew": {
+            "name": "Estofat de xampinyons",
+            "desc": ""
+        },
+        "swordGold": {
+            "name": "Espasa d'or",
+            "desc": ""
+        },
+        "shovelGold": {
+            "name": "Pala d'or",
+            "desc": ""
+        },
+        "pickaxeGold": {
+            "name": "Pic d'or",
+            "desc": ""
+        },
+        "hatchetGold": {
+            "name": "Destral d'or",
+            "desc": ""
+        },
+        "string": {
+            "name": "Fil",
+            "desc": ""
+        },
+        "feather": {
+            "name": "Ploma",
+            "desc": ""
+        },
+        "gunpowder": {
+            "name": "Pólvora",
+            "desc": ""
+        },
+        "hoeWood": {
+            "name": "Aixada de fusta",
+            "desc": ""
+        },
+        "hoeStone": {
+            "name": "Aixada de pedra",
+            "desc": ""
+        },
+        "hoeIron": {
+            "name": "Aixada de ferro",
+            "desc": ""
+        },
+        "hoeDiamond": {
+            "name": "Aixada de diamant",
+            "desc": ""
+        },
+        "hoeGold": {
+            "name": "Aixada d'or",
+            "desc": ""
+        },
+        "seeds": {
+            "name": "Llavors",
+            "desc": ""
+        },
+        "wheat": {
+            "name": "Blat",
+            "desc": ""
+        },
+        "bread": {
+            "name": "Pa",
+            "desc": ""
+        },
+        "helmetLeather": {
+            "name": "Casc de cuir",
+            "desc": ""
+        },
+        "chestplateLeather": {
+            "name": "Pectoral de cuir",
+            "desc": ""
+        },
+        "leggingsLeather": {
+            "name": "Pantalons de cuir",
+            "desc": ""
+        },
+        "bootsLeather": {
+            "name": "Botes de cuir",
+            "desc": ""
+        },
+        "helmetChain": {
+            "name": "Casc de cota de malla",
+            "desc": ""
+        },
+        "chestplateChain": {
+            "name": "Pectoral de cota de malla",
+            "desc": ""
+        },
+        "leggingsChain": {
+            "name": "Pantalons de cota de malla",
+            "desc": ""
+        },
+        "bootsChain": {
+            "name": "Botes de cota de malla",
+            "desc": ""
+        },
+        "helmetIron": {
+            "name": "Casc de ferro",
+            "desc": ""
+        },
+        "chestplateIron": {
+            "name": "Pectoral de ferro",
+            "desc": ""
+        },
+        "leggingsIron": {
+            "name": "Pantalons de ferro",
+            "desc": ""
+        },
+        "bootsIron": {
+            "name": "Botes de ferro",
+            "desc": ""
+        },
+        "helmetDiamond": {
+            "name": "Casc de diamant",
+            "desc": ""
+        },
+        "chestplateDiamond": {
+            "name": "Pectoral de diamant",
+            "desc": ""
+        },
+        "leggingsDiamond": {
+            "name": "Pantalons de diamant",
+            "desc": ""
+        },
+        "bootsDiamond": {
+            "name": "Botes de diamant",
+            "desc": ""
+        },
+        "helmetGold": {
+            "name": "Casc d'or",
+            "desc": ""
+        },
+        "chestplateGold": {
+            "name": "Pectoral d'or",
+            "desc": ""
+        },
+        "leggingsGold": {
+            "name": "Pantalons d'or",
+            "desc": ""
+        },
+        "bootsGold": {
+            "name": "Botes d'or",
+            "desc": ""
+        },
+        "flint": {
+            "name": "Sílex",
+            "desc": ""
+        },
+        "porkchopRaw": {
+            "name": "Carn de porc crua",
+            "desc": ""
+        },
+        "porkchopCooked": {
+            "name": "Carn de porc cuinada",
+            "desc": ""
+        },
+        "painting": {
+            "name": "Quadre",
+            "desc": ""
+        },
+        "appleGold": {
+            "name": "Poma daurada",
+            "desc": ""
+        },
+        "sign": {
+            "name": "Rètol",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "Porta de fusta",
+            "desc": ""
+        },
+        "bucket": {
+            "name": "Galleda",
+            "desc": ""
+        },
+        "bucketWater": {
+            "name": "Galleda d'aigua",
+            "desc": ""
+        },
+        "bucketLava": {
+            "name": "Galleda de lava",
+            "desc": ""
+        },
+        "minecart": {
+            "name": "Vagoneta",
+            "desc": ""
+        },
+        "saddle": {
+            "name": "Muntura",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "Porta de ferro",
+            "desc": ""
+        },
+        "redstone": {
+            "name": "Redstone",
+            "desc": ""
+        },
+        "snowball": {
+            "name": "Bola de neu",
+            "desc": ""
+        },
+        "boat": {
+            "name": "Barca",
+            "desc": ""
+        },
+        "leather": {
+            "name": "Cuir",
+            "desc": ""
+        },
+        "milk": {
+            "name": "Llet",
+            "desc": ""
+        },
+        "brick": {
+            "name": "Maó",
+            "desc": ""
+        },
+        "clay": {
+            "name": "Argila",
+            "desc": ""
+        },
+        "sugarCanes": {
+            "name": "Canya de sucre",
+            "desc": ""
+        },
+        "paper": {
+            "name": "Paper",
+            "desc": ""
+        },
+        "book": {
+            "name": "Llibre",
+            "desc": ""
+        },
+        "slimeball": {
+            "name": "Bola de llim",
+            "desc": ""
+        },
+        "minecartChest": {
+            "name": "Vagoneta amb cofre",
+            "desc": ""
+        },
+        "minecartFurnace": {
+            "name": "Vagoneta amb forn",
+            "desc": ""
+        },
+        "egg": {
+            "name": "Ou",
+            "desc": ""
+        },
+        "compass": {
+            "name": "Brúixola",
+            "desc": ""
+        },
+        "fishingRod": {
+            "name": "Canya de pescar",
+            "desc": ""
+        },
+        "clock": {
+            "name": "Rellotge",
+            "desc": ""
+        },
+        "yellowDust": {
+            "name": "Pols de pedra lluminosa",
+            "desc": ""
+        },
+        "fishRaw": {
+            "name": "Peix cru",
+            "desc": ""
+        },
+        "fishCooked": {
+            "name": "Peix cuinat",
+            "desc": ""
+        },
+        "record": {
+            "name": "Disc de música",
+            "desc": ""
+        },
+        "bone": {
+            "name": "Os",
+            "desc": ""
+        },
+        "dyePowder": {
+            "black": {
+                "name": "Sac de tinta",
+                "desc": ""
+            },
+            "red": {
+                "name": "Vermell de rosa",
+                "desc": ""
+            },
+            "green": {
+                "name": "Verd de cactus",
+                "desc": ""
+            },
+            "brown": {
+                "name": "Grans de cacau",
+                "desc": ""
+            },
+            "blue": {
+                "name": "Lapislàtzuli",
+                "desc": ""
+            },
+            "purple": {
+                "name": "Tint lila",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "Tint cian",
+                "desc": ""
+            },
+            "silver": {
+                "name": "Tint gris clar",
+                "desc": ""
+            },
+            "gray": {
+                "name": "Tint gris",
+                "desc": ""
+            },
+            "pink": {
+                "name": "Tint rosa",
+                "desc": ""
+            },
+            "lime": {
+                "name": "Tint verd llima",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "Groc de dent de lleó",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "Tint blau cel",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "Tint magenta",
+                "desc": ""
+            },
+            "orange": {
+                "name": "Tint taronja",
+                "desc": ""
+            },
+            "white": {
+                "name": "Farina d'os",
+                "desc": ""
+            }
+        },
+        "sugar": {
+            "name": "Sucre",
+            "desc": ""
+        },
+        "cake": {
+            "name": "Pastís",
+            "desc": ""
+        },
+        "bed": {
+            "name": "Llit",
+            "desc": ""
+        },
+        "redstoneRepeater": {
+            "name": "Repetidor de redstone",
+            "desc": ""
+        },
+        "map": {
+            "name": "Mapa",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "Fulles",
+            "desc": ""
+        },
+        "shears": {
+            "name": "Tisores",
+            "desc": ""
+        }
+    },
+    "stat": {
+        "generalButton": "General",
+        "blocksButton": "Blocs",
+        "itemsButton": "Objectes",
+        "used": "Vegades utilitzat",
+        "mined": "Vegades minat",
+        "depleted": "Vegades esgotat",
+        "crafted": "Vegades fabricat",
+        "startGame": "Partides jugades",
+        "createWorld": "Mons jugats",
+        "loadWorld": "Partides carregades",
+        "joinMultiplayer": "Connexions multijugador",
+        "leaveGame": "Partides abandonades",
+        "playOneMinute": "Minuts jugats",
+        "walkOneCm": "Distància caminada",
+        "fallOneCm": "Distància de caiguda",
+        "swimOneCm": "Distància nedada",
+        "flyOneCm": "Distància volada",
+        "climbOneCm": "Distància escalada",
+        "diveOneCm": "Distància bussejant",
+        "minecartOneCm": "Distància en vagoneta",
+        "boatOneCm": "Distància en barca",
+        "pigOneCm": "Distància en porc",
+        "jump": "Salts",
+        "drop": "Objectes deixats anar",
+        "damageDealt": "Dany infligit",
+        "damageTaken": "Dany rebut",
+        "deaths": "Nombre de morts",
+        "mobKills": "Monstres assassinats",
+        "playerKills": "Jugadors assassinats",
+        "fishCaught": "Peixos pescats",
+        "mineBlock": "{0} minats",
+        "craftItem": "{0} fabricats",
+        "useItem": "{0} utilitzats",
+        "breakItem": "{0} esgotats"
+    },
+    "achievements.title": "Assoliments",
+    "achievement": {
+        "get": "Assoliment desbloquejat!",
+        "taken": "Aconseguit!",
+        "challenge": "REPTE",
+        "unlocked": "DESBLOQUEJAT",
+        "locked": "BLOQUEJAT",
+        "requires": "Requereix '{0}'",
+        "openInventory": {
+            "title": "Fent inventari",
+            "desc": "Obre el teu inventari."
+        },
+        "mineWood": {
+            "title": "Aconseguint fusta",
+            "desc": "Colpeja un arbre fins que surti un bloc de fusta"
+        },
+        "buildWorkBench": {
+            "title": "Fent taules",
+            "desc": "Fabrica una taula de treball amb quatre blocs de fusta"
+        },
+        "buildPickaxe": {
+            "title": "Hora de minar!",
+            "desc": "Utilitza taulons i pals per fer un pic"
+        },
+        "buildFurnace": {
+            "title": "Tema candent",
+            "desc": "Construeix un forn amb vuit blocs de pedra"
+        },
+        "acquireIron": {
+            "title": "Adquirint material",
+            "desc": "Fon un lingot de ferro"
+        },
+        "buildHoe": {
+            "title": "Hora de cultivar!",
+            "desc": "Utilitza taulons i pals per fer una aixada"
+        },
+        "makeBread": {
+            "title": "Fes pa",
+            "desc": "Converteix blat en pa"
+        },
+        "bakeCake": {
+            "title": "La mentida",
+            "desc": "Blat, sucre, llet i ous!"
+        },
+        "buildBetterPickaxe": {
+            "title": "Aconseguint una millora",
+            "desc": "Construeix un pic millor"
+        },
+        "cookFish": {
+            "title": "Peix deliciós",
+            "desc": "Pesca i cuina peix!"
+        },
+        "onARail": {
+            "title": "Sobre rails",
+            "desc": "Viatja en vagoneta almenys 1 km des d'on has començat "
+        },
+        "buildSword": {
+            "title": "Hora d'atacar!",
+            "desc": "Utilitza taulons i pals per fer una espasa"
+        },
+        "killEnemy": {
+            "title": "Caçador de monstres",
+            "desc": "Ataca i destrueix un monstre"
+        },
+        "killCow": {
+            "title": "Bolcador de vaques",
+            "desc": "Recull una mica de cuir"
+        },
+        "flyPig": {
+            "title": "Quan els porcs volin",
+            "desc": "Fes volar un porc per un penya-segat"
+        }
+    },
+    "credits": {
+        "version": "BetaSharp Versió %1$s",
+        "description": "Una versió millorada de Minecraft Beta 1.7.3, escrita en C#.",
+        "github": "A GitHub",
+        "author": "Fet per Fazin85",
+        "libs": "Biblioteques",
+        "slik": "Slik.NET - Gràfics",
+        "imgui": "ImGui - Interfície de depuració",
+        "sfml": "SFML.NET - Àudio",
+        "sixlabors": "SixLabors - Fonts, processament d'imatges",
+        "translations": "Crèdits de traduccions"
+    }
+}

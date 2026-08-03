@@ -1,0 +1,1372 @@
+{
+    "gui": {
+        "joinServer": "Tham gia máy chủ",
+        "rename": "Đổi tên",
+        "edit": "Chỉnh sửa",
+        "refresh": "Làm mới",
+        "done": "Xong",
+        "cancel": "Hủy",
+        "delete": "Xóa",
+        "toMenu": "Quay lại màn hình chính",
+        "up": "Lên",
+        "down": "Xuống",
+        "yes": "Có",
+        "no": "Không",
+        "connect": "Kết nối",
+        "directConnect": "Kết nối trực tiếp",
+        "addServer": "Thêm máy chủ",
+        "create": "Tạo",
+        "customize": "Tùy chỉnh",
+        "achievements": "Thành tựu",
+        "stats": "Thống kê",
+        "container": {
+            "crafting": "Chế tạo",
+            "inventory": "Túi đồ",
+            "dispenser": "Máy phân phát",
+            "furnace": "Lò nung",
+            "tip": {
+                "move": "Di chuyển",
+                "quickMove": "Di chuyển nhanh",
+                "takeHalf": "Lấy một nửa",
+                "place": "Đặt",
+                "placeOne": "Đặt một"
+            }
+        }
+    },
+    "menu": {
+        "singleplayer": "Chơi đơn",
+        "multiplayer": "Chơi mạng",
+        "texturePacks": "Gói tài nguyên",
+        "options": "Tùy chọn...",
+        "language": "Ngôn ngữ",
+        "quit": "Thoát Game",
+        "credits": "Ghi nhận",
+        "sendFeedback": "Gửi phản hồi",
+        "reportBugs": "Báo lỗi",
+        "saveAndQuitToTitle": "Lưu và quay lại màn hình chính",
+        "disconnect": "Ngắt kết nối"
+    },
+    "selectWorld": {
+        "title": "Chọn Thế giới",
+        "empty": "trống",
+        "world": "Thế giới",
+        "select": "Chơi Thế giới đã chọn",
+        "create": "Tạo Thế giới mới",
+        "createDemo": "Chơi Thế giới Demo mới",
+        "deleteQuestion": "Bạn có chắc chắn muốn xóa thế giới này không?",
+        "deleteWarning": "sẽ bị mất vĩnh viễn! (Rất lâu đấy!)",
+        "renameTitle": "Đổi tên Thế giới",
+        "conversion": "Cần phải chuyển đổi!",
+        "newWorld": "Thế giới mới",
+        "enterName": "Tên Thế giới",
+        "resultFolder": "Sẽ được lưu trong:",
+        "enterSeed": "Mã hạt giống cho Trình tạo Thế giới",
+        "seedInfo": "Để trống nếu muốn mã hạt giống ngẫu nhiên",
+        "selectWorldType": "Chọn loại Thế giới",
+        "worldType": "Loại Thế giới",
+        "customize": "Tùy chỉnh",
+        "moreWorldOptions": "Thêm tùy chọn Thế giới...",
+        "type": {
+            "default": {
+                "title": "Mặc định",
+                "description": "Thế giới Minecraft tiêu chuẩn."
+            },
+            "flat": {
+                "title": "Siêu phẳng",
+                "description": "Một thế giới hoàn toàn phẳng."
+            },
+            "sky": {
+                "title": "Bầu trời",
+                "description": "Một thế giới trôi nổi trên bầu trời."
+            }
+        }
+    },
+    "newWorld": {
+        "customize": {
+            "superflatWorld": {
+                "title": "Tùy chỉnh Thế giới siêu phẳng"
+            },
+            "removeLayer": "Xóa lớp",
+            "presets": "Cài đặt sẵn",
+            "height": "Chiều cao",
+            "unknown": "???"
+        }
+    },
+    "world": {
+        "world": "Thế giới",
+        "unsupportedFormat": "Định dạng không được hỗ trợ!"
+    },
+    "multiplayer": {
+        "title": "Chơi mạng",
+        "betasharpServer": "Máy chủ BetaSharp",
+        "info1": "Chế độ chơi mạng Minecraft hiện chưa hoàn thiện, nhưng",
+        "info2": "đang có một số đợt thử nghiệm sớm kèm theo lỗi.",
+        "ipinfo": "Nhập IP của máy chủ để kết nối:",
+        "deleteQuestion": "Bạn có chắc chắn muốn xóa máy chủ này không?",
+        "deleteWarning": "sẽ bị mất vĩnh viễn! (Rất lâu đấy!)",
+        "downloadingTerrain": "Đang tải địa hình",
+        "stopSleeping": "Rời khỏi giường",
+        "editServerTitle": "Chỉnh sửa thông tin Máy chủ",
+        "addServerTitle": "Thêm thông tin Máy chủ",
+        "serverName": "Tên Máy chủ",
+        "serverAddress": "Địa chỉ Máy chủ"
+    },
+    "loading": {
+        "loadingLevel": "Đang tải màn chơi",
+        "startingServer": "Đang khởi động máy chủ...",
+        "preparingSpawnArea": "Đang chuẩn bị khu vực hồi sinh"
+    },
+    "achievements": {
+        "title": "Thành tựu"
+    },
+    "gameover": {
+        "title": "Kết thúc Trò chơi!",
+        "score": "Điểm",
+        "respawn": "Hồi sinh",
+        "titleMenu": "Màn hình chính"
+    },
+    "gamemenu": {
+        "title": "Menu Trò chơi",
+        "backToGame": "Trở lại Trò chơi"
+    },
+    "sign": {
+        "title": "Sửa tin nhắn biển báo:",
+        "done": "Xong"
+    },
+    "stats": {
+        "title": "Thống kê",
+        "general": "Chung",
+        "blocks": {
+            "name": "Khối",
+            "mined": "Đã đào",
+            "crafted": "Đã chế tạo",
+            "used": "Đã dùng"
+        },
+        "items": {
+            "name": "Vật phẩm",
+            "broken": "Đã hỏng",
+            "crafted": "Đã chế tạo",
+            "used": "Đã dùng"
+        },
+        "item": "Vật phẩm"
+    },
+    "connect": {
+        "connecting": "Đang kết nối tới máy chủ...",
+        "authorizing": "Đang đăng nhập...",
+        "failed": "Không thể kết nối tới máy chủ"
+    },
+    "disconnect": {
+        "genericReason": "{0}",
+        "disconnected": "Bị ngắt kết nối bởi Máy chủ",
+        "lost": "Mất kết nối",
+        "kicked": "Bị đá khỏi trò chơi",
+        "timeout": "Hết thời gian chờ",
+        "closed": "Kết nối đã đóng",
+        "loginFailed": "Đăng nhập thất bại",
+        "quitting": "Đang thoát",
+        "endOfStream": "Kết thúc luồng",
+        "overflow": "Tràn bộ đệm"
+    },
+    "options": {
+        "off": "TẮT",
+        "on": "BẬT",
+        "disabled": "Vô hiệu hóa",
+        "title": "Tùy chọn",
+        "controls": "Điều khiển...",
+        "keyboardControls": "Điều khiển Bàn phím...",
+        "controllerSettings": "Cài đặt Bộ điều khiển...",
+        "controllerType": "Loại Bộ điều khiển",
+        "video": {
+            "text": "Cài đặt Video...",
+            "performance": "Hiệu suất",
+            "display": "Hiển thị"
+        },
+        "uiSettings": "Cài đặt UI...",
+        "audioSettings": "Cài đặt Âm thanh...",
+        "audioTitle": "Cài đặt Âm thanh",
+        "videoTitle": "Cài đặt Video",
+        "language": "Ngôn ngữ...",
+        "anisoLevel": "Mức Aniso",
+        "music": "Nhạc",
+        "sound": "Âm thanh",
+        "invertMouse": "Đảo ngược Chuột",
+        "alternateBlocks": "Khối thay thế",
+        "chunkFade": "Làm mờ Chunk",
+        "sensitivity": {
+            "text": "Độ nhạy",
+            "controllerText": "Độ nhạy Bộ điều khiển",
+            "min": "*ngáp*",
+            "max": "TỐC ĐỘ BÀN THỜ!!!"
+        },
+        "renderDistance": {
+            "text": "Tầm nhìn",
+            "chunks": "Chunk",
+            "tiny": "Rất gần",
+            "short": "Gần",
+            "normal": "Bình thường",
+            "far": "Xa"
+        },
+        "viewBobbing": "Lắc lư góc nhìn",
+        "ao": "Ánh sáng mượt",
+        "anaglyph": "3D Anaglyph",
+        "framerateLimit": "Hiệu suất",
+        "difficulty": {
+            "text": "Độ khó",
+            "peaceful": "Bình yên",
+            "easy": "Dễ",
+            "normal": "Bình thường",
+            "hard": "Khó"
+        },
+        "graphics": {
+            "text": "Đồ họa",
+            "fancy": "Đẹp",
+            "fast": "Nhanh"
+        },
+        "cloudsQuality": {
+            "text": "Chất lượng Mây",
+            "off": "Không Mây",
+            "legacy": "Mây cũ",
+            "shader": "Shader"
+        },
+        "softClouds": {
+            "text": "Mây mềm"
+        },
+        "guiScale": {
+            "text": "Tỷ lệ GUI",
+            "auto": "Tự động",
+            "small": "Nhỏ",
+            "normal": "Bình thường",
+            "large": "Lớn"
+        },
+        "chatScale": {
+            "text": "Tỷ lệ Chat"
+        },
+        "chatWidth": {
+            "text": "Chiều rộng Chat"
+        },
+        "advancedOpengl": "OpenGL nâng cao",
+        "fps": {
+            "text": "FPS",
+            "maxFps": "FPS tối đa",
+            "unlimited": "Không giới hạn"
+        },
+        "showCoordinates": "Hiện Tọa độ",
+        "uiCursors": "Con trỏ UI",
+        "gamma": "Độ sáng",
+        "vSync": "Đồng bộ dọc (VSync)",
+        "mipmaps": "Mipmap",
+        "menuMusic": "Nhạc Menu",
+        "msaa": "MSAA",
+        "fov": "Góc nhìn (FOV)",
+        "movement": {
+            "text": "Di chuyển"
+        },
+        "view": {
+            "text": "Góc nhìn"
+        },
+        "other": {
+            "text": "Khác"
+        },
+        "editBindings": "Chỉnh sửa Phím...",
+        "resetBindings": "Đặt lại Phím...",
+        "controllerBindings": "Phím Bộ điều khiển",
+        "shader": {
+            "text": "Tùy chọn Shader",
+            "chunkVert": {
+                "text": "Thế giới",
+                "WavyLeavesStrength": "Độ gợn của Lá",
+                "WavyLeavesSpeed": "Tốc độ gợn của Lá",
+                "WavyPlantStrength": "Độ gợn của Cây",
+                "WavyPlantSpeed": "Tốc độ gợn của Cây",
+                "WavyPlantMode": "Chế độ gợn của Cây"
+            },
+            "cloud": {
+                "text": "Mây",
+                "minParallax": "Thị sai Tối thiểu",
+                "maxParallax": "Thị sai Tối đa",
+                "minGradient": "Độ dốc Tối thiểu",
+                "maxGradient": "Độ dốc Tối đa",
+                "cloudHeight": "Độ cao Mây",
+                "shadow": "Màu Bóng",
+                "smoothWidth": "Độ rộng Làm mượt",
+                "smoothSamples": "Mẫu Làm mượt",
+                "closeFade": "Làm mờ Gần",
+                "smoothTop": "Làm mượt Đỉnh",
+                "smoothEdge": "Làm mượt Cạnh",
+                "smoothBottom": "Làm mượt Đáy",
+                "smoothBottomTopDown": "Làm mượt Đáy Từ trên xuống"
+            },
+            "ui": {
+                "text": "UI",
+                "darkMode": "Chế độ Tối"
+            },
+            "preset": {
+                "text": "Cài đặt sẵn",
+                "disabled": "Vô hiệu hóa",
+                "default": "Mặc định",
+                "custom": "Tùy chỉnh",
+                "2d": "2D",
+                "3d": "3D",
+                "low": "Thấp",
+                "medium": "Trung bình",
+                "high": "Cao",
+                "ultra": "Siêu cao"
+            }
+        }
+    },
+    "performance": {
+        "max": "FPS tối đa",
+        "balanced": "Cân bằng",
+        "powersaver": "Tiết kiệm pin"
+    },
+    "controls": {
+        "title": "Điều khiển"
+    },
+    "key": {
+        "forward": "Tiến lên",
+        "left": "Sang trái",
+        "back": "Lùi lại",
+        "right": "Sang phải",
+        "jump": "Nhảy",
+        "inventory": "Túi đồ",
+        "drop": "Vứt",
+        "chat": "Chat",
+        "fog": "Bật/Tắt Sương mù",
+        "sneak": "Đi rón rén",
+        "playerlist": "Danh sách người chơi",
+        "zoom": "Phóng to",
+        "hotbarLeft": "Thanh công cụ Trái",
+        "hotbarRight": "Thanh công cụ Phải",
+        "pickBlock": "Chọn Khối",
+        "camera": "Chế độ Máy ảnh",
+        "pause": "Tạm dừng"
+    },
+    "texturePack": {
+        "openFolder": "Mở thư mục gói tài nguyên",
+        "title": "Chọn Gói Tài nguyên",
+        "folderInfo": "(Đặt các tập tin gói tài nguyên tại đây)"
+    },
+    "tile": {
+        "tallgrass": {
+            "name": "Cỏ cao",
+            "desc": ""
+        },
+        "stone": {
+            "name": "Đá",
+            "desc": ""
+        },
+        "grass": {
+            "name": "Khối cỏ",
+            "desc": ""
+        },
+        "dirt": {
+            "name": "Đất",
+            "desc": ""
+        },
+        "stonebrick": {
+            "name": "Đá cuội",
+            "desc": ""
+        },
+        "wood": {
+            "name": "Ván gỗ",
+            "desc": ""
+        },
+        "sapling": {
+            "name": "Chồi cây",
+            "desc": ""
+        },
+        "bedrock": {
+            "name": "Đá nền",
+            "desc": ""
+        },
+        "water": {
+            "name": "Nước",
+            "desc": ""
+        },
+        "lava": {
+            "name": "Dung nham",
+            "desc": ""
+        },
+        "sand": {
+            "name": "Cát",
+            "desc": ""
+        },
+        "sandStone": {
+            "name": "Cát kết"
+        },
+        "gravel": {
+            "name": "Sỏi",
+            "desc": ""
+        },
+        "oreGold": {
+            "name": "Quặng vàng",
+            "desc": ""
+        },
+        "oreIron": {
+            "name": "Quặng sắt",
+            "desc": ""
+        },
+        "oreCoal": {
+            "name": "Quặng than",
+            "desc": ""
+        },
+        "log": {
+            "name": "Gỗ",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "Lá cây",
+            "desc": ""
+        },
+        "sponge": {
+            "name": "Bọt biển",
+            "desc": ""
+        },
+        "glass": {
+            "name": "Kính",
+            "desc": ""
+        },
+        "cloth": {
+            "name": "Len",
+            "desc": "",
+            "black": {
+                "name": "Len đen",
+                "desc": ""
+            },
+            "red": {
+                "name": "Len đỏ",
+                "desc": ""
+            },
+            "green": {
+                "name": "Len xanh lá",
+                "desc": ""
+            },
+            "brown": {
+                "name": "Len nâu",
+                "desc": ""
+            },
+            "blue": {
+                "name": "Len xanh biển",
+                "desc": ""
+            },
+            "purple": {
+                "name": "Len tím",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "Len lục lam",
+                "desc": ""
+            },
+            "silver": {
+                "name": "Len xám nhạt",
+                "desc": ""
+            },
+            "gray": {
+                "name": "Len xám",
+                "desc": ""
+            },
+            "pink": {
+                "name": "Len hồng",
+                "desc": ""
+            },
+            "lime": {
+                "name": "Len xanh lá mạ",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "Len vàng",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "Len xanh nhạt",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "Len đỏ sẫm",
+                "desc": ""
+            },
+            "orange": {
+                "name": "Len cam",
+                "desc": ""
+            },
+            "white": {
+                "name": "Len",
+                "desc": ""
+            }
+        },
+        "flower": {
+            "name": "Hoa",
+            "desc": ""
+        },
+        "rose": {
+            "name": "Hoa hồng",
+            "desc": ""
+        },
+        "mushroom": {
+            "name": "Nấm",
+            "desc": ""
+        },
+        "blockGold": {
+            "name": "Khối Vàng",
+            "desc": ""
+        },
+        "blockIron": {
+            "name": "Khối Sắt",
+            "desc": ""
+        },
+        "stoneSlab": {
+            "stone": {
+                "name": "Phiến đá",
+                "desc": ""
+            },
+            "sand": {
+                "name": "Phiến cát kết",
+                "desc": ""
+            },
+            "wood": {
+                "name": "Phiến gỗ",
+                "desc": ""
+            },
+            "cobble": {
+                "name": "Phiến đá",
+                "desc": ""
+            }
+        },
+        "brick": {
+            "name": "Gạch",
+            "desc": ""
+        },
+        "tnt": {
+            "name": "Thuốc nổ (TNT)",
+            "desc": ""
+        },
+        "bookshelf": {
+            "name": "Kệ sách",
+            "desc": ""
+        },
+        "stoneMoss": {
+            "name": "Đá cuội mọc rêu",
+            "desc": ""
+        },
+        "obsidian": {
+            "name": "Hắc diện thạch",
+            "desc": ""
+        },
+        "torch": {
+            "name": "Đuốc",
+            "desc": ""
+        },
+        "fire": {
+            "name": "Lửa",
+            "desc": ""
+        },
+        "mobSpawner": {
+            "name": "Lồng sinh Quái vật",
+            "desc": ""
+        },
+        "stairsWood": {
+            "name": "Cầu thang gỗ",
+            "desc": ""
+        },
+        "chest": {
+            "name": "Rương",
+            "desc": ""
+        },
+        "redstoneDust": {
+            "name": "Bột đá đỏ",
+            "desc": ""
+        },
+        "oreDiamond": {
+            "name": "Quặng kim cương",
+            "desc": ""
+        },
+        "blockDiamond": {
+            "name": "Khối Kim cương",
+            "desc": ""
+        },
+        "workbench": {
+            "name": "Bàn chế tạo",
+            "desc": ""
+        },
+        "crops": {
+            "name": "Cây trồng",
+            "desc": ""
+        },
+        "farmland": {
+            "name": "Đất trồng trọt",
+            "desc": ""
+        },
+        "furnace": {
+            "name": "Lò nung",
+            "desc": ""
+        },
+        "sign": {
+            "name": "Biển báo",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "Cửa gỗ",
+            "desc": ""
+        },
+        "ladder": {
+            "name": "Thang",
+            "desc": ""
+        },
+        "rail": {
+            "name": "Đường ray",
+            "desc": ""
+        },
+        "goldenRail": {
+            "name": "Đường ray tăng tốc",
+            "desc": ""
+        },
+        "detectorRail": {
+            "name": "Đường ray cảm biến",
+            "desc": ""
+        },
+        "stairsStone": {
+            "name": "Cầu thang đá",
+            "desc": ""
+        },
+        "lever": {
+            "name": "Cần gạt",
+            "desc": ""
+        },
+        "pressurePlate": {
+            "name": "Bàn dẫm",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "Cửa sắt",
+            "desc": ""
+        },
+        "oreRedstone": {
+            "name": "Quặng đá đỏ",
+            "desc": ""
+        },
+        "notGate": {
+            "name": "Đuốc đá đỏ",
+            "desc": ""
+        },
+        "button": {
+            "name": "Nút bấm",
+            "desc": ""
+        },
+        "snow": {
+            "name": "Tuyết",
+            "desc": ""
+        },
+        "ice": {
+            "name": "Băng",
+            "desc": ""
+        },
+        "cactus": {
+            "name": "Xương rồng",
+            "desc": ""
+        },
+        "clay": {
+            "name": "Đất sét",
+            "desc": ""
+        },
+        "reeds": {
+            "name": "Mía",
+            "desc": ""
+        },
+        "jukebox": {
+            "name": "Hộp phát nhạc",
+            "desc": ""
+        },
+        "fence": {
+            "name": "Hàng rào",
+            "desc": ""
+        },
+        "pumpkin": {
+            "name": "Bí ngô",
+            "desc": ""
+        },
+        "litpumpkin": {
+            "name": "Đèn lồng Bí ngô",
+            "desc": ""
+        },
+        "hellrock": {
+            "name": "Đá địa ngục",
+            "desc": ""
+        },
+        "hellsand": {
+            "name": "Cát linh hồn",
+            "desc": ""
+        },
+        "lightgem": {
+            "name": "Đá phát sáng",
+            "desc": ""
+        },
+        "portal": {
+            "name": "Cổng dịch chuyển",
+            "desc": ""
+        },
+        "oreLapis": {
+            "name": "Quặng ngọc lưu ly",
+            "desc": ""
+        },
+        "blockLapis": {
+            "name": "Khối Ngọc lưu ly",
+            "desc": ""
+        },
+        "dispenser": {
+            "name": "Máy phân phát",
+            "desc": ""
+        },
+        "musicBlock": {
+            "name": "Khối nốt nhạc",
+            "desc": ""
+        },
+        "cake": {
+            "name": "Bánh ngọt",
+            "desc": ""
+        },
+        "bed": {
+            "name": "Giường",
+            "desc": "",
+            "occupied": "Giường này đã có người nằm",
+            "noSleep": "Bạn chỉ có thể ngủ vào ban đêm",
+            "notValid": "Giường của bạn đã bị phá hoặc bị cản trở"
+        },
+        "lockedchest": {
+            "name": "Rương bị khóa",
+            "desc": ""
+        },
+        "trapdoor": {
+            "name": "Cửa sập",
+            "desc": ""
+        },
+        "web": {
+            "name": "Mạng nhện",
+            "desc": ""
+        },
+        "stonebricksmooth": {
+            "name": "Gạch đá",
+            "desc": ""
+        },
+        "pistonBase": {
+            "name": "Pít-tông",
+            "desc": ""
+        },
+        "pistonStickyBase": {
+            "name": "Pít-tông dính",
+            "desc": ""
+        }
+    },
+    "item": {
+        "shovelIron": {
+            "name": "Xẻng sắt",
+            "desc": ""
+        },
+        "pickaxeIron": {
+            "name": "Cúp sắt",
+            "desc": ""
+        },
+        "hatchetIron": {
+            "name": "Rìu sắt",
+            "desc": ""
+        },
+        "flintAndSteel": {
+            "name": "Dụng cụ đánh lửa",
+            "desc": ""
+        },
+        "apple": {
+            "name": "Táo",
+            "desc": ""
+        },
+        "cookie": {
+            "name": "Bánh quy",
+            "desc": ""
+        },
+        "bow": {
+            "name": "Cung",
+            "desc": ""
+        },
+        "arrow": {
+            "name": "Mũi tên",
+            "desc": ""
+        },
+        "coal": {
+            "name": "Than",
+            "desc": ""
+        },
+        "charcoal": {
+            "name": "Than củi",
+            "desc": ""
+        },
+        "diamond": {
+            "name": "Kim cương",
+            "desc": ""
+        },
+        "ingotIron": {
+            "name": "Thỏi sắt",
+            "desc": ""
+        },
+        "ingotGold": {
+            "name": "Thỏi vàng",
+            "desc": ""
+        },
+        "swordIron": {
+            "name": "Kiếm sắt",
+            "desc": ""
+        },
+        "swordWood": {
+            "name": "Kiếm gỗ",
+            "desc": ""
+        },
+        "shovelWood": {
+            "name": "Xẻng gỗ",
+            "desc": ""
+        },
+        "pickaxeWood": {
+            "name": "Cúp gỗ",
+            "desc": ""
+        },
+        "hatchetWood": {
+            "name": "Rìu gỗ",
+            "desc": ""
+        },
+        "swordStone": {
+            "name": "Kiếm đá",
+            "desc": ""
+        },
+        "shovelStone": {
+            "name": "Xẻng đá",
+            "desc": ""
+        },
+        "pickaxeStone": {
+            "name": "Cúp đá",
+            "desc": ""
+        },
+        "hatchetStone": {
+            "name": "Rìu đá",
+            "desc": ""
+        },
+        "swordDiamond": {
+            "name": "Kiếm kim cương",
+            "desc": ""
+        },
+        "shovelDiamond": {
+            "name": "Xẻng kim cương",
+            "desc": ""
+        },
+        "pickaxeDiamond": {
+            "name": "Cúp kim cương",
+            "desc": ""
+        },
+        "hatchetDiamond": {
+            "name": "Rìu kim cương",
+            "desc": ""
+        },
+        "stick": {
+            "name": "Gậy",
+            "desc": ""
+        },
+        "bowl": {
+            "name": "Cái bát",
+            "desc": ""
+        },
+        "mushroomStew": {
+            "name": "Súp nấm",
+            "desc": ""
+        },
+        "swordGold": {
+            "name": "Kiếm vàng",
+            "desc": ""
+        },
+        "shovelGold": {
+            "name": "Xẻng vàng",
+            "desc": ""
+        },
+        "pickaxeGold": {
+            "name": "Cúp vàng",
+            "desc": ""
+        },
+        "hatchetGold": {
+            "name": "Rìu vàng",
+            "desc": ""
+        },
+        "string": {
+            "name": "Sợi chỉ",
+            "desc": ""
+        },
+        "feather": {
+            "name": "Lông chim",
+            "desc": ""
+        },
+        "gunpowder": {
+            "name": "Thuốc súng",
+            "desc": ""
+        },
+        "hoeWood": {
+            "name": "Cuốc gỗ",
+            "desc": ""
+        },
+        "hoeStone": {
+            "name": "Cuốc đá",
+            "desc": ""
+        },
+        "hoeIron": {
+            "name": "Cuốc sắt",
+            "desc": ""
+        },
+        "hoeDiamond": {
+            "name": "Cuốc kim cương",
+            "desc": ""
+        },
+        "hoeGold": {
+            "name": "Cuốc vàng",
+            "desc": ""
+        },
+        "seeds": {
+            "name": "Hạt giống",
+            "desc": ""
+        },
+        "wheat": {
+            "name": "Lúa mì",
+            "desc": ""
+        },
+        "bread": {
+            "name": "Bánh mì",
+            "desc": ""
+        },
+        "helmetLeather": {
+            "name": "Mũ da",
+            "desc": ""
+        },
+        "chestplateLeather": {
+            "name": "Áo da",
+            "desc": ""
+        },
+        "leggingsLeather": {
+            "name": "Quần da",
+            "desc": ""
+        },
+        "bootsLeather": {
+            "name": "Ủng da",
+            "desc": ""
+        },
+        "helmetChain": {
+            "name": "Mũ xích",
+            "desc": ""
+        },
+        "chestplateChain": {
+            "name": "Áo xích",
+            "desc": ""
+        },
+        "leggingsChain": {
+            "name": "Quần xích",
+            "desc": ""
+        },
+        "bootsChain": {
+            "name": "Ủng xích",
+            "desc": ""
+        },
+        "helmetIron": {
+            "name": "Mũ sắt",
+            "desc": ""
+        },
+        "chestplateIron": {
+            "name": "Áo sắt",
+            "desc": ""
+        },
+        "leggingsIron": {
+            "name": "Quần sắt",
+            "desc": ""
+        },
+        "bootsIron": {
+            "name": "Ủng sắt",
+            "desc": ""
+        },
+        "helmetDiamond": {
+            "name": "Mũ kim cương",
+            "desc": ""
+        },
+        "chestplateDiamond": {
+            "name": "Áo kim cương",
+            "desc": ""
+        },
+        "leggingsDiamond": {
+            "name": "Quần kim cương",
+            "desc": ""
+        },
+        "bootsDiamond": {
+            "name": "Ủng kim cương",
+            "desc": ""
+        },
+        "helmetGold": {
+            "name": "Mũ vàng",
+            "desc": ""
+        },
+        "chestplateGold": {
+            "name": "Áo vàng",
+            "desc": ""
+        },
+        "leggingsGold": {
+            "name": "Quần vàng",
+            "desc": ""
+        },
+        "bootsGold": {
+            "name": "Ủng vàng",
+            "desc": ""
+        },
+        "flint": {
+            "name": "Đá lửa",
+            "desc": ""
+        },
+        "porkchopRaw": {
+            "name": "Thịt heo sống",
+            "desc": ""
+        },
+        "porkchopCooked": {
+            "name": "Thịt heo chín",
+            "desc": ""
+        },
+        "painting": {
+            "name": "Tranh vẽ",
+            "desc": ""
+        },
+        "appleGold": {
+            "name": "Táo vàng",
+            "desc": ""
+        },
+        "sign": {
+            "name": "Biển báo",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "Cửa gỗ",
+            "desc": ""
+        },
+        "bucket": {
+            "name": "Xô",
+            "desc": ""
+        },
+        "bucketWater": {
+            "name": "Xô nước",
+            "desc": ""
+        },
+        "bucketLava": {
+            "name": "Xô dung nham",
+            "desc": ""
+        },
+        "minecart": {
+            "name": "Xe mỏ",
+            "desc": ""
+        },
+        "saddle": {
+            "name": "Yên cưỡi",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "Cửa sắt",
+            "desc": ""
+        },
+        "redstone": {
+            "name": "Đá đỏ",
+            "desc": ""
+        },
+        "snowball": {
+            "name": "Bóng tuyết",
+            "desc": ""
+        },
+        "boat": {
+            "name": "Thuyền",
+            "desc": ""
+        },
+        "leather": {
+            "name": "Da",
+            "desc": ""
+        },
+        "milk": {
+            "name": "Sữa",
+            "desc": ""
+        },
+        "brick": {
+            "name": "Viên gạch",
+            "desc": ""
+        },
+        "clay": {
+            "name": "Đất sét",
+            "desc": ""
+        },
+        "sugarCanes": {
+            "name": "Mía",
+            "desc": ""
+        },
+        "paper": {
+            "name": "Giấy",
+            "desc": ""
+        },
+        "book": {
+            "name": "Sách",
+            "desc": ""
+        },
+        "slimeball": {
+            "name": "Bóng nhầy",
+            "desc": ""
+        },
+        "minecartChest": {
+            "name": "Xe mỏ có rương",
+            "desc": ""
+        },
+        "minecartFurnace": {
+            "name": "Xe mỏ có lò nung",
+            "desc": ""
+        },
+        "egg": {
+            "name": "Trứng",
+            "desc": ""
+        },
+        "compass": {
+            "name": "La bàn",
+            "desc": ""
+        },
+        "fishingRod": {
+            "name": "Cần câu",
+            "desc": ""
+        },
+        "clock": {
+            "name": "Đồng hồ",
+            "desc": ""
+        },
+        "yellowDust": {
+            "name": "Bột đá phát sáng",
+            "desc": ""
+        },
+        "fishRaw": {
+            "name": "Cá sống",
+            "desc": ""
+        },
+        "fishCooked": {
+            "name": "Cá chín",
+            "desc": ""
+        },
+        "record": {
+            "name": "Đĩa nhạc",
+            "desc": ""
+        },
+        "bone": {
+            "name": "Xương",
+            "desc": ""
+        },
+        "dyePowder": {
+            "black": {
+                "name": "Túi mực",
+                "desc": ""
+            },
+            "red": {
+                "name": "Màu đỏ hoa hồng",
+                "desc": ""
+            },
+            "green": {
+                "name": "Màu xanh xương rồng",
+                "desc": ""
+            },
+            "brown": {
+                "name": "Hạt ca cao",
+                "desc": ""
+            },
+            "blue": {
+                "name": "Ngọc lưu ly",
+                "desc": ""
+            },
+            "purple": {
+                "name": "Thuốc nhuộm tím",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "Thuốc nhuộm lục lam",
+                "desc": ""
+            },
+            "silver": {
+                "name": "Thuốc nhuộm xám nhạt",
+                "desc": ""
+            },
+            "gray": {
+                "name": "Thuốc nhuộm xám",
+                "desc": ""
+            },
+            "pink": {
+                "name": "Thuốc nhuộm hồng",
+                "desc": ""
+            },
+            "lime": {
+                "name": "Thuốc nhuộm xanh lá mạ",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "Màu vàng bồ công anh",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "Thuốc nhuộm xanh nhạt",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "Thuốc nhuộm đỏ sẫm",
+                "desc": ""
+            },
+            "orange": {
+                "name": "Thuốc nhuộm cam",
+                "desc": ""
+            },
+            "white": {
+                "name": "Bột xương",
+                "desc": ""
+            }
+        },
+        "sugar": {
+            "name": "Đường",
+            "desc": ""
+        },
+        "cake": {
+            "name": "Bánh ngọt",
+            "desc": ""
+        },
+        "bed": {
+            "name": "Giường",
+            "desc": ""
+        },
+        "redstoneRepeater": {
+            "name": "Bộ lặp đá đỏ",
+            "desc": ""
+        },
+        "map": {
+            "name": "Bản đồ",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "Lá cây",
+            "desc": ""
+        },
+        "shears": {
+            "name": "Kéo",
+            "desc": ""
+        }
+    },
+    "stat": {
+        "generalButton": "Chung",
+        "blocksButton": "Khối",
+        "itemsButton": "Vật phẩm",
+        "used": "Số lần Dùng",
+        "mined": "Số lần Đào",
+        "depleted": "Số lần Cạn kiệt",
+        "crafted": "Số lần Chế tạo",
+        "startGame": "Số lần chơi",
+        "createWorld": "Số thế giới đã chơi",
+        "loadWorld": "Số bản lưu đã tải",
+        "joinMultiplayer": "Tham gia chơi mạng",
+        "leaveGame": "Số lần thoát game",
+        "playOneMinute": "Số phút đã chơi",
+        "walkOneCm": "Quãng đường Đi bộ",
+        "fallOneCm": "Quãng đường Rơi",
+        "swimOneCm": "Quãng đường Bơi",
+        "flyOneCm": "Quãng đường Bay",
+        "climbOneCm": "Quãng đường Leo trèo",
+        "diveOneCm": "Quãng đường Lặn",
+        "minecartOneCm": "Quãng đường đi Xe mỏ",
+        "boatOneCm": "Quãng đường đi Thuyền",
+        "pigOneCm": "Quãng đường Cưỡi heo",
+        "jump": "Số lần Nhảy",
+        "drop": "Số vật phẩm Vứt",
+        "damageDealt": "Sát thương Gây ra",
+        "damageTaken": "Sát thương Nhận vào",
+        "deaths": "Số lần Chết",
+        "mobKills": "Số Quái vật đã giết",
+        "playerKills": "Số Người chơi đã giết",
+        "fishCaught": "Số Cá câu được",
+        "mineBlock": "Đã đào {0}",
+        "craftItem": "Đã chế tạo {0}",
+        "useItem": "Đã dùng {0}",
+        "breakItem": "Đã làm hỏng {0}"
+    },
+    "achievements.title": "Thành tựu",
+    "achievement": {
+        "get": "Đã đạt Thành tựu!",
+        "taken": "Đã nhận!",
+        "challenge": "THỬ THÁCH",
+        "unlocked": "ĐÃ MỞ KHÓA",
+        "locked": "ĐÃ KHÓA",
+        "requires": "Yêu cầu '{0}'",
+        "openInventory": {
+            "title": "Kiểm tra Túi đồ",
+            "desc": "Mở túi đồ của bạn."
+        },
+        "mineWood": {
+            "title": "Kiếm Gỗ",
+            "desc": "Đấm một cái cây cho đến khi văng ra một khối gỗ"
+        },
+        "buildWorkBench": {
+            "title": "Bàn làm việc",
+            "desc": "Chế tạo một Bàn chế tạo bằng bốn khối ván gỗ"
+        },
+        "buildPickaxe": {
+            "title": "Đến lúc đi Đào mỏ!",
+            "desc": "Dùng ván gỗ và gậy để tạo ra một cái cúp"
+        },
+        "buildFurnace": {
+            "title": "Chủ đề Nóng hổi",
+            "desc": "Xây một cái lò nung từ tám khối đá cuội"
+        },
+        "acquireIron": {
+            "title": "Kiếm Trang bị",
+            "desc": "Nung một thỏi sắt"
+        },
+        "buildHoe": {
+            "title": "Đến giờ Làm nông!",
+            "desc": "Dùng ván gỗ và gậy để chế tạo một cái cuốc"
+        },
+        "makeBread": {
+            "title": "Nướng Bánh mì",
+            "desc": "Biến lúa mì thành bánh mì"
+        },
+        "bakeCake": {
+            "title": "Cú lừa",
+            "desc": "Lúa mì, đường, sữa và trứng!"
+        },
+        "buildBetterPickaxe": {
+            "title": "Nâng cấp nào",
+            "desc": "Chế tạo một chiếc cúp xịn hơn"
+        },
+        "cookFish": {
+            "title": "Cá Ngon",
+            "desc": "Câu và nướng cá!"
+        },
+        "onARail": {
+            "title": "Trên Đường ray",
+            "desc": "Đi chuyển bằng xe mỏ ít nhất 1 km tính từ điểm xuất phát "
+        },
+        "buildSword": {
+            "title": "Tới giờ Tấn công!",
+            "desc": "Dùng ván gỗ và gậy để tạo một thanh kiếm"
+        },
+        "killEnemy": {
+            "title": "Thợ săn Quái vật",
+            "desc": "Tấn công và tiêu diệt một con quái vật"
+        },
+        "killCow": {
+            "title": "Lột da bò",
+            "desc": "Thu thập một ít da"
+        },
+        "flyPig": {
+            "title": "Khi Heo biết bay",
+            "desc": "Cưỡi một con heo rơi xuống một vách đá"
+        }
+    },
+    "credits": {
+        "version": "Phiên bản BetaSharp %1$s",
+        "description": "Một phiên bản nâng cao của Minecraft Beta 1.7.3, viết bằng C#.",
+        "github": "Trên GitHub",
+        "author": "Được tạo bởi Fazin85",
+        "libs": "Thư viện",
+        "slik": "Slik.NET - Đồ họa",
+        "imgui": "ImGui - Giao diện gỡ lỗi (Debug UI)",
+        "sfml": "SFML.NET - Âm thanh",
+        "sixlabors": "SixLabors - Phông chữ, xử lý hình ảnh",
+        "translations": "Ghi nhận Dịch thuật"
+    }
+}

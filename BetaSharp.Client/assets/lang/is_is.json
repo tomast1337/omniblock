@@ -1,0 +1,1372 @@
+{
+    "gui": {
+        "joinServer": "Tengjast netþjóni",
+        "rename": "Endurnefna",
+        "edit": "Breyta",
+        "refresh": "Endurhlaða",
+        "done": "Lokið",
+        "cancel": "Hætta við",
+        "delete": "Eyða",
+        "toMenu": "Til baka á upphafsskjá",
+        "up": "Upp",
+        "down": "Niður",
+        "yes": "Já",
+        "no": "Nei",
+        "connect": "Tengjast",
+        "directConnect": "Bein tenging",
+        "addServer": "Bæta við netþjóni",
+        "create": "Búa til",
+        "customize": "Sérsníða",
+        "achievements": "Afrek",
+        "stats": "Tölfræði",
+        "container": {
+            "crafting": "Smíði",
+            "inventory": "Birgðir",
+            "dispenser": "Skammtari",
+            "furnace": "Ofn",
+            "tip": {
+                "move": "Færa",
+                "quickMove": "Flýtifæra",
+                "takeHalf": "Taka helming",
+                "place": "Setja",
+                "placeOne": "Setja einn"
+            }
+        }
+    },
+    "menu": {
+        "singleplayer": "Einn spilari",
+        "multiplayer": "Fjölspilun",
+        "texturePacks": "Textúrapakkar",
+        "options": "Valkostir...",
+        "language": "Tungumál",
+        "quit": "Hætta leik",
+        "credits": "Höfundar",
+        "sendFeedback": "Senda ábendingu",
+        "reportBugs": "Tilkynna villur",
+        "saveAndQuitToTitle": "Vista og hætta til upphafs",
+        "disconnect": "Aftengjast"
+    },
+    "selectWorld": {
+        "title": "Veldu heim",
+        "empty": "tómt",
+        "world": "Heimur",
+        "select": "Spila valinn heim",
+        "create": "Búa til nýjan heim",
+        "createDemo": "Spila nýjan kynningarheim",
+        "deleteQuestion": "Ertu viss um að þú viljir eyða þessum heimi?",
+        "deleteWarning": "mun tapast að eilífu! (Lengi!)",
+        "renameTitle": "Endurnefna heim",
+        "conversion": "Verður að breyta!",
+        "newWorld": "Nýr heimur",
+        "enterName": "Nafn heims",
+        "resultFolder": "Verður vistað í:",
+        "enterSeed": "Fræ fyrir heimsmyndara",
+        "seedInfo": "Skildu eftir autt fyrir handahófskennt fræ",
+        "selectWorldType": "Veldu gerð heims",
+        "worldType": "Gerð heims",
+        "customize": "Sérsníða",
+        "moreWorldOptions": "Fleiri valkostir...",
+        "type": {
+            "default": {
+                "title": "Sjálfgefið",
+                "description": "Venjulegur Minecraft heimur."
+            },
+            "flat": {
+                "title": "Flatur",
+                "description": "Algjörlega flatur heimur."
+            },
+            "sky": {
+                "title": "Himinn",
+                "description": "Heimur sem flýtur á himni."
+            }
+        }
+    },
+    "newWorld": {
+        "customize": {
+            "superflatWorld": {
+                "title": "Sérsníða ofurflatan heim"
+            },
+            "removeLayer": "Fjarlægja lag",
+            "presets": "Forstillingar",
+            "height": "Hæð",
+            "unknown": "???"
+        }
+    },
+    "world": {
+        "world": "Heimur",
+        "unsupportedFormat": "Óstudd snið!"
+    },
+    "multiplayer": {
+        "title": "Spila fjölspilun",
+        "betasharpServer": "BetaSharp netþjónn",
+        "info1": "Fjölspilun í Minecraft er ekki fullkláruð enn, en það",
+        "info2": "er í gangi einhver ófullkomin frumprófun.",
+        "ipinfo": "Settu inn IP tölu netþjóns til að tengjast:",
+        "deleteQuestion": "Ertu viss um að þú viljir eyða þessum netþjóni?",
+        "deleteWarning": "mun tapast að eilífu! (Lengi!)",
+        "downloadingTerrain": "Sæki landslag",
+        "stopSleeping": "Fara úr rúmi",
+        "editServerTitle": "Breyta upplýsingum netþjóns",
+        "addServerTitle": "Bæta við upplýsingum netþjóns",
+        "serverName": "Nafn netþjóns",
+        "serverAddress": "Vistfang netþjóns"
+    },
+    "loading": {
+        "loadingLevel": "Hleð borði",
+        "startingServer": "Ræsi netþjón...",
+        "preparingSpawnArea": "Undirbý svæði þar sem spilarar byrja"
+    },
+    "achievements": {
+        "title": "Afrek"
+    },
+    "gameover": {
+        "title": "Leik lokið!",
+        "score": "Stig",
+        "respawn": "Endurfæðast",
+        "titleMenu": "Upphafsvalmynd"
+    },
+    "gamemenu": {
+        "title": "Leikjavalmynstur",
+        "backToGame": "Aftur í leik"
+    },
+    "sign": {
+        "title": "Breyta skilaboðum á spjaldi:",
+        "done": "Lokið"
+    },
+    "stats": {
+        "title": "Tölfræði",
+        "general": "Almennt",
+        "blocks": {
+            "name": "Blokkir",
+            "mined": "Nám",
+            "crafted": "Smíðað",
+            "used": "Notað"
+        },
+        "items": {
+            "name": "Hlutir",
+            "broken": "Brotinn",
+            "crafted": "Smíðað",
+            "used": "Notað"
+        },
+        "item": "Hlutur"
+    },
+    "connect": {
+        "connecting": "Tengist netþjóni...",
+        "authorizing": "Skrái inn...",
+        "failed": "Tókst ekki að tengjast netþjóni"
+    },
+    "disconnect": {
+        "genericReason": "{0}",
+        "disconnected": "Aftengdur af netþjóni",
+        "lost": "Tenging rofnaði",
+        "kicked": "Var sparkað úr leik",
+        "timeout": "Tímamörk runnin út",
+        "closed": "Tenging lokuð",
+        "loginFailed": "Tókst ekki að skrá inn",
+        "quitting": "Hætti",
+        "endOfStream": "Straumur endar",
+        "overflow": "Biðminni flæðir yfir"
+    },
+    "options": {
+        "off": "AF",
+        "on": "Á",
+        "disabled": "Óvirkjað",
+        "title": "Valkostir",
+        "controls": "Stýringar...",
+        "keyboardControls": "Lyklaborðsstýringar...",
+        "controllerSettings": "Stillingar stýris...",
+        "controllerType": "Gerð stýris",
+        "video": {
+            "text": "Myndstillingar...",
+            "performance": "Aðköst",
+            "display": "Skjár"
+        },
+        "uiSettings": "Stillingar viðmóts...",
+        "audioSettings": "Hljóðstillingar...",
+        "audioTitle": "Hljóðstillingar",
+        "videoTitle": "Myndstillingar",
+        "language": "Tungumál...",
+        "anisoLevel": "Anisó stig",
+        "music": "Tónlist",
+        "sound": "Hljóð",
+        "invertMouse": "Snúa mús við",
+        "alternateBlocks": "Skiptir blokkum",
+        "chunkFade": "Mýking á bútum",
+        "sensitivity": {
+            "text": "Næmi",
+            "controllerText": "Næmi stýris",
+            "min": "*geispa*",
+            "max": "OFURHRATT!!!"
+        },
+        "renderDistance": {
+            "text": "Sjónmætti",
+            "chunks": "Bútar",
+            "tiny": "Örsmátt",
+            "short": "Stutt",
+            "normal": "Venjulegt",
+            "far": "Langt"
+        },
+        "viewBobbing": "Sveifla sjónarhorni",
+        "ao": "Mjúk lýsing",
+        "anaglyph": "3D anaglyph",
+        "framerateLimit": "Aðköst",
+        "difficulty": {
+            "text": "Erfiðleikar",
+            "peaceful": "Friðsælt",
+            "easy": "Auðvelt",
+            "normal": "Venjulegt",
+            "hard": "Erfitt"
+        },
+        "graphics": {
+            "text": "Grafík",
+            "fancy": "Glæsilegt",
+            "fast": "Fljótt"
+        },
+        "cloudsQuality": {
+            "text": "Gæði skýja",
+            "off": "Engin ský",
+            "legacy": "Gömlu skýin",
+            "shader": "Shader"
+        },
+        "softClouds": {
+            "text": "Mjúk ský"
+        },
+        "guiScale": {
+            "text": "Stærð viðmóts",
+            "auto": "Sjálfvirkt",
+            "small": "Lítið",
+            "normal": "Venjulegt",
+            "large": "Stórt"
+        },
+        "chatScale": {
+            "text": "Stærð spjalls"
+        },
+        "chatWidth": {
+            "text": "Breidd spjalls"
+        },
+        "advancedOpengl": "Ítarlegur OpenGL",
+        "fps": {
+            "text": "FPS",
+            "maxFps": "Hámarks FPS",
+            "unlimited": "Ótakmarkað"
+        },
+        "showCoordinates": "Sýna hnit",
+        "uiCursors": "Viðmótsbendlar",
+        "gamma": "Gamma",
+        "vSync": "Samstilling",
+        "mipmaps": "Mipkort",
+        "menuMusic": "Tónlist í valmynd",
+        "msaa": "MSAA",
+        "fov": "Sjónsvið",
+        "movement": {
+            "text": "Hreyfing"
+        },
+        "view": {
+            "text": "Útsýni"
+        },
+        "other": {
+            "text": "Annað"
+        },
+        "editBindings": "Breyta hnappatengslum...",
+        "resetBindings": "Endurstilla hnappatengsl...",
+        "controllerBindings": "Hnappatengsl stýris",
+        "shader": {
+            "text": "Shader valkostir",
+            "chunkVert": {
+                "text": "Heimur",
+                "WavyLeavesStrength": "Styrkur bylgjandi laufa",
+                "WavyLeavesSpeed": "Hraði bylgjandi laufa",
+                "WavyPlantStrength": "Styrkur bylgjandi jurta",
+                "WavyPlantSpeed": "Hraði bylgjandi jurta",
+                "WavyPlantMode": "Hamur bylgjandi jurta"
+            },
+            "cloud": {
+                "text": "Ský",
+                "minParallax": "Lágmarks hliðrun",
+                "maxParallax": "Hámarks hliðrun",
+                "minGradient": "Lágmarks halli",
+                "maxGradient": "Hámarks halli",
+                "cloudHeight": "Hæð skýja",
+                "shadow": "Skugg litur",
+                "smoothWidth": "Mjúk breidd",
+                "smoothSamples": "Mjúk sýni",
+                "closeFade": "Mýking nálægt",
+                "smoothTop": "Mjúkur toppur",
+                "smoothEdge": "Mjúkur brún",
+                "smoothBottom": "Mjúkur botn",
+                "smoothBottomTopDown": "Mjúkur botn (ofan til neð)"
+            },
+            "ui": {
+                "text": "Viðmót",
+                "darkMode": "Dökkur hamur"
+            },
+            "preset": {
+                "text": "Forstilling",
+                "disabled": "Óvirk",
+                "default": "Sjálfgefið",
+                "custom": "Sérsniðið",
+                "2d": "2D",
+                "3d": "3D",
+                "low": "Lágt",
+                "medium": "Miðlungs",
+                "high": "Hátt",
+                "ultra": "Hámark"
+            }
+        }
+    },
+    "performance": {
+        "max": "Hámarks FPS",
+        "balanced": "Jafnvægi",
+        "powersaver": "Orkusparnaður"
+    },
+    "controls": {
+        "title": "Stýringar"
+    },
+    "key": {
+        "forward": "Áfram",
+        "left": "Vinstri",
+        "back": "Aftur",
+        "right": "Hægri",
+        "jump": "Stökk",
+        "inventory": "Birgðir",
+        "drop": "Sleppa",
+        "chat": "Spjall",
+        "fog": "Víxla þoku",
+        "sneak": "Laumast",
+        "playerlist": "Listi yfir spilara",
+        "zoom": "Aðdráttur",
+        "hotbarLeft": "Verkfærastika vinstri",
+        "hotbarRight": "Verkfærastika hægri",
+        "pickBlock": "Velja blokk",
+        "camera": "Myndavélarhamur",
+        "pause": "Hlé"
+    },
+    "texturePack": {
+        "openFolder": "Opna möppu textúrapakka",
+        "title": "Veldu textúrapakka",
+        "folderInfo": "(Settu textúrapakka skrár hér)"
+    },
+    "tile": {
+        "tallgrass": {
+            "name": "Hávaxið gras",
+            "desc": ""
+        },
+        "stone": {
+            "name": "Steinn",
+            "desc": ""
+        },
+        "grass": {
+            "name": "Gras",
+            "desc": ""
+        },
+        "dirt": {
+            "name": "Mold",
+            "desc": ""
+        },
+        "stonebrick": {
+            "name": "Steinsteypa",
+            "desc": ""
+        },
+        "wood": {
+            "name": "Viðarplankur",
+            "desc": ""
+        },
+        "sapling": {
+            "name": "Planta",
+            "desc": ""
+        },
+        "bedrock": {
+            "name": "Berggrunnur",
+            "desc": ""
+        },
+        "water": {
+            "name": "Vatn",
+            "desc": ""
+        },
+        "lava": {
+            "name": "Hraun",
+            "desc": ""
+        },
+        "sand": {
+            "name": "Sandur",
+            "desc": ""
+        },
+        "sandStone": {
+            "name": "Sandsteinn"
+        },
+        "gravel": {
+            "name": "Möl",
+            "desc": ""
+        },
+        "oreGold": {
+            "name": "Gullgrýti",
+            "desc": ""
+        },
+        "oreIron": {
+            "name": "Járngrýti",
+            "desc": ""
+        },
+        "oreCoal": {
+            "name": "Kolgrýti",
+            "desc": ""
+        },
+        "log": {
+            "name": "Viður",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "Lauf",
+            "desc": ""
+        },
+        "sponge": {
+            "name": "Svampur",
+            "desc": ""
+        },
+        "glass": {
+            "name": "Gler",
+            "desc": ""
+        },
+        "cloth": {
+            "name": "Ull",
+            "desc": "",
+            "black": {
+                "name": "Svart ull",
+                "desc": ""
+            },
+            "red": {
+                "name": "Rauð ull",
+                "desc": ""
+            },
+            "green": {
+                "name": "Græn ull",
+                "desc": ""
+            },
+            "brown": {
+                "name": "Brún ull",
+                "desc": ""
+            },
+            "blue": {
+                "name": "Blá ull",
+                "desc": ""
+            },
+            "purple": {
+                "name": "Fjólublá ull",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "Blágræn ull",
+                "desc": ""
+            },
+            "silver": {
+                "name": "Ljósgrá ull",
+                "desc": ""
+            },
+            "gray": {
+                "name": "Grá ull",
+                "desc": ""
+            },
+            "pink": {
+                "name": "Bleik ull",
+                "desc": ""
+            },
+            "lime": {
+                "name": "Ljósgræn ull",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "Gul ull",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "Ljósblá ull",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "Magenta ull",
+                "desc": ""
+            },
+            "orange": {
+                "name": "Appelsínugul ull",
+                "desc": ""
+            },
+            "white": {
+                "name": "Ull",
+                "desc": ""
+            }
+        },
+        "flower": {
+            "name": "Blóm",
+            "desc": ""
+        },
+        "rose": {
+            "name": "Rós",
+            "desc": ""
+        },
+        "mushroom": {
+            "name": "Sveppur",
+            "desc": ""
+        },
+        "blockGold": {
+            "name": "Gullkloss",
+            "desc": ""
+        },
+        "blockIron": {
+            "name": "Járnkloss",
+            "desc": ""
+        },
+        "stoneSlab": {
+            "stone": {
+                "name": "Steinslá",
+                "desc": ""
+            },
+            "sand": {
+                "name": "Sandsteinsslá",
+                "desc": ""
+            },
+            "wood": {
+                "name": "Viðarslá",
+                "desc": ""
+            },
+            "cobble": {
+                "name": "Steinslá",
+                "desc": ""
+            }
+        },
+        "brick": {
+            "name": "Múrsteinar",
+            "desc": ""
+        },
+        "tnt": {
+            "name": "TNT",
+            "desc": ""
+        },
+        "bookshelf": {
+            "name": "Bókaskápur",
+            "desc": ""
+        },
+        "stoneMoss": {
+            "name": "Mosa steinn",
+            "desc": ""
+        },
+        "obsidian": {
+            "name": "Hrafntinna",
+            "desc": ""
+        },
+        "torch": {
+            "name": "Kerta",
+            "desc": ""
+        },
+        "fire": {
+            "name": "Eldur",
+            "desc": ""
+        },
+        "mobSpawner": {
+            "name": "Skrímslabú",
+            "desc": ""
+        },
+        "stairsWood": {
+            "name": "Viðarstigar",
+            "desc": ""
+        },
+        "chest": {
+            "name": "Kista",
+            "desc": ""
+        },
+        "redstoneDust": {
+            "name": "Rauðsteinsryk",
+            "desc": ""
+        },
+        "oreDiamond": {
+            "name": "Demantsgrýti",
+            "desc": ""
+        },
+        "blockDiamond": {
+            "name": "Demantskloss",
+            "desc": ""
+        },
+        "workbench": {
+            "name": "Smíðaborð",
+            "desc": ""
+        },
+        "crops": {
+            "name": "Ræktun",
+            "desc": ""
+        },
+        "farmland": {
+            "name": "Akur",
+            "desc": ""
+        },
+        "furnace": {
+            "name": "Ofn",
+            "desc": ""
+        },
+        "sign": {
+            "name": "Spjald",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "Viðarhurð",
+            "desc": ""
+        },
+        "ladder": {
+            "name": "Stigi",
+            "desc": ""
+        },
+        "rail": {
+            "name": "Járnbraut",
+            "desc": ""
+        },
+        "goldenRail": {
+            "name": "Orkujárnbraut",
+            "desc": ""
+        },
+        "detectorRail": {
+            "name": "Skynjari járnbraut",
+            "desc": ""
+        },
+        "stairsStone": {
+            "name": "Steinstigar",
+            "desc": ""
+        },
+        "lever": {
+            "name": "Stýripinni",
+            "desc": ""
+        },
+        "pressurePlate": {
+            "name": "Þrýstiplata",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "Járnhurð",
+            "desc": ""
+        },
+        "oreRedstone": {
+            "name": "Rauðsteinsgrýti",
+            "desc": ""
+        },
+        "notGate": {
+            "name": "Rauðsteinskerta",
+            "desc": ""
+        },
+        "button": {
+            "name": "Hnappur",
+            "desc": ""
+        },
+        "snow": {
+            "name": "Snjór",
+            "desc": ""
+        },
+        "ice": {
+            "name": "Ís",
+            "desc": ""
+        },
+        "cactus": {
+            "name": "Kaktus",
+            "desc": ""
+        },
+        "clay": {
+            "name": "Leir",
+            "desc": ""
+        },
+        "reeds": {
+            "name": "Sykurreyr",
+            "desc": ""
+        },
+        "jukebox": {
+            "name": "Hljóðkassi",
+            "desc": ""
+        },
+        "fence": {
+            "name": "Girðing",
+            "desc": ""
+        },
+        "pumpkin": {
+            "name": "Grasker",
+            "desc": ""
+        },
+        "litpumpkin": {
+            "name": "Graskerjaljós",
+            "desc": ""
+        },
+        "hellrock": {
+            "name": "Nethergrýti",
+            "desc": ""
+        },
+        "hellsand": {
+            "name": "Sálarsandur",
+            "desc": ""
+        },
+        "lightgem": {
+            "name": "Glóstein",
+            "desc": ""
+        },
+        "portal": {
+            "name": "Hlið",
+            "desc": ""
+        },
+        "oreLapis": {
+            "name": "Lapis lazuli grýti",
+            "desc": ""
+        },
+        "blockLapis": {
+            "name": "Lapis lazuli kloss",
+            "desc": ""
+        },
+        "dispenser": {
+            "name": "Skammtari",
+            "desc": ""
+        },
+        "musicBlock": {
+            "name": "Nótnakloss",
+            "desc": ""
+        },
+        "cake": {
+            "name": "Kaka",
+            "desc": ""
+        },
+        "bed": {
+            "name": "Rúm",
+            "desc": "",
+            "occupied": "Þetta rúm er upptekið",
+            "noSleep": "Þú getur aðeins sofið á nóttunni",
+            "notValid": "Heimarúmið þitt vantaði eða var lokað"
+        },
+        "lockedchest": {
+            "name": "Læst kista",
+            "desc": ""
+        },
+        "trapdoor": {
+            "name": "Lúga",
+            "desc": ""
+        },
+        "web": {
+            "name": "Köngulóarvefur",
+            "desc": ""
+        },
+        "stonebricksmooth": {
+            "name": "Steinmúrsteinar",
+            "desc": ""
+        },
+        "pistonBase": {
+            "name": "Stimpill",
+            "desc": ""
+        },
+        "pistonStickyBase": {
+            "name": "Víðjóstim pill",
+            "desc": ""
+        }
+    },
+    "item": {
+        "shovelIron": {
+            "name": "Járnskófla",
+            "desc": ""
+        },
+        "pickaxeIron": {
+            "name": "Járnpikka",
+            "desc": ""
+        },
+        "hatchetIron": {
+            "name": "Járnöxi",
+            "desc": ""
+        },
+        "flintAndSteel": {
+            "name": "Eldsteinn og stál",
+            "desc": ""
+        },
+        "apple": {
+            "name": "Epli",
+            "desc": ""
+        },
+        "cookie": {
+            "name": "Smákaka",
+            "desc": ""
+        },
+        "bow": {
+            "name": "Bogi",
+            "desc": ""
+        },
+        "arrow": {
+            "name": "Ör",
+            "desc": ""
+        },
+        "coal": {
+            "name": "Kol",
+            "desc": ""
+        },
+        "charcoal": {
+            "name": "Viðarkol",
+            "desc": ""
+        },
+        "diamond": {
+            "name": "Demantur",
+            "desc": ""
+        },
+        "ingotIron": {
+            "name": "Járnstöng",
+            "desc": ""
+        },
+        "ingotGold": {
+            "name": "Gullstöng",
+            "desc": ""
+        },
+        "swordIron": {
+            "name": "Járnsverð",
+            "desc": ""
+        },
+        "swordWood": {
+            "name": "Viðarsverð",
+            "desc": ""
+        },
+        "shovelWood": {
+            "name": "Viðarskófla",
+            "desc": ""
+        },
+        "pickaxeWood": {
+            "name": "Viðarpikka",
+            "desc": ""
+        },
+        "hatchetWood": {
+            "name": "Viðaröxi",
+            "desc": ""
+        },
+        "swordStone": {
+            "name": "Steinsverð",
+            "desc": ""
+        },
+        "shovelStone": {
+            "name": "Steinskófla",
+            "desc": ""
+        },
+        "pickaxeStone": {
+            "name": "Steinspikka",
+            "desc": ""
+        },
+        "hatchetStone": {
+            "name": "Steinöxi",
+            "desc": ""
+        },
+        "swordDiamond": {
+            "name": "Demantssverð",
+            "desc": ""
+        },
+        "shovelDiamond": {
+            "name": "Demantskófla",
+            "desc": ""
+        },
+        "pickaxeDiamond": {
+            "name": "Demantspikka",
+            "desc": ""
+        },
+        "hatchetDiamond": {
+            "name": "Demantsöxi",
+            "desc": ""
+        },
+        "stick": {
+            "name": "Stafur",
+            "desc": ""
+        },
+        "bowl": {
+            "name": "Skál",
+            "desc": ""
+        },
+        "mushroomStew": {
+            "name": "Sveppasúpa",
+            "desc": ""
+        },
+        "swordGold": {
+            "name": "Gullssverð",
+            "desc": ""
+        },
+        "shovelGold": {
+            "name": "Gullskófla",
+            "desc": ""
+        },
+        "pickaxeGold": {
+            "name": "Gullspikka",
+            "desc": ""
+        },
+        "hatchetGold": {
+            "name": "Gullöxi",
+            "desc": ""
+        },
+        "string": {
+            "name": "Band",
+            "desc": ""
+        },
+        "feather": {
+            "name": "Fjöður",
+            "desc": ""
+        },
+        "gunpowder": {
+            "name": "Krúður",
+            "desc": ""
+        },
+        "hoeWood": {
+            "name": "Viðarhrífa",
+            "desc": ""
+        },
+        "hoeStone": {
+            "name": "Steinhrífa",
+            "desc": ""
+        },
+        "hoeIron": {
+            "name": "Járnhrífa",
+            "desc": ""
+        },
+        "hoeDiamond": {
+            "name": "Demantshrífa",
+            "desc": ""
+        },
+        "hoeGold": {
+            "name": "Gullhrífa",
+            "desc": ""
+        },
+        "seeds": {
+            "name": "Fræ",
+            "desc": ""
+        },
+        "wheat": {
+            "name": "Hveiti",
+            "desc": ""
+        },
+        "bread": {
+            "name": "Brauð",
+            "desc": ""
+        },
+        "helmetLeather": {
+            "name": "Leðurhúfa",
+            "desc": ""
+        },
+        "chestplateLeather": {
+            "name": "Leðurboli",
+            "desc": ""
+        },
+        "leggingsLeather": {
+            "name": "Leðurbuxur",
+            "desc": ""
+        },
+        "bootsLeather": {
+            "name": "Leðurstígvél",
+            "desc": ""
+        },
+        "helmetChain": {
+            "name": "Keðjuhjálmur",
+            "desc": ""
+        },
+        "chestplateChain": {
+            "name": "Keðjuboli",
+            "desc": ""
+        },
+        "leggingsChain": {
+            "name": "Keðjubuxur",
+            "desc": ""
+        },
+        "bootsChain": {
+            "name": "Keðjustígvél",
+            "desc": ""
+        },
+        "helmetIron": {
+            "name": "Járnhjálmur",
+            "desc": ""
+        },
+        "chestplateIron": {
+            "name": "Járnboli",
+            "desc": ""
+        },
+        "leggingsIron": {
+            "name": "Járnbuxur",
+            "desc": ""
+        },
+        "bootsIron": {
+            "name": "Járnstígvél",
+            "desc": ""
+        },
+        "helmetDiamond": {
+            "name": "Demantshjálmur",
+            "desc": ""
+        },
+        "chestplateDiamond": {
+            "name": "Demantsboli",
+            "desc": ""
+        },
+        "leggingsDiamond": {
+            "name": "Demantsbuxur",
+            "desc": ""
+        },
+        "bootsDiamond": {
+            "name": "Demantsstígvél",
+            "desc": ""
+        },
+        "helmetGold": {
+            "name": "Gullhjálmur",
+            "desc": ""
+        },
+        "chestplateGold": {
+            "name": "Gullboli",
+            "desc": ""
+        },
+        "leggingsGold": {
+            "name": "Gullbuxur",
+            "desc": ""
+        },
+        "bootsGold": {
+            "name": "Gullstígvél",
+            "desc": ""
+        },
+        "flint": {
+            "name": "Eldsteinn",
+            "desc": ""
+        },
+        "porkchopRaw": {
+            "name": "Hrátt svínakjöt",
+            "desc": ""
+        },
+        "porkchopCooked": {
+            "name": "Steikt svínakjöt",
+            "desc": ""
+        },
+        "painting": {
+            "name": "Málverk",
+            "desc": ""
+        },
+        "appleGold": {
+            "name": "Gullna epli",
+            "desc": ""
+        },
+        "sign": {
+            "name": "Spjald",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "Viðarhurð",
+            "desc": ""
+        },
+        "bucket": {
+            "name": "Fata",
+            "desc": ""
+        },
+        "bucketWater": {
+            "name": "Vatnsfata",
+            "desc": ""
+        },
+        "bucketLava": {
+            "name": "Hraunsfata",
+            "desc": ""
+        },
+        "minecart": {
+            "name": "Námuvagn",
+            "desc": ""
+        },
+        "saddle": {
+            "name": "Hnakkur",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "Járnhurð",
+            "desc": ""
+        },
+        "redstone": {
+            "name": "Rauðsteinn",
+            "desc": ""
+        },
+        "snowball": {
+            "name": "Snjóbolti",
+            "desc": ""
+        },
+        "boat": {
+            "name": "Bátur",
+            "desc": ""
+        },
+        "leather": {
+            "name": "Leður",
+            "desc": ""
+        },
+        "milk": {
+            "name": "Mjólk",
+            "desc": ""
+        },
+        "brick": {
+            "name": "Múrsteinn",
+            "desc": ""
+        },
+        "clay": {
+            "name": "Leir",
+            "desc": ""
+        },
+        "sugarCanes": {
+            "name": "Sykurreyr",
+            "desc": ""
+        },
+        "paper": {
+            "name": "Pappír",
+            "desc": ""
+        },
+        "book": {
+            "name": "Bók",
+            "desc": ""
+        },
+        "slimeball": {
+            "name": "Slímbolti",
+            "desc": ""
+        },
+        "minecartChest": {
+            "name": "Námuvagn með kistu",
+            "desc": ""
+        },
+        "minecartFurnace": {
+            "name": "Námuvagn með ofni",
+            "desc": ""
+        },
+        "egg": {
+            "name": "Egg",
+            "desc": ""
+        },
+        "compass": {
+            "name": "Áttaviti",
+            "desc": ""
+        },
+        "fishingRod": {
+            "name": "Veiðistöng",
+            "desc": ""
+        },
+        "clock": {
+            "name": "Klukka",
+            "desc": ""
+        },
+        "yellowDust": {
+            "name": "Glósteinsryk",
+            "desc": ""
+        },
+        "fishRaw": {
+            "name": "Hráur fiskur",
+            "desc": ""
+        },
+        "fishCooked": {
+            "name": "Steiktur fiskur",
+            "desc": ""
+        },
+        "record": {
+            "name": "Hljómdiskur",
+            "desc": ""
+        },
+        "bone": {
+            "name": "Bein",
+            "desc": ""
+        },
+        "dyePowder": {
+            "black": {
+                "name": "Blekskál",
+                "desc": ""
+            },
+            "red": {
+                "name": "Rósrauður",
+                "desc": ""
+            },
+            "green": {
+                "name": "Kaktusgrænn",
+                "desc": ""
+            },
+            "brown": {
+                "name": "Kakóbaunir",
+                "desc": ""
+            },
+            "blue": {
+                "name": "Lapis lazuli",
+                "desc": ""
+            },
+            "purple": {
+                "name": "Fjólublátt litarefni",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "Blágrænt litarefni",
+                "desc": ""
+            },
+            "silver": {
+                "name": "Ljósgrátt litarefni",
+                "desc": ""
+            },
+            "gray": {
+                "name": "Grátt litarefni",
+                "desc": ""
+            },
+            "pink": {
+                "name": "Bleikt litarefni",
+                "desc": ""
+            },
+            "lime": {
+                "name": "Ljósgrænt litarefni",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "Fífilgulur",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "Ljósblátt litarefni",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "Magenta litarefni",
+                "desc": ""
+            },
+            "orange": {
+                "name": "Appelsínugult litarefni",
+                "desc": ""
+            },
+            "white": {
+                "name": "Beinamjöl",
+                "desc": ""
+            }
+        },
+        "sugar": {
+            "name": "Sykur",
+            "desc": ""
+        },
+        "cake": {
+            "name": "Kaka",
+            "desc": ""
+        },
+        "bed": {
+            "name": "Rúm",
+            "desc": ""
+        },
+        "redstoneRepeater": {
+            "name": "Rauðsteinsendurvarpi",
+            "desc": ""
+        },
+        "map": {
+            "name": "Kort",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "Lauf",
+            "desc": ""
+        },
+        "shears": {
+            "name": "Klippur",
+            "desc": ""
+        }
+    },
+    "stat": {
+        "generalButton": "Almennt",
+        "blocksButton": "Blokkir",
+        "itemsButton": "Hlutir",
+        "used": "Notað sinnum",
+        "mined": "Nám sinnum",
+        "depleted": "Tæmd sinnum",
+        "crafted": "Smíðað sinnum",
+        "startGame": "Spilað sinnum",
+        "createWorld": "Heimur spilaður",
+        "loadWorld": "Vistun hlaðin",
+        "joinMultiplayer": "Tengingar við fjölspilun",
+        "leaveGame": "Leikjum hætt",
+        "playOneMinute": "Spilaðar mínútur",
+        "walkOneCm": "Genginn vegalengd",
+        "fallOneCm": "Fallin vegalengd",
+        "swimOneCm": "Sundað vegalengd",
+        "flyOneCm": "Flogið vegalengd",
+        "climbOneCm": "Klifrað vegalengd",
+        "diveOneCm": "Kafað vegalengd",
+        "minecartOneCm": "Vegalengd í námuvagni",
+        "boatOneCm": "Vegalengd í báti",
+        "pigOneCm": "Vegalengd á svíni",
+        "jump": "Stökk",
+        "drop": "Hlutir sleppt",
+        "damageDealt": "Skaði valdið",
+        "damageTaken": "Skaði tekinn",
+        "deaths": "Dauðsföll",
+        "mobKills": "Skrímsli drepin",
+        "playerKills": "Spilarar drepnir",
+        "fishCaught": "Fiskar veiddir",
+        "mineBlock": "{0} námuð",
+        "craftItem": "{0} smíðað",
+        "useItem": "{0} notað",
+        "breakItem": "{0} tæmd"
+    },
+    "achievements.title": "Afrek",
+    "achievement": {
+        "get": "Afrek fengið!",
+        "taken": "Fengið!",
+        "challenge": "ÁSKORUN",
+        "unlocked": "OPPLÆST",
+        "locked": "LÆST",
+        "requires": "Krefst '{0}'",
+        "openInventory": {
+            "title": "Að taka birgðir",
+            "desc": "Opnaðu birgðir þínar."
+        },
+        "mineWood": {
+            "title": "Að fá við",
+            "desc": "Ráðast á tré þar til viðarkloss kemur út."
+        },
+        "buildWorkBench": {
+            "title": "Viðmið",
+            "desc": "Smíðaðu smíðaborð með fjórum plankaklossum."
+        },
+        "buildPickaxe": {
+            "title": "Tími til að grafa!",
+            "desc": "Notaðu planka og stafi til að búa til pikku."
+        },
+        "buildFurnace": {
+            "title": "Heitt umræðuefni",
+            "desc": "Smíðaðu ofn úr átta steinaklossum."
+        },
+        "acquireIron": {
+            "title": "Fá vélbúnað",
+            "desc": "Bræddu járnstöng."
+        },
+        "buildHoe": {
+            "title": "Tími til að rækta!",
+            "desc": "Notaðu planka og stafi til að búa til hrífu."
+        },
+        "makeBread": {
+            "title": "Baka brauð",
+            "desc": "Breyttu hveiti í brauð."
+        },
+        "bakeCake": {
+            "title": "Lygin",
+            "desc": "Hveiti, sykur, mjólk og egg!"
+        },
+        "buildBetterPickaxe": {
+            "title": "Að fá uppfærslu",
+            "desc": "Smíðaðu betri pikku."
+        },
+        "cookFish": {
+            "title": "Ljúffengur fiskur",
+            "desc": "Veiddu og eldaðu fisk!"
+        },
+        "onARail": {
+            "title": "Á járnbrautum",
+            "desc": "Farðu í námuvagni að minnsta kosti 1 km frá þar sem þú byrjaðir."
+        },
+        "buildSword": {
+            "title": "Tími til að slá!",
+            "desc": "Notaðu planka og stafi til að búa til sverð."
+        },
+        "killEnemy": {
+            "title": "Skrímslaveiðimaður",
+            "desc": "Ráðist á og eyðilagðu skrímsli."
+        },
+        "killCow": {
+            "title": "Kúasláttur",
+            "desc": "Safnaðu leðri."
+        },
+        "flyPig": {
+            "title": "Þegar svín fljúga",
+            "desc": "Fljúgðu svíni af bjargi."
+        }
+    },
+    "credits": {
+        "version": "BetaSharp Útgáfa %1$s",
+        "description": "Endurbætt útgáfa af Minecraft Beta 1.7.3, skrifuð í C#.",
+        "github": "Á GitHub",
+        "author": "Búið til af Fazin85",
+        "libs": "Bókasöfn",
+        "slik": "Slik.NET - Grafík",
+        "imgui": "ImGui - Kóðunarviðmót",
+        "sfml": "SFML.NET - Hljóð",
+        "sixlabors": "SixLabors - Letur, myndvinnsla",
+        "translations": "Þýðingaskrá"
+    }
+}

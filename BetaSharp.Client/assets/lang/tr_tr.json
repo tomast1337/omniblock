@@ -1,0 +1,1372 @@
+{
+    "gui": {
+        "joinServer": "Sunucuya Katıl",
+        "rename": "Yeniden Adlandır",
+        "edit": "Düzenle",
+        "refresh": "Yenile",
+        "done": "Tamam",
+        "cancel": "İptal",
+        "delete": "Sil",
+        "toMenu": "Başlık ekranına dön",
+        "up": "Yukarı",
+        "down": "Aşağı",
+        "yes": "Evet",
+        "no": "Hayır",
+        "connect": "Bağlan",
+        "directConnect": "Doğrudan Bağlan",
+        "addServer": "Sunucu Ekle",
+        "create": "Oluştur",
+        "customize": "Özelleştir",
+        "achievements": "Başarımlar",
+        "stats": "İstatistikler",
+        "container": {
+            "crafting": "Üretim",
+            "inventory": "Envanter",
+            "dispenser": "Fırlatıcı",
+            "furnace": "Fırın",
+            "tip": {
+                "move": "Taşı",
+                "quickMove": "Hızlı Taşı",
+                "takeHalf": "Yarısını Al",
+                "place": "Yerleştir",
+                "placeOne": "Bir Tane Yerleştir"
+            }
+        }
+    },
+    "menu": {
+        "singleplayer": "Tek Oyunculu",
+        "multiplayer": "Çok Oyunculu",
+        "texturePacks": "Doku Paketleri",
+        "options": "Seçenekler...",
+        "language": "Dil",
+        "quit": "Oyundan Çık",
+        "credits": "Katkıda Bulunanlar",
+        "sendFeedback": "Geri Bildirim Gönder",
+        "reportBugs": "Hata Bildir",
+        "saveAndQuitToTitle": "Kaydet ve başlığa çık",
+        "disconnect": "Bağlantıyı Kes"
+    },
+    "selectWorld": {
+        "title": "Dünya Seç",
+        "empty": "boş",
+        "world": "Dünya",
+        "select": "Seçili Dünyada Oyna",
+        "create": "Yeni Dünya Oluştur",
+        "createDemo": "Yeni Demo Dünyasında Oyna",
+        "deleteQuestion": "Bu dünyayı silmek istediğinize emin misiniz?",
+        "deleteWarning": "sonsuza kadar kaybolacak! (Uzun süre!)",
+        "renameTitle": "Dünyayı Yeniden Adlandır",
+        "conversion": "Dönüştürülmeli!",
+        "newWorld": "Yeni Dünya",
+        "enterName": "Dünya Adı",
+        "resultFolder": "Şuraya kaydedilecek:",
+        "enterSeed": "Dünya Oluşturucu Tohumu",
+        "seedInfo": "Rastgele tohum için boş bırakın",
+        "selectWorldType": "Dünya Tipini Seçin",
+        "worldType": "Dünya Tipi",
+        "customize": "Özelleştir",
+        "moreWorldOptions": "Daha Fazla Dünya Seçeneği...",
+        "type": {
+            "default": {
+                "title": "Varsayılan",
+                "description": "Standart Minecraft dünyası."
+            },
+            "flat": {
+                "title": "Düz",
+                "description": "Tamamen düz bir dünya."
+            },
+            "sky": {
+                "title": "Gökyüzü",
+                "description": "Gökyüzünde süzülen bir dünya."
+            }
+        }
+    },
+    "newWorld": {
+        "customize": {
+            "superflatWorld": {
+                "title": "Süper Düz Dünyayı Özelleştir"
+            },
+            "removeLayer": "Katmanı Kaldır",
+            "presets": "Hazır Ayarlar",
+            "height": "Yükseklik",
+            "unknown": "???"
+        }
+    },
+    "world": {
+        "world": "Dünya",
+        "unsupportedFormat": "Desteklenmeyen Biçim!"
+    },
+    "multiplayer": {
+        "title": "Çok Oyunculu Oyna",
+        "betasharpServer": "BetaSharp Sunucusu",
+        "info1": "Minecraft Çok Oyunculu şu an tamamlanmadı, ancak",
+        "info2": "bazı hatalı erken testler yapılıyor.",
+        "ipinfo": "Bağlanmak için sunucunun IP'sini girin:",
+        "deleteQuestion": "Bu sunucuyu silmek istediğinize emin misiniz?",
+        "deleteWarning": "sonsuza kadar kaybolacak! (Uzun süre!)",
+        "downloadingTerrain": "Arazi indiriliyor",
+        "stopSleeping": "Yataktan Kalk",
+        "editServerTitle": "Sunucu Bilgilerini Düzenle",
+        "addServerTitle": "Sunucu Bilgilerini Ekle",
+        "serverName": "Sunucu Adı",
+        "serverAddress": "Sunucu Adresi"
+    },
+    "loading": {
+        "loadingLevel": "Seviye yükleniyor",
+        "startingServer": "Sunucu başlatılıyor...",
+        "preparingSpawnArea": "Doğma alanı hazırlanıyor"
+    },
+    "achievements": {
+        "title": "Başarımlar"
+    },
+    "gameover": {
+        "title": "Oyun Bitti!",
+        "score": "Puan",
+        "respawn": "Yeniden Doğ",
+        "titleMenu": "Başlık menüsü"
+    },
+    "gamemenu": {
+        "title": "Oyun Menüsü",
+        "backToGame": "Oyuna Dön"
+    },
+    "sign": {
+        "title": "Tabela mesajını düzenle:",
+        "done": "Tamam"
+    },
+    "stats": {
+        "title": "İstatistikler",
+        "general": "Genel",
+        "blocks": {
+            "name": "Bloklar",
+            "mined": "Kazıldı",
+            "crafted": "Üretildi",
+            "used": "Kullanıldı"
+        },
+        "items": {
+            "name": "Eşyalar",
+            "broken": "Kırıldı",
+            "crafted": "Üretildi",
+            "used": "Kullanıldı"
+        },
+        "item": "Eşya"
+    },
+    "connect": {
+        "connecting": "Sunucuya bağlanılıyor...",
+        "authorizing": "Giriş yapılıyor...",
+        "failed": "Sunucuya bağlanılamadı"
+    },
+    "disconnect": {
+        "genericReason": "{0}",
+        "disconnected": "Sunucu Tarafından Bağlantı Kesildi",
+        "lost": "Bağlantı Kayboldu",
+        "kicked": "Oyundan atıldı",
+        "timeout": "Zaman aşımı",
+        "closed": "Bağlantı kapatıldı",
+        "loginFailed": "Giriş başarısız",
+        "quitting": "Çıkılıyor",
+        "endOfStream": "Akış sonu",
+        "overflow": "Arabellek taşması"
+    },
+    "options": {
+        "off": "KAPALI",
+        "on": "AÇIK",
+        "disabled": "Devre Dışı",
+        "title": "Seçenekler",
+        "controls": "Kontroller...",
+        "keyboardControls": "Klavye Kontrolleri...",
+        "controllerSettings": "Denetleyici Ayarları...",
+        "controllerType": "Denetleyici Tipi",
+        "video": {
+            "text": "Video Ayarları...",
+            "performance": "Performans",
+            "display": "Görüntü"
+        },
+        "uiSettings": "Arayüz Ayarları...",
+        "audioSettings": "Ses Ayarları...",
+        "audioTitle": "Ses Ayarları",
+        "videoTitle": "Video Ayarları",
+        "language": "Dil...",
+        "anisoLevel": "Anizotropi Seviyesi",
+        "music": "Müzik",
+        "sound": "Ses",
+        "invertMouse": "Fareyi Ters Çevir",
+        "alternateBlocks": "Alternatif Bloklar",
+        "chunkFade": "Yığın Solması",
+        "sensitivity": {
+            "text": "Hassasiyet",
+            "controllerText": "Denetleyici Hassasiyeti",
+            "min": "*esneme*",
+            "max": "SÜPER HIZ!!!"
+        },
+        "renderDistance": {
+            "text": "Görüş Mesafesi",
+            "chunks": "Yığın",
+            "tiny": "Çok Kısa",
+            "short": "Kısa",
+            "normal": "Normal",
+            "far": "Uzak"
+        },
+        "viewBobbing": "Görüş Sallanması",
+        "ao": "Yumuşak Aydınlatma",
+        "anaglyph": "3D Anaglif",
+        "framerateLimit": "Performans",
+        "difficulty": {
+            "text": "Zorluk",
+            "peaceful": "Barışçıl",
+            "easy": "Kolay",
+            "normal": "Normal",
+            "hard": "Zor"
+        },
+        "graphics": {
+            "text": "Grafikler",
+            "fancy": "Gösterişli",
+            "fast": "Hızlı"
+        },
+        "cloudsQuality": {
+            "text": "Bulut Kalitesi",
+            "off": "Bulut Yok",
+            "legacy": "Eski Bulutlar",
+            "shader": "Gölgelendirici"
+        },
+        "softClouds": {
+            "text": "Yumuşak Bulutlar"
+        },
+        "guiScale": {
+            "text": "Arayüz Ölçeği",
+            "auto": "Otomatik",
+            "small": "Küçük",
+            "normal": "Normal",
+            "large": "Büyük"
+        },
+        "chatScale": {
+            "text": "Sohbet Ölçeği"
+        },
+        "chatWidth": {
+            "text": "Sohbet Genişliği"
+        },
+        "advancedOpengl": "Gelişmiş OpenGL",
+        "fps": {
+            "text": "FPS",
+            "maxFps": "Maks. FPS",
+            "unlimited": "Sınırsız"
+        },
+        "showCoordinates": "Koordinatları Göster",
+        "uiCursors": "Arayüz İmleçleri",
+        "gamma": "Gama",
+        "vSync": "Dikey Senkronizasyon",
+        "mipmaps": "Mip Haritaları",
+        "menuMusic": "Menü Müziği",
+        "msaa": "MSAA",
+        "fov": "Görüş Alanı",
+        "movement": {
+            "text": "Hareket"
+        },
+        "view": {
+            "text": "Görünüm"
+        },
+        "other": {
+            "text": "Diğer"
+        },
+        "editBindings": "Tuş Atamalarını Düzenle...",
+        "resetBindings": "Tuş Atamalarını Sıfırla...",
+        "controllerBindings": "Denetleyici Tuş Atamaları",
+        "shader": {
+            "text": "Gölgelendirici Seçenekleri",
+            "chunkVert": {
+                "text": "Dünya",
+                "WavyLeavesStrength": "Dalgalı Yaprak Gücü",
+                "WavyLeavesSpeed": "Dalgalı Yaprak Hızı",
+                "WavyPlantStrength": "Dalgalı Bitki Gücü",
+                "WavyPlantSpeed": "Dalgalı Bitki Hızı",
+                "WavyPlantMode": "Dalgalı Bitki Modu"
+            },
+            "cloud": {
+                "text": "Bulutlar",
+                "minParallax": "Min. Paralaks",
+                "maxParallax": "Maks. Paralaks",
+                "minGradient": "Min. Gradyan",
+                "maxGradient": "Maks. Gradyan",
+                "cloudHeight": "Bulut Yüksekliği",
+                "shadow": "Gölge Rengi",
+                "smoothWidth": "Yumuşak Genişlik",
+                "smoothSamples": "Yumuşak Örnekler",
+                "closeFade": "Yakın Solma",
+                "smoothTop": "Yumuşak Üst",
+                "smoothEdge": "Yumuşak Kenar",
+                "smoothBottom": "Yumuşak Alt",
+                "smoothBottomTopDown": "Yumuşak Alt (Yukarıdan Aşağıya)"
+            },
+            "ui": {
+                "text": "Arayüz",
+                "darkMode": "Karanlık Mod"
+            },
+            "preset": {
+                "text": "Hazır Ayar",
+                "disabled": "Devre Dışı",
+                "default": "Varsayılan",
+                "custom": "Özel",
+                "2d": "2B",
+                "3d": "3B",
+                "low": "Düşük",
+                "medium": "Orta",
+                "high": "Yüksek",
+                "ultra": "Ultra"
+            }
+        }
+    },
+    "performance": {
+        "max": "Maks. FPS",
+        "balanced": "Dengeli",
+        "powersaver": "Güç Tasarrufu"
+    },
+    "controls": {
+        "title": "Kontroller"
+    },
+    "key": {
+        "forward": "İleri",
+        "left": "Sol",
+        "back": "Geri",
+        "right": "Sağ",
+        "jump": "Zıpla",
+        "inventory": "Envanter",
+        "drop": "At",
+        "chat": "Sohbet",
+        "fog": "Sisi Aç/Kapa",
+        "sneak": "Eğil",
+        "playerlist": "Oyuncu listesi",
+        "zoom": "Yakınlaştır",
+        "hotbarLeft": "Çubuk Sol",
+        "hotbarRight": "Çubuk Sağ",
+        "pickBlock": "Bloğu Seç",
+        "camera": "Kamera Modu",
+        "pause": "Duraklat"
+    },
+    "texturePack": {
+        "openFolder": "Doku paketi klasörünü aç",
+        "title": "Doku Paketi Seç",
+        "folderInfo": "(Doku paketi dosyalarını buraya koyun)"
+    },
+    "tile": {
+        "tallgrass": {
+            "name": "Uzun Ot",
+            "desc": ""
+        },
+        "stone": {
+            "name": "Taş",
+            "desc": ""
+        },
+        "grass": {
+            "name": "Çim",
+            "desc": ""
+        },
+        "dirt": {
+            "name": "Toprak",
+            "desc": ""
+        },
+        "stonebrick": {
+            "name": "Kaldırım Taşı",
+            "desc": ""
+        },
+        "wood": {
+            "name": "Ahşap Tahta",
+            "desc": ""
+        },
+        "sapling": {
+            "name": "Fidan",
+            "desc": ""
+        },
+        "bedrock": {
+            "name": "Ana Kaya",
+            "desc": ""
+        },
+        "water": {
+            "name": "Su",
+            "desc": ""
+        },
+        "lava": {
+            "name": "Lav",
+            "desc": ""
+        },
+        "sand": {
+            "name": "Kum",
+            "desc": ""
+        },
+        "sandStone": {
+            "name": "Kumtaşı"
+        },
+        "gravel": {
+            "name": "Çakıl",
+            "desc": ""
+        },
+        "oreGold": {
+            "name": "Altın Cevheri",
+            "desc": ""
+        },
+        "oreIron": {
+            "name": "Demir Cevheri",
+            "desc": ""
+        },
+        "oreCoal": {
+            "name": "Kömür Cevheri",
+            "desc": ""
+        },
+        "log": {
+            "name": "Odun",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "Yapraklar",
+            "desc": ""
+        },
+        "sponge": {
+            "name": "Sünger",
+            "desc": ""
+        },
+        "glass": {
+            "name": "Cam",
+            "desc": ""
+        },
+        "cloth": {
+            "name": "Yün",
+            "desc": "",
+            "black": {
+                "name": "Siyah Yün",
+                "desc": ""
+            },
+            "red": {
+                "name": "Kırmızı Yün",
+                "desc": ""
+            },
+            "green": {
+                "name": "Yeşil Yün",
+                "desc": ""
+            },
+            "brown": {
+                "name": "Kahverengi Yün",
+                "desc": ""
+            },
+            "blue": {
+                "name": "Mavi Yün",
+                "desc": ""
+            },
+            "purple": {
+                "name": "Mor Yün",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "Camgöbeği Yün",
+                "desc": ""
+            },
+            "silver": {
+                "name": "Açık Gri Yün",
+                "desc": ""
+            },
+            "gray": {
+                "name": "Gri Yün",
+                "desc": ""
+            },
+            "pink": {
+                "name": "Pembe Yün",
+                "desc": ""
+            },
+            "lime": {
+                "name": "Açık Yeşil Yün",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "Sarı Yün",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "Açık Mavi Yün",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "Eflatun Yün",
+                "desc": ""
+            },
+            "orange": {
+                "name": "Turuncu Yün",
+                "desc": ""
+            },
+            "white": {
+                "name": "Yün",
+                "desc": ""
+            }
+        },
+        "flower": {
+            "name": "Çiçek",
+            "desc": ""
+        },
+        "rose": {
+            "name": "Gül",
+            "desc": ""
+        },
+        "mushroom": {
+            "name": "Mantar",
+            "desc": ""
+        },
+        "blockGold": {
+            "name": "Altın Bloğu",
+            "desc": ""
+        },
+        "blockIron": {
+            "name": "Demir Bloğu",
+            "desc": ""
+        },
+        "stoneSlab": {
+            "stone": {
+                "name": "Taş Döşeme",
+                "desc": ""
+            },
+            "sand": {
+                "name": "Kumtaşı Döşeme",
+                "desc": ""
+            },
+            "wood": {
+                "name": "Ahşap Döşeme",
+                "desc": ""
+            },
+            "cobble": {
+                "name": "Taş Döşeme",
+                "desc": ""
+            }
+        },
+        "brick": {
+            "name": "Tuğla",
+            "desc": ""
+        },
+        "tnt": {
+            "name": "TNT",
+            "desc": ""
+        },
+        "bookshelf": {
+            "name": "Kitaplık",
+            "desc": ""
+        },
+        "stoneMoss": {
+            "name": "Yosunlu Taş",
+            "desc": ""
+        },
+        "obsidian": {
+            "name": "Obsidyen",
+            "desc": ""
+        },
+        "torch": {
+            "name": "Meşale",
+            "desc": ""
+        },
+        "fire": {
+            "name": "Ateş",
+            "desc": ""
+        },
+        "mobSpawner": {
+            "name": "Canavar Üretici",
+            "desc": ""
+        },
+        "stairsWood": {
+            "name": "Ahşap Merdiven",
+            "desc": ""
+        },
+        "chest": {
+            "name": "Sandık",
+            "desc": ""
+        },
+        "redstoneDust": {
+            "name": "Kızıltaş Tozu",
+            "desc": ""
+        },
+        "oreDiamond": {
+            "name": "Elmas Cevheri",
+            "desc": ""
+        },
+        "blockDiamond": {
+            "name": "Elmas Bloğu",
+            "desc": ""
+        },
+        "workbench": {
+            "name": "Çalışma Tezgahı",
+            "desc": ""
+        },
+        "crops": {
+            "name": "Ekinler",
+            "desc": ""
+        },
+        "farmland": {
+            "name": "Ekili Toprak",
+            "desc": ""
+        },
+        "furnace": {
+            "name": "Fırın",
+            "desc": ""
+        },
+        "sign": {
+            "name": "Tabela",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "Ahşap Kapı",
+            "desc": ""
+        },
+        "ladder": {
+            "name": "Merdiven",
+            "desc": ""
+        },
+        "rail": {
+            "name": "Ray",
+            "desc": ""
+        },
+        "goldenRail": {
+            "name": "Güçlendirilmiş Ray",
+            "desc": ""
+        },
+        "detectorRail": {
+            "name": "Algılayıcı Ray",
+            "desc": ""
+        },
+        "stairsStone": {
+            "name": "Taş Merdiven",
+            "desc": ""
+        },
+        "lever": {
+            "name": "Kumanda Kolu",
+            "desc": ""
+        },
+        "pressurePlate": {
+            "name": "Basınç Plakası",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "Demir Kapı",
+            "desc": ""
+        },
+        "oreRedstone": {
+            "name": "Kızıltaş Cevheri",
+            "desc": ""
+        },
+        "notGate": {
+            "name": "Kızıltaş Meşalesi",
+            "desc": ""
+        },
+        "button": {
+            "name": "Düğme",
+            "desc": ""
+        },
+        "snow": {
+            "name": "Kar",
+            "desc": ""
+        },
+        "ice": {
+            "name": "Buz",
+            "desc": ""
+        },
+        "cactus": {
+            "name": "Kaktüs",
+            "desc": ""
+        },
+        "clay": {
+            "name": "Kil",
+            "desc": ""
+        },
+        "reeds": {
+            "name": "Şeker Kamışı",
+            "desc": ""
+        },
+        "jukebox": {
+            "name": "Müzik Kutusu",
+            "desc": ""
+        },
+        "fence": {
+            "name": "Çit",
+            "desc": ""
+        },
+        "pumpkin": {
+            "name": "Balkabağı",
+            "desc": ""
+        },
+        "litpumpkin": {
+            "name": "Jack Feneri",
+            "desc": ""
+        },
+        "hellrock": {
+            "name": "Alt Taş",
+            "desc": ""
+        },
+        "hellsand": {
+            "name": "Ruh Kumu",
+            "desc": ""
+        },
+        "lightgem": {
+            "name": "Aydınlık Taşı",
+            "desc": ""
+        },
+        "portal": {
+            "name": "Portal",
+            "desc": ""
+        },
+        "oreLapis": {
+            "name": "Lapis Lazuli Cevheri",
+            "desc": ""
+        },
+        "blockLapis": {
+            "name": "Lapis Lazuli Bloğu",
+            "desc": ""
+        },
+        "dispenser": {
+            "name": "Fırlatıcı",
+            "desc": ""
+        },
+        "musicBlock": {
+            "name": "Nota Bloğu",
+            "desc": ""
+        },
+        "cake": {
+            "name": "Pasta",
+            "desc": ""
+        },
+        "bed": {
+            "name": "Yatak",
+            "desc": "",
+            "occupied": "Bu yatak dolu",
+            "noSleep": "Sadece gece uyuyabilirsin",
+            "notValid": "Evinizdeki yatak kayıp veya engellenmiş"
+        },
+        "lockedchest": {
+            "name": "Kilitli Sandık",
+            "desc": ""
+        },
+        "trapdoor": {
+            "name": "Tuzak Kapısı",
+            "desc": ""
+        },
+        "web": {
+            "name": "Örümcek Ağı",
+            "desc": ""
+        },
+        "stonebricksmooth": {
+            "name": "Taş Tuğla",
+            "desc": ""
+        },
+        "pistonBase": {
+            "name": "Piston",
+            "desc": ""
+        },
+        "pistonStickyBase": {
+            "name": "Yapışkan Piston",
+            "desc": ""
+        }
+    },
+    "item": {
+        "shovelIron": {
+            "name": "Demir Kürek",
+            "desc": ""
+        },
+        "pickaxeIron": {
+            "name": "Demir Kazma",
+            "desc": ""
+        },
+        "hatchetIron": {
+            "name": "Demir Balta",
+            "desc": ""
+        },
+        "flintAndSteel": {
+            "name": "Çakmaktaşı ve Çelik",
+            "desc": ""
+        },
+        "apple": {
+            "name": "Elma",
+            "desc": ""
+        },
+        "cookie": {
+            "name": "Kurabiye",
+            "desc": ""
+        },
+        "bow": {
+            "name": "Yay",
+            "desc": ""
+        },
+        "arrow": {
+            "name": "Ok",
+            "desc": ""
+        },
+        "coal": {
+            "name": "Kömür",
+            "desc": ""
+        },
+        "charcoal": {
+            "name": "Odun Kömürü",
+            "desc": ""
+        },
+        "diamond": {
+            "name": "Elmas",
+            "desc": ""
+        },
+        "ingotIron": {
+            "name": "Demir Külçe",
+            "desc": ""
+        },
+        "ingotGold": {
+            "name": "Altın Külçe",
+            "desc": ""
+        },
+        "swordIron": {
+            "name": "Demir Kılıç",
+            "desc": ""
+        },
+        "swordWood": {
+            "name": "Ahşap Kılıç",
+            "desc": ""
+        },
+        "shovelWood": {
+            "name": "Ahşap Kürek",
+            "desc": ""
+        },
+        "pickaxeWood": {
+            "name": "Ahşap Kazma",
+            "desc": ""
+        },
+        "hatchetWood": {
+            "name": "Ahşap Balta",
+            "desc": ""
+        },
+        "swordStone": {
+            "name": "Taş Kılıç",
+            "desc": ""
+        },
+        "shovelStone": {
+            "name": "Taş Kürek",
+            "desc": ""
+        },
+        "pickaxeStone": {
+            "name": "Taş Kazma",
+            "desc": ""
+        },
+        "hatchetStone": {
+            "name": "Taş Balta",
+            "desc": ""
+        },
+        "swordDiamond": {
+            "name": "Elmas Kılıç",
+            "desc": ""
+        },
+        "shovelDiamond": {
+            "name": "Elmas Kürek",
+            "desc": ""
+        },
+        "pickaxeDiamond": {
+            "name": "Elmas Kazma",
+            "desc": ""
+        },
+        "hatchetDiamond": {
+            "name": "Elmas Balta",
+            "desc": ""
+        },
+        "stick": {
+            "name": "Çubuk",
+            "desc": ""
+        },
+        "bowl": {
+            "name": "Kase",
+            "desc": ""
+        },
+        "mushroomStew": {
+            "name": "Mantar Yemeği",
+            "desc": ""
+        },
+        "swordGold": {
+            "name": "Altın Kılıç",
+            "desc": ""
+        },
+        "shovelGold": {
+            "name": "Altın Kürek",
+            "desc": ""
+        },
+        "pickaxeGold": {
+            "name": "Altın Kazma",
+            "desc": ""
+        },
+        "hatchetGold": {
+            "name": "Altın Balta",
+            "desc": ""
+        },
+        "string": {
+            "name": "İp",
+            "desc": ""
+        },
+        "feather": {
+            "name": "Tüy",
+            "desc": ""
+        },
+        "gunpowder": {
+            "name": "Barut",
+            "desc": ""
+        },
+        "hoeWood": {
+            "name": "Ahşap Çapa",
+            "desc": ""
+        },
+        "hoeStone": {
+            "name": "Taş Çapa",
+            "desc": ""
+        },
+        "hoeIron": {
+            "name": "Demir Çapa",
+            "desc": ""
+        },
+        "hoeDiamond": {
+            "name": "Elmas Çapa",
+            "desc": ""
+        },
+        "hoeGold": {
+            "name": "Altın Çapa",
+            "desc": ""
+        },
+        "seeds": {
+            "name": "Tohumlar",
+            "desc": ""
+        },
+        "wheat": {
+            "name": "Buğday",
+            "desc": ""
+        },
+        "bread": {
+            "name": "Ekmek",
+            "desc": ""
+        },
+        "helmetLeather": {
+            "name": "Deri Külah",
+            "desc": ""
+        },
+        "chestplateLeather": {
+            "name": "Deri Tunik",
+            "desc": ""
+        },
+        "leggingsLeather": {
+            "name": "Deri Pantolon",
+            "desc": ""
+        },
+        "bootsLeather": {
+            "name": "Deri Çizme",
+            "desc": ""
+        },
+        "helmetChain": {
+            "name": "Zincir Miğfer",
+            "desc": ""
+        },
+        "chestplateChain": {
+            "name": "Zincir Zırh",
+            "desc": ""
+        },
+        "leggingsChain": {
+            "name": "Zincir Dizlik",
+            "desc": ""
+        },
+        "bootsChain": {
+            "name": "Zincir Çizme",
+            "desc": ""
+        },
+        "helmetIron": {
+            "name": "Demir Miğfer",
+            "desc": ""
+        },
+        "chestplateIron": {
+            "name": "Demir Zırh",
+            "desc": ""
+        },
+        "leggingsIron": {
+            "name": "Demir Dizlik",
+            "desc": ""
+        },
+        "bootsIron": {
+            "name": "Demir Çizme",
+            "desc": ""
+        },
+        "helmetDiamond": {
+            "name": "Elmas Miğfer",
+            "desc": ""
+        },
+        "chestplateDiamond": {
+            "name": "Elmas Zırh",
+            "desc": ""
+        },
+        "leggingsDiamond": {
+            "name": "Elmas Dizlik",
+            "desc": ""
+        },
+        "bootsDiamond": {
+            "name": "Elmas Çizme",
+            "desc": ""
+        },
+        "helmetGold": {
+            "name": "Altın Miğfer",
+            "desc": ""
+        },
+        "chestplateGold": {
+            "name": "Altın Zırh",
+            "desc": ""
+        },
+        "leggingsGold": {
+            "name": "Altın Dizlik",
+            "desc": ""
+        },
+        "bootsGold": {
+            "name": "Altın Çizme",
+            "desc": ""
+        },
+        "flint": {
+            "name": "Çakmaktaşı",
+            "desc": ""
+        },
+        "porkchopRaw": {
+            "name": "Çiğ Domuz Eti",
+            "desc": ""
+        },
+        "porkchopCooked": {
+            "name": "Pişmiş Domuz Eti",
+            "desc": ""
+        },
+        "painting": {
+            "name": "Tablo",
+            "desc": ""
+        },
+        "appleGold": {
+            "name": "Altın Elma",
+            "desc": ""
+        },
+        "sign": {
+            "name": "Tabela",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "Ahşap Kapı",
+            "desc": ""
+        },
+        "bucket": {
+            "name": "Kova",
+            "desc": ""
+        },
+        "bucketWater": {
+            "name": "Su Kovası",
+            "desc": ""
+        },
+        "bucketLava": {
+            "name": "Lav Kovası",
+            "desc": ""
+        },
+        "minecart": {
+            "name": "Maden Arabası",
+            "desc": ""
+        },
+        "saddle": {
+            "name": "Eyer",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "Demir Kapı",
+            "desc": ""
+        },
+        "redstone": {
+            "name": "Kızıltaş",
+            "desc": ""
+        },
+        "snowball": {
+            "name": "Kartopu",
+            "desc": ""
+        },
+        "boat": {
+            "name": "Tekne",
+            "desc": ""
+        },
+        "leather": {
+            "name": "Deri",
+            "desc": ""
+        },
+        "milk": {
+            "name": "Süt",
+            "desc": ""
+        },
+        "brick": {
+            "name": "Tuğla",
+            "desc": ""
+        },
+        "clay": {
+            "name": "Kil",
+            "desc": ""
+        },
+        "sugarCanes": {
+            "name": "Şeker Kamışı",
+            "desc": ""
+        },
+        "paper": {
+            "name": "Kağıt",
+            "desc": ""
+        },
+        "book": {
+            "name": "Kitap",
+            "desc": ""
+        },
+        "slimeball": {
+            "name": "Sümüksü Top",
+            "desc": ""
+        },
+        "minecartChest": {
+            "name": "Sandıklı Maden Arabası",
+            "desc": ""
+        },
+        "minecartFurnace": {
+            "name": "Fırınlı Maden Arabası",
+            "desc": ""
+        },
+        "egg": {
+            "name": "Yumurta",
+            "desc": ""
+        },
+        "compass": {
+            "name": "Pusula",
+            "desc": ""
+        },
+        "fishingRod": {
+            "name": "Olta",
+            "desc": ""
+        },
+        "clock": {
+            "name": "Saat",
+            "desc": ""
+        },
+        "yellowDust": {
+            "name": "Aydınlık Taşı Tozu",
+            "desc": ""
+        },
+        "fishRaw": {
+            "name": "Çiğ Balık",
+            "desc": ""
+        },
+        "fishCooked": {
+            "name": "Pişmiş Balık",
+            "desc": ""
+        },
+        "record": {
+            "name": "Müzik Diski",
+            "desc": ""
+        },
+        "bone": {
+            "name": "Kemik",
+            "desc": ""
+        },
+        "dyePowder": {
+            "black": {
+                "name": "Mürekkep Kesesi",
+                "desc": ""
+            },
+            "red": {
+                "name": "Gül Kırmızısı",
+                "desc": ""
+            },
+            "green": {
+                "name": "Kaktüs Yeşili",
+                "desc": ""
+            },
+            "brown": {
+                "name": "Kakao Çekirdekleri",
+                "desc": ""
+            },
+            "blue": {
+                "name": "Lapis Lazuli",
+                "desc": ""
+            },
+            "purple": {
+                "name": "Mor Boya",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "Camgöbeği Boya",
+                "desc": ""
+            },
+            "silver": {
+                "name": "Açık Gri Boya",
+                "desc": ""
+            },
+            "gray": {
+                "name": "Gri Boya",
+                "desc": ""
+            },
+            "pink": {
+                "name": "Pembe Boya",
+                "desc": ""
+            },
+            "lime": {
+                "name": "Açık Yeşil Boya",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "Karahindiba Sarısı",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "Açık Mavi Boya",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "Eflatun Boya",
+                "desc": ""
+            },
+            "orange": {
+                "name": "Turuncu Boya",
+                "desc": ""
+            },
+            "white": {
+                "name": "Kemik Tozu",
+                "desc": ""
+            }
+        },
+        "sugar": {
+            "name": "Şeker",
+            "desc": ""
+        },
+        "cake": {
+            "name": "Pasta",
+            "desc": ""
+        },
+        "bed": {
+            "name": "Yatak",
+            "desc": ""
+        },
+        "redstoneRepeater": {
+            "name": "Kızıltaş Tekrarlayıcı",
+            "desc": ""
+        },
+        "map": {
+            "name": "Harita",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "Yapraklar",
+            "desc": ""
+        },
+        "shears": {
+            "name": "Makas",
+            "desc": ""
+        }
+    },
+    "stat": {
+        "generalButton": "Genel",
+        "blocksButton": "Bloklar",
+        "itemsButton": "Eşyalar",
+        "used": "Kullanım Sayısı",
+        "mined": "Kazım Sayısı",
+        "depleted": "Tükenme Sayısı",
+        "crafted": "Üretim Sayısı",
+        "startGame": "Oynanma Sayısı",
+        "createWorld": "Oynanmış Dünyalar",
+        "loadWorld": "Yüklenen Kayıtlar",
+        "joinMultiplayer": "Çok Oyunculu Katılımlar",
+        "leaveGame": "Oyundan Çıkışlar",
+        "playOneMinute": "Oynanan Dakika",
+        "walkOneCm": "Yürünen Mesafe",
+        "fallOneCm": "Düşülen Mesafe",
+        "swimOneCm": "Yüzülen Mesafe",
+        "flyOneCm": "Uçulan Mesafe",
+        "climbOneCm": "Tırmanılan Mesafe",
+        "diveOneCm": "Dalınan Mesafe",
+        "minecartOneCm": "Maden Arabasıyla Gidilen Mesafe",
+        "boatOneCm": "Tekneyle Gidilen Mesafe",
+        "pigOneCm": "Domuzla Gidilen Mesafe",
+        "jump": "Zıplamalar",
+        "drop": "Atılan Eşyalar",
+        "damageDealt": "Verilen Hasar",
+        "damageTaken": "Alınan Hasar",
+        "deaths": "Ölüm Sayısı",
+        "mobKills": "Öldürülen Canavarlar",
+        "playerKills": "Öldürülen Oyuncular",
+        "fishCaught": "Yakalanan Balıklar",
+        "mineBlock": "{0} Kazıldı",
+        "craftItem": "{0} Üretildi",
+        "useItem": "{0} Kullanıldı",
+        "breakItem": "{0} Tüketildi"
+    },
+    "achievements.title": "Başarımlar",
+    "achievement": {
+        "get": "Başarım kazanıldı!",
+        "taken": "Kazanıldı!",
+        "challenge": "MÜCADELE",
+        "unlocked": "AÇILDI",
+        "locked": "KİLİTLİ",
+        "requires": "'{0}' gerektirir",
+        "openInventory": {
+            "title": "Envanteri Açmak",
+            "desc": "Envanterinizi açın."
+        },
+        "mineWood": {
+            "title": "Odun Almak",
+            "desc": "Bir ağaca bir odun bloğu çıkana kadar vur"
+        },
+        "buildWorkBench": {
+            "title": "Tezgah Yapımı",
+            "desc": "Dört tahta bloğuyla bir çalışma tezgahı yap"
+        },
+        "buildPickaxe": {
+            "title": "Kazma Zamanı!",
+            "desc": "Kazma yapmak için tahta ve çubuk kullan"
+        },
+        "buildFurnace": {
+            "title": "Sıcak Konu",
+            "desc": "Sekiz taş bloktan bir fırın inşa et"
+        },
+        "acquireIron": {
+            "title": "Donanım Edinme",
+            "desc": "Bir demir külçe erit"
+        },
+        "buildHoe": {
+            "title": "Çapa Zamanı!",
+            "desc": "Çapa yapmak için tahta ve çubuk kullan"
+        },
+        "makeBread": {
+            "title": "Ekmek Pişir",
+            "desc": "Buğdayı ekmeğe dönüştür"
+        },
+        "bakeCake": {
+            "title": "Yalan",
+            "desc": "Buğday, şeker, süt ve yumurta!"
+        },
+        "buildBetterPickaxe": {
+            "title": "Yükseltme Yapmak",
+            "desc": "Daha iyi bir kazma yap"
+        },
+        "cookFish": {
+            "title": "Lezzetli Balık",
+            "desc": "Balık yakala ve pişir!"
+        },
+        "onARail": {
+            "title": "Ray Üzerinde",
+            "desc": "Başladığın yerden en az 1 km maden arabasıyla git"
+        },
+        "buildSword": {
+            "title": "Saldırı Zamanı!",
+            "desc": "Kılıç yapmak için tahta ve çubuk kullan"
+        },
+        "killEnemy": {
+            "title": "Canavar Avcısı",
+            "desc": "Bir canavara saldır ve onu yok et"
+        },
+        "killCow": {
+            "title": "İnek Devirici",
+            "desc": "Biraz deri topla"
+        },
+        "flyPig": {
+            "title": "Domuzlar Uçunca",
+            "desc": "Bir domuzu uçurumdan uçur"
+        }
+    },
+    "credits": {
+        "version": "BetaSharp Sürüm %1$s",
+        "description": "Minecraft Beta 1.7.3'ün C# ile yazılmış geliştirilmiş sürümü.",
+        "github": "GitHub'da",
+        "author": "Fazin85 tarafından yapıldı",
+        "libs": "Kütüphaneler",
+        "slik": "Slik.NET - Grafik",
+        "imgui": "ImGui - Hata Ayıklama Arayüzü",
+        "sfml": "SFML.NET - Ses",
+        "sixlabors": "SixLabors - Yazı tipleri, görüntü işleme",
+        "translations": "Çeviri Katkıları"
+    }
+}

@@ -1,0 +1,1372 @@
+{
+    "gui": {
+        "joinServer": "서버 접속",
+        "rename": "이름 바꾸기",
+        "edit": "편집",
+        "refresh": "새로고침",
+        "done": "완료",
+        "cancel": "취소",
+        "delete": "삭제",
+        "toMenu": "타이틀 화면으로 돌아가기",
+        "up": "위",
+        "down": "아래",
+        "yes": "예",
+        "no": "아니요",
+        "connect": "연결",
+        "directConnect": "직접 연결",
+        "addServer": "서버 추가",
+        "create": "만들기",
+        "customize": "사용자 지정",
+        "achievements": "도전 과제",
+        "stats": "통계",
+        "container": {
+            "crafting": "제작",
+            "inventory": "보관함",
+            "dispenser": "발사기",
+            "furnace": "화로",
+            "tip": {
+                "move": "이동",
+                "quickMove": "빠른 이동",
+                "takeHalf": "절반 나누기",
+                "place": "놓기",
+                "placeOne": "하나 놓기"
+            }
+        }
+    },
+    "menu": {
+        "singleplayer": "싱글플레이",
+        "multiplayer": "멀티플레이",
+        "texturePacks": "텍스처 팩",
+        "options": "설정...",
+        "language": "언어",
+        "quit": "게임 종료",
+        "credits": "크레딧",
+        "sendFeedback": "피드백 보내기",
+        "reportBugs": "버그 신고",
+        "saveAndQuitToTitle": "저장하고 타이틀로 나가기",
+        "disconnect": "연결 끊기"
+    },
+    "selectWorld": {
+        "title": "세계 선택",
+        "empty": "비어 있음",
+        "world": "세계",
+        "select": "선택한 세계 플레이",
+        "create": "새로운 세계 만들기",
+        "createDemo": "새로운 데모 세계 플레이",
+        "deleteQuestion": "정말로 이 세계를 삭제하시겠습니까?",
+        "deleteWarning": "이 세계는 영원히 삭제됩니다! (정말 오랫동안!)",
+        "renameTitle": "세계 이름 바꾸기",
+        "conversion": "변환해야 합니다!",
+        "newWorld": "새로운 세계",
+        "enterName": "세계 이름",
+        "resultFolder": "저장 위치:",
+        "enterSeed": "세계 생성기 시드",
+        "seedInfo": "무작위 시드를 사용하려면 비워두세요",
+        "selectWorldType": "세계 종류 선택",
+        "worldType": "세계 종류",
+        "customize": "사용자 지정",
+        "moreWorldOptions": "세계 추가 설정...",
+        "type": {
+            "default": {
+                "title": "기본",
+                "description": "일반적인 마인크래프트 세계입니다."
+            },
+            "flat": {
+                "title": "완전한 평지",
+                "description": "완전히 평평한 세계입니다."
+            },
+            "sky": {
+                "title": "하늘",
+                "description": "하늘에 떠 있는 세계입니다."
+            }
+        }
+    },
+    "newWorld": {
+        "customize": {
+            "superflatWorld": {
+                "title": "완전한 평지 사용자 지정"
+            },
+            "removeLayer": "레이어 제거",
+            "presets": "사전 설정",
+            "height": "높이",
+            "unknown": "???"
+        }
+    },
+    "world": {
+        "world": "세계",
+        "unsupportedFormat": "지원하지 않는 형식!"
+    },
+    "multiplayer": {
+        "title": "멀티플레이",
+        "betasharpServer": "BetaSharp 서버",
+        "info1": "마인크래프트 멀티플레이는 아직 완성되지 않았지만,",
+        "info2": "현재 버그가 있는 초기 테스트가 진행 중입니다.",
+        "ipinfo": "연결할 서버의 IP를 입력하세요:",
+        "deleteQuestion": "정말로 이 서버를 삭제하시겠습니까?",
+        "deleteWarning": "이 서버는 영원히 삭제됩니다! (정말 오랫동안!)",
+        "downloadingTerrain": "지형 다운로드 중",
+        "stopSleeping": "침대에서 일어나기",
+        "editServerTitle": "서버 정보 편집",
+        "addServerTitle": "서버 정보 추가",
+        "serverName": "서버 이름",
+        "serverAddress": "서버 주소"
+    },
+    "loading": {
+        "loadingLevel": "레벨 불러오는 중",
+        "startingServer": "서버 시작 중...",
+        "preparingSpawnArea": "스폰 지역 준비 중"
+    },
+    "achievements": {
+        "title": "도전 과제"
+    },
+    "gameover": {
+        "title": "게임 오버!",
+        "score": "점수",
+        "respawn": "리스폰",
+        "titleMenu": "타이틀 메뉴"
+    },
+    "gamemenu": {
+        "title": "게임 메뉴",
+        "backToGame": "게임으로 돌아가기"
+    },
+    "sign": {
+        "title": "표지판 내용 편집:",
+        "done": "완료"
+    },
+    "stats": {
+        "title": "통계",
+        "general": "일반",
+        "blocks": {
+            "name": "블록",
+            "mined": "캔 횟수",
+            "crafted": "제작 횟수",
+            "used": "사용 횟수"
+        },
+        "items": {
+            "name": "아이템",
+            "broken": "부러진 횟수",
+            "crafted": "제작 횟수",
+            "used": "사용 횟수"
+        },
+        "item": "아이템"
+    },
+    "connect": {
+        "connecting": "서버에 연결 중...",
+        "authorizing": "로그인 중...",
+        "failed": "서버에 연결하지 못했습니다"
+    },
+    "disconnect": {
+        "genericReason": "{0}",
+        "disconnected": "서버와의 연결이 끊어졌습니다",
+        "lost": "연결이 끊어졌습니다",
+        "kicked": "게임에서 추방당했습니다",
+        "timeout": "시간 초과",
+        "closed": "연결이 종료되었습니다",
+        "loginFailed": "로그인 실패",
+        "quitting": "종료하는 중",
+        "endOfStream": "스트림의 끝",
+        "overflow": "버퍼 오버플로우"
+    },
+    "options": {
+        "off": "꺼짐",
+        "on": "켜짐",
+        "disabled": "비활성화됨",
+        "title": "설정",
+        "controls": "조작...",
+        "keyboardControls": "키보드 조작...",
+        "controllerSettings": "컨트롤러 설정...",
+        "controllerType": "컨트롤러 종류",
+        "video": {
+            "text": "비디오 설정...",
+            "performance": "성능",
+            "display": "디스플레이"
+        },
+        "uiSettings": "UI 설정...",
+        "audioSettings": "오디오 설정...",
+        "audioTitle": "오디오 설정",
+        "videoTitle": "비디오 설정",
+        "language": "언어...",
+        "anisoLevel": "비등방성 필터링 레벨",
+        "music": "음악",
+        "sound": "소리",
+        "invertMouse": "마우스 반전",
+        "alternateBlocks": "대체 블록",
+        "chunkFade": "청크 페이드",
+        "sensitivity": {
+            "text": "민감도",
+            "controllerText": "컨트롤러 민감도",
+            "min": "*하품*",
+            "max": "초고속!!!"
+        },
+        "renderDistance": {
+            "text": "렌더링 거리",
+            "chunks": "청크",
+            "tiny": "매우 짧게",
+            "short": "짧게",
+            "normal": "보통",
+            "far": "멀게"
+        },
+        "viewBobbing": "화면 흔들림",
+        "ao": "부드러운 조명",
+        "anaglyph": "3D 애너글리프",
+        "framerateLimit": "성능",
+        "difficulty": {
+            "text": "난이도",
+            "peaceful": "평화로움",
+            "easy": "쉬움",
+            "normal": "보통",
+            "hard": "어려움"
+        },
+        "graphics": {
+            "text": "그래픽",
+            "fancy": "화려하게",
+            "fast": "빠르게"
+        },
+        "cloudsQuality": {
+            "text": "구름 품질",
+            "off": "구름 없음",
+            "legacy": "예전 구름",
+            "shader": "셰이더"
+        },
+        "softClouds": {
+            "text": "부드러운 구름"
+        },
+        "guiScale": {
+            "text": "GUI 비율",
+            "auto": "자동",
+            "small": "작게",
+            "normal": "보통",
+            "large": "크게"
+        },
+        "chatScale": {
+            "text": "채팅 크기"
+        },
+        "chatWidth": {
+            "text": "채팅 너비"
+        },
+        "advancedOpengl": "고급 OpenGL",
+        "fps": {
+            "text": "FPS",
+            "maxFps": "최대 FPS",
+            "unlimited": "제한 없음"
+        },
+        "showCoordinates": "좌표 표시",
+        "uiCursors": "UI 커서",
+        "gamma": "감마",
+        "vSync": "수직 동기화",
+        "mipmaps": "밉맵",
+        "menuMusic": "메뉴 음악",
+        "msaa": "MSAA",
+        "fov": "시야(FOV)",
+        "movement": {
+            "text": "움직임"
+        },
+        "view": {
+            "text": "시야"
+        },
+        "other": {
+            "text": "기타"
+        },
+        "editBindings": "키 설정 편집...",
+        "resetBindings": "키 설정 초기화...",
+        "controllerBindings": "컨트롤러 키 설정",
+        "shader": {
+            "text": "셰이더 옵션",
+            "chunkVert": {
+                "text": "세계",
+                "WavyLeavesStrength": "흔들리는 나뭇잎 강도",
+                "WavyLeavesSpeed": "흔들리는 나뭇잎 속도",
+                "WavyPlantStrength": "흔들리는 식물 강도",
+                "WavyPlantSpeed": "흔들리는 식물 속도",
+                "WavyPlantMode": "흔들리는 식물 모드"
+            },
+            "cloud": {
+                "text": "구름",
+                "minParallax": "최소 시차",
+                "maxParallax": "최대 시차",
+                "minGradient": "최소 그레이디언트",
+                "maxGradient": "최대 그레이디언트",
+                "cloudHeight": "구름 높이",
+                "shadow": "그림자 색상",
+                "smoothWidth": "부드러움 너비",
+                "smoothSamples": "부드러움 샘플",
+                "closeFade": "가까운 페이드",
+                "smoothTop": "부드러운 위쪽",
+                "smoothEdge": "부드러운 가장자리",
+                "smoothBottom": "부드러운 아래쪽",
+                "smoothBottomTopDown": "부드러운 아래쪽 탑다운"
+            },
+            "ui": {
+                "text": "UI",
+                "darkMode": "다크 모드"
+            },
+            "preset": {
+                "text": "프리셋",
+                "disabled": "비활성화됨",
+                "default": "기본",
+                "custom": "사용자 지정",
+                "2d": "2D",
+                "3d": "3D",
+                "low": "낮음",
+                "medium": "중간",
+                "high": "높음",
+                "ultra": "울트라"
+            }
+        }
+    },
+    "performance": {
+        "max": "최대 FPS",
+        "balanced": "균형",
+        "powersaver": "절전"
+    },
+    "controls": {
+        "title": "조작"
+    },
+    "key": {
+        "forward": "앞으로",
+        "left": "왼쪽",
+        "back": "뒤로",
+        "right": "오른쪽",
+        "jump": "점프",
+        "inventory": "보관함",
+        "drop": "버리기",
+        "chat": "채팅",
+        "fog": "안개 전환",
+        "sneak": "웅크리기",
+        "playerlist": "플레이어 목록",
+        "zoom": "확대",
+        "hotbarLeft": "단축바 왼쪽",
+        "hotbarRight": "단축바 오른쪽",
+        "pickBlock": "블록 선택",
+        "camera": "카메라 모드",
+        "pause": "일시 정지"
+    },
+    "texturePack": {
+        "openFolder": "텍스처 팩 폴더 열기",
+        "title": "텍스처 팩 선택",
+        "folderInfo": "(여기에 텍스처 팩 파일을 넣으세요)"
+    },
+    "tile": {
+        "tallgrass": {
+            "name": "잔디",
+            "desc": ""
+        },
+        "stone": {
+            "name": "돌",
+            "desc": ""
+        },
+        "grass": {
+            "name": "잔디 블록",
+            "desc": ""
+        },
+        "dirt": {
+            "name": "흙",
+            "desc": ""
+        },
+        "stonebrick": {
+            "name": "조약돌",
+            "desc": ""
+        },
+        "wood": {
+            "name": "나무 판자",
+            "desc": ""
+        },
+        "sapling": {
+            "name": "묘목",
+            "desc": ""
+        },
+        "bedrock": {
+            "name": "기반암",
+            "desc": ""
+        },
+        "water": {
+            "name": "물",
+            "desc": ""
+        },
+        "lava": {
+            "name": "용암",
+            "desc": ""
+        },
+        "sand": {
+            "name": "모래",
+            "desc": ""
+        },
+        "sandStone": {
+            "name": "사암"
+        },
+        "gravel": {
+            "name": "자갈",
+            "desc": ""
+        },
+        "oreGold": {
+            "name": "금 광석",
+            "desc": ""
+        },
+        "oreIron": {
+            "name": "철 광석",
+            "desc": ""
+        },
+        "oreCoal": {
+            "name": "석탄 광석",
+            "desc": ""
+        },
+        "log": {
+            "name": "나무",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "나뭇잎",
+            "desc": ""
+        },
+        "sponge": {
+            "name": "스펀지",
+            "desc": ""
+        },
+        "glass": {
+            "name": "유리",
+            "desc": ""
+        },
+        "cloth": {
+            "name": "양털",
+            "desc": "",
+            "black": {
+                "name": "검은색 양털",
+                "desc": ""
+            },
+            "red": {
+                "name": "빨간색 양털",
+                "desc": ""
+            },
+            "green": {
+                "name": "초록색 양털",
+                "desc": ""
+            },
+            "brown": {
+                "name": "갈색 양털",
+                "desc": ""
+            },
+            "blue": {
+                "name": "파란색 양털",
+                "desc": ""
+            },
+            "purple": {
+                "name": "보라색 양털",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "청록색 양털",
+                "desc": ""
+            },
+            "silver": {
+                "name": "회백색 양털",
+                "desc": ""
+            },
+            "gray": {
+                "name": "회색 양털",
+                "desc": ""
+            },
+            "pink": {
+                "name": "분홍색 양털",
+                "desc": ""
+            },
+            "lime": {
+                "name": "연두색 양털",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "노란색 양털",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "하늘색 양털",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "자홍색 양털",
+                "desc": ""
+            },
+            "orange": {
+                "name": "주황색 양털",
+                "desc": ""
+            },
+            "white": {
+                "name": "양털",
+                "desc": ""
+            }
+        },
+        "flower": {
+            "name": "꽃",
+            "desc": ""
+        },
+        "rose": {
+            "name": "장미",
+            "desc": ""
+        },
+        "mushroom": {
+            "name": "버섯",
+            "desc": ""
+        },
+        "blockGold": {
+            "name": "금 블록",
+            "desc": ""
+        },
+        "blockIron": {
+            "name": "철 블록",
+            "desc": ""
+        },
+        "stoneSlab": {
+            "stone": {
+                "name": "돌 반 블록",
+                "desc": ""
+            },
+            "sand": {
+                "name": "사암 반 블록",
+                "desc": ""
+            },
+            "wood": {
+                "name": "나무 반 블록",
+                "desc": ""
+            },
+            "cobble": {
+                "name": "돌 반 블록",
+                "desc": ""
+            }
+        },
+        "brick": {
+            "name": "벽돌",
+            "desc": ""
+        },
+        "tnt": {
+            "name": "TNT",
+            "desc": ""
+        },
+        "bookshelf": {
+            "name": "책장",
+            "desc": ""
+        },
+        "stoneMoss": {
+            "name": "이끼 낀 돌",
+            "desc": ""
+        },
+        "obsidian": {
+            "name": "흑요석",
+            "desc": ""
+        },
+        "torch": {
+            "name": "횃불",
+            "desc": ""
+        },
+        "fire": {
+            "name": "불",
+            "desc": ""
+        },
+        "mobSpawner": {
+            "name": "몬스터 생성기",
+            "desc": ""
+        },
+        "stairsWood": {
+            "name": "나무 계단",
+            "desc": ""
+        },
+        "chest": {
+            "name": "상자",
+            "desc": ""
+        },
+        "redstoneDust": {
+            "name": "레드스톤 가루",
+            "desc": ""
+        },
+        "oreDiamond": {
+            "name": "다이아몬드 광석",
+            "desc": ""
+        },
+        "blockDiamond": {
+            "name": "다이아몬드 블록",
+            "desc": ""
+        },
+        "workbench": {
+            "name": "제작대",
+            "desc": ""
+        },
+        "crops": {
+            "name": "작물",
+            "desc": ""
+        },
+        "farmland": {
+            "name": "경작지",
+            "desc": ""
+        },
+        "furnace": {
+            "name": "화로",
+            "desc": ""
+        },
+        "sign": {
+            "name": "표지판",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "나무 문",
+            "desc": ""
+        },
+        "ladder": {
+            "name": "사다리",
+            "desc": ""
+        },
+        "rail": {
+            "name": "레일",
+            "desc": ""
+        },
+        "goldenRail": {
+            "name": "전동 레일",
+            "desc": ""
+        },
+        "detectorRail": {
+            "name": "탐지 레일",
+            "desc": ""
+        },
+        "stairsStone": {
+            "name": "돌 계단",
+            "desc": ""
+        },
+        "lever": {
+            "name": "레버",
+            "desc": ""
+        },
+        "pressurePlate": {
+            "name": "압력판",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "철 문",
+            "desc": ""
+        },
+        "oreRedstone": {
+            "name": "레드스톤 광석",
+            "desc": ""
+        },
+        "notGate": {
+            "name": "레드스톤 횃불",
+            "desc": ""
+        },
+        "button": {
+            "name": "버튼",
+            "desc": ""
+        },
+        "snow": {
+            "name": "눈",
+            "desc": ""
+        },
+        "ice": {
+            "name": "얼음",
+            "desc": ""
+        },
+        "cactus": {
+            "name": "선인장",
+            "desc": ""
+        },
+        "clay": {
+            "name": "점토",
+            "desc": ""
+        },
+        "reeds": {
+            "name": "사탕수수",
+            "desc": ""
+        },
+        "jukebox": {
+            "name": "주크박스",
+            "desc": ""
+        },
+        "fence": {
+            "name": "울타리",
+            "desc": ""
+        },
+        "pumpkin": {
+            "name": "호박",
+            "desc": ""
+        },
+        "litpumpkin": {
+            "name": "잭오랜턴",
+            "desc": ""
+        },
+        "hellrock": {
+            "name": "네더랙",
+            "desc": ""
+        },
+        "hellsand": {
+            "name": "영혼 모래",
+            "desc": ""
+        },
+        "lightgem": {
+            "name": "발광석",
+            "desc": ""
+        },
+        "portal": {
+            "name": "포탈",
+            "desc": ""
+        },
+        "oreLapis": {
+            "name": "청금석 광석",
+            "desc": ""
+        },
+        "blockLapis": {
+            "name": "청금석 블록",
+            "desc": ""
+        },
+        "dispenser": {
+            "name": "발사기",
+            "desc": ""
+        },
+        "musicBlock": {
+            "name": "소리 블록",
+            "desc": ""
+        },
+        "cake": {
+            "name": "케이크",
+            "desc": ""
+        },
+        "bed": {
+            "name": "침대",
+            "desc": "",
+            "occupied": "이 침대는 사용 중입니다",
+            "noSleep": "밤에만 잠을 잘 수 있습니다",
+            "notValid": "침대가 없거나 막혀 있습니다"
+        },
+        "lockedchest": {
+            "name": "잠긴 상자",
+            "desc": ""
+        },
+        "trapdoor": {
+            "name": "다락문",
+            "desc": ""
+        },
+        "web": {
+            "name": "거미줄",
+            "desc": ""
+        },
+        "stonebricksmooth": {
+            "name": "석재 벽돌",
+            "desc": ""
+        },
+        "pistonBase": {
+            "name": "피스톤",
+            "desc": ""
+        },
+        "pistonStickyBase": {
+            "name": "끈끈이 피스톤",
+            "desc": ""
+        }
+    },
+    "item": {
+        "shovelIron": {
+            "name": "철 삽",
+            "desc": ""
+        },
+        "pickaxeIron": {
+            "name": "철 곡괭이",
+            "desc": ""
+        },
+        "hatchetIron": {
+            "name": "철 도끼",
+            "desc": ""
+        },
+        "flintAndSteel": {
+            "name": "부싯돌과 부시",
+            "desc": ""
+        },
+        "apple": {
+            "name": "사과",
+            "desc": ""
+        },
+        "cookie": {
+            "name": "쿠키",
+            "desc": ""
+        },
+        "bow": {
+            "name": "활",
+            "desc": ""
+        },
+        "arrow": {
+            "name": "화살",
+            "desc": ""
+        },
+        "coal": {
+            "name": "석탄",
+            "desc": ""
+        },
+        "charcoal": {
+            "name": "목탄",
+            "desc": ""
+        },
+        "diamond": {
+            "name": "다이아몬드",
+            "desc": ""
+        },
+        "ingotIron": {
+            "name": "철 주괴",
+            "desc": ""
+        },
+        "ingotGold": {
+            "name": "금 주괴",
+            "desc": ""
+        },
+        "swordIron": {
+            "name": "철 검",
+            "desc": ""
+        },
+        "swordWood": {
+            "name": "나무 검",
+            "desc": ""
+        },
+        "shovelWood": {
+            "name": "나무 삽",
+            "desc": ""
+        },
+        "pickaxeWood": {
+            "name": "나무 곡괭이",
+            "desc": ""
+        },
+        "hatchetWood": {
+            "name": "나무 도끼",
+            "desc": ""
+        },
+        "swordStone": {
+            "name": "돌 검",
+            "desc": ""
+        },
+        "shovelStone": {
+            "name": "돌 삽",
+            "desc": ""
+        },
+        "pickaxeStone": {
+            "name": "돌 곡괭이",
+            "desc": ""
+        },
+        "hatchetStone": {
+            "name": "돌 도끼",
+            "desc": ""
+        },
+        "swordDiamond": {
+            "name": "다이아몬드 검",
+            "desc": ""
+        },
+        "shovelDiamond": {
+            "name": "다이아몬드 삽",
+            "desc": ""
+        },
+        "pickaxeDiamond": {
+            "name": "다이아몬드 곡괭이",
+            "desc": ""
+        },
+        "hatchetDiamond": {
+            "name": "다이아몬드 도끼",
+            "desc": ""
+        },
+        "stick": {
+            "name": "막대기",
+            "desc": ""
+        },
+        "bowl": {
+            "name": "그릇",
+            "desc": ""
+        },
+        "mushroomStew": {
+            "name": "버섯 스튜",
+            "desc": ""
+        },
+        "swordGold": {
+            "name": "금 검",
+            "desc": ""
+        },
+        "shovelGold": {
+            "name": "금 삽",
+            "desc": ""
+        },
+        "pickaxeGold": {
+            "name": "금 곡괭이",
+            "desc": ""
+        },
+        "hatchetGold": {
+            "name": "금 도끼",
+            "desc": ""
+        },
+        "string": {
+            "name": "실",
+            "desc": ""
+        },
+        "feather": {
+            "name": "깃털",
+            "desc": ""
+        },
+        "gunpowder": {
+            "name": "화약",
+            "desc": ""
+        },
+        "hoeWood": {
+            "name": "나무 괭이",
+            "desc": ""
+        },
+        "hoeStone": {
+            "name": "돌 괭이",
+            "desc": ""
+        },
+        "hoeIron": {
+            "name": "철 괭이",
+            "desc": ""
+        },
+        "hoeDiamond": {
+            "name": "다이아몬드 괭이",
+            "desc": ""
+        },
+        "hoeGold": {
+            "name": "금 괭이",
+            "desc": ""
+        },
+        "seeds": {
+            "name": "씨앗",
+            "desc": ""
+        },
+        "wheat": {
+            "name": "밀",
+            "desc": ""
+        },
+        "bread": {
+            "name": "빵",
+            "desc": ""
+        },
+        "helmetLeather": {
+            "name": "가죽 모자",
+            "desc": ""
+        },
+        "chestplateLeather": {
+            "name": "가죽 조끼",
+            "desc": ""
+        },
+        "leggingsLeather": {
+            "name": "가죽 바지",
+            "desc": ""
+        },
+        "bootsLeather": {
+            "name": "가죽 장화",
+            "desc": ""
+        },
+        "helmetChain": {
+            "name": "사슬 투구",
+            "desc": ""
+        },
+        "chestplateChain": {
+            "name": "사슬 갑옷",
+            "desc": ""
+        },
+        "leggingsChain": {
+            "name": "사슬 레깅스",
+            "desc": ""
+        },
+        "bootsChain": {
+            "name": "사슬 부츠",
+            "desc": ""
+        },
+        "helmetIron": {
+            "name": "철 투구",
+            "desc": ""
+        },
+        "chestplateIron": {
+            "name": "철 흉갑",
+            "desc": ""
+        },
+        "leggingsIron": {
+            "name": "철 레깅스",
+            "desc": ""
+        },
+        "bootsIron": {
+            "name": "철 부츠",
+            "desc": ""
+        },
+        "helmetDiamond": {
+            "name": "다이아몬드 투구",
+            "desc": ""
+        },
+        "chestplateDiamond": {
+            "name": "다이아몬드 흉갑",
+            "desc": ""
+        },
+        "leggingsDiamond": {
+            "name": "다이아몬드 레깅스",
+            "desc": ""
+        },
+        "bootsDiamond": {
+            "name": "다이아몬드 부츠",
+            "desc": ""
+        },
+        "helmetGold": {
+            "name": "금 투구",
+            "desc": ""
+        },
+        "chestplateGold": {
+            "name": "금 흉갑",
+            "desc": ""
+        },
+        "leggingsGold": {
+            "name": "금 레깅스",
+            "desc": ""
+        },
+        "bootsGold": {
+            "name": "금 부츠",
+            "desc": ""
+        },
+        "flint": {
+            "name": "부싯돌",
+            "desc": ""
+        },
+        "porkchopRaw": {
+            "name": "익히지 않은 돼지고기",
+            "desc": ""
+        },
+        "porkchopCooked": {
+            "name": "익힌 돼지고기",
+            "desc": ""
+        },
+        "painting": {
+            "name": "그림",
+            "desc": ""
+        },
+        "appleGold": {
+            "name": "황금 사과",
+            "desc": ""
+        },
+        "sign": {
+            "name": "표지판",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "나무 문",
+            "desc": ""
+        },
+        "bucket": {
+            "name": "양동이",
+            "desc": ""
+        },
+        "bucketWater": {
+            "name": "물 양동이",
+            "desc": ""
+        },
+        "bucketLava": {
+            "name": "용암 양동이",
+            "desc": ""
+        },
+        "minecart": {
+            "name": "광산 수레",
+            "desc": ""
+        },
+        "saddle": {
+            "name": "안장",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "철 문",
+            "desc": ""
+        },
+        "redstone": {
+            "name": "레드스톤",
+            "desc": ""
+        },
+        "snowball": {
+            "name": "눈덩이",
+            "desc": ""
+        },
+        "boat": {
+            "name": "보트",
+            "desc": ""
+        },
+        "leather": {
+            "name": "가죽",
+            "desc": ""
+        },
+        "milk": {
+            "name": "우유",
+            "desc": ""
+        },
+        "brick": {
+            "name": "벽돌",
+            "desc": ""
+        },
+        "clay": {
+            "name": "점토",
+            "desc": ""
+        },
+        "sugarCanes": {
+            "name": "사탕수수",
+            "desc": ""
+        },
+        "paper": {
+            "name": "종이",
+            "desc": ""
+        },
+        "book": {
+            "name": "책",
+            "desc": ""
+        },
+        "slimeball": {
+            "name": "슬라임볼",
+            "desc": ""
+        },
+        "minecartChest": {
+            "name": "상자가 실린 광산 수레",
+            "desc": ""
+        },
+        "minecartFurnace": {
+            "name": "화로가 실린 광산 수레",
+            "desc": ""
+        },
+        "egg": {
+            "name": "달걀",
+            "desc": ""
+        },
+        "compass": {
+            "name": "나침반",
+            "desc": ""
+        },
+        "fishingRod": {
+            "name": "낚싯대",
+            "desc": ""
+        },
+        "clock": {
+            "name": "시계",
+            "desc": ""
+        },
+        "yellowDust": {
+            "name": "발광석 가루",
+            "desc": ""
+        },
+        "fishRaw": {
+            "name": "날 생선",
+            "desc": ""
+        },
+        "fishCooked": {
+            "name": "익힌 생선",
+            "desc": ""
+        },
+        "record": {
+            "name": "음반",
+            "desc": ""
+        },
+        "bone": {
+            "name": "뼈",
+            "desc": ""
+        },
+        "dyePowder": {
+            "black": {
+                "name": "먹물",
+                "desc": ""
+            },
+            "red": {
+                "name": "장미 붉은색",
+                "desc": ""
+            },
+            "green": {
+                "name": "선인장 초록색",
+                "desc": ""
+            },
+            "brown": {
+                "name": "코코아 콩",
+                "desc": ""
+            },
+            "blue": {
+                "name": "청금석",
+                "desc": ""
+            },
+            "purple": {
+                "name": "보라색 염료",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "청록색 염료",
+                "desc": ""
+            },
+            "silver": {
+                "name": "회백색 염료",
+                "desc": ""
+            },
+            "gray": {
+                "name": "회색 염료",
+                "desc": ""
+            },
+            "pink": {
+                "name": "분홍색 염료",
+                "desc": ""
+            },
+            "lime": {
+                "name": "연두색 염료",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "민들레 노란색",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "하늘색 염료",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "자홍색 염료",
+                "desc": ""
+            },
+            "orange": {
+                "name": "주황색 염료",
+                "desc": ""
+            },
+            "white": {
+                "name": "뼛가루",
+                "desc": ""
+            }
+        },
+        "sugar": {
+            "name": "설탕",
+            "desc": ""
+        },
+        "cake": {
+            "name": "케이크",
+            "desc": ""
+        },
+        "bed": {
+            "name": "침대",
+            "desc": ""
+        },
+        "redstoneRepeater": {
+            "name": "레드스톤 중계기",
+            "desc": ""
+        },
+        "map": {
+            "name": "지도",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "나뭇잎",
+            "desc": ""
+        },
+        "shears": {
+            "name": "가위",
+            "desc": ""
+        }
+    },
+    "stat": {
+        "generalButton": "일반",
+        "blocksButton": "블록",
+        "itemsButton": "아이템",
+        "used": "사용 횟수",
+        "mined": "캔 횟수",
+        "depleted": "소모 횟수",
+        "crafted": "제작 횟수",
+        "startGame": "플레이 횟수",
+        "createWorld": "플레이한 세계",
+        "loadWorld": "불러온 저장 파일",
+        "joinMultiplayer": "멀티플레이 접속 횟수",
+        "leaveGame": "게임 종료 횟수",
+        "playOneMinute": "플레이 시간(분)",
+        "walkOneCm": "걸은 거리",
+        "fallOneCm": "떨어진 거리",
+        "swimOneCm": "수영한 거리",
+        "flyOneCm": "비행 거리",
+        "climbOneCm": "오른 거리",
+        "diveOneCm": "잠수한 거리",
+        "minecartOneCm": "수레로 이동한 거리",
+        "boatOneCm": "보트로 이동한 거리",
+        "pigOneCm": "돼지로 이동한 거리",
+        "jump": "점프 횟수",
+        "drop": "버린 아이템 수",
+        "damageDealt": "가한 피해량",
+        "damageTaken": "받은 피해량",
+        "deaths": "사망 횟수",
+        "mobKills": "몹 처치 수",
+        "playerKills": "플레이어 처치 수",
+        "fishCaught": "잡은 물고기 수",
+        "mineBlock": "{0} 캠",
+        "craftItem": "{0} 제작함",
+        "useItem": "{0} 사용함",
+        "breakItem": "{0} 부서짐"
+    },
+    "achievements.title": "도전 과제",
+    "achievement": {
+        "get": "도전 과제 달성!",
+        "taken": "달성됨!",
+        "challenge": "도전",
+        "unlocked": "잠금 해제됨",
+        "locked": "잠김",
+        "requires": "'{0}' 필요",
+        "openInventory": {
+            "title": "보관함 확인하기",
+            "desc": "보관함을 엽니다."
+        },
+        "mineWood": {
+            "title": "나무 베기",
+            "desc": "나무 블록이 떨어질 때까지 나무를 공격하세요"
+        },
+        "buildWorkBench": {
+            "title": "제작의 기본",
+            "desc": "나무 판자 4개로 제작대를 만드세요"
+        },
+        "buildPickaxe": {
+            "title": "광질할 시간!",
+            "desc": "판자와 막대기로 곡괭이를 만드세요"
+        },
+        "buildFurnace": {
+            "title": "뜨거운 화제",
+            "desc": "조약돌 8개로 화로를 만드세요"
+        },
+        "acquireIron": {
+            "title": "하드웨어 확보",
+            "desc": "철 주괴를 구우세요"
+        },
+        "buildHoe": {
+            "title": "농사지을 시간!",
+            "desc": "판자와 막대기로 괭이를 만드세요"
+        },
+        "makeBread": {
+            "title": "빵 굽기",
+            "desc": "밀로 빵을 만드세요"
+        },
+        "bakeCake": {
+            "title": "거짓말",
+            "desc": "밀, 설탕, 우유, 그리고 달걀!"
+        },
+        "buildBetterPickaxe": {
+            "title": "업그레이드",
+            "desc": "더 좋은 곡괭이를 만드세요"
+        },
+        "cookFish": {
+            "title": "맛있는 물고기",
+            "desc": "물고기를 잡고 구우세요!"
+        },
+        "onARail": {
+            "title": "레일 위에서",
+            "desc": "출발점에서 광산 수레를 타고 최소 1km를 이동하세요"
+        },
+        "buildSword": {
+            "title": "공격할 시간!",
+            "desc": "판자와 막대기로 검을 만드세요"
+        },
+        "killEnemy": {
+            "title": "몬스터 사냥꾼",
+            "desc": "몬스터를 공격하고 처치하세요"
+        },
+        "killCow": {
+            "title": "소가죽 공예",
+            "desc": "가죽을 약간 모으세요"
+        },
+        "flyPig": {
+            "title": "돼지가 날 때",
+            "desc": "돼지를 타고 절벽에서 떨어지세요"
+        }
+    },
+    "credits": {
+        "version": "BetaSharp 버전 %1$s",
+        "description": "C#으로 작성된 향상된 마인크래프트 Beta 1.7.3입니다.",
+        "github": "GitHub 정보",
+        "author": "Fazin85 제작",
+        "libs": "라이브러리",
+        "slik": "Slik.NET - 그래픽",
+        "imgui": "ImGui - 디버그 UI",
+        "sfml": "SFML.NET - 오디오",
+        "sixlabors": "SixLabors - 폰트, 이미지 처리",
+        "translations": "번역 크레딧"
+    }
+}
