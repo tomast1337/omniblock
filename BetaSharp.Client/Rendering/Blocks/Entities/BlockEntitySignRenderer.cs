@@ -2,6 +2,7 @@ using BetaSharp.Blocks;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Guis;
 using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Entities.Models;
 
 namespace BetaSharp.Client.Rendering.Blocks.Entities;
@@ -52,7 +53,15 @@ public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
         bindTextureByName("/item/sign.png");
         GLManager.GL.PushMatrix();
         GLManager.GL.Scale(modelScale, -modelScale, -modelScale);
+
+        // Block entities are drawn inside the instancing pass (WorldRenderer opens it around them),
+        // and ModelSign is a BbModelEntityModel, so the board was submitted here and drawn when the
+        // pass ended, under whatever state had been set by then rather than this one. The text below
+        // goes through the tessellator and drew correctly, which is why only the board looked wrong.
+        EntityInstanceBatchRenderer.Instance.ForceLegacyPath = true;
         _modelSign.Render();
+        EntityInstanceBatchRenderer.Instance.ForceLegacyPath = false;
+
         GLManager.GL.PopMatrix();
         TextRenderer fontRenderer = getFontRenderer();
         rotationYaw = (float)(1.0D / 60.0D) * modelScale;
