@@ -30,6 +30,10 @@ uniform mat4 projectionMatrix;
 // Start index of this draw's instances in InstanceBuffer.
 uniform int instanceBase;
 
+// Same transform the fixed-function path applies to texture coordinates. Usually identity; the
+// charged creeper's glow scrolls its overlay with it.
+uniform mat4 textureMatrix;
+
 uniform bool lightingEnabled;
 uniform vec3 ambient;
 uniform vec3 light0Dir;
@@ -58,7 +62,7 @@ void main()
     float a = clamp(inst.tint.a, 0.0, 1.0);
 
     vertexColor = vec4(rgb, a);
-    texCoord = inUV;
+    texCoord = (textureMatrix * vec4(inUV, 0.0, 1.0)).xy;
     partId = inPartId;
 
     fogDistance = length(worldPos.xyz);

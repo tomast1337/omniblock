@@ -51,11 +51,38 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
     private readonly float[] _flushData = new float[MaxInstances * FloatsPerInstance];
     private int _instanceCount;
 
-    // One bucket per (model, texture) pair seen this frame.
-    private readonly record struct Bucket(int VertexBase, int VertexCount, uint TextureId);
+    /// <summary>
+    ///     Everything about how a draw is rasterised and shaded that a caller can change between one
+    ///     submission and the next.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         An instance is not drawn where it is submitted but when the batch is flushed, so all
+    ///         of this has to be recorded at submission. It used to be read from the GL state at
+    ///         flush instead, which meant every instance was drawn under the state of whatever
+    ///         happened to run last — the reason four renderers had to opt out of instancing
+    ///         entirely to get a translucent slime shell, an additive creeper glow, a sign board and
+    ///         a depth-equal hurt flash.
+    ///     </para>
+    ///     <para>
+    ///         The projection matrix and the fog are deliberately not here. Both are set once per
+    ///         render pass and nothing inside the pass changes them, so sampling them at flush is
+    ///         still correct. If that ever stops being true they belong here too, and the symptom
+    ///         will look exactly like the four bugs above.
+    ///     </para>
+    /// </remarks>
+    private readonly record struct DrawState(
+        RenderState Raster,
+        bool UseTexture,
+        float AlphaThreshold,
+        EntityLightingSnapshot Lighting,
+        Matrix4X4<float> TextureMatrix);
+
+    // One bucket per (model, texture, draw state) seen this frame.
+    private readonly record struct Bucket(int VertexBase, int VertexCount, uint TextureId, DrawState Draw);
     private readonly List<Bucket> _buckets = [];
     private readonly List<List<int>> _bucketInstanceIndices = [];
-    private readonly Dictionary<(ModelBase Model, uint TextureId), int> _bucketIndexByKey = [];
+    private readonly Dictionary<(ModelBase Model, uint TextureId, DrawState Draw), int> _bucketIndexByKey = [];
 
     private bool _active;
 
@@ -177,25 +204,6 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
     /// <summary>Whether a pass is open. Gates <see cref="Models.BbModelEntityModel.Render"/>'s choice of path.</summary>
     public bool IsActive => _active;
 
-    /// <summary>
-    /// Forces the legacy per-vertex path even while <see cref="IsActive"/>.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Two reasons so far. There is no no-texture draw mode here, so
-    /// <see cref="LivingEntityRenderer"/>'s color-only hurt and death flash sets this rather than
-    /// submitting an instance, which always samples a texture.
-    /// </para>
-    /// <para>
-    /// And anything drawn under non-default blend, depth or alpha state has to, because an instance
-    /// is not drawn where it is submitted but when the pass ends, by which time that state is gone.
-    /// The legacy batch flushes on every raster state change and so keeps the state each piece of
-    /// geometry was posed under; this one has no equivalent. Bucketing instances by
-    /// <see cref="Core.RenderState"/> would remove the need for both of these.
-    /// </para>
-    /// </remarks>
-    public bool ForceLegacyPath { get; set; }
-
     /// <summary>Opens a per-frame instancing pass.</summary>
     public void Begin()
     {
@@ -249,12 +257,24 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         _instanceData[tintOffset + 2] = tint.Z;
         _instanceData[tintOffset + 3] = tint.W;
 
-        (ModelBase, uint) key = (model, textureId);
+        EmulatedGL gl = (EmulatedGL)GLManager.GL;
+        DrawState draw = new(
+            GLManager.State.Current,
+            gl.GetTextureEnabled(),
+            gl.GetCurrentAlphaThreshold(),
+            gl.GetLightingState(),
+            GLManager.TextureMatrix.Top);
+
+        // A colour-only draw samples nothing, so the bound texture is not part of what it looks
+        // like. Keying on it anyway would split one bucket per texture that happened to be bound.
+        uint bucketTexture = draw.UseTexture ? textureId : 0;
+
+        (ModelBase, uint, DrawState) key = (model, bucketTexture, draw);
         if (!_bucketIndexByKey.TryGetValue(key, out int bucketIndex))
         {
             bucketIndex = _buckets.Count;
             _bucketIndexByKey[key] = bucketIndex;
-            _buckets.Add(new Bucket(model.StaticVertexBase, model.StaticVertexCount, textureId));
+            _buckets.Add(new Bucket(model.StaticVertexBase, model.StaticVertexCount, bucketTexture, draw));
             // Reuse a pooled (already-cleared) list from a previous frame if one exists at this
             // index rather than allocating a new one every frame.
             if (bucketIndex == _bucketInstanceIndices.Count)
@@ -288,6 +308,7 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         EnsureStaticBufferUploaded();
 
         uint callerTexture = _legacyGL.BoundTexture2D;
+        RenderState callerState = GLManager.State.Current;
 
         // Submissions interleave by entity, not by bucket, so pack each bucket's instances
         // contiguously into _flushData before upload — DrawArraysInstanced needs its instances
@@ -311,13 +332,17 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         }
 
         GLManager.GL.UseProgram(_shader.ProgramId);
-        UploadState();
+        UploadPassState();
 
         _silkGL.BindVertexArray(_vaoId);
 
+        // Buckets are drawn in the order they were first submitted to, which is what keeps a
+        // translucent shell behind the body it covers and a depth-equal flash behind the depths it
+        // matches. Reordering them would break both.
         for (int b = 0; b < _buckets.Count; b++)
         {
             Bucket bucket = _buckets[b];
+            UploadDrawState(bucket.Draw);
             _shader.SetUniform1("instanceBase", bucketStarts[b]);
             _silkGL.ActiveTexture(TextureUnit.Texture0);
             _silkGL.BindTexture(TextureTarget.Texture2D, bucket.TextureId);
@@ -330,11 +355,22 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         GLManager.GL.UseProgram(0);
         _silkGL.BindTexture(TextureTarget.Texture2D, callerTexture);
 
+        // A flush can happen part way through a renderer, so put back the pipeline state the caller
+        // was working under rather than leaving it on whichever bucket happened to be drawn last.
+        GLManager.State.Apply(callerState);
+
         ResetBuckets();
     }
 
-    /// <summary>Mirrors the fixed-function state the queued instances were posed under.</summary>
-    private void UploadState()
+    /// <summary>
+    ///     The part of the shader's state that is the same for every bucket in the flush.
+    /// </summary>
+    /// <remarks>
+    ///     Read from GL now rather than recorded at submission, which is only correct because
+    ///     nothing between a <see cref="Begin" /> and its <see cref="End" /> changes the projection
+    ///     or the fog. See <see cref="DrawState" /> for the ones that could not stay here.
+    /// </remarks>
+    private void UploadPassState()
     {
         EmulatedGL gl = (EmulatedGL)GLManager.GL;
 
@@ -347,19 +383,9 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
             projectionData[12], projectionData[13], projectionData[14], projectionData[15]);
 
         EntityFogSnapshot fog = gl.GetFogState();
-        EntityLightingSnapshot lighting = gl.GetLightingState();
 
         _shader.SetUniformMatrix4("projectionMatrix", projection);
         _shader.SetUniform1("textureSampler", 0);
-        _shader.SetUniform1("useTexture", 1);
-        _shader.SetUniform1("alphaThreshold", gl.GetCurrentAlphaThreshold());
-
-        _shader.SetUniform1("lightingEnabled", lighting.Enabled ? 1 : 0);
-        _shader.SetUniform3("ambient", lighting.Ambient);
-        _shader.SetUniform3("light0Dir", lighting.Light0Dir);
-        _shader.SetUniform3("light0Diffuse", lighting.Light0Diffuse);
-        _shader.SetUniform3("light1Dir", lighting.Light1Dir);
-        _shader.SetUniform3("light1Diffuse", lighting.Light1Diffuse);
 
         _shader.SetUniform1("fogEnabled", fog.Enabled ? 1 : 0);
         _shader.SetUniform1("fogMode", fog.Mode);
@@ -367,6 +393,23 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         _shader.SetUniform1("fogEnd", fog.End);
         _shader.SetUniform1("fogDensity", fog.Density);
         _shader.SetUniform4("fogColor", fog.Color);
+    }
+
+    /// <summary>Puts back the state one bucket's instances were submitted under.</summary>
+    private void UploadDrawState(in DrawState draw)
+    {
+        GLManager.State.Apply(draw.Raster);
+
+        _shader.SetUniform1("useTexture", draw.UseTexture ? 1 : 0);
+        _shader.SetUniform1("alphaThreshold", draw.AlphaThreshold);
+        _shader.SetUniformMatrix4("textureMatrix", draw.TextureMatrix);
+
+        _shader.SetUniform1("lightingEnabled", draw.Lighting.Enabled ? 1 : 0);
+        _shader.SetUniform3("ambient", draw.Lighting.Ambient);
+        _shader.SetUniform3("light0Dir", draw.Lighting.Light0Dir);
+        _shader.SetUniform3("light0Diffuse", draw.Lighting.Light0Diffuse);
+        _shader.SetUniform3("light1Dir", draw.Lighting.Light1Dir);
+        _shader.SetUniform3("light1Diffuse", draw.Lighting.Light1Diffuse);
     }
 
     public void Dispose()

@@ -32,6 +32,21 @@ public sealed class RenderStateApplier
     /// </summary>
     public void Invalidate() => _known = false;
 
+    /// <summary>
+    ///     The state currently in effect.
+    /// </summary>
+    /// <remarks>
+    ///     Only answerable because the cache is the truth, which is a recent thing. It is what lets a
+    ///     deferred renderer record the state a draw was submitted under and reproduce it later,
+    ///     rather than drawing under whatever happens to be set when its batch is finally flushed.
+    ///     Throws rather than guessing after <see cref="Invalidate" />: a caller that needs this
+    ///     needs it to be right, and there is no honest answer before the first <see cref="Apply" />.
+    /// </remarks>
+    public RenderState Current => _known
+        ? _current
+        : throw new InvalidOperationException(
+            "The render state is not known. Something set it outside the applier and invalidated the cache; apply a state before asking what is set.");
+
     public void Apply(in RenderState state)
     {
         if (_known && _current == state)

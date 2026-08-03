@@ -54,13 +54,13 @@ public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
         GLManager.GL.PushMatrix();
         GLManager.GL.Scale(modelScale, -modelScale, -modelScale);
 
-        // Block entities are drawn inside the instancing pass (WorldRenderer opens it around them),
-        // and ModelSign is a BbModelEntityModel, so the board was submitted here and drawn when the
-        // pass ended, under whatever state had been set by then rather than this one. The text below
-        // goes through the tessellator and drew correctly, which is why only the board looked wrong.
-        EntityInstanceBatchRenderer.Instance.ForceLegacyPath = true;
         _modelSign.Render();
-        EntityInstanceBatchRenderer.Instance.ForceLegacyPath = false;
+
+        // Block entities are drawn inside the instancing pass (WorldRenderer opens it around them)
+        // and ModelSign is a BbModelEntityModel, so the board is queued rather than drawn. The text
+        // below is not — it goes through the tessellator, straight to the screen — and it sits a
+        // hair in front of the board, so the board has to reach the depth buffer first.
+        EntityInstanceBatchRenderer.Instance.Flush();
 
         GLManager.GL.PopMatrix();
         TextRenderer fontRenderer = getFontRenderer();

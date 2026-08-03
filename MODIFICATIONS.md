@@ -96,3 +96,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-03 — refactor(timer): standardize variable naming and improve encapsulation in Timer class (Nicolas Vyčas Nery; `5fb0ba9f1aef85270b71de7ddedcea146d018fe8`)
 - 2026-08-03 — Refactor UI components for improved readability and maintainability (Nicolas Vyčas Nery; `d14088b692a8f6f309edec4beb86361e0bf5c113`)
 - 2026-08-03 — refactor(rendering): let the render state cache be believed (Nicolas Vyčas Nery; `0dfd87e0dc7637c688bf825967d930c78d44d49a`)
+- 2026-08-03 — refactor(rendering): give an instance the state it was posed under (Nicolas Vyčas Nery; `8f67a1f1e2402531bfcfd8e46e6822a1eef3cf71`)

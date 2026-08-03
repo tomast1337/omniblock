@@ -586,6 +586,9 @@ public unsafe class EmulatedGL : LegacyGL
     public Vector4D<float> GetCurrentColorTint() => _currentColorTint;
     public float GetCurrentAlphaThreshold() => _alphaTestEnabled ? _alphaThreshold : -1.0f;
 
+    /// <summary>Whether <c>Texture2D</c> is enabled, i.e. whether a draw would sample its texture.</summary>
+    public bool GetTextureEnabled() => _useTexture;
+
     public EntityFogSnapshot GetFogState() => new(
         _fogState.FogEnabled,
         _fogState.FogMode,

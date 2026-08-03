@@ -78,7 +78,7 @@ public class BbModelEntityModel : ModelBase
     {
         SetRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale);
 
-        if (EntityInstanceBatchRenderer.Instance.IsActive && !EntityInstanceBatchRenderer.Instance.ForceLegacyPath)
+        if (EntityInstanceBatchRenderer.Instance.IsActive)
         {
             Span<System.Numerics.Matrix4x4> poseMatrices = stackalloc System.Numerics.Matrix4x4[ModelPart.MaxPartsPerModel];
             foreach (string boneName in _renderOrder)
