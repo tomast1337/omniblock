@@ -677,10 +677,13 @@ public class GameRenderer
             int cameraBlockY = MathHelper.Floor(camera.Y);
             int cameraBlockZ = MathHelper.Floor(camera.Z);
             Tessellator tessellator = Tessellator.instance;
-            GLManager.GL.Disable(GLEnum.CullFace);
+
+            // Culling off because the rain and snow quads are camera-facing strips with no
+            // meaningful back, and still depth writing, which is what they have always done.
+            GLManager.State.ApplyUntrusted(RenderState.Entity with { Blend = BlendMode.Alpha });
             GLManager.GL.Normal3(0.0F, 1.0F, 0.0F);
-            GLManager.GL.Enable(GLEnum.Blend);
-            GLManager.GL.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+
+            // Lower than the usual 0.1 so the faint tail of a raindrop is not cut off.
             GLManager.GL.AlphaFunc(GLEnum.Greater, 0.01F);
             _client.TextureManager.BindTexture(_client.TextureManager.GetTextureId("/environment/snow.png"));
             double renderX = camera.LastTickX + (camera.X - camera.LastTickX) * tickDelta;
@@ -812,8 +815,7 @@ public class GameRenderer
                 }
             }
 
-            GLManager.GL.Enable(GLEnum.CullFace);
-            GLManager.GL.Disable(GLEnum.Blend);
+            GLManager.State.ApplyUntrusted(RenderState.Opaque);
             GLManager.GL.AlphaFunc(GLEnum.Greater, 0.1F);
         }
     }
