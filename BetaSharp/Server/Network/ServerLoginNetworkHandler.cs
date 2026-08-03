@@ -135,7 +135,7 @@ public class ServerLoginNetworkHandler : NetHandler
             ent.SetWorld(server.getWorld(ent.DimensionId));
             _logger.LogInformation($"{getConnectionInfo()} logged in with entity id {ent.ID} at ({ent.X}, {ent.Y}, {ent.Z})");
             ServerWorld playerWorld = server.getWorld(ent.DimensionId);
-            Vec3i spawnPos = playerWorld.Properties.GetSpawnPos();
+            Vec3I spawnPos = playerWorld.Properties.GetSpawnPos();
             ServerPlayNetworkHandler handler = new ServerPlayNetworkHandler(server, connection, ent);
             handler.SendPacket(LoginHelloPacket.Get("", ent.ID, playerWorld.Seed, (sbyte)playerWorld.Dimension.Id));
             server.SendConfigurationTo(handler.SendPacket);

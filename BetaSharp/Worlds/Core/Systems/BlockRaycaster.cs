@@ -16,18 +16,18 @@ public static class BlockRaycaster
 {
     public static HitResult Cast(IBlockReader reader, EntityManager entities, Vec3D start, Vec3D end, bool includeFluids, bool ignoreNonSolid)
     {
-        if (double.IsNaN(start.x) || double.IsNaN(start.y) || double.IsNaN(start.z) ||
-            double.IsNaN(end.x) || double.IsNaN(end.y) || double.IsNaN(end.z))
+        if (double.IsNaN(start.X) || double.IsNaN(start.Y) || double.IsNaN(start.Z) ||
+            double.IsNaN(end.X) || double.IsNaN(end.Y) || double.IsNaN(end.Z))
         {
             return new HitResult(HitResultType.Miss);
         }
 
-        int targetX = MathHelper.Floor(end.x);
-        int targetY = MathHelper.Floor(end.y);
-        int targetZ = MathHelper.Floor(end.z);
-        int currentX = MathHelper.Floor(start.x);
-        int currentY = MathHelper.Floor(start.y);
-        int currentZ = MathHelper.Floor(start.z);
+        int targetX = MathHelper.Floor(end.X);
+        int targetY = MathHelper.Floor(end.Y);
+        int targetZ = MathHelper.Floor(end.Z);
+        int currentX = MathHelper.Floor(start.X);
+        int currentY = MathHelper.Floor(start.Y);
+        int currentZ = MathHelper.Floor(start.Z);
 
         int initialId = reader.GetBlockId(currentX, currentY, currentZ);
         int initialMeta = reader.GetBlockMeta(currentX, currentY, currentZ);
@@ -47,7 +47,7 @@ public static class BlockRaycaster
         int iterationsRemaining = 200;
         while (iterationsRemaining-- >= 0)
         {
-            if (double.IsNaN(start.x) || double.IsNaN(start.y) || double.IsNaN(start.z) || currentX == targetX && currentY == targetY && currentZ == targetZ)
+            if (double.IsNaN(start.X) || double.IsNaN(start.Y) || double.IsNaN(start.Z) || currentX == targetX && currentY == targetY && currentZ == targetZ)
             {
                 return new HitResult(HitResultType.Miss);
             }
@@ -94,69 +94,69 @@ public static class BlockRaycaster
                 canMoveZ = false;
             }
 
-            double deltaX = end.x - start.x;
-            double deltaY = end.y - start.y;
-            double deltaZ = end.z - start.z;
+            double deltaX = end.X - start.X;
+            double deltaY = end.Y - start.Y;
+            double deltaZ = end.Z - start.Z;
 
             double scaleX = 999.0D, scaleY = 999.0D, scaleZ = 999.0D;
             if (canMoveX)
             {
-                scaleX = (nextBoundaryX - start.x) / deltaX;
+                scaleX = (nextBoundaryX - start.X) / deltaX;
             }
 
             if (canMoveY)
             {
-                scaleY = (nextBoundaryY - start.y) / deltaY;
+                scaleY = (nextBoundaryY - start.Y) / deltaY;
             }
 
             if (canMoveZ)
             {
-                scaleZ = (nextBoundaryZ - start.z) / deltaZ;
+                scaleZ = (nextBoundaryZ - start.Z) / deltaZ;
             }
 
             byte hitSide;
             if (scaleX < scaleY && scaleX < scaleZ)
             {
                 hitSide = (byte)(targetX > currentX ? 4 : 5);
-                start.x = nextBoundaryX;
-                start.y += deltaY * scaleX;
-                start.z += deltaZ * scaleX;
+                start.X = nextBoundaryX;
+                start.Y += deltaY * scaleX;
+                start.Z += deltaZ * scaleX;
             }
             else if (scaleY < scaleZ)
             {
                 hitSide = (byte)(targetY > currentY ? 0 : 1);
-                start.x += deltaX * scaleY;
-                start.y = nextBoundaryY;
-                start.z += deltaZ * scaleY;
+                start.X += deltaX * scaleY;
+                start.Y = nextBoundaryY;
+                start.Z += deltaZ * scaleY;
             }
             else
             {
                 hitSide = (byte)(targetZ > currentZ ? 2 : 3);
-                start.x += deltaX * scaleZ;
-                start.y += deltaY * scaleZ;
-                start.z = nextBoundaryZ;
+                start.X += deltaX * scaleZ;
+                start.Y += deltaY * scaleZ;
+                start.Z = nextBoundaryZ;
             }
 
-            Vec3D currentStepPos = new(start.x, start.y, start.z);
-            currentX = (int)(currentStepPos.x = MathHelper.Floor(start.x));
+            Vec3D currentStepPos = new(start.X, start.Y, start.Z);
+            currentX = (int)(currentStepPos.X = MathHelper.Floor(start.X));
             if (hitSide == 5)
             {
                 currentX--;
-                currentStepPos.x++;
+                currentStepPos.X++;
             }
 
-            currentY = (int)(currentStepPos.y = MathHelper.Floor(start.y));
+            currentY = (int)(currentStepPos.Y = MathHelper.Floor(start.Y));
             if (hitSide == 1)
             {
                 currentY--;
-                currentStepPos.y++;
+                currentStepPos.Y++;
             }
 
-            currentZ = (int)(currentStepPos.z = MathHelper.Floor(start.z));
+            currentZ = (int)(currentStepPos.Z = MathHelper.Floor(start.Z));
             if (hitSide == 3)
             {
                 currentZ--;
-                currentStepPos.z++;
+                currentStepPos.Z++;
             }
 
             int blockIdAtStep = reader.GetBlockId(currentX, currentY, currentZ);

@@ -102,36 +102,36 @@ public class LeverRenderer : IBlockRenderer
             // Toggle angle based on state
             if (isActivated)
             {
-                vertices[i].z -= 1.0D / 16.0D;
-                vertices[i].rotateAroundX((float)Math.PI * 2.0F / 9.0F);
+                vertices[i].Z -= 1.0D / 16.0D;
+                vertices[i].RotateAroundX((float)Math.PI * 2.0F / 9.0F);
             }
             else
             {
-                vertices[i].z += 1.0D / 16.0D;
-                vertices[i].rotateAroundX(-(float)Math.PI * 2.0F / 9.0F);
+                vertices[i].Z += 1.0D / 16.0D;
+                vertices[i].RotateAroundX(-(float)Math.PI * 2.0F / 9.0F);
             }
 
             // Apply orientation rotations
-            if (orientation == 6) vertices[i].rotateAroundY((float)Math.PI * 0.5F);
+            if (orientation == 6) vertices[i].RotateAroundY((float)Math.PI * 0.5F);
 
             if (orientation < 5) // Wall mount requires extra rotation
             {
-                vertices[i].y -= 0.375D;
-                vertices[i].rotateAroundX((float)Math.PI * 0.5F);
+                vertices[i].Y -= 0.375D;
+                vertices[i].RotateAroundX((float)Math.PI * 0.5F);
 
-                if (orientation == 3) vertices[i].rotateAroundY((float)Math.PI);
-                if (orientation == 2) vertices[i].rotateAroundY((float)Math.PI * 0.5F);
-                if (orientation == 1) vertices[i].rotateAroundY((float)Math.PI * -0.5F);
+                if (orientation == 3) vertices[i].RotateAroundY((float)Math.PI);
+                if (orientation == 2) vertices[i].RotateAroundY((float)Math.PI * 0.5F);
+                if (orientation == 1) vertices[i].RotateAroundY((float)Math.PI * -0.5F);
 
-                vertices[i].x += pos.X + 0.5D; // Fixed .X to .x
-                vertices[i].y += pos.Y + 0.5D;
-                vertices[i].z += pos.Z + 0.5D;
+                vertices[i].X += pos.X + 0.5D; // Fixed .X to .x
+                vertices[i].Y += pos.Y + 0.5D;
+                vertices[i].Z += pos.Z + 0.5D;
             }
             else
             {
-                vertices[i].x += pos.X + 0.5D; // Fixed .X to .x
-                vertices[i].y += pos.Y + 2.0F / 16.0F;
-                vertices[i].z += pos.Z + 0.5D;
+                vertices[i].X += pos.X + 0.5D; // Fixed .X to .x
+                vertices[i].Y += pos.Y + 2.0F / 16.0F;
+                vertices[i].Z += pos.Z + 0.5D;
             }
         }
 
@@ -205,10 +205,10 @@ public class LeverRenderer : IBlockRenderer
                     break;
             }
 
-            handleCtx.Tess.addVertexWithUV(v1.x, v1.y, v1.z, minU, maxV);
-            handleCtx.Tess.addVertexWithUV(v2.x, v2.y, v2.z, maxU, maxV);
-            handleCtx.Tess.addVertexWithUV(v3.x, v3.y, v3.z, maxU, minV);
-            handleCtx.Tess.addVertexWithUV(v4.x, v4.y, v4.z, minU, minV);
+            handleCtx.Tess.addVertexWithUV(v1.X, v1.Y, v1.Z, minU, maxV);
+            handleCtx.Tess.addVertexWithUV(v2.X, v2.Y, v2.Z, maxU, maxV);
+            handleCtx.Tess.addVertexWithUV(v3.X, v3.Y, v3.Z, maxU, minV);
+            handleCtx.Tess.addVertexWithUV(v4.X, v4.Y, v4.Z, minU, minV);
         }
 
         return true;

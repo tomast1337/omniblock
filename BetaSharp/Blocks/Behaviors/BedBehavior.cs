@@ -76,7 +76,7 @@ public sealed class BedBehavior : IBlockInteractable, IBlockPhysics, IBlockLifec
                     continue;
                 }
 
-                Vec3i? sleepingPos = otherPlayer.SleepingPos;
+                Vec3I? sleepingPos = otherPlayer.SleepingPos;
                 if (sleepingPos != null && sleepingPos.Value.X == x && sleepingPos.Value.Y == y && sleepingPos.Value.Z == z)
                 {
                     occupant = otherPlayer;
@@ -177,7 +177,7 @@ public sealed class BedBehavior : IBlockInteractable, IBlockPhysics, IBlockLifec
         worldWriter.SetBlockMeta(x, y, z, meta);
     }
 
-    public static Vec3i? FindWakeUpPosition(IBlockReader reader, int x, int y, int z, int skip)
+    public static Vec3I? FindWakeUpPosition(IBlockReader reader, int x, int y, int z, int skip)
     {
         int blockMeta = reader.GetBlockMeta(x, y, z);
         int direction = GetDirection(blockMeta);
@@ -211,7 +211,7 @@ public sealed class BedBehavior : IBlockInteractable, IBlockPhysics, IBlockLifec
 
                     if (skip <= 0)
                     {
-                        return new Vec3i(checkX, y, checkZ);
+                        return new Vec3I(checkX, y, checkZ);
                     }
 
                     --skip;

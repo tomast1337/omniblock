@@ -69,9 +69,9 @@ public sealed class FireballBehavior : IEntityTicker, IEntityLifecycle, IEntityP
             return true;
         }
 
-        self.VelocityX = lookVector.Value.x;
-        self.VelocityY = lookVector.Value.y;
-        self.VelocityZ = lookVector.Value.z;
+        self.VelocityX = lookVector.Value.X;
+        self.VelocityY = lookVector.Value.Y;
+        self.VelocityZ = lookVector.Value.Z;
 
         self.State[_powerX] = self.VelocityX * 0.1D;
         self.State[_powerY] = self.VelocityY * 0.1D;
@@ -142,7 +142,7 @@ public sealed class FireballBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         endPos = new Vec3D(self.X + self.VelocityX, self.Y + self.VelocityY, self.Z + self.VelocityZ);
         if (hitResult.Type != HitResultType.Miss)
         {
-            endPos = new Vec3D(hitResult.Pos.x, hitResult.Pos.y, hitResult.Pos.z);
+            endPos = new Vec3D(hitResult.Pos.X, hitResult.Pos.Y, hitResult.Pos.Z);
         }
 
         EntityLiving? owner = Owner(self);
@@ -165,7 +165,7 @@ public sealed class FireballBehavior : IEntityTicker, IEntityLifecycle, IEntityP
                 continue;
             }
 
-            double hitDistance = startPos.distanceTo(candidateHit.Pos);
+            double hitDistance = startPos.DistanceTo(candidateHit.Pos);
             if (!(hitDistance < nearestHitDistance) && nearestHitDistance != 0.0D)
             {
                 continue;

@@ -23,9 +23,9 @@ public abstract class EntityPlayer : EntityLiving
     public readonly InventoryPlayer Inventory;
     public readonly ScreenHandler PlayerScreenHandler;
     private int _damageSpill;
-    private Vec3i? _playerSpawnCoordinate;
+    private Vec3I? _playerSpawnCoordinate;
     private int _sleepTimer;
-    private Vec3i? _startMinecartRidingCoordinate;
+    private Vec3I? _startMinecartRidingCoordinate;
     public Vec3D CapePos;
     public float ChangeDimensionCooldown;
     public ScreenHandler? CurrentScreenHandler;
@@ -48,7 +48,7 @@ public abstract class EntityPlayer : EntityLiving
     public float PrevStepBobbingAmount;
     protected int Score;
     protected bool Sleeping;
-    public Vec3i? SleepingPos;
+    public Vec3I? SleepingPos;
     public float SleepOffsetX;
     public float SleepOffsetY;
     public float SleepOffsetZ;
@@ -60,7 +60,7 @@ public abstract class EntityPlayer : EntityLiving
         PlayerScreenHandler = new PlayerScreenHandler(Inventory, !world.IsRemote);
         CurrentScreenHandler = PlayerScreenHandler;
         StandingEyeHeight = 1.62F - 0.5F;
-        Vec3i spawnPos = world.Properties.GetSpawnPos();
+        Vec3I spawnPos = world.Properties.GetSpawnPos();
         SetPositionAndAnglesKeepPrevAngles(spawnPos.X + 0.5D, spawnPos.Y + 1, spawnPos.Z + 0.5D, 0.0F, 0.0F);
         Health = 20;
         ModelName = "humanoid";
@@ -178,9 +178,9 @@ public abstract class EntityPlayer : EntityLiving
     {
         PrevCapePos = CapePos;
 
-        double deltaX = X - CapePos.x;
-        double deltaY = Y - CapePos.y;
-        double deltaZ = Z - CapePos.z;
+        double deltaX = X - CapePos.X;
+        double deltaY = Y - CapePos.Y;
+        double deltaZ = Z - CapePos.Z;
         const double teleportThreshold = 10.0D;
         if (Math.Abs(deltaX) > teleportThreshold ||
             Math.Abs(deltaY) > teleportThreshold ||
@@ -429,13 +429,13 @@ public abstract class EntityPlayer : EntityLiving
         _sleepTimer = nbt.GetShort("SleepTimer");
         if (Sleeping)
         {
-            SleepingPos = new Vec3i(MathHelper.Floor(X), MathHelper.Floor(Y), MathHelper.Floor(Z));
+            SleepingPos = new Vec3I(MathHelper.Floor(X), MathHelper.Floor(Y), MathHelper.Floor(Z));
             WakeUp(true, true, false);
         }
 
         if (nbt.HasKey("SpawnX") && nbt.HasKey("SpawnY") && nbt.HasKey("SpawnZ"))
         {
-            _playerSpawnCoordinate = new Vec3i(nbt.GetInteger("SpawnX"), nbt.GetInteger("SpawnY"), nbt.GetInteger("SpawnZ"));
+            _playerSpawnCoordinate = new Vec3I(nbt.GetInteger("SpawnX"), nbt.GetInteger("SpawnY"), nbt.GetInteger("SpawnZ"));
         }
     }
 
@@ -752,7 +752,7 @@ public abstract class EntityPlayer : EntityLiving
 
         Sleeping = true;
         _sleepTimer = 0;
-        SleepingPos = new Vec3i(x, y, z);
+        SleepingPos = new Vec3I(x, y, z);
         VelocityX = VelocityZ = VelocityY = 0.0D;
         if (!World.IsRemote)
         {
@@ -787,12 +787,12 @@ public abstract class EntityPlayer : EntityLiving
     {
         SetBoundingBoxSpacing(0.6F, 1.8F);
         resetEyeHeight();
-        Vec3i? bedPos = SleepingPos;
+        Vec3I? bedPos = SleepingPos;
         if (bedPos is var (x, y, z) && World.Reader.GetBlockId(x, y, z) == BlockRegistry.Get("bed").Id)
         {
             int bedMeta = World.Reader.GetBlockMeta(x, y, z);
             BedBehavior.UpdateState(World.Writer, x, y, z, bedMeta, false);
-            Vec3i? wakeUpPos = BedBehavior.FindWakeUpPosition(World.Reader, x, y, z, 0) ?? new Vec3i(x, y + 1, z);
+            Vec3I? wakeUpPos = BedBehavior.FindWakeUpPosition(World.Reader, x, y, z, 0) ?? new Vec3I(x, y + 1, z);
             SetPosition(wakeUpPos.Value.X + 0.5F, wakeUpPos.Value.Y + StandingEyeHeight + 0.1F, wakeUpPos.Value.Z + 0.5F);
         }
 
@@ -812,7 +812,7 @@ public abstract class EntityPlayer : EntityLiving
 
     private bool IsSleepingInBed() => SleepingPos != null && World.Reader.GetBlockId(SleepingPos.Value.X, SleepingPos.Value.Y, SleepingPos.Value.Z) == BlockRegistry.Get("bed").Id;
 
-    public static Vec3i? FindRespawnPosition(IWorldContext world, Vec3i? spawnPos)
+    public static Vec3I? FindRespawnPosition(IWorldContext world, Vec3I? spawnPos)
     {
         if (spawnPos is not var (x, y, z))
         {
@@ -854,13 +854,13 @@ public abstract class EntityPlayer : EntityLiving
     {
     }
 
-    public Vec3i? GetSpawnPos() => _playerSpawnCoordinate;
+    public Vec3I? GetSpawnPos() => _playerSpawnCoordinate;
 
-    public void SetSpawnPos(Vec3i? spawnPos)
+    public void SetSpawnPos(Vec3I? spawnPos)
     {
         if (spawnPos is var (x, y, z))
         {
-            _playerSpawnCoordinate = new Vec3i(x, y, z);
+            _playerSpawnCoordinate = new Vec3I(x, y, z);
         }
         else
         {
@@ -963,9 +963,9 @@ public abstract class EntityPlayer : EntityLiving
 
                 if (_startMinecartRidingCoordinate is null)
                 {
-                    _startMinecartRidingCoordinate = new Vec3i(currentX, currentY, currentZ);
+                    _startMinecartRidingCoordinate = new Vec3I(currentX, currentY, currentZ);
                 }
-                else if (_startMinecartRidingCoordinate.Value.SquaredDistanceTo(new Vec3i(currentX, currentY, currentZ)) >= 1_000_000)
+                else if (_startMinecartRidingCoordinate.Value.SquaredDistanceTo(new Vec3I(currentX, currentY, currentZ)) >= 1_000_000)
                 {
                     IncreaseStat(Achievements.CraftRail, 1);
                 }

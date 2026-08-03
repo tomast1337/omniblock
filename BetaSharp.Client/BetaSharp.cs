@@ -1474,8 +1474,8 @@ public partial class BetaSharp :
 
     public void Respawn(bool ignoreSpawnPosition, int newDimensionId)
     {
-        Vec3i? playerSpawnPos = null;
-        Vec3i? respawnPos = null;
+        Vec3I? playerSpawnPos = null;
+        Vec3I? respawnPos = null;
 
         if (Player is not null && !ignoreSpawnPosition)
         {
@@ -1493,7 +1493,7 @@ public partial class BetaSharp :
         }
 
         bool useBedSpawn = respawnPos is not null;
-        Vec3i finalRespawnPos = respawnPos ?? World.Properties.GetSpawnPos();
+        Vec3I finalRespawnPos = respawnPos ?? World.Properties.GetSpawnPos();
 
         World.UpdateSpawnPosition();
         World.Entities.UpdateEntityLists();
@@ -1570,7 +1570,7 @@ public partial class BetaSharp :
         int loadedChunkCount = 0;
         int totalChunksToLoad = loadingRadius * 2 / 16 + 1;
         totalChunksToLoad *= totalChunksToLoad;
-        Vec3i centerPos = World.Properties.GetSpawnPos();
+        Vec3I centerPos = World.Properties.GetSpawnPos();
 
         if (Player != null)
         {

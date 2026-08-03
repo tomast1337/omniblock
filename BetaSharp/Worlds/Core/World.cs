@@ -705,7 +705,7 @@ public abstract class World : IWorldContext
 
     public long GetSeed() => Properties.RandomSeed;
 
-    public void SetSpawnPos(Vec3i pos) => Properties.SetSpawn(pos.X, pos.Y, pos.Z);
+    public void SetSpawnPos(Vec3I pos) => Properties.SetSpawn(pos.X, pos.Y, pos.Z);
 
     public void setBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {

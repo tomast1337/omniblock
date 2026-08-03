@@ -443,7 +443,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     private bool CanBypassSpawnProtection(int x, int z, ServerWorld world)
     {
         const int spawnProtection = 16;
-        Vec3i spawnPos = world.Properties.GetSpawnPos();
+        Vec3I spawnPos = world.Properties.GetSpawnPos();
         bool notBlockedFromSpawnProtection = Math.Abs(x - spawnPos.X) > spawnProtection || Math.Abs(z - spawnPos.Z) > spawnProtection;
         notBlockedFromSpawnProtection = notBlockedFromSpawnProtection || world.BypassSpawnProtection || server is InternalServer || server.playerManager.isOperator(player.Name);
         return notBlockedFromSpawnProtection;

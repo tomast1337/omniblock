@@ -210,7 +210,7 @@ public class CameraController
 
                     if (hit.Type != HitResultType.Miss)
                     {
-                        double dist = hit.Pos.distanceTo(new Vec3D(x, y, z));
+                        double dist = hit.Pos.DistanceTo(new Vec3D(x, y, z));
                         if (dist < currentDistance)
                         {
                             currentDistance = dist;

@@ -1230,7 +1230,7 @@ public class ClientNetworkHandler : NetHandler
 
     private void onPlayerSpawnPosition(PlayerSpawnPositionMessage packet)
     {
-        _context.PlayerHost.Player.SetSpawnPos(new Vec3i(packet.X, packet.Y, packet.Z));
+        _context.PlayerHost.Player.SetSpawnPos(new Vec3I(packet.X, packet.Y, packet.Z));
         _context.WorldHost.World?.Properties.SetSpawn(packet.X, packet.Y, packet.Z);
     }
 

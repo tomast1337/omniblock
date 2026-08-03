@@ -34,7 +34,7 @@ public class ServerChunkCache : IChunkSource
 
     public void isLoaded(int chunkX, int chunkZ)
     {
-        Vec3i spawnPos = _world.Properties.GetSpawnPos();
+        Vec3I spawnPos = _world.Properties.GetSpawnPos();
         int deltaX = chunkX * 16 + 8 - spawnPos.X;
         int deltaZ = chunkZ * 16 + 8 - spawnPos.Z;
         short spawnRadius = 128;

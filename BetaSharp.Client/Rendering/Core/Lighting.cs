@@ -34,15 +34,15 @@ public unsafe class Lighting
         float diffuseLight = 0.6F;
         float specularLight = 0.0F;
         float mx = mirrored ? -1.0f : 1.0f;
-        Vec3D lightDirection = new Vec3D((double)(0.2F * mx), 1.0D, (double)-0.7F).normalize();
+        Vec3D lightDirection = new Vec3D((double)(0.2F * mx), 1.0D, (double)-0.7F).Normalize();
         fixed (float* buf = s_buffer)
         {
-            GLManager.GL.Light(GLEnum.Light0, GLEnum.Position, getBuffer(buf, lightDirection.x, lightDirection.y, lightDirection.z, 0.0D));
+            GLManager.GL.Light(GLEnum.Light0, GLEnum.Position, getBuffer(buf, lightDirection.X, lightDirection.Y, lightDirection.Z, 0.0D));
             GLManager.GL.Light(GLEnum.Light0, GLEnum.Diffuse, getBuffer(buf, diffuseLight, diffuseLight, diffuseLight, 1.0F));
             GLManager.GL.Light(GLEnum.Light0, GLEnum.Ambient, getBuffer(buf, 0.0F, 0.0F, 0.0F, 1.0F));
             GLManager.GL.Light(GLEnum.Light0, GLEnum.Specular, getBuffer(buf, specularLight, specularLight, specularLight, 1.0F));
-            lightDirection = new Vec3D((double)(-0.2F * mx), 1.0D, (double)0.7F).normalize();
-            GLManager.GL.Light(GLEnum.Light1, GLEnum.Position, getBuffer(buf, lightDirection.x, lightDirection.y, lightDirection.z, 0.0D));
+            lightDirection = new Vec3D((double)(-0.2F * mx), 1.0D, (double)0.7F).Normalize();
+            GLManager.GL.Light(GLEnum.Light1, GLEnum.Position, getBuffer(buf, lightDirection.X, lightDirection.Y, lightDirection.Z, 0.0D));
             GLManager.GL.Light(GLEnum.Light1, GLEnum.Diffuse, getBuffer(buf, diffuseLight, diffuseLight, diffuseLight, 1.0F));
             GLManager.GL.Light(GLEnum.Light1, GLEnum.Ambient, getBuffer(buf, 0.0F, 0.0F, 0.0F, 1.0F));
             GLManager.GL.Light(GLEnum.Light1, GLEnum.Specular, getBuffer(buf, specularLight, specularLight, specularLight, 1.0F));

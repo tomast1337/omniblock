@@ -91,3 +91,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-03 — refactor(hit): simplify HitResult struct and standardize HitResultType naming (Nicolas Vyčas Nery; `123e8275710253ec69afdc7220e1dc3eb7d9fd86`)
 - 2026-08-03 — refactor(noise): standardize method naming conventions across noise samplers (Nicolas Vyčas Nery; `26341e38b8c05f53098076a51fbe1c3527137d70`)
 - 2026-08-03 — refactor(blockpos): simplify BlockPos struct by using primary constructor and removing redundant fields (Nicolas Vyčas Nery; `b1526677dc8f8ecf2daddce96495f8e9ece052d9`)
+- 2026-08-03 — refactor(math): standardize naming conventions and improve struct definitions across Vec3i, Vec3I, and Box (Nicolas Vyčas Nery; `06204477f535d08efaf7063bb9cab183df494f7a`)
