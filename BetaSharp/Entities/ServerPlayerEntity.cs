@@ -255,6 +255,11 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
                 else
                 {
                     ChangeDimensionCooldown += 0.0125F;
+                    if (ChangeDimensionCooldown == 0.0125F)
+                    {
+                        s_logger.LogInformation("[DIM] {Name} entered a portal in dim {Dim}", Name, DimensionId);
+                    }
+
                     if (ChangeDimensionCooldown >= 1.0F)
                     {
                         ChangeDimensionCooldown = 1.0F;

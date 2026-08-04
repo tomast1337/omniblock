@@ -8,12 +8,14 @@ using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Dimensions;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Server;
 
 public class PlayerManager
 {
     public List<ServerPlayerEntity> players = [];
+    private readonly ILogger<PlayerManager> _logger = Log.Instance.For<PlayerManager>();
     private readonly BetaSharpServer _server;
     private readonly ChunkMap[] _chunkMaps;
     private readonly int _maxPlayerCount;
@@ -234,6 +236,10 @@ public class PlayerManager
             return;
         }
 
+        _logger.LogInformation(
+            "[DIM] {Name}: {Source} -> {Target}, from {X:F1},{Y:F1},{Z:F1}",
+            player.Name, sourceDim, targetDim, player.X, player.Y, player.Z);
+
         // Remove from source chunk map NOW, while player.x/z are still in
         // source-dimension space.
         GetChunkMap(sourceDim).removePlayer(player);
@@ -279,9 +285,17 @@ public class PlayerManager
             // Fully drain lighting updates generated during portal chunk
             // creation before the chunks are queued for the client.
             while (targetWorld.Lighting.DoLightingUpdates()) { }
+
+            _logger.LogInformation(
+                "[DIM] after MoveToPortal: {X:F1},{Y:F1},{Z:F1}", player.X, player.Y, player.Z);
         }
 
         updatePlayerAfterDimensionChange(player);
+
+        _logger.LogInformation(
+            "[DIM] watching {Active} chunks in dim {Dim}",
+            player.ActiveChunks.Count, player.DimensionId);
+
         player.NetworkHandler.teleport(player.X, player.Y, player.Z, player.Yaw, player.Pitch);
         player.SetWorld(targetWorld);
         sendWorldInfo(player, targetWorld);
