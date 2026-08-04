@@ -1,12 +1,11 @@
 using BetaSharp.Client.Entities;
 using BetaSharp.Client.Rendering;
+using BetaSharp.Client.Rendering.Chunks;
 using BetaSharp.Client.Sound;
 using BetaSharp.Client.UI;
 using BetaSharp.Client.UI.Screens.InGame;
 using BetaSharp.Util.Hit;
 using BetaSharp.Worlds.Core;
-
-using BetaSharp.Client.Rendering.Chunks;
 
 namespace BetaSharp.Client.Diagnostics;
 
