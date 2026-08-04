@@ -27,6 +27,9 @@ namespace BetaSharp.Entities;
 public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 {
     private static readonly ILogger s_logger = Log.Instance.For<ServerPlayerEntity>();
+
+    /// <summary>Set on arrival, cleared once the player is clear of portal blocks.</summary>
+    private bool _mustLeavePortalBeforeAnother;
     private readonly ItemStack?[] _equipment = [null, null, null, null, null];
     private readonly PlayerChunkSendQueue _pendingChunkUpdates = new();
     private readonly BetaSharpServer _server;
@@ -243,10 +246,22 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         // Asked of the world rather than taken from InTeleportationState alone. That flag is set by
         // the block-collision scan, which runs only from Entity.Move, which on the server runs only
         // when a movement packet arrives. The decay below is four times the gain, so a single tick
-        // without a packet costs four ticks of progress and eighty consecutive gains — what the
+        // without a packet costs four ticks of progress, and eighty consecutive gains — what the
         // threshold needs — is not reachable on any connection that ever gaps.
-        bool standingInPortal = InTeleportationState
-            || World.Reader.IsMaterialInBox(BoundingBox, static m => m == Material.NetherPortal);
+        bool insidePortalBlock =
+            World.Reader.IsMaterialInBox(BoundingBox, static m => m == Material.NetherPortal);
+
+        // Arriving through a portal leaves the player standing in the one at the far end, so the
+        // arrival would otherwise read as a fresh entry and bounce them straight back. A timeout
+        // only moves the problem: it has to outlast the terrain download, and nothing here knows
+        // how long that is. Requiring the player to leave a portal first needs no such guess.
+        if (_mustLeavePortalBeforeAnother && !insidePortalBlock)
+        {
+            _mustLeavePortalBeforeAnother = false;
+        }
+
+        bool standingInPortal = !_mustLeavePortalBeforeAnother
+            && (InTeleportationState || (PortalCooldown <= 0 && insidePortalBlock));
 
         if (standingInPortal)
         {
@@ -266,8 +281,11 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
                     ChangeDimensionCooldown += 0.0125F;
                     if (ChangeDimensionCooldown >= 1.0F)
                     {
-                        ChangeDimensionCooldown = 1.0F;
+                        // Back to zero rather than held at the threshold, so a portal the player
+                        // is still standing in cannot clear it again on the next tick.
+                        ChangeDimensionCooldown = 0.0F;
                         PortalCooldown = 10;
+                        _mustLeavePortalBeforeAnother = true;
                         _server.playerManager.changePlayerDimension(this);
                     }
                 }
