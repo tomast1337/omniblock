@@ -120,3 +120,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-04 — feat(rendering): light terrain in the shader instead of baking it into vertices (Nicolas Vyčas Nery; `11212f1dafd69ba41bd5c03456b428ba0f361962`)
 - 2026-08-04 — fix(rendering): set terrain light on the paths that draw without per-corner data (Nicolas Vyčas Nery; `6d8c7c26598ebc35ae3131702a866f6b205dc974`)
 - 2026-08-04 — debug(rendering): make a GL error say which draw caused it (Nicolas Vyčas Nery; `c51b91ad9b15873a03b976ed2c52c18023437087`)
+- 2026-08-04 — debug(rendering): report the faulting draw from the thread that issued it (Nicolas Vyčas Nery; `931c68de221a14a28a3c392acf61d4963422d89e`)
