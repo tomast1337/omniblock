@@ -78,4 +78,14 @@ public class ChunkMeshVersion
     {
         return _epoch != _lastMeshed;
     }
+
+    /// <summary>
+    ///     How many times this chunk has been marked dirty, how far the last finished mesh got, and
+    ///     which epoch a mesh is being built for, or -1 for none.
+    /// </summary>
+    /// <remarks>
+    ///     For the debug view. A chunk whose epoch has outrun its last mesh with nothing pending is
+    ///     one the world has changed and the screen has not caught up with.
+    /// </remarks>
+    public (long Epoch, long LastMeshed, long Pending) State => (_epoch, _lastMeshed, _pendingMesh);
 }

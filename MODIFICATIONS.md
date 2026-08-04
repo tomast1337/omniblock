@@ -123,3 +123,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-04 — debug(rendering): report the faulting draw from the thread that issued it (Nicolas Vyčas Nery; `931c68de221a14a28a3c392acf61d4963422d89e`)
 - 2026-08-04 — fix(rendering): drain queued geometry before a draw binds its own state (Nicolas Vyčas Nery; `a8acc979db96833f8d2833162c00c91acf89ab97`)
 - 2026-08-04 — fix(rendering): render a cactus as a whole cube inset by its faces, not by its box (Nicolas Vyčas Nery; `6f28b26e4fdca108f3ebd5956bcf507b66ac9854`)
+- 2026-08-04 — debug(rendering): show what the world holds at the crosshair beside what the mesh was told (Nicolas Vyčas Nery; `1d2a6e31a03ca7aaab45a187988e75c8986be0d6`)

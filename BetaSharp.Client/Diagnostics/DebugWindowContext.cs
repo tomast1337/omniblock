@@ -6,6 +6,8 @@ using BetaSharp.Client.UI.Screens.InGame;
 using BetaSharp.Util.Hit;
 using BetaSharp.Worlds.Core;
 
+using BetaSharp.Client.Rendering.Chunks;
+
 namespace BetaSharp.Client.Diagnostics;
 
 /// <summary>
@@ -40,6 +42,7 @@ internal sealed class DebugWindowContext(BetaSharp game)
     public World? World => game.World;
     public ClientPlayerEntity? Player => game.Player;
     public HitResult ObjectMouseOver => game.ObjectMouseOver;
+    public ChunkRenderer? ChunkRenderer => game.WorldRenderer?.ChunkRenderer;
     public DebugSystemSnapshot DebugSystemSnapshot => game.DebugSystemSnapshot;
     public UIScreen? CurrentScreen => game.CurrentScreen;
     public HUD HUD => game.HUD;
