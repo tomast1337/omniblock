@@ -10,8 +10,8 @@ public class FireRenderer : IBlockRenderer
         int textureId = block.GetTexture(0);
         if (ctx.OverrideTexture >= 0) textureId = ctx.OverrideTexture;
 
-        float luminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z);
-        ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
+        ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
+        ctx.Tess.setColorOpaque_F(1.0F, 1.0F, 1.0F);
 
         int texU = (textureId & 15) << 4;
         int texV = textureId & 240;

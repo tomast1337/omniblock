@@ -1,6 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Util.Maths;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Client.Rendering.Blocks.Renderers;
 
@@ -21,10 +22,15 @@ public class RedstoneWireRenderer : IBlockRenderer
         if (ctx.OverrideTexture >= 0) textureId = ctx.OverrideTexture;
 
         // --- 1. Calculate the Glow Color & Emissive Lighting ---
-        float baseLuminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y + 1, pos.Z);
         float powerPercent = powerLevel / 15.0F;
 
-        float luminance = Math.Max(baseLuminance, powerPercent * 0.4F);
+        // The wire glows with its own charge, which is a floor on the block channel rather than a
+        // brightness multiplier: powered wire should stay visible in the dark without the sky
+        // channel making it brighter by day.
+        LightLevels wireLight = block.GetLightLevels(ctx.Lighting, pos.X, pos.Y + 1, pos.Z);
+        ctx.Tess.setLight(wireLight.Sky, Math.Max(wireLight.Block, powerLevel * 0.4F));
+
+        const float luminance = 1.0F;
 
         float r = powerPercent * 0.6F + 0.4F;
         if (powerLevel == 0) r = 0.3F;
@@ -146,7 +152,7 @@ public class RedstoneWireRenderer : IBlockRenderer
 
         // Shadow Shroud
 
-        ctx.Tess.setColorOpaque_F(baseLuminance * 0.5f, baseLuminance * 0.5f, baseLuminance * 0.5f);
+        ctx.Tess.setColorOpaque_F(0.5f, 0.5f, 0.5f);
         ctx.Tess.addVertexWithUV(renderMaxX, shadowY, renderMaxZ, u3, v3 + ShroudVOffset);
         ctx.Tess.addVertexWithUV(renderMaxX, shadowY, renderMinZ, u2, v2 + ShroudVOffset);
         ctx.Tess.addVertexWithUV(renderMinX, shadowY, renderMinZ, u1, v1 + ShroudVOffset);

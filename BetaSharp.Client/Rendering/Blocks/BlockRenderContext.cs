@@ -136,24 +136,24 @@ public ref struct BlockRenderContext
         {
             if (flipped)
             {
-                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                colors.ApplyBottomLeft(Tess);
                 Tess.addVertexWithUV(minX, minY, minZ, u1, v1);
-                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                colors.ApplyBottomRight(Tess);
                 Tess.addVertexWithUV(maxX, minY, minZ, u2, v2);
-                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                colors.ApplyTopRight(Tess);
                 Tess.addVertexWithUV(maxX, minY, maxZ, u3, v3);
-                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                colors.ApplyTopLeft(Tess);
                 Tess.addVertexWithUV(minX, minY, maxZ, u0, v0);
             }
             else
             {
-                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                colors.ApplyTopLeft(Tess);
                 Tess.addVertexWithUV(minX, minY, maxZ, u0, v0);
-                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                colors.ApplyBottomLeft(Tess);
                 Tess.addVertexWithUV(minX, minY, minZ, u1, v1);
-                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                colors.ApplyBottomRight(Tess);
                 Tess.addVertexWithUV(maxX, minY, minZ, u2, v2);
-                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                colors.ApplyTopRight(Tess);
                 Tess.addVertexWithUV(maxX, minY, maxZ, u3, v3);
             }
         }
@@ -201,24 +201,24 @@ public ref struct BlockRenderContext
         {
             if (flipped)
             {
-                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                colors.ApplyBottomLeft(Tess);
                 Tess.addVertexWithUV(maxX, maxY, minZ, u1, v1);
-                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                colors.ApplyBottomRight(Tess);
                 Tess.addVertexWithUV(minX, maxY, minZ, u2, v2);
-                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                colors.ApplyTopRight(Tess);
                 Tess.addVertexWithUV(minX, maxY, maxZ, u3, v3);
-                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                colors.ApplyTopLeft(Tess);
                 Tess.addVertexWithUV(maxX, maxY, maxZ, u0, v0);
             }
             else
             {
-                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                colors.ApplyTopLeft(Tess);
                 Tess.addVertexWithUV(maxX, maxY, maxZ, u0, v0);
-                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                colors.ApplyBottomLeft(Tess);
                 Tess.addVertexWithUV(maxX, maxY, minZ, u1, v1);
-                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                colors.ApplyBottomRight(Tess);
                 Tess.addVertexWithUV(minX, maxY, minZ, u2, v2);
-                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                colors.ApplyTopRight(Tess);
                 Tess.addVertexWithUV(minX, maxY, maxZ, u3, v3);
             }
         }
@@ -261,24 +261,24 @@ public ref struct BlockRenderContext
         {
             if (flipped)
             {
-                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                colors.ApplyBottomLeft(Tess);
                 Tess.addVertexWithUV(minX, minY, minZ, uBl, vBl);
-                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                colors.ApplyBottomRight(Tess);
                 Tess.addVertexWithUV(minX, minY, maxZ, uBr, vBr);
-                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                colors.ApplyTopRight(Tess);
                 Tess.addVertexWithUV(minX, maxY, maxZ, uTr, vTr);
-                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                colors.ApplyTopLeft(Tess);
                 Tess.addVertexWithUV(minX, maxY, minZ, uTl, vTl);
             }
             else
             {
-                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                colors.ApplyTopLeft(Tess);
                 Tess.addVertexWithUV(minX, maxY, minZ, uTl, vTl);
-                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                colors.ApplyBottomLeft(Tess);
                 Tess.addVertexWithUV(minX, minY, minZ, uBl, vBl);
-                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                colors.ApplyBottomRight(Tess);
                 Tess.addVertexWithUV(minX, minY, maxZ, uBr, vBr);
-                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                colors.ApplyTopRight(Tess);
                 Tess.addVertexWithUV(minX, maxY, maxZ, uTr, vTr);
             }
         }
@@ -326,24 +326,24 @@ public ref struct BlockRenderContext
         {
             if (flipped)
             {
-                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                colors.ApplyBottomLeft(Tess);
                 Tess.addVertexWithUV(posX, minY, maxZ, uBl, vBl);
-                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                colors.ApplyBottomRight(Tess);
                 Tess.addVertexWithUV(posX, minY, minZ, uBr, vBr);
-                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                colors.ApplyTopRight(Tess);
                 Tess.addVertexWithUV(posX, maxY, minZ, uTr, vTr);
-                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                colors.ApplyTopLeft(Tess);
                 Tess.addVertexWithUV(posX, maxY, maxZ, uTl, vTl);
             }
             else
             {
-                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                colors.ApplyTopLeft(Tess);
                 Tess.addVertexWithUV(posX, maxY, maxZ, uTl, vTl);
-                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                colors.ApplyBottomLeft(Tess);
                 Tess.addVertexWithUV(posX, minY, maxZ, uBl, vBl);
-                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                colors.ApplyBottomRight(Tess);
                 Tess.addVertexWithUV(posX, minY, minZ, uBr, vBr);
-                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                colors.ApplyTopRight(Tess);
                 Tess.addVertexWithUV(posX, maxY, minZ, uTr, vTr);
             }
         }
@@ -391,24 +391,24 @@ public ref struct BlockRenderContext
         {
             if (flipped)
             {
-                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                colors.ApplyBottomLeft(Tess);
                 Tess.addVertexWithUV(maxX, minY, minZ, uBl, vBl);
-                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                colors.ApplyBottomRight(Tess);
                 Tess.addVertexWithUV(minX, minY, minZ, uBr, vBr);
-                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                colors.ApplyTopRight(Tess);
                 Tess.addVertexWithUV(minX, maxY, minZ, uTr, vTr);
-                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                colors.ApplyTopLeft(Tess);
                 Tess.addVertexWithUV(maxX, maxY, minZ, uTl, vTl);
             }
             else
             {
-                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                colors.ApplyTopLeft(Tess);
                 Tess.addVertexWithUV(maxX, maxY, minZ, uTl, vTl);
-                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                colors.ApplyBottomLeft(Tess);
                 Tess.addVertexWithUV(maxX, minY, minZ, uBl, vBl);
-                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                colors.ApplyBottomRight(Tess);
                 Tess.addVertexWithUV(minX, minY, minZ, uBr, vBr);
-                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                colors.ApplyTopRight(Tess);
                 Tess.addVertexWithUV(minX, maxY, minZ, uTr, vTr);
             }
         }
@@ -456,24 +456,24 @@ public ref struct BlockRenderContext
         {
             if (flipped)
             {
-                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                colors.ApplyBottomLeft(Tess);
                 Tess.addVertexWithUV(minX, minY, maxZ, uBl, vBl);
-                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                colors.ApplyBottomRight(Tess);
                 Tess.addVertexWithUV(maxX, minY, maxZ, uBr, vBr);
-                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                colors.ApplyTopRight(Tess);
                 Tess.addVertexWithUV(maxX, maxY, maxZ, uTr, vTr);
-                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                colors.ApplyTopLeft(Tess);
                 Tess.addVertexWithUV(minX, maxY, maxZ, uTl, vTl);
             }
             else
             {
-                Tess.setColorOpaque_F(colors.RedTopLeft, colors.GreenTopLeft, colors.BlueTopLeft);
+                colors.ApplyTopLeft(Tess);
                 Tess.addVertexWithUV(minX, maxY, maxZ, uTl, vTl);
-                Tess.setColorOpaque_F(colors.RedBottomLeft, colors.GreenBottomLeft, colors.BlueBottomLeft);
+                colors.ApplyBottomLeft(Tess);
                 Tess.addVertexWithUV(minX, minY, maxZ, uBl, vBl);
-                Tess.setColorOpaque_F(colors.RedBottomRight, colors.GreenBottomRight, colors.BlueBottomRight);
+                colors.ApplyBottomRight(Tess);
                 Tess.addVertexWithUV(maxX, minY, maxZ, uBr, vBr);
-                Tess.setColorOpaque_F(colors.RedTopRight, colors.GreenTopRight, colors.BlueTopRight);
+                colors.ApplyTopRight(Tess);
                 Tess.addVertexWithUV(maxX, maxY, maxZ, uTr, vTr);
             }
         }
@@ -488,6 +488,103 @@ public ref struct BlockRenderContext
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private readonly bool IsOpaque(int x, int y, int z) => !Block.BlocksAllowVision[BlockReader.GetBlockId(x, y, z)];
+
+    /// <summary>
+    ///     Sets the light the next vertices carry from one cell, for a primitive lit as a whole.
+    /// </summary>
+    /// <remarks>
+    ///     The sub-renderers draw shapes that are not block faces — a torch, a rail, a wire — and
+    ///     never had per-corner lighting. They used to fold the one luminance into the colour they
+    ///     set; now they set the colour and this sets the light.
+    /// </remarks>
+    internal readonly void SetLightAt(in Block block, int x, int y, int z)
+    {
+        LightLevels levels = block.GetLightLevels(Lighting, x, y, z);
+        Tess.setLight(levels.Sky, levels.Block);
+    }
+
+    /// <summary>Sets the light for something that should come out at full brightness regardless.</summary>
+    /// <remarks>
+    ///     Through the block channel rather than the sky channel, so it stays bright after dark.
+    ///     This is what the torch and the repeater's torch used to get by forcing their luminance to
+    ///     one before multiplying it into the colour.
+    /// </remarks>
+    internal readonly void SetFullBright() => Tess.setLight(0.0f, 15.0f);
+
+    private readonly CornerLight Sample(in Block block, int x, int y, int z)
+    {
+        LightLevels levels = block.GetLightLevels(Lighting, x, y, z);
+        return new CornerLight(levels.Sky, levels.Block);
+    }
+
+    /// <summary>
+    ///     The four corner light values for a face, each the mean of the four cells meeting there.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         All six faces sample the same nine cells in the plane one step along
+    ///         <paramref name="ox" />/<paramref name="oy" />/<paramref name="oz" />: the centre, the
+    ///         four edge neighbours along the in-plane axes <c>a</c> and <c>b</c>, and the four
+    ///         corners. A corner whose two adjacent edge cells are both opaque cannot be seen from
+    ///         this face, so it reads as the <c>a</c> edge instead — that is what keeps an inside
+    ///         corner from picking up light leaking around a solid block.
+    ///     </para>
+    ///     <para>
+    ///         The quadrants come back in a fixed order and each face maps them onto its own winding.
+    ///         They used to be written out per face, six times, which is why the mapping is the one
+    ///         thing here worth checking against the old code rather than reading forwards.
+    ///     </para>
+    /// </remarks>
+    private readonly FaceQuadrants SampleFace(
+        in Block block, in BlockPos pos,
+        int ox, int oy, int oz,
+        int ax, int ay, int az,
+        int bx, int by, int bz)
+    {
+        int cx = pos.X + ox, cy = pos.Y + oy, cz = pos.Z + oz;
+
+        CornerLight centre = Sample(block, cx, cy, cz);
+        CornerLight edgeAMinus = Sample(block, cx - ax, cy - ay, cz - az);
+        CornerLight edgeAPlus = Sample(block, cx + ax, cy + ay, cz + az);
+        CornerLight edgeBMinus = Sample(block, cx - bx, cy - by, cz - bz);
+        CornerLight edgeBPlus = Sample(block, cx + bx, cy + by, cz + bz);
+
+        bool opaqueAMinus = IsOpaque(cx - ax, cy - ay, cz - az);
+        bool opaqueAPlus = IsOpaque(cx + ax, cy + ay, cz + az);
+        bool opaqueBMinus = IsOpaque(cx - bx, cy - by, cz - bz);
+        bool opaqueBPlus = IsOpaque(cx + bx, cy + by, cz + bz);
+
+        CornerLight cornerMinusMinus = opaqueAMinus && opaqueBMinus
+            ? edgeAMinus
+            : Sample(block, cx - ax - bx, cy - ay - by, cz - az - bz);
+
+        CornerLight cornerMinusPlus = opaqueAMinus && opaqueBPlus
+            ? edgeAMinus
+            : Sample(block, cx - ax + bx, cy - ay + by, cz - az + bz);
+
+        CornerLight cornerPlusMinus = opaqueAPlus && opaqueBMinus
+            ? edgeAPlus
+            : Sample(block, cx + ax - bx, cy + ay - by, cz + az - bz);
+
+        CornerLight cornerPlusPlus = opaqueAPlus && opaqueBPlus
+            ? edgeAPlus
+            : Sample(block, cx + ax + bx, cy + ay + by, cz + az + bz);
+
+        return new FaceQuadrants(
+            CornerLight.Mean(cornerMinusMinus, edgeAMinus, edgeBMinus, centre),
+            CornerLight.Mean(cornerMinusPlus, edgeAMinus, edgeBPlus, centre),
+            CornerLight.Mean(cornerPlusMinus, edgeAPlus, edgeBMinus, centre),
+            CornerLight.Mean(cornerPlusPlus, edgeAPlus, edgeBPlus, centre));
+    }
+
+    /// <summary>The four quadrant means of a face, named by their sign along the two in-plane axes.</summary>
+    private readonly ref struct FaceQuadrants(CornerLight mm, CornerLight mp, CornerLight pm, CornerLight pp)
+    {
+        public readonly CornerLight MinusMinus = mm;
+        public readonly CornerLight MinusPlus = mp;
+        public readonly CornerLight PlusMinus = pm;
+        public readonly CornerLight PlusPlus = pp;
+    }
 
     internal readonly bool DrawBlock(in Block block, in BlockPos pos)
     {
@@ -507,37 +604,27 @@ public ref struct BlockRenderContext
             tintBottom = tintEast = tintWest = tintNorth = tintSouth = false;
         }
 
-        float v0, v1, v2, v3;
+        CornerLight v0, v1, v2, v3;
         bool ao = AoBlendMode > 0;
         Vec3D vecPos = new(pos.X, pos.Y, pos.Z); // Allocate struct once
 
         // BOTTOM FACE (Y - 1)
         if (RenderAllFaces || bounds.MinY > 0.0F || block.IsSideVisible(BlockReader, pos.X, pos.Y - 1, pos.Z, Side.Down))
         {
-            float lYn = block.GetLuminance(Lighting, pos.X, pos.Y - 1, pos.Z);
-            if (!ao) v0 = v1 = v2 = v3 = lYn;
+            if (!ao) { v0 = v1 = v2 = v3 = Sample(block, pos.X, pos.Y - 1, pos.Z); }
             else
             {
-                float n = block.GetLuminance(Lighting, pos.X, pos.Y - 1, pos.Z - 1);
-                float s = block.GetLuminance(Lighting, pos.X, pos.Y - 1, pos.Z + 1);
-                float w = block.GetLuminance(Lighting, pos.X - 1, pos.Y - 1, pos.Z);
-                float e = block.GetLuminance(Lighting, pos.X + 1, pos.Y - 1, pos.Z);
-
-                float nw = (IsOpaque(pos.X - 1, pos.Y - 1, pos.Z) && IsOpaque(pos.X, pos.Y - 1, pos.Z - 1)) ? w : block.GetLuminance(Lighting, pos.X - 1, pos.Y - 1, pos.Z - 1);
-                float sw = (IsOpaque(pos.X - 1, pos.Y - 1, pos.Z) && IsOpaque(pos.X, pos.Y - 1, pos.Z + 1)) ? w : block.GetLuminance(Lighting, pos.X - 1, pos.Y - 1, pos.Z + 1);
-                float ne = (IsOpaque(pos.X + 1, pos.Y - 1, pos.Z) && IsOpaque(pos.X, pos.Y - 1, pos.Z - 1)) ? e : block.GetLuminance(Lighting, pos.X + 1, pos.Y - 1, pos.Z - 1);
-                float se = (IsOpaque(pos.X + 1, pos.Y - 1, pos.Z) && IsOpaque(pos.X, pos.Y - 1, pos.Z + 1)) ? e : block.GetLuminance(Lighting, pos.X + 1, pos.Y - 1, pos.Z + 1);
-
-                v0 = (sw + w + s + lYn) * 0.25F;
-                v1 = (w + nw + lYn + n) * 0.25F;
-                v2 = (lYn + n + e + ne) * 0.25F;
-                v3 = (s + lYn + se + e) * 0.25F;
+                FaceQuadrants q = SampleFace(block, pos, 0, -1, 0, 1, 0, 0, 0, 0, 1);
+                v0 = q.MinusPlus;
+                v1 = q.MinusMinus;
+                v2 = q.PlusMinus;
+                v3 = q.PlusPlus;
             }
 
             var colors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 0.5F, tintBottom);
             int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.Down);
 
-            DrawBottomFace(block, in vecPos, colors, textureId, ao && (v0 + v2 > v1 + v3));
+            DrawBottomFace(block, in vecPos, colors, textureId, ao && (v0.FlipWeight + v2.FlipWeight > v1.FlipWeight + v3.FlipWeight));
 
             hasRendered = true;
         }
@@ -545,30 +632,20 @@ public ref struct BlockRenderContext
         // TOP FACE (Y + 1)
         if (RenderAllFaces || bounds.MaxY < 1.0F || block.IsSideVisible(BlockReader, pos.X, pos.Y + 1, pos.Z, Side.Up))
         {
-            float lYp = block.GetLuminance(Lighting, pos.X, pos.Y + 1, pos.Z);
-            if (!ao) v0 = v1 = v2 = v3 = lYp;
+            if (!ao) { v0 = v1 = v2 = v3 = Sample(block, pos.X, pos.Y + 1, pos.Z); }
             else
             {
-                float n = block.GetLuminance(Lighting, pos.X, pos.Y + 1, pos.Z - 1);
-                float s = block.GetLuminance(Lighting, pos.X, pos.Y + 1, pos.Z + 1);
-                float w = block.GetLuminance(Lighting, pos.X - 1, pos.Y + 1, pos.Z);
-                float e = block.GetLuminance(Lighting, pos.X + 1, pos.Y + 1, pos.Z);
-
-                float nw = (IsOpaque(pos.X - 1, pos.Y + 1, pos.Z) && IsOpaque(pos.X, pos.Y + 1, pos.Z - 1)) ? w : block.GetLuminance(Lighting, pos.X - 1, pos.Y + 1, pos.Z - 1);
-                float sw = (IsOpaque(pos.X - 1, pos.Y + 1, pos.Z) && IsOpaque(pos.X, pos.Y + 1, pos.Z + 1)) ? w : block.GetLuminance(Lighting, pos.X - 1, pos.Y + 1, pos.Z + 1);
-                float ne = (IsOpaque(pos.X + 1, pos.Y + 1, pos.Z) && IsOpaque(pos.X, pos.Y + 1, pos.Z - 1)) ? e : block.GetLuminance(Lighting, pos.X + 1, pos.Y + 1, pos.Z - 1);
-                float se = (IsOpaque(pos.X + 1, pos.Y + 1, pos.Z) && IsOpaque(pos.X, pos.Y + 1, pos.Z + 1)) ? e : block.GetLuminance(Lighting, pos.X + 1, pos.Y + 1, pos.Z + 1);
-
-                v0 = (s + lYp + se + e) * 0.25F;
-                v1 = (lYp + n + e + ne) * 0.25F;
-                v2 = (w + nw + lYp + n) * 0.25F;
-                v3 = (sw + w + s + lYp) * 0.25F;
+                FaceQuadrants q = SampleFace(block, pos, 0, 1, 0, 1, 0, 0, 0, 0, 1);
+                v0 = q.PlusPlus;
+                v1 = q.PlusMinus;
+                v2 = q.MinusMinus;
+                v3 = q.MinusPlus;
             }
 
             var colors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 1.0F, tintTop);
             int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.Up);
 
-            DrawTopFace(block, in vecPos, colors, textureId, ao && (v0 + v2 > v1 + v3));
+            DrawTopFace(block, in vecPos, colors, textureId, ao && (v0.FlipWeight + v2.FlipWeight > v1.FlipWeight + v3.FlipWeight));
 
             hasRendered = true;
         }
@@ -576,29 +653,19 @@ public ref struct BlockRenderContext
         // EAST FACE (Z - 1)
         if (RenderAllFaces || bounds.MinZ > 0.0F || block.IsSideVisible(BlockReader, pos.X, pos.Y, pos.Z - 1, Side.North))
         {
-            float lZn = block.GetLuminance(Lighting, pos.X, pos.Y, pos.Z - 1);
-            if (!ao) v0 = v1 = v2 = v3 = lZn;
+            if (!ao) { v0 = v1 = v2 = v3 = Sample(block, pos.X, pos.Y, pos.Z - 1); }
             else
             {
-                float u = block.GetLuminance(Lighting, pos.X, pos.Y + 1, pos.Z - 1);
-                float d = block.GetLuminance(Lighting, pos.X, pos.Y - 1, pos.Z - 1);
-                float w = block.GetLuminance(Lighting, pos.X - 1, pos.Y, pos.Z - 1);
-                float e = block.GetLuminance(Lighting, pos.X + 1, pos.Y, pos.Z - 1);
-
-                float uw = (IsOpaque(pos.X - 1, pos.Y, pos.Z - 1) && IsOpaque(pos.X, pos.Y + 1, pos.Z - 1)) ? w : block.GetLuminance(Lighting, pos.X - 1, pos.Y + 1, pos.Z - 1);
-                float dw = (IsOpaque(pos.X - 1, pos.Y, pos.Z - 1) && IsOpaque(pos.X, pos.Y - 1, pos.Z - 1)) ? w : block.GetLuminance(Lighting, pos.X - 1, pos.Y - 1, pos.Z - 1);
-                float ue = (IsOpaque(pos.X + 1, pos.Y, pos.Z - 1) && IsOpaque(pos.X, pos.Y + 1, pos.Z - 1)) ? e : block.GetLuminance(Lighting, pos.X + 1, pos.Y + 1, pos.Z - 1);
-                float de = (IsOpaque(pos.X + 1, pos.Y, pos.Z - 1) && IsOpaque(pos.X, pos.Y - 1, pos.Z - 1)) ? e : block.GetLuminance(Lighting, pos.X + 1, pos.Y - 1, pos.Z - 1);
-
-                v0 = (w + uw + lZn + u) * 0.25F;
-                v1 = (lZn + u + e + ue) * 0.25F;
-                v2 = (d + lZn + de + e) * 0.25F;
-                v3 = (dw + w + d + lZn) * 0.25F;
+                FaceQuadrants q = SampleFace(block, pos, 0, 0, -1, 1, 0, 0, 0, 1, 0);
+                v0 = q.MinusPlus;
+                v1 = q.PlusPlus;
+                v2 = q.PlusMinus;
+                v3 = q.MinusMinus;
             }
 
             int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.North);
             var colors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.8F, tintEast);
-            bool flipped = ao && (v1 + v3 > v2 + v0);
+            bool flipped = ao && (v1.FlipWeight + v3.FlipWeight > v2.FlipWeight + v0.FlipWeight);
 
             DrawEastFace(block, in vecPos, colors, textureId, flipped);
 
@@ -614,29 +681,19 @@ public ref struct BlockRenderContext
         // WEST FACE (Z + 1)
         if (RenderAllFaces || bounds.MaxZ < 1.0F || block.IsSideVisible(BlockReader, pos.X, pos.Y, pos.Z + 1, Side.South))
         {
-            float lZp = block.GetLuminance(Lighting, pos.X, pos.Y, pos.Z + 1);
-            if (!ao) v0 = v1 = v2 = v3 = lZp;
+            if (!ao) { v0 = v1 = v2 = v3 = Sample(block, pos.X, pos.Y, pos.Z + 1); }
             else
             {
-                float u = block.GetLuminance(Lighting, pos.X, pos.Y + 1, pos.Z + 1);
-                float d = block.GetLuminance(Lighting, pos.X, pos.Y - 1, pos.Z + 1);
-                float w = block.GetLuminance(Lighting, pos.X - 1, pos.Y, pos.Z + 1);
-                float e = block.GetLuminance(Lighting, pos.X + 1, pos.Y, pos.Z + 1);
-
-                float uw = (IsOpaque(pos.X - 1, pos.Y, pos.Z + 1) && IsOpaque(pos.X, pos.Y + 1, pos.Z + 1)) ? w : block.GetLuminance(Lighting, pos.X - 1, pos.Y + 1, pos.Z + 1);
-                float dw = (IsOpaque(pos.X - 1, pos.Y, pos.Z + 1) && IsOpaque(pos.X, pos.Y - 1, pos.Z + 1)) ? w : block.GetLuminance(Lighting, pos.X - 1, pos.Y - 1, pos.Z + 1);
-                float ue = (IsOpaque(pos.X + 1, pos.Y, pos.Z + 1) && IsOpaque(pos.X, pos.Y + 1, pos.Z + 1)) ? e : block.GetLuminance(Lighting, pos.X + 1, pos.Y + 1, pos.Z + 1);
-                float de = (IsOpaque(pos.X + 1, pos.Y, pos.Z + 1) && IsOpaque(pos.X, pos.Y - 1, pos.Z + 1)) ? e : block.GetLuminance(Lighting, pos.X + 1, pos.Y - 1, pos.Z + 1);
-
-                v0 = (w + uw + lZp + u) * 0.25F;
-                v1 = (dw + w + d + lZp) * 0.25F;
-                v2 = (d + lZp + de + e) * 0.25F;
-                v3 = (lZp + u + e + ue) * 0.25F;
+                FaceQuadrants q = SampleFace(block, pos, 0, 0, 1, 1, 0, 0, 0, 1, 0);
+                v0 = q.MinusPlus;
+                v1 = q.MinusMinus;
+                v2 = q.PlusMinus;
+                v3 = q.PlusPlus;
             }
 
             int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.South);
             var colors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 0.8F, tintWest);
-            bool flipped = ao && (v0 + v2 > v1 + v3);
+            bool flipped = ao && (v0.FlipWeight + v2.FlipWeight > v1.FlipWeight + v3.FlipWeight);
 
             DrawWestFace(block, in vecPos, colors, textureId, flipped);
 
@@ -652,29 +709,19 @@ public ref struct BlockRenderContext
         // NORTH FACE (X - 1)
         if (RenderAllFaces || bounds.MinX > 0.0F || block.IsSideVisible(BlockReader, pos.X - 1, pos.Y, pos.Z, Side.West))
         {
-            float lXn = block.GetLuminance(Lighting, pos.X - 1, pos.Y, pos.Z);
-            if (!ao) v0 = v1 = v2 = v3 = lXn;
+            if (!ao) { v0 = v1 = v2 = v3 = Sample(block, pos.X - 1, pos.Y, pos.Z); }
             else
             {
-                float u = block.GetLuminance(Lighting, pos.X - 1, pos.Y + 1, pos.Z);
-                float d = block.GetLuminance(Lighting, pos.X - 1, pos.Y - 1, pos.Z);
-                float n = block.GetLuminance(Lighting, pos.X - 1, pos.Y, pos.Z - 1);
-                float s = block.GetLuminance(Lighting, pos.X - 1, pos.Y, pos.Z + 1);
-
-                float un = (IsOpaque(pos.X - 1, pos.Y, pos.Z - 1) && IsOpaque(pos.X - 1, pos.Y + 1, pos.Z)) ? n : block.GetLuminance(Lighting, pos.X - 1, pos.Y + 1, pos.Z - 1);
-                float dn = (IsOpaque(pos.X - 1, pos.Y, pos.Z - 1) && IsOpaque(pos.X - 1, pos.Y - 1, pos.Z)) ? n : block.GetLuminance(Lighting, pos.X - 1, pos.Y - 1, pos.Z - 1);
-                float us = (IsOpaque(pos.X - 1, pos.Y, pos.Z + 1) && IsOpaque(pos.X - 1, pos.Y + 1, pos.Z)) ? s : block.GetLuminance(Lighting, pos.X - 1, pos.Y + 1, pos.Z + 1);
-                float ds = (IsOpaque(pos.X - 1, pos.Y, pos.Z + 1) && IsOpaque(pos.X - 1, pos.Y - 1, pos.Z)) ? s : block.GetLuminance(Lighting, pos.X - 1, pos.Y - 1, pos.Z + 1);
-
-                v0 = (u + us + lXn + s) * 0.25F;
-                v1 = (u + un + n + lXn) * 0.25F;
-                v2 = (n + lXn + dn + d) * 0.25F;
-                v3 = (d + ds + lXn + s) * 0.25F;
+                FaceQuadrants q = SampleFace(block, pos, -1, 0, 0, 0, 0, 1, 0, 1, 0);
+                v0 = q.PlusPlus;
+                v1 = q.MinusPlus;
+                v2 = q.MinusMinus;
+                v3 = q.PlusMinus;
             }
 
             int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.West);
             var colors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.6F, tintNorth);
-            bool flipped = ao && (v1 + v3 > v2 + v0);
+            bool flipped = ao && (v1.FlipWeight + v3.FlipWeight > v2.FlipWeight + v0.FlipWeight);
 
             DrawNorthFace(block, in vecPos, colors, textureId, flipped);
 
@@ -690,29 +737,19 @@ public ref struct BlockRenderContext
         // SOUTH FACE (X + 1)
         if (RenderAllFaces || bounds.MaxX < 1.0F || block.IsSideVisible(BlockReader, pos.X + 1, pos.Y, pos.Z, Side.East))
         {
-            float lXp = block.GetLuminance(Lighting, pos.X + 1, pos.Y, pos.Z);
-            if (!ao) v0 = v1 = v2 = v3 = lXp;
+            if (!ao) { v0 = v1 = v2 = v3 = Sample(block, pos.X + 1, pos.Y, pos.Z); }
             else
             {
-                float u = block.GetLuminance(Lighting, pos.X + 1, pos.Y + 1, pos.Z);
-                float d = block.GetLuminance(Lighting, pos.X + 1, pos.Y - 1, pos.Z);
-                float n = block.GetLuminance(Lighting, pos.X + 1, pos.Y, pos.Z - 1);
-                float s = block.GetLuminance(Lighting, pos.X + 1, pos.Y, pos.Z + 1);
-
-                float un = (IsOpaque(pos.X + 1, pos.Y, pos.Z - 1) && IsOpaque(pos.X + 1, pos.Y + 1, pos.Z)) ? n : block.GetLuminance(Lighting, pos.X + 1, pos.Y + 1, pos.Z - 1);
-                float dn = (IsOpaque(pos.X + 1, pos.Y, pos.Z - 1) && IsOpaque(pos.X + 1, pos.Y - 1, pos.Z)) ? n : block.GetLuminance(Lighting, pos.X + 1, pos.Y - 1, pos.Z - 1);
-                float us = (IsOpaque(pos.X + 1, pos.Y, pos.Z + 1) && IsOpaque(pos.X + 1, pos.Y + 1, pos.Z)) ? s : block.GetLuminance(Lighting, pos.X + 1, pos.Y + 1, pos.Z + 1);
-                float ds = (IsOpaque(pos.X + 1, pos.Y, pos.Z + 1) && IsOpaque(pos.X + 1, pos.Y - 1, pos.Z)) ? s : block.GetLuminance(Lighting, pos.X + 1, pos.Y - 1, pos.Z + 1);
-
-                v0 = (d + ds + lXp + s) * 0.25F;
-                v1 = (n + lXp + dn + d) * 0.25F;
-                v2 = (u + un + n + lXp) * 0.25F;
-                v3 = (u + us + lXp + s) * 0.25F;
+                FaceQuadrants q = SampleFace(block, pos, 1, 0, 0, 0, 0, 1, 0, 1, 0);
+                v0 = q.PlusMinus;
+                v1 = q.MinusMinus;
+                v2 = q.MinusPlus;
+                v3 = q.PlusPlus;
             }
 
             int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, 5.ToSide());
             var colors = FaceColors.AssignVertexColors(v3, v0, v1, v2, r, g, b, 0.6F, tintSouth);
-            bool flipped = ao && (v3 + v1 > v0 + v2);
+            bool flipped = ao && (v3.FlipWeight + v1.FlipWeight > v0.FlipWeight + v2.FlipWeight);
 
             DrawSouthFace(block, in vecPos, colors, textureId, flipped);
 

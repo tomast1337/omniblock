@@ -10,7 +10,8 @@ public class PistonExtensionRenderer : IBlockRenderer
     {
         int metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
         Side facing = PistonExtensionBehavior.GetFacing(metadata);
-        float luminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z);
+        ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
+        const float luminance = 1.0F;
 
         // Using CustomFlag to track if this is a ShortArm rendering phase
         bool isShortArm = ctx.CustomFlag;

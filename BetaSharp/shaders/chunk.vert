@@ -3,7 +3,7 @@
 layout (location = 0) in vec3 inPosition;
 layout (location = 1) in uvec2 inUV;
 layout (location = 2) in vec4 inColor;
-layout (location = 3) in uint inLight;
+layout (location = 3) in uvec2 inLight;
 
 out vec4 vertexColor;
 out vec2 texCoord;
@@ -13,6 +13,13 @@ uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform vec2 chunkPos;
 uniform vec3 time;
+
+// How far the sky channel is knocked down right now, in levels. A uniform rather than something
+// baked into the mesh, which is the point of keeping the channels apart.
+uniform float ambientDarkness;
+
+// The floor of the brightness curve: 0.05 in the overworld, 0.1 in the nether.
+uniform float luminanceOffset;
 
 const float WavyLeavesStrength = 1.0; // [0.0 - 4.0]
 const float WavyLeavesSpeed = 1.0; // [0.1 - 2.0]
@@ -30,14 +37,30 @@ vec3 unpackPosition(vec3 packedPos)
     return packedPos * POSITION_SCALE_INV;
 }
 
-float unpackSkyLight(uint light)
+// Quarter levels, so a smooth-lit corner's mean of four cells survives the trip exactly.
+float lightLevel(uint quarterLevels)
 {
-    return float((light >> 4) & 0xFu) / 15.0;
+    return float(quarterLevels) * 0.25;
 }
 
-float unpackBlockLight(uint light)
+// Beta's brightness curve, which used to be a 16-entry table built per dimension. It is a closed
+// form, so the fractional levels smooth lighting produces can be evaluated directly rather than
+// interpolated between table entries. The offset is the only part that differs by dimension.
+float rampLuminance(float level)
 {
-    return float(light & 0xFu) / 15.0;
+    float factor = 1.0 - level / 15.0;
+    return (1.0 - factor) / (factor * 3.0 + 1.0) * (1.0 - luminanceOffset) + luminanceOffset;
+}
+
+// What Chunk.GetLight used to return before the mesh builder ever saw it. Doing it here is what
+// lets the sun set without every chunk in view being rebuilt, and what leaves a pack something to
+// override: by this point sky and block are still telling apart.
+float terrainBrightness(uvec2 packedLight)
+{
+    float sky = lightLevel(packedLight.x) - ambientDarkness;
+    float block = lightLevel(packedLight.y);
+
+    return rampLuminance(clamp(max(sky, block), 0.0, 15.0));
 }
 
 int atlasIndexFromUV(vec2 uv)
@@ -162,7 +185,9 @@ void main()
         position = worldPos - vec3(chunkPos.x, 0.0, chunkPos.y);
     }
 
-    vec4 color = inColor;
+    // The vertex colour is the block's own colour and its face shading; how lit it is arrives
+    // separately and is applied here rather than baked in by the mesh builder.
+    vec4 color = vec4(inColor.rgb * terrainBrightness(inLight), inColor.a);
 
     vec4 viewPos = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * viewPos;
