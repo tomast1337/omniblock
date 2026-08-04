@@ -42,6 +42,13 @@ internal sealed class DebugWindowContext(BetaSharp game)
     public ClientPlayerEntity? Player => game.Player;
     public HitResult ObjectMouseOver => game.ObjectMouseOver;
     public ChunkRenderer? ChunkRenderer => game.WorldRenderer?.ChunkRenderer;
+
+    /// <summary>
+    ///     The overworld the internal server holds, when there is one, so a debug view can compare
+    ///     what this client believes against what decided it.
+    /// </summary>
+    public World? InternalServerOverworld =>
+        game.InternalServer is { worlds.Length: > 0 } server ? server.worlds[0] : null;
     public DebugSystemSnapshot DebugSystemSnapshot => game.DebugSystemSnapshot;
     public UIScreen? CurrentScreen => game.CurrentScreen;
     public HUD HUD => game.HUD;
