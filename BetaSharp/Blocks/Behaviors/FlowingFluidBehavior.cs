@@ -179,6 +179,9 @@ public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidifie
 
     public float GetLuminance(Block block, ILightProvider lighting, int x, int y, int z, float defaultLuminance) => FluidMath.GetLuminance(lighting, x, y, z);
 
+    public LightLevels GetLightLevels(Block block, ILightProvider lighting, int x, int y, int z, LightLevels defaultLevels) =>
+        FluidMath.GetLightLevels(lighting, x, y, z, Block.BlocksLightLuminance[block.Id]);
+
     private static void ConvertToSource(Block block, IWorldContext world, int x, int y, int z)
     {
         int meta = world.Reader.GetBlockMeta(x, y, z);

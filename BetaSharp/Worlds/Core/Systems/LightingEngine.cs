@@ -33,6 +33,46 @@ public class LightingEngine : ILightProvider
 
     public float GetLuminance(int x, int y, int z) => _world.Dimension.LightLevelToLuminance[GetLightLevel(x, y, z)];
 
+    public LightLevels GetLightLevels(int x, int y, int z, int minBlockLight) =>
+        GetLightLevels(x, y, z, true).WithBlockFloor(minBlockLight);
+
+    /// <inheritdoc cref="WorldRegionSnapshot.GetLightLevelsExt" />
+    private LightLevels GetLightLevels(int x, int y, int z, bool checkNeighbors)
+    {
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000)
+        {
+            return LightLevels.FullSky;
+        }
+
+        if (checkNeighbors)
+        {
+            int blockId = _world.Reader.GetBlockId(x, y, z);
+            if (blockId == BlockRegistry.Get("slab").Id || blockId == BlockRegistry.Get("farmland").Id ||
+                blockId == BlockRegistry.Get("cobblestone_stairs").Id || blockId == BlockRegistry.Get("wooden_stairs").Id)
+            {
+                return GetLightLevels(x, y + 1, z, false)
+                    .Max(GetLightLevels(x + 1, y, z, false))
+                    .Max(GetLightLevels(x - 1, y, z, false))
+                    .Max(GetLightLevels(x, y, z + 1, false))
+                    .Max(GetLightLevels(x, y, z - 1, false));
+            }
+        }
+
+        if (y < 0)
+        {
+            return default;
+        }
+
+        if (y >= ChuckFormat.WorldHeight)
+        {
+            return _world.Dimension.HasCeiling ? default : LightLevels.FullSky;
+        }
+
+        Chunk chunk = _world.ChunkHost.GetChunk(x >> 4, z >> 4);
+        byte packed = chunk.GetPackedLight(x & 15, y, z & 15);
+        return LightLevels.Of((packed >> 4) & 0xF, packed & 0xF);
+    }
+
     public event Action<int, int, int>? OnLightUpdated;
 
     public bool HasSkyLight(int x, int y, int z) => _world.ChunkHost.GetChunk(x >> 4, z >> 4).IsAboveMaxHeight(x & 15, y, z & 15);

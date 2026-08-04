@@ -118,6 +118,59 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 
     public float GetLuminance(int x, int y, int z) => _lightTable[GetLightValue(x, y, z)];
 
+    public LightLevels GetLightLevels(int x, int y, int z, int minBlockLight) =>
+        GetLightLevelsExt(x, y, z, true).WithBlockFloor(minBlockLight);
+
+    /// <summary>
+    ///     <see cref="GetLightValueExt" /> per channel, with the time of day left to the shader.
+    /// </summary>
+    /// <remarks>
+    ///     The slab and stairs case takes the brightest neighbour in each channel separately, where
+    ///     the collapsed form took the brightest collapsed neighbour. Those disagree whenever the
+    ///     sunniest neighbour and the best-lit one are not the same cell, and there is no reading
+    ///     that keeps both — the collapsed answer cannot be taken apart again.
+    /// </remarks>
+    public LightLevels GetLightLevelsExt(int x, int y, int z, bool checkStairs)
+    {
+        if (x < -32000000 || z < -32000000 || x >= 32000000 || z > 32000000)
+        {
+            return LightLevels.FullSky;
+        }
+
+        if (checkStairs)
+        {
+            int blockId = GetBlockId(x, y, z);
+            if (blockId == BlockRegistry.Get("slab").Id || blockId == BlockRegistry.Get("farmland").Id || blockId == BlockRegistry.Get("wooden_stairs").Id || blockId == BlockRegistry.Get("cobblestone_stairs").Id)
+            {
+                return GetLightLevelsExt(x, y + 1, z, false)
+                    .Max(GetLightLevelsExt(x + 1, y, z, false))
+                    .Max(GetLightLevelsExt(x - 1, y, z, false))
+                    .Max(GetLightLevelsExt(x, y, z + 1, false))
+                    .Max(GetLightLevelsExt(x, y, z - 1, false));
+            }
+        }
+
+        if (y < 0)
+        {
+            return default;
+        }
+
+        if (y >= ChuckFormat.WorldHeight)
+        {
+            return LightLevels.FullSky;
+        }
+
+        ref ChunkSnapshot chunk = ref _chunks[(x >> 4) - _chunkX, (z >> 4) - _chunkZ];
+        LightLevels levels = chunk.GetLightLevels(x & 15, y, z & 15);
+
+        if (chunk.IsLit)
+        {
+            IsLit = true;
+        }
+
+        return levels;
+    }
+
     public int GetLightValue(int x, int y, int z) => GetLightValueExt(x, y, z, true);
 
     public int GetLightValueExt(int x, int y, int z, bool checkStairs)

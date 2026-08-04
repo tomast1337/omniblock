@@ -75,6 +75,9 @@ public sealed class StationaryFluidBehavior(Block ignitionTarget, Block sourceSo
 
     public float GetLuminance(Block block, ILightProvider lighting, int x, int y, int z, float defaultLuminance) => FluidMath.GetLuminance(lighting, x, y, z);
 
+    public LightLevels GetLightLevels(Block block, ILightProvider lighting, int x, int y, int z, LightLevels defaultLevels) =>
+        FluidMath.GetLightLevels(lighting, x, y, z, Block.BlocksLightLuminance[block.Id]);
+
     private static void ConvertToFlowing(Block block, OnTickEvent @event)
     {
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
