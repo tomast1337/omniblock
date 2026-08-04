@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
@@ -125,40 +123,14 @@ public unsafe class FixedFunctionPipeline : LegacyGL
         SilkGL.BufferData(target.ToModern(), size, data, usage.ToModern());
     }
 
-    /// <summary>
-    ///     Whether to check what is bound before each draw. Switches itself off once it has found
-    ///     something, so the cost is paid only until the first report.
-    /// </summary>
     /// <remarks>
-    ///     Temporary. This exists because the GL debug callback reported nothing useful, and unlike
-    ///     that callback this runs on the thread that issued the draw, where a stack trace is
-    ///     guaranteed to mean something. Delete it once the fault it is looking for is fixed.
+    ///     Still drains queued geometry, for draws that do not bind anything of their own and so
+    ///     cannot be disturbed by a flush. Anything that does bind first has to drain itself before
+    ///     it starts — see <see cref="LegacyGL.FlushQueuedGeometry" />.
     /// </remarks>
-    private static bool s_validateDraws = true;
-
-    private static readonly ILogger s_logger = Log.Instance.For(nameof(FixedFunctionPipeline));
-
     public override void DrawArrays(GLEnum mode, int first, uint count)
     {
         OnImmediateGeometryDrawing();
-
-        if (s_validateDraws)
-        {
-            SilkGL.GetInteger(GetPName.CurrentProgram, out int program);
-            SilkGL.GetInteger(GetPName.VertexArrayBinding, out int vertexArray);
-
-            // A core profile has neither a default program nor a default vertex array, so either at
-            // zero fails the draw outright.
-            if (program == 0 || vertexArray == 0)
-            {
-                s_validateDraws = false;
-                s_logger.LogError(
-                    "Draw with program {Program} and vertex array {VertexArray}; zero for either " +
-                    "cannot draw. Further checks disabled.\n{Stack}",
-                    program, vertexArray, new StackTrace(1, true).ToString());
-            }
-        }
-
         SilkGL.DrawArrays(mode.ToModern(), first, count);
     }
 

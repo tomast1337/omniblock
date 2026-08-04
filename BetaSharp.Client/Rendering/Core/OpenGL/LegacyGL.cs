@@ -73,6 +73,17 @@ public abstract unsafe class LegacyGL : IGL
 
     protected void OnImmediateGeometryDrawing() => ImmediateGeometryDrawing?.Invoke();
 
+    /// <summary>
+    ///     Drains anything a batching renderer is holding, before the caller binds its own state.
+    /// </summary>
+    /// <remarks>
+    ///     A flush binds its own program and vertex array and leaves both at zero afterwards. Raised
+    ///     from inside <see cref="DrawArrays" />, as it also is, that lands in the middle of a caller
+    ///     that has already bound its own — so the draw that triggered the flush is the one that
+    ///     draws with nothing bound. Callers that set up before drawing have to drain first.
+    /// </remarks>
+    public void FlushQueuedGeometry() => OnImmediateGeometryDrawing();
+
     public void BlendFunc(GLEnum sfactor, GLEnum dfactor)
     {
         OnRasterStateChanging();
