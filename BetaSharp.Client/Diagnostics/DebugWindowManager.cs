@@ -46,7 +46,7 @@ internal sealed class DebugWindowManager
         [
             _liveStatsWindow,
             new SystemWindow(ctx),
-            new RenderInfoWindow(),
+            new RenderInfoWindow(ctx),
             new AudioDebugWindow(ctx),
             new ProfilerWindow(),
             new TranslationsWindow(),

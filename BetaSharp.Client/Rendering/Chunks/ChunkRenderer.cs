@@ -623,6 +623,28 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             MarkDirty(pos, true);
     }
 
+    /// <summary>
+    ///     The mesh bookkeeping for the sub-chunk containing a block, for the debug view.
+    /// </summary>
+    public bool TryGetMeshState(int blockX, int blockY, int blockZ, out (long Epoch, long LastMeshed, long Pending) state, out bool hasRenderer)
+    {
+        Vector3D<int> pos = new(
+            (int)Math.Floor(blockX / (double)SubChunkRenderer.Size) * SubChunkRenderer.Size,
+            (int)Math.Floor(blockY / (double)SubChunkRenderer.Size) * SubChunkRenderer.Size,
+            (int)Math.Floor(blockZ / (double)SubChunkRenderer.Size) * SubChunkRenderer.Size);
+
+        hasRenderer = _renderers.ContainsKey(pos);
+
+        if (_chunkVersions.TryGetValue(pos, out ChunkMeshVersion? version))
+        {
+            state = version.State;
+            return true;
+        }
+
+        state = default;
+        return false;
+    }
+
     public bool MarkDirty(Vector3D<int> chunkPos, bool priority = false)
     {
         if (!_world.BlockHost.IsRegionLoaded(chunkPos.X - 1, chunkPos.Y - 1, chunkPos.Z - 1, chunkPos.X + SubChunkRenderer.Size + 1, chunkPos.Y + SubChunkRenderer.Size + 1, chunkPos.Z + SubChunkRenderer.Size + 1) | !IsChunkInRenderDistance(chunkPos, _lastViewPos))
