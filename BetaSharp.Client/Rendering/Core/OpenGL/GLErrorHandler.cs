@@ -23,6 +23,15 @@ internal class GLErrorHandler
     private readonly DebugProc _debugProcCallback;
 
     /// <summary>
+    ///     Call sites already reported, so a fault that repeats every frame is described once.
+    /// </summary>
+    /// <remarks>
+    ///     Without this the log is thousands of identical lines that say what went wrong and never
+    ///     where. The message text alone does not distinguish two draws failing for the same reason.
+    /// </remarks>
+    private readonly HashSet<string> _reportedSites = [];
+
+    /// <summary>
     ///     Routes GL debug messages to the log. Replaces any handler installed before it, so a
     ///     recreated context gets a callback bound to the context that is current now.
     /// </summary>
@@ -71,6 +80,43 @@ internal class GLErrorHandler
             "[GL] [{Severity}] [{Source}] [{Type}] (id={Id}): {Message}",
             severity, source, type, id, msg);
 
+        // Debug output is synchronous, so the managed frames that issued the call are still on the
+        // stack. That is the only thing here that says which draw is at fault; the message says
+        // what GL disliked and never where.
+        if (type == Silk.NET.OpenGL.GLEnum.DebugTypeError)
+        {
+            ReportCallSite(msg);
+        }
+
         Debugger.Break();
+    }
+
+    /// <summary>
+    ///     Names the draw that faulted, and the two pieces of state that most often explain a
+    ///     GL_INVALID_OPERATION on a draw in a core profile.
+    /// </summary>
+    /// <remarks>
+    ///     A core context has no default vertex array and no fixed-function program, so drawing with
+    ///     either bound to zero is an error rather than a fallback. Both are easy to leave that way
+    ///     — every path here unbinds after itself — and neither is visible in the GL message.
+    /// </remarks>
+    private void ReportCallSite(string message)
+    {
+        string stack = new StackTrace(2, true).ToString();
+        string site = message + stack;
+
+        if (!_reportedSites.Add(site))
+        {
+            return;
+        }
+
+        GL gl = Display.getGL()!;
+        gl.GetInteger(GetPName.CurrentProgram, out int program);
+        gl.GetInteger(GetPName.VertexArrayBinding, out int vertexArray);
+
+        _logger.LogError(
+            "[GL] first occurrence of the above. Bound program {Program}, bound vertex array " +
+            "{VertexArray} (zero for either is itself an error on a draw).\n{Stack}",
+            program, vertexArray, stack);
     }
 }
