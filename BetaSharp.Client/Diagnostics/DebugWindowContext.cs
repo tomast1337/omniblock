@@ -43,20 +43,6 @@ internal sealed class DebugWindowContext(BetaSharp game)
     public HitResult ObjectMouseOver => game.ObjectMouseOver;
     public ChunkRenderer? ChunkRenderer => game.WorldRenderer?.ChunkRenderer;
 
-    /// <summary>
-    ///     The internal server's copy of the world this client is in, so a debug view can compare
-    ///     what this client believes against what decided it.
-    /// </summary>
-    /// <remarks>
-    ///     Selected by dimension rather than taken as <c>worlds[0]</c>. The two disagree everywhere
-    ///     outside the overworld, and a comparison against the wrong world reads a different world's
-    ///     blocks at the same coordinates — which looks exactly like the corruption such a view
-    ///     exists to find.
-    /// </remarks>
-    public World? InternalServerWorld =>
-        game.InternalServer is { } server && game.World is { } world
-            ? server.getWorld(world.Dimension.Id)
-            : null;
     public DebugSystemSnapshot DebugSystemSnapshot => game.DebugSystemSnapshot;
     public UIScreen? CurrentScreen => game.CurrentScreen;
     public HUD HUD => game.HUD;

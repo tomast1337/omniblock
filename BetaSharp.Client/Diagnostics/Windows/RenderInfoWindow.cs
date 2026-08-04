@@ -77,37 +77,12 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
         DrawCell("Z-   ", world, x, y, z - 1);
         DrawCell("Z+   ", world, x, y, z + 1);
 
-        // In single player the internal server holds the light this client's copy came from, so
-        // disagreeing with it says the light was lost on the way here rather than never computed.
-        World? server = ctx.InternalServerWorld;
-        if (server != null)
+        // Sky light is only meaningful against the height it was computed from: every cell below a
+        // column's height is legitimately dark, so a height that disagrees with the terrain reads
+        // exactly like a lighting fault.
+        if (world.BlockHost.HasChunk(x >> 4, z >> 4))
         {
-            int serverId = server.Reader.GetBlockId(x, y + 1, z);
-            LightLevels here = StoredLight(world, x, y + 1, z);
-            LightLevels there = StoredLight(server, x, y + 1, z);
-
-            ImGuiTextSafe.Text($"Up on server:  id {serverId,3}  sky {there.Sky,2}  block {there.Block,2}");
-
-            // Sky light is only meaningful against the height it was computed from. A column whose
-            // height the client thinks is higher than it is has every cell below it legitimately
-            // dark, and that is a heightmap fault wearing a lighting fault's clothes.
-            ImGuiTextSafe.Text($"Height:  client {HeightAt(world, x, z),3}   server {HeightAt(server, x, z),3}");
-
-            // The block first: while a right-click is still unconfirmed the two hold different
-            // blocks there, and different blocks are entitled to different light. Reporting that as
-            // a light fault sends you looking in the wrong system.
-            if (serverId != world.Reader.GetBlockId(x, y + 1, z))
-            {
-                ImGuiTextSafe.TextColored(
-                    new(1.0f, 0.8f, 0.4f, 1.0f),
-                    "       client and server disagree about the block above; light cannot be compared");
-            }
-            else if (here != there)
-            {
-                ImGuiTextSafe.TextColored(
-                    new(1.0f, 0.4f, 0.4f, 1.0f),
-                    "       client and server disagree about the light above this block");
-            }
+            ImGuiTextSafe.Text($"Height:  {world.BlockHost.GetChunk(x >> 4, z >> 4).GetHeight(x & 15, z & 15)}");
         }
 
         if (ctx.ChunkRenderer != null && ctx.ChunkRenderer.TryGetMeshState(x, y, z, out (long Epoch, long LastMeshed, long Pending) state, out bool hasRenderer))
@@ -147,16 +122,9 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
     /// <remarks>
     ///     Not <c>Lighting.GetLightLevels</c>, which answers "what should a face towards this cell
     ///     be shaded by" — for a slab, farmland or stairs that is the brightest of five neighbors
-    ///     rather than the cell itself. Asking that question of two worlds compares two derivations
-    ///     instead of two stored values, and the derivations can differ while the storage agrees.
-    ///     A view that exists to say whether light arrived has to read what arrived.
+    ///     rather than the cell itself. This view exists to say what the world holds, so it reads
+    ///     what the world holds.
     /// </remarks>
-    /// <summary>The column height this world believes, or -1 when it holds no chunk there.</summary>
-    private static int HeightAt(World world, int x, int z) =>
-        world.BlockHost.HasChunk(x >> 4, z >> 4)
-            ? world.BlockHost.GetChunk(x >> 4, z >> 4).GetHeight(x & 15, z & 15)
-            : -1;
-
     private static LightLevels StoredLight(World world, int x, int y, int z)
     {
         if (y < 0 || y >= ChuckFormat.WorldHeight || !world.BlockHost.HasChunk(x >> 4, z >> 4))
