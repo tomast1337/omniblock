@@ -134,3 +134,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-04 — debug(server): trace the portal chain, from standing in one to watching chunks (Nicolas Vyčas Nery; `b55aacc695d179ba29a9a16409b69b49ea67e58f`)
 - 2026-08-04 — fix(entities): decide portal entry from where the player is, not from a packet (Nicolas Vyčas Nery; `5af8b1bf3f92145685f7bd97f18bbf2af345ac8b`)
 - 2026-08-04 — fix(entities): require leaving a portal before another one can fire (Nicolas Vyčas Nery; `5befbc5ec76102c58142700422ea43389a4c411e`)
+- 2026-08-04 — refactor(server): remove the portal chain trace (Nicolas Vyčas Nery; `76758d4e3972c44d3bd957aa9a5642e72ceab51a`)
