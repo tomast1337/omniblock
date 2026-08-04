@@ -7,13 +7,18 @@ public class CactusRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        Box bounds = ctx.OverrideBounds ?? block.BoundingBox;
+        // The whole cube, not the block's bounding box. That box is inset by a pixel on X and Z
+        // because that is where a cactus hurts you, and rendering through it drew the sides a pixel
+        // thin and left the full-width top and bottom overhanging them. A cactus is inset by moving
+        // each side face inward below, and by nothing else.
+        Box bounds = ctx.OverrideBounds ?? new Box(0.0, 0.0, 0.0, 1.0, 1.0, 1.0);
         bool hasRendered = false;
 
         // Force the helper to use flat shading so it doesn't override our colors with the dummy struct
         var flatCtx = ctx with
         {
-            EnableAo = false
+            EnableAo = false,
+            OverrideBounds = bounds
         };
 
         // 1. Calculate the specific biome/tint color for this cactus
