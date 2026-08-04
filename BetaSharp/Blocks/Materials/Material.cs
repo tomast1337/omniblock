@@ -26,6 +26,7 @@ public sealed class Material
     public static Material Ice => MaterialRegistry.Get("ice");
     public static Material SnowLayer => MaterialRegistry.Get("snow_layer");
     public static Material SnowBlock => MaterialRegistry.Get("snow_block");
+    public static Material NetherPortal => MaterialRegistry.Get("nether_portal");
 
     public required MapColor MapColor { get; init; }
     public bool IsFluid { get; init; }
