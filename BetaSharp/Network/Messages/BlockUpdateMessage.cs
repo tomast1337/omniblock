@@ -1,5 +1,15 @@
 namespace BetaSharp.Network.Messages;
 
+/// <summary>
+///     One position's block and metadata.
+/// </summary>
+/// <remarks>
+///     Carries no light. It used to, so that a light-only change had something to travel in, and
+///     that was the wrong shape twice over: a light byte read for one cell cannot express the pass
+///     that lights a whole chunk, and every construction of this message that forgot to set the
+///     field wrote a real, destructive zero into the receiver. Light travels as whole sections on
+///     <see cref="LightSectionsMessage" />, where there is no per-message field to leave unset.
+/// </remarks>
 [WireMessage("beta:block_update")]
 public partial class BlockUpdateMessage : Message
 {
@@ -18,17 +28,4 @@ public partial class BlockUpdateMessage : Message
 
     [WireField]
     public byte BlockMetadata { get; set; }
-
-    /// <summary>
-    ///     Block light in the low nibble, sky light in the high one, matching how a chunk stores
-    ///     them.
-    /// </summary>
-    /// <remarks>
-    ///     Carried because the server announces a position whenever its <em>light</em> changes, not
-    ///     only when its block does. Without this the announcement for a light-only change is
-    ///     identical to what the receiver already holds, so it is indistinguishable from a repeat
-    ///     and the new value never arrives.
-    /// </remarks>
-    [WireField]
-    public byte Light { get; set; }
 }

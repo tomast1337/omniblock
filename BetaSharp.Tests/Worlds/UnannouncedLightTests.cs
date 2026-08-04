@@ -110,14 +110,11 @@ public sealed class UnannouncedLightTests
 
     /// <summary>
     ///     Applies what the server puts on the wire for each announced position, through the wire
-    ///     form rather than around it, and in the order <c>ClientWorld.SetBlockWithMetaFromPacket</c>
-    ///     uses: the block first, then the light over the top of whatever that queued.
+    ///     form rather than around it, and then the light sections the change dirtied.
     /// </summary>
     /// <remarks>
-    ///     Light is read from the server after its queue has drained, which is the best content the
-    ///     wire could ever carry — the real server reads it at send time and can read it
-    ///     mid-propagation. A failure here is therefore about cells the wire never names, not about
-    ///     a stale byte for one it does.
+    ///     Blocks and light travel apart, so replaying one without the other would prove nothing
+    ///     about a client, which receives both.
     /// </remarks>
     private static void Replay(RecordingListener announced, LightTestWorld server, LightTestWorld client)
     {
@@ -130,7 +127,6 @@ public sealed class UnannouncedLightTests
                 Z = z,
                 BlockRawId = (byte)server.Reader.GetBlockId(x, y, z),
                 BlockMetadata = (byte)server.Reader.GetBlockMeta(x, y, z),
-                Light = server.BlockHost.GetChunk(x >> 4, z >> 4).GetPackedLight(x & 15, y, z & 15)
             };
 
             using MemoryStream buffer = new();
@@ -142,9 +138,20 @@ public sealed class UnannouncedLightTests
 
             client.Writer.SetBlockWithoutNotifyingNeighbors(
                 received.X, received.Y, received.Z, received.BlockRawId, received.BlockMetadata);
+        }
 
-            client.BlockHost.GetChunk(received.X >> 4, received.Z >> 4)
-                .SetPackedLight(received.X & 15, received.Y, received.Z & 15, received.Light);
+        foreach ((int chunkX, int chunkZ) in announced.BlockUpdates
+                     .Select(p => (p.X >> 4, p.Z >> 4))
+                     .Distinct())
+        {
+            Chunk serverChunk = server.BlockHost.GetChunk(chunkX, chunkZ);
+            uint sections = serverChunk.TakeLightDirtySections();
+
+            if (sections != 0)
+            {
+                LightSectionsMessage.Of(serverChunk, sections)
+                    .ApplyTo(client.BlockHost.GetChunk(chunkX, chunkZ));
+            }
         }
 
         client.DrainLighting();

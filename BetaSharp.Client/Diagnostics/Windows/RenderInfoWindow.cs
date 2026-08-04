@@ -88,6 +88,11 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
 
             ImGuiTextSafe.Text($"Up on server:  id {serverId,3}  sky {there.Sky,2}  block {there.Block,2}");
 
+            // Sky light is only meaningful against the height it was computed from. A column whose
+            // height the client thinks is higher than it is has every cell below it legitimately
+            // dark, and that is a heightmap fault wearing a lighting fault's clothes.
+            ImGuiTextSafe.Text($"Height:  client {HeightAt(world, x, z),3}   server {HeightAt(server, x, z),3}");
+
             // The block first: while a right-click is still unconfirmed the two hold different
             // blocks there, and different blocks are entitled to different light. Reporting that as
             // a light fault sends you looking in the wrong system.
@@ -146,6 +151,12 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
     ///     instead of two stored values, and the derivations can differ while the storage agrees.
     ///     A view that exists to say whether light arrived has to read what arrived.
     /// </remarks>
+    /// <summary>The column height this world believes, or -1 when it holds no chunk there.</summary>
+    private static int HeightAt(World world, int x, int z) =>
+        world.BlockHost.HasChunk(x >> 4, z >> 4)
+            ? world.BlockHost.GetChunk(x >> 4, z >> 4).GetHeight(x & 15, z & 15)
+            : -1;
+
     private static LightLevels StoredLight(World world, int x, int y, int z)
     {
         if (y < 0 || y >= ChuckFormat.WorldHeight || !world.BlockHost.HasChunk(x >> 4, z >> 4))
