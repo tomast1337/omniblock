@@ -37,16 +37,14 @@ public class CactusRenderer : IBlockRenderer
         // 1/16th of a block = exactly 1 pixel width in a standard 16x16 texture
         float inset = 1.0F / 16.0F;
 
-        float centerLuminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z);
-        float faceLuminance;
 
         FaceColors dummyColors = new();
 
         // --- Bottom Face (Y - 1) ---
         if (flatCtx.RenderAllFaces || bounds.MinY > 0.0D || block.IsSideVisible(ctx.BlockReader, pos.X, pos.Y - 1, pos.Z, 0))
         {
-            faceLuminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y - 1, pos.Z);
-            ctx.Tess.setColorOpaque_F(rBottom * faceLuminance, gBottom * faceLuminance, bBottom * faceLuminance);
+            ctx.SetLightAt(block, pos.X, pos.Y - 1, pos.Z);
+            ctx.Tess.setColorOpaque_F(rBottom, gBottom, bBottom);
 
             int tex = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, 0);
             flatCtx.DrawBottomFace(block, new Vec3D(pos.X, pos.Y, pos.Z), dummyColors, tex);
@@ -56,13 +54,16 @@ public class CactusRenderer : IBlockRenderer
         // --- Top Face (Y + 1) ---
         if (flatCtx.RenderAllFaces || bounds.MaxY < 1.0D || block.IsSideVisible(ctx.BlockReader, pos.X, pos.Y + 1, pos.Z, Side.Up))
         {
-            faceLuminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y + 1, pos.Z);
             if (Math.Abs(bounds.MaxY - 1.0D) > 0.1 && !block.Material.IsFluid)
             {
-                faceLuminance = centerLuminance;
+                ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
+            }
+            else
+            {
+                ctx.SetLightAt(block, pos.X, pos.Y + 1, pos.Z);
             }
 
-            ctx.Tess.setColorOpaque_F(rTop * faceLuminance, gTop * faceLuminance, bTop * faceLuminance);
+            ctx.Tess.setColorOpaque_F(rTop, gTop, bTop);
 
             int tex = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.Up);
             flatCtx.DrawTopFace(block, new Vec3D(pos.X, pos.Y, pos.Z), dummyColors, tex);
@@ -72,10 +73,10 @@ public class CactusRenderer : IBlockRenderer
         // --- East Face (Z - 1) ---
         if (flatCtx.RenderAllFaces || bounds.MinZ > 0.0D || block.IsSideVisible(ctx.BlockReader, pos.X, pos.Y, pos.Z - 1, Side.North))
         {
-            faceLuminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z - 1);
-            if (bounds.MinZ > 0.0D) faceLuminance = centerLuminance;
+            if (bounds.MinZ > 0.0D) { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z); }
+            else { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z - 1); }
 
-            ctx.Tess.setColorOpaque_F(rZ * faceLuminance, gZ * faceLuminance, bZ * faceLuminance);
+            ctx.Tess.setColorOpaque_F(rZ, gZ, bZ);
 
             ctx.Tess.setTranslationF(0.0F, 0.0F, inset);
 
@@ -89,10 +90,10 @@ public class CactusRenderer : IBlockRenderer
         // --- West Face (Z + 1) ---
         if (flatCtx.RenderAllFaces || bounds.MaxZ < 1.0D || block.IsSideVisible(ctx.BlockReader, pos.X, pos.Y, pos.Z + 1, Side.South))
         {
-            faceLuminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z + 1);
-            if (bounds.MaxZ < 1.0D) faceLuminance = centerLuminance;
+            if (bounds.MaxZ < 1.0D) { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z); }
+            else { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z + 1); }
 
-            ctx.Tess.setColorOpaque_F(rZ * faceLuminance, gZ * faceLuminance, bZ * faceLuminance);
+            ctx.Tess.setColorOpaque_F(rZ, gZ, bZ);
 
             ctx.Tess.setTranslationF(0.0F, 0.0F, -inset);
 
@@ -106,10 +107,10 @@ public class CactusRenderer : IBlockRenderer
         // --- North Face (X - 1) ---
         if (flatCtx.RenderAllFaces || bounds.MinX > 0.0D || block.IsSideVisible(ctx.BlockReader, pos.X - 1, pos.Y, pos.Z, Side.West))
         {
-            faceLuminance = block.GetLuminance(ctx.Lighting, pos.X - 1, pos.Y, pos.Z);
-            if (bounds.MinX > 0.0D) faceLuminance = centerLuminance;
+            if (bounds.MinX > 0.0D) { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z); }
+            else { ctx.SetLightAt(block, pos.X - 1, pos.Y, pos.Z); }
 
-            ctx.Tess.setColorOpaque_F(rX * faceLuminance, gX * faceLuminance, bX * faceLuminance);
+            ctx.Tess.setColorOpaque_F(rX, gX, bX);
 
             ctx.Tess.setTranslationF(inset, 0.0F, 0.0F);
 
@@ -123,10 +124,10 @@ public class CactusRenderer : IBlockRenderer
         // --- South Face (X + 1) ---
         if (flatCtx.RenderAllFaces || bounds.MaxX < 1.0D || block.IsSideVisible(ctx.BlockReader, pos.X + 1, pos.Y, pos.Z, Side.East))
         {
-            faceLuminance = block.GetLuminance(ctx.Lighting, pos.X + 1, pos.Y, pos.Z);
-            if (bounds.MaxX < 1.0D) faceLuminance = centerLuminance;
+            if (bounds.MaxX < 1.0D) { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z); }
+            else { ctx.SetLightAt(block, pos.X + 1, pos.Y, pos.Z); }
 
-            ctx.Tess.setColorOpaque_F(rX * faceLuminance, gX * faceLuminance, bX * faceLuminance);
+            ctx.Tess.setColorOpaque_F(rX, gX, bX);
 
             ctx.Tess.setTranslationF(-inset, 0.0F, 0.0F);
 

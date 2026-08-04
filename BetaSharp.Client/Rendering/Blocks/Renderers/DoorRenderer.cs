@@ -16,7 +16,6 @@ public class DoorRenderer : IBlockRenderer
         const float lightZ = 0.8F; // East/West
         const float lightX = 0.6F; // North/South
 
-        float blockLuminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z);
         bool isLightEmitter = Block.BlocksLightLuminance[block.Id] > 0;
 
         // Dummy colors since Door uses flat shading (ctx.Tess.setColorOpaque_F) instead of AO
@@ -26,27 +25,27 @@ public class DoorRenderer : IBlockRenderer
         Vec3D vecPos = new Vec3D(pos.X, pos.Y, pos.Z);
 
         // --- Bottom Face (Y - 1) ---
-        float faceLuminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y - 1, pos.Z);
-        if (bounds.MinY > 0.0D) faceLuminance = blockLuminance;
-        if (isLightEmitter) faceLuminance = 1.0F;
+        if (isLightEmitter) { ctx.SetFullBright(); }
+        else if (bounds.MinY > 0.0D) { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z); }
+        else { ctx.SetLightAt(block, pos.X, pos.Y - 1, pos.Z); }
 
-        ctx.Tess.setColorOpaque_F(lightBottom * faceLuminance, lightBottom * faceLuminance, lightBottom * faceLuminance);
+        ctx.Tess.setColorOpaque_F(lightBottom, lightBottom, lightBottom);
         flatCtx.DrawBottomFace(block, vecPos, dummyColors, block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.Down));
 
         // --- Top Face (Y + 1) ---
-        faceLuminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y + 1, pos.Z);
-        if (bounds.MaxY < 1.0D) faceLuminance = blockLuminance;
-        if (isLightEmitter) faceLuminance = 1.0F;
+        if (isLightEmitter) { ctx.SetFullBright(); }
+        else if (bounds.MaxY < 1.0D) { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z); }
+        else { ctx.SetLightAt(block, pos.X, pos.Y + 1, pos.Z); }
 
-        ctx.Tess.setColorOpaque_F(lightTop * faceLuminance, lightTop * faceLuminance, lightTop * faceLuminance);
+        ctx.Tess.setColorOpaque_F(lightTop, lightTop, lightTop);
         flatCtx.DrawTopFace(block, vecPos, dummyColors, block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.Up));
 
         // --- East Face (Z - 1) ---
-        faceLuminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z - 1);
-        if (bounds.MinZ > 0.0D) faceLuminance = blockLuminance;
-        if (isLightEmitter) faceLuminance = 1.0F;
+        if (isLightEmitter) { ctx.SetFullBright(); }
+        else if (bounds.MinZ > 0.0D) { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z); }
+        else { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z - 1); }
 
-        ctx.Tess.setColorOpaque_F(lightZ * faceLuminance, lightZ * faceLuminance, lightZ * faceLuminance);
+        ctx.Tess.setColorOpaque_F(lightZ, lightZ, lightZ);
         int textureId = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.North);
 
 
@@ -58,11 +57,11 @@ public class DoorRenderer : IBlockRenderer
         flatCtx.DrawEastFace(block, vecPos, dummyColors, textureId);
 
         // --- West Face (Z + 1) ---
-        faceLuminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z + 1);
-        if (bounds.MaxZ < 1.0D) faceLuminance = blockLuminance;
-        if (isLightEmitter) faceLuminance = 1.0F;
+        if (isLightEmitter) { ctx.SetFullBright(); }
+        else if (bounds.MaxZ < 1.0D) { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z); }
+        else { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z + 1); }
 
-        ctx.Tess.setColorOpaque_F(lightZ * faceLuminance, lightZ * faceLuminance, lightZ * faceLuminance);
+        ctx.Tess.setColorOpaque_F(lightZ, lightZ, lightZ);
         textureId = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.South);
 
 
@@ -74,11 +73,11 @@ public class DoorRenderer : IBlockRenderer
         flatCtx.DrawWestFace(block, vecPos, dummyColors, textureId);
 
         // --- North Face (X - 1) ---
-        faceLuminance = block.GetLuminance(ctx.Lighting, pos.X - 1, pos.Y, pos.Z);
-        if (bounds.MinX > 0.0D) faceLuminance = blockLuminance;
-        if (isLightEmitter) faceLuminance = 1.0F;
+        if (isLightEmitter) { ctx.SetFullBright(); }
+        else if (bounds.MinX > 0.0D) { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z); }
+        else { ctx.SetLightAt(block, pos.X - 1, pos.Y, pos.Z); }
 
-        ctx.Tess.setColorOpaque_F(lightX * faceLuminance, lightX * faceLuminance, lightX * faceLuminance);
+        ctx.Tess.setColorOpaque_F(lightX, lightX, lightX);
         textureId = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.West);
 
 
@@ -90,11 +89,11 @@ public class DoorRenderer : IBlockRenderer
         flatCtx.DrawNorthFace(block, vecPos, dummyColors, textureId);
 
         // --- South Face (X + 1) ---
-        faceLuminance = block.GetLuminance(ctx.Lighting, pos.X + 1, pos.Y, pos.Z);
-        if (bounds.MaxX < 1.0D) faceLuminance = blockLuminance;
-        if (isLightEmitter) faceLuminance = 1.0F;
+        if (isLightEmitter) { ctx.SetFullBright(); }
+        else if (bounds.MaxX < 1.0D) { ctx.SetLightAt(block, pos.X, pos.Y, pos.Z); }
+        else { ctx.SetLightAt(block, pos.X + 1, pos.Y, pos.Z); }
 
-        ctx.Tess.setColorOpaque_F(lightX * faceLuminance, lightX * faceLuminance, lightX * faceLuminance);
+        ctx.Tess.setColorOpaque_F(lightX, lightX, lightX);
         textureId = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.East);
 
 

@@ -154,10 +154,12 @@ public class SubChunkRenderer : IDisposable
                 (void*)0
             );
 
+            // Two channels rather than one packed byte: a smooth-lit corner is a mean of four
+            // cells, so a nibble each cannot hold it.
             GLManager.GL.EnableVertexAttribArray(3);
             GLManager.GL.VertexAttribIPointer(
                 3,
-                1,
+                2,
                 GLEnum.UnsignedByte,
                 stride,
                 (void*)14

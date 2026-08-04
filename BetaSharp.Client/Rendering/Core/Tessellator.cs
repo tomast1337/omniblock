@@ -29,8 +29,12 @@ public struct ChunkVertex
     public short Z; // 2 bytes + 8 bytes = 10 bytes
     public short U; // 2 bytes + 10 bytes = 12 bytes
     public short V; // 2 bytes + 12 bytes = 14 bytes
-    public byte Light; // 1 byte + 14 bytes = 15 bytes
-    public byte Padding; // 16 bytes total
+
+    // The two light channels, in quarter levels: a smooth-lit corner is the mean of four cells each
+    // 0-15, so the value is a multiple of 0.25 and 0..60 holds it exactly. This is where the spare
+    // padding byte went; a vertex attribute for mc_Entity needs the struct to grow.
+    public byte SkyLight; // 1 byte + 14 bytes = 15 bytes
+    public byte BlockLight; // 16 bytes total
 }
 
 public static class ChunkVertexHelper
@@ -59,10 +63,14 @@ public static class ChunkVertexHelper
             Z = FloatToShortPosition(z),
             U = FloatToShortUVWithInset(u, centroidU),
             V = FloatToShortUVWithInset(v, centroidV),
-            Light = PackLight(skyLight, blockLight),
-            Padding = 0
+            SkyLight = skyLight,
+            BlockLight = blockLight
         };
     }
+
+    /// <summary>A light level in 0..15, possibly fractional, as the quarter levels a vertex holds.</summary>
+    public static byte ToQuarterLevels(float level) =>
+        (byte)Math.Clamp((int)MathF.Round(level * 4.0f), 0, 60);
 
     private static short FloatToShortUVWithInset(float uv, float centroid)
     {
@@ -87,23 +95,6 @@ public static class ChunkVertexHelper
         return (short)(uv * UV_SCALE);
     }
 
-    public static byte PackLight(byte skyLight, byte blockLight)
-    {
-        skyLight = (byte)(skyLight & 0x0F);
-        blockLight = (byte)(blockLight & 0x0F);
-
-        return (byte)(skyLight << 4 | blockLight);
-    }
-
-    public static byte GetSkyLight(byte light)
-    {
-        return (byte)(light >> 4 & 0x0F);
-    }
-
-    public static byte GetBlockLight(byte light)
-    {
-        return (byte)(light & 0x0F);
-    }
 }
 
 public enum TesselatorCaptureVertexFormat
@@ -509,8 +500,7 @@ public class Tessellator
 
             if (hasLight)
             {
-                scratchBuffer[scratchBufferIndex + 7] =
-                    ChunkVertexHelper.PackLight(skyLight, blockLight);
+                scratchBuffer[scratchBufferIndex + 7] = skyLight | blockLight << 8;
             }
 
             scratchBufferIndex += 8;
@@ -618,7 +608,7 @@ public class Tessellator
         if (vertexFormat == TesselatorCaptureVertexFormat.Chunk)
         {
             int col = hasColor ? scratchBuffer[baseIndex + 5] : unchecked((int)0xFFFFFFFF);
-            byte light = hasLight ? (byte)scratchBuffer[baseIndex + 7] : (byte)0;
+            int light = hasLight ? scratchBuffer[baseIndex + 7] : 0;
 
             float u = BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 3]);
             float v = BitConverter.Int32BitsToSingle(scratchBuffer[baseIndex + 4]);
@@ -629,8 +619,8 @@ public class Tessellator
                     x, y, z,
                     u, v,
                     uvCentroidU, uvCentroidV,
-                    ChunkVertexHelper.GetSkyLight(light),
-                    ChunkVertexHelper.GetBlockLight(light)
+                    (byte)(light & 0xFF),
+                    (byte)((light >> 8) & 0xFF)
                 )
             );
         }
@@ -676,22 +666,17 @@ public class Tessellator
         normal = packedX | packedY << 8 | packedZ << 16;
     }
 
-    public void setSkyLight(byte value)
+    /// <summary>
+    ///     The two light levels the next vertices carry, each 0..15 and allowed to be fractional.
+    /// </summary>
+    /// <remarks>
+    ///     Levels, not brightness: the ramp and the time of day are applied by the terrain shader, so
+    ///     what is stored here is what the world holds rather than what it currently looks like.
+    /// </remarks>
+    public void setLight(float sky, float block)
     {
-        skyLight = (byte)(value & 0x0F);
-        hasLight = true;
-    }
-
-    public void setBlockLight(byte value)
-    {
-        blockLight = (byte)(value & 0x0F);
-        hasLight = true;
-    }
-
-    public void setLight(byte sky, byte block)
-    {
-        skyLight = (byte)(sky & 0x0F);
-        blockLight = (byte)(block & 0x0F);
+        skyLight = ChunkVertexHelper.ToQuarterLevels(sky);
+        blockLight = ChunkVertexHelper.ToQuarterLevels(block);
         hasLight = true;
     }
 

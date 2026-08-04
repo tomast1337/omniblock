@@ -119,6 +119,20 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _projectionMatrixLoc = _chunkShader.GetUniformLocation("projectionMatrix");
     }
 
+    /// <summary>
+    ///     The time of day and the dimension's brightness floor, which the terrain shader needs
+    ///     because it applies the light rather than reading it pre-applied.
+    /// </summary>
+    /// <remarks>
+    ///     Uniforms rather than mesh data, which is what stops the sun setting from dirtying every
+    ///     chunk in view. Uploaded per frame because the ambient darkness moves per tick.
+    /// </remarks>
+    private void UploadLightingUniforms()
+    {
+        _chunkShader.SetUniform1("ambientDarkness", (float)_world.Environment.AmbientDarkness);
+        _chunkShader.SetUniform1("luminanceOffset", _world.Dimension.LightLevelToLuminance[0]);
+    }
+
     public void Render(ChunkRenderParams renderParams)
     {
         _lastRenderDistance = renderParams.RenderDistance;
@@ -126,6 +140,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         _chunkShader.Bind();
         _chunkShader.SetCommonUniforms(GameRenderer.ShaderInfo);
+        UploadLightingUniforms();
         GLManager.GL.Uniform1(_textureSamplerLoc, 0);
         GLManager.GL.Uniform1(_chunkFadeEnabledLoc, renderParams.ChunkFade ? 1 : 0);
 
@@ -289,6 +304,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         _chunkShader.Bind();
         _chunkShader.SetCommonUniforms(GameRenderer.ShaderInfo);
+        UploadLightingUniforms();
         GLManager.GL.Uniform1(_textureSamplerLoc, 0);
 
         _chunkShader.SetUniformMatrix4("projectionMatrix", _projection);

@@ -7,13 +7,13 @@ public class ReedRenderer : IBlockRenderer
 {
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
-        float luminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z);
+        ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
         int colorMultiplier = block.GetColorMultiplier(ctx.BlockReader, pos.X, pos.Y, pos.Z);
         float r = (colorMultiplier >> 16 & 255) / 255.0F;
         float g = (colorMultiplier >> 8 & 255) / 255.0F;
         float b = (colorMultiplier & 255) / 255.0F;
 
-        ctx.Tess.setColorOpaque_F(luminance * r, luminance * g, luminance * b);
+        ctx.Tess.setColorOpaque_F(r, g, b);
 
         float renderX = pos.X;
         float renderY = pos.Y;

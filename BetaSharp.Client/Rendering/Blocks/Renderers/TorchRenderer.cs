@@ -9,13 +9,16 @@ public class TorchRenderer : IBlockRenderer
     {
         int metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
 
-        float luminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z);
         if (Block.BlocksLightLuminance[block.Id] > 0)
         {
-            luminance = 1.0F;
+            ctx.SetFullBright();
+        }
+        else
+        {
+            ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
         }
 
-        ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
+        ctx.Tess.setColorOpaque_F(1.0F, 1.0F, 1.0F);
 
         float tiltAmount = 0.4f;
         float horizontalOffset = 0.5f - tiltAmount;

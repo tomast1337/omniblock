@@ -84,9 +84,8 @@ public class FluidsRenderer : IBlockRenderer
             float sinAngle = MathHelper.Sin(flowAngle) * 8.0F / 256.0F;
             float cosAngle = MathHelper.Cos(flowAngle) * 8.0F / 256.0F;
 
-            float luminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y, pos.Z);
-            ctx.Tess.setColorOpaque_F(lightTop * luminance * tintR, lightTop * luminance * tintG,
-                lightTop * luminance * tintB);
+            ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
+            ctx.Tess.setColorOpaque_F(lightTop * tintR, lightTop * tintG, lightTop * tintB);
 
             // Draw top face with dynamic heights and rotated UVs
             ctx.Tess.addVertexWithUV(pos.X + 0, pos.Y + heightNw, pos.Z + 0, centerU - cosAngle - sinAngle,
@@ -102,8 +101,8 @@ public class FluidsRenderer : IBlockRenderer
         // BOTTOM FACE
         if (ctx.RenderAllFaces || isBottomVisible)
         {
-            float luminance = block.GetLuminance(ctx.Lighting, pos.X, pos.Y - 1, pos.Z);
-            ctx.Tess.setColorOpaque_F(lightBottom * luminance, lightBottom * luminance, lightBottom * luminance);
+            ctx.SetLightAt(block, pos.X, pos.Y - 1, pos.Z);
+            ctx.Tess.setColorOpaque_F(lightBottom, lightBottom, lightBottom);
 
             // Fluids don't use AO, so pass dummy colors
             FaceColors dummyColors = new FaceColors();
@@ -181,12 +180,11 @@ public class FluidsRenderer : IBlockRenderer
                 float minV2 = (texV + (1.0F - h2) * 16.0F) / 256.0F; // UV height match for corner 2
                 float maxV = (texV + 16 - 0.01f) / 256.0f;
 
-                float luminance = block.GetLuminance(ctx.Lighting, adjX, pos.Y, adjZ);
+                ctx.SetLightAt(block, adjX, pos.Y, adjZ);
                 float shadow = (side < 2) ? lightZ : lightX;
-                luminance *= shadow;
 
-                ctx.Tess.setColorOpaque_F(lightTop * luminance * tintR, lightTop * luminance * tintG,
-                    lightTop * luminance * tintB);
+                ctx.Tess.setColorOpaque_F(lightTop * shadow * tintR, lightTop * shadow * tintG,
+                    lightTop * shadow * tintB);
 
                 // Draw the side face matching the sloped top corners
                 ctx.Tess.addVertexWithUV(x1, pos.Y + h1, z1, minU, minV1);
