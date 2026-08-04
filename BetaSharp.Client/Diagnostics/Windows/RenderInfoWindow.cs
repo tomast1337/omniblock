@@ -1,6 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Diagnostics;
 using BetaSharp.Util.Hit;
+using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Core.Systems;
 using Hexa.NET.ImGui;
@@ -65,7 +66,7 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text($"Pos:   {x}, {y}, {z}");
         ImGuiTextSafe.Text($"Id:    {world.Reader.GetBlockId(x, y, z)}  meta {world.Reader.GetBlockMeta(x, y, z)}");
 
-        // Every face takes its light from the cell it faces, so the neighbours are what decides how
+        // Every face takes its light from the cell it faces, so the neighbors are what decides how
         // this block looks. Its own cell is shown too, but a solid block reads 0/0 there and that is
         // not a fault.
         DrawCell("Self ", world, x, y, z);
@@ -78,15 +79,25 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
 
         // In single player the internal server holds the light this client's copy came from, so
         // disagreeing with it says the light was lost on the way here rather than never computed.
-        World? server = ctx.InternalServerOverworld;
+        World? server = ctx.InternalServerWorld;
         if (server != null)
         {
-            LightLevels here = world.Lighting.GetLightLevels(x, y + 1, z, 0);
-            LightLevels there = server.Lighting.GetLightLevels(x, y + 1, z, 0);
+            int serverId = server.Reader.GetBlockId(x, y + 1, z);
+            LightLevels here = StoredLight(world, x, y + 1, z);
+            LightLevels there = StoredLight(server, x, y + 1, z);
 
-            ImGuiTextSafe.Text($"Up on server:  sky {there.Sky,2}  block {there.Block,2}");
+            ImGuiTextSafe.Text($"Up on server:  id {serverId,3}  sky {there.Sky,2}  block {there.Block,2}");
 
-            if (here != there)
+            // The block first: while a right-click is still unconfirmed the two hold different
+            // blocks there, and different blocks are entitled to different light. Reporting that as
+            // a light fault sends you looking in the wrong system.
+            if (serverId != world.Reader.GetBlockId(x, y + 1, z))
+            {
+                ImGuiTextSafe.TextColored(
+                    new(1.0f, 0.8f, 0.4f, 1.0f),
+                    "       client and server disagree about the block above; light cannot be compared");
+            }
+            else if (here != there)
             {
                 ImGuiTextSafe.TextColored(
                     new(1.0f, 0.4f, 0.4f, 1.0f),
@@ -121,10 +132,29 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
     private static void DrawCell(string label, World world, int x, int y, int z)
     {
         int id = world.Reader.GetBlockId(x, y, z);
-        LightLevels levels = world.Lighting.GetLightLevels(x, y, z, 0);
+        LightLevels levels = StoredLight(world, x, y, z);
         bool opaque = !Block.BlocksAllowVision[id];
 
         ImGuiTextSafe.Text($"{label} id {id,3}  {(opaque ? "opaque" : "see-thru")}  sky {levels.Sky,2}  block {levels.Block,2}");
+    }
+
+    /// <summary>The two nibbles the chunk actually stores, with nothing derived from them.</summary>
+    /// <remarks>
+    ///     Not <c>Lighting.GetLightLevels</c>, which answers "what should a face towards this cell
+    ///     be shaded by" — for a slab, farmland or stairs that is the brightest of five neighbors
+    ///     rather than the cell itself. Asking that question of two worlds compares two derivations
+    ///     instead of two stored values, and the derivations can differ while the storage agrees.
+    ///     A view that exists to say whether light arrived has to read what arrived.
+    /// </remarks>
+    private static LightLevels StoredLight(World world, int x, int y, int z)
+    {
+        if (y < 0 || y >= ChuckFormat.WorldHeight || !world.BlockHost.HasChunk(x >> 4, z >> 4))
+        {
+            return default;
+        }
+
+        byte packed = world.BlockHost.GetChunk(x >> 4, z >> 4).GetPackedLight(x & 15, y, z & 15);
+        return LightLevels.Of((packed >> 4) & 0xF, packed & 0xF);
     }
 
     private static void DrawChunkSection()
