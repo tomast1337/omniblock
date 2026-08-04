@@ -144,7 +144,7 @@ internal class ChunkMeshGenerator : IDisposable
                 }
             }
 
-            tess.draw();
+            tess.draw(ProgramSlot.Terrain);
             tess.setTranslationD(0, 0, 0);
 
             PooledList<ChunkVertex> verts = tess.endCaptureChunkVertices();

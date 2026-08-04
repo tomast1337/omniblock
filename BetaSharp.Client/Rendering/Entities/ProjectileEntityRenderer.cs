@@ -38,7 +38,7 @@ public class ProjectileEntityRenderer : EntityRenderer
         tessellator.addVertexWithUV((double)(quadWidth - xOffset), (double)(0.0F - yOffset), 0.0D, (double)maxU, (double)maxV);
         tessellator.addVertexWithUV((double)(quadWidth - xOffset), (double)(1.0F - yOffset), 0.0D, (double)maxU, (double)minV);
         tessellator.addVertexWithUV((double)(0.0F - xOffset), (double)(1.0F - yOffset), 0.0D, (double)minU, (double)minV);
-        tessellator.draw();
+        tessellator.draw(ProgramSlot.Entities);
         GLManager.ModelView.Pop();
     }
 }

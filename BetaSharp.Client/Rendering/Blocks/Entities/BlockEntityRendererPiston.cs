@@ -78,7 +78,7 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
             }
 
             tess.setTranslationD(0.0D, 0.0D, 0.0D);
-            tess.draw();
+            tess.draw(ProgramSlot.BlockEntity);
             GLManager.State.Apply(RenderState.Entity);
             Lighting.turnOn();
         }

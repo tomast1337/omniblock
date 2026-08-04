@@ -115,3 +115,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-03 — feat(rendering): give untextured geometry a program of its own (Nicolas Vyčas Nery; `33699a18e41a5e795846940f56c86420932a2f6d`)
 - 2026-08-03 — feat(rendering): give textured, unlit geometry a program of its own (Nicolas Vyčas Nery; `e00ad0c74eee69bb9037220ad0882997967fa871`)
 - 2026-08-04 — feat(rendering): give lit geometry a program of its own (Nicolas Vyčas Nery; `71b50606190997f13f33d08346e5830b1596140a`)
+- 2026-08-04 — feat(rendering): retire the fallback shader; every draw names what it is (Nicolas Vyčas Nery; `a8017e1d3fa1d1b902dcceb049a18c2d7aeac76e`)

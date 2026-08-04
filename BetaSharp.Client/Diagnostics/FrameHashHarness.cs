@@ -180,7 +180,7 @@ internal static unsafe class FrameHashHarness
         tessellator.addVertex(x + w, y + h, z);
         tessellator.addVertex(x + w, y, z);
         tessellator.addVertex(x, y, z);
-        tessellator.draw();
+        tessellator.draw(ProgramSlot.Basic);
     }
 
     /// <summary>The same quad wound the other way round, so back-face culling removes it.</summary>
@@ -192,7 +192,7 @@ internal static unsafe class FrameHashHarness
         tessellator.addVertex(x + w, y, z);
         tessellator.addVertex(x + w, y + h, z);
         tessellator.addVertex(x, y + h, z);
-        tessellator.draw();
+        tessellator.draw(ProgramSlot.Basic);
     }
 
     private static void TexturedQuad(double x, double y, double w, double h)
@@ -203,7 +203,7 @@ internal static unsafe class FrameHashHarness
         tessellator.addVertexWithUV(x + w, y + h, 0.0, 1.0, 1.0);
         tessellator.addVertexWithUV(x + w, y, 0.0, 1.0, 0.0);
         tessellator.addVertexWithUV(x, y, 0.0, 0.0, 0.0);
-        tessellator.draw();
+        tessellator.draw(ProgramSlot.Textured);
     }
 
     /// <summary>
@@ -331,7 +331,7 @@ internal static unsafe class FrameHashHarness
     }
 
     /// <summary>
-    ///     One scene per thing the fixed-function layer still does, so a hash that moves names the
+    ///     One scene per thing the shared GL state still governs, so a hash that moves names the
     ///     group that broke.
     /// </summary>
     private static IEnumerable<(string Name, Action Draw)> Scenes()
@@ -350,18 +350,18 @@ internal static unsafe class FrameHashHarness
         yield return ("fog-linear", FogLinear);
         yield return ("static-mesh", StaticMeshScene);
 
-        // Same geometry under the fixed-function shader and under the slot's own program. The two
-        // hashes have to match: a slot exists to take state explicitly, not to draw differently.
-        // Nothing else covers this — the game's untextured draws are the selection box and the
-        // chunk-border overlay, and the harness draws neither world nor entities.
-        yield return ("slot-basic-fallback", () => BasicSlotScene(t => t.draw()));
+        // Each pair is the same geometry under a slot that has its own program and under one that
+        // has to walk the chain to reach it. The two hashes have to match: an unclaimed slot draws
+        // under its nearest claimed ancestor, and a pack that ships one file gets that for the whole
+        // subtree below it. Nothing else covers this — the harness draws neither world nor entities.
         yield return ("slot-basic-program", () => BasicSlotScene(t => t.draw(ProgramSlot.Basic)));
-        yield return ("slot-basic-fog-fallback", () => BasicSlotFogScene(t => t.draw()));
+        yield return ("slot-basic-inherited", () => BasicSlotScene(t => t.draw(ProgramSlot.Line)));
         yield return ("slot-basic-fog-program", () => BasicSlotFogScene(t => t.draw(ProgramSlot.Basic)));
-        yield return ("slot-textured-fallback", () => TexturedSlotScene(t => t.draw()));
+        yield return ("slot-basic-fog-inherited", () => BasicSlotFogScene(t => t.draw(ProgramSlot.Line)));
         yield return ("slot-textured-program", () => TexturedSlotScene(t => t.draw(ProgramSlot.Textured)));
-        yield return ("slot-textured-lit-fallback", () => TexturedLitSlotScene(t => t.draw()));
+        yield return ("slot-textured-inherited", () => TexturedSlotScene(t => t.draw(ProgramSlot.Gui)));
         yield return ("slot-textured-lit-program", () => TexturedLitSlotScene(t => t.draw(ProgramSlot.TexturedLit)));
+        yield return ("slot-textured-lit-inherited", () => TexturedLitSlotScene(t => t.draw(ProgramSlot.Entities)));
 
         // Each of these is drawn twice, once through the raw calls and once through the state it is
         // meant to be equivalent to. The two hashes have to match, which is the property every
@@ -750,6 +750,6 @@ internal static unsafe class FrameHashHarness
 
         using StaticMesh mesh = tessellator.captureStatic();
         GLManager.Color = new(0.95f, 0.75f, 0.15f, 1.0f);
-        mesh.Draw();
+        mesh.Draw(ProgramSlot.Basic);
     }
 }

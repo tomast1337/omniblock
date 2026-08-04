@@ -234,12 +234,13 @@ public class Tessellator
         hasNormals = false;
     }
 
-    /// <summary>Draws the accumulated vertices under the fixed-function shader.</summary>
+    /// <summary>Draws the accumulated vertices under whatever program the caller has already bound.</summary>
     /// <remarks>
-    ///     What every call site did before slots existed, and still the majority. Equivalent to
-    ///     naming a slot nothing has claimed; it goes away when the last one has been named.
+    ///     For the sky, which binds its own shader and sets its own uniforms around a batch built
+    ///     here. Not a fallback — there is nothing left to fall back to — and not a way to avoid
+    ///     naming a slot: a draw that reaches this without a program bound draws with none.
     /// </remarks>
-    public void draw() => draw(SlotPrograms.FixedFunction);
+    public void drawWithBoundProgram() => draw(SlotPrograms.CallerBound);
 
     /// <summary>Draws the accumulated vertices under whatever program <paramref name="slot" /> resolves to.</summary>
     /// <remarks>
@@ -279,8 +280,8 @@ public class Tessellator
                 silkGl.BindVertexArray(_tessVao);
                 TessellatorVertexLayout.Bind(silkGl, hasTexture, hasColor, hasNormals);
 
-                // Through GLManager rather than Silk, so that a bound program suppresses the
-                // fixed-function shader's own activation and the queued-geometry flush still fires.
+                // Through GLManager rather than Silk, so the queued-geometry flush still fires:
+                // a renderer holding batched vertices has to drain them before this lands.
                 program.Activate();
                 GLManager.GL.DrawArrays(SubmittedDrawMode, 0, (uint)vertexCount);
                 program.Deactivate();
@@ -591,7 +592,18 @@ public class Tessellator
 
             if (vertexCount % 4 == 0 && rawBufferIndex >= bufferSize - 32)
             {
-                draw();
+                // In capture mode this draws nothing — it recycles the scratch buffer so a chunk
+                // mesh larger than the buffer can keep accumulating, which is the only way a batch
+                // gets near this size.
+                if (!isCaptureMode)
+                {
+                    throw new InvalidOperationException(
+                        $"A batch of {vertexCount} vertices filled the Tessellator before naming a " +
+                        "slot. Splitting it here would draw the first half under whichever program " +
+                        "happened to be bound, so the batch has to be broken up by its caller.");
+                }
+
+                draw(SlotPrograms.CallerBound);
                 IsDrawing = true;
             }
         }

@@ -66,14 +66,14 @@ public class HeldItemRenderer
             tessellator.addVertexWithUV((double)quadWidth, 0.0D, 0.0D, (double)minU, (double)maxV);
             tessellator.addVertexWithUV((double)quadWidth, 1.0D, 0.0D, (double)minU, (double)minV);
             tessellator.addVertexWithUV(0.0D, 1.0D, 0.0D, (double)maxU, (double)minV);
-            tessellator.draw();
+            tessellator.draw(ProgramSlot.Hand);
             tessellator.startDrawingQuads();
             tessellator.setNormal(0.0F, 0.0F, -1.0F);
             tessellator.addVertexWithUV(0.0D, 1.0D, (double)(0.0F - thickness), (double)maxU, (double)minV);
             tessellator.addVertexWithUV((double)quadWidth, 1.0D, (double)(0.0F - thickness), (double)minU, (double)minV);
             tessellator.addVertexWithUV((double)quadWidth, 0.0D, (double)(0.0F - thickness), (double)minU, (double)maxV);
             tessellator.addVertexWithUV(0.0D, 0.0D, (double)(0.0F - thickness), (double)maxU, (double)maxV);
-            tessellator.draw();
+            tessellator.draw(ProgramSlot.Hand);
             tessellator.startDrawingQuads();
             tessellator.setNormal(-1.0F, 0.0F, 0.0F);
 
@@ -92,7 +92,7 @@ public class HeldItemRenderer
                 tessellator.addVertexWithUV((double)sliceX, 1.0D, (double)(0.0F - thickness), (double)sliceU, (double)minV);
             }
 
-            tessellator.draw();
+            tessellator.draw(ProgramSlot.Hand);
             tessellator.startDrawingQuads();
             tessellator.setNormal(1.0F, 0.0F, 0.0F);
 
@@ -107,7 +107,7 @@ public class HeldItemRenderer
                 tessellator.addVertexWithUV((double)sliceX, 0.0D, (double)(0.0F - thickness), (double)sliceU, (double)maxV);
             }
 
-            tessellator.draw();
+            tessellator.draw(ProgramSlot.Hand);
             tessellator.startDrawingQuads();
             tessellator.setNormal(0.0F, 1.0F, 0.0F);
 
@@ -122,7 +122,7 @@ public class HeldItemRenderer
                 tessellator.addVertexWithUV(0.0D, (double)sliceX, (double)(0.0F - thickness), (double)maxU, (double)sliceU);
             }
 
-            tessellator.draw();
+            tessellator.draw(ProgramSlot.Hand);
             tessellator.startDrawingQuads();
             tessellator.setNormal(0.0F, -1.0F, 0.0F);
 
@@ -137,7 +137,7 @@ public class HeldItemRenderer
                 tessellator.addVertexWithUV((double)quadWidth, (double)sliceX, (double)(0.0F - thickness), (double)minU, (double)sliceU);
             }
 
-            tessellator.draw();
+            tessellator.draw(ProgramSlot.Hand);
         }
 
         GLManager.ModelView.Pop();
@@ -236,7 +236,7 @@ public class HeldItemRenderer
             tessellator.addVertexWithUV(128 + mapBorder, 128 + mapBorder, 0.0D, 1.0D, 1.0D);
             tessellator.addVertexWithUV(128 + mapBorder, 0 - mapBorder, 0.0D, 1.0D, 0.0D);
             tessellator.addVertexWithUV(0 - mapBorder, 0 - mapBorder, 0.0D, 0.0D, 0.0D);
-            tessellator.draw();
+            tessellator.draw(ProgramSlot.Hand);
             MapState mapState = MapBehavior.GetMapState(itemToRender.GetDamage(), _game.World);
             mapRenderer.render(_game.Player, _game.TextureManager, mapState);
             GLManager.ModelView.Pop();
@@ -375,7 +375,7 @@ public class HeldItemRenderer
         tessellator.addVertexWithUV((double)maxX, (double)minY, (double)z, (double)minU, (double)maxV);
         tessellator.addVertexWithUV((double)maxX, (double)maxY, (double)z, (double)minU, (double)minV);
         tessellator.addVertexWithUV((double)minX, (double)maxY, (double)z, (double)maxU, (double)minV);
-        tessellator.draw();
+        tessellator.draw(ProgramSlot.Hand);
         GLManager.ModelView.Pop();
         GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
     }
@@ -404,7 +404,7 @@ public class HeldItemRenderer
         tessellator.addVertexWithUV((double)maxX, (double)minY, (double)z, (double)(0.0F + uOffset), (double)(uvScale + vOffset));
         tessellator.addVertexWithUV((double)maxX, (double)maxY, (double)z, (double)(0.0F + uOffset), (double)(0.0F + vOffset));
         tessellator.addVertexWithUV((double)minX, (double)maxY, (double)z, (double)(uvScale + uOffset), (double)(0.0F + vOffset));
-        tessellator.draw();
+        tessellator.draw(ProgramSlot.Hand);
         GLManager.ModelView.Pop();
         GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
         GLManager.State.Apply(RenderState.Entity);
@@ -439,7 +439,7 @@ public class HeldItemRenderer
             tessellator.addVertexWithUV((double)maxX, (double)minY, (double)z, (double)minU, (double)maxV);
             tessellator.addVertexWithUV((double)maxX, (double)maxY, (double)z, (double)minU, (double)minV);
             tessellator.addVertexWithUV((double)minX, (double)maxY, (double)z, (double)maxU, (double)minV);
-            tessellator.draw();
+            tessellator.draw(ProgramSlot.Hand);
             GLManager.ModelView.Pop();
         }
 

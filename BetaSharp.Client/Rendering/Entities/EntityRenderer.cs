@@ -264,7 +264,7 @@ public abstract class EntityRenderer
         tess.addVertex(aabb.MaxX, aabb.MinY, aabb.MaxZ);
 
         tess.setTranslationD(0.0D, 0.0D, 0.0D);
-        tess.draw();
+        tess.draw(ProgramSlot.Basic);
         GLManager.TextureEnabled = true;
     }
 
@@ -303,7 +303,7 @@ public abstract class EntityRenderer
         tess.addVertex(aabb.MaxX, aabb.MaxY, aabb.MaxZ);
         tess.addVertex(aabb.MaxX, aabb.MinY, aabb.MaxZ);
 
-        tess.draw();
+        tess.draw(ProgramSlot.Basic);
     }
 
     public void PostRender(Entity target, Vec3D pos, float yaw, float tickDelta)
@@ -373,7 +373,7 @@ public abstract class EntityRenderer
         tess.addVertex(minX, minY, maxZ);
         tess.addVertex(minX, maxY, maxZ);
 
-        tess.draw();
+        tess.draw(ProgramSlot.Basic);
         tess.startDrawing(1);
         GLManager.Color = new(1.0F, 1.0F, 0, 1.0F);
 
@@ -386,7 +386,7 @@ public abstract class EntityRenderer
         tess.addVertex(minX, target.EyeHeight, maxZ);
         tess.addVertex(minX, target.EyeHeight, minZ);
 
-        tess.draw();
+        tess.draw(ProgramSlot.Line);
         tess.startDrawing(1);
         GLManager.Color = new(1.0F, 0, 0, 1.0F);
 
@@ -397,7 +397,7 @@ public abstract class EntityRenderer
         tess.addVertex(0, target.EyeHeight, 0);
         tess.addVertex(MathHelper.Sin(yaw) * pitchCos, target.EyeHeight + MathHelper.Sin(target.Pitch * toRad), MathHelper.Cos(yaw) * pitchCos);
 
-        tess.draw();
+        tess.draw(ProgramSlot.Line);
         GLManager.ModelView.Pop();
         GLManager.TextureEnabled = true;
         GLManager.LightingEnabled = true;

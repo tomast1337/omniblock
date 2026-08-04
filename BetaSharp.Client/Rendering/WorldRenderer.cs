@@ -425,8 +425,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         // Sky dome (top + bottom) — angle-based gradient
         _skyShader.SetUniform1("u_GradientMode", 1);
         GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
-        _skyAbove.Draw();
-        _skyBelow.Draw();
+        _skyAbove.DrawWithBoundProgram();
+        _skyBelow.DrawWithBoundProgram();
 
         // Sunrise/sunset fan
         _skyShader.SetUniform1("u_GradientMode", 0);
@@ -453,7 +453,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                 tessellator.addVertex((ringX * 120.0F), (ringY * 120.0F), (-ringY * 40.0F * backgroundColor[3]));
             }
 
-            tessellator.draw();
+            tessellator.drawWithBoundProgram();
             GLManager.ModelView.Pop();
             _skyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
             GLManager.ShadeModel = ShadeModel.Flat;
@@ -477,7 +477,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         tessellator.addVertexWithUV(sunQuadSize, 100.0D, -sunQuadSize, 1.0D, 0.0D);
         tessellator.addVertexWithUV(sunQuadSize, 100.0D, sunQuadSize, 1.0D, 1.0D);
         tessellator.addVertexWithUV(-sunQuadSize, 100.0D, sunQuadSize, 0.0D, 1.0D);
-        tessellator.draw();
+        tessellator.drawWithBoundProgram();
         sunQuadSize = 20.0F;
         _textureManager.BindTexture(_textureManager.GetTextureId("/terrain/moon.png"));
         tessellator.startDrawingQuads();
@@ -485,7 +485,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         tessellator.addVertexWithUV(sunQuadSize, -100.0D, sunQuadSize, 0.0D, 1.0D);
         tessellator.addVertexWithUV(sunQuadSize, -100.0D, -sunQuadSize, 0.0D, 0.0D);
         tessellator.addVertexWithUV(-sunQuadSize, -100.0D, -sunQuadSize, 1.0D, 0.0D);
-        tessellator.draw();
+        tessellator.drawWithBoundProgram();
 
         // Stars
         _skyShader.SetUniform1("u_UseTexture", 0);
@@ -494,7 +494,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         if (starBrightness > 0.0F)
         {
             GLManager.Color = new(starBrightness, starBrightness, starBrightness, starBrightness);
-            _stars.Draw();
+            _stars.DrawWithBoundProgram();
         }
 
         GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
@@ -694,7 +694,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         _cloudShader.SetUniformMatrix4("u_TextureMatrix", GLManager.TextureMatrix.Top);
 
         GLManager.Color = new(cloudRed, cloudGreen, cloudBlue, 0.8F);
-        _clouds[0].Draw();
+        _clouds[0].DrawWithBoundProgram();
 
         GLManager.TextureMatrix.Pop();
 
@@ -756,20 +756,20 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             if (cloudY > -cloudHeight - 1.0F)
             {
                 GLManager.Color = new(cloudRed * 0.7F, cloudGreen * 0.7F, cloudBlue * 0.7F, 0.8F);
-                _clouds[0].Draw(); // Bottom
+                _clouds[0].DrawWithBoundProgram(); // Bottom
             }
 
             if (cloudY <= cloudHeight + 1.0F)
             {
                 GLManager.Color = new(cloudRed, cloudGreen, cloudBlue, 0.8F);
-                _clouds[1].Draw(); // Top
+                _clouds[1].DrawWithBoundProgram(); // Top
             }
 
             GLManager.Color = new(cloudRed * 0.9F, cloudGreen * 0.9F, cloudBlue * 0.9F, 0.8F);
-            _clouds[2].Draw(); // Side X
+            _clouds[2].DrawWithBoundProgram(); // Side X
 
             GLManager.Color = new(cloudRed * 0.8F, cloudGreen * 0.8F, cloudBlue * 0.8F, 0.8F);
-            _clouds[3].Draw(); // Side Z
+            _clouds[3].DrawWithBoundProgram(); // Side Z
 
             GLManager.TextureMatrix.Pop();
 
@@ -813,7 +813,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         tessellator.disableColor();
 
         BlockRenderer.RenderBlockByRenderType(_world.Reader, _world.Lighting, targetBlock, new BlockPos(hit.BlockX, hit.BlockY, hit.BlockZ), tessellator, 240 + (int)(DamagePartialTime * 10.0F), true, _game.Options.AlternateBlocksEnabled);
-        tessellator.draw();
+        tessellator.draw(ProgramSlot.DamagedBlock);
 
         tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
         GLManager.GL.PolygonOffset(0.0F, 0.0F);

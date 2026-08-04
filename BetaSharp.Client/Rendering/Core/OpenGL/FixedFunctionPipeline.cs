@@ -4,22 +4,19 @@ using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client.Rendering.Core.OpenGL;
 
-/// <summary>
-///     The state a draw is shaded by when it brings none of its own, and the shader that applies it.
-/// </summary>
+/// <summary>The state a draw is shaded by, for the programs that ask for it.</summary>
 /// <remarks>
 ///     <para>
 ///         This was <c>EmulatedGL</c>, and the name was accurate while it emulated fixed-function
-///         entry points over a core context. There are none left to emulate: every one of them is
-///         now a value on <c>GLManager</c>, which is what this holds and what
-///         <see cref="FixedFunctionShader" /> consumes.
+///         entry points over a core context. There are none left to emulate, and there is no longer
+///         a shader here either: what used to be applied on the way past <see cref="DrawArrays" /> is
+///         now read by whichever <c>ISlotProgram</c> a draw names, which is why every draw has to
+///         name one.
 ///     </para>
 ///     <para>
-///         What keeps it alive is <see cref="DrawArrays" />. Geometry that arrives through
-///         <see cref="Tessellator" /> or <see cref="StaticMesh" /> — terrain, sky, clouds, text, the
-///         interface, held items — carries no shader of its own, so this supplies one and uploads
-///         what it needs on the way past. Giving those their own shader is what would retire this
-///         class, and it is the same work as porting them to a backend that has no such fallback.
+///         What is left is the state itself — the matrix stacks, the tint, the facing, the fog and
+///         the lights — held here because it is per-context and assigned from everywhere. A backend
+///         with no fixed-function heritage would keep exactly this and drop the class name.
 ///     </para>
 /// </remarks>
 public unsafe class FixedFunctionPipeline : LegacyGL
@@ -28,26 +25,8 @@ public unsafe class FixedFunctionPipeline : LegacyGL
     private readonly MatrixStack _projectionStack = new();
     private readonly MatrixStack _textureStack = new();
 
-    private readonly FixedFunctionShader _shader;
-    private uint _currentProgram = 0;
-    private float _alphaThreshold = 0.1f;
-
-    private struct DirtyState
-    {
-        public bool StateDirty = true;
-
-        public DirtyState()
-        {
-        }
-    }
-
-    private DirtyState _dirtyState = new();
-
     public FixedFunctionPipeline(GL gl) : base(gl)
     {
-        _shader = new FixedFunctionShader(gl);
-        _shader.Use();
-        _shader.SetTexture0(0);
     }
 
     /// <inheritdoc cref="GLManager.ModelView" />
@@ -88,44 +67,26 @@ public unsafe class FixedFunctionPipeline : LegacyGL
     public LightingState Lighting { get; set; } = LightingState.Default;
 
     /// <summary>
-    ///     The four capabilities a core context does not have, which are shader uniforms here.
+    ///     The four capabilities a core context does not have, which are values a program reads here.
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         Each one deduplicates, because redundant assignments are extremely common — every
-    ///         entity re-asserts the alpha test on unconditionally — and two of them cost a batch
-    ///         flush.
+    ///         Read rather than applied: a slot's program uploads whichever of these it declares, and
+    ///         the batching renderers key their buckets on them. Nothing here touches GL.
     ///     </para>
     ///     <para>
     ///         Only the alpha test and fog raise <see cref="LegacyGL.RasterStateChanging" />, which
     ///         is what drains <c>EntityBatchRenderer</c>. That batch bakes lighting into vertex
     ///         colours and tracks its own texture, so those two it already accounts for; the alpha
     ///         threshold and the fog it does not, and queued geometry would draw under the wrong
-    ///         one.
+    ///         one. Both deduplicate because redundant assignment is constant and a flush is not
+    ///         free.
     ///     </para>
     /// </remarks>
-    public bool TextureEnabled
-    {
-        get;
-        set
-        {
-            if (field == value) return;
-            field = value;
-            _dirtyState.StateDirty = true;
-        }
-    }
+    public bool TextureEnabled { get; set; }
 
     /// <inheritdoc cref="TextureEnabled" />
-    public bool LightingEnabled
-    {
-        get;
-        set
-        {
-            if (field == value) return;
-            field = value;
-            _dirtyState.StateDirty = true;
-        }
-    }
+    public bool LightingEnabled { get; set; }
 
     /// <inheritdoc cref="TextureEnabled" />
     public bool AlphaTestEnabled
@@ -135,7 +96,6 @@ public unsafe class FixedFunctionPipeline : LegacyGL
         {
             if (field == value) return;
             field = value;
-            _dirtyState.StateDirty = true;
             OnRasterStateChanging();
         }
     }
@@ -148,151 +108,15 @@ public unsafe class FixedFunctionPipeline : LegacyGL
         {
             if (field == value) return;
             field = value;
-            _dirtyState.StateDirty = true;
             OnRasterStateChanging();
         }
     }
 
     /// <inheritdoc cref="GLManager.ShadeModel" />
-    public ShadeModel ShadeModel
-    {
-        get;
-        set
-        {
-            if (field == value)
-            {
-                return;
-            }
-
-            field = value;
-            _dirtyState.StateDirty = true;
-        }
-    } = ShadeModel.Smooth;
+    public ShadeModel ShadeModel { get; set; } = ShadeModel.Smooth;
 
     /// <inheritdoc cref="GLManager.AlphaThreshold" />
-    public float AlphaThreshold
-    {
-        get => _alphaThreshold;
-        set
-        {
-            if (_alphaThreshold == value)
-            {
-                return;
-            }
-
-            _alphaThreshold = value;
-            _dirtyState.StateDirty = true;
-        }
-    }
-
-    /// <summary>
-    ///     The stack versions last written to the active program, or <see cref="Unuploaded" /> when
-    ///     nothing has been.
-    /// </summary>
-    /// <remarks>
-    ///     Compared against <see cref="MatrixStack.Version" /> rather than tracked as dirty flags,
-    ///     because the stacks are reachable through <c>GLManager</c> and a caller mutating one
-    ///     directly has no way to raise a flag held here.
-    /// </remarks>
-    private const uint Unuploaded = uint.MaxValue;
-
-    private uint _uploadedModelView = Unuploaded;
-    private uint _uploadedProjection = Unuploaded;
-    private uint _uploadedTextureMatrix = Unuploaded;
-
-    /// <summary>The fog last written to the active program, and whether any has been.</summary>
-    /// <remarks>
-    ///     Compared rather than tracked as a dirty flag, for the same reason the matrix stacks are:
-    ///     <see cref="Fog" /> is assigned from outside and a writer there cannot raise a flag here.
-    /// </remarks>
-    private FogState _uploadedFog;
-
-    private bool _fogUploaded;
-
-    /// <inheritdoc cref="_uploadedFog" />
-    private LightingState _uploadedLighting;
-
-    private bool _lightingUploaded;
-
-    /// <summary>Forces every matrix uniform to be written again on the next draw.</summary>
-    private void InvalidateUploadedMatrices()
-    {
-        _uploadedModelView = Unuploaded;
-        _uploadedProjection = Unuploaded;
-        _uploadedTextureMatrix = Unuploaded;
-    }
-
-    internal void ActivateShader()
-    {
-        if (_currentProgram != _shader.Program)
-        {
-            SilkGL.UseProgram(_shader.Program);
-            _currentProgram = _shader.Program;
-            InvalidateUploadedMatrices();
-            _dirtyState.StateDirty = true;
-            _lightingUploaded = false;
-            _fogUploaded = false;
-        }
-
-        if (_uploadedProjection != _projectionStack.Version) { _shader.SetProjection(_projectionStack.Top); _uploadedProjection = _projectionStack.Version; }
-        if (_uploadedTextureMatrix != _textureStack.Version) { _shader.SetTextureMatrix(_textureStack.Top); _uploadedTextureMatrix = _textureStack.Version; }
-
-        if (_dirtyState.StateDirty)
-        {
-            _shader.SetUseTexture(TextureEnabled);
-            _shader.SetAlphaThreshold(AlphaTestEnabled ? _alphaThreshold : -1.0f);
-            _shader.SetEnableLighting(LightingEnabled);
-            _shader.SetEnableFog(FogEnabled);
-            _shader.SetShadeModel((int)ShadeModel);
-            _dirtyState.StateDirty = false;
-        }
-
-        if (_uploadedModelView != _modelViewStack.Version)
-        {
-            _shader.SetModelView(_modelViewStack.Top);
-
-            if (LightingEnabled)
-            {
-                Matrix4X4<float> mv = _modelViewStack.Top;
-                if (Matrix4X4.Invert(mv, out Matrix4X4<float> invMv))
-                {
-                    var t = Matrix4X4.Transpose(invMv);
-                    var normalMatrix = new Matrix3X3<float>(
-                        t.M11, t.M12, t.M13,
-                        t.M21, t.M22, t.M23,
-                        t.M31, t.M32, t.M33);
-                    _shader.SetNormalMatrix(normalMatrix);
-                }
-                else
-                {
-                    _shader.SetNormalMatrix(Matrix3X3<float>.Identity);
-                }
-            }
-            _uploadedModelView = _modelViewStack.Version;
-        }
-
-        if (LightingEnabled && (!_lightingUploaded || _uploadedLighting != Lighting))
-        {
-            LightingState lighting = Lighting;
-            _shader.SetLight0(lighting.Light0Direction.X, lighting.Light0Direction.Y, lighting.Light0Direction.Z, lighting.Light0Diffuse.X, lighting.Light0Diffuse.Y, lighting.Light0Diffuse.Z);
-            _shader.SetLight1(lighting.Light1Direction.X, lighting.Light1Direction.Y, lighting.Light1Direction.Z, lighting.Light1Diffuse.X, lighting.Light1Diffuse.Y, lighting.Light1Diffuse.Z);
-            _shader.SetAmbientLight(lighting.Ambient.X, lighting.Ambient.Y, lighting.Ambient.Z);
-            _uploadedLighting = lighting;
-            _lightingUploaded = true;
-        }
-
-        if (FogEnabled && (!_fogUploaded || _uploadedFog != Fog))
-        {
-            FogState fog = Fog;
-            _shader.SetFogMode((int)fog.Curve);
-            _shader.SetFogColor(fog.Color.X, fog.Color.Y, fog.Color.Z, fog.Color.W);
-            _shader.SetFogStart(fog.Start);
-            _shader.SetFogEnd(fog.End);
-            _shader.SetFogDensity(fog.Density);
-            _uploadedFog = fog;
-            _fogUploaded = true;
-        }
-    }
+    public float AlphaThreshold { get; set; } = 0.1f;
 
     public override void BufferData(GLEnum target, nuint size, void* data, GLEnum usage)
     {
@@ -302,21 +126,7 @@ public unsafe class FixedFunctionPipeline : LegacyGL
     public override void DrawArrays(GLEnum mode, int first, uint count)
     {
         OnImmediateGeometryDrawing();
-
-        if (_currentProgram == 0 || _currentProgram == _shader.Program)
-        {
-            ActivateShader();
-        }
-
         SilkGL.DrawArrays(mode.ToModern(), first, count);
-    }
-
-    public override void UseProgram(uint program)
-    {
-        _currentProgram = program;
-        _dirtyState.StateDirty = true;
-        InvalidateUploadedMatrices();
-        base.UseProgram(program);
     }
 
     public override void LineWidth(float width)
@@ -324,7 +134,4 @@ public unsafe class FixedFunctionPipeline : LegacyGL
         // TODO: ADD A BETTER WAY TO DO LINE WIDTH
         SilkGL.LineWidth(1.0f); // > 1.0 IS DEPRECATED
     }
-
-    public float GetCurrentAlphaThreshold() => AlphaTestEnabled ? _alphaThreshold : -1.0f;
-
 }

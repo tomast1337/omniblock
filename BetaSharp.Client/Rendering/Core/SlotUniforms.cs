@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
 
 namespace BetaSharp.Client.Rendering.Core;
@@ -7,9 +5,6 @@ namespace BetaSharp.Client.Rendering.Core;
 /// <summary>The state more than one slot's program needs uploaded, and the state none of them may inherit.</summary>
 internal static class SlotUniforms
 {
-    private static readonly ILogger s_logger = Log.Instance.For(nameof(SlotUniforms));
-    private static readonly HashSet<string> s_reportedLit = [];
-
     /// <summary>The transforms every slot draws under, in the names the shaders declare them by.</summary>
     public static void UploadTransforms(Shader shader)
     {
@@ -72,33 +67,5 @@ internal static class SlotUniforms
         }
 
         shader.SetUniformMatrix3("normalMatrix", normalMatrix);
-    }
-
-    /// <summary>
-    ///     Reports a draw routed to an unlit slot while lighting is on, once per slot.
-    /// </summary>
-    /// <remarks>
-    ///     <para>
-    ///         An unlit slot silently drops the lighting the fixed-function shader would have
-    ///         applied, so the whole of a mis-routed draw's symptom is that it comes out a slightly
-    ///         different shade. That is the one kind of mistake this migration can make that nothing
-    ///         else would catch — the geometry is right, the texture is right, and a frame hash
-    ///         taken from a scene that never enables lighting agrees.
-    ///     </para>
-    ///     <para>
-    ///         A report rather than a throw: being wrong about this costs a shade, and crashing the
-    ///         client over it during a loading screen would cost more.
-    ///     </para>
-    /// </remarks>
-    [Conditional("DEBUG")]
-    public static void ReportIfLit(string slot)
-    {
-        if (GLManager.LightingEnabled && s_reportedLit.Add(slot))
-        {
-            s_logger.LogWarning(
-                "Draw routed to unlit slot {Slot} while lighting was on; it will come out unlit. " +
-                "Either the call site should turn lighting off or the draw belongs to a lit slot.",
-                slot);
-        }
     }
 }
