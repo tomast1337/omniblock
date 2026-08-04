@@ -24,6 +24,33 @@ public class Chunk
     // The value in a hightmap is HeightMap[chunkZ << 4 | chunk] == height
     public readonly byte[] HeightMap = new byte[DefaultHeightMapHeight];
 
+    /// <summary>The height of one light section, and how many of them a column is divided into.</summary>
+    /// <remarks>
+    ///     Light travels as whole sections rather than as one cell at a time, so that what goes out
+    ///     is a consistent snapshot of the array rather than a value read while propagation was
+    ///     still running. Sixteen matches the cube the client meshes, so a section arriving dirties
+    ///     exactly one mesh.
+    /// </remarks>
+    public const int LightSectionHeight = 16;
+
+    /// <inheritdoc cref="LightSectionHeight" />
+    public static int LightSectionCount => ChuckFormat.ChunkHeight / LightSectionHeight;
+
+    private uint _lightDirtySections;
+
+    /// <summary>
+    ///     Which sections have had light written into them since anything last took them.
+    /// </summary>
+    /// <remarks>
+    ///     Held here, beside the arrays, rather than on <c>LightingEngine</c>. Its
+    ///     <c>SetLight</c> is not the only writer and never was: <see cref="PopulateHeightMap" />
+    ///     fills the sky array directly, and a mask driven from the engine would be blind to
+    ///     exactly the pass that establishes a chunk's light in the first place. Every writer goes
+    ///     through this type, so tracking it here is the only placement where being complete is
+    ///     structural rather than a thing to remember.
+    /// </remarks>
+    public uint LightDirtySections => _lightDirtySections;
+
     public bool Loaded;
     public IWorldContext World;
     public int MinHeightMapValue;
@@ -163,6 +190,10 @@ public class Chunk
             }
         }
 
+        // The fill above wrote the sky array directly, so nothing that watches LightingEngine saw
+        // any of it. Without this the pass that establishes a chunk's light is the one pass no
+        // reader can be told about, and a client sent the chunk beforehand keeps zeros for good.
+        MarkAllLightDirty();
         Dirty = true;
     }
 
@@ -270,6 +301,10 @@ public class Chunk
         int worldX = X * 16 + localX;
         int worldZ = Z * 16 + localZ;
 
+        // Both branches write the sky array directly, as the first fill does, so both have to say
+        // so themselves.
+        MarkLightDirty(Math.Min(oldHeight, newHeight), Math.Max(oldHeight, newHeight));
+
         if (newHeight < oldHeight)
         {
             for (int currY = newHeight; currY < oldHeight; ++currY)
@@ -288,6 +323,8 @@ public class Chunk
 
         int lightLevel = 15;
         int updateY = newHeight;
+
+        MarkLightDirty(0, newHeight);
 
         while (newHeight > 0 && lightLevel > 0)
         {
@@ -436,8 +473,99 @@ public class Chunk
     public virtual void SetLight(LightType lightType, int x, int y, int z, int value)
     {
         Dirty = true;
+        MarkLightDirty(y);
         if (lightType == LightType.Sky) SkyLight.SetNibble(x, y, z, value);
         else if (lightType == LightType.Block) BlockLight.SetNibble(x, y, z, value);
+    }
+
+    /// <summary>Records that the section holding <paramref name="y" /> has had light written.</summary>
+    public void MarkLightDirty(int y)
+    {
+        if ((uint)y < (uint)ChuckFormat.ChunkHeight)
+        {
+            _lightDirtySections |= 1u << (y / LightSectionHeight);
+        }
+    }
+
+    /// <summary>Records the sections spanned by a range, inclusive, clamped to the column.</summary>
+    public void MarkLightDirty(int minY, int maxY)
+    {
+        for (int section = Math.Max(minY, 0) / LightSectionHeight;
+             section <= Math.Min(maxY, ChuckFormat.ChunkHeight - 1) / LightSectionHeight;
+             section++)
+        {
+            _lightDirtySections |= 1u << section;
+        }
+    }
+
+    /// <summary>Records that every section has had light written.</summary>
+    /// <remarks>
+    ///     For the passes that fill the whole column at once. Naming each section they touched
+    ///     would be exact and would cost more than sending them: the passes run when a chunk has
+    ///     just arrived, which is when nearly every section is dirty anyway.
+    /// </remarks>
+    public void MarkAllLightDirty() =>
+        _lightDirtySections = LightSectionCount >= 32 ? uint.MaxValue : (1u << LightSectionCount) - 1u;
+
+    /// <summary>Reads the dirty sections and clears them, so each change is claimed once.</summary>
+    public uint TakeLightDirtySections()
+    {
+        uint taken = _lightDirtySections;
+        _lightDirtySections = 0;
+        return taken;
+    }
+
+    /// <summary>Bytes one section occupies in one light array: 256 columns of 16 nibbles.</summary>
+    public const int LightSectionBytes = 16 * 16 * LightSectionHeight / 2;
+
+    /// <summary>What <see cref="CopyLightSection" /> writes and <see cref="ApplyLightSection" /> reads.</summary>
+    public const int LightSectionPayloadBytes = LightSectionBytes * 2;
+
+    /// <summary>
+    ///     A section is not contiguous. The index is <c>(x &lt;&lt; 11) | (z &lt;&lt; 7) | y</c>, so
+    ///     y is the fastest axis and a slice of the column is 256 runs of eight bytes, one per
+    ///     column, spaced 64 apart.
+    /// </summary>
+    private const int ColumnBytes = ChunkHeightForStride / 2;
+    private const int ChunkHeightForStride = 128;
+
+    /// <summary>The sky and block nibbles for one section, sky first.</summary>
+    /// <remarks>
+    ///     A whole section rather than the cells that changed: what makes this worth sending at all
+    ///     is that the receiver ends up holding a copy of the array rather than a sequence of edits
+    ///     it has to have applied in order and in full.
+    /// </remarks>
+    public void CopyLightSection(int section, Span<byte> destination)
+    {
+        const int runBytes = LightSectionHeight / 2;
+        int start = section * runBytes;
+
+        for (int column = 0; column < 256; column++)
+        {
+            int source = column * ColumnBytes + start;
+            int target = column * runBytes;
+
+            SkyLight.Bytes.AsSpan(source, runBytes).CopyTo(destination[target..]);
+            BlockLight.Bytes.AsSpan(source, runBytes).CopyTo(destination[(LightSectionBytes + target)..]);
+        }
+    }
+
+    /// <summary>Overwrites one section's light with a copy taken elsewhere.</summary>
+    public void ApplyLightSection(int section, ReadOnlySpan<byte> source)
+    {
+        const int runBytes = LightSectionHeight / 2;
+        int start = section * runBytes;
+
+        for (int column = 0; column < 256; column++)
+        {
+            int target = column * ColumnBytes + start;
+            int origin = column * runBytes;
+
+            source.Slice(origin, runBytes).CopyTo(SkyLight.Bytes.AsSpan(target, runBytes));
+            source.Slice(LightSectionBytes + origin, runBytes).CopyTo(BlockLight.Bytes.AsSpan(target, runBytes));
+        }
+
+        Dirty = true;
     }
 
     /// <summary>
@@ -463,6 +591,7 @@ public class Chunk
 
         BlockLight.SetNibble(x, y, z, block);
         SkyLight.SetNibble(x, y, z, sky);
+        MarkLightDirty(y);
         Dirty = true;
         return true;
     }

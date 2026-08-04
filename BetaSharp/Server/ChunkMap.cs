@@ -121,6 +121,16 @@ internal class ChunkMap
         }
 
         _chunksToUpdate.Clear();
+
+        // Every watched chunk, not only the ones a block change put on the list above. Light
+        // changes without any block changing, and the pass that first lights a chunk writes the
+        // arrays directly and so puts nothing on any list at all. Testing a mask is a field read,
+        // which is what makes sweeping the whole set affordable.
+        foreach (TrackedChunk chunk in _chunkMapping.Values)
+        {
+            chunk.sendDirtyLight();
+        }
+
         loadQueue.Tick();
     }
 
@@ -551,6 +561,33 @@ internal class ChunkMap
 
                 _dirtyBlockCount = 0;
             }
+        }
+
+        /// <summary>
+        ///     Sends whatever sections of this chunk have had light written since the last sweep.
+        /// </summary>
+        /// <remarks>
+        ///     The mask is taken — read and cleared — whether or not anyone is watching. Leaving it
+        ///     set for an unwatched chunk would mean the first player to arrive is sent every
+        ///     section ever touched, and they are about to be sent the whole chunk anyway.
+        /// </remarks>
+        public void sendDirtyLight()
+        {
+            ServerWorld sWorld = _chunkMap.getWorld();
+            if (!sWorld.BlockHost.HasChunk(_chunkPos.X, _chunkPos.Z))
+            {
+                return;
+            }
+
+            Chunk chunk = sWorld.BlockHost.GetChunk(_chunkPos.X, _chunkPos.Z);
+            uint sections = chunk.TakeLightDirtySections();
+
+            if (sections == 0 || _players.Count == 0)
+            {
+                return;
+            }
+
+            sendMessageToPlayers(LightSectionsMessage.Of(chunk, sections));
         }
 
         private void sendBlockEntityUpdate(BlockEntity? blockentity)

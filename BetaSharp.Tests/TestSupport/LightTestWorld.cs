@@ -61,7 +61,12 @@ public sealed class ControlledChunkSource(World world) : IChunkSource
     ///     <see cref="Chunk.PopulateHeightMap" /> for the sky light columns and the cross-border
     ///     updates, then <see cref="Chunk.PopulateBlockLight" /> once the chunk is reachable.
     /// </summary>
-    public Chunk Add(int chunkX, int chunkZ, Action<Chunk>? buildTerrain = null)
+    /// <param name="populateLight">
+    ///     Whether to run the first light pass. False leaves the chunk present and holding no light
+    ///     at all, which is the state a chunk is in between arriving and being lit — the window a
+    ///     test needs to reach to say anything about what happens to a reader that saw it then.
+    /// </param>
+    public Chunk Add(int chunkX, int chunkZ, Action<Chunk>? buildTerrain = null, bool populateLight = true)
     {
         Chunk chunk = new(world, chunkX, chunkZ)
         {
@@ -77,8 +82,12 @@ public sealed class ControlledChunkSource(World world) : IChunkSource
         // its own columns.
         _chunks[(chunkX, chunkZ)] = chunk;
 
-        chunk.PopulateHeightMap();
-        chunk.PopulateBlockLight();
+        if (populateLight)
+        {
+            chunk.PopulateHeightMap();
+            chunk.PopulateBlockLight();
+        }
+
         chunk.Load();
         return chunk;
     }
