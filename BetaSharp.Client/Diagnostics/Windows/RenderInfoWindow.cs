@@ -1,3 +1,4 @@
+using BetaSharp.Blocks;
 using BetaSharp.Diagnostics;
 using BetaSharp.Util.Hit;
 using BetaSharp.Worlds.Core;
@@ -64,11 +65,16 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
         ImGuiTextSafe.Text($"Pos:   {x}, {y}, {z}");
         ImGuiTextSafe.Text($"Id:    {world.Reader.GetBlockId(x, y, z)}  meta {world.Reader.GetBlockMeta(x, y, z)}");
 
-        LightLevels levels = world.Lighting.GetLightLevels(x, y, z, 0);
-        ImGuiTextSafe.Text($"Light: sky {levels.Sky}  block {levels.Block}");
-
-        LightLevels above = world.Lighting.GetLightLevels(x, y + 1, z, 0);
-        ImGuiTextSafe.Text($"Above: sky {above.Sky}  block {above.Block}");
+        // Every face takes its light from the cell it faces, so the neighbours are what decides how
+        // this block looks. Its own cell is shown too, but a solid block reads 0/0 there and that is
+        // not a fault.
+        DrawCell("Self ", world, x, y, z);
+        DrawCell("Up   ", world, x, y + 1, z);
+        DrawCell("Down ", world, x, y - 1, z);
+        DrawCell("X-   ", world, x - 1, y, z);
+        DrawCell("X+   ", world, x + 1, y, z);
+        DrawCell("Z-   ", world, x, y, z - 1);
+        DrawCell("Z+   ", world, x, y, z + 1);
 
         if (ctx.ChunkRenderer != null && ctx.ChunkRenderer.TryGetMeshState(x, y, z, out (long Epoch, long LastMeshed, long Pending) state, out bool hasRenderer))
         {
@@ -86,6 +92,21 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
         {
             ImGuiTextSafe.TextDisabled("Mesh:  no version tracked for this sub-chunk");
         }
+    }
+
+    /// <summary>One cell: what is in it, whether it stops light, and the light it holds.</summary>
+    /// <remarks>
+    ///     Opacity is here because it decides both whether the face towards this cell is drawn at
+    ///     all and whether light was ever going to reach it. A dark face towards an opaque cell is
+    ///     working correctly; a dark face towards a see-through one is not.
+    /// </remarks>
+    private static void DrawCell(string label, World world, int x, int y, int z)
+    {
+        int id = world.Reader.GetBlockId(x, y, z);
+        LightLevels levels = world.Lighting.GetLightLevels(x, y, z, 0);
+        bool opaque = !Block.BlocksAllowVision[id];
+
+        ImGuiTextSafe.Text($"{label} id {id,3}  {(opaque ? "opaque" : "see-thru")}  sky {levels.Sky,2}  block {levels.Block,2}");
     }
 
     private static void DrawChunkSection()
