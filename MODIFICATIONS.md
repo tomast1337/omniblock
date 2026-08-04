@@ -125,3 +125,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-04 — fix(rendering): render a cactus as a whole cube inset by its faces, not by its box (Nicolas Vyčas Nery; `6f28b26e4fdca108f3ebd5956bcf507b66ac9854`)
 - 2026-08-04 — debug(rendering): show what the world holds at the crosshair beside what the mesh was told (Nicolas Vyčas Nery; `1d2a6e31a03ca7aaab45a187988e75c8986be0d6`)
 - 2026-08-04 — style(diagnostics): order the import added with the chunk renderer accessor (Nicolas Vyčas Nery; `8f8771e6623d58e0342d696e3b69bf30154ec37c`)
+- 2026-08-04 — debug(rendering): show the six neighbours of the targeted block, not just the cell above (Nicolas Vyčas Nery; `ee300cab773953dd4bda396a97c00e196ec7df3a`)
