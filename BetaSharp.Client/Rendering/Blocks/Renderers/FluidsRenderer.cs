@@ -104,12 +104,14 @@ public class FluidsRenderer : IBlockRenderer
             ctx.SetLightAt(block, pos.X, pos.Y - 1, pos.Z);
             ctx.Tess.setColorOpaque_F(lightBottom, lightBottom, lightBottom);
 
-            // Fluids don't use AO, so pass dummy colors
-            FaceColors dummyColors = new FaceColors();
+            // Through a context with ambient occlusion off, because the colour and the light are set
+            // above rather than carried per corner. Drawing it through ctx meant the empty FaceColors
+            // below overwrote both with zero, which is why this face came out black.
+            BlockRenderContext flatCtx = ctx with { EnableAo = false };
             int tex = block.GetTexture(0);
 
             // Note: Fluids don't override bounds for the bottom face, so we just pass the default context
-            ctx.DrawBottomFace(block, new Vec3D(pos.X, pos.Y, pos.Z), dummyColors, tex);
+            flatCtx.DrawBottomFace(block, new Vec3D(pos.X, pos.Y, pos.Z), default, tex);
             hasRendered = true;
         }
 

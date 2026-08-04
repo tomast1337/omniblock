@@ -511,6 +511,23 @@ public ref struct BlockRenderContext
     /// </remarks>
     internal readonly void SetFullBright() => Tess.setLight(0.0f, 15.0f);
 
+    /// <summary>
+    ///     Sets one light for a face whose context does not read the per-corner values.
+    /// </summary>
+    /// <remarks>
+    ///     With <see cref="EnableAo" /> off — inventory blocks, stairs, fences, piston bases — the
+    ///     draw methods take the colour the caller set and ignore the <see cref="FaceColors" />
+    ///     passed to them, so the light in it would never reach a vertex. It has to be set here
+    ///     instead, or the face keeps whatever the previous block left behind.
+    /// </remarks>
+    private readonly void ApplyFlatLightIfUnread(CornerLight light)
+    {
+        if (!EnableAo)
+        {
+            Tess.setLight(light.Sky, light.Block);
+        }
+    }
+
     private readonly CornerLight Sample(in Block block, int x, int y, int z)
     {
         LightLevels levels = block.GetLightLevels(Lighting, x, y, z);
@@ -621,6 +638,7 @@ public ref struct BlockRenderContext
                 v3 = q.PlusPlus;
             }
 
+            ApplyFlatLightIfUnread(v0);
             var colors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 0.5F, tintBottom);
             int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.Down);
 
@@ -642,6 +660,7 @@ public ref struct BlockRenderContext
                 v3 = q.MinusPlus;
             }
 
+            ApplyFlatLightIfUnread(v0);
             var colors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 1.0F, tintTop);
             int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.Up);
 
@@ -664,6 +683,7 @@ public ref struct BlockRenderContext
             }
 
             int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.North);
+            ApplyFlatLightIfUnread(v1);
             var colors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.8F, tintEast);
             bool flipped = ao && (v1.FlipWeight + v3.FlipWeight > v2.FlipWeight + v0.FlipWeight);
 
@@ -692,6 +712,7 @@ public ref struct BlockRenderContext
             }
 
             int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.South);
+            ApplyFlatLightIfUnread(v0);
             var colors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 0.8F, tintWest);
             bool flipped = ao && (v0.FlipWeight + v2.FlipWeight > v1.FlipWeight + v3.FlipWeight);
 
@@ -720,6 +741,7 @@ public ref struct BlockRenderContext
             }
 
             int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, Side.West);
+            ApplyFlatLightIfUnread(v1);
             var colors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.6F, tintNorth);
             bool flipped = ao && (v1.FlipWeight + v3.FlipWeight > v2.FlipWeight + v0.FlipWeight);
 
@@ -748,6 +770,7 @@ public ref struct BlockRenderContext
             }
 
             int textureId = hasOverrideTex ? OverrideTexture : block.GetTextureId(BlockReader, pos.X, pos.Y, pos.Z, 5.ToSide());
+            ApplyFlatLightIfUnread(v3);
             var colors = FaceColors.AssignVertexColors(v3, v0, v1, v2, r, g, b, 0.6F, tintSouth);
             bool flipped = ao && (v3.FlipWeight + v1.FlipWeight > v0.FlipWeight + v2.FlipWeight);
 
