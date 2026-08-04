@@ -129,3 +129,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-04 — debug(worlds): compare the client's sky light against the server's (Nicolas Vyčas Nery; `aec908c51a220cd0bf6b158f89f6b93c72b49ee5`)
 - 2026-08-04 — fix(diagnostics): compare the light two worlds store, not what they derive from it (Nicolas Vyčas Nery; `c62e8b4a873221d01fcf95156712548cd7d10bac`)
 - 2026-08-04 — feat(worlds): send light as whole sections, so the first fill can be announced (Nicolas Vyčas Nery; `5cde4984bd231d7b2ce3606c16fe405721fef681`)
+- 2026-08-04 — fix(network): stop block updates carrying light, which two of them zeroed (Nicolas Vyčas Nery; `5f2826a90470e97797127ca81fd7b1e6a99e091e`)

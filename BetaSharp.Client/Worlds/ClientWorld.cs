@@ -207,30 +207,26 @@ public class ClientWorld : World
     }
 
     /// <summary>
-    ///     Applies one position's worth of server state: its block and its light.
+    ///     Applies one position's worth of server state: its block.
     /// </summary>
     /// <remarks>
-    ///     The light is applied whether or not the block changed. The server announces a position
-    ///     whenever its light changes, and a light-only change leaves the block byte-identical to
-    ///     what this client already holds, which is precisely the case
-    ///     <see cref="Chunk.SetBlock" /> refuses. Gating the light on the block having changed
-    ///     discards every such update, and nothing resends it.
+    ///     No light. It used to take a byte from the same message and write it here unconditionally,
+    ///     which made every construction of that message that forgot to fill the field overwrite
+    ///     this cell with darkness — and two of them did. Light arrives on
+    ///     <c>LightSectionsMessage</c>, as sections, where nothing is inferred from a field being
+    ///     absent.
     /// </remarks>
-    public bool SetBlockWithMetaFromPacket(int minX, int minY, int minZ, int blockId, int meta, byte light)
+    public bool SetBlockWithMetaFromPacket(int minX, int minY, int minZ, int blockId, int meta)
     {
         ClearBlockResets(minX, minY, minZ, minX, minY, minZ);
-        bool blockChanged = Writer.SetBlockWithoutNotifyingNeighbors(minX, minY, minZ, blockId, meta);
 
-        bool lightChanged = BlockHost.HasChunk(minX >> 4, minZ >> 4)
-            && BlockHost.GetChunk(minX >> 4, minZ >> 4)
-                .SetPackedLight(minX & 15, minY, minZ & 15, light);
-
-        if (blockChanged || lightChanged)
+        if (Writer.SetBlockWithoutNotifyingNeighbors(minX, minY, minZ, blockId, meta))
         {
             BlockUpdate(minX, minY, minZ, blockId);
+            return true;
         }
 
-        return blockChanged;
+        return false;
     }
 
     public override void Disconnect()

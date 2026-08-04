@@ -500,9 +500,7 @@ internal class ChunkMap
                         Y = (sbyte)worldY,
                         Z = worldZ,
                         BlockRawId = (byte)sWorld.Reader.GetBlockId(worldX, worldY, worldZ),
-                        BlockMetadata = (byte)sWorld.Reader.GetBlockMeta(worldX, worldY, worldZ),
-                        Light = sWorld.BlockHost.GetChunk(_chunkPos.X, _chunkPos.Z)
-                            .GetPackedLight(_dirtyBlockMinX, worldY, _dirtyBlockMinZ)
+                        BlockMetadata = (byte)sWorld.Reader.GetBlockMeta(worldX, worldY, worldZ)
                     });
                     if (Block.BlocksWithEntity[sWorld.Reader.GetBlockId(worldX, worldY, worldZ)])
                     {
@@ -533,7 +531,6 @@ internal class ChunkMap
                     delta.Positions = new short[_dirtyBlockCount];
                     delta.BlockRawIds = new byte[_dirtyBlockCount];
                     delta.BlockMetadata = new byte[_dirtyBlockCount];
-                    delta.Light = new byte[_dirtyBlockCount];
                     Chunk chunk = sWorld.BlockHost.GetChunk(_chunkPos.X, _chunkPos.Z);
                     for (int i = 0; i < _dirtyBlockCount; i++)
                     {
@@ -543,7 +540,6 @@ internal class ChunkMap
                         delta.Positions[i] = _dirtyBlocks[i];
                         delta.BlockRawIds[i] = (byte)chunk.GetBlockId(bx, by, bz);
                         delta.BlockMetadata[i] = (byte)chunk.GetBlockMeta(bx, by, bz);
-                        delta.Light[i] = chunk.GetPackedLight(bx, by, bz);
                     }
                     sendMessageToPlayers(delta);
 
