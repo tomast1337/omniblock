@@ -259,6 +259,9 @@ public class Tessellator
 
             if (vertexCount > 0)
             {
+                // Before anything of ours is bound, because draining binds and unbinds its own.
+                ((LegacyGL)GLManager.GL).FlushQueuedGeometry();
+
                 vboIndex = (vboIndex + 1) % vboCount;
                 GLManager.GL.BindBuffer(GLEnum.ArrayBuffer, _vboIds[vboIndex]);
 
@@ -271,8 +274,6 @@ public class Tessellator
                 silkGl.BindVertexArray(_tessVao);
                 TessellatorVertexLayout.Bind(silkGl, hasTexture, hasColor, hasNormals);
 
-                // Through GLManager rather than Silk, so the queued-geometry flush still fires:
-                // a renderer holding batched vertices has to drain them before this lands.
                 program.Activate();
                 GLManager.GL.DrawArrays(SubmittedDrawMode, 0, (uint)vertexCount);
                 program.Deactivate();

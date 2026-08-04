@@ -114,6 +114,9 @@ public sealed class StaticMesh(
             return;
         }
 
+        // Before the VAO below is bound, for the reason FlushQueuedGeometry gives.
+        ((LegacyGL)GLManager.GL).FlushQueuedGeometry();
+
         GL gl = ((LegacyGL)GLManager.GL).SilkGL;
 
         if (_vao == 0)
