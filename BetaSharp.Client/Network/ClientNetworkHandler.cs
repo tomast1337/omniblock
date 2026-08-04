@@ -445,6 +445,7 @@ public class ClientNetworkHandler : NetHandler
         MessageHandlers.On<PlayerRespawnMessage>(onPlayerRespawn);
         MessageHandlers.On<BlockUpdateMessage>(onBlockUpdate);
         MessageHandlers.On<ChunkDeltaUpdateMessage>(onChunkDeltaUpdate);
+        MessageHandlers.On<LightSectionsMessage>(onLightSections);
         MessageHandlers.On<ChunkStatusUpdateMessage>(onChunkStatusUpdate);
         MessageHandlers.On<WorldEventMessage>(onWorldEvent);
         MessageHandlers.On<WorldTimeUpdateMessage>(onWorldTimeUpdate);
@@ -1062,6 +1063,29 @@ public class ClientNetworkHandler : NetHandler
     private void onBlockUpdate(BlockUpdateMessage packet)
     {
         _worldClient.SetBlockWithMetaFromPacket(packet.X, packet.Y, packet.Z, packet.BlockRawId, packet.BlockMetadata, packet.Light);
+    }
+
+    /// <summary>
+    ///     Overwrites whole sections of a chunk's light with the server's copy.
+    /// </summary>
+    /// <remarks>
+    ///     Dropped rather than queued when the chunk is absent. The section is a snapshot of an
+    ///     array rather than an edit to it, so nothing depends on this one having been applied —
+    ///     the chunk arrives carrying light of its own, and the next write to any of these sections
+    ///     sends them again.
+    /// </remarks>
+    private void onLightSections(LightSectionsMessage message)
+    {
+        if (!_worldClient.BlockHost.HasChunk(message.ChunkX, message.ChunkZ))
+        {
+            return;
+        }
+
+        message.ApplyTo(_worldClient.BlockHost.GetChunk(message.ChunkX, message.ChunkZ));
+
+        _worldClient.setBlocksDirty(
+            message.ChunkX * 16, 0, message.ChunkZ * 16,
+            message.ChunkX * 16 + 15, ChuckFormat.WorldHeight - 1, message.ChunkZ * 16 + 15);
     }
 
     private void onDisconnect(DisconnectMessage packet)
