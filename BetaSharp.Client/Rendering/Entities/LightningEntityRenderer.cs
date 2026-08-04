@@ -123,7 +123,7 @@ public class LightningEntityRenderer : EntityRenderer
                         tessellator.addVertex(outerX + prevBranchX, y + (yIndex + 1) * 16, outerZ + prevBranchZ);
                     }
 
-                    tessellator.draw();
+                    tessellator.draw(ProgramSlot.Basic);
                 }
             }
         }

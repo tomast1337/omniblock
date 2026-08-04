@@ -117,7 +117,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                     tessellator.addVertex(-nameHalfWidth - 1, 8.0D, 0.0D);
                     tessellator.addVertex(nameHalfWidth + 1, 8.0D, 0.0D);
                     tessellator.addVertex(nameHalfWidth + 1, -1.0D, 0.0D);
-                    tessellator.draw();
+                    tessellator.draw(ProgramSlot.Basic);
                     GLManager.TextureEnabled = true;
                     GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
                     fontRenderer.DrawString(displayName, -fontRenderer.GetStringWidth(displayName) / 2, 0, Color.WhiteAlpha20);

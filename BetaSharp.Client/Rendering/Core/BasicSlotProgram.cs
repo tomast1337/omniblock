@@ -2,12 +2,12 @@ using BetaSharp.Client.Options;
 
 namespace BetaSharp.Client.Rendering.Core;
 
-/// <summary><see cref="ProgramSlot.Basic" />: untextured, unlit geometry under fog.</summary>
+/// <summary><see cref="ProgramSlot.Basic" />: untextured geometry, tinted, shaded, under fog.</summary>
 /// <remarks>
-///     Ten uniforms against the fixed-function shader's twenty. What is gone is everything an
-///     untextured draw was never going to read — the texture and its matrix, the two lights, the
-///     normal matrix — and the value is not the uniforms saved but that a caller can no longer leave
-///     lighting on and have it reach geometry that has no normals.
+///     Everything the fixed-function shader did short of sampling a texture. It reads the lights
+///     because untextured geometry can be lit — the debug shapes are drawn inside the entity pass,
+///     with normals and nothing turning lighting off — and a slot that could not shade them would
+///     leave them with nothing to name.
 /// </remarks>
 internal sealed class BasicSlotProgram : ISlotProgram, IDisposable
 {
@@ -21,17 +21,15 @@ internal sealed class BasicSlotProgram : ISlotProgram, IDisposable
 
     public void Activate()
     {
-        SlotUniforms.ReportIfLit(nameof(ProgramSlot.Basic));
-
         _shader.Bind();
         SlotUniforms.UploadTransforms(_shader);
         SlotUniforms.UploadFogAndAlpha(_shader);
+        SlotUniforms.UploadLighting(_shader);
     }
 
     /// <summary>
-    ///     Unbinds rather than restoring, because there is nothing to restore to: the fixed-function
-    ///     pipeline activates its own shader when it finds no program bound, and leaving this one
-    ///     bound would make it skip that.
+    ///     Unbinds rather than restoring, so a draw that names no slot draws with no program and
+    ///     shows it, rather than silently inheriting whatever the last one left bound.
     /// </summary>
     public void Deactivate() => GLManager.GL.UseProgram(0);
 

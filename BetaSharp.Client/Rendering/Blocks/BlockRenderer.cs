@@ -130,42 +130,42 @@ public class BlockRenderer
             tess.setNormal(0.0F, -1.0F, 0.0F);
             SetFaceColor(0);
             uiCtx.DrawBottomFace(block, origin, dummyColors, isPiston ? block.GetTexture(Side.Down) : block.GetTexture(Side.Down, metadata));
-            tess.draw();
+            tess.draw(ProgramSlot.Gui);
 
             tess.startDrawingQuads();
             tess.setNormal(0.0F, 1.0F, 0.0F);
             SetFaceColor(1);
             uiCtx.DrawTopFace(block, origin, dummyColors,
                 isPiston ? block.GetTexture(Side.Up) : block.GetTexture(Side.Up, metadata));
-            tess.draw();
+            tess.draw(ProgramSlot.Gui);
 
             tess.startDrawingQuads();
             tess.setNormal(0.0F, 0.0F, -1.0F);
             SetFaceColor(2);
             uiCtx.DrawEastFace(block, origin, dummyColors,
                 isPiston ? block.GetTexture(Side.North) : block.GetTexture(Side.North, metadata));
-            tess.draw();
+            tess.draw(ProgramSlot.Gui);
 
             tess.startDrawingQuads();
             tess.setNormal(0.0F, 0.0F, 1.0F);
             SetFaceColor(3);
             uiCtx.DrawWestFace(block, origin, dummyColors,
                 isPiston ? block.GetTexture(Side.South) : block.GetTexture(Side.South, metadata));
-            tess.draw();
+            tess.draw(ProgramSlot.Gui);
 
             tess.startDrawingQuads();
             tess.setNormal(-1.0F, 0.0F, 0.0F);
             SetFaceColor(4);
             uiCtx.DrawNorthFace(block, origin, dummyColors,
                 isPiston ? block.GetTexture(Side.West) : block.GetTexture(Side.West, metadata));
-            tess.draw();
+            tess.draw(ProgramSlot.Gui);
 
             tess.startDrawingQuads();
             tess.setNormal(1.0F, 0.0F, 0.0F);
             SetFaceColor(5);
             uiCtx.DrawSouthFace(block, origin, dummyColors,
                 isPiston ? block.GetTexture(Side.East) : block.GetTexture(Side.East, metadata));
-            tess.draw();
+            tess.draw(ProgramSlot.Gui);
 
             GLManager.ModelView.Translate(0.5F, 0.5F, 0.5F);
         }
@@ -179,7 +179,7 @@ public class BlockRenderer
             tess.startDrawingQuads();
             tess.setNormal(0.0F, 1.0F, 0.0F);
             RenderBlockByRenderType(itemWorld, itemWorld, block, itemPos, tess, uiCtx.OverrideTexture, true);
-            tess.draw();
+            tess.draw(ProgramSlot.Gui);
             GLManager.ModelView.Translate(0.5F, 0.5F, 0.5F);
         }
     }
@@ -235,7 +235,7 @@ public class BlockRenderer
         tess.setColorOpaque_F(lightX * faceLum, lightX * faceLum, lightX * faceLum);
         entityCtx.DrawSouthFace(block, localOrigin, dummyColors, block.GetTexture(Side.East));
 
-        tess.draw();
+        tess.draw(ProgramSlot.Entities);
     }
 
     public static bool IsSideLit(BlockRendererType renderType)

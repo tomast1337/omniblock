@@ -26,7 +26,7 @@ internal static unsafe class TessellatorVertexLayout
     /// </summary>
     /// <remarks>
     ///     The caller binds its own VAO and VBO first, then calls this to configure which offsets
-    ///     map to which shader inputs. The same attribute locations the FixedFunctionShader expects:
+    ///     map to which shader inputs. The same attribute locations every slot's program declares:
     ///     0=position, 1=color, 2=texcoord, 3=normal.
     /// </remarks>
     public static void Bind(GL gl, bool hasTexture, bool hasColor, bool hasNormals)
@@ -101,7 +101,13 @@ public sealed class StaticMesh(
     private uint _buffer = buffer;
     private uint _vao;
 
-    public void Draw()
+    /// <inheritdoc cref="Tessellator.drawWithBoundProgram" />
+    public void DrawWithBoundProgram() => Draw(SlotPrograms.CallerBound);
+
+    /// <inheritdoc cref="Tessellator.draw(ProgramSlot)" />
+    public void Draw(ProgramSlot slot) => Draw(SlotPrograms.Resolve(slot));
+
+    private void Draw(ISlotProgram program)
     {
         if (vertexCount == 0 || _buffer == 0)
         {
@@ -120,7 +126,9 @@ public sealed class StaticMesh(
         }
 
         gl.BindVertexArray(_vao);
+        program.Activate();
         GLManager.GL.DrawArrays(drawMode, 0, (uint)vertexCount);
+        program.Deactivate();
         gl.BindVertexArray(0);
     }
 

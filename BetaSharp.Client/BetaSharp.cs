@@ -1907,7 +1907,7 @@ public partial class BetaSharp :
         tessellator.addVertexWithUV((double)DisplayWidth, (double)DisplayHeight, 0.0D, 0.0D, 0.0D);
         tessellator.addVertexWithUV((double)DisplayWidth, 0.0D, 0.0D, 0.0D, 0.0D);
         tessellator.addVertexWithUV(0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
-        tessellator.draw();
+        tessellator.draw(ProgramSlot.Gui);
         short logoWidth = 256;
         short logoHeight = 256;
         GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
@@ -1931,7 +1931,7 @@ public partial class BetaSharp :
         tess.addVertexWithUV(x + width, y + height, 0, (texX + width) * uScale, (texY + height) * vScale);
         tess.addVertexWithUV(x + width, y + 0, 0, (texX + width) * uScale, (texY + 0) * vScale);
         tess.addVertexWithUV(x + 0, y + 0, 0, (texX + 0) * uScale, (texY + 0) * vScale);
-        tess.draw();
+        tess.draw(ProgramSlot.Gui);
     }
 
     #endregion

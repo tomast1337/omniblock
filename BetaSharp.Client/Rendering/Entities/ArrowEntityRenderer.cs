@@ -45,14 +45,14 @@ public class ArrowEntityRenderer : EntityRenderer
             tessellator.addVertexWithUV(-7.0D, -2.0D, 2.0D, (double)sideMaxU, (double)sideMinV);
             tessellator.addVertexWithUV(-7.0D, 2.0D, 2.0D, (double)sideMaxU, (double)sideMaxV);
             tessellator.addVertexWithUV(-7.0D, 2.0D, -2.0D, (double)sideMinU, (double)sideMaxV);
-            tessellator.draw();
+            tessellator.draw(ProgramSlot.Entities);
             GLManager.Normal = new(-modelScale, 0.0F, 0.0F);
             tessellator.startDrawingQuads();
             tessellator.addVertexWithUV(-7.0D, 2.0D, -2.0D, (double)sideMinU, (double)sideMinV);
             tessellator.addVertexWithUV(-7.0D, 2.0D, 2.0D, (double)sideMaxU, (double)sideMinV);
             tessellator.addVertexWithUV(-7.0D, -2.0D, 2.0D, (double)sideMaxU, (double)sideMaxV);
             tessellator.addVertexWithUV(-7.0D, -2.0D, -2.0D, (double)sideMinU, (double)sideMaxV);
-            tessellator.draw();
+            tessellator.draw(ProgramSlot.Entities);
 
             for (int quadIndex = 0; quadIndex < 4; ++quadIndex)
             {
@@ -63,7 +63,7 @@ public class ArrowEntityRenderer : EntityRenderer
                 tessellator.addVertexWithUV(8.0D, -2.0D, 0.0D, (double)shaftMaxU, (double)featherMinV);
                 tessellator.addVertexWithUV(8.0D, 2.0D, 0.0D, (double)shaftMaxU, (double)featherMaxV);
                 tessellator.addVertexWithUV(-8.0D, 2.0D, 0.0D, (double)shaftMinU, (double)featherMaxV);
-                tessellator.draw();
+                tessellator.draw(ProgramSlot.Entities);
             }
 
             GLManager.ModelView.Pop();

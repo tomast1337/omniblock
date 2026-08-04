@@ -45,7 +45,7 @@ public class EntityFootStepFX : EntityFX
         t.addVertexWithUV((double)(renderX + footprintSize), (double)renderY, (double)(renderZ + footprintSize), 1.0D, 1.0D);
         t.addVertexWithUV((double)(renderX + footprintSize), (double)renderY, (double)(renderZ - footprintSize), 1.0D, 0.0D);
         t.addVertexWithUV((double)(renderX - footprintSize), (double)renderY, (double)(renderZ - footprintSize), 0.0D, 0.0D);
-        t.draw();
+        t.draw(ProgramSlot.Entities);
         GLManager.State.Apply(RenderState.Entity);
         GLManager.LightingEnabled = true;
     }

@@ -6,24 +6,23 @@ namespace BetaSharp.Client.Rendering.Core;
 /// <remarks>
 ///     <para>
 ///         A slot with no program of its own resolves to the nearest ancestor that has one, walking
-///         <see cref="ProgramSlots.ResolutionChain" />. A slot whose whole chain is empty resolves to
-///         <see cref="FixedFunction" />, which draws exactly as everything drew before slots existed.
-///         So routing a draw to a slot is safe before that slot's shader is written: it changes
-///         nothing until a program shows up to claim it.
+///         <see cref="ProgramSlots.ResolutionChain" />. Every chain ends at
+///         <see cref="ProgramSlot.Basic" /> and that one is always claimed, so naming a slot is safe
+///         before its own shader exists — it draws under an ancestor's until one shows up.
 ///     </para>
 ///     <para>
-///         Static because the fallback shader it is displacing is, and because a draw reaches this
-///         through <see cref="Tessellator" />, which is a singleton for the same reason. It stops
-///         being static when the last draw stops going through the Tessellator.
+///         Static because a draw reaches this through <see cref="Tessellator" />, which is a
+///         singleton. It stops being static when the last draw stops going through the Tessellator.
 ///     </para>
 /// </remarks>
 public static class SlotPrograms
 {
     /// <summary>
-    ///     Stands in for a slot nothing has claimed. Binds nothing, so the draw falls through to the
-    ///     fixed-function shader that <c>FixedFunctionPipeline.DrawArrays</c> activates on its own.
+    ///     Binds nothing and uploads nothing, for a draw whose caller has already bound a program of
+    ///     its own and set its uniforms — the sky. Not a fallback: with no program bound it draws
+    ///     with none.
     /// </summary>
-    public static ISlotProgram FixedFunction { get; } = new FixedFunctionSlotProgram();
+    public static ISlotProgram CallerBound { get; } = new CallerBoundProgram();
 
     private static readonly Dictionary<ProgramSlot, ISlotProgram> s_programs = [];
 
@@ -40,14 +39,15 @@ public static class SlotPrograms
             }
         }
 
-        return FixedFunction;
+        throw new InvalidOperationException(
+            $"No program for slot {slot} or any of its ancestors. Basic claims the root of every " +
+            "chain, so this means a draw ran before SlotPrograms.Initialize.");
     }
 
     /// <summary>Builds the programs that exist so far and claims their slots.</summary>
     /// <remarks>
-    ///     Runs once the GL context is up. Anything drawn before this — the loading screen's first
-    ///     frames — resolves to <see cref="FixedFunction" /> and looks the same, which is the point
-    ///     of having a fallback at all rather than an initialisation order to get right.
+    ///     Runs as soon as the GL context is up, and must: a draw before this has no program to
+    ///     resolve to and says so rather than drawing wrongly.
     /// </remarks>
     public static void Initialize(GameOptions options)
     {
@@ -66,7 +66,7 @@ public static class SlotPrograms
         s_programs.Clear();
     }
 
-    private sealed class FixedFunctionSlotProgram : ISlotProgram
+    private sealed class CallerBoundProgram : ISlotProgram
     {
         public void Activate()
         {

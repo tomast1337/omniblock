@@ -2,13 +2,13 @@ using BetaSharp.Client.Options;
 
 namespace BetaSharp.Client.Rendering.Core;
 
-/// <summary><see cref="ProgramSlot.Textured" />: textured and tinted, unlit, under fog.</summary>
+/// <summary><see cref="ProgramSlot.Textured" />: textured and tinted, shaded, under fog.</summary>
 /// <remarks>
 ///     <para>
-///         Adds the texture and its matrix to what <see cref="BasicSlotProgram" /> draws, and
-///         nothing else. Still no lights and no normal matrix, which is the line between this and
-///         <see cref="ProgramSlot.TexturedLit" />: a draw that belongs here has to have turned
-///         lighting off, and one that has not is reported rather than quietly shaded differently.
+///         Adds the texture and its matrix to what <see cref="BasicSlotProgram" /> draws. What
+///         separates it from <see cref="ProgramSlot.TexturedLit" /> is which draws carry which name,
+///         not what either program can do — the two defaults are the same shader, and exist apart so
+///         a pack can replace one without replacing both.
 ///     </para>
 ///     <para>
 ///         The texture unit is fixed at 0 and the caller binds to it. Which texture is not this
@@ -27,11 +27,10 @@ internal sealed class TexturedSlotProgram : ISlotProgram, IDisposable
 
     public void Activate()
     {
-        SlotUniforms.ReportIfLit(nameof(ProgramSlot.Textured));
-
         _shader.Bind();
         SlotUniforms.UploadTransforms(_shader);
         SlotUniforms.UploadFogAndAlpha(_shader);
+        SlotUniforms.UploadLighting(_shader);
         _shader.SetUniformMatrix4("textureMatrix", GLManager.TextureMatrix.Top);
         _shader.SetUniform1("textureSampler", 0);
     }

@@ -35,7 +35,7 @@ public class FishingBobberEntityRenderer : EntityRenderer
         tessellator.addVertexWithUV((double)(quadWidth - xOffset), (double)(0.0F - yOffset), 0.0D, (double)maxU, (double)maxV);
         tessellator.addVertexWithUV((double)(quadWidth - xOffset), (double)(1.0F - yOffset), 0.0D, (double)maxU, (double)minV);
         tessellator.addVertexWithUV((double)(0.0F - xOffset), (double)(1.0F - yOffset), 0.0D, (double)minU, (double)minV);
-        tessellator.draw();
+        tessellator.draw(ProgramSlot.Entities);
         GLManager.ModelView.Pop();
         if (angler != null)
         {
@@ -80,7 +80,7 @@ public class FishingBobberEntityRenderer : EntityRenderer
                 tessellator.addVertex(x + lineDeltaX * (double)segmentProgress, y + lineDeltaY * (double)(segmentProgress * segmentProgress + segmentProgress) * 0.5D + 0.25D, z + lineDeltaZ * (double)segmentProgress);
             }
 
-            tessellator.draw();
+            tessellator.draw(ProgramSlot.Line);
             GLManager.LightingEnabled = true;
             GLManager.TextureEnabled = true;
         }

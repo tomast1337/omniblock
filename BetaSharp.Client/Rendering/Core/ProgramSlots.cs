@@ -87,7 +87,7 @@ public static class ProgramSlots
 
             // No Iris counterpart, so no gbuffers_ prefix to inherit and nothing for a ported pack
             // to collide with.
-            [ProgramSlot.Gui] = Under("gui", ProgramSlot.Basic),
+            [ProgramSlot.Gui] = Under("gui", ProgramSlot.Textured),
         };
 
         Validate(slots);

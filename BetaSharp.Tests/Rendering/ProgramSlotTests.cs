@@ -49,6 +49,22 @@ public class ProgramSlotTests
             ProgramSlots.ResolutionChain(ProgramSlot.DamagedBlock));
     }
 
+    /// <summary>
+    ///     The interface draws textured — every one of its quads samples a sheet — so its chain has
+    ///     to reach a program that has a sampler before it reaches one that does not.
+    /// </summary>
+    [Fact]
+    public void TheInterfaceInheritsFromTexturedRatherThanBasic()
+    {
+        Assert.Equal(
+            [
+                ProgramSlot.Gui,
+                ProgramSlot.Textured,
+                ProgramSlot.Basic,
+            ],
+            ProgramSlots.ResolutionChain(ProgramSlot.Gui));
+    }
+
     [Fact]
     public void PackNamesRoundTrip()
     {

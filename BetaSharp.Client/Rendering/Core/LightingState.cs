@@ -4,7 +4,7 @@ namespace BetaSharp.Client.Rendering.Core;
 
 /// <summary>Whether a shaded colour is taken per vertex or per face.</summary>
 /// <remarks>
-///     The numeric values reach <c>FixedFunctionShader</c> as-is, which picks between two
+///     The numeric values reach every slot's program as-is, which picks between two
 ///     interpolated colours on the integer.
 /// </remarks>
 public enum ShadeModel
