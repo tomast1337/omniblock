@@ -299,6 +299,8 @@ public class AssetManager
         defineEmbeddedAsset("shaders/gbuffers_basic.frag", AssetType.Text);
         defineEmbeddedAsset("shaders/gbuffers_textured.vert", AssetType.Text);
         defineEmbeddedAsset("shaders/gbuffers_textured.frag", AssetType.Text);
+        defineEmbeddedAsset("shaders/gbuffers_textured_lit.vert", AssetType.Text);
+        defineEmbeddedAsset("shaders/gbuffers_textured_lit.frag", AssetType.Text);
         defineEmbeddedAsset("shaders/quad.vert", AssetType.Text);
         defineEmbeddedAsset("shaders/sky.vert", AssetType.Text);
         defineEmbeddedAsset("shaders/sky.frag", AssetType.Text);

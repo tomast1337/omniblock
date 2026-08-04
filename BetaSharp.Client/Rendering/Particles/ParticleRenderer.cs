@@ -77,7 +77,7 @@ public static class ParticleRenderer
                 t.addVertexWithUV(rx + cosYaw * size - upX * size, ry - cosPitch * size, rz + sinYaw * size - upZ * size, minU, maxV);
             }
 
-            t.draw();
+            t.draw(ProgramSlot.TexturedLit);
         }
     }
 

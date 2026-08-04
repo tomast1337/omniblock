@@ -125,7 +125,7 @@ public abstract class EntityRenderer
             ++pass;
         }
 
-        tess.draw();
+        tess.draw(ProgramSlot.Entities);
         GLManager.ModelView.Pop();
         GLManager.LightingEnabled = true;
     }
@@ -181,7 +181,7 @@ public abstract class EntityRenderer
             }
         }
 
-        tess.draw();
+        tess.draw(ProgramSlot.Entities);
         GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
         GLManager.State.Apply(RenderState.Entity);
     }

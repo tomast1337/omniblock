@@ -754,7 +754,7 @@ public class GameRenderer
                             tessellator.addVertexWithUV(sampleX + 0.5D, maxRenderY, sampleZ + 1, (1.0F * textureScroll + textureUDrift), (maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
                             tessellator.addVertexWithUV(sampleX + 0.5D, maxRenderY, sampleZ + 0, (0.0F * textureScroll + textureUDrift), (maxRenderY * textureScroll / 4.0F + textureVOffset * textureScroll + textureVDrift));
                             tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
-                            tessellator.draw();
+                            tessellator.draw(ProgramSlot.Weather);
                         }
                     }
                 }
@@ -806,7 +806,7 @@ public class GameRenderer
                             tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 1, rainUvScale, (maxY * rainUvScale / 4.0F + textureScroll * rainUvScale));
                             tessellator.addVertexWithUV(sampleX + 0.5D, maxY, sampleZ + 0, 0, (maxY * rainUvScale / 4.0F + textureScroll * rainUvScale));
                             tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
-                            tessellator.draw();
+                            tessellator.draw(ProgramSlot.Weather);
                         }
                     }
                 }

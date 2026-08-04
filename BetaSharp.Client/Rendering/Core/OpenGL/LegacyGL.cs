@@ -369,6 +369,11 @@ public abstract unsafe class LegacyGL : IGL
         SilkGL.Uniform4(location, v0, v1, v2, v3);
     }
 
+    public void UniformMatrix3(int location, uint count, bool transpose, float* value)
+    {
+        SilkGL.UniformMatrix3(location, count, transpose, value);
+    }
+
     public void UniformMatrix4(int location, uint count, bool transpose, float* value)
     {
         SilkGL.UniformMatrix4(location, count, transpose, value);

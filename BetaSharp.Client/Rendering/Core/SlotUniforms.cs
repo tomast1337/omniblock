@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Silk.NET.Maths;
 
 namespace BetaSharp.Client.Rendering.Core;
 
@@ -29,6 +30,48 @@ internal static class SlotUniforms
         shader.SetUniform1("fogEnd", fog.End);
         shader.SetUniform1("fogDensity", fog.Density);
         shader.SetUniform4("fogColor", fog.Color);
+    }
+
+    /// <summary>The two directional lights, the ambient term, and the matrix normals arrive under.</summary>
+    /// <remarks>
+    ///     <para>
+    ///         The normal matrix is the upper-left of the inverse-transpose of the model-view, and it
+    ///         is built here rather than asked of <c>GLManager</c> because nothing else wants it. It
+    ///         is only worth computing when something will read it, hence the branch — a 4x4 inverse
+    ///         per draw is not free, and an unlit draw's normals go nowhere.
+    ///     </para>
+    ///     <para>
+    ///         An unlit draw still gets <c>lightingEnabled</c> written, so a program left bound from
+    ///         a lit draw cannot shade the next one by inheritance.
+    ///     </para>
+    /// </remarks>
+    public static void UploadLighting(Shader shader)
+    {
+        bool enabled = GLManager.LightingEnabled;
+        shader.SetUniform1("lightingEnabled", enabled ? 1 : 0);
+        if (!enabled)
+        {
+            return;
+        }
+
+        LightingState lighting = GLManager.Lighting;
+        shader.SetUniform3("light0Direction", lighting.Light0Direction);
+        shader.SetUniform3("light0Diffuse", lighting.Light0Diffuse);
+        shader.SetUniform3("light1Direction", lighting.Light1Direction);
+        shader.SetUniform3("light1Diffuse", lighting.Light1Diffuse);
+        shader.SetUniform3("ambientLight", lighting.Ambient);
+
+        Matrix3X3<float> normalMatrix = Matrix3X3<float>.Identity;
+        if (Matrix4X4.Invert(GLManager.ModelView.Top, out Matrix4X4<float> inverse))
+        {
+            Matrix4X4<float> transposed = Matrix4X4.Transpose(inverse);
+            normalMatrix = new Matrix3X3<float>(
+                transposed.M11, transposed.M12, transposed.M13,
+                transposed.M21, transposed.M22, transposed.M23,
+                transposed.M31, transposed.M32, transposed.M33);
+        }
+
+        shader.SetUniformMatrix3("normalMatrix", normalMatrix);
     }
 
     /// <summary>

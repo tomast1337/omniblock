@@ -100,7 +100,7 @@ public class PaintingEntityRenderer : EntityRenderer
                 tess.addVertexWithUV(xMin, yMin, backZ, edgeUMin, edgeVMax);
                 tess.addVertexWithUV(xMin, yMax, backZ, edgeUMin, edgeVMin);
 
-                tess.draw();
+                tess.draw(ProgramSlot.Entities);
             }
         }
     }
