@@ -76,6 +76,24 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
         DrawCell("Z-   ", world, x, y, z - 1);
         DrawCell("Z+   ", world, x, y, z + 1);
 
+        // In single player the internal server holds the light this client's copy came from, so
+        // disagreeing with it says the light was lost on the way here rather than never computed.
+        World? server = ctx.InternalServerOverworld;
+        if (server != null)
+        {
+            LightLevels here = world.Lighting.GetLightLevels(x, y + 1, z, 0);
+            LightLevels there = server.Lighting.GetLightLevels(x, y + 1, z, 0);
+
+            ImGuiTextSafe.Text($"Up on server:  sky {there.Sky,2}  block {there.Block,2}");
+
+            if (here != there)
+            {
+                ImGuiTextSafe.TextColored(
+                    new(1.0f, 0.4f, 0.4f, 1.0f),
+                    "       client and server disagree about the light above this block");
+            }
+        }
+
         if (ctx.ChunkRenderer != null && ctx.ChunkRenderer.TryGetMeshState(x, y, z, out (long Epoch, long LastMeshed, long Pending) state, out bool hasRenderer))
         {
             ImGuiTextSafe.Text($"Mesh:  epoch {state.Epoch}  meshed {state.LastMeshed}  pending {state.Pending}");
