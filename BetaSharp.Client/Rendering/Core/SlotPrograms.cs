@@ -53,6 +53,7 @@ public static class SlotPrograms
     {
         Register(ProgramSlot.Basic, new BasicSlotProgram(options));
         Register(ProgramSlot.Textured, new TexturedSlotProgram(options));
+        Register(ProgramSlot.TexturedLit, new TexturedLitSlotProgram(options));
     }
 
     public static void Dispose()

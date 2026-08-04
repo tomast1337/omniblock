@@ -137,6 +137,15 @@ public class Shader : IDisposable
         GLManager.GL.Uniform2(location, x, y);
     }
 
+    public void SetUniformMatrix3(string name, Matrix3X3<float> matrix)
+    {
+        int location = GetUniformLocation(name);
+        unsafe
+        {
+            GLManager.GL.UniformMatrix3(location, 1, false, (float*)&matrix);
+        }
+    }
+
     public void SetUniformMatrix4(string name, Matrix4X4<float> matrix)
     {
         int location = GetUniformLocation(name);

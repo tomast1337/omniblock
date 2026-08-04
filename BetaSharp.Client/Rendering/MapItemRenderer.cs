@@ -76,7 +76,7 @@ public class MapItemRenderer
         tess.addVertexWithUV(128, 128, -0.01F, 1.0D, 1.0D);
         tess.addVertexWithUV(128, 0, -0.01F, 1.0D, 0.0D);
         tess.addVertexWithUV(0, 0, -0.01F, 0.0D, 0.0D);
-        tess.draw();
+        tess.draw(ProgramSlot.Hand);
         GLManager.AlphaTestEnabled = true;
         GLManager.State.Apply(RenderState.Entity);
         textureManager.BindTexture(textureManager.GetTextureId("/misc/mapicons.png"));
@@ -96,7 +96,7 @@ public class MapItemRenderer
             tess.addVertexWithUV(1, 1, 0, uMax, vMin);
             tess.addVertexWithUV(1, -1, 0, uMax, vMax);
             tess.addVertexWithUV(-1, -1, 0, uMin, vMax);
-            tess.draw();
+            tess.draw(ProgramSlot.Hand);
             GLManager.ModelView.Pop();
         }
 

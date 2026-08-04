@@ -123,6 +123,8 @@ internal static unsafe class FrameHashHarness
         GLManager.FogEnabled = false;
         GLManager.AlphaTestEnabled = false;
         GLManager.LightingEnabled = false;
+        GLManager.Lighting = LightingState.Default;
+        GLManager.Normal = new(0.0f, 0.0f, 0.0f);
         GLManager.GL.Disable(GLEnum.CullFace);
         GLManager.TextureEnabled = false;
         GLManager.GL.Enable(GLEnum.DepthTest);
@@ -358,6 +360,8 @@ internal static unsafe class FrameHashHarness
         yield return ("slot-basic-fog-program", () => BasicSlotFogScene(t => t.draw(ProgramSlot.Basic)));
         yield return ("slot-textured-fallback", () => TexturedSlotScene(t => t.draw()));
         yield return ("slot-textured-program", () => TexturedSlotScene(t => t.draw(ProgramSlot.Textured)));
+        yield return ("slot-textured-lit-fallback", () => TexturedLitSlotScene(t => t.draw()));
+        yield return ("slot-textured-lit-program", () => TexturedLitSlotScene(t => t.draw(ProgramSlot.TexturedLit)));
 
         // Each of these is drawn twice, once through the raw calls and once through the state it is
         // meant to be equivalent to. The two hashes have to match, which is the property every
@@ -644,6 +648,88 @@ internal static unsafe class FrameHashHarness
         finish(tessellator);
 
         GLManager.Color = new(1.0f, 1.0f, 1.0f, 1.0f);
+        tessellator.startDrawingQuads();
+        tessellator.addVertexWithUV(144, 240, 0.0, 0.0, 1.0);
+        tessellator.addVertexWithUV(240, 240, 0.0, 1.0, 1.0);
+        tessellator.addVertexWithUV(240, 144, 0.0, 1.0, 0.0);
+        tessellator.addVertexWithUV(144, 144, 0.0, 0.0, 0.0);
+        finish(tessellator);
+    }
+
+    /// <summary>
+    ///     Textured geometry under the two directional lights, drawn however
+    ///     <paramref name="finish" /> says to finish a batch.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         The only scene here that turns lighting on, and it exists because every other one
+    ///         agrees with a program that drops lighting entirely. Geometry that comes out right
+    ///         except for its shade is the one mistake this migration can make that nothing else
+    ///         would catch.
+    ///     </para>
+    ///     <para>
+    ///         The model-view is rotated and scaled unevenly on purpose: under an even scale the
+    ///         inverse-transpose and the model-view agree, so a program that skipped building the
+    ///         normal matrix would still match.
+    ///     </para>
+    /// </remarks>
+    private static void TexturedLitSlotScene(Action<Tessellator> finish)
+    {
+        Ortho();
+        GLManager.TextureEnabled = true;
+        GLManager.GL.BindTexture(GLEnum.Texture2D, s_checkerboard);
+
+        GLManager.LightingEnabled = true;
+        GLManager.Lighting = new LightingState(
+            new Vector3D<float>(0.3f, 0.9f, -0.32f),
+            new Vector3D<float>(0.8f, 0.75f, 0.6f),
+            new Vector3D<float>(-0.5f, 0.6f, 0.62f),
+            new Vector3D<float>(0.3f, 0.35f, 0.5f),
+            new Vector3D<float>(0.25f, 0.25f, 0.3f));
+
+        Tessellator tessellator = Tessellator.instance;
+
+        // Facing from the attribute default, which is where most of the game's lit geometry gets it:
+        // the Tessellator binds an array to the normal attribute only when a draw sets one per
+        // vertex, so a batch that never calls setNormal is relying on GLManager.Normal instead.
+        GLManager.Normal = new(0.0f, 0.0f, 1.0f);
+        GLManager.Color = new(1.0f, 1.0f, 1.0f, 1.0f);
+        tessellator.startDrawingQuads();
+        tessellator.addVertexWithUV(16, 112, 0.0, 0.0, 1.0);
+        tessellator.addVertexWithUV(112, 112, 0.0, 1.0, 1.0);
+        tessellator.addVertexWithUV(112, 16, 0.0, 1.0, 0.0);
+        tessellator.addVertexWithUV(16, 16, 0.0, 0.0, 0.0);
+        finish(tessellator);
+
+        // Per-vertex normals, so the interpolated facing and the array binding are both exercised.
+        tessellator.startDrawingQuads();
+        tessellator.setNormal(-0.7f, 0.0f, 0.7f);
+        tessellator.addVertexWithUV(144, 112, 0.0, 0.0, 1.0);
+        tessellator.setNormal(0.7f, 0.0f, 0.7f);
+        tessellator.addVertexWithUV(240, 112, 0.0, 1.0, 1.0);
+        tessellator.setNormal(0.0f, 0.7f, 0.7f);
+        tessellator.addVertexWithUV(240, 16, 0.0, 1.0, 0.0);
+        tessellator.setNormal(0.0f, -0.7f, 0.7f);
+        tessellator.addVertexWithUV(144, 16, 0.0, 0.0, 0.0);
+        finish(tessellator);
+
+        GLManager.ModelView.Push();
+        GLManager.ModelView.Translate(64.0f, 192.0f, 0.0f);
+        GLManager.ModelView.Rotate(35.0f, 0.3f, 1.0f, 0.2f);
+        GLManager.ModelView.Scale(1.0f, 2.0f, 0.5f);
+        GLManager.Normal = new(0.0f, 0.0f, 1.0f);
+        tessellator.startDrawingQuads();
+        tessellator.addVertexWithUV(-40, 40, 0.0, 0.0, 1.0);
+        tessellator.addVertexWithUV(40, 40, 0.0, 1.0, 1.0);
+        tessellator.addVertexWithUV(40, -40, 0.0, 1.0, 0.0);
+        tessellator.addVertexWithUV(-40, -40, 0.0, 0.0, 0.0);
+        finish(tessellator);
+        GLManager.ModelView.Pop();
+
+        // Lighting off inside a lit slot, which is the state particles and weather draw under for a
+        // pass without ceasing to belong here.
+        GLManager.LightingEnabled = false;
+        GLManager.Color = new(1.0f, 0.6f, 0.6f, 1.0f);
         tessellator.startDrawingQuads();
         tessellator.addVertexWithUV(144, 240, 0.0, 0.0, 1.0);
         tessellator.addVertexWithUV(240, 240, 0.0, 1.0, 1.0);
