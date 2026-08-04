@@ -34,4 +34,7 @@ public interface IBlockVisuals
     ///     the cell above).
     /// </summary>
     float GetLuminance(Block block, ILightProvider lighting, int x, int y, int z, float defaultLuminance) => defaultLuminance;
+
+    /// <inheritdoc cref="Block.GetLightLevels" />
+    LightLevels GetLightLevels(Block block, ILightProvider lighting, int x, int y, int z, LightLevels defaultLevels) => defaultLevels;
 }

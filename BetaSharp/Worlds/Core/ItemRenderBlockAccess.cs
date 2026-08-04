@@ -75,4 +75,11 @@ public sealed class ItemRenderBlockAccess : IBlockReader, ILightProvider
     public bool UpdateMovementInFluid(Box entityBox, Material fluidMaterial, Entity entity) => false;
     public float GetNaturalBrightness(int x, int y, int z, int minLight) => getNaturalBrightness(x, y, z, minLight);
     public float GetLuminance(int x, int y, int z) => getLuminance(x, y, z);
+
+    /// <summary>
+    ///     The item preview is lit by one number the caller chose, so it goes in the block channel
+    ///     and the sky channel stays dark — an inventory icon should not brighten at dawn.
+    /// </summary>
+    public LightLevels GetLightLevels(int x, int y, int z, int minBlockLight) =>
+        LightLevels.Of(0, Math.Max(GetBrightness(x, y, z), minBlockLight));
 }

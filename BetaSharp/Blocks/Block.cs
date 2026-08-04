@@ -214,6 +214,23 @@ public class Block
         return Visuals?.GetLuminance(this, lighting!, x, y, z, baseLuminance) ?? baseLuminance;
     }
 
+    /// <inheritdoc cref="ILightProvider.GetLightLevels" />
+    /// <remarks>
+    ///     The counterpart to <see cref="GetLuminance" />, stopping before the ramp. With no provider
+    ///     there is no world to read, so a block that emits reads as its own light and one that does
+    ///     not reads as fully lit — which is what the luminance path does with the same inputs.
+    /// </remarks>
+    public LightLevels GetLightLevels(ILightProvider? lighting, int x, int y, int z)
+    {
+        int emission = BlocksLightLuminance[Id];
+
+        LightLevels baseLevels = lighting != null
+            ? lighting.GetLightLevels(x, y, z, emission)
+            : emission > 0 ? LightLevels.Of(0, emission) : LightLevels.FullSky;
+
+        return Visuals?.GetLightLevels(this, lighting!, x, y, z, baseLevels) ?? baseLevels;
+    }
+
     public bool IsSideVisible(IBlockReader iBlockReader, int x, int y, int z, Side side)
     {
         double minX = BoundingBox.MinX;

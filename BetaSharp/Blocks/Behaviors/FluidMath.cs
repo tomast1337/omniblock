@@ -149,6 +149,14 @@ public static class FluidMath
         return luminance > luminanceAbove ? luminance : luminanceAbove;
     }
 
+    /// <summary>
+    ///     A fluid surface takes the brighter of its own cell and the one above, so the top face is
+    ///     lit by the open air rather than by the water it sits in.
+    /// </summary>
+    public static LightLevels GetLightLevels(ILightProvider lighting, int x, int y, int z, int minBlockLight) =>
+        lighting.GetLightLevels(x, y, z, minBlockLight)
+            .Max(lighting.GetLightLevels(x, y + 1, z, minBlockLight));
+
     public static Vec3D ApplyVelocity(IBlockReader reader, int x, int y, int z, Material material)
     {
         Vector3D<double> flow = GetFlow(reader, x, y, z, material);

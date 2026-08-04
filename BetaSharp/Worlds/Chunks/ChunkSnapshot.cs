@@ -1,4 +1,5 @@
 using System.Buffers;
+using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Worlds.Chunks;
 
@@ -56,6 +57,22 @@ internal struct ChunkSnapshot : IDisposable
         }
 
         return skyLight;
+    }
+
+    /// <summary>Both channels for a cell, uncollapsed and with the time of day not yet applied.</summary>
+    /// <remarks>
+    ///     Sets <see cref="IsLit" /> on the same condition <see cref="GetBlockLightValue" /> does, so
+    ///     a mesh built through either path agrees about whether the region has seen daylight.
+    /// </remarks>
+    public LightLevels GetLightLevels(int x, int y, int z)
+    {
+        int skyLight = _skylightMap.GetNibble(x, y, z);
+        if (skyLight > 0)
+        {
+            IsLit = true;
+        }
+
+        return LightLevels.Of(skyLight, _blocklightMap.GetNibble(x, y, z));
     }
 
     public void Dispose()
