@@ -102,21 +102,40 @@ internal class GLErrorHandler
     /// </remarks>
     private void ReportCallSite(string message)
     {
-        string stack = new StackTrace(2, true).ToString();
-        string site = message + stack;
+        string stack;
+        try
+        {
+            stack = new StackTrace(2, true).ToString();
+        }
+        catch (Exception e)
+        {
+            stack = $"(stack unavailable: {e.Message})";
+        }
 
-        if (!_reportedSites.Add(site))
+        if (!_reportedSites.Add(message + stack))
         {
             return;
         }
 
-        GL gl = Display.getGL()!;
-        gl.GetInteger(GetPName.CurrentProgram, out int program);
-        gl.GetInteger(GetPName.VertexArrayBinding, out int vertexArray);
+        // The stack goes out on its own first. This runs inside a callback GL invoked, on whichever
+        // thread made the call, and anything else attempted here can throw into a native frame that
+        // discards the exception — which is exactly how the first version of this reported nothing.
+        _logger.LogError("[GL] first occurrence of the above, from:\n{Stack}", stack);
 
-        _logger.LogError(
-            "[GL] first occurrence of the above. Bound program {Program}, bound vertex array " +
-            "{VertexArray} (zero for either is itself an error on a draw).\n{Stack}",
-            program, vertexArray, stack);
+        try
+        {
+            GL gl = Display.getGL()!;
+            gl.GetInteger(GetPName.CurrentProgram, out int program);
+            gl.GetInteger(GetPName.VertexArrayBinding, out int vertexArray);
+
+            _logger.LogError(
+                "[GL] at that point: program {Program}, vertex array {VertexArray}. " +
+                "Zero for either is itself enough to fail a draw in a core profile.",
+                program, vertexArray);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("[GL] could not read the bound state here: {Reason}", e.Message);
+        }
     }
 }
