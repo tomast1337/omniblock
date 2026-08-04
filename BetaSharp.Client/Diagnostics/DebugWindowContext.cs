@@ -44,11 +44,19 @@ internal sealed class DebugWindowContext(BetaSharp game)
     public ChunkRenderer? ChunkRenderer => game.WorldRenderer?.ChunkRenderer;
 
     /// <summary>
-    ///     The overworld the internal server holds, when there is one, so a debug view can compare
+    ///     The internal server's copy of the world this client is in, so a debug view can compare
     ///     what this client believes against what decided it.
     /// </summary>
-    public World? InternalServerOverworld =>
-        game.InternalServer is { worlds.Length: > 0 } server ? server.worlds[0] : null;
+    /// <remarks>
+    ///     Selected by dimension rather than taken as <c>worlds[0]</c>. The two disagree everywhere
+    ///     outside the overworld, and a comparison against the wrong world reads a different world's
+    ///     blocks at the same coordinates — which looks exactly like the corruption such a view
+    ///     exists to find.
+    /// </remarks>
+    public World? InternalServerWorld =>
+        game.InternalServer is { } server && game.World is { } world
+            ? server.getWorld(world.Dimension.Id)
+            : null;
     public DebugSystemSnapshot DebugSystemSnapshot => game.DebugSystemSnapshot;
     public UIScreen? CurrentScreen => game.CurrentScreen;
     public HUD HUD => game.HUD;
