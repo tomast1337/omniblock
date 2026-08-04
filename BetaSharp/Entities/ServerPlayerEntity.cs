@@ -1,4 +1,5 @@
 using BetaSharp.Blocks.Entities;
+using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities.Behaviors;
 using BetaSharp.Inventories;
 using BetaSharp.Items;
@@ -239,7 +240,15 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
             FlushPendingChunkUpdates();
         }
 
-        if (InTeleportationState)
+        // Asked of the world rather than taken from InTeleportationState alone. That flag is set by
+        // the block-collision scan, which runs only from Entity.Move, which on the server runs only
+        // when a movement packet arrives. The decay below is four times the gain, so a single tick
+        // without a packet costs four ticks of progress and eighty consecutive gains — what the
+        // threshold needs — is not reachable on any connection that ever gaps.
+        bool standingInPortal = InTeleportationState
+            || World.Reader.IsMaterialInBox(BoundingBox, static m => m == Material.NetherPortal);
+
+        if (standingInPortal)
         {
             if (_server.config.GetAllowNether(true))
             {
@@ -255,11 +264,6 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
                 else
                 {
                     ChangeDimensionCooldown += 0.0125F;
-                    if (ChangeDimensionCooldown == 0.0125F)
-                    {
-                        s_logger.LogInformation("[DIM] {Name} entered a portal in dim {Dim}", Name, DimensionId);
-                    }
-
                     if (ChangeDimensionCooldown >= 1.0F)
                     {
                         ChangeDimensionCooldown = 1.0F;
