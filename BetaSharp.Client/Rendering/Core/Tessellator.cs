@@ -17,10 +17,12 @@ public struct Vertex(float x, float y, float z, float u, float v, int color, int
     public float V = v; // 4 bytes + 16 bytes = 20 bytes
     public int Color = color; // 4 bytes + 20 bytes = 24 bytes
     public int Normal = normal; // 4 bytes + 20 bytes = 28 bytes
-    public int Padding; // 32 bytes total
+
+    /// <summary>Which layer of a texture array this vertex samples. Unread until task #28 wires a named array in.</summary>
+    public int ArrayLayer; // 32 bytes total
 }
 
-[StructLayout(LayoutKind.Sequential, Size = 16)]
+[StructLayout(LayoutKind.Sequential, Size = 18)]
 public struct ChunkVertex
 {
     public int Color; // 4 bytes
@@ -34,7 +36,10 @@ public struct ChunkVertex
     // 0-15, so the value is a multiple of 0.25 and 0..60 holds it exactly. This is where the spare
     // padding byte went; a vertex attribute for mc_Entity needs the struct to grow.
     public byte SkyLight; // 1 byte + 14 bytes = 15 bytes
-    public byte BlockLight; // 16 bytes total
+    public byte BlockLight; // 1 byte + 15 bytes = 16 bytes
+
+    /// <summary>Which layer of the terrain array this vertex samples. Unread until task #28.</summary>
+    public ushort ArrayLayer; // 18 bytes total
 }
 
 public static class ChunkVertexHelper

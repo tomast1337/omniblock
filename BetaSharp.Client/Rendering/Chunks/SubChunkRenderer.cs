@@ -123,47 +123,7 @@ public class SubChunkRenderer : IDisposable
             vertexArrays[bufferIdx].Bind();
             buffers[bufferIdx].Bind();
 
-            const uint stride = 16;
-
-            GLManager.GL.EnableVertexAttribArray(0);
-            GLManager.GL.VertexAttribPointer(
-                0,
-                3,
-                GLEnum.Short,
-                false,
-                stride,
-                (void*)4
-            );
-
-            GLManager.GL.EnableVertexAttribArray(1);
-            GLManager.GL.VertexAttribIPointer(
-                1,
-                2,
-                GLEnum.UnsignedShort,
-                stride,
-                (void*)10
-            );
-
-            GLManager.GL.EnableVertexAttribArray(2);
-            GLManager.GL.VertexAttribPointer(
-                2,
-                4,
-                GLEnum.UnsignedByte,
-                true,
-                stride,
-                (void*)0
-            );
-
-            // Two channels rather than one packed byte: a smooth-lit corner is a mean of four
-            // cells, so a nibble each cannot hold it.
-            GLManager.GL.EnableVertexAttribArray(3);
-            GLManager.GL.VertexAttribIPointer(
-                3,
-                2,
-                GLEnum.UnsignedByte,
-                stride,
-                (void*)14
-            );
+            ChunkVertexLayout.Bind();
 
             VertexArray.Unbind();
         }

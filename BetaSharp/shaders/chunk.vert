@@ -5,6 +5,10 @@ layout (location = 1) in uvec2 inUV;
 layout (location = 2) in vec4 inColor;
 layout (location = 3) in uvec2 inLight;
 
+// Which layer of the terrain array this vertex samples. Unread until task #28 converts
+// textureSampler to a sampler2DArray.
+layout (location = 4) in uint inArrayLayer;
+
 out vec4 vertexColor;
 out vec2 texCoord;
 out float fogDistance;

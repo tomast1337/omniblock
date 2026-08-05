@@ -20,6 +20,7 @@ internal static unsafe class TessellatorVertexLayout
     private const int TextureOffset = 12;
     private const int ColorOffset = 20;
     private const int NormalOffset = 24;
+    private const int ArrayLayerOffset = 28;
 
     /// <summary>
     ///     Sets the vertex attribute pointers on the currently bound VAO and buffer.
@@ -27,7 +28,11 @@ internal static unsafe class TessellatorVertexLayout
     /// <remarks>
     ///     The caller binds its own VAO and VBO first, then calls this to configure which offsets
     ///     map to which shader inputs. The same attribute locations every slot's program declares:
-    ///     0=position, 1=color, 2=texcoord, 3=normal.
+    ///     0=position, 1=color, 2=texcoord, 3=normal, 4=array layer. Location 4 is bound
+    ///     unconditionally, unlike the other three — the field is always present in <see cref="Vertex" />
+    ///     regardless of which optional attributes a given draw used, so there is no "does this draw
+    ///     have one" question to ask. No current shader declares location 4, so this is inert until
+    ///     task #28 adds it.
     /// </remarks>
     public static void Bind(GL gl, bool hasTexture, bool hasColor, bool hasNormals)
     {
@@ -49,6 +54,9 @@ internal static unsafe class TessellatorVertexLayout
             gl.EnableVertexAttribArray(3);
         }
 
+        gl.VertexAttribIPointer(4, 1, VertexAttribIType.Int, Stride, (void*)ArrayLayerOffset);
+        gl.EnableVertexAttribArray(4);
+
         gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, Stride, (void*)PositionOffset);
         gl.EnableVertexAttribArray(0);
     }
@@ -56,6 +64,7 @@ internal static unsafe class TessellatorVertexLayout
     public static void Unbind(GL gl, bool hasTexture, bool hasColor, bool hasNormals)
     {
         gl.DisableVertexAttribArray(0);
+        gl.DisableVertexAttribArray(4);
 
         if (hasTexture)
         {
