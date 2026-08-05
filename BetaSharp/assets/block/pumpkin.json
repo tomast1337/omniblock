@@ -7,10 +7,14 @@
   "Resistance": 1.6666666,
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": "betasharp:netherrack",
+  "TextureId": "betasharp:pumpkin_top",
   "Behaviors": [
     {
-      "Slots": ["Physics", "Lifecycle", "Visuals"],
+      "Slots": [
+        "Physics",
+        "Lifecycle",
+        "Visuals"
+      ],
       "Type": "pumpkin",
       "lit": false
     }

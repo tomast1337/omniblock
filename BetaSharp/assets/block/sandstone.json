@@ -5,10 +5,10 @@
   "SoundGroup": "stone",
   "Hardness": 0.8,
   "Resistance": 1.3333334,
-  "TextureId": "betasharp:sandstone_top",
+  "TextureId": "betasharp:sandstone_side",
   "FaceTextures": {
     "down": "betasharp:sandstone_bottom",
-    "up": "betasharp:sandstone_side"
+    "up": "betasharp:sandstone_top"
   },
   "TopVariance": "Rotate270",
   "BottomVariance": "Rotate270"

@@ -159,7 +159,7 @@
       "y": 1
     },
     {
-      "name": "spruce_sapling",
+      "name": "fire_placeholder_0",
       "x": 15,
       "y": 1
     },
@@ -199,18 +199,8 @@
       "y": 2
     },
     {
-      "name": "crafting_table_top",
-      "x": 9,
-      "y": 2
-    },
-    {
       "name": "chest_double_front_left",
       "x": 9,
-      "y": 2
-    },
-    {
-      "name": "crafting_table_side",
-      "x": 10,
       "y": 2
     },
     {
@@ -219,7 +209,7 @@
       "y": 2
     },
     {
-      "name": "crafting_table_front",
+      "name": "crafting_table_top",
       "x": 11,
       "y": 2
     },
@@ -239,7 +229,7 @@
       "y": 2
     },
     {
-      "name": "birch_sapling",
+      "name": "fire_placeholder_1",
       "x": 15,
       "y": 2
     },
@@ -294,17 +284,27 @@
       "y": 3
     },
     {
-      "name": "crafting_table_side_alt",
+      "name": "crafting_table_side",
       "x": 11,
       "y": 3
     },
     {
-      "name": "furnace_front_lit",
+      "name": "crafting_table_front",
       "x": 12,
       "y": 3
     },
     {
-      "name": "spruce_leaves_fancy",
+      "name": "furnace_front_on",
+      "x": 13,
+      "y": 3
+    },
+    {
+      "name": "furnace_top",
+      "x": 14,
+      "y": 3
+    },
+    {
+      "name": "spruce_sapling",
       "x": 15,
       "y": 3
     },
@@ -369,7 +369,7 @@
       "y": 4
     },
     {
-      "name": "spruce_leaves_fast",
+      "name": "birch_sapling",
       "x": 15,
       "y": 4
     },
@@ -470,32 +470,22 @@
     },
     {
       "name": "pumpkin_top",
-      "x": 5,
-      "y": 6
-    },
-    {
-      "name": "netherrack",
       "x": 6,
       "y": 6
     },
     {
-      "name": "soul_sand",
+      "name": "netherrack",
       "x": 7,
       "y": 6
     },
     {
-      "name": "glowstone",
+      "name": "soul_sand",
       "x": 8,
       "y": 6
     },
     {
-      "name": "sticky_piston_head",
+      "name": "glowstone",
       "x": 9,
-      "y": 6
-    },
-    {
-      "name": "piston_head",
-      "x": 10,
       "y": 6
     },
     {
@@ -504,28 +494,13 @@
       "y": 6
     },
     {
-      "name": "piston_side",
-      "x": 11,
-      "y": 6
-    },
-    {
       "name": "piston_top_normal",
       "x": 11,
       "y": 6
     },
     {
-      "name": "piston_back",
-      "x": 12,
-      "y": 6
-    },
-    {
       "name": "piston_body_side",
       "x": 12,
-      "y": 6
-    },
-    {
-      "name": "piston_inner",
-      "x": 13,
       "y": 6
     },
     {
@@ -539,7 +514,7 @@
       "y": 6
     },
     {
-      "name": "redstone_torch_off",
+      "name": "rail_turn",
       "x": 0,
       "y": 7
     },
@@ -554,22 +529,22 @@
       "y": 7
     },
     {
-      "name": "redstone_repeater_base_off",
+      "name": "redstone_torch_off",
       "x": 3,
       "y": 7
     },
     {
-      "name": "leaves_opaque",
+      "name": "spruce_log_side",
       "x": 4,
       "y": 7
     },
     {
-      "name": "pumpkin_side",
+      "name": "birch_log_side",
       "x": 5,
       "y": 7
     },
     {
-      "name": "jack_olantern_face",
+      "name": "pumpkin_side",
       "x": 6,
       "y": 7
     },
@@ -579,27 +554,32 @@
       "y": 7
     },
     {
-      "name": "cake_top",
+      "name": "jack_olantern_face",
       "x": 8,
       "y": 7
     },
     {
-      "name": "cake_side",
+      "name": "cake_top",
       "x": 9,
       "y": 7
     },
     {
-      "name": "cake_inner",
+      "name": "cake_side",
       "x": 10,
       "y": 7
     },
     {
-      "name": "cake_bottom",
+      "name": "cake_inner",
       "x": 11,
       "y": 7
     },
     {
-      "name": "rails_corner",
+      "name": "cake_bottom",
+      "x": 12,
+      "y": 7
+    },
+    {
+      "name": "rail",
       "x": 0,
       "y": 8
     },
@@ -614,23 +594,28 @@
       "y": 8
     },
     {
-      "name": "redstone_repeater_base_on",
+      "name": "redstone_repeater_top_off",
       "x": 3,
       "y": 8
     },
     {
-      "name": "leaves_opaque_1",
+      "name": "spruce_leaves_fancy",
       "x": 4,
       "y": 8
     },
     {
-      "name": "bed_foot_top",
+      "name": "spruce_leaves_fast",
       "x": 5,
       "y": 8
     },
     {
-      "name": "bed_head_top",
+      "name": "bed_foot_top",
       "x": 6,
+      "y": 8
+    },
+    {
+      "name": "bed_head_top",
+      "x": 7,
       "y": 8
     },
     {
@@ -649,23 +634,28 @@
       "y": 9
     },
     {
-      "name": "bed_foot_side",
-      "x": 4,
-      "y": 9
-    },
-    {
-      "name": "bed_head_side",
-      "x": 5,
+      "name": "redstone_repeater_top_on",
+      "x": 3,
       "y": 9
     },
     {
       "name": "bed_foot_end",
+      "x": 5,
+      "y": 9
+    },
+    {
+      "name": "bed_foot_side",
       "x": 6,
       "y": 9
     },
     {
-      "name": "bed_head_end",
+      "name": "bed_head_side",
       "x": 7,
+      "y": 9
+    },
+    {
+      "name": "bed_head_end",
+      "x": 8,
       "y": 9
     },
     {
@@ -699,7 +689,7 @@
       "y": 10
     },
     {
-      "name": "sandstone_side",
+      "name": "sandstone_top",
       "x": 0,
       "y": 11
     },
@@ -729,7 +719,7 @@
       "y": 11
     },
     {
-      "name": "sandstone_top",
+      "name": "sandstone_side",
       "x": 0,
       "y": 12
     },
