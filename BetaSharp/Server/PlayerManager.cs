@@ -272,9 +272,10 @@ public class PlayerManager
             targetWorld.Entities.SpawnEntity(player);
             player.SetPositionAndAnglesKeepPrevAngles(x, player.Y, z, player.Yaw, player.Pitch);
             targetWorld.Entities.UpdateEntity(player, false);
-            targetWorld.ChunkCache.forceLoad = true;
-            new PortalForcer().MoveToPortal(targetWorld, player);
-            targetWorld.ChunkCache.forceLoad = false;
+            using (targetWorld.ChunkCache.AllowGenerationOnRead())
+            {
+                new PortalForcer().MoveToPortal(targetWorld, player);
+            }
 
             // Fully drain lighting updates generated during portal chunk
             // creation before the chunks are queued for the client.
