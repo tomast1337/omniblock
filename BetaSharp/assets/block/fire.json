@@ -8,7 +8,7 @@
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": "betasharp:fire_placeholder_0",
+  "TextureId": "betasharp:fire_layer_0",
   "RenderType": "Fire",
   "TickRate": 40,
   "NotFullCube": true,

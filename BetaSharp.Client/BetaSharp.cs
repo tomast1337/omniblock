@@ -460,8 +460,8 @@ public partial class BetaSharp :
         TextureManager.AddDynamicTexture(new ClockSprite(this));
         TextureManager.AddDynamicTexture(new WaterSideSprite());
         TextureManager.AddDynamicTexture(new LavaSideSprite());
-        TextureManager.AddDynamicTexture(new FireSprite(0));
-        TextureManager.AddDynamicTexture(new FireSprite(1));
+        TextureManager.AddDynamicTexture(new FireSprite("fire_layer_0", "custom_fire_e_w.png"));
+        TextureManager.AddDynamicTexture(new FireSprite("fire_layer_1", "custom_fire_n_s.png"));
 
         WorldRenderer = new WorldRenderer(this, TextureManager);
         GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());

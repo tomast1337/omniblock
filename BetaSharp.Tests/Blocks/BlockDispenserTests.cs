@@ -3,6 +3,7 @@ using BetaSharp.Blocks.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Tests.Entities;
+using BetaSharp.Textures;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Tests.Blocks;
@@ -256,8 +257,8 @@ public sealed class BlockDispenserTests
         int top = BlockRegistry.Get("dispenser").GetTexture(Side.Up);
         int south = BlockRegistry.Get("dispenser").GetTexture(Side.South);
         int north = BlockRegistry.Get("dispenser").GetTexture(Side.North);
-        Assert.Equal(BlockRegistry.Get("dispenser").TextureId + 17, top);
-        Assert.Equal(BlockRegistry.Get("dispenser").TextureId + 1, south);
+        Assert.Equal(Atlases.Terrain.IndexOf("furnace_top"), top);
+        Assert.Equal(Atlases.Terrain.IndexOf("dispenser_front"), south);
         Assert.Equal(BlockRegistry.Get("dispenser").TextureId, north);
     }
 
@@ -270,9 +271,9 @@ public sealed class BlockDispenserTests
         int meta = world.Reader.GetBlockMeta(x, y, z);
         Side facing = meta.ToSide();
 
-        Assert.Equal(BlockRegistry.Get("dispenser").TextureId + 17, BlockRegistry.Get("dispenser").GetTextureId(world.Reader, x, y, z, Side.Up));
-        Assert.Equal(BlockRegistry.Get("dispenser").TextureId + 17, BlockRegistry.Get("dispenser").GetTextureId(world.Reader, x, y, z, Side.Down));
-        Assert.Equal(BlockRegistry.Get("dispenser").TextureId + 1, BlockRegistry.Get("dispenser").GetTextureId(world.Reader, x, y, z, facing));
+        Assert.Equal(Atlases.Terrain.IndexOf("furnace_top"), BlockRegistry.Get("dispenser").GetTextureId(world.Reader, x, y, z, Side.Up));
+        Assert.Equal(Atlases.Terrain.IndexOf("furnace_top"), BlockRegistry.Get("dispenser").GetTextureId(world.Reader, x, y, z, Side.Down));
+        Assert.Equal(Atlases.Terrain.IndexOf("dispenser_front"), BlockRegistry.Get("dispenser").GetTextureId(world.Reader, x, y, z, facing));
         Assert.Equal(BlockRegistry.Get("dispenser").TextureId, BlockRegistry.Get("dispenser").GetTextureId(world.Reader, x, y, z, facing.OppositeFace()));
     }
 

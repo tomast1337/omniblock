@@ -1,8 +1,8 @@
-using BetaSharp.Blocks;
+using BetaSharp.Textures;
 
 namespace BetaSharp.Client.DynamicTexture;
 
-internal class FireSprite(int index) : Rendering.Core.Textures.DynamicTexture(BlockRegistry.Get("fire").TextureId + index * 16)
+internal class FireSprite(string tile, string customTexture) : Rendering.Core.Textures.DynamicTexture(Atlases.Terrain.IndexOf(tile))
 {
     private float[] _current = new float[320];
     private float[] _next = new float[320];
@@ -11,7 +11,7 @@ internal class FireSprite(int index) : Rendering.Core.Textures.DynamicTexture(Bl
     {
         Array.Clear(_current);
         Array.Clear(_next);
-        TryLoadCustomTexture(game, index == 0 ? "custom_fire_e_w.png" : "custom_fire_n_s.png");
+        TryLoadCustomTexture(game, customTexture);
     }
 
     public override void tick()
