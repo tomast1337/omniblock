@@ -242,6 +242,11 @@ public class UIRenderer
         _scissorStack.Push((_scissorEnabled, _scissorRect.X, _scissorRect.Y, _scissorRect.W, _scissorRect.H));
         _scissorEnabled = true;
         _scissorRect = (physicalX, physicalY, physicalWidth, physicalHeight);
+
+        // Scissoring is deliberately not a RenderState field, even though it reads like one. It is
+        // not part of a pipeline in a backend that has pipelines: WebGPU scissors with a command on
+        // the pass encoder, always on and defaulting to the whole attachment. Folding it into the
+        // state would multiply every state by every rectangle a screen happens to clip to.
         GLManager.GL.Enable(GLEnum.ScissorTest);
         GLManager.GL.Scissor(physicalX, physicalY, (uint)physicalWidth, (uint)physicalHeight);
     }

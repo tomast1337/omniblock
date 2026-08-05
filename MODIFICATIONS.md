@@ -136,3 +136,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-04 — fix(entities): require leaving a portal before another one can fire (Nicolas Vyčas Nery; `5befbc5ec76102c58142700422ea43389a4c411e`)
 - 2026-08-04 — refactor(server): remove the portal chain trace (Nicolas Vyčas Nery; `76758d4e3972c44d3bd957aa9a5642e72ceab51a`)
 - 2026-08-04 — refactor(worlds): name the spawn-search flag, and scope the generation window (Nicolas Vyčas Nery; `5e2304ecb802811e13411a8ada53923f1aec6adb`)
+- 2026-08-04 — feat(rendering): put depth bias in the render state, and stop the interface going round it (Nicolas Vyčas Nery; `eb583a0f4b1a376305008a6c4edf45ff5cf81857`)

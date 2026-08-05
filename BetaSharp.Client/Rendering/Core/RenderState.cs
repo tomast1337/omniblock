@@ -57,7 +57,35 @@ public enum DepthCompare
 }
 
 /// <summary>
-///     The fixed part of how a draw is rasterised: blending, depth, culling and write masks.
+///     How much a fragment's depth is nudged before it is tested, so that geometry drawn coincident
+///     with a surface resolves in front of it rather than fighting with it.
+/// </summary>
+/// <remarks>
+///     <para>
+///         Named for WebGPU's <c>depthBias</c> and <c>depthBiasSlopeScale</c>, which is what it
+///         becomes: <see cref="Constant" /> is a multiple of the smallest depth step the buffer can
+///         represent, and <see cref="SlopeScale" /> a multiple of the fragment's depth slope, so a
+///         surface seen edge-on gets more of a nudge than one seen face-on. GL spells the pair
+///         <c>glPolygonOffset(factor, units)</c> with the arguments the other way round.
+///     </para>
+/// </remarks>
+public readonly record struct DepthBias(float SlopeScale, float Constant)
+{
+    /// <summary>No nudge, which is what all but coincident geometry wants.</summary>
+    public static readonly DepthBias None = default;
+
+    /// <summary>
+    ///     Geometry drawn over a surface it shares a plane with, such as the block-breaking crack.
+    /// </summary>
+    /// <remarks>
+    ///     Towards the viewer, hence negative: the decal has to win the depth test against the face
+    ///     it is copied from, not lose to it.
+    /// </remarks>
+    public static readonly DepthBias Decal = new(-3.0F, -50.0F);
+}
+
+/// <summary>
+///     The fixed part of how a draw is rasterised: blending, depth, culling, write masks and bias.
 /// </summary>
 /// <remarks>
 ///     <para>
@@ -81,6 +109,7 @@ public readonly record struct RenderState
     public DepthCompare DepthCompare { get; init; }
     public CullMode Cull { get; init; }
     public bool ColorWrite { get; init; }
+    public DepthBias DepthBias { get; init; }
 
     /// <summary>Solid geometry: depth tested and written, backs discarded, no blending.</summary>
     public static readonly RenderState Opaque = new()

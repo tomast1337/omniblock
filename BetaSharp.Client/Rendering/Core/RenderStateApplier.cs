@@ -7,10 +7,10 @@ namespace BetaSharp.Client.Rendering.Core;
 /// </summary>
 /// <remarks>
 ///     <para>
-///         The cache is only correct because nothing else in the client writes these six pieces of
-///         state. Every blend, depth, cull and write mask the renderer wants now comes through here,
-///         so what was last applied is what is actually set, and a field can safely be skipped when
-///         it already holds the value being asked for.
+///         The cache is only correct because nothing else in the client writes these seven pieces of
+///         state. Every blend, depth, cull, write mask and depth bias the renderer wants now comes
+///         through here, so what was last applied is what is actually set, and a field can safely be
+///         skipped when it already holds the value being asked for.
 ///     </para>
 ///     <para>
 ///         That invariant is the whole thing. Reintroducing a bare <c>Enable</c>, <c>BlendFunc</c>
@@ -95,8 +95,33 @@ public sealed class RenderStateApplier
             GLManager.GL.ColorMask(state.ColorWrite, state.ColorWrite, state.ColorWrite, state.ColorWrite);
         }
 
+        if (all || _current.DepthBias != state.DepthBias)
+        {
+            ApplyDepthBias(state.DepthBias);
+        }
+
         _current = state;
         _known = true;
+    }
+
+    /// <summary>
+    ///     Sets the offset only on the way in, and turns it off on the way out.
+    /// </summary>
+    /// <remarks>
+    ///     No matching reset of the offset itself, because <c>glPolygonOffset</c> does nothing while
+    ///     <c>PolygonOffsetFill</c> is disabled and every path that enables it sets the offset in the
+    ///     same breath, so a stale value can never be the one in force.
+    /// </remarks>
+    private static void ApplyDepthBias(DepthBias bias)
+    {
+        if (bias == DepthBias.None)
+        {
+            GLManager.GL.Disable(GLEnum.PolygonOffsetFill);
+            return;
+        }
+
+        GLManager.GL.Enable(GLEnum.PolygonOffsetFill);
+        GLManager.GL.PolygonOffset(bias.SlopeScale, bias.Constant);
     }
 
     private static void ApplyBlend(BlendMode mode)

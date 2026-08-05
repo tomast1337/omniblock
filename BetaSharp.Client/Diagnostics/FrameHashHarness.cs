@@ -131,6 +131,8 @@ internal static unsafe class FrameHashHarness
         GLManager.GL.DepthFunc(GLEnum.Lequal);
         GLManager.GL.DepthMask(true);
         GLManager.GL.ColorMask(true, true, true, true);
+        GLManager.GL.Disable(GLEnum.PolygonOffsetFill);
+        GLManager.GL.PolygonOffset(0.0f, 0.0f);
         GLManager.Color = new(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
@@ -371,6 +373,32 @@ internal static unsafe class FrameHashHarness
             yield return ($"state-{name}-raw", () => StateScene(raw));
             yield return ($"state-{name}-applied", () => StateScene(() => GLManager.State.Apply(state)));
         }
+
+        // Depth bias, on the only geometry that can tell. The first two have to agree with each
+        // other and the third has to differ from both; a run where all three match means the bias
+        // never reached the driver, not that the mapping is right.
+        RenderState biasedEqual = RenderState.Opaque with
+        {
+            DepthCompare = DepthCompare.Equal,
+            DepthBias = DepthBias.Decal
+        };
+
+        yield return ("state-depth-bias-raw", () => CoplanarScene(RawDepthBiasedEqual));
+        yield return ("state-depth-bias-applied", () => CoplanarScene(() => GLManager.State.Apply(biasedEqual)));
+        yield return ("state-depth-bias-absent", () => CoplanarScene(() => GLManager.State.Apply(biasedEqual with { DepthBias = DepthBias.None })));
+    }
+
+    private static void RawDepthBiasedEqual()
+    {
+        GLManager.GL.Disable(GLEnum.Blend);
+        GLManager.GL.Enable(GLEnum.DepthTest);
+        GLManager.GL.DepthMask(true);
+        GLManager.GL.DepthFunc(GLEnum.Equal);
+        GLManager.GL.Enable(GLEnum.CullFace);
+        GLManager.GL.CullFace(GLEnum.Back);
+        GLManager.GL.ColorMask(true, true, true, true);
+        GLManager.GL.Enable(GLEnum.PolygonOffsetFill);
+        GLManager.GL.PolygonOffset(-3.0f, -50.0f);
     }
 
     private static void StateScene(Action setState)
@@ -379,6 +407,27 @@ internal static unsafe class FrameHashHarness
         PrimeDepth();
         setState();
         OverlappingQuads();
+    }
+
+    /// <summary>
+    ///     A quad lying exactly on the primed depth, tested for equality against it.
+    /// </summary>
+    /// <remarks>
+    ///     <see cref="OverlappingQuads" /> cannot see a depth bias: its quads stand clear of the
+    ///     primed depth and are accepted or rejected the same either way. Coplanar geometry under an
+    ///     equality test is decided by the bias and nothing else — unbiased it matches and draws,
+    ///     nudged by any amount at all it misses and does not — so a pair drawn through this differs
+    ///     from the unbiased scene, which is what stops the pair agreeing for want of anything to
+    ///     disagree about.
+    /// </remarks>
+    private static void CoplanarScene(Action setState)
+    {
+        Ortho();
+        PrimeDepth();
+        setState();
+
+        GLManager.Color = new(1.0f, 0.35f, 0.85f, 1.0f);
+        Quad(16, 16, 96, 96, 5.0);
     }
 
     private static void FlatQuad()
