@@ -19,6 +19,8 @@ internal sealed class BasicSlotProgram : ISlotProgram, IDisposable
             "shaders/gbuffers_basic.vert",
             "shaders/gbuffers_basic.frag");
 
+    public VertexLayoutKind VertexLayout => VertexLayoutKind.Generic;
+
     public void Activate()
     {
         _shader.Bind();

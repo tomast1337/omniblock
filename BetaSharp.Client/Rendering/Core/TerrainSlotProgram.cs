@@ -24,6 +24,8 @@ internal sealed class TerrainSlotProgram : ISlotProgram, IDisposable
             "shaders/chunk.vert",
             "shaders/chunk.frag");
 
+    public VertexLayoutKind VertexLayout => VertexLayoutKind.Chunk;
+
     public void Activate() => Shader.Bind();
 
     /// <inheritdoc cref="BasicSlotProgram.Deactivate" />

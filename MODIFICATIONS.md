@@ -161,3 +161,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-05 — feat(items): give the fishing rod its cast icon by name (Nicolas Vyčas Nery; `ee15f3d567ccf8e1b1a8c3dcde9323a32f9ede3d`)
 - 2026-08-05 — feat(textures): stand the terrain and item texture arrays up (Nicolas Vyčas Nery; `2a4222a6a2740fcbe46f76c7caedb7d3bbafda71`)
 - 2026-08-05 — feat(rendering): sample block textures from the named array, not the atlas (Nicolas Vyčas Nery; `3c3575bb72d0c19d127991aa1e56377fb6d23a58`)
+- 2026-08-05 — fix(rendering): resolve a slot's program for the vertex format the draw is in (Nicolas Vyčas Nery; `d01bd3c949587128286c76554543d89c981484cd`)

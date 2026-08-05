@@ -114,7 +114,7 @@ public sealed class StaticMesh(
     public void DrawWithBoundProgram() => Draw(SlotPrograms.CallerBound);
 
     /// <inheritdoc cref="Tessellator.draw(ProgramSlot)" />
-    public void Draw(ProgramSlot slot) => Draw(SlotPrograms.Resolve(slot));
+    public void Draw(ProgramSlot slot) => Draw(SlotPrograms.Resolve(slot, VertexLayoutKind.Generic));
 
     private void Draw(ISlotProgram program)
     {
