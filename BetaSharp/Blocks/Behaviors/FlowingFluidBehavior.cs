@@ -16,7 +16,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         all required, (see <c>BehaviorRegistry</c>'s <c>"flowing_fluid"</c> entry).
 ///     </para>
 /// </summary>
-public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidified, Block flowSolidified) : IBlockPhysics, IBlockVisuals, IBlockLifecycle, IBlockTicker
+public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidified, Block flowSolidified, int still, int flowing) : IBlockPhysics, IBlockVisuals, IBlockLifecycle, IBlockTicker
 {
     private readonly ThreadLocal<int> _adjacentSources = new(() => 0);
     private readonly ThreadLocal<int[]> _distanceToGap = new(() => new int[4]);
@@ -172,7 +172,7 @@ public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidifie
         }
     }
 
-    public int GetTexture(Block block, Side side, int defaultTexture) => FluidMath.GetTexture(block, side);
+    public int GetTexture(Block block, Side side, int defaultTexture) => FluidMath.GetTexture(side, still, flowing);
 
     public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
         => FluidMath.IsSideVisible(block, reader, x, y, z, side, defaultVisibility);

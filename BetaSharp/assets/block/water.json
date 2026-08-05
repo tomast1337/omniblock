@@ -18,11 +18,18 @@
   "DropCount": 0,
   "Behaviors": [
     {
-      "Slots": ["Physics", "Visuals", "Lifecycle", "Ticker"],
+      "Slots": [
+        "Physics",
+        "Visuals",
+        "Lifecycle",
+        "Ticker"
+      ],
       "Type": "stationary_fluid",
       "ignition_target": "betasharp:fire",
       "source_solidified": "betasharp:obsidian",
-      "flow_solidified": "betasharp:cobblestone"
+      "flow_solidified": "betasharp:cobblestone",
+      "still": "betasharp:water_texture",
+      "flowing": "betasharp:water_texture_1"
     }
   ]
 }

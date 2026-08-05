@@ -43,7 +43,7 @@ public sealed class BlockLeavesTests
         world.ReaderWriter.SetInitial(0, 63, 0, customTrunk.Id);
         world.ReaderWriter.SetInitial(0, 64, 0, leavesBlock.Id, 8);
 
-        LeavesBehavior behavior = new(customTrunk, sapling, shears);
+        LeavesBehavior behavior = new(customTrunk, sapling, shears, fancyTextures: [0, 0, 0, 0], fastTextures: [0, 0, 0, 0]);
         behavior.OnTick(leavesBlock, Tick(world));
 
         Assert.Equal(0, world.Reader.GetBlockMeta(0, 64, 0) & 8);
@@ -56,7 +56,7 @@ public sealed class BlockLeavesTests
         Block sand = BlockRegistry.Get("sand");
         Item shears = Item.ByName("shears");
 
-        LeavesBehavior behavior = new(log, sand, shears);
+        LeavesBehavior behavior = new(log, sand, shears, fancyTextures: [0, 0, 0, 0], fastTextures: [0, 0, 0, 0]);
         Assert.Equal(sand.Id, behavior.GetDroppedItemId(BlockRegistry.Get("leaves"), 0, 0));
     }
 

@@ -25,7 +25,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         tick) are also required.
 ///     </para>
 /// </summary>
-internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item seeds, float dropSpread, int seedScatterChanceBound, int growthChanceDenominator) : IBlockTicker, IBlockPhysics, IBlockLifecycle, IBlockVisuals
+internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item seeds, float dropSpread, int seedScatterChanceBound, int growthChanceDenominator, int[] stages) : IBlockTicker, IBlockPhysics, IBlockLifecycle, IBlockVisuals
 {
     public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => blockMeta == 7 ? matureCropItem.Id : -1;
 
@@ -73,8 +73,9 @@ internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item
         @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
     }
 
+    // A negative age means "fully grown" to the item renderer, which has no crop to measure.
     public int GetTexture(Block block, Side side, int meta, int defaultTexture)
-        => defaultTexture + (meta < 0 ? 7 : meta);
+        => meta < 0 ? stages[^1] : stages[meta];
 
     private float GetAvailableMoisture(Block block, IBlockReader read, int x, int y, int z)
     {

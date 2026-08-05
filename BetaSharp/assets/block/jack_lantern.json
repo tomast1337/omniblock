@@ -20,7 +20,10 @@
         "Visuals"
       ],
       "Type": "pumpkin",
-      "lit": true
+      "top": "betasharp:pumpkin_top",
+      "side": "betasharp:pumpkin_side",
+      "face": "betasharp:jack_olantern_face",
+      "item_face": "betasharp:pumpkin_face"
     }
   ]
 }

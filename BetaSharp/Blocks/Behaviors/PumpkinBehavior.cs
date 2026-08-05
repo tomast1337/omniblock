@@ -7,7 +7,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     face texture is swapped for the lit variant when carved. <paramref name="lit" /> distinguishes
 ///     the two block instances (shared logic, one flag).
 /// </summary>
-internal sealed class PumpkinBehavior(bool lit) : IBlockPhysics, IBlockLifecycle, IBlockVisuals
+internal sealed class PumpkinBehavior(int top, int side, int face, int itemFace) : IBlockPhysics, IBlockLifecycle, IBlockVisuals
 {
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
@@ -18,21 +18,22 @@ internal sealed class PumpkinBehavior(bool lit) : IBlockPhysics, IBlockLifecycle
 
     public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
 
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture)
+    public int GetTexture(Block block, Side renderSide, int meta, int defaultTexture)
     {
-        if (side is Side.Up or Side.Down) return block.TextureId;
-        int faceTexture = block.TextureId + 1 + 16;
-        if (lit) ++faceTexture;
-        return meta == 2 && side == Side.North ? faceTexture :
-            meta == 3 && side == Side.East ? faceTexture :
-            meta == 0 && side == Side.South ? faceTexture :
-            meta == 1 && side == Side.West ? faceTexture : block.TextureId + 16;
+        if (renderSide is Side.Up or Side.Down) return top;
+        return meta == 2 && renderSide == Side.North ? face :
+            meta == 3 && renderSide == Side.East ? face :
+            meta == 0 && renderSide == Side.South ? face :
+            meta == 1 && renderSide == Side.West ? face : side;
     }
 
-    public int GetTexture(Block block, Side side, int defaultTexture) => side switch
+    // Without a world there is no facing to read, so the south face is carved by convention. A lit
+    // pumpkin shows the unlit carving here: the item icon has never lit up, and it is a separate
+    // texture rather than the same one, so the two have to be named apart.
+    public int GetTexture(Block block, Side renderSide, int defaultTexture) => renderSide switch
     {
-        Side.Up or Side.Down => block.TextureId,
-        Side.South => block.TextureId + 1 + 16,
-        _ => block.TextureId + 16
+        Side.Up or Side.Down => top,
+        Side.South => itemFace,
+        _ => side
     };
 }

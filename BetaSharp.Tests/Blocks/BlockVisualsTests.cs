@@ -1,5 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Behaviors;
+using BetaSharp.Textures;
 
 namespace BetaSharp.Tests.Blocks;
 
@@ -9,27 +10,6 @@ namespace BetaSharp.Tests.Blocks;
 /// </summary>
 public class BlockVisualsTests
 {
-    [Theory]
-    [InlineData(0)]
-    [InlineData(1)]
-    [InlineData(7)]
-    [InlineData(15)]
-    public void Wool_TextureMatchesOldPaletteFormula(int meta)
-    {
-        int expected;
-        if (meta == 0)
-        {
-            expected = 64;
-        }
-        else
-        {
-            int inverted = ~(meta & 15);
-            expected = BlockTextures.WoolColoredPaletteBase + ((inverted & 8) >> 3) + (inverted & 7) * 16;
-        }
-
-        Assert.Equal(expected, BlockRegistry.Get("wool").GetTexture(Side.North, meta));
-    }
-
     [Fact]
     public void Wool_MetaRoundTripsBetweenItemAndBlock()
     {
@@ -74,9 +54,9 @@ public class BlockVisualsTests
     [Fact]
     public void Grass_TopAndBottomTexturesAreDeclarative()
     {
-        Assert.Equal(BlockTextures.GrassTop, BlockRegistry.Get("grass_block").GetTexture(Side.Up));
-        Assert.Equal(BlockTextures.Dirt, BlockRegistry.Get("grass_block").GetTexture(Side.Down));
-        Assert.Equal(BlockTextures.GrassSide, BlockRegistry.Get("grass_block").GetTexture(Side.North));
+        Assert.Equal(Atlases.Terrain.IndexOf("grass_block_top"), BlockRegistry.Get("grass_block").GetTexture(Side.Up));
+        Assert.Equal(Atlases.Terrain.IndexOf("dirt"), BlockRegistry.Get("grass_block").GetTexture(Side.Down));
+        Assert.Equal(Atlases.Terrain.IndexOf("grass_block_side"), BlockRegistry.Get("grass_block").GetTexture(Side.North));
     }
 
     [Fact]

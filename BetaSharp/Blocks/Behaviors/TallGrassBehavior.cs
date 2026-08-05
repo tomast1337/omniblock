@@ -16,17 +16,13 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         required.
 ///     </para>
 /// </summary>
-internal sealed class TallGrassBehavior(Item seeds, int seedDropChanceOneIn) : IBlockVisuals, IBlockLifecycle
+internal sealed class TallGrassBehavior(Item seeds, int seedDropChanceOneIn, int[] textures) : IBlockVisuals, IBlockLifecycle
 {
     public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => Random.Shared.Next(seedDropChanceOneIn) == 0 ? seeds.Id : -1;
 
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture) => meta switch
-    {
-        1 => block.TextureId,
-        2 => block.TextureId + 16 + 1,
-        0 => block.TextureId + 16,
-        _ => block.TextureId
-    };
+    // Metadata past the last kind kept the middle one -- plain tall grass -- rather than failing.
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture) =>
+        meta >= 0 && meta < textures.Length ? textures[meta] : textures[1];
 
     public int GetColor(Block block, int meta, int defaultColor) => meta == 0 ? 0xFFFFFF : GrassColors.getDefaultColor();
 
