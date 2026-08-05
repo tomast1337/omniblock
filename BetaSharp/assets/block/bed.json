@@ -28,7 +28,14 @@
         "Lifecycle",
         "Visuals"
       ],
-      "Type": "bed"
+      "Type": "bed",
+      "bottom": "betasharp:wooden_planks",
+      "foot_top": "betasharp:bed_foot_top",
+      "foot_side": "betasharp:bed_foot_side",
+      "foot_end": "betasharp:bed_foot_end",
+      "head_top": "betasharp:bed_head_top",
+      "head_side": "betasharp:bed_head_side",
+      "head_end": "betasharp:bed_head_end"
     }
   ]
 }

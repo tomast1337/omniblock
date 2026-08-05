@@ -11,8 +11,13 @@ internal sealed class SlabBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisua
     public static readonly string[] Names = ["stone", "sand", "wood", "cobble"];
 
     private readonly bool _isDoubleSlab;
+    private readonly BlockFaceTextures[] _variants;
 
-    public SlabBehavior(bool isDoubleSlab) => _isDoubleSlab = isDoubleSlab;
+    public SlabBehavior(bool isDoubleSlab, BlockFaceTextures[] variants)
+    {
+        _isDoubleSlab = isDoubleSlab;
+        _variants = variants;
+    }
 
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
@@ -61,20 +66,20 @@ internal sealed class SlabBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisua
     public int GetTexture(Block block, Side side, int defaultTexture)
         => GetTexture(block, side, 0, defaultTexture);
 
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture) =>
-        meta switch
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture)
+    {
+        // Metadata past the last kind is not a slab at all. It showed the first kind's side texture
+        // on every face rather than failing, which is still the least surprising thing to draw.
+        if (meta < 0 || meta >= _variants.Length) return _variants[0].Side;
+
+        BlockFaceTextures faces = _variants[meta];
+        return side switch
         {
-            0 => side <= Side.Up ? BlockTextures.StoneSlabTop : BlockTextures.StoneSlabSide,
-            1 => side switch
-            {
-                Side.Down => BlockTextures.SandstoneBottom,
-                Side.Up => BlockTextures.SandstoneTop,
-                _ => BlockTextures.SandstoneSide
-            },
-            2 => BlockTextures.OakPlanks,
-            3 => BlockTextures.Cobblestone,
-            _ => BlockTextures.StoneSlabSide
+            Side.Down => faces.Bottom,
+            Side.Up => faces.Top,
+            _ => faces.Side
         };
+    }
 
     public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility) =>
         side == Side.Up

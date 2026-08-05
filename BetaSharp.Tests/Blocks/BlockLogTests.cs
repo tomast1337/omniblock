@@ -33,7 +33,7 @@ public sealed class BlockLogTests
         world.ReaderWriter.SetInitial(1, 64, 0, customLeaves.Id);
         world.ReaderWriter.SetInitial(2, 64, 0, vanillaLeaves.Id);
 
-        LogBehavior behavior = new(canopy: customLeaves, searchRadius: 4);
+        LogBehavior behavior = new(canopy: customLeaves, searchRadius: 4, top: 0, sides: [0, 0, 0, 0]);
         behavior.OnBreak(logBlock, new OnBreakEvent(world, null, 0, 64, 0));
 
         Assert.Equal(8, world.Reader.GetBlockMeta(1, 64, 0) & 8);

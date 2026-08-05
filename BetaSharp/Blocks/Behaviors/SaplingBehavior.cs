@@ -13,7 +13,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         <see cref="Generate" /> is called externally by <c>ItemDye</c> for bone meal.
 ///     </para>
 /// </summary>
-internal sealed class SaplingBehavior : IBlockTicker, IBlockVisuals, IBlockLifecycle
+internal sealed class SaplingBehavior(int[] textures) : IBlockTicker, IBlockVisuals, IBlockLifecycle
 {
     private static readonly JavaRandom s_random = new();
 
@@ -36,12 +36,7 @@ internal sealed class SaplingBehavior : IBlockTicker, IBlockVisuals, IBlockLifec
         }
     }
 
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture) => (meta & 3) switch
-    {
-        1 => BlockTextures.SaplingPine,
-        2 => BlockTextures.SaplingBirch,
-        _ => BlockTextures.SaplingOak
-    };
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture) => textures[meta & 3];
 
     public static void Generate(IWorldContext world, int x, int y, int z)
     {

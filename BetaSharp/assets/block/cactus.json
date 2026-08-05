@@ -23,11 +23,19 @@
   },
   "Behaviors": [
     {
-      "Slots": ["Ticker", "Physics", "Interactable", "Visuals"],
+      "Slots": [
+        "Ticker",
+        "Physics",
+        "Interactable",
+        "Visuals"
+      ],
       "Type": "cactus",
       "stem": "betasharp:cactus",
       "soil": "betasharp:sand",
-      "max_height": 3
+      "max_height": 3,
+      "top": "betasharp:cactus_top",
+      "side": "betasharp:cactus_side",
+      "bottom": "betasharp:cactus_bottom"
     }
   ]
 }

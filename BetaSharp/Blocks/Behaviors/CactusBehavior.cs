@@ -16,7 +16,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         Max stack height (<paramref name="maxHeight" />) is also a required
 ///     </para>
 /// </summary>
-internal sealed class CactusBehavior(Block stem, Block soil, int maxHeight) : IBlockTicker, IBlockPhysics, IBlockInteractable, IBlockVisuals
+internal sealed class CactusBehavior(Block stem, Block soil, int maxHeight, int top, int side, int bottom) : IBlockTicker, IBlockPhysics, IBlockInteractable, IBlockVisuals
 {
     private const float EdgeInset = 1.0F / 16.0F;
 
@@ -63,11 +63,11 @@ internal sealed class CactusBehavior(Block stem, Block soil, int maxHeight) : IB
         }
     }
 
-    public int GetTexture(Block block, Side side, int defaultTexture) => side switch
+    public int GetTexture(Block block, Side renderSide, int defaultTexture) => renderSide switch
     {
-        Side.Up => BlockTextures.CactusTop,
-        Side.Down => BlockTextures.CactusBottom,
-        _ => BlockTextures.CactusSide
+        Side.Up => top,
+        Side.Down => bottom,
+        _ => side
     };
 
     private bool CanGrowAt(IBlockReader world, int x, int y, int z)

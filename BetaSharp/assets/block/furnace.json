@@ -9,9 +9,18 @@
   "TileEntity": "furnace",
   "Behaviors": [
     {
-      "Slots": ["Interactable", "Lifecycle", "Physics", "Ticker", "Visuals"],
+      "Slots": [
+        "Interactable",
+        "Lifecycle",
+        "Physics",
+        "Ticker",
+        "Visuals"
+      ],
       "Type": "furnace",
-      "lit": false
+      "lit": false,
+      "top": "betasharp:furnace_top",
+      "front_off": "betasharp:furnace_front_off",
+      "front_on": "betasharp:furnace_front_on"
     }
   ]
 }

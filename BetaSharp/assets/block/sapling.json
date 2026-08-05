@@ -20,13 +20,29 @@
   },
   "Behaviors": [
     {
-      "Slots": ["Ticker", "Visuals", "Lifecycle"],
-      "Type": "sapling"
+      "Slots": [
+        "Ticker",
+        "Visuals",
+        "Lifecycle"
+      ],
+      "Type": "sapling",
+      "textures": [
+        "betasharp:oak_sapling",
+        "betasharp:spruce_sapling",
+        "betasharp:birch_sapling",
+        "betasharp:oak_sapling"
+      ]
     },
     {
-      "Slots": ["Physics"],
+      "Slots": [
+        "Physics"
+      ],
       "Type": "plant_survival",
-      "valid_ground": ["betasharp:grass_block", "betasharp:dirt", "betasharp:farmland"]
+      "valid_ground": [
+        "betasharp:grass_block",
+        "betasharp:dirt",
+        "betasharp:farmland"
+      ]
     }
   ]
 }

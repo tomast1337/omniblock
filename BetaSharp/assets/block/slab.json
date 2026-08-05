@@ -31,9 +31,35 @@
   },
   "Behaviors": [
     {
-      "Slots": ["Physics", "Lifecycle", "Visuals"],
+      "Slots": [
+        "Physics",
+        "Lifecycle",
+        "Visuals"
+      ],
       "Type": "slab",
-      "is_double": false
+      "is_double": false,
+      "variants": [
+        {
+          "top": "betasharp:stone_slab_top",
+          "side": "betasharp:stone_slab_side",
+          "bottom": "betasharp:stone_slab_top"
+        },
+        {
+          "top": "betasharp:sandstone_top",
+          "side": "betasharp:sandstone_side",
+          "bottom": "betasharp:sandstone_bottom"
+        },
+        {
+          "top": "betasharp:wooden_planks",
+          "side": "betasharp:wooden_planks",
+          "bottom": "betasharp:wooden_planks"
+        },
+        {
+          "top": "betasharp:cobblestone",
+          "side": "betasharp:cobblestone",
+          "bottom": "betasharp:cobblestone"
+        }
+      ]
     }
   ]
 }

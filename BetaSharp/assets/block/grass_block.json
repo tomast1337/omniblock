@@ -27,11 +27,17 @@
   },
   "Behaviors": [
     {
-      "Slots": ["Visuals"],
-      "Type": "grass_visual"
+      "Slots": [
+        "Visuals"
+      ],
+      "Type": "grass_visual",
+      "side": "betasharp:grass_block_side",
+      "snowy_side": "betasharp:grass_block_side_snowy"
     },
     {
-      "Slots": ["Ticker"],
+      "Slots": [
+        "Ticker"
+      ],
       "Type": "grass_ticker",
       "soil": "betasharp:dirt",
       "die_light_threshold": 4,

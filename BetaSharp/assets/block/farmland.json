@@ -20,13 +20,22 @@
   },
   "Behaviors": [
     {
-      "Slots": ["Ticker", "Physics", "Interactable", "Lifecycle", "Visuals"],
+      "Slots": [
+        "Ticker",
+        "Physics",
+        "Interactable",
+        "Lifecycle",
+        "Visuals"
+      ],
       "Type": "farmland",
       "revert_block": "betasharp:dirt",
       "crop": "betasharp:wheat",
       "trample_chance_one_in": 4,
       "tick_chance_one_in": 5,
-      "water_check_radius": 4
+      "water_check_radius": 4,
+      "wet": "betasharp:farmland_wet",
+      "dry": "betasharp:farmland_dry",
+      "side": "betasharp:dirt"
     }
   ]
 }

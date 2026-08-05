@@ -8,7 +8,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     shared by the unlit and powered blocks, lit state is derived from the block id, and the
 ///     delay state machine swaps between the two ids. Assign to all six slots.
 /// </summary>
-public sealed class RepeaterBehavior : IRedstoneComponent, IBlockTicker, IBlockPhysics, IBlockInteractable, IBlockLifecycle, IBlockVisuals
+public sealed class RepeaterBehavior(int topOff, int topOn, int torchOff, int torchOn, int side) : IRedstoneComponent, IBlockTicker, IBlockPhysics, IBlockInteractable, IBlockLifecycle, IBlockVisuals
 {
     public static readonly float[] RenderOffset = [-0.0625f, 1.0f / 16.0f, 0.1875f, 0.3125f];
     private static readonly int[] s_delay = [1, 2, 3, 4];
@@ -183,11 +183,11 @@ public sealed class RepeaterBehavior : IRedstoneComponent, IBlockTicker, IBlockP
 
     private static bool IsLit(Block block) => block.Id == s_poweredRepeater.Id;
 
-    private static int TextureFor(Block block, Side side) => side switch
+    private int TextureFor(Block block, Side renderSide) => renderSide switch
     {
-        Side.Down => IsLit(block) ? BlockTextures.RedstoneTorchLit : BlockTextures.RedstoneTorchUnlit,
-        Side.Up => IsLit(block) ? BlockTextures.RepeaterTopLit : BlockTextures.RepeaterTopUnlit,
-        _ => BlockTextures.StoneSlabSide
+        Side.Down => IsLit(block) ? torchOn : torchOff,
+        Side.Up => IsLit(block) ? topOn : topOff,
+        _ => side
     };
 
     private static bool IsPowered(IBlockReader world, RedstoneEngine redstoneEngine, int x, int y, int z, int meta)

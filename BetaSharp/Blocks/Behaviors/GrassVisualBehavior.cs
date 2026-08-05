@@ -9,14 +9,14 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     Top/bottom textures are declarative (<c>setTopBottomTextures</c>); this only handles the
 ///     world-aware pieces.
 /// </summary>
-public sealed class GrassVisualBehavior : IBlockVisuals
+public sealed class GrassVisualBehavior(int side, int snowySide) : IBlockVisuals
 {
-    public int GetTextureId(Block block, IBlockReader reader, int x, int y, int z, Side side, int defaultTexture)
+    public int GetTextureId(Block block, IBlockReader reader, int x, int y, int z, Side renderSide, int defaultTexture)
     {
-        if (side is Side.Up or Side.Down) return defaultTexture;
+        if (renderSide is Side.Up or Side.Down) return defaultTexture;
 
         Material materialAbove = reader.GetMaterial(x, y + 1, z);
-        return materialAbove != Material.SnowLayer && materialAbove != Material.SnowBlock ? BlockTextures.GrassSide : BlockTextures.GrassSideSnowy;
+        return materialAbove != Material.SnowLayer && materialAbove != Material.SnowBlock ? side : snowySide;
     }
 
     public int GetColorForFace(Block block, int meta, int face, int defaultColor) => face == 1 ? GrassColors.getDefaultColor() : defaultColor;
