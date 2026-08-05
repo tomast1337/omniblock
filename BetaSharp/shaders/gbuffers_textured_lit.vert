@@ -9,6 +9,10 @@ layout (location = 1) in vec4 inColor;
 layout (location = 2) in vec2 inUV;
 layout (location = 3) in vec3 inNormal;
 
+// Which layer of a texture array this vertex samples. Unread until task #28 converts
+// textureSampler to a sampler2DArray.
+layout (location = 4) in int inArrayLayer;
+
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 textureMatrix;

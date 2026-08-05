@@ -70,6 +70,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly List<Vector3D<int>> _chunkVersionsToRemove = [];
     private readonly List<ChunkToMeshInfo> _dirtyChunks = [];
     private readonly List<ChunkToMeshInfo> _lightingUpdates = [];
+    private readonly TerrainSlotProgram _terrainProgram;
     private Shader _chunkShader;
     private int _lastRenderDistance;
     private Vector3D<double> _lastViewPos;
@@ -106,7 +107,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _meshGenerator = new();
         _world = world;
 
-        _chunkShader = new Shader(_options.ShaderOptions.GetOrCreate("chunk"), "shaders/chunk.vert", "shaders/chunk.frag");
+        _terrainProgram = (TerrainSlotProgram)SlotPrograms.Resolve(ProgramSlot.Terrain);
+        _chunkShader = _terrainProgram.Shader;
         _chunkShader.Changed += BuildChunkShader;
 
         GLManager.GL.UseProgram(0);
@@ -138,7 +140,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _lastRenderDistance = renderParams.RenderDistance;
         _lastViewPos = renderParams.ViewPos;
 
-        _chunkShader.Bind();
+        _terrainProgram.Activate();
         _chunkShader.SetCommonUniforms(GameRenderer.ShaderInfo);
         UploadLightingUniforms();
         GLManager.GL.Uniform1(_textureSamplerLoc, 0);
@@ -268,7 +270,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         ProcessOneLightingMeshUpdate();
         LoadNewMeshes(renderParams.ViewPos);
 
-        GLManager.GL.UseProgram(0);
+        _terrainProgram.Deactivate();
         Core.VertexArray.Unbind();
     }
 
@@ -302,7 +304,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     public void RenderTransparent(ChunkRenderParams renderParams)
     {
-        _chunkShader.Bind();
+        _terrainProgram.Activate();
         _chunkShader.SetCommonUniforms(GameRenderer.ShaderInfo);
         UploadLightingUniforms();
         GLManager.GL.Uniform1(_textureSamplerLoc, 0);
@@ -321,7 +323,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         _translucentRenderers.Clear();
 
-        GLManager.GL.UseProgram(0);
+        _terrainProgram.Deactivate();
         Core.VertexArray.Unbind();
     }
 
@@ -736,7 +738,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             state.Renderer.Dispose();
         }
 
-        _chunkShader.Dispose();
+        // Not disposed here: the shader belongs to the TerrainSlotProgram registered with
+        // SlotPrograms, shared across every ChunkRenderer a world reload creates, and disposed once
+        // with the rest of the registry. Only the subscription below is this instance's own.
+        _chunkShader.Changed -= BuildChunkShader;
 
         _renderers.Clear();
 
