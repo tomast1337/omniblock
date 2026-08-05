@@ -19,7 +19,6 @@ public abstract class EntityPlayer : EntityLiving
 {
     protected const float AirFlySpeedMult = 5f;
     private static readonly Item s_apple = Item.ByName("apple");
-    private static readonly Item s_fishingRod = Item.ByName("fishing_rod");
     public readonly InventoryPlayer Inventory;
     public readonly ScreenHandler PlayerScreenHandler;
     private int _damageSpill;
@@ -1003,13 +1002,14 @@ public abstract class EntityPlayer : EntityLiving
 
     public override int GetItemStackTextureId(ItemStack stack)
     {
-        int textureId = base.GetItemStackTextureId(stack);
-        if (stack.ItemId == s_fishingRod.Id && FishHook != null)
+        // Asked of the behavior rather than of the one rod in the registry, so a second rod holds
+        // its own cast icon instead of being compared against this one by id.
+        if (FishHook != null && stack.GetItem().GetBehavior<Items.Behaviors.FishingRodBehavior>() is { } rod)
         {
-            textureId = stack.GetTextureId() + 16;
+            return rod.CastTextureId;
         }
 
-        return textureId;
+        return base.GetItemStackTextureId(stack);
     }
 
     public override void TickPortalCooldown()
