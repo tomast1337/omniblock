@@ -307,6 +307,8 @@ public class AssetManager
         defineEmbeddedAsset("shaders/ui.vert", AssetType.Text);
         defineEmbeddedAsset("shaders/ui.frag", AssetType.Text);
         defineEmbeddedAsset("shaders/ui_textures.properties", AssetType.Text);
+        defineEmbeddedAsset("textures/atlas/terrain.json", AssetType.Text);
+        defineEmbeddedAsset("textures/atlas/items.json", AssetType.Text);
         defineAsset("lang/lang.json", AssetType.Text);
     }
 

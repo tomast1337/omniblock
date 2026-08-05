@@ -50,6 +50,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="shaders\**\*" />
+    <EmbeddedResource Include="textures\**\*" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="BetaSharp.Tests" />

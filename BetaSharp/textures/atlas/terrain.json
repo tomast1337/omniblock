@@ -1,0 +1,812 @@
+{
+  "tileSize": 16,
+  "gridWidth": 16,
+  "gridHeight": 16,
+  "tiles": [
+    {
+      "name": "grass_block_top",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "name": "stone",
+      "x": 1,
+      "y": 0
+    },
+    {
+      "name": "dirt",
+      "x": 2,
+      "y": 0
+    },
+    {
+      "name": "grass_block_side",
+      "x": 3,
+      "y": 0
+    },
+    {
+      "name": "wooden_planks",
+      "x": 4,
+      "y": 0
+    },
+    {
+      "name": "stone_slab_side",
+      "x": 5,
+      "y": 0
+    },
+    {
+      "name": "stone_slab_top",
+      "x": 6,
+      "y": 0
+    },
+    {
+      "name": "bricks",
+      "x": 7,
+      "y": 0
+    },
+    {
+      "name": "tnt_side",
+      "x": 8,
+      "y": 0
+    },
+    {
+      "name": "tnt_top",
+      "x": 9,
+      "y": 0
+    },
+    {
+      "name": "tnt_bottom",
+      "x": 10,
+      "y": 0
+    },
+    {
+      "name": "cobweb",
+      "x": 11,
+      "y": 0
+    },
+    {
+      "name": "rose",
+      "x": 12,
+      "y": 0
+    },
+    {
+      "name": "dandelion",
+      "x": 13,
+      "y": 0
+    },
+    {
+      "name": "solid_blue_water_placeholder",
+      "x": 14,
+      "y": 0
+    },
+    {
+      "name": "oak_sapling",
+      "x": 15,
+      "y": 0
+    },
+    {
+      "name": "cobblestone",
+      "x": 0,
+      "y": 1
+    },
+    {
+      "name": "bedrock",
+      "x": 1,
+      "y": 1
+    },
+    {
+      "name": "sand",
+      "x": 2,
+      "y": 1
+    },
+    {
+      "name": "gravel",
+      "x": 3,
+      "y": 1
+    },
+    {
+      "name": "oak_log_side",
+      "x": 4,
+      "y": 1
+    },
+    {
+      "name": "oak_log_top",
+      "x": 5,
+      "y": 1
+    },
+    {
+      "name": "block_of_iron",
+      "x": 6,
+      "y": 1
+    },
+    {
+      "name": "block_of_gold",
+      "x": 7,
+      "y": 1
+    },
+    {
+      "name": "block_of_diamond",
+      "x": 8,
+      "y": 1
+    },
+    {
+      "name": "chest_top",
+      "x": 9,
+      "y": 1
+    },
+    {
+      "name": "chest_side",
+      "x": 10,
+      "y": 1
+    },
+    {
+      "name": "chest_front",
+      "x": 11,
+      "y": 1
+    },
+    {
+      "name": "red_mushroom",
+      "x": 12,
+      "y": 1
+    },
+    {
+      "name": "brown_mushroom",
+      "x": 13,
+      "y": 1
+    },
+    {
+      "name": "pink_placeholder_fire_tex",
+      "x": 14,
+      "y": 1
+    },
+    {
+      "name": "spruce_sapling",
+      "x": 15,
+      "y": 1
+    },
+    {
+      "name": "gold_ore",
+      "x": 0,
+      "y": 2
+    },
+    {
+      "name": "iron_ore",
+      "x": 1,
+      "y": 2
+    },
+    {
+      "name": "coal_ore",
+      "x": 2,
+      "y": 2
+    },
+    {
+      "name": "bookshelf",
+      "x": 3,
+      "y": 2
+    },
+    {
+      "name": "mossy_cobblestone",
+      "x": 4,
+      "y": 2
+    },
+    {
+      "name": "obsidian",
+      "x": 5,
+      "y": 2
+    },
+    {
+      "name": "crafting_table_top",
+      "x": 9,
+      "y": 2
+    },
+    {
+      "name": "crafting_table_side",
+      "x": 10,
+      "y": 2
+    },
+    {
+      "name": "crafting_table_front",
+      "x": 11,
+      "y": 2
+    },
+    {
+      "name": "furnace_front_off",
+      "x": 12,
+      "y": 2
+    },
+    {
+      "name": "furnace_side",
+      "x": 13,
+      "y": 2
+    },
+    {
+      "name": "dispenser_front",
+      "x": 14,
+      "y": 2
+    },
+    {
+      "name": "birch_sapling",
+      "x": 15,
+      "y": 2
+    },
+    {
+      "name": "sponge",
+      "x": 0,
+      "y": 3
+    },
+    {
+      "name": "glass",
+      "x": 1,
+      "y": 3
+    },
+    {
+      "name": "diamond_ore",
+      "x": 2,
+      "y": 3
+    },
+    {
+      "name": "redstone_ore",
+      "x": 3,
+      "y": 3
+    },
+    {
+      "name": "oak_leaves_fancy",
+      "x": 4,
+      "y": 3
+    },
+    {
+      "name": "oak_leaves_fast",
+      "x": 5,
+      "y": 3
+    },
+    {
+      "name": "dead_bush",
+      "x": 7,
+      "y": 3
+    },
+    {
+      "name": "fern_tall_grass",
+      "x": 8,
+      "y": 3
+    },
+    {
+      "name": "furnace_front_lit",
+      "x": 12,
+      "y": 3
+    },
+    {
+      "name": "spruce_leaves_fancy",
+      "x": 15,
+      "y": 3
+    },
+    {
+      "name": "white_wool",
+      "x": 0,
+      "y": 4
+    },
+    {
+      "name": "mob_spawner",
+      "x": 1,
+      "y": 4
+    },
+    {
+      "name": "snow_block",
+      "x": 2,
+      "y": 4
+    },
+    {
+      "name": "ice",
+      "x": 3,
+      "y": 4
+    },
+    {
+      "name": "grass_block_side_snowy",
+      "x": 4,
+      "y": 4
+    },
+    {
+      "name": "cactus_top",
+      "x": 5,
+      "y": 4
+    },
+    {
+      "name": "cactus_side",
+      "x": 6,
+      "y": 4
+    },
+    {
+      "name": "cactus_bottom",
+      "x": 7,
+      "y": 4
+    },
+    {
+      "name": "clay_block",
+      "x": 8,
+      "y": 4
+    },
+    {
+      "name": "sugar_cane",
+      "x": 9,
+      "y": 4
+    },
+    {
+      "name": "note_block",
+      "x": 10,
+      "y": 4
+    },
+    {
+      "name": "jukebox_top",
+      "x": 11,
+      "y": 4
+    },
+    {
+      "name": "spruce_leaves_fast",
+      "x": 15,
+      "y": 4
+    },
+    {
+      "name": "torch",
+      "x": 0,
+      "y": 5
+    },
+    {
+      "name": "wooden_door_top",
+      "x": 1,
+      "y": 5
+    },
+    {
+      "name": "iron_door_top",
+      "x": 2,
+      "y": 5
+    },
+    {
+      "name": "ladder",
+      "x": 3,
+      "y": 5
+    },
+    {
+      "name": "trapdoor",
+      "x": 4,
+      "y": 5
+    },
+    {
+      "name": "farmland_wet",
+      "x": 6,
+      "y": 5
+    },
+    {
+      "name": "farmland_dry",
+      "x": 7,
+      "y": 5
+    },
+    {
+      "name": "wheat_stage_0",
+      "x": 8,
+      "y": 5
+    },
+    {
+      "name": "wheat_stage_1",
+      "x": 9,
+      "y": 5
+    },
+    {
+      "name": "wheat_stage_2",
+      "x": 10,
+      "y": 5
+    },
+    {
+      "name": "wheat_stage_3",
+      "x": 11,
+      "y": 5
+    },
+    {
+      "name": "wheat_stage_4",
+      "x": 12,
+      "y": 5
+    },
+    {
+      "name": "wheat_stage_5",
+      "x": 13,
+      "y": 5
+    },
+    {
+      "name": "wheat_stage_6",
+      "x": 14,
+      "y": 5
+    },
+    {
+      "name": "wheat_stage_7",
+      "x": 15,
+      "y": 5
+    },
+    {
+      "name": "lever",
+      "x": 0,
+      "y": 6
+    },
+    {
+      "name": "wooden_door_bottom",
+      "x": 1,
+      "y": 6
+    },
+    {
+      "name": "iron_door_bottom",
+      "x": 2,
+      "y": 6
+    },
+    {
+      "name": "redstone_torch_on",
+      "x": 3,
+      "y": 6
+    },
+    {
+      "name": "pumpkin_top",
+      "x": 5,
+      "y": 6
+    },
+    {
+      "name": "netherrack",
+      "x": 6,
+      "y": 6
+    },
+    {
+      "name": "soul_sand",
+      "x": 7,
+      "y": 6
+    },
+    {
+      "name": "glowstone",
+      "x": 8,
+      "y": 6
+    },
+    {
+      "name": "sticky_piston_head",
+      "x": 9,
+      "y": 6
+    },
+    {
+      "name": "piston_head",
+      "x": 10,
+      "y": 6
+    },
+    {
+      "name": "piston_side",
+      "x": 11,
+      "y": 6
+    },
+    {
+      "name": "piston_back",
+      "x": 12,
+      "y": 6
+    },
+    {
+      "name": "piston_inner",
+      "x": 13,
+      "y": 6
+    },
+    {
+      "name": "redstone_torch_off",
+      "x": 0,
+      "y": 7
+    },
+    {
+      "name": "black_wool",
+      "x": 1,
+      "y": 7
+    },
+    {
+      "name": "gray_wool",
+      "x": 2,
+      "y": 7
+    },
+    {
+      "name": "redstone_repeater_base_off",
+      "x": 3,
+      "y": 7
+    },
+    {
+      "name": "leaves_opaque",
+      "x": 4,
+      "y": 7
+    },
+    {
+      "name": "pumpkin_side",
+      "x": 5,
+      "y": 7
+    },
+    {
+      "name": "jack_olantern_face",
+      "x": 6,
+      "y": 7
+    },
+    {
+      "name": "pumpkin_face",
+      "x": 7,
+      "y": 7
+    },
+    {
+      "name": "cake_top",
+      "x": 8,
+      "y": 7
+    },
+    {
+      "name": "cake_side",
+      "x": 9,
+      "y": 7
+    },
+    {
+      "name": "cake_inner",
+      "x": 10,
+      "y": 7
+    },
+    {
+      "name": "cake_bottom",
+      "x": 11,
+      "y": 7
+    },
+    {
+      "name": "rails_corner",
+      "x": 0,
+      "y": 8
+    },
+    {
+      "name": "red_wool",
+      "x": 1,
+      "y": 8
+    },
+    {
+      "name": "pink_wool",
+      "x": 2,
+      "y": 8
+    },
+    {
+      "name": "redstone_repeater_base_on",
+      "x": 3,
+      "y": 8
+    },
+    {
+      "name": "leaves_opaque_1",
+      "x": 4,
+      "y": 8
+    },
+    {
+      "name": "bed_foot_top",
+      "x": 5,
+      "y": 8
+    },
+    {
+      "name": "bed_head_top",
+      "x": 6,
+      "y": 8
+    },
+    {
+      "name": "lapis_lazuli_block",
+      "x": 0,
+      "y": 9
+    },
+    {
+      "name": "green_wool",
+      "x": 1,
+      "y": 9
+    },
+    {
+      "name": "lime_wool",
+      "x": 2,
+      "y": 9
+    },
+    {
+      "name": "bed_foot_side",
+      "x": 4,
+      "y": 9
+    },
+    {
+      "name": "bed_head_side",
+      "x": 5,
+      "y": 9
+    },
+    {
+      "name": "bed_foot_end",
+      "x": 6,
+      "y": 9
+    },
+    {
+      "name": "bed_head_end",
+      "x": 7,
+      "y": 9
+    },
+    {
+      "name": "lapis_lazuli_ore",
+      "x": 0,
+      "y": 10
+    },
+    {
+      "name": "brown_wool",
+      "x": 1,
+      "y": 10
+    },
+    {
+      "name": "yellow_wool",
+      "x": 2,
+      "y": 10
+    },
+    {
+      "name": "powered_rail_off",
+      "x": 3,
+      "y": 10
+    },
+    {
+      "name": "redstone_dust_cross_off",
+      "x": 4,
+      "y": 10
+    },
+    {
+      "name": "redstone_dust_line_off",
+      "x": 5,
+      "y": 10
+    },
+    {
+      "name": "sandstone_side",
+      "x": 0,
+      "y": 11
+    },
+    {
+      "name": "blue_wool",
+      "x": 1,
+      "y": 11
+    },
+    {
+      "name": "light_blue_wool",
+      "x": 2,
+      "y": 11
+    },
+    {
+      "name": "powered_rail_on",
+      "x": 3,
+      "y": 11
+    },
+    {
+      "name": "redstone_dust_cross_on",
+      "x": 4,
+      "y": 11
+    },
+    {
+      "name": "redstone_dust_line_on",
+      "x": 5,
+      "y": 11
+    },
+    {
+      "name": "sandstone_top",
+      "x": 0,
+      "y": 12
+    },
+    {
+      "name": "purple_wool",
+      "x": 1,
+      "y": 12
+    },
+    {
+      "name": "magenta_wool",
+      "x": 2,
+      "y": 12
+    },
+    {
+      "name": "detector_rail",
+      "x": 3,
+      "y": 12
+    },
+    {
+      "name": "water_texture",
+      "x": 13,
+      "y": 12
+    },
+    {
+      "name": "water_texture_1",
+      "x": 14,
+      "y": 12
+    },
+    {
+      "name": "water_texture_2",
+      "x": 15,
+      "y": 12
+    },
+    {
+      "name": "sandstone_bottom",
+      "x": 0,
+      "y": 13
+    },
+    {
+      "name": "cyan_wool",
+      "x": 1,
+      "y": 13
+    },
+    {
+      "name": "orange_wool",
+      "x": 2,
+      "y": 13
+    },
+    {
+      "name": "water_texture_3",
+      "x": 14,
+      "y": 13
+    },
+    {
+      "name": "water_texture_4",
+      "x": 15,
+      "y": 13
+    },
+    {
+      "name": "light_gray_wool",
+      "x": 1,
+      "y": 14
+    },
+    {
+      "name": "lava_texture",
+      "x": 14,
+      "y": 14
+    },
+    {
+      "name": "lava_texture_1",
+      "x": 15,
+      "y": 14
+    },
+    {
+      "name": "block_breaking_stage_0",
+      "x": 0,
+      "y": 15
+    },
+    {
+      "name": "block_breaking_stage_1",
+      "x": 1,
+      "y": 15
+    },
+    {
+      "name": "block_breaking_stage_2",
+      "x": 2,
+      "y": 15
+    },
+    {
+      "name": "block_breaking_stage_3",
+      "x": 3,
+      "y": 15
+    },
+    {
+      "name": "block_breaking_stage_4",
+      "x": 4,
+      "y": 15
+    },
+    {
+      "name": "block_breaking_stage_5",
+      "x": 5,
+      "y": 15
+    },
+    {
+      "name": "block_breaking_stage_6",
+      "x": 6,
+      "y": 15
+    },
+    {
+      "name": "block_breaking_stage_7",
+      "x": 7,
+      "y": 15
+    },
+    {
+      "name": "block_breaking_stage_8",
+      "x": 8,
+      "y": 15
+    },
+    {
+      "name": "block_breaking_stage_9",
+      "x": 9,
+      "y": 15
+    },
+    {
+      "name": "lava_texture_2",
+      "x": 14,
+      "y": 15
+    },
+    {
+      "name": "lava_texture_3",
+      "x": 15,
+      "y": 15
+    }
+  ]
+}
