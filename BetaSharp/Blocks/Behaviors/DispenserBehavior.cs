@@ -11,7 +11,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     Which items get projectile-spawn behavior (vs. a plain item toss) are required,
 ///     (see <c>BehaviorRegistry</c>'s <c>"dispenser"</c> entry).
 /// </summary>
-internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball) : IBlockInteractable, IBlockLifecycle, IBlockPhysics, IBlockTicker, IBlockVisuals
+internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball, int front, int top, int side) : IBlockInteractable, IBlockLifecycle, IBlockPhysics, IBlockTicker, IBlockVisuals
 {
     public bool OnUse(Block block, OnUseEvent @event)
     {
@@ -70,16 +70,16 @@ internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball) : I
     public int GetTexture(Block block, Side side, int defaultTexture) =>
         side switch
         {
-            Side.Up or Side.Down => block.TextureId + 17,
-            Side.South => block.TextureId + 1,
+            Side.Up or Side.Down => top,
+            Side.South => front,
             _ => defaultTexture
         };
 
-    public int GetTextureId(Block block, IBlockReader reader, int x, int y, int z, Side side, int defaultTexture)
+    public int GetTextureId(Block block, IBlockReader reader, int x, int y, int z, Side renderSide, int defaultTexture)
     {
-        if (side is Side.Up or Side.Down) return block.TextureId + 17;
+        if (renderSide is Side.Up or Side.Down) return top;
         Side facing = reader.GetBlockMeta(x, y, z).ToSide();
-        return side != facing ? block.TextureId : block.TextureId + 1;
+        return renderSide != facing ? side : front;
     }
 
     private static void UpdateDirection(OnPlacedEvent @event)

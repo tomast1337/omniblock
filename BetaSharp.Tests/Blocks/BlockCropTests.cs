@@ -17,7 +17,7 @@ public sealed class BlockCropTests
         Item seeds = Item.ByName("seeds");
 
         world.ReaderWriter.SetInitial(0, 63, 0, customSoil.Id);
-        CropBehavior behavior = new(customSoil, wheat, seeds, 0.7F, 15, 100);
+        CropBehavior behavior = new(customSoil, wheat, seeds, 0.7F, 15, 100, stages: [0, 0, 0, 0, 0, 0, 0, 0]);
 
         Assert.True(behavior.CanPlaceAt(BlockRegistry.Get("wheat"), new CanPlaceAtContext(world, Side.Up, 0, 64, 0)));
 
@@ -29,7 +29,7 @@ public sealed class BlockCropTests
     public void GetDroppedItemId_CustomWheat_ReturnsConfiguredItemOnlyWhenMature()
     {
         Item apple = Item.ByName("apple");
-        CropBehavior behavior = new(BlockRegistry.Get("farmland"), apple, Item.ByName("seeds"), 0.7F, 15, 100);
+        CropBehavior behavior = new(BlockRegistry.Get("farmland"), apple, Item.ByName("seeds"), 0.7F, 15, 100, stages: [0, 0, 0, 0, 0, 0, 0, 0]);
 
         Assert.Equal(apple.Id, behavior.GetDroppedItemId(BlockRegistry.Get("wheat"), 7, 0));
         Assert.Equal(-1, behavior.GetDroppedItemId(BlockRegistry.Get("wheat"), 3, 0));

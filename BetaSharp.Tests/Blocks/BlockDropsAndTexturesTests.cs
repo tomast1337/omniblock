@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Textures;
 using BetaSharp.Items;
 
 namespace BetaSharp.Tests.Blocks;
@@ -79,17 +80,17 @@ public sealed class BlockDropsAndTexturesTests
     [Fact]
     public void Sandstone_HasDistinctTopBottomSideTextures()
     {
-        Assert.Equal(BlockTextures.SandstoneTop, BlockRegistry.Get("sandstone").GetTexture(Side.Up));
-        Assert.Equal(BlockTextures.SandstoneBottom, BlockRegistry.Get("sandstone").GetTexture(Side.Down));
-        Assert.Equal(BlockTextures.SandstoneSide, BlockRegistry.Get("sandstone").GetTexture(Side.North));
+        Assert.Equal(Atlases.Terrain.IndexOf("sandstone_top"), BlockRegistry.Get("sandstone").GetTexture(Side.Up));
+        Assert.Equal(Atlases.Terrain.IndexOf("sandstone_bottom"), BlockRegistry.Get("sandstone").GetTexture(Side.Down));
+        Assert.Equal(Atlases.Terrain.IndexOf("sandstone_side"), BlockRegistry.Get("sandstone").GetTexture(Side.North));
     }
 
     [Fact]
     public void Bookshelf_HasOakPlanksTopAndBottomTextures()
     {
-        Assert.Equal(BlockTextures.OakPlanks, BlockRegistry.Get("bookshelf").GetTexture(Side.Up));
-        Assert.Equal(BlockTextures.OakPlanks, BlockRegistry.Get("bookshelf").GetTexture(Side.Down));
-        Assert.Equal(BlockTextures.Bookshelf, BlockRegistry.Get("bookshelf").GetTexture(Side.North));
+        Assert.Equal(Atlases.Terrain.IndexOf("wooden_planks"), BlockRegistry.Get("bookshelf").GetTexture(Side.Up));
+        Assert.Equal(Atlases.Terrain.IndexOf("wooden_planks"), BlockRegistry.Get("bookshelf").GetTexture(Side.Down));
+        Assert.Equal(Atlases.Terrain.IndexOf("bookshelf"), BlockRegistry.Get("bookshelf").GetTexture(Side.North));
     }
 
     [Fact]

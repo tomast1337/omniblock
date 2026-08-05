@@ -16,11 +16,27 @@
   "SideVariance": "Rotate180",
   "Behaviors": [
     {
-      "Slots": ["Ticker", "Lifecycle", "Visuals"],
+      "Slots": [
+        "Ticker",
+        "Lifecycle",
+        "Visuals"
+      ],
       "Type": "leaves",
       "trunk": "betasharp:log",
       "sapling": "betasharp:sapling",
-      "harvest_tool": "betasharp:shears"
+      "harvest_tool": "betasharp:shears",
+      "fancy": [
+        "betasharp:oak_leaves_fancy",
+        "betasharp:spruce_leaves_fancy",
+        "betasharp:oak_leaves_fancy",
+        "betasharp:oak_leaves_fancy"
+      ],
+      "fast": [
+        "betasharp:oak_leaves_fast",
+        "betasharp:spruce_leaves_fast",
+        "betasharp:oak_leaves_fast",
+        "betasharp:oak_leaves_fast"
+      ]
     }
   ]
 }

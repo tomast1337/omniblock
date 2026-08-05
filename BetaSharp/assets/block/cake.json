@@ -19,7 +19,11 @@
         "Visuals",
         "Interactable"
       ],
-      "Type": "cake"
+      "Type": "cake",
+      "top": "betasharp:cake_top",
+      "side": "betasharp:cake_side",
+      "inner": "betasharp:cake_inner",
+      "bottom": "betasharp:cake_bottom"
     }
   ]
 }

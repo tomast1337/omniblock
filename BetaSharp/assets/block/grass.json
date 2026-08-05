@@ -22,15 +22,30 @@
   },
   "Behaviors": [
     {
-      "Slots": ["Ticker", "Physics"],
+      "Slots": [
+        "Ticker",
+        "Physics"
+      ],
       "Type": "plant_survival",
-      "valid_ground": ["betasharp:grass_block", "betasharp:dirt", "betasharp:farmland"]
+      "valid_ground": [
+        "betasharp:grass_block",
+        "betasharp:dirt",
+        "betasharp:farmland"
+      ]
     },
     {
-      "Slots": ["Visuals", "Lifecycle"],
+      "Slots": [
+        "Visuals",
+        "Lifecycle"
+      ],
       "Type": "tall_grass",
       "seeds": "betasharp:seeds",
-      "seed_drop_chance_one_in": 8
+      "seed_drop_chance_one_in": 8,
+      "textures": [
+        "betasharp:dead_bush",
+        "betasharp:tallgrass",
+        "betasharp:fern_tall_grass"
+      ]
     }
   ]
 }

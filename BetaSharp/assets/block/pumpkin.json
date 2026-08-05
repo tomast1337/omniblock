@@ -16,7 +16,10 @@
         "Visuals"
       ],
       "Type": "pumpkin",
-      "lit": false
+      "top": "betasharp:pumpkin_top",
+      "side": "betasharp:pumpkin_side",
+      "face": "betasharp:pumpkin_face",
+      "item_face": "betasharp:pumpkin_face"
     }
   ]
 }

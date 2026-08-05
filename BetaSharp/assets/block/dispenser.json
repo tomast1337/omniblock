@@ -10,11 +10,20 @@
   "TileEntity": "dispenser",
   "Behaviors": [
     {
-      "Slots": ["Interactable", "Lifecycle", "Physics", "Ticker", "Visuals"],
+      "Slots": [
+        "Interactable",
+        "Lifecycle",
+        "Physics",
+        "Ticker",
+        "Visuals"
+      ],
       "Type": "dispenser",
       "arrow": "betasharp:arrow",
       "egg": "betasharp:egg",
-      "snowball": "betasharp:snowball"
+      "snowball": "betasharp:snowball",
+      "front": "betasharp:dispenser_front",
+      "top": "betasharp:furnace_top",
+      "side": "betasharp:furnace_side"
     }
   ]
 }

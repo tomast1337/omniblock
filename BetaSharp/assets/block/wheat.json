@@ -22,14 +22,29 @@
   },
   "Behaviors": [
     {
-      "Slots": ["Ticker", "Physics", "Lifecycle", "Visuals"],
+      "Slots": [
+        "Ticker",
+        "Physics",
+        "Lifecycle",
+        "Visuals"
+      ],
       "Type": "crop",
       "required_soil": "betasharp:farmland",
       "mature_crop_item": "betasharp:wheat",
       "seeds": "betasharp:seeds",
       "drop_spread": 0.7,
       "seed_scatter_chance_bound": 15,
-      "growth_chance_denominator": 100
+      "growth_chance_denominator": 100,
+      "stages": [
+        "betasharp:wheat_stage_0",
+        "betasharp:wheat_stage_1",
+        "betasharp:wheat_stage_2",
+        "betasharp:wheat_stage_3",
+        "betasharp:wheat_stage_4",
+        "betasharp:wheat_stage_5",
+        "betasharp:wheat_stage_6",
+        "betasharp:wheat_stage_7"
+      ]
     }
   ]
 }

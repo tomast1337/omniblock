@@ -13,7 +13,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         required, (see <c>BehaviorRegistry</c>'s <c>"stationary_fluid"</c> entry).
 ///     </para>
 /// </summary>
-public sealed class StationaryFluidBehavior(Block ignitionTarget, Block sourceSolidified, Block flowSolidified) : IBlockPhysics, IBlockVisuals, IBlockLifecycle, IBlockTicker
+public sealed class StationaryFluidBehavior(Block ignitionTarget, Block sourceSolidified, Block flowSolidified, int still, int flowing) : IBlockPhysics, IBlockVisuals, IBlockLifecycle, IBlockTicker
 {
     public void OnPlaced(Block block, OnPlacedEvent @event)
         => FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z, sourceSolidified, flowSolidified);
@@ -68,7 +68,7 @@ public sealed class StationaryFluidBehavior(Block ignitionTarget, Block sourceSo
         }
     }
 
-    public int GetTexture(Block block, Side side, int defaultTexture) => FluidMath.GetTexture(block, side);
+    public int GetTexture(Block block, Side side, int defaultTexture) => FluidMath.GetTexture(side, still, flowing);
 
     public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
         => FluidMath.IsSideVisible(block, reader, x, y, z, side, defaultVisibility);

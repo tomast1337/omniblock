@@ -20,11 +20,24 @@
   "DropCount": 0,
   "Behaviors": [
     {
-      "Slots": ["Physics", "Visuals", "Lifecycle", "Ticker"],
+      "Slots": [
+        "Physics",
+        "Visuals",
+        "Lifecycle",
+        "Ticker"
+      ],
       "Type": "flowing_fluid",
-      "passable": ["betasharp:door", "betasharp:iron_door", "betasharp:sign", "betasharp:ladder", "betasharp:sugar_cane"],
+      "passable": [
+        "betasharp:door",
+        "betasharp:iron_door",
+        "betasharp:sign",
+        "betasharp:ladder",
+        "betasharp:sugar_cane"
+      ],
       "source_solidified": "betasharp:obsidian",
-      "flow_solidified": "betasharp:cobblestone"
+      "flow_solidified": "betasharp:cobblestone",
+      "still": "betasharp:water_texture",
+      "flowing": "betasharp:water_texture_1"
     }
   ]
 }

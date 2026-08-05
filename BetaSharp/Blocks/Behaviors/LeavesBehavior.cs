@@ -19,7 +19,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         the owning <see cref="Block" /> passed into each call, not a separate cached id.
 ///     </para>
 /// </summary>
-public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestToolItem) : IBlockTicker, IBlockLifecycle, IBlockVisuals
+public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestToolItem, int[] fancyTextures, int[] fastTextures) : IBlockTicker, IBlockLifecycle, IBlockVisuals
 {
     private const sbyte DecayRadius = 4;
     private const sbyte RegionSize = 32;
@@ -186,7 +186,9 @@ public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestT
         return FoliageColors.getFoliageColor(temperature, downfall);
     }
 
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture) => (meta & 3) == 1 ? defaultTexture + 80 : defaultTexture;
+    // Four species slots for two metadata bits, the same as the log the canopy grew from.
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture) =>
+        (_graphicsLevel ? fancyTextures : fastTextures)[meta & 3];
 
     public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
         => (_graphicsLevel || reader.GetBlockId(x, y, z) != block.Id) && defaultVisibility;
@@ -204,6 +206,6 @@ public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestT
     {
         if (block.Visuals is not LeavesBehavior behavior) return;
         behavior._graphicsLevel = fancy;
-        block.TextureId = BlockTextures.LeavesOak + (fancy ? 0 : 1);
+        block.TextureId = behavior.GetTexture(block, Side.North, 0, 0);
     }
 }

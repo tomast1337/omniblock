@@ -134,7 +134,7 @@ public static class FluidMath
         Fizz(broadcaster, x, y, z);
     }
 
-    public static int GetTexture(Block block, Side side) => side != Side.Down && side != Side.Up ? block.TextureId + 1 : block.TextureId;
+    public static int GetTexture(Side side, int still, int flowing) => side != Side.Down && side != Side.Up ? flowing : still;
 
     public static bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
     {

@@ -9,7 +9,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     shrinks the collision/visible box from the west edge as slices are eaten, and it wilts when
 ///     the block below is no longer solid.
 /// </summary>
-internal sealed class CakeBehavior : IBlockPhysics, IBlockVisuals, IBlockInteractable
+internal sealed class CakeBehavior(int top, int side, int inner, int bottom) : IBlockPhysics, IBlockVisuals, IBlockInteractable
 {
     private const float CakeHeight = 0.5F;
     private const float EdgeInset = 1.0F / 16.0F;
@@ -50,19 +50,20 @@ internal sealed class CakeBehavior : IBlockPhysics, IBlockVisuals, IBlockInterac
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
     }
 
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture)
+    public int GetTexture(Block block, Side renderSide, int meta, int defaultTexture)
     {
-        if (side == Side.Up) return BlockTextures.Cake;
-        if (side == Side.Down) return block.TextureId + 3;
-        if (meta > 0 && side == Side.West) return block.TextureId + 2;
-        return block.TextureId + 1;
+        if (renderSide == Side.Up) return top;
+        if (renderSide == Side.Down) return bottom;
+        // The cut face, exposed only once a slice is gone.
+        if (meta > 0 && renderSide == Side.West) return inner;
+        return side;
     }
 
-    public int GetTexture(Block block, Side side, int defaultTexture) => side switch
+    public int GetTexture(Block block, Side renderSide, int defaultTexture) => renderSide switch
     {
-        Side.Up => block.TextureId,
-        Side.Down => block.TextureId + 3,
-        _ => block.TextureId + 1
+        Side.Up => top,
+        Side.Down => bottom,
+        _ => side
     };
 
     private static bool CanGrow(IBlockReader world, int x, int y, int z) => world.GetMaterial(x, y - 1, z).IsSolid;
