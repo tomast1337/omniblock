@@ -1,6 +1,6 @@
 namespace BetaSharp;
 
-public sealed record ArmorMaterial(string Name, int ArmorLevel, int RenderIndex);
+public sealed record ArmorMaterial(string Name, int ArmorLevel, string TexturePrefix);
 
 public static class ArmorMaterialRegistry
 {
@@ -11,7 +11,7 @@ public static class ArmorMaterialRegistry
         s_materials.Clear();
         foreach (ArmorMaterialDefinition def in definitions)
         {
-            s_materials[def.Name] = new ArmorMaterial(def.Name, def.ArmorLevel, def.RenderIndex);
+            s_materials[def.Name] = new ArmorMaterial(def.Name, def.ArmorLevel, def.TexturePrefix);
         }
     }
 

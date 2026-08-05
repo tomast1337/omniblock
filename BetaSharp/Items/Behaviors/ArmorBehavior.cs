@@ -15,7 +15,7 @@ public sealed class ArmorBehavior : IItemBehavior
     public ArmorMaterial Material { get; }
     public ArmorSlot Slot { get; }
     public int ArmorLevel => Material.ArmorLevel;
-    public int RenderIndex => Material.RenderIndex;
+    public string TexturePrefix => Material.TexturePrefix;
     public int ArmorType => (int)Slot;
     public int DamageReduceAmount { get; }
 
