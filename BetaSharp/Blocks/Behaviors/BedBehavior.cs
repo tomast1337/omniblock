@@ -15,7 +15,7 @@ public sealed class BedBehavior(int bottom, int footTop, int footSide, int footE
 {
     private static readonly int s_bedId = Item.ByName("bed").Id;
 
-    public static readonly Side[][] BedFacings =
+    private static readonly Side[][] s_bedFacings =
     [
         [Side.Up, Side.Down, Side.South, Side.North, Side.East, Side.West],
         [Side.Up, Side.Down, Side.East, Side.West, Side.North, Side.South],
@@ -45,9 +45,6 @@ public sealed class BedBehavior(int bottom, int footTop, int footSide, int footE
 
         if (!@event.World.Dimension.HasWorldSpawn)
         {
-            double posX = x + 0.5D;
-            double posY = y + 0.5D;
-            double posZ = z + 0.5D;
             @event.World.Writer.SetBlock(x, y, z, 0);
 
             int direction = GetDirection(meta);
@@ -57,9 +54,6 @@ public sealed class BedBehavior(int bottom, int footTop, int footSide, int footE
             if (@event.World.Reader.GetBlockId(x, y, z) == block.Id)
             {
                 @event.World.Writer.SetBlock(x, y, z, 0);
-                posX = (posX + x + 0.5D) / 2.0D;
-                posY = (posY + y + 0.5D) / 2.0D;
-                posZ = (posZ + z + 0.5D) / 2.0D;
             }
 
             @event.World.CreateExplosion(null, x + 0.5F, y + 0.5F, z + 0.5F, 5.0F, true);
@@ -97,14 +91,12 @@ public sealed class BedBehavior(int bottom, int footTop, int footSide, int footE
         {
             case SleepAttemptResult.OK:
                 UpdateState(@event.World.Writer, x, y, z, meta, true);
-                return true;
+                break;
             case SleepAttemptResult.NOT_POSSIBLE_NOW:
                 @event.Player.SendMessage("tile.bed.noSleep");
                 break;
             case SleepAttemptResult.NOT_POSSIBLE_HERE:
-                break;
             case SleepAttemptResult.TOO_FAR_AWAY:
-                break;
             case SleepAttemptResult.OTHER_PROBLEM:
                 break;
             default:
@@ -140,7 +132,7 @@ public sealed class BedBehavior(int bottom, int footTop, int footSide, int footE
     public int GetTexture(Block block, Side side, int meta, int defaultTexture)
     {
         int direction = GetDirection(meta);
-        Side sideFacing = BedFacings[direction][side.ToInt()];
+        Side sideFacing = s_bedFacings[direction][side.ToInt()];
         if (side == Side.Down) return bottom;
 
         if (IsHeadOfBed(meta))
@@ -161,7 +153,7 @@ public sealed class BedBehavior(int bottom, int footTop, int footSide, int footE
 
     public static bool IsHeadOfBed(int meta) => (meta & 8) != 0;
 
-    public static bool IsBedOccupied(int meta) => (meta & 4) != 0;
+    private static bool IsBedOccupied(int meta) => (meta & 4) != 0;
 
     public static void UpdateState(IBlockWriter worldWriter, int x, int y, int z, int meta, bool occupied)
     {

@@ -102,7 +102,7 @@ internal static class BehaviorRegistry
             Texture(json, "still"), Texture(json, "flowing")),
         ["tall_grass"] = json => new TallGrassBehavior(ResolveItem(json.GetProperty("seeds").GetString()!), json.GetProperty("seed_drop_chance_one_in").GetInt32(), ResolveTextures(json.GetProperty("textures"))),
         ["tile_entity_lifecycle"] = _ => new TileEntityLifecycleBehavior(),
-        ["tnt"] = json => new TNTBehavior(ResolveItem(json.GetProperty("igniter").GetString()!),
+        ["tnt"] = json => new TntBehavior(ResolveItem(json.GetProperty("igniter").GetString()!),
             Texture(json, "top"), Texture(json, "side"), Texture(json, "bottom")),
         ["web"] = _ => new WebBehavior(),
         ["workbench_interact"] = _ => new WorkbenchInteractBehavior(),

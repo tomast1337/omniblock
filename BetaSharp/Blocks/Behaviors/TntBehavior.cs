@@ -12,7 +12,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         Igniter tool item is a required, (see <c>BehaviorRegistry</c>'s <c>"tnt"</c> entry).
 ///     </para>
 /// </summary>
-internal sealed class TNTBehavior(Item igniter, int top, int side, int bottom) : IBlockPhysics, IBlockLifecycle, IBlockInteractable, IBlockVisuals
+internal sealed class TntBehavior(Item igniter, int top, int side, int bottom) : IBlockPhysics, IBlockLifecycle, IBlockInteractable, IBlockVisuals
 {
     public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event)
     {

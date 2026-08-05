@@ -10,19 +10,9 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     shares this instance for shape/placement rules but keeps its own <see cref="DetectorRailBehavior" />
 ///     for the actual minecart-detection redstone signal.
 /// </summary>
-public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
+public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) : IBlockPhysics, IBlockLifecycle, IBlockVisuals
 {
-    private readonly bool _isPoweredTrack;
-
-    private readonly int _turn;
-    private readonly int _unpowered;
-
-    public RailBehavior(bool isPoweredTrack, int turn, int unpowered)
-    {
-        _isPoweredTrack = isPoweredTrack;
-        _turn = turn;
-        _unpowered = unpowered;
-    }
+    private readonly bool _isPoweredTrack = isPoweredTrack;
 
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
@@ -107,11 +97,11 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
     {
         if (_isPoweredTrack)
         {
-            if (block.Id == BlockRegistry.Get("powered_rail").Id && (meta & 8) == 0) return _unpowered;
+            if (block.Id == BlockRegistry.Get("powered_rail").Id && (meta & 8) == 0) return unpowered;
         }
         else if (meta >= 6)
         {
-            return _turn;
+            return turn;
         }
 
         return defaultTexture;

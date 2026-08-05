@@ -1,27 +1,13 @@
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
-using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Blocks.Behaviors;
 
-internal sealed class FurnaceBehavior : IBlockInteractable, IBlockLifecycle, IBlockPhysics, IBlockTicker, IBlockVisuals
+internal sealed class FurnaceBehavior(bool lit, int top, int frontOff, int frontOn)
+    : IBlockInteractable, IBlockLifecycle, IBlockPhysics, IBlockTicker, IBlockVisuals
 {
     private const float FlameParticleOffset = 0.52F;
-
-    private static readonly ILogger<FurnaceBehavior> s_logger = Log.Instance.For<FurnaceBehavior>();
-    private readonly bool _lit;
-    private readonly int _top;
-    private readonly int _frontOff;
-    private readonly int _frontOn;
-
-    public FurnaceBehavior(bool lit, int top, int frontOff, int frontOn)
-    {
-        _lit = lit;
-        _top = top;
-        _frontOff = frontOff;
-        _frontOn = frontOn;
-    }
 
     public bool OnUse(Block block, OnUseEvent @event)
     {
@@ -68,7 +54,7 @@ internal sealed class FurnaceBehavior : IBlockInteractable, IBlockLifecycle, IBl
 
     public void RandomDisplayTick(Block block, OnTickEvent @event)
     {
-        if (!_lit) return;
+        if (!lit) return;
 
         Side rotation = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z).ToSide();
         float particleX = @event.X + 0.5F;
@@ -100,19 +86,19 @@ internal sealed class FurnaceBehavior : IBlockInteractable, IBlockLifecycle, IBl
     public int GetTexture(Block block, Side side, int defaultTexture) =>
         side switch
         {
-            Side.Up or Side.Down => _top,
-            Side.South => _frontOff,
+            Side.Up or Side.Down => top,
+            Side.South => frontOff,
             _ => defaultTexture
         };
 
     public int GetTextureId(Block block, IBlockReader reader, int x, int y, int z, Side side, int defaultTexture)
     {
-        if (side is Side.Up or Side.Down) return _top;
+        if (side is Side.Up or Side.Down) return top;
 
         Side facing = reader.GetBlockMeta(x, y, z).ToSide();
         if (side != facing) return block.TextureId;
 
-        return _lit ? _frontOn : _frontOff;
+        return lit ? frontOn : frontOff;
     }
 
     private static void UpdateDirection(OnPlacedEvent @event)
