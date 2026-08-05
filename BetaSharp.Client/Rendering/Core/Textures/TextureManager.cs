@@ -11,6 +11,7 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using static BetaSharp.Client.Rendering.Core.Textures.TextureAtlasMipmapGenerator;
+using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client.Rendering.Core.Textures;
 
@@ -67,6 +68,26 @@ public class TextureManager : IDisposable
 
         array.Rebuild();
         return array;
+    }
+
+    /// <summary>
+    ///     Puts each named array on its own unit, where every program that samples one expects to
+    ///     find it.
+    /// </summary>
+    /// <remarks>
+    ///     Once a frame rather than per draw: there is one terrain array and one item array for the
+    ///     whole frame, and nothing else uses those units. Leaves unit 0 active, because that is
+    ///     where the rest of the renderer assumes it was left.
+    /// </remarks>
+    public void BindTextureArrays()
+    {
+        GLManager.GL.ActiveTexture(GLEnum.Texture0 + TextureArrayUnits.Terrain);
+        TerrainArray.Texture?.Bind();
+
+        GLManager.GL.ActiveTexture(GLEnum.Texture0 + TextureArrayUnits.Items);
+        ItemsArray.Texture?.Bind();
+
+        GLManager.GL.ActiveTexture(GLEnum.Texture0);
     }
 
     public int[] GetColors(string path)
@@ -415,6 +436,8 @@ public class TextureManager : IDisposable
                         }
                     }
                 }
+
+                UploadAnimatedLayer(texture, fxSize);
             }
             finally
             {
@@ -423,6 +446,50 @@ public class TextureManager : IDisposable
                     System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
                 }
             }
+        }
+    }
+
+    /// <summary>
+    ///     Writes an animated tile's new frame into its layer of the named array, alongside the 2D
+    ///     atlas the same frame just went into.
+    /// </summary>
+    /// <remarks>
+    ///     No replication here, unlike the atlas: Beta wrote flowing water into a 2x2 block of cells
+    ///     so a quad sweeping past a cell edge landed on more water, and a layer wrapping onto itself
+    ///     does that on its own.
+    /// </remarks>
+    private unsafe void UploadAnimatedLayer(DynamicTexture texture, int fxSize)
+    {
+        bool isTerrain = texture.Atlas == DynamicTexture.FxImage.Terrain;
+        NamedTextureArray array = isTerrain ? TerrainArray : ItemsArray;
+        AtlasTileMap tileMap = isTerrain ? Atlases.Terrain : Atlases.Items;
+
+        int layer = tileMap.LayerOfGridIndex(texture.Sprite);
+        if (layer == AtlasTileMap.MissingLayer || array.Texture == null) return;
+
+        int scale = Math.Max(1, array.LayerSize / fxSize);
+        int size = fxSize * scale;
+
+        byte[]? rented = null;
+        byte[] pixels = texture.Pixels;
+
+        try
+        {
+            if (scale > 1)
+            {
+                rented = ArrayPool<byte>.Shared.Rent(size * size * 4);
+                UpscaleNearestNeighbor(texture.Pixels, rented, fxSize, size, scale);
+                pixels = rented;
+            }
+
+            fixed (byte* ptr = pixels)
+            {
+                array.Texture.UploadLayer(layer, size, size, ptr);
+            }
+        }
+        finally
+        {
+            if (rented != null) ArrayPool<byte>.Shared.Return(rented);
         }
     }
 

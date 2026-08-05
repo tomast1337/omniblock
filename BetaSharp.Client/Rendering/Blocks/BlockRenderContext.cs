@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using BetaSharp.Blocks;
 using BetaSharp.Client.Rendering.Core;
+using BetaSharp.Textures;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -79,6 +80,14 @@ public ref struct BlockRenderContext
         CustomFlag = customFlag;
     }
 
+    /// <summary>
+    ///     Grass's side is drawn twice: the bare dirt-and-grass tile, then a biome-tinted mask over
+    ///     it. Matched by texture rather than by block, so anything drawing that side gets the
+    ///     overlay -- which is how snowy and unsnowy grass share one renderer.
+    /// </summary>
+    private static readonly int s_grassSideTexture = Atlases.Terrain.IndexOf("betasharp:grass_block_side");
+    private static readonly int s_grassSideOverlayTexture = Atlases.Terrain.IndexOf("betasharp:grass_block_side_overlay");
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static int ApplyVariance(int hash, TextureVariance variance, out int flipMask)
     {
@@ -104,8 +113,7 @@ public ref struct BlockRenderContext
     internal readonly void DrawBottomFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
         Box bb = OverrideBounds ?? block.BoundingBox;
-        int texU = (textureId & 15) << 4;
-        int texV = textureId & 240;
+        Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 
         float bbMinX = (float)bb.MinX;
         float bbMaxX = (float)bb.MaxX;
@@ -117,10 +125,10 @@ public ref struct BlockRenderContext
         float bMinZ = Clamp(bbMinZ);
         float bMaxZ = Clamp(bbMaxZ);
 
-        CalculateUv(bMinX, bMaxZ, UvRotateBottom, FlipBottom, texU, texV, out float u0, out float v0);
-        CalculateUv(bMinX, bMinZ, UvRotateBottom, FlipBottom, texU, texV, out float u1, out float v1);
-        CalculateUv(bMaxX, bMinZ, UvRotateBottom, FlipBottom, texU, texV, out float u2, out float v2);
-        CalculateUv(bMaxX, bMaxZ, UvRotateBottom, FlipBottom, texU, texV, out float u3, out float v3);
+        CalculateUv(bMinX, bMaxZ, UvRotateBottom, FlipBottom, out float u0, out float v0);
+        CalculateUv(bMinX, bMinZ, UvRotateBottom, FlipBottom, out float u1, out float v1);
+        CalculateUv(bMaxX, bMinZ, UvRotateBottom, FlipBottom, out float u2, out float v2);
+        CalculateUv(bMaxX, bMaxZ, UvRotateBottom, FlipBottom, out float u3, out float v3);
 
         float pX = (float)pos.X;
         float pY = (float)pos.Y;
@@ -169,8 +177,7 @@ public ref struct BlockRenderContext
     internal readonly void DrawTopFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
         Box bb = OverrideBounds ?? block.BoundingBox;
-        int texU = (textureId & 15) << 4;
-        int texV = textureId & 240;
+        Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 
         float bbMinX = (float)bb.MinX;
         float bbMaxX = (float)bb.MaxX;
@@ -182,10 +189,10 @@ public ref struct BlockRenderContext
         float bMinZ = Clamp(bbMinZ);
         float bMaxZ = Clamp(bbMaxZ);
 
-        CalculateUv(bMaxX, bMaxZ, UvRotateTop, FlipTop, texU, texV, out float u0, out float v0);
-        CalculateUv(bMaxX, bMinZ, UvRotateTop, FlipTop, texU, texV, out float u1, out float v1);
-        CalculateUv(bMinX, bMinZ, UvRotateTop, FlipTop, texU, texV, out float u2, out float v2);
-        CalculateUv(bMinX, bMaxZ, UvRotateTop, FlipTop, texU, texV, out float u3, out float v3);
+        CalculateUv(bMaxX, bMaxZ, UvRotateTop, FlipTop, out float u0, out float v0);
+        CalculateUv(bMaxX, bMinZ, UvRotateTop, FlipTop, out float u1, out float v1);
+        CalculateUv(bMinX, bMinZ, UvRotateTop, FlipTop, out float u2, out float v2);
+        CalculateUv(bMinX, bMaxZ, UvRotateTop, FlipTop, out float u3, out float v3);
 
         float pX = (float)pos.X;
         float pY = (float)pos.Y;
@@ -234,18 +241,17 @@ public ref struct BlockRenderContext
     internal readonly void DrawNorthFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
         Box bb = OverrideBounds ?? block.BoundingBox;
-        int texU = (textureId & 15) << 4;
-        int texV = textureId & 240;
+        Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 
         float bbMinY = (float)bb.MinY;
         float bbMaxY = (float)bb.MaxY;
         float bbMinZ = (float)bb.MinZ;
         float bbMaxZ = (float)bb.MaxZ;
 
-        CalculateUv(bbMinZ, 1.0f - bbMaxY, UvRotateNorth, FlipNorth, texU, texV, out float uTl, out float vTl);
-        CalculateUv(bbMinZ, 1.0f - bbMinY, UvRotateNorth, FlipNorth, texU, texV, out float uBl, out float vBl);
-        CalculateUv(bbMaxZ, 1.0f - bbMinY, UvRotateNorth, FlipNorth, texU, texV, out float uBr, out float vBr);
-        CalculateUv(bbMaxZ, 1.0f - bbMaxY, UvRotateNorth, FlipNorth, texU, texV, out float uTr, out float vTr);
+        CalculateUv(bbMinZ, 1.0f - bbMaxY, UvRotateNorth, FlipNorth, out float uTl, out float vTl);
+        CalculateUv(bbMinZ, 1.0f - bbMinY, UvRotateNorth, FlipNorth, out float uBl, out float vBl);
+        CalculateUv(bbMaxZ, 1.0f - bbMinY, UvRotateNorth, FlipNorth, out float uBr, out float vBr);
+        CalculateUv(bbMaxZ, 1.0f - bbMaxY, UvRotateNorth, FlipNorth, out float uTr, out float vTr);
 
         float pX = (float)pos.X;
         float pY = (float)pos.Y;
@@ -294,8 +300,7 @@ public ref struct BlockRenderContext
     internal readonly void DrawSouthFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
         Box bb = OverrideBounds ?? block.BoundingBox;
-        int texU = (textureId & 15) << 4;
-        int texV = textureId & 240;
+        Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 
         float bbMinY = (float)bb.MinY;
         float bbMaxY = (float)bb.MaxY;
@@ -307,10 +312,10 @@ public ref struct BlockRenderContext
         float bMinZ = Clamp(bbMinZ);
         float bMaxZ = Clamp(bbMaxZ);
 
-        CalculateUv(1.0f - bMaxZ, 1.0f - bMaxY, UvRotateSouth, FlipSouth, texU, texV, out float uTl, out float vTl);
-        CalculateUv(1.0f - bMaxZ, 1.0f - bMinY, UvRotateSouth, FlipSouth, texU, texV, out float uBl, out float vBl);
-        CalculateUv(1.0f - bMinZ, 1.0f - bMinY, UvRotateSouth, FlipSouth, texU, texV, out float uBr, out float vBr);
-        CalculateUv(1.0f - bMinZ, 1.0f - bMaxY, UvRotateSouth, FlipSouth, texU, texV, out float uTr, out float vTr);
+        CalculateUv(1.0f - bMaxZ, 1.0f - bMaxY, UvRotateSouth, FlipSouth, out float uTl, out float vTl);
+        CalculateUv(1.0f - bMaxZ, 1.0f - bMinY, UvRotateSouth, FlipSouth, out float uBl, out float vBl);
+        CalculateUv(1.0f - bMinZ, 1.0f - bMinY, UvRotateSouth, FlipSouth, out float uBr, out float vBr);
+        CalculateUv(1.0f - bMinZ, 1.0f - bMaxY, UvRotateSouth, FlipSouth, out float uTr, out float vTr);
 
         float pX = (float)pos.X;
         float pY = (float)pos.Y;
@@ -359,8 +364,7 @@ public ref struct BlockRenderContext
     internal readonly void DrawEastFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
         Box bb = OverrideBounds ?? block.BoundingBox;
-        int texU = (textureId & 15) << 4;
-        int texV = textureId & 240;
+        Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 
         float bbMinX = (float)bb.MinX;
         float bbMaxX = (float)bb.MaxX;
@@ -372,10 +376,10 @@ public ref struct BlockRenderContext
         float bMinY = Clamp(bbMinY);
         float bMaxY = Clamp(bbMaxY);
 
-        CalculateUv(1.0f - bMaxX, 1.0f - bMaxY, UvRotateEast, FlipEast, texU, texV, out float uTl, out float vTl);
-        CalculateUv(1.0f - bMaxX, 1.0f - bMinY, UvRotateEast, FlipEast, texU, texV, out float uBl, out float vBl);
-        CalculateUv(1.0f - bMinX, 1.0f - bMinY, UvRotateEast, FlipEast, texU, texV, out float uBr, out float vBr);
-        CalculateUv(1.0f - bMinX, 1.0f - bMaxY, UvRotateEast, FlipEast, texU, texV, out float uTr, out float vTr);
+        CalculateUv(1.0f - bMaxX, 1.0f - bMaxY, UvRotateEast, FlipEast, out float uTl, out float vTl);
+        CalculateUv(1.0f - bMaxX, 1.0f - bMinY, UvRotateEast, FlipEast, out float uBl, out float vBl);
+        CalculateUv(1.0f - bMinX, 1.0f - bMinY, UvRotateEast, FlipEast, out float uBr, out float vBr);
+        CalculateUv(1.0f - bMinX, 1.0f - bMaxY, UvRotateEast, FlipEast, out float uTr, out float vTr);
 
         float pX = (float)pos.X;
         float pY = (float)pos.Y;
@@ -424,8 +428,7 @@ public ref struct BlockRenderContext
     internal readonly void DrawWestFace(Block block, in Vec3D pos, in FaceColors colors, int textureId, bool flipped = false)
     {
         Box bb = OverrideBounds ?? block.BoundingBox;
-        int texU = (textureId & 15) << 4;
-        int texV = textureId & 240;
+        Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 
         float bbMinX = (float)bb.MinX;
         float bbMaxX = (float)bb.MaxX;
@@ -437,10 +440,10 @@ public ref struct BlockRenderContext
         float bMinY = Clamp(bbMinY);
         float bMaxY = Clamp(bbMaxY);
 
-        CalculateUv(bMinX, 1.0f - bMaxY, UvRotateWest, FlipWest, texU, texV, out float uTl, out float vTl);
-        CalculateUv(bMinX, 1.0f - bMinY, UvRotateWest, FlipWest, texU, texV, out float uBl, out float vBl);
-        CalculateUv(bMaxX, 1.0f - bMinY, UvRotateWest, FlipWest, texU, texV, out float uBr, out float vBr);
-        CalculateUv(bMaxX, 1.0f - bMaxY, UvRotateWest, FlipWest, texU, texV, out float uTr, out float vTr);
+        CalculateUv(bMinX, 1.0f - bMaxY, UvRotateWest, FlipWest, out float uTl, out float vTl);
+        CalculateUv(bMinX, 1.0f - bMinY, UvRotateWest, FlipWest, out float uBl, out float vBl);
+        CalculateUv(bMaxX, 1.0f - bMinY, UvRotateWest, FlipWest, out float uBr, out float vBr);
+        CalculateUv(bMaxX, 1.0f - bMaxY, UvRotateWest, FlipWest, out float uTr, out float vTr);
 
         float pX = (float)pos.X;
         float pY = (float)pos.Y;
@@ -689,10 +692,10 @@ public ref struct BlockRenderContext
 
             DrawEastFace(block, in vecPos, colors, textureId, flipped);
 
-            if (textureId == GrassRenderConstants.GrassSideTextureId && !hasOverrideTex)
+            if (textureId == s_grassSideTexture && !hasOverrideTex)
             {
                 var overlayColors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.8F, true);
-                DrawEastFace(block, in vecPos, overlayColors, GrassRenderConstants.GrassSideOverlayTextureId, flipped);
+                DrawEastFace(block, in vecPos, overlayColors, s_grassSideOverlayTexture, flipped);
             }
 
             hasRendered = true;
@@ -718,10 +721,10 @@ public ref struct BlockRenderContext
 
             DrawWestFace(block, in vecPos, colors, textureId, flipped);
 
-            if (textureId == GrassRenderConstants.GrassSideTextureId && !hasOverrideTex)
+            if (textureId == s_grassSideTexture && !hasOverrideTex)
             {
                 var overlayColors = FaceColors.AssignVertexColors(v0, v1, v2, v3, r, g, b, 0.8F, true);
-                DrawWestFace(block, in vecPos, overlayColors, GrassRenderConstants.GrassSideOverlayTextureId, flipped);
+                DrawWestFace(block, in vecPos, overlayColors, s_grassSideOverlayTexture, flipped);
             }
 
             hasRendered = true;
@@ -747,10 +750,10 @@ public ref struct BlockRenderContext
 
             DrawNorthFace(block, in vecPos, colors, textureId, flipped);
 
-            if (textureId == GrassRenderConstants.GrassSideTextureId && !hasOverrideTex)
+            if (textureId == s_grassSideTexture && !hasOverrideTex)
             {
                 var overlayColors = FaceColors.AssignVertexColors(v1, v2, v3, v0, r, g, b, 0.6F, true);
-                DrawNorthFace(block, in vecPos, overlayColors, GrassRenderConstants.GrassSideOverlayTextureId, flipped);
+                DrawNorthFace(block, in vecPos, overlayColors, s_grassSideOverlayTexture, flipped);
             }
 
             hasRendered = true;
@@ -776,10 +779,10 @@ public ref struct BlockRenderContext
 
             DrawSouthFace(block, in vecPos, colors, textureId, flipped);
 
-            if (textureId == GrassRenderConstants.GrassSideTextureId && !hasOverrideTex)
+            if (textureId == s_grassSideTexture && !hasOverrideTex)
             {
                 var overlayColors = FaceColors.AssignVertexColors(v3, v0, v1, v2, r, g, b, 0.6F, true);
-                DrawSouthFace(block, in vecPos, overlayColors, GrassRenderConstants.GrassSideOverlayTextureId, flipped);
+                DrawSouthFace(block, in vecPos, overlayColors, s_grassSideOverlayTexture, flipped);
             }
 
             hasRendered = true;
@@ -791,30 +794,32 @@ public ref struct BlockRenderContext
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal readonly void DrawTorch(in Block block, in Vec3D pos, float tiltX, float tiltZ)
     {
-        const float texScale = 1.0f / 256.0f;
+        // A sixteenth of the tile, whatever resolution the tile actually is: the torch's flame sits
+        // at fixed pixel offsets in the vanilla 16x16 art, and those are the same fractions of a
+        // 128x128 one a pack might ship instead.
+        const float texel = 1.0f / 16.0f;
         const float radius = 1.0f / 16.0f;
         const float height = 10.0f / 16.0f;
         const float tipOffsetBase = 1.0f - height;
 
-        const float topMinUOffset = 7.0f * texScale;
-        const float topMaxUOffset = 9.0f * texScale;
-        const float topMinVOffset = 6.0f * texScale;
-        const float topMaxVOffset = 8.0f * texScale;
+        const float topMinUOffset = 7.0f * texel;
+        const float topMaxUOffset = 9.0f * texel;
+        const float topMinVOffset = 6.0f * texel;
+        const float topMaxVOffset = 8.0f * texel;
 
         int textureId = OverrideTexture >= 0 ? OverrideTexture : block.GetTexture(0);
 
-        int texU = (textureId & 15) << 4;
-        int texV = textureId & 240;
+        Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 
-        float minU = texU * texScale;
-        float maxU = (texU + 15.99f) * texScale;
-        float minV = texV * texScale;
-        float maxV = (texV + 15.99f) * texScale;
+        const float minU = 0.0f;
+        const float maxU = 1.0f;
+        const float minV = 0.0f;
+        const float maxV = 1.0f;
 
-        float topMinU = minU + topMinUOffset;
-        float topMinV = minV + topMinVOffset;
-        float topMaxU = minU + topMaxUOffset;
-        float topMaxV = minV + topMaxVOffset;
+        const float topMinU = minU + topMinUOffset;
+        const float topMinV = minV + topMinVOffset;
+        const float topMaxU = minU + topMaxUOffset;
+        const float topMaxV = minV + topMaxVOffset;
 
         float pX = (float)pos.X;
         float pY = (float)pos.Y;
@@ -883,12 +888,12 @@ public ref struct BlockRenderContext
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private readonly void CalculateUv(float h, float v, int rotation, int flipMask, int texU, int texV, out float u, out float outV)
+    private readonly void CalculateUv(float h, float v, int rotation, int flipMask, out float u, out float outV)
     {
         if (rotation == 0 && !FlipTexture && flipMask == 0)
         {
-            u = texU * 0.00390625f + h * 0.0625f;
-            outV = texV * 0.00390625f + v * 0.0625f;
+            u = h;
+            outV = v;
             return;
         }
 
@@ -935,7 +940,7 @@ public ref struct BlockRenderContext
         if ((flipMask & 1) != 0) fU = 1.0f - fU;
         if ((flipMask & 2) != 0) fV = 1.0f - fV;
 
-        u = texU * 0.00390625f + fU * 0.0625f;
-        outV = texV * 0.00390625f + fV * 0.0625f;
+        u = fU;
+        outV = fV;
     }
 }

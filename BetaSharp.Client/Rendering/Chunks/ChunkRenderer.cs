@@ -3,6 +3,7 @@ using BetaSharp.Client.Rendering.Chunks.Occlusion;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Profiling;
+using BetaSharp.Textures;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Chunks;
@@ -101,6 +102,22 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private int _chunkFadeEnabledLoc;
     private int _projectionMatrixLoc;
 
+    // Only the fancy canopies sway; the fast ones are the flat fallback and stayed still in Beta too.
+    private static readonly string[] s_wavyLeaves =
+    [
+        "betasharp:oak_leaves_fancy",
+        "betasharp:spruce_leaves_fancy",
+    ];
+
+    private static readonly string[] s_wavyPlants =
+    [
+        "betasharp:rose",
+        "betasharp:dandelion",
+        "betasharp:tallgrass",
+        "betasharp:dead_bush",
+        "betasharp:fern_tall_grass",
+    ];
+
     public ChunkRenderer(World world, GameOptions options)
     {
         _options = options;
@@ -119,6 +136,31 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _textureSamplerLoc = _chunkShader.GetUniformLocation("textureSampler");
         _chunkFadeEnabledLoc = _chunkShader.GetUniformLocation("chunkFadeEnabled");
         _projectionMatrixLoc = _chunkShader.GetUniformLocation("projectionMatrix");
+
+        // glUniform writes to whatever program is bound, and nothing has bound this one yet — every
+        // other uniform here is set inside a pass that already activated it.
+        _chunkShader.Bind();
+        UploadWavyLayers("wavyLeaf", s_wavyLeaves);
+        UploadWavyLayers("wavyPlant", s_wavyPlants);
+        GLManager.GL.UseProgram(0);
+    }
+
+    /// <summary>
+    ///     Tells the vertex shader which array layers sway in the wind, by name rather than by the
+    ///     atlas indices it used to compare against.
+    /// </summary>
+    /// <remarks>
+    ///     Uploaded once with the shader rather than per frame: which textures are a leaf does not
+    ///     change while the game runs, and the layer a name resolves to does not either.
+    /// </remarks>
+    private void UploadWavyLayers(string uniformPrefix, string[] names)
+    {
+        for (int i = 0; i < names.Length; i++)
+        {
+            _chunkShader.SetUniform1($"{uniformPrefix}Layers[{i}]", Atlases.Terrain.LayerOf(names[i]));
+        }
+
+        _chunkShader.SetUniform1($"{uniformPrefix}Count", names.Length);
     }
 
     /// <summary>
@@ -143,7 +185,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _terrainProgram.Activate();
         _chunkShader.SetCommonUniforms(GameRenderer.ShaderInfo);
         UploadLightingUniforms();
-        GLManager.GL.Uniform1(_textureSamplerLoc, 0);
+        GLManager.GL.Uniform1(_textureSamplerLoc, TextureArrayUnits.Terrain);
         GLManager.GL.Uniform1(_chunkFadeEnabledLoc, renderParams.ChunkFade ? 1 : 0);
 
         Matrix4X4<float> modelView = GLManager.ModelView.Top;
@@ -307,7 +349,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _terrainProgram.Activate();
         _chunkShader.SetCommonUniforms(GameRenderer.ShaderInfo);
         UploadLightingUniforms();
-        GLManager.GL.Uniform1(_textureSamplerLoc, 0);
+        GLManager.GL.Uniform1(_textureSamplerLoc, TextureArrayUnits.Terrain);
 
         _chunkShader.SetUniformMatrix4("projectionMatrix", _projection);
 

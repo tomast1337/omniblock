@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Textures;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Blocks.Renderers;
@@ -75,12 +76,16 @@ public class LeverRenderer : IBlockRenderer
         // Determine texture for the handle itself
         int handleTextureId = handleCtx.OverrideTexture >= 0 ? handleCtx.OverrideTexture : block.GetTexture(0);
 
-        int texU = (handleTextureId & 15) << 4;
-        int texV = handleTextureId & 240;
-        float minU = texU / 256.0F;
-        float maxU = (texU + 15.99F) / 256.0F;
-        float minV = texV / 256.0F;
-        float maxV = (texV + 15.99F) / 256.0F;
+        handleCtx.Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(handleTextureId));
+
+        // A sixteenth of the tile, whatever resolution it actually is: the handle's detail sits at
+        // fixed pixel offsets in the vanilla art, and those are the same fractions of a larger tile.
+        const float texel = 1.0F / 16.0F;
+
+        float minU = 0.0F;
+        float maxU = 1.0F;
+        float minV = 0.0F;
+        float maxV = 1.0F;
 
         // --- 3. Handle Vertex Math ---
         Vec3D[] vertices = new Vec3D[8];
@@ -150,17 +155,17 @@ public class LeverRenderer : IBlockRenderer
             // The handle uses specific tiny snippets of the texture atlas for its detail
             if (face == 0) // Bottom cap
             {
-                minU = (texU + 7) / 256.0F;
-                maxU = (texU + 9 - 0.01F) / 256.0F;
-                minV = (texV + 6) / 256.0F;
-                maxV = (texV + 8 - 0.01F) / 256.0F;
+                minU = 7 * texel;
+                maxU = 9 * texel;
+                minV = 6 * texel;
+                maxV = 8 * texel;
             }
             else if (face == 2) // Side detail
             {
-                minU = (texU + 7) / 256.0F;
-                maxU = (texU + 9 - 0.01F) / 256.0F;
-                minV = (texV + 6) / 256.0F;
-                maxV = (texV + 16 - 0.01F) / 256.0F;
+                minU = 7 * texel;
+                maxU = 9 * texel;
+                minV = 6 * texel;
+                maxV = 1.0F;
             }
 
             Vec3D v1 = default, v2 = default, v3 = default, v4 = default;

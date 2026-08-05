@@ -5,12 +5,11 @@ layout (location = 1) in uvec2 inUV;
 layout (location = 2) in vec4 inColor;
 layout (location = 3) in uvec2 inLight;
 
-// Which layer of the terrain array this vertex samples. Unread until task #28 converts
-// textureSampler to a sampler2DArray.
+// Which layer of the terrain array this vertex samples.
 layout (location = 4) in uint inArrayLayer;
 
 out vec4 vertexColor;
-out vec2 texCoord;
+out vec3 texCoord;
 out float fogDistance;
 
 uniform mat4 modelViewMatrix;
@@ -65,20 +64,6 @@ float terrainBrightness(uvec2 packedLight)
     float block = lightLevel(packedLight.y);
 
     return rampLuminance(clamp(max(sky, block), 0.0, 15.0));
-}
-
-int atlasIndexFromUV(vec2 uv)
-{
-    uv = clamp(uv, 0.0, 0.999999);
-
-    ivec2 tile = ivec2(floor(uv * 16.0));
-
-    return tile.x + tile.y * 16;
-}
-
-vec2 localUV(uvec2 inuv)
-{
-    return vec2(inuv & 0xFu) / 14.0;
 }
 
 const vec2 WindDir = vec2(-0.8, 0.6); // unit vector, 0.8^2 + 0.6^2 = 1.0
@@ -146,44 +131,56 @@ vec3 calcMoveLeaves(in vec3 pos)
     return 5.0 * WavyLeavesStrength * move1;
 }
 
-bool isLeaf(int idx)
+// Which layers sway, uploaded by name rather than written in as atlas indices -- a pack that
+// reorders nothing still moves these, and a definition that adds a plant can join them.
+const int MaxWavyLayers = 8;
+uniform int wavyLeafLayers[MaxWavyLayers];
+uniform int wavyLeafCount;
+uniform int wavyPlantLayers[MaxWavyLayers];
+uniform int wavyPlantCount;
+
+bool isLeaf(int layer)
 {
-    return idx == 52 || idx == 132;
+    for (int i = 0; i < wavyLeafCount; i++)
+    {
+        if (wavyLeafLayers[i] == layer) return true;
+    }
+    return false;
 }
 
-bool isPlant(int idx)
+bool isPlant(int layer)
 {
-    return idx == 12 || idx == 13 || idx == 39 || idx == 55 || idx == 56;
+    for (int i = 0; i < wavyPlantCount; i++)
+    {
+        if (wavyPlantLayers[i] == layer) return true;
+    }
+    return false;
 }
 
 void main()
 {
     vec3 position = unpackPosition(inPosition);
-    vec2 uv = vec2(inUV & 0x7FFFu) / 32767.0;
-    uvec2 signBits = (inUV >> 15u) & 1u;
 
-    const float epsilon = 1.0 / 65536.0;
-    vec2 bias = vec2(
-    (signBits.x == 0u) ? epsilon : -epsilon,
-    (signBits.y == 0u) ? epsilon : -epsilon
-    );
+    // The whole range, with no sign bit carved out of it: an atlas needed the top bit to say which
+    // way to nudge a coordinate off a cell edge, and a layer has no neighbouring cell to nudge away
+    // from. What that bit buys instead is room to run past 1.0, which flowing water does.
+    vec2 uv = vec2(inUV) / 32767.0;
 
-    uv += bias;
+    int layer = int(inArrayLayer);
 
     if (Wavy > 0)
     {
-        int textureIndex = atlasIndexFromUV(uv);
-
         vec3 worldPos = position + vec3(chunkPos.x, 0.0, chunkPos.y);
 
-        if (WavyLeavesStrength > 0.0 && isLeaf(textureIndex))
+        if (WavyLeavesStrength > 0.0 && isLeaf(layer))
         {
             worldPos += calcMoveLeaves(worldPos);
         }
-        else if (WavyPlantStrength > 0.0 && isPlant(textureIndex))
+        else if (WavyPlantStrength > 0.0 && isPlant(layer))
         {
-            vec2 luv = localUV(inUV);
-            worldPos += calcMovePlants(worldPos) * (1.0 - luv.y);
+            // Anchored at the bottom: a plant's root does not move, and the tile's own v says how
+            // far up the vertex sits.
+            worldPos += calcMovePlants(worldPos) * (1.0 - uv.y);
         }
 
         position = worldPos - vec3(chunkPos.x, 0.0, chunkPos.y);
@@ -197,7 +194,7 @@ void main()
     gl_Position = projectionMatrix * viewPos;
 
     vertexColor = color;
-    texCoord = uv;
+    texCoord = vec3(uv, float(layer));
 
     fogDistance = length(viewPos.xyz);
 }

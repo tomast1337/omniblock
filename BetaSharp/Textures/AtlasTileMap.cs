@@ -23,6 +23,13 @@ public sealed class AtlasTileMap
     private static readonly JsonSerializerOptions s_options = new(JsonSerializerDefaults.Web);
 
     private Dictionary<string, int>? _indexByName;
+    private int[]? _layerByGridIndex;
+
+    /// <summary>
+    ///     The layer a renderer lands on when it asks for a cell no tile is named after. Reserved so
+    ///     that looks broken rather than like whichever tile happened to be listed first.
+    /// </summary>
+    public const int MissingLayer = 0;
 
     public int TileSize { get; init; } = 16;
     public int GridWidth { get; init; } = 16;
@@ -66,5 +73,45 @@ public sealed class AtlasTileMap
         return _indexByName.TryGetValue(name, out int index)
             ? index
             : throw new KeyNotFoundException($"No atlas tile named '{name}'.");
+    }
+
+    /// <summary>How many texture-array layers this map needs, the reserved one included.</summary>
+    public int LayerCount => Tiles.Count + 1;
+
+    /// <summary>
+    ///     The array layer holding <paramref name="name" />: its position in <see cref="Tiles" />,
+    ///     offset past the reserved <see cref="MissingLayer" />.
+    /// </summary>
+    /// <remarks>
+    ///     Layers are not grid positions, deliberately. A tile listed past the 256th cell of a 16x16
+    ///     map still gets a layer, which is what lets a definition from outside this assembly ship a
+    ///     texture the legacy grid has no room for.
+    /// </remarks>
+    public int LayerOf(string name) => LayerOfGridIndex(IndexOf(name));
+
+    /// <summary>
+    ///     The array layer for a legacy grid index — <c>x + y * GridWidth</c>, the int a
+    ///     <c>TextureId</c> still carries — or <see cref="MissingLayer" /> for an unclaimed cell.
+    /// </summary>
+    public int LayerOfGridIndex(int gridIndex)
+    {
+        _layerByGridIndex ??= BuildGridLayers();
+
+        return (uint)gridIndex < (uint)_layerByGridIndex.Length ? _layerByGridIndex[gridIndex] : MissingLayer;
+    }
+
+    private int[] BuildGridLayers()
+    {
+        int[] layers = new int[GridWidth * GridHeight];
+
+        for (int i = 0; i < Tiles.Count; i++)
+        {
+            AtlasTile tile = Tiles[i];
+            int gridIndex = tile.X + tile.Y * GridWidth;
+
+            if ((uint)gridIndex < (uint)layers.Length) layers[gridIndex] = i + 1;
+        }
+
+        return layers;
     }
 }

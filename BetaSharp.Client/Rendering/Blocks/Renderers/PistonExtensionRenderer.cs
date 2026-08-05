@@ -1,5 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Behaviors;
+using BetaSharp.Textures;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Blocks.Renderers;
@@ -16,7 +17,9 @@ public class PistonExtensionRenderer : IBlockRenderer
         // Using CustomFlag to track if this is a ShortArm rendering phase
         bool isShortArm = ctx.CustomFlag;
         float armLength = isShortArm ? 1.0F : 0.5F;
-        float texWidth = isShortArm ? 16.0f : 8.0f;
+        // The retracted arm shows the whole tile along its length; the extended one is stretched
+        // over half of it, so the texture repeats visually rather than smearing.
+        float texWidth = isShortArm ? 1.0f : 0.5f;
 
         int uvTop = 0, uvBottom = 0, uvNorth = 0, uvSouth = 0, uvEast = 0, uvWest = 0;
         Box? bounds = ctx.OverrideBounds ?? block.BoundingBox;
@@ -141,16 +144,21 @@ public class PistonExtensionRenderer : IBlockRenderer
     }
 
 
+    /// <summary>The arm's own texture, which is the piston body's side however the head is textured.</summary>
+    private static readonly int s_armSideLayer = Atlases.Terrain.LayerOf("betasharp:piston_body_side");
+
+    /// <summary>The arm is 4 of the tile's 16 pixels thick, so it uses the top quarter of it.</summary>
+    private const float ArmThickness = 4.0f / 16.0f;
+
     private static void RenderPistonArmY(ref BlockRenderContext ctx, float x1, float x2, float y1,
         float y2, float z1, float z2, float luminance, float textureWidth)
     {
-        const int textureId = 108;
-        const int texU = (textureId & 15) << 4;
-        const int texV = textureId & 240;
-        const float minU = texU / 256.0f;
-        const float minV = texV / 256.0f;
-        const float maxV = (texV + 4.0f - 0.01f) / 256.0f;
-        float maxU = (texU + textureWidth - 0.01f) / 256.0f;
+        ctx.Tess.setArrayLayer(s_armSideLayer);
+
+        const float minU = 0.0f;
+        const float minV = 0.0f;
+        const float maxV = ArmThickness;
+        float maxU = textureWidth;
 
         ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
         ctx.Tess.addVertexWithUV(x1, y2, z1, maxU, minV);
@@ -162,13 +170,12 @@ public class PistonExtensionRenderer : IBlockRenderer
     private static void RenderPistonArmZ(ref BlockRenderContext ctx, float x1, float x2, float y1,
         float y2, float z1, float z2, float luminance, float textureWidth)
     {
-        const int textureId = 108;
-        const int texU = (textureId & 15) << 4;
-        const int texV = textureId & 240;
-        const float minU = texU / 256.0f;
-        const float minV = texV / 256.0f;
-        const float maxV = (texV + 4.0f - 0.01f) / 256.0f;
-        float maxU = (texU + textureWidth - 0.01f) / 256.0f;
+        ctx.Tess.setArrayLayer(s_armSideLayer);
+
+        const float minU = 0.0f;
+        const float minV = 0.0f;
+        const float maxV = ArmThickness;
+        float maxU = textureWidth;
 
         ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
         ctx.Tess.addVertexWithUV(x1, y1, z2, maxU, minV);
@@ -180,13 +187,12 @@ public class PistonExtensionRenderer : IBlockRenderer
     private static void RenderPistonArmX(ref BlockRenderContext ctx, float x1, float x2, float y1,
         float y2, float z1, float z2, float luminance, float textureWidth)
     {
-        const int textureId = 108;
-        const int texU = (textureId & 15) << 4;
-        const int texV = textureId & 240;
-        const float minU = texU / 256.0f;
-        const float minV = texV / 256.0f;
-        const float maxV = (texV + 4.0f - 0.01f) / 256.0f;
-        float maxU = (texU + textureWidth - 0.01f) / 256.0f;
+        ctx.Tess.setArrayLayer(s_armSideLayer);
+
+        const float minU = 0.0f;
+        const float minV = 0.0f;
+        const float maxV = ArmThickness;
+        float maxU = textureWidth;
 
         ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
         ctx.Tess.addVertexWithUV(x2, y1, z1, maxU, minV);
