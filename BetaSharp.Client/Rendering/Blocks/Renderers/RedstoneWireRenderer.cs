@@ -1,5 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Behaviors;
+using BetaSharp.Textures;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -8,7 +9,16 @@ namespace BetaSharp.Client.Rendering.Blocks.Renderers;
 public class RedstoneWireRenderer : IBlockRenderer
 {
     private const float QuarterPixel = 0.015625F;
-    private const float ShroudVOffset = 1.0F / 16.0F;
+
+    /// <summary>
+    ///     The wire's brighter twin, drawn underneath at half colour. Beta reached it as the tile one
+    ///     row below the unpowered dust, which is what these two are.
+    /// </summary>
+    private static readonly int s_crossShroudLayer = Atlases.Terrain.LayerOf("betasharp:redstone_dust_cross_on");
+    private static readonly int s_lineShroudLayer = Atlases.Terrain.LayerOf("betasharp:redstone_dust_line_on");
+
+    /// <summary>A run of wire with no branch, which is the cross tile's neighbour on the atlas.</summary>
+    private static readonly int s_lineLayer = Atlases.Terrain.LayerOf("betasharp:redstone_dust_line_off");
 
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
@@ -43,12 +53,17 @@ public class RedstoneWireRenderer : IBlockRenderer
         ctx.Tess.setColorOpaque_F(luminance * r, luminance * g, luminance * b);
 
         // --- 2. UV Mapping ---
-        int texU = (textureId & 15) << 4;
-        int texV = textureId & 240;
-        float minU = texU / 256.0F;
-        float maxU = (texU + 15.99F) / 256.0F;
-        float minV = texV / 256.0F;
-        float maxV = (texV + 15.99F) / 256.0F;
+        // Four tiles: a cross and a straight run, each with a brighter twin drawn underneath as the
+        // shroud. An override -- the block-breaking overlay -- has only the one texture to give, so
+        // every part of the wire falls back to it.
+        bool overridden = ctx.OverrideTexture >= 0;
+        int wireLayer = Atlases.Terrain.LayerOfGridIndex(textureId);
+        int shroudLayer = overridden ? wireLayer : s_crossShroudLayer;
+
+        float minU = 0.0F;
+        float maxU = 1.0F;
+        float minV = 0.0F;
+        float maxV = 1.0F;
 
         // --- 3. Connection Logic ---
         bool connectsWest = wireBehavior.IsPowerProviderOrWire(ctx.BlockReader, pos.X - 1, pos.Y, pos.Z, 1) ||
@@ -90,8 +105,8 @@ public class RedstoneWireRenderer : IBlockRenderer
 
         if (shapeType != 0) // Use the "Straight Line" texture variant
         {
-            minU = (texU + 16) / 256.0F;
-            maxU = (texU + 16 + 15.99F) / 256.0F;
+            wireLayer = overridden ? wireLayer : s_lineLayer;
+            shroudLayer = overridden ? wireLayer : s_lineShroudLayer;
         }
 
         if (shapeType == 0)
@@ -101,25 +116,25 @@ public class RedstoneWireRenderer : IBlockRenderer
                 if (!connectsWest)
                 {
                     renderMinX += 0.3125F;
-                    minU += 0.01953125F;
+                    minU += 5.0F / 16.0F;
                 }
 
                 if (!connectsEast)
                 {
                     renderMaxX -= 0.3125F;
-                    maxU -= 0.01953125F;
+                    maxU -= 5.0F / 16.0F;
                 }
 
                 if (!connectsNorth)
                 {
                     renderMinZ += 0.3125F;
-                    minV += 0.01953125F;
+                    minV += 5.0F / 16.0F;
                 }
 
                 if (!connectsSouth)
                 {
                     renderMaxZ -= 0.3125F;
-                    maxV -= 0.01953125F;
+                    maxV -= 5.0F / 16.0F;
                 }
             }
         }
@@ -145,6 +160,7 @@ public class RedstoneWireRenderer : IBlockRenderer
         }
 
         // Main Wire
+        ctx.Tess.setArrayLayer(wireLayer);
         ctx.Tess.addVertexWithUV(renderMaxX, wireY, renderMaxZ, u3, v3);
         ctx.Tess.addVertexWithUV(renderMaxX, wireY, renderMinZ, u2, v2);
         ctx.Tess.addVertexWithUV(renderMinX, wireY, renderMinZ, u1, v1);
@@ -153,19 +169,23 @@ public class RedstoneWireRenderer : IBlockRenderer
         // Shadow Shroud
 
         ctx.Tess.setColorOpaque_F(0.5f, 0.5f, 0.5f);
-        ctx.Tess.addVertexWithUV(renderMaxX, shadowY, renderMaxZ, u3, v3 + ShroudVOffset);
-        ctx.Tess.addVertexWithUV(renderMaxX, shadowY, renderMinZ, u2, v2 + ShroudVOffset);
-        ctx.Tess.addVertexWithUV(renderMinX, shadowY, renderMinZ, u1, v1 + ShroudVOffset);
-        ctx.Tess.addVertexWithUV(renderMinX, shadowY, renderMaxZ, u4, v4 + ShroudVOffset);
+        ctx.Tess.setArrayLayer(shroudLayer);
+        ctx.Tess.addVertexWithUV(renderMaxX, shadowY, renderMaxZ, u3, v3);
+        ctx.Tess.addVertexWithUV(renderMaxX, shadowY, renderMinZ, u2, v2);
+        ctx.Tess.addVertexWithUV(renderMinX, shadowY, renderMinZ, u1, v1);
+        ctx.Tess.addVertexWithUV(renderMinX, shadowY, renderMaxZ, u4, v4);
 
         // --- 6. Render Slopes ---
         if (ctx.BlockReader.ShouldSuffocate(pos.X, pos.Y + 1, pos.Z)) return true;
 
         // Reset to the straight texture variant for slopes
-        minU = (texU + 16) / 256.0F;
-        maxU = (texU + 16 + 15.99F) / 256.0F;
-        minV = texV / 256.0F;
-        maxV = (texV + 15.99F) / 256.0F;
+        wireLayer = overridden ? wireLayer : s_lineLayer;
+        shroudLayer = overridden ? wireLayer : s_lineShroudLayer;
+
+        minU = 0.0F;
+        maxU = 1.0F;
+        minV = 0.0F;
+        maxV = 1.0F;
 
         float slopeHeight = pos.Y + 1.021875F;
 
@@ -174,16 +194,18 @@ public class RedstoneWireRenderer : IBlockRenderer
             ctx.BlockReader.GetBlockId(pos.X - 1, pos.Y + 1, pos.Z) == block.Id)
         {
             ctx.Tess.setColorOpaque_F(luminance * r, luminance * g, luminance * b);
+            ctx.Tess.setArrayLayer(wireLayer);
             ctx.Tess.addVertexWithUV(pos.X + QuarterPixel, slopeHeight, pos.Z + 1, maxU, minV);
             ctx.Tess.addVertexWithUV(pos.X + QuarterPixel, pos.Y, pos.Z + 1, minU, minV);
             ctx.Tess.addVertexWithUV(pos.X + QuarterPixel, pos.Y, pos.Z + 0, minU, maxV);
             ctx.Tess.addVertexWithUV(pos.X + QuarterPixel, slopeHeight, pos.Z + 0, maxU, maxV);
 
             ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
-            ctx.Tess.addVertexWithUV(pos.X + QuarterPixel, slopeHeight, pos.Z + 1, maxU, minV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.X + QuarterPixel, pos.Y, pos.Z + 1, minU, minV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.X + QuarterPixel, pos.Y, pos.Z + 0, minU, maxV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.X + QuarterPixel, slopeHeight, pos.Z + 0, maxU, maxV + ShroudVOffset);
+            ctx.Tess.setArrayLayer(shroudLayer);
+            ctx.Tess.addVertexWithUV(pos.X + QuarterPixel, slopeHeight, pos.Z + 1, maxU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + QuarterPixel, pos.Y, pos.Z + 1, minU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + QuarterPixel, pos.Y, pos.Z + 0, minU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + QuarterPixel, slopeHeight, pos.Z + 0, maxU, maxV);
         }
 
         // East Slope
@@ -191,16 +213,18 @@ public class RedstoneWireRenderer : IBlockRenderer
             ctx.BlockReader.GetBlockId(pos.X + 1, pos.Y + 1, pos.Z) == block.Id)
         {
             ctx.Tess.setColorOpaque_F(luminance * r, luminance * g, luminance * b);
+            ctx.Tess.setArrayLayer(wireLayer);
             ctx.Tess.addVertexWithUV(pos.X + 1 - QuarterPixel, pos.Y, pos.Z + 1, minU, maxV);
             ctx.Tess.addVertexWithUV(pos.X + 1 - QuarterPixel, slopeHeight, pos.Z + 1, maxU, maxV);
             ctx.Tess.addVertexWithUV(pos.X + 1 - QuarterPixel, slopeHeight, pos.Z + 0, maxU, minV);
             ctx.Tess.addVertexWithUV(pos.X + 1 - QuarterPixel, pos.Y, pos.Z + 0, minU, minV);
 
             ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
-            ctx.Tess.addVertexWithUV(pos.X + 1 - QuarterPixel, pos.Y, pos.Z + 1, minU, maxV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.X + 1 - QuarterPixel, slopeHeight, pos.Z + 1, maxU, maxV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.X + 1 - QuarterPixel, slopeHeight, pos.Z + 0, maxU, minV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.X + 1 - QuarterPixel, pos.Y, pos.Z + 0, minU, minV + ShroudVOffset);
+            ctx.Tess.setArrayLayer(shroudLayer);
+            ctx.Tess.addVertexWithUV(pos.X + 1 - QuarterPixel, pos.Y, pos.Z + 1, minU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + 1 - QuarterPixel, slopeHeight, pos.Z + 1, maxU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + 1 - QuarterPixel, slopeHeight, pos.Z + 0, maxU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + 1 - QuarterPixel, pos.Y, pos.Z + 0, minU, minV);
         }
 
         // North Slope
@@ -208,16 +232,18 @@ public class RedstoneWireRenderer : IBlockRenderer
             ctx.BlockReader.GetBlockId(pos.X, pos.Y + 1, pos.Z - 1) == block.Id)
         {
             ctx.Tess.setColorOpaque_F(luminance * r, luminance * g, luminance * b);
+            ctx.Tess.setArrayLayer(wireLayer);
             ctx.Tess.addVertexWithUV(pos.X + 1, pos.Y, pos.Z + QuarterPixel, minU, maxV);
             ctx.Tess.addVertexWithUV(pos.X + 1, slopeHeight, pos.Z + QuarterPixel, maxU, maxV);
             ctx.Tess.addVertexWithUV(pos.X + 0, slopeHeight, pos.Z + QuarterPixel, maxU, minV);
             ctx.Tess.addVertexWithUV(pos.X + 0, pos.Y, pos.Z + QuarterPixel, minU, minV);
 
             ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
-            ctx.Tess.addVertexWithUV(pos.X + 1, pos.Y, pos.Z + QuarterPixel, minU, maxV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.X + 1, slopeHeight, pos.Z + QuarterPixel, maxU, maxV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.X + 0, slopeHeight, pos.Z + QuarterPixel, maxU, minV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.X + 0, pos.Y, pos.Z + QuarterPixel, minU, minV + ShroudVOffset);
+            ctx.Tess.setArrayLayer(shroudLayer);
+            ctx.Tess.addVertexWithUV(pos.X + 1, pos.Y, pos.Z + QuarterPixel, minU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + 1, slopeHeight, pos.Z + QuarterPixel, maxU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + 0, slopeHeight, pos.Z + QuarterPixel, maxU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + 0, pos.Y, pos.Z + QuarterPixel, minU, minV);
         }
 
         // South Slope
@@ -225,16 +251,18 @@ public class RedstoneWireRenderer : IBlockRenderer
             ctx.BlockReader.GetBlockId(pos.X, pos.Y + 1, pos.Z + 1) == block.Id)
         {
             ctx.Tess.setColorOpaque_F(luminance * r, luminance * g, luminance * b);
+            ctx.Tess.setArrayLayer(wireLayer);
             ctx.Tess.addVertexWithUV(pos.X + 1, slopeHeight, pos.Z + 1 - QuarterPixel, maxU, minV);
             ctx.Tess.addVertexWithUV(pos.X + 1, pos.Y, pos.Z + 1 - QuarterPixel, minU, minV);
             ctx.Tess.addVertexWithUV(pos.X + 0, pos.Y, pos.Z + 1 - QuarterPixel, minU, maxV);
             ctx.Tess.addVertexWithUV(pos.X + 0, slopeHeight, pos.Z + 1 - QuarterPixel, maxU, maxV);
 
             ctx.Tess.setColorOpaque_F(luminance, luminance, luminance);
-            ctx.Tess.addVertexWithUV(pos.X + 1, slopeHeight, pos.Z + 1 - QuarterPixel, maxU, minV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.X + 1, pos.Y, pos.Z + 1 - QuarterPixel, minU, minV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.X + 0, pos.Y, pos.Z + 1 - QuarterPixel, minU, maxV + ShroudVOffset);
-            ctx.Tess.addVertexWithUV(pos.X + 0, slopeHeight, pos.Z + 1 - QuarterPixel, maxU, maxV + ShroudVOffset);
+            ctx.Tess.setArrayLayer(shroudLayer);
+            ctx.Tess.addVertexWithUV(pos.X + 1, slopeHeight, pos.Z + 1 - QuarterPixel, maxU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + 1, pos.Y, pos.Z + 1 - QuarterPixel, minU, minV);
+            ctx.Tess.addVertexWithUV(pos.X + 0, pos.Y, pos.Z + 1 - QuarterPixel, minU, maxV);
+            ctx.Tess.addVertexWithUV(pos.X + 0, slopeHeight, pos.Z + 1 - QuarterPixel, maxU, maxV);
         }
 
         return true;

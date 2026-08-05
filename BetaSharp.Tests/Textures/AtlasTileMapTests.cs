@@ -39,4 +39,50 @@ public sealed class AtlasTileMapTests
                 $"{name} atlas tile '{tile.Name}' at ({tile.X},{tile.Y}) is outside the {atlas.GridWidth}x{atlas.GridHeight} grid.");
         }
     }
+
+    [Theory]
+    [MemberData(nameof(Atlases))]
+    public void Every_tile_has_its_own_layer(string name, AtlasTileMap atlas)
+    {
+        int[] layers = [.. atlas.Tiles.Select(t => atlas.LayerOf(t.Name))];
+
+        Assert.True(layers.Length == layers.Distinct().Count(), $"{name} atlas has tiles sharing a layer.");
+        Assert.DoesNotContain(AtlasTileMap.MissingLayer, layers);
+        Assert.All(layers, layer => Assert.InRange(layer, 1, atlas.LayerCount - 1));
+    }
+
+    [Theory]
+    [MemberData(nameof(Atlases))]
+    public void A_tile_resolves_to_the_same_layer_by_name_and_by_grid_index(string name, AtlasTileMap atlas)
+    {
+        foreach (AtlasTile tile in atlas.Tiles)
+        {
+            Assert.True(atlas.LayerOf(tile.Name) == atlas.LayerOfGridIndex(atlas.IndexOf(tile.Name)),
+                $"{name} atlas tile '{tile.Name}' resolves to a different layer by name than by index.");
+        }
+    }
+
+    /// <summary>
+    ///     An index nothing claims has to land somewhere, and landing on a real tile is the failure
+    ///     mode worth ruling out — a block with a stale index would render as some unrelated texture
+    ///     instead of as visibly broken.
+    /// </summary>
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(256)]
+    public void An_index_outside_the_grid_resolves_to_the_reserved_layer(int gridIndex)
+    {
+        Assert.Equal(AtlasTileMap.MissingLayer, BetaSharp.Textures.Atlases.Terrain.LayerOfGridIndex(gridIndex));
+    }
+
+    [Fact]
+    public void An_unclaimed_cell_inside_the_grid_resolves_to_the_reserved_layer()
+    {
+        AtlasTileMap atlas = BetaSharp.Textures.Atlases.Terrain;
+        var claimed = atlas.Tiles.Select(t => t.X + t.Y * atlas.GridWidth).ToHashSet();
+
+        int unclaimed = Enumerable.Range(0, atlas.GridWidth * atlas.GridHeight).First(i => !claimed.Contains(i));
+
+        Assert.Equal(AtlasTileMap.MissingLayer, atlas.LayerOfGridIndex(unclaimed));
+    }
 }

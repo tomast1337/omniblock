@@ -1,5 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Behaviors;
+using BetaSharp.Textures;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Blocks.Renderers;
@@ -25,12 +26,12 @@ public class MinecartTrackRenderer : IBlockRenderer
         ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
         ctx.Tess.setColorOpaque_F(1.0F, 1.0F, 1.0F);
 
-        int texU = (textureId & 15) << 4;
-        int texV = textureId & 240;
-        float minU = texU / 256.0f;
-        float maxU = (texU + 15.99f) / 256.0f;
-        float minV = texV / 256.0f;
-        float maxV = (texV + 15.99f) / 256.0f;
+        ctx.Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
+
+        const float minU = 0.0F;
+        const float maxU = 1.0F;
+        const float minV = 0.0F;
+        const float maxV = 1.0F;
 
         float verticalOffset = 1.0F / 16.0F; // 1 pixel above the ground
 

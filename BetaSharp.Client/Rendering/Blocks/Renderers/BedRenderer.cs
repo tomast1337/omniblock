@@ -1,5 +1,6 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Behaviors;
+using BetaSharp.Textures;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Blocks.Renderers;
@@ -23,13 +24,12 @@ public class BedRenderer : IBlockRenderer
         ctx.Tess.setColorOpaque_F(lightBottom, lightBottom, lightBottom);
 
         int texBottom = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, 0);
-        int texU = (texBottom & 15) << 4;
-        int texV = texBottom & 240;
+        ctx.Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(texBottom));
 
-        float minU = texU / 256.0F;
-        float maxU = (texU + 15.99f) / 256.0f;
-        float minV = texV / 256.0F;
-        float maxV = (texV + 15.99f) / 256.0f;
+        const float minU = 0.0F;
+        const float maxU = 1.0F;
+        const float minV = 0.0F;
+        const float maxV = 1.0F;
 
         float minX = (float)(pos.X + bounds.MinX);
         float maxX = (float)(pos.X + bounds.MaxX);
@@ -47,13 +47,7 @@ public class BedRenderer : IBlockRenderer
         ctx.Tess.setColorOpaque_F(lightTop, lightTop, lightTop);
 
         int texTop = block.GetTextureId(ctx.BlockReader, pos.X, pos.Y, pos.Z, Side.Up);
-        texU = (texTop & 15) << 4;
-        texV = texTop & 240;
-
-        minU = texU / 256.0F;
-        maxU = (texU + 15.99f) / 256.0f;
-        minV = texV / 256.0F;
-        maxV = (texV + 15.99f) / 256.0f;
+        ctx.Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(texTop));
 
         float u1 = minU, u2 = maxU, u3 = minU, u4 = maxU;
         float v1 = minV, v2 = minV, v3 = maxV, v4 = maxV;

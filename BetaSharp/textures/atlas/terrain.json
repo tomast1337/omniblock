@@ -194,6 +194,11 @@
       "y": 2
     },
     {
+      "name": "grass_block_side_overlay",
+      "x": 6,
+      "y": 2
+    },
+    {
       "name": "tallgrass",
       "x": 7,
       "y": 2

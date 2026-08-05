@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Textures;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Blocks.Renderers;
@@ -29,12 +30,12 @@ public class CropsRenderer : IBlockRenderer
             textureId = ctx.OverrideTexture;
         }
 
-        int texU = (textureId & 15) << 4;
-        int texV = textureId & 240;
-        float minU = texU / 256.0F;
-        float maxU = (texU + 15.99F) / 256.0F;
-        float minV = texV / 256.0F;
-        float maxV = (texV + 15.99F) / 256.0F;
+        ctx.Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
+
+        const float minU = 0.0F;
+        const float maxU = 1.0F;
+        const float minV = 0.0F;
+        const float maxV = 1.0F;
 
         float minX = x + 0.5f - 0.25f; // Left plane X
         float maxX = x + 0.5f + 0.25f; // Right plane X

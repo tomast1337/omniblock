@@ -1,4 +1,5 @@
 using BetaSharp.Blocks;
+using BetaSharp.Textures;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Blocks.Renderers;
@@ -44,12 +45,12 @@ public class ReedRenderer : IBlockRenderer
         }
 
         // Convert texture ID to UV coordinates (0.0 to 1.0 range)
-        int texU = (textureId & 15) << 4;
-        int texV = textureId & 240;
-        float minU = texU / 256.0F;
-        float maxU = (texU + 15.99F) / 256.0F;
-        float minV = texV / 256.0F;
-        float maxV = (texV + 15.99F) / 256.0F;
+        ctx.Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
+
+        const float minU = 0.0F;
+        const float maxU = 1.0F;
+        const float minV = 0.0F;
+        const float maxV = 1.0F;
 
         // Magic number 0.45 means the planes stretch from 0.05 to 0.95 within the block.
         // This slight inset prevents Z-fighting (flickering) if the plant touches an adjacent solid block.

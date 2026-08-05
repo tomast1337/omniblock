@@ -1,6 +1,7 @@
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Materials;
+using BetaSharp.Textures;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Blocks.Renderers;
@@ -63,26 +64,28 @@ public class FluidsRenderer : IBlockRenderer
                 textureId = block.GetTexture(Side.North, meta);
             }
 
-            int texU = (textureId & 15) << 4;
-            int texV = textureId & 240;
-            float centerU = (texU + 8.0f) / 256.0f;
-            float centerV = (texV + 8.0f) / 256.0f;
+            ctx.Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 
-            // If completely still, use standard flat UVs
+            // Still water is a quad turned about the middle of its tile, so it lands back on the
+            // tile exactly. Flowing water turns about the corner instead and sweeps up to 0.71 of a
+            // tile past the edge, which the layer's wrap folds back onto itself -- Beta got the same
+            // result by writing the flowing frame into a 2x2 block of atlas cells.
+            float centerU = 0.5F;
+            float centerV = 0.5F;
+
             if (flowAngle <= -999.0F)
             {
                 flowAngle = 0.0F;
             }
             else
             {
-                // Shift UV center for flowing animation
-                centerU = (texU + 16) / 256.0F;
-                centerV = (texV + 16) / 256.0F;
+                centerU = 1.0F;
+                centerV = 1.0F;
             }
 
             // Calculate rotational offsets for the UVs to make the texture flow in the correct direction
-            float sinAngle = MathHelper.Sin(flowAngle) * 8.0F / 256.0F;
-            float cosAngle = MathHelper.Cos(flowAngle) * 8.0F / 256.0F;
+            float sinAngle = MathHelper.Sin(flowAngle) * 0.5F;
+            float cosAngle = MathHelper.Cos(flowAngle) * 0.5F;
 
             ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
             ctx.Tess.setColorOpaque_F(lightTop * tintR, lightTop * tintG, lightTop * tintB);
@@ -127,8 +130,7 @@ public class FluidsRenderer : IBlockRenderer
             if (side == 3) adjX = pos.X + 1; // East
 
             int textureId = block.GetTexture((side + 2).ToSide(), meta);
-            int texU = (textureId & 15) << 4;
-            int texV = textureId & 240;
+            ctx.Tess.setArrayLayer(Atlases.Terrain.LayerOfGridIndex(textureId));
 
             if (ctx.RenderAllFaces || sideVisible[side])
             {
@@ -176,11 +178,11 @@ public class FluidsRenderer : IBlockRenderer
                 hasRendered = true;
 
                 // Crop the UVs vertically so the texture doesn't stretch on short flowing water blocks
-                float minU = (texU + 0) / 256.0F;
-                float maxU = (texU + 16 - 0.01f) / 256.0f;
-                float minV1 = (texV + (1.0F - h1) * 16.0F) / 256.0F; // UV height match for corner 1
-                float minV2 = (texV + (1.0F - h2) * 16.0F) / 256.0F; // UV height match for corner 2
-                float maxV = (texV + 16 - 0.01f) / 256.0f;
+                const float minU = 0.0F;
+                const float maxU = 1.0F;
+                float minV1 = 1.0F - h1; // UV height match for corner 1
+                float minV2 = 1.0F - h2; // UV height match for corner 2
+                const float maxV = 1.0F;
 
                 ctx.SetLightAt(block, adjX, pos.Y, adjZ);
                 float shadow = (side < 2) ? lightZ : lightX;

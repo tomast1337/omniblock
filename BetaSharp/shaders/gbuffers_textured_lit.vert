@@ -9,8 +9,9 @@ layout (location = 1) in vec4 inColor;
 layout (location = 2) in vec2 inUV;
 layout (location = 3) in vec3 inNormal;
 
-// Which layer of a texture array this vertex samples. Unread until task #28 converts
-// textureSampler to a sampler2DArray.
+// Which layer of the named texture array this vertex samples, or -1 for a draw that means the
+// plain 2D texture on unit 0. Carried per vertex rather than switched by a uniform so a batch can
+// mix the two -- an item icon and the block behind it go out together.
 layout (location = 4) in int inArrayLayer;
 
 uniform mat4 modelViewMatrix;
@@ -32,12 +33,15 @@ flat out vec4 vertexColorFlat;
 out vec4 vertexColorSmooth;
 out vec2 texCoord;
 out float fogDistance;
+flat out int arrayLayer;
 
 void main()
 {
     vec4 viewPos = modelViewMatrix * vec4(inPosition, 1.0);
 
     gl_Position = projectionMatrix * viewPos;
+    arrayLayer = inArrayLayer;
+
     fogDistance = length(viewPos.xyz);
 
     texCoord = (textureMatrix * vec4(inUV, 0.0, 1.0)).xy;

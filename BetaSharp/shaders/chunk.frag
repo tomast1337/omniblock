@@ -1,12 +1,12 @@
 ﻿#version 410
 
 in vec4 vertexColor;
-in vec2 texCoord;
+in vec3 texCoord;
 in float fogDistance;
 
 out vec4 FragColor;
 
-uniform sampler2D textureSampler;
+uniform sampler2DArray textureSampler;
 uniform vec4 fogColor;
 uniform vec3 fog;
 uniform int fogMode;

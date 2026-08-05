@@ -18,8 +18,11 @@ public struct Vertex(float x, float y, float z, float u, float v, int color, int
     public int Color = color; // 4 bytes + 20 bytes = 24 bytes
     public int Normal = normal; // 4 bytes + 20 bytes = 28 bytes
 
-    /// <summary>Which layer of a texture array this vertex samples. Unread until task #28 wires a named array in.</summary>
-    public int ArrayLayer; // 32 bytes total
+    /// <summary>
+    ///     Which layer of the named texture array this vertex samples, or
+    ///     <see cref="Tessellator.NoArrayLayer" /> for the plain 2D texture on unit 0.
+    /// </summary>
+    public int ArrayLayer = Tessellator.NoArrayLayer; // 32 bytes total
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 18)]
@@ -29,8 +32,12 @@ public struct ChunkVertex
     public short X; // 2 bytes + 4 bytes = 6 bytes
     public short Y; // 2 bytes + 6 bytes = 8 bytes
     public short Z; // 2 bytes + 8 bytes = 10 bytes
-    public short U; // 2 bytes + 10 bytes = 12 bytes
-    public short V; // 2 bytes + 12 bytes = 14 bytes
+
+    // Within the vertex's own array layer, 1.0 stored as 32767. Unsigned rather than signed so the
+    // spare top half reaches 2.0: flowing water turns its quad about the tile's corner and needs to
+    // run past the edge, which the layer's wrap folds back onto itself.
+    public ushort U; // 2 bytes + 10 bytes = 12 bytes
+    public ushort V; // 2 bytes + 12 bytes = 14 bytes
 
     // The two light channels, in quarter levels: a smooth-lit corner is the mean of four cells each
     // 0-15, so the value is a multiple of 0.25 and 0..60 holds it exactly. This is where the spare
@@ -38,7 +45,7 @@ public struct ChunkVertex
     public byte SkyLight; // 1 byte + 14 bytes = 15 bytes
     public byte BlockLight; // 1 byte + 15 bytes = 16 bytes
 
-    /// <summary>Which layer of the terrain array this vertex samples. Unread until task #28.</summary>
+    /// <summary>Which layer of the terrain array this vertex samples.</summary>
     public ushort ArrayLayer; // 18 bytes total
 }
 
@@ -55,8 +62,7 @@ public static class ChunkVertexHelper
         float z,
         float u,
         float v,
-        float centroidU,
-        float centroidV,
+        int arrayLayer,
         byte skyLight,
         byte blockLight)
     {
@@ -66,8 +72,9 @@ public static class ChunkVertexHelper
             X = FloatToShortPosition(x),
             Y = FloatToShortPosition(y),
             Z = FloatToShortPosition(z),
-            U = FloatToShortUVWithInset(u, centroidU),
-            V = FloatToShortUVWithInset(v, centroidV),
+            U = FloatToShortUV(u),
+            V = FloatToShortUV(v),
+            ArrayLayer = (ushort)arrayLayer,
             SkyLight = skyLight,
             BlockLight = blockLight
         };
@@ -77,27 +84,23 @@ public static class ChunkVertexHelper
     public static byte ToQuarterLevels(float level) =>
         (byte)Math.Clamp((int)MathF.Round(level * 4.0f), 0, 60);
 
-    private static short FloatToShortUVWithInset(float uv, float centroid)
-    {
-        int bias = uv < centroid ? 1 : -1;
-        int quantized = (int)System.Math.Round(uv * UV_SCALE) + bias;
-
-        return (short)(quantized & 0x7FFF | Sign(bias) << 15);
-    }
-
-    private static int Sign(int x)
-    {
-        return x < 0 ? 1 : 0;
-    }
-
     public static short FloatToShortPosition(float position)
     {
         return (short)System.Math.Round(position * POSITION_SCALE);
     }
 
-    public static short FloatToShortUV(float uv)
+    /// <summary>
+    ///     A texture coordinate within its own array layer as the fixed point a vertex holds, where
+    ///     1.0 is a whole tile and the representable range runs to 2.0.
+    /// </summary>
+    /// <remarks>
+    ///     Straight quantization, with none of the inward bias an atlas needed: a layer's edge is the
+    ///     texture's edge, so a neighbouring cell is no longer somewhere a coordinate can slip into.
+    ///     Bleeding is what the bias existed to hide.
+    /// </remarks>
+    public static ushort FloatToShortUV(float uv)
     {
-        return (short)(uv * UV_SCALE);
+        return (ushort)Math.Clamp((int)MathF.Round(uv * UV_SCALE), 0, ushort.MaxValue);
     }
 
 }
@@ -110,6 +113,18 @@ public enum TesselatorCaptureVertexFormat
 
 public class Tessellator
 {
+    /// <summary>
+    ///     What a vertex carries when its texture is the plain 2D one on unit 0 rather than a layer of
+    ///     a named array. The default, so a draw that never heard of arrays keeps sampling as it did.
+    /// </summary>
+    public const int NoArrayLayer = -1;
+
+    /// <summary>Ints per vertex in the capture scratch buffer: x, y, z, u, v, colour, normal, light, array layer.</summary>
+    private const int ScratchVertexInts = 9;
+
+    /// <summary>The scratch buffer holds exactly one quad, which is emitted as two triangles once full.</summary>
+    private const int ScratchQuadInts = ScratchVertexInts * 4;
+
     private static readonly bool convertQuadsToTriangles = true;
     private readonly int[] rawBuffer;
     private int vertexCount;
@@ -130,6 +145,7 @@ public class Tessellator
     private double yOffset;
     private double zOffset;
     private int normal;
+    private int arrayLayer = NoArrayLayer;
     public static readonly Tessellator instance = new(2097152);
     public bool IsDrawing { get; private set; }
     private readonly uint[] _vboIds;
@@ -137,8 +153,6 @@ public class Tessellator
     private int vboIndex;
     private readonly int vboCount = 10;
     private readonly int bufferSize;
-    private float uvCentroidU;
-    private float uvCentroidV;
     private bool isCaptureMode;
     private PooledList<Vertex> capturedVertices;
     private PooledList<ChunkVertex> capturedChunkVertices;
@@ -181,10 +195,8 @@ public class Tessellator
             capturedChunkVertices = new();
         }
 
-        scratchBuffer = new int[32];
+        scratchBuffer = new int[ScratchQuadInts];
         scratchBufferIndex = 0;
-        uvCentroidU = 0f;
-        uvCentroidV = 0f;
     }
 
     public PooledList<Vertex> endCaptureVertices()
@@ -223,6 +235,7 @@ public class Tessellator
 
     public void begin()
     {
+        arrayLayer = NoArrayLayer;
         scratchBufferIndex = 0;
         vertexCount = 0;
         hasTexture = false;
@@ -334,6 +347,7 @@ public class Tessellator
 
     private void reset()
     {
+        arrayLayer = NoArrayLayer;
         vertexCount = 0;
         rawBufferIndex = 0;
         addedVertices = 0;
@@ -367,6 +381,25 @@ public class Tessellator
         hasTexture = true;
         textureU = u;
         textureV = v;
+    }
+
+    /// <summary>
+    ///     Which layer of the bound texture array the vertices from here on sample. Stays set until
+    ///     changed, like the colour and the UV do.
+    /// </summary>
+    /// <remarks>
+    ///     A layer rather than a texture name because the caller is usually resolving a legacy
+    ///     <c>TextureId</c>: see <see cref="Textures.AtlasTileMap.LayerOfGridIndex" />.
+    /// </remarks>
+    public void setArrayLayer(int layer)
+    {
+        arrayLayer = layer;
+    }
+
+    /// <summary>Goes back to sampling the plain 2D texture bound to unit 0.</summary>
+    public void clearArrayLayer()
+    {
+        arrayLayer = NoArrayLayer;
     }
 
     public void setColorOpaque_F(float red, float green, float blue)
@@ -509,27 +542,18 @@ public class Tessellator
                 scratchBuffer[scratchBufferIndex + 7] = skyLight | blockLight << 8;
             }
 
-            scratchBufferIndex += 8;
+            scratchBuffer[scratchBufferIndex + 8] = arrayLayer;
 
-            if (drawMode == 7 && convertQuadsToTriangles && scratchBufferIndex == 32)
+            scratchBufferIndex += ScratchVertexInts;
+
+            if (drawMode == 7 && convertQuadsToTriangles && scratchBufferIndex == ScratchQuadInts)
             {
-                uvCentroidU = 0f;
-                uvCentroidV = 0f;
-                for (int i = 0; i < 4; i++)
-                {
-                    int idx = i * 8;
-                    uvCentroidU += BitConverter.Int32BitsToSingle(scratchBuffer[idx + 3]);
-                    uvCentroidV += BitConverter.Int32BitsToSingle(scratchBuffer[idx + 4]);
-                }
-                uvCentroidU *= 0.25f;
-                uvCentroidV *= 0.25f;
-
                 EmitVertexFromScratch(0);
-                EmitVertexFromScratch(8);
-                EmitVertexFromScratch(16);
+                EmitVertexFromScratch(ScratchVertexInts);
+                EmitVertexFromScratch(ScratchVertexInts * 2);
 
-                EmitVertexFromScratch(16);
-                EmitVertexFromScratch(24);
+                EmitVertexFromScratch(ScratchVertexInts * 2);
+                EmitVertexFromScratch(ScratchVertexInts * 3);
                 EmitVertexFromScratch(0);
 
                 scratchBufferIndex = 0;
@@ -559,6 +583,7 @@ public class Tessellator
                     rawBuffer[rawBufferIndex + 0] = rawBuffer[rawBufferIndex - copyOffset + 0];
                     rawBuffer[rawBufferIndex + 1] = rawBuffer[rawBufferIndex - copyOffset + 1];
                     rawBuffer[rawBufferIndex + 2] = rawBuffer[rawBufferIndex - copyOffset + 2];
+                    rawBuffer[rawBufferIndex + 7] = rawBuffer[rawBufferIndex - copyOffset + 7];
                     ++vertexCount;
                     rawBufferIndex += 8;
                 }
@@ -579,6 +604,8 @@ public class Tessellator
             {
                 rawBuffer[rawBufferIndex + 6] = normal;
             }
+
+            rawBuffer[rawBufferIndex + 7] = arrayLayer;
 
             rawBuffer[rawBufferIndex + 0] = BitConverter.SingleToInt32Bits((float)(x + xOffset));
             rawBuffer[rawBufferIndex + 1] = BitConverter.SingleToInt32Bits((float)(y + yOffset));
@@ -624,7 +651,7 @@ public class Tessellator
                     col,
                     x, y, z,
                     u, v,
-                    uvCentroidU, uvCentroidV,
+                    scratchBuffer[baseIndex + 8],
                     (byte)(light & 0xFF),
                     (byte)((light >> 8) & 0xFF)
                 )
@@ -637,7 +664,7 @@ public class Tessellator
             int col = hasColor ? scratchBuffer[baseIndex + 5] : 0;
             int norm = hasNormals ? scratchBuffer[baseIndex + 6] : 0;
 
-            capturedVertices.Add(new Vertex(x, y, z, u, v, col, norm));
+            capturedVertices.Add(new Vertex(x, y, z, u, v, col, norm) { ArrayLayer = scratchBuffer[baseIndex + 8] });
         }
     }
 

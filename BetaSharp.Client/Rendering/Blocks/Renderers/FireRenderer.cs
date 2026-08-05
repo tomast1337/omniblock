@@ -1,10 +1,14 @@
 using BetaSharp.Blocks;
+using BetaSharp.Textures;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Blocks.Renderers;
 
 public class FireRenderer : IBlockRenderer
 {
+    /// <summary>The other half of the crossed pair, which the fire animation writes into too.</summary>
+    private static readonly int s_secondFrameLayer = Atlases.Terrain.LayerOf("betasharp:fire_layer_1");
+
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {
         int textureId = block.GetTexture(0);
@@ -13,12 +17,17 @@ public class FireRenderer : IBlockRenderer
         ctx.SetLightAt(block, pos.X, pos.Y, pos.Z);
         ctx.Tess.setColorOpaque_F(1.0F, 1.0F, 1.0F);
 
-        int texU = (textureId & 15) << 4;
-        int texV = textureId & 240;
-        float minU = texU / 256.0F;
-        float maxU = (texU + 15.99F) / 256.0F;
-        float minV = texV / 256.0F;
-        float maxV = (texV + 15.99F) / 256.0F;
+        // Fire is drawn as a crossed pair of quads alternating between two tiles. An override --
+        // the block-breaking overlay -- has only the one texture to give, so both alternate to it.
+        int firstFrame = Atlases.Terrain.LayerOfGridIndex(textureId);
+        int secondFrame = ctx.OverrideTexture >= 0 ? firstFrame : s_secondFrameLayer;
+
+        ctx.Tess.setArrayLayer(firstFrame);
+
+        float minU = 0.0F;
+        float maxU = 1.0F;
+        const float minV = 0.0F;
+        const float maxV = 1.0F;
 
         float fireHeight = 1.4F;
 
@@ -31,8 +40,7 @@ public class FireRenderer : IBlockRenderer
             // Variation: Flip texture or use second fire frame based on position
             if ((pos.X + pos.Y + pos.Z & 1) == 1)
             {
-                minV = (texV + 16) / 256.0F;
-                maxV = (texV + 15.99F + 16.0F) / 256.0F;
+                ctx.Tess.setArrayLayer(secondFrame);
             }
 
             if ((pos.X / 2 + pos.Y / 2 + pos.Z / 2 & 1) == 1)
@@ -102,10 +110,9 @@ public class FireRenderer : IBlockRenderer
                 float xMax = pos.X + 1, xMin = pos.X;
                 float zMax = pos.Z + 1, zMin = pos.Z;
 
-                minU = texU / 256.0F;
-                maxU = (texU + 15.99F) / 256.0F;
-                minV = texV / 256.0F;
-                maxV = (texV + 15.99F) / 256.0F;
+                ctx.Tess.setArrayLayer(firstFrame);
+                minU = 0.0F;
+                maxU = 1.0F;
 
                 int ceilY = pos.Y + 1;
                 float ceilOffset = -0.2F;
@@ -117,8 +124,7 @@ public class FireRenderer : IBlockRenderer
                     ctx.Tess.addVertexWithUV(xMax, ceilY, pos.Z + 1, minU, maxV);
                     ctx.Tess.addVertexWithUV(xMin, ceilY + ceilOffset, pos.Z + 1, minU, minV);
 
-                    minV = (texV + 16) / 256.0F;
-                    maxV = (texV + 15.99F + 16.0F) / 256.0F;
+                    ctx.Tess.setArrayLayer(secondFrame);
 
                     ctx.Tess.addVertexWithUV(xMax, ceilY + ceilOffset, pos.Z + 1, maxU, minV);
                     ctx.Tess.addVertexWithUV(xMin, ceilY, pos.Z + 1, maxU, maxV);
@@ -132,8 +138,7 @@ public class FireRenderer : IBlockRenderer
                     ctx.Tess.addVertexWithUV(pos.X + 1, ceilY, zMin, minU, maxV);
                     ctx.Tess.addVertexWithUV(pos.X + 1, ceilY + ceilOffset, zMax, minU, minV);
 
-                    minV = (texV + 16) / 256.0F;
-                    maxV = (texV + 15.99F + 16.0F) / 256.0F;
+                    ctx.Tess.setArrayLayer(secondFrame);
 
                     ctx.Tess.addVertexWithUV(pos.X + 1, ceilY + ceilOffset, zMin, maxU, minV);
                     ctx.Tess.addVertexWithUV(pos.X + 1, ceilY, zMax, maxU, maxV);
@@ -159,8 +164,7 @@ public class FireRenderer : IBlockRenderer
             ctx.Tess.addVertexWithUV(xC + insetLarge, pos.Y + fireHeight, pos.Z + 1, minU, minV);
 
             // Switch texture frame
-            minV = (texV + 16) / 256.0F;
-            maxV = (texV + 15.99F + 16.0F) / 256.0F;
+            ctx.Tess.setArrayLayer(secondFrame);
 
             // Second diagonal set (X-axis dominant)
             ctx.Tess.addVertexWithUV(pos.X + 1, pos.Y + fireHeight, zC + insetLarge, maxU, minV);
@@ -186,8 +190,7 @@ public class FireRenderer : IBlockRenderer
             ctx.Tess.addVertexWithUV(xC + i4, pos.Y + fireHeight, pos.Z, maxU, minV);
 
             // Final set
-            minV = texV / 256.0F;
-            maxV = (texV + 15.99F) / 256.0F;
+            ctx.Tess.setArrayLayer(firstFrame);
             ctx.Tess.addVertexWithUV(pos.X, pos.Y + fireHeight, zC + i4, minU, minV);
             ctx.Tess.addVertexWithUV(pos.X, pos.Y, zC + i5, minU, maxV);
             ctx.Tess.addVertexWithUV(pos.X + 1, pos.Y, zC + i5, maxU, maxV);

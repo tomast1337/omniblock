@@ -291,6 +291,10 @@ public class GameRenderer
 
             _client.FramebufferManager.Begin();
 
+            // Before anything draws, because a block-shaped draw anywhere in the frame — terrain, an
+            // item icon, the thing in your hand — samples a layer of one of these.
+            _client.TextureManager.BindTextureArrays();
+
             if (_client.World != null)
             {
                 using (Profiler.Begin("RenderWorld"))
