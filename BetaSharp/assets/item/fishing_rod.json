@@ -5,6 +5,7 @@
     "MaxStackSize": 1,
     "MaxDurability": 64,
     "Behavior": {
-        "type": "fishing_rod"
+        "type": "fishing_rod",
+        "Cast": "betasharp:fishing_rod_cast"
     }
 }

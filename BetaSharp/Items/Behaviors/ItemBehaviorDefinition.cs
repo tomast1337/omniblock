@@ -117,7 +117,9 @@ public sealed class FlintAndSteelBehaviorDefinition : ItemBehaviorDefinition
 
 public sealed class FishingRodBehaviorDefinition : ItemBehaviorDefinition
 {
-    public override IItemBehavior Build() => new FishingRodBehavior();
+    public string Cast { get; init; } = "";
+
+    public override IItemBehavior Build() => new FishingRodBehavior(Atlases.Items.IndexOf(Cast));
 }
 
 public sealed class BowBehaviorDefinition : ItemBehaviorDefinition

@@ -4,8 +4,11 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items.Behaviors;
 
-internal sealed class FishingRodBehavior : IItemBehavior
+internal sealed class FishingRodBehavior(int cast) : IItemBehavior
 {
+    /// <summary>The icon for a rod with a bobber in the water.</summary>
+    public int CastTextureId => cast;
+
     public bool IsHandheld(Item item) => true;
     public bool IsHandheldRod(Item item) => true;
 
