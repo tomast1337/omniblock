@@ -62,9 +62,30 @@ public class Connection
 
     private int _timeout;
 
-    protected Connection(IPEndPoint? address = null)
+    /// <summary>
+    ///     What the drain budget is measured against.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Deliberately not <see cref="MonotonicClock" />, which every timestamp that crosses the
+    ///         wire has to come from. This reading never leaves the process — it decides only whether
+    ///         to stop draining and go back to the tick — so it is free to be something a test can
+    ///         drive, and the wire's single time source is untouched.
+    ///     </para>
+    ///     <para>
+    ///         The budget is the one thing here that a test cannot arrange by choosing its input:
+    ///         "enough work to overrun 10 ms" depends on the machine, so a test asserting either side
+    ///         of that line has to either burn real time or lose to whatever else the machine is
+    ///         doing. With the clock injected it asserts on packets applied per millisecond charged,
+    ///         which is the property, and takes no wall time at all.
+    ///     </para>
+    /// </remarks>
+    private readonly TimeProvider _clock;
+
+    protected Connection(IPEndPoint? address = null, TimeProvider? clock = null)
     {
         _address = address;
+        _clock = clock ?? TimeProvider.System;
     }
 
     public void setNetworkHandler(NetHandler netHandler)
@@ -252,7 +273,7 @@ public class Connection
             throw new Exception("networkHandler is null");
         }
 
-        long start = MonotonicClock.NowTicks();
+        long start = _clock.GetTimestamp();
         int sinceCheck = 0;
 
         while (readQueue.TryDequeue(out Packet? packet))
@@ -266,7 +287,7 @@ public class Connection
 
             sinceCheck = 0;
 
-            if (MonotonicClock.ElapsedMs(start, MonotonicClock.NowTicks()) >= DrainBudgetMs)
+            if (_clock.GetElapsedTime(start).TotalMilliseconds >= DrainBudgetMs)
             {
                 DrainBudgetHits++;
                 break;
