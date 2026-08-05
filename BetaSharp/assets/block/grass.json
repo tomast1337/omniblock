@@ -6,7 +6,7 @@
   "SoundGroup": "grass",
   "NonOpaque": true,
   "TickRandomly": true,
-  "TextureId": 39,
+  "TextureId": "betasharp:tallgrass",
   "BurnChance": 60,
   "SpreadChance": 100,
   "RenderType": "Reed",

@@ -5,7 +5,7 @@
   "SoundGroup": "stone",
   "Hardness": 3,
   "Resistance": 5,
-  "TextureId": 34,
+  "TextureId": "betasharp:coal_ore",
   "LootTable": {
     "Entries": [
       {

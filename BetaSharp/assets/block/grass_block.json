@@ -7,10 +7,10 @@
   "Hardness": 0.6,
   "Resistance": 1,
   "TickRandomly": true,
-  "TextureId": 3,
+  "TextureId": "betasharp:grass_block_side",
   "FaceTextures": {
-    "down": 2,
-    "up": 0
+    "down": "betasharp:dirt",
+    "up": "betasharp:grass_block_top"
   },
   "TopVariance": "Rotate270",
   "BottomVariance": "Rotations",

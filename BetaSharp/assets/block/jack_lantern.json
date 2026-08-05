@@ -9,7 +9,7 @@
   "Luminance": 1,
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": 102,
+  "TextureId": "betasharp:netherrack",
   "TopVariance": "All",
   "BottomVariance": "All",
   "Behaviors": [

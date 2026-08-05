@@ -7,7 +7,7 @@
   "NonOpaque": true,
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": 80,
+  "TextureId": "betasharp:torch",
   "RenderType": "Torch",
   "NotFullCube": true,
   "NoCollision": true,

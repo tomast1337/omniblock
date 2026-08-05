@@ -7,7 +7,7 @@
   "Resistance": 8.333333,
   "NonOpaque": true,
   "TrackStatistics": false,
-  "TextureId": 65,
+  "TextureId": "betasharp:mob_spawner",
   "DropCount": 0,
   "TileEntity": "mob_spawner",
   "Behaviors": [

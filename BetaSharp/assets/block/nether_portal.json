@@ -7,7 +7,7 @@
   "Hardness": -1,
   "Luminance": 0.73333335,
   "NonOpaque": true,
-  "TextureId": 14,
+  "TextureId": "betasharp:solid_blue_water_placeholder",
   "RenderLayer": 1,
   "NotFullCube": true,
   "DropCount": 0,

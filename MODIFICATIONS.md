@@ -148,3 +148,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-05 — feat(rendering): make a draw carry its pipeline, and give it an array-layer index (Nicolas Vyčas Nery; `5ec02566c5b8e89f107a5e3218785c62f527afb1`)
 - 2026-08-05 — feat(items): name a flat item TextureId instead of spelling out its grid index (Nicolas Vyčas Nery; `e0e0b2a2b93b514e25284ae1f50ffa5bf1ae4be6`)
 - 2026-08-05 — feat(ui): add ItemBlockBrowserWindow for item and block inspection (Nicolas Vyčas Nery; `4fc5bff1ed75fc0fd28e0fc11dac57b934c19af8`)
+- 2026-08-05 — feat(blocks): name a flat block TextureId instead of spelling out its grid index (Nicolas Vyčas Nery; `6114d7773fee6888d9bfc6b127ac1f05bf94c438`)

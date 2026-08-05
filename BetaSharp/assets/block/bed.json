@@ -8,7 +8,7 @@
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": 134,
+  "TextureId": "betasharp:bed_head_top",
   "RenderType": "Bed",
   "NotFullCube": true,
   "BoundingBox": {

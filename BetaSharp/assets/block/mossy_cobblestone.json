@@ -5,5 +5,5 @@
   "SoundGroup": "stone",
   "Hardness": 2,
   "Resistance": 10,
-  "TextureId": 36
+  "TextureId": "betasharp:mossy_cobblestone"
 }

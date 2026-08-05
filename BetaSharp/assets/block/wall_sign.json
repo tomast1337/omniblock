@@ -9,7 +9,7 @@
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": 4,
+  "TextureId": "betasharp:wooden_planks",
   "RenderType": "Entity",
   "NotFullCube": true,
   "NoCollision": true,

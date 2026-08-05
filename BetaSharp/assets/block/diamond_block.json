@@ -6,5 +6,5 @@
   "SoundGroup": "metal",
   "Hardness": 5,
   "Resistance": 10,
-  "TextureId": 24
+  "TextureId": "betasharp:block_of_diamond"
 }

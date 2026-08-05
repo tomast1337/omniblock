@@ -8,7 +8,7 @@
   "Resistance": 1.1666666,
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": 179,
+  "TextureId": "betasharp:powered_rail_on",
   "RenderType": "MinecartTrack",
   "NotFullCube": true,
   "NoCollision": true,

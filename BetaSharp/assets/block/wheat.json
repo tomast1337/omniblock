@@ -8,7 +8,7 @@
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": 88,
+  "TextureId": "betasharp:wheat_stage_0",
   "RenderType": "Crops",
   "NotFullCube": true,
   "NoCollision": true,

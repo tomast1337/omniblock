@@ -9,7 +9,7 @@
   "NonOpaque": true,
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": 195,
+  "TextureId": "betasharp:detector_rail",
   "RenderType": "MinecartTrack",
   "TickRate": 20,
   "NotFullCube": true,

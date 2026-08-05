@@ -5,5 +5,5 @@
   "SoundGroup": "stone",
   "Hardness": 3,
   "Resistance": 5,
-  "TextureId": 32
+  "TextureId": "betasharp:gold_ore"
 }

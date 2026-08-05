@@ -5,10 +5,10 @@
   "SoundGroup": "wood",
   "Hardness": 1.5,
   "Resistance": 2.5,
-  "TextureId": 35,
+  "TextureId": "betasharp:bookshelf",
   "FaceTextures": {
-    "down": 4,
-    "up": 4
+    "down": "betasharp:wooden_planks",
+    "up": "betasharp:wooden_planks"
   },
   "SideVariance": "FlipU",
   "DropCount": 0,

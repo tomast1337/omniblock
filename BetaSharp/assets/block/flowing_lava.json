@@ -10,7 +10,7 @@
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": 237,
+  "TextureId": "betasharp:lava_still",
   "RenderType": "Fluids",
   "TickRate": 30,
   "NotFullCube": true,

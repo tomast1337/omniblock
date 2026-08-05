@@ -7,7 +7,7 @@
   "Hardness": 0.8,
   "Resistance": 1.3333334,
   "IgnoreMetaUpdates": true,
-  "TextureId": 64,
+  "TextureId": "betasharp:white_wool",
   "BurnChance": 30,
   "SpreadChance": 60,
   "SideVariance": "FlipBoth",

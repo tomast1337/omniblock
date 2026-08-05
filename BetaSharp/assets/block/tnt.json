@@ -3,7 +3,7 @@
   "Name": "tnt",
   "Material": "tnt",
   "SoundGroup": "grass",
-  "TextureId": 8,
+  "TextureId": "betasharp:tnt_side",
   "DropCount": 0,
   "BurnChance": 15,
   "SpreadChance": 100,

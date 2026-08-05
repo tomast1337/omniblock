@@ -7,7 +7,7 @@
   "Resistance": 10,
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": 16,
+  "TextureId": "betasharp:cobblestone",
   "RenderType": "Stairs",
   "NotFullCube": true,
   "Behaviors": [

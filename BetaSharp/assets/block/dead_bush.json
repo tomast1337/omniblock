@@ -6,7 +6,7 @@
   "SoundGroup": "grass",
   "NonOpaque": true,
   "TickRandomly": true,
-  "TextureId": 55,
+  "TextureId": "betasharp:dead_bush",
   "RenderType": "Reed",
   "NotFullCube": true,
   "NoCollision": true,

@@ -8,7 +8,7 @@
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": 31,
+  "TextureId": "betasharp:spruce_sapling",
   "RenderType": "Fire",
   "TickRate": 40,
   "NotFullCube": true,

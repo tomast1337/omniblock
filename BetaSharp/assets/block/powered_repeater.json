@@ -8,7 +8,7 @@
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": 6,
+  "TextureId": "betasharp:stone_slab_top",
   "RenderType": "Repeater",
   "NotFullCube": true,
   "BoundingBox": {

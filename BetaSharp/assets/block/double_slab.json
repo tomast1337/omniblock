@@ -5,7 +5,7 @@
   "SoundGroup": "stone",
   "Hardness": 2,
   "Resistance": 10,
-  "TextureId": 6,
+  "TextureId": "betasharp:stone_slab_top",
   "PreservesMetaOnDrop": true,
   "LootTable": {
     "Entries": [

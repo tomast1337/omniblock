@@ -194,6 +194,11 @@
       "y": 2
     },
     {
+      "name": "tallgrass",
+      "x": 7,
+      "y": 2
+    },
+    {
       "name": "crafting_table_top",
       "x": 9,
       "y": 2
@@ -266,6 +271,11 @@
     {
       "name": "fern_tall_grass",
       "x": 8,
+      "y": 3
+    },
+    {
+      "name": "crafting_table_side_alt",
+      "x": 11,
       "y": 3
     },
     {
@@ -736,6 +746,11 @@
     {
       "name": "light_gray_wool",
       "x": 1,
+      "y": 14
+    },
+    {
+      "name": "lava_still",
+      "x": 13,
       "y": 14
     },
     {

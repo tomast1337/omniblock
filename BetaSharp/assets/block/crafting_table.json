@@ -6,12 +6,12 @@
   "SoundGroup": "wood",
   "Hardness": 2.5,
   "Resistance": 4.1666665,
-  "TextureId": 59,
+  "TextureId": "betasharp:crafting_table_side_alt",
   "FaceTextures": {
-    "down": 4,
-    "up": 43,
-    "north": 60,
-    "west": 60
+    "down": "betasharp:wooden_planks",
+    "up": "betasharp:crafting_table_front",
+    "north": "betasharp:furnace_front_lit",
+    "west": "betasharp:furnace_front_lit"
   },
   "Behaviors": [
     {

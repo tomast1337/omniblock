@@ -9,7 +9,7 @@
   "NonOpaque": true,
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": 4,
+  "TextureId": "betasharp:wooden_planks",
   "TickRate": 20,
   "NotFullCube": true,
   "NoCollision": true,

@@ -6,9 +6,9 @@
   "Hardness": 2,
   "Resistance": 10,
   "IgnoreMetaUpdates": true,
-  "TextureId": 74,
+  "TextureId": "betasharp:note_block",
   "FaceTextures": {
-    "up": 75
+    "up": "betasharp:jukebox_top"
   },
   "LootTable": {
     "Entries": [

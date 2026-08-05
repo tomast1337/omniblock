@@ -2,15 +2,20 @@ using System.Text.Json;
 using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Blocks.Materials;
+using BetaSharp.Textures;
 
 namespace BetaSharp.Blocks;
 
 internal static class BlockFactory
 {
+    private static readonly AtlasTileMap s_blockTextures = AtlasTileMap.Load("textures/atlas/terrain.json");
+
     public static Block Create(BlockDefinition def)
     {
         Material material = MaterialRegistry.Get(def.Material);
-        Block block = new(def.ProtocolId, def.TextureId, material);
+        // An unset TextureId keeps the implicit default the int field used to have.
+        int textureId = string.IsNullOrEmpty(def.TextureId) ? 0 : s_blockTextures.IndexOf(ResourceLocation.Parse(def.TextureId).Path);
+        Block block = new(def.ProtocolId, textureId, material);
 
         block.SetHardness(def.Hardness);
         block.SetResistance(def.Resistance);
@@ -24,9 +29,9 @@ internal static class BlockFactory
         if (def.SoundGroup is { } sg) block.SoundGroup = SoundGroupRegistry.Get(sg);
         if (def.FaceTextures is { } faces)
         {
-            foreach ((string sideName, int textureId) in faces)
+            foreach ((string sideName, string faceTextureId) in faces)
             {
-                block.SetFaceTexture(Enum.Parse<Side>(sideName, true), textureId);
+                block.SetFaceTexture(Enum.Parse<Side>(sideName, true), s_blockTextures.IndexOf(ResourceLocation.Parse(faceTextureId).Path));
             }
         }
 

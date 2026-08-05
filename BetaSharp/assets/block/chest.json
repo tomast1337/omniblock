@@ -6,7 +6,7 @@
   "Hardness": 2.5,
   "Resistance": 4.1666665,
   "IgnoreMetaUpdates": true,
-  "TextureId": 26,
+  "TextureId": "betasharp:chest_side",
   "TileEntity": "chest",
   "Behaviors": [
     {

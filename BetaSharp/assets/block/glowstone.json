@@ -6,7 +6,7 @@
   "Hardness": 0.3,
   "Resistance": 0.5,
   "Luminance": 1,
-  "TextureId": 105,
+  "TextureId": "betasharp:sticky_piston_head",
   "TopVariance": "All",
   "BottomVariance": "All",
   "SideVariance": "FlipBoth",

@@ -27,8 +27,8 @@ public sealed record BlockDefinition : IDataAsset
     public bool IgnoreMetaUpdates { get; init; }
     public bool TrackStatistics { get; init; } = true;
 
-    public int TextureId { get; init; }
-    public Dictionary<string, int>? FaceTextures { get; init; }
+    public string TextureId { get; init; } = "";
+    public Dictionary<string, string>? FaceTextures { get; init; }
     public TextureVariance TopVariance { get; init; }
     public TextureVariance BottomVariance { get; init; }
     public TextureVariance SideVariance { get; init; }

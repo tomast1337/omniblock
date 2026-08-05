@@ -7,7 +7,7 @@
   "NonOpaque": true,
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": 115,
+  "TextureId": "betasharp:redstone_repeater_base_off",
   "RenderType": "Torch",
   "TickRate": 2,
   "NotFullCube": true,
