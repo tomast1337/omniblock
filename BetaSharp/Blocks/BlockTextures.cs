@@ -37,11 +37,6 @@ public static class BlockTextures
     public const int FarmlandWet = 86;
     public const int FarmlandDry = 87;
     public const int RedstoneTorchLit = 99;
-    public const int PistonTopSticky = 106;
-    public const int PistonTopNormal = 107;
-    public const int PistonSide = 108;
-    public const int PistonBottom = 109;
-    public const int PistonExtensionSide = 110;
     public const int RedstoneTorchUnlit = 115;
     public const int Cake = 121;
     public const int BedTopFoot = 134;
@@ -58,11 +53,4 @@ public static class BlockTextures
     public const int SandstoneBottom = 208;
     public const int SandstoneTop = 176;
     public const int WoolColoredPaletteBase = 113;
-    public const int ChestTopBottom = 25;
-    public const int ChestSingleSide = 26;
-    public const int ChestSingleFront = 27;
-    public const int ChestDoubleFrontLeft = 41;
-    public const int ChestDoubleFrontRight = 42;
-    public const int ChestDoubleBackLeft = 57;
-    public const int ChestDoubleBackRight = 58;
 }

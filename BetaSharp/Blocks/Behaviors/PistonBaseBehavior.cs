@@ -14,7 +14,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     dance temporarily writes <see cref="BlockRegistry.Get("moving_piston")" /> placeholders backed by
 ///     <see cref="BlockEntityPiston" /> for the client-visible slide animation.
 /// </summary>
-public sealed class PistonBaseBehavior(bool sticky) : IBlockPhysics, IBlockLifecycle, IBlockTicker, IBlockVisuals
+public sealed class PistonBaseBehavior(bool sticky, int top, int side, int bottom, int extensionSide) : IBlockPhysics, IBlockLifecycle, IBlockTicker, IBlockVisuals
 {
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
@@ -156,14 +156,14 @@ public sealed class PistonBaseBehavior(bool sticky) : IBlockPhysics, IBlockLifec
         }
     }
 
-    public int GetTexture(Block block, Side side, int defaultTexture) => side switch
+    public int GetTexture(Block block, Side renderSide, int defaultTexture) => renderSide switch
     {
         Side.Up => GetTopTexture(),
-        Side.Down => BlockTextures.PistonBottom,
-        _ => BlockTextures.PistonSide
+        Side.Down => bottom,
+        _ => side
     };
 
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture)
+    public int GetTexture(Block block, Side renderSide, int meta, int defaultTexture)
     {
         Side facing = GetFacing(meta).ToSide();
         if (facing > Side.East)
@@ -171,22 +171,22 @@ public sealed class PistonBaseBehavior(bool sticky) : IBlockPhysics, IBlockLifec
             return block.TextureId;
         }
 
-        if (side == facing)
+        if (renderSide == facing)
         {
             return !IsExtended(meta) &&
                    block.BoundingBox is { MinX: <= 0.0D, MinY: <= 0.0D, MinZ: <= 0.0D, MaxX: >= 1.0D, MaxY: >= 1.0D, MaxZ: >= 1.0D }
                 ? block.TextureId
-                : BlockTextures.PistonExtensionSide;
+                : extensionSide;
         }
 
-        return side == facing.OppositeFace() ? BlockTextures.PistonBottom : BlockTextures.PistonSide;
+        return renderSide == facing.OppositeFace() ? bottom : side;
     }
 
     public static int GetFacing(int meta) => meta & 7;
 
     public static bool IsExtended(int meta) => (meta & 8) != 0;
 
-    public int GetTopTexture() => sticky ? BlockTextures.PistonTopSticky : BlockTextures.PistonTopNormal;
+    public int GetTopTexture() => top;
 
     private static void CheckExtended(IWorldContext ctx, int x, int y, int z)
     {

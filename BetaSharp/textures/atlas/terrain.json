@@ -204,7 +204,17 @@
       "y": 2
     },
     {
+      "name": "chest_double_front_left",
+      "x": 9,
+      "y": 2
+    },
+    {
       "name": "crafting_table_side",
+      "x": 10,
+      "y": 2
+    },
+    {
+      "name": "chest_double_front_right",
       "x": 10,
       "y": 2
     },
@@ -271,6 +281,16 @@
     {
       "name": "fern_tall_grass",
       "x": 8,
+      "y": 3
+    },
+    {
+      "name": "chest_double_back_left",
+      "x": 9,
+      "y": 3
+    },
+    {
+      "name": "chest_double_back_right",
+      "x": 10,
       "y": 3
     },
     {
@@ -479,7 +499,17 @@
       "y": 6
     },
     {
+      "name": "piston_top_sticky",
+      "x": 10,
+      "y": 6
+    },
+    {
       "name": "piston_side",
+      "x": 11,
+      "y": 6
+    },
+    {
+      "name": "piston_top_normal",
       "x": 11,
       "y": 6
     },
@@ -489,8 +519,23 @@
       "y": 6
     },
     {
+      "name": "piston_body_side",
+      "x": 12,
+      "y": 6
+    },
+    {
       "name": "piston_inner",
       "x": 13,
+      "y": 6
+    },
+    {
+      "name": "piston_bottom",
+      "x": 13,
+      "y": 6
+    },
+    {
+      "name": "piston_extension_side",
+      "x": 14,
       "y": 6
     },
     {

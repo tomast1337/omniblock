@@ -4,7 +4,8 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Blocks.Behaviors;
 
-internal sealed class ChestBehavior : IBlockInteractable, IBlockLifecycle, IBlockPhysics, IBlockVisuals
+internal sealed class ChestBehavior(int top, int side, int front, int doubleFrontLeft, int doubleFrontRight, int doubleBackLeft, int doubleBackRight)
+    : IBlockInteractable, IBlockLifecycle, IBlockPhysics, IBlockVisuals
 {
     public bool OnUse(Block block, OnUseEvent @event)
     {
@@ -87,17 +88,17 @@ internal sealed class ChestBehavior : IBlockInteractable, IBlockLifecycle, IBloc
         return adjacentChestCount <= 1 && !HasNeighbor(chestId, context);
     }
 
-    public int GetTexture(Block block, Side side, int defaultTexture) =>
-        side switch
+    public int GetTexture(Block block, Side renderSide, int defaultTexture) =>
+        renderSide switch
         {
-            Side.Up or Side.Down => BlockTextures.ChestTopBottom,
-            Side.South => BlockTextures.ChestSingleFront,
-            _ => BlockTextures.ChestSingleSide
+            Side.Up or Side.Down => top,
+            Side.South => front,
+            _ => side
         };
 
-    public int GetTextureId(Block block, IBlockReader reader, int x, int y, int z, Side side, int defaultTexture)
+    public int GetTextureId(Block block, IBlockReader reader, int x, int y, int z, Side renderSide, int defaultTexture)
     {
-        if (side is Side.Up or Side.Down) return BlockTextures.ChestTopBottom;
+        if (renderSide is Side.Up or Side.Down) return top;
 
         int chestId = block.Id;
         int blockNorth = reader.GetBlockId(x, y, z - 1);
@@ -115,12 +116,12 @@ internal sealed class ChestBehavior : IBlockInteractable, IBlockLifecycle, IBloc
             if (Block.BlocksOpaque[blockSouth] && !Block.BlocksOpaque[blockNorth]) facing = Side.North;
             if (Block.BlocksOpaque[blockWest] && !Block.BlocksOpaque[blockEast]) facing = Side.East;
             if (Block.BlocksOpaque[blockEast] && !Block.BlocksOpaque[blockWest]) facing = Side.West;
-            return side == facing ? BlockTextures.ChestSingleFront : BlockTextures.ChestSingleSide;
+            return renderSide == facing ? front : side;
         }
 
         if (isDoubleEw)
         {
-            if (side is Side.West or Side.East) return BlockTextures.ChestSingleSide;
+            if (renderSide is Side.West or Side.East) return side;
 
             bool isWestPartner = blockWest == chestId;
             int corner1 = reader.GetBlockId(isWestPartner ? x - 1 : x + 1, y, z - 1);
@@ -132,12 +133,12 @@ internal sealed class ChestBehavior : IBlockInteractable, IBlockLifecycle, IBloc
 
             bool isRightHalf = facing == Side.South ? isWestPartner : !isWestPartner;
 
-            return GetDoubleChestTexture(side, facing, isRightHalf);
+            return GetDoubleChestTexture(renderSide, facing, isRightHalf);
         }
 
         if (isDoubleNs)
         {
-            if (side is Side.North or Side.South) return BlockTextures.ChestSingleSide;
+            if (renderSide is Side.North or Side.South) return side;
 
             bool isNorthPartner = blockNorth == chestId;
             int corner1 = reader.GetBlockId(x - 1, y, isNorthPartner ? z - 1 : z + 1);
@@ -149,10 +150,10 @@ internal sealed class ChestBehavior : IBlockInteractable, IBlockLifecycle, IBloc
 
             bool isRightHalf = facing == Side.East ? !isNorthPartner : isNorthPartner;
 
-            return GetDoubleChestTexture(side, facing, isRightHalf);
+            return GetDoubleChestTexture(renderSide, facing, isRightHalf);
         }
 
-        return BlockTextures.ChestSingleSide;
+        return side;
     }
 
     private static bool HasNeighbor(int chestId, CanPlaceAtContext ctx) =>
@@ -164,10 +165,10 @@ internal sealed class ChestBehavior : IBlockInteractable, IBlockLifecycle, IBloc
                 ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z + 1) == chestId
             );
 
-    private static int GetDoubleChestTexture(Side renderSide, Side frontFacing, bool isRightHalf)
+    private int GetDoubleChestTexture(Side renderSide, Side frontFacing, bool isRightHalf)
     {
         bool isFront = renderSide == frontFacing;
-        if (isFront) return isRightHalf ? BlockTextures.ChestDoubleFrontRight : BlockTextures.ChestDoubleFrontLeft;
-        return isRightHalf ? BlockTextures.ChestDoubleBackLeft : BlockTextures.ChestDoubleBackRight;
+        if (isFront) return isRightHalf ? doubleFrontRight : doubleFrontLeft;
+        return isRightHalf ? doubleBackLeft : doubleBackRight;
     }
 }
