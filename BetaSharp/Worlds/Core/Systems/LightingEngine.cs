@@ -268,6 +268,15 @@ public class LightingEngine : ILightProvider
 
     public void QueueLightUpdate(LightType type, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, bool attemptMerge)
     {
+        // A remote world holds only the light the wire writes — the chunk blob on load, the
+        // section snapshot on change. Propagating locally here would race that snapshot with a
+        // locally derived answer that can diverge while a neighbour is still loading, and nothing
+        // arbitrates the two once they disagree.
+        if (_world.IsRemote)
+        {
+            return;
+        }
+
         if (_world.Dimension.HasCeiling && type == LightType.Sky)
         {
             return;

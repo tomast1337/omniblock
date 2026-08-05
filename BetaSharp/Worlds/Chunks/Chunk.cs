@@ -301,51 +301,59 @@ public class Chunk
         int worldX = X * 16 + localX;
         int worldZ = Z * 16 + localZ;
 
-        // Both branches write the sky array directly, as the first fill does, so both have to say
-        // so themselves.
-        MarkLightDirty(Math.Min(oldHeight, newHeight), Math.Max(oldHeight, newHeight));
-
-        if (newHeight < oldHeight)
+        // The heightmap itself is still recomputed on a remote world above — the renderer needs
+        // it and the wire carries none. The sky light that follows from a height change is not:
+        // a remote world holds the sky the wire wrote, and the section snapshot that follows this
+        // change overwrites anything computed here. Writing it locally would just race that
+        // snapshot.
+        if (!World.IsRemote)
         {
-            for (int currY = newHeight; currY < oldHeight; ++currY)
+            // Both branches write the sky array directly, as the first fill does, so both have to
+            // say so themselves.
+            MarkLightDirty(Math.Min(oldHeight, newHeight), Math.Max(oldHeight, newHeight));
+
+            if (newHeight < oldHeight)
             {
-                SkyLight.SetNibble(localX, currY, localZ, 15);
+                for (int currY = newHeight; currY < oldHeight; ++currY)
+                {
+                    SkyLight.SetNibble(localX, currY, localZ, 15);
+                }
             }
-        }
-        else
-        {
-            World.Lighting.QueueLightUpdate(LightType.Sky, worldX, oldHeight, worldZ, worldX, newHeight, worldZ);
-            for (int currY = oldHeight; currY < newHeight; ++currY)
+            else
             {
-                SkyLight.SetNibble(localX, currY, localZ, 0);
+                World.Lighting.QueueLightUpdate(LightType.Sky, worldX, oldHeight, worldZ, worldX, newHeight, worldZ);
+                for (int currY = oldHeight; currY < newHeight; ++currY)
+                {
+                    SkyLight.SetNibble(localX, currY, localZ, 0);
+                }
             }
-        }
 
-        int lightLevel = 15;
-        int updateY = newHeight;
+            int lightLevel = 15;
+            int updateY = newHeight;
 
-        MarkLightDirty(0, newHeight);
+            MarkLightDirty(0, newHeight);
 
-        while (newHeight > 0 && lightLevel > 0)
-        {
-            SkyLight.SetNibble(localX, newHeight, localZ, lightLevel);
-            --newHeight;
+            while (newHeight > 0 && lightLevel > 0)
+            {
+                SkyLight.SetNibble(localX, newHeight, localZ, lightLevel);
+                --newHeight;
 
-            int opacity = Block.BlockLightOpacity[GetBlockId(localX, newHeight, localZ)];
-            if (opacity == 0) opacity = 1;
+                int opacity = Block.BlockLightOpacity[GetBlockId(localX, newHeight, localZ)];
+                if (opacity == 0) opacity = 1;
 
-            lightLevel -= opacity;
-            if (lightLevel < 0) lightLevel = 0;
-        }
+                lightLevel -= opacity;
+                if (lightLevel < 0) lightLevel = 0;
+            }
 
-        while (newHeight > 0 && Block.BlockLightOpacity[GetBlockId(localX, newHeight - 1, localZ)] == 0)
-        {
-            --newHeight;
-        }
+            while (newHeight > 0 && Block.BlockLightOpacity[GetBlockId(localX, newHeight - 1, localZ)] == 0)
+            {
+                --newHeight;
+            }
 
-        if (newHeight != updateY)
-        {
-            World.Lighting.QueueLightUpdate(LightType.Sky, worldX - 1, newHeight, worldZ - 1, worldX + 1, updateY, worldZ + 1);
+            if (newHeight != updateY)
+            {
+                World.Lighting.QueueLightUpdate(LightType.Sky, worldX - 1, newHeight, worldZ - 1, worldX + 1, updateY, worldZ + 1);
+            }
         }
 
         Dirty = true;
