@@ -25,12 +25,21 @@ public sealed class NamedTextureArray : IDisposable
     private readonly Func<Image<Rgba32>> _loadDefaultGridImage;
     private readonly Func<TexturePack> _activePack;
 
-    private readonly Dictionary<string, int> _layerIndexByName = [];
-    private readonly List<string> _namesByLayer = [];
+    private readonly Dictionary<string, int> _layerByName = [];
+    private readonly List<string> _names = [];
+    private readonly int[] _layerByGridIndex;
     private readonly Dictionary<string, TextureSource> _sourceByName = [];
+
+    /// <summary>
+    ///     The checkerboard, reserved so a grid cell no tile is named after has somewhere to land.
+    ///     A cell addressed by a legacy index nothing claims should look broken rather than like
+    ///     whichever tile happened to be first in the map.
+    /// </summary>
+    public const int MissingLayer = 0;
 
     public GLTextureArray? Texture { get; private set; }
     public int LayerSize { get; private set; }
+    public int LayerCount => _names.Count + 1;
 
     public NamedTextureArray(string domain, AtlasTileMap tileMap, Func<Image<Rgba32>> loadDefaultGridImage, Func<TexturePack> activePack)
     {
@@ -39,10 +48,14 @@ public sealed class NamedTextureArray : IDisposable
         _loadDefaultGridImage = loadDefaultGridImage;
         _activePack = activePack;
 
+        _layerByGridIndex = new int[tileMap.GridWidth * tileMap.GridHeight];
+
         foreach (AtlasTile tile in tileMap.Tiles)
         {
-            _layerIndexByName[tile.Name] = _namesByLayer.Count;
-            _namesByLayer.Add(tile.Name);
+            int layer = _names.Count + 1;
+            _layerByName[tile.Name] = layer;
+            _names.Add(tile.Name);
+            _layerByGridIndex[tile.X + tile.Y * tileMap.GridWidth] = layer;
         }
     }
 
@@ -56,18 +69,20 @@ public sealed class NamedTextureArray : IDisposable
         Dictionary<string, Image<Rgba32>> defaults = AtlasSlicer.Slice(defaultGrid, _tileMap);
         TexturePack pack = _activePack();
 
-        var resolved = new ResolvedTexture[_namesByLayer.Count];
+        var resolved = new ResolvedTexture[LayerCount];
         int targetSize = _tileMap.TileSize;
 
-        for (int i = 0; i < _namesByLayer.Count; i++)
+        resolved[MissingLayer] = new ResolvedTexture(TextureSource.Fallback, MissingTextureImage.Generate(_tileMap.TileSize));
+
+        for (int layer = 1; layer < LayerCount; layer++)
         {
-            string name = _namesByLayer[i];
-            resolved[i] = TextureFallbackChain.Resolve(
+            string name = _names[layer - 1];
+            resolved[layer] = TextureFallbackChain.Resolve(
                 name,
                 n => pack.GetResourceAsStream($"textures/{_domain}/{n}.png"),
                 defaults,
                 _tileMap.TileSize);
-            targetSize = Math.Max(targetSize, resolved[i].Image.Width);
+            targetSize = Math.Max(targetSize, resolved[layer].Image.Width);
         }
 
         try
@@ -80,7 +95,7 @@ public sealed class NamedTextureArray : IDisposable
             {
                 using Image<Rgba32> layer = ResizeToTarget(resolved[i].Image, targetSize);
                 layer.CopyPixelDataTo(packed.AsSpan(i * layerBytes, layerBytes));
-                _sourceByName[_namesByLayer[i]] = resolved[i].Source;
+                if (i != MissingLayer) _sourceByName[_names[i - 1]] = resolved[i].Source;
             }
 
             Texture ??= new GLTextureArray($"NamedTextureArray[{_domain}]");
@@ -113,16 +128,29 @@ public sealed class NamedTextureArray : IDisposable
         }));
     }
 
+    /// <summary>
+    ///     The layer for a legacy grid index — <c>x + y * GridWidth</c>, the int a <c>TextureId</c>
+    ///     still carries — or <see cref="MissingLayer" /> for a cell no tile is named after.
+    /// </summary>
+    /// <remarks>
+    ///     Layers are not grid positions, deliberately: a tile added past the 256th cell has a layer
+    ///     but no grid index, which is what lets an outside definition ship a texture the legacy
+    ///     atlas has no room for. Renderers that still address by index come through here; ones that
+    ///     address by name use <see cref="GetLayer" />.
+    /// </remarks>
+    public int LayerOfGridIndex(int gridIndex) =>
+        (uint)gridIndex < (uint)_layerByGridIndex.Length ? _layerByGridIndex[gridIndex] : MissingLayer;
+
     // ---- Inspector API ----
 
-    public IReadOnlyList<string> Names => _namesByLayer;
+    public IReadOnlyList<string> Names => _names;
 
-    public int? GetLayer(string name) => _layerIndexByName.TryGetValue(name, out int layer) ? layer : null;
+    public int? GetLayer(string name) => _layerByName.TryGetValue(name, out int layer) ? layer : null;
 
     public TextureSource GetSource(string name) => _sourceByName.TryGetValue(name, out TextureSource source) ? source : TextureSource.Fallback;
 
     public IEnumerable<string> Search(string substring) =>
-        _namesByLayer.Where(n => n.Contains(substring, StringComparison.OrdinalIgnoreCase));
+        _names.Where(n => n.Contains(substring, StringComparison.OrdinalIgnoreCase));
 
     public void Dispose() => Texture?.Dispose();
 }

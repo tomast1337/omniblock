@@ -1,7 +1,9 @@
 using System.Buffers;
 using BetaSharp.Client.Options;
+using BetaSharp.Client.Rendering.Core.Textures.Atlas;
 using BetaSharp.Client.Resource.Pack;
 using BetaSharp.Registries.Data;
+using BetaSharp.Textures;
 using Microsoft.Extensions.Logging;
 using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
@@ -22,6 +24,8 @@ public class TextureManager : IDisposable
     private readonly Dictionary<string, int> _atlasTileSizes = [];
     private TextureHandle? _terrainHandle;
     private TextureHandle? _itemsHandle;
+    private NamedTextureArray? _terrainArray;
+    private NamedTextureArray? _itemsArray;
     private readonly GameOptions _gameOptions;
     private bool _clamp;
     private bool _blur;
@@ -40,6 +44,29 @@ public class TextureManager : IDisposable
             ctx.Fill(Color.Black, new RectangleF(0, 0, 128, 128));
             ctx.Fill(Color.Black, new RectangleF(128, 128, 128, 128));
         });
+    }
+
+    /// <summary>The terrain tiles as a texture array addressed by name, built on first use.</summary>
+    /// <remarks>
+    ///     Built lazily rather than in the constructor because <see cref="NamedTextureArray.Rebuild" />
+    ///     uploads to the GPU, and a <see cref="TextureManager" /> is constructed before there is a
+    ///     context to upload into.
+    /// </remarks>
+    public NamedTextureArray TerrainArray => _terrainArray ??= BuildArray("terrain", Atlases.Terrain, "/terrain.png");
+
+    /// <summary>The item icons as a texture array addressed by name, built on first use.</summary>
+    public NamedTextureArray ItemsArray => _itemsArray ??= BuildArray("items", Atlases.Items, "/gui/items.png");
+
+    private NamedTextureArray BuildArray(string domain, AtlasTileMap tileMap, string defaultGridPath)
+    {
+        NamedTextureArray array = new(
+            domain,
+            tileMap,
+            () => LoadImageFromResource(defaultGridPath),
+            () => _texturePacks.SelectedTexturePack);
+
+        array.Rebuild();
+        return array;
     }
 
     public int[] GetColors(string path)
@@ -312,6 +339,11 @@ public class TextureManager : IDisposable
             dynamicTexture.Setup(_game);
         }
 
+        // Re-resolves every name through the new pack. Only the arrays that were already built get
+        // one: a pack switch is no reason to pay for an array nothing has asked for yet.
+        _terrainArray?.Rebuild();
+        _itemsArray?.Rebuild();
+
         _terrainHandle = null;
         _itemsHandle = null;
     }
@@ -501,6 +533,9 @@ public class TextureManager : IDisposable
             entry.Image.Dispose();
         }
         _images.Clear();
+
+        _terrainArray?.Dispose();
+        _itemsArray?.Dispose();
 
         _missingTextureImage.Dispose();
         _colors.Clear();
