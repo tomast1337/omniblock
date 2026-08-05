@@ -169,13 +169,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     /// </summary>
     /// <remarks>
     ///     Uniforms rather than mesh data, which is what stops the sun setting from dirtying every
-    ///     chunk in view. Uploaded per frame because the ambient darkness moves per tick.
+    ///     chunk in view. Taken from the frame's ambient state rather than read off this renderer's
+    ///     own world, because the same two reach the Tessellator's programs for the blocks that are
+    ///     drawn outside a chunk mesh — a moving piston, a primed TNT — and those have to be lit by
+    ///     the same numbers as the terrain they stand in.
     /// </remarks>
-    private void UploadLightingUniforms()
-    {
-        _chunkShader.SetUniform1("ambientDarkness", (float)_world.Environment.AmbientDarkness);
-        _chunkShader.SetUniform1("luminanceOffset", _world.Dimension.LightLevelToLuminance[0]);
-    }
+    private void UploadLightingUniforms() => SlotUniforms.UploadWorldLight(_chunkShader);
 
     public void Render(ChunkRenderParams renderParams)
     {

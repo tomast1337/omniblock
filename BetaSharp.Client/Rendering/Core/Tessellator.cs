@@ -7,7 +7,7 @@ using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client.Rendering.Core;
 
-[StructLayout(LayoutKind.Sequential, Pack = 4, Size = 32)]
+[StructLayout(LayoutKind.Sequential, Pack = 4, Size = 36)]
 public struct Vertex(float x, float y, float z, float u, float v, int color, int normal)
 {
     public float X = x; // 4 bytes
@@ -22,7 +22,20 @@ public struct Vertex(float x, float y, float z, float u, float v, int color, int
     ///     Which layer of the named texture array this vertex samples, or
     ///     <see cref="Tessellator.NoArrayLayer" /> for the plain 2D texture on unit 0.
     /// </summary>
-    public int ArrayLayer = Tessellator.NoArrayLayer; // 32 bytes total
+    public int ArrayLayer = Tessellator.NoArrayLayer; // 4 bytes + 28 bytes = 32 bytes
+
+    /// <summary>
+    ///     The two world-light channels in quarter levels, sky in the low byte and block in the next.
+    ///     <see cref="Tessellator.FullBrightLight" /> for a draw that sets none.
+    /// </summary>
+    /// <remarks>
+    ///     Alongside the colour rather than multiplied into it, the same way a <see cref="ChunkVertex" />
+    ///     carries it — a block drawn from the Tessellator is still a block, and the shader applies
+    ///     the same ramp to it. Before this the field did not exist, and the light every block draw
+    ///     was already setting reached the chunk mesh and nothing else, so a moving piston or a
+    ///     primed TNT drew at full daylight wherever it was.
+    /// </remarks>
+    public int Light = Tessellator.FullBrightLight; // 36 bytes total
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 18)]
@@ -119,8 +132,17 @@ public class Tessellator
     /// </summary>
     public const int NoArrayLayer = -1;
 
+    /// <summary>
+    ///     The packed light a vertex carries when its draw sets none: no sky, full block. Through the
+    ///     block channel so it stays bright after dark, which is what text and inventory items want.
+    /// </summary>
+    public static readonly int FullBrightLight = ChunkVertexHelper.ToQuarterLevels(15.0f) << 8;
+
     /// <summary>Ints per vertex in the capture scratch buffer: x, y, z, u, v, colour, normal, light, array layer.</summary>
     private const int ScratchVertexInts = 9;
+
+    /// <summary>Ints per vertex in the raw buffer, matching <see cref="Vertex" /> field for field.</summary>
+    private const int RawVertexInts = 9;
 
     /// <summary>The scratch buffer holds exactly one quad, which is emitted as two triangles once full.</summary>
     private const int ScratchQuadInts = ScratchVertexInts * 4;
@@ -568,7 +590,7 @@ public class Tessellator
             {
                 for (int triangleCopyIndex = 0; triangleCopyIndex < 2; ++triangleCopyIndex)
                 {
-                    int copyOffset = 8 * (3 - triangleCopyIndex);
+                    int copyOffset = RawVertexInts * (3 - triangleCopyIndex);
                     if (hasTexture)
                     {
                         rawBuffer[rawBufferIndex + 3] = rawBuffer[rawBufferIndex - copyOffset + 3];
@@ -584,8 +606,9 @@ public class Tessellator
                     rawBuffer[rawBufferIndex + 1] = rawBuffer[rawBufferIndex - copyOffset + 1];
                     rawBuffer[rawBufferIndex + 2] = rawBuffer[rawBufferIndex - copyOffset + 2];
                     rawBuffer[rawBufferIndex + 7] = rawBuffer[rawBufferIndex - copyOffset + 7];
+                    rawBuffer[rawBufferIndex + 8] = rawBuffer[rawBufferIndex - copyOffset + 8];
                     ++vertexCount;
-                    rawBufferIndex += 8;
+                    rawBufferIndex += RawVertexInts;
                 }
             }
 
@@ -606,14 +629,15 @@ public class Tessellator
             }
 
             rawBuffer[rawBufferIndex + 7] = arrayLayer;
+            rawBuffer[rawBufferIndex + 8] = PackedLight;
 
             rawBuffer[rawBufferIndex + 0] = BitConverter.SingleToInt32Bits((float)(x + xOffset));
             rawBuffer[rawBufferIndex + 1] = BitConverter.SingleToInt32Bits((float)(y + yOffset));
             rawBuffer[rawBufferIndex + 2] = BitConverter.SingleToInt32Bits((float)(z + zOffset));
-            rawBufferIndex += 8;
+            rawBufferIndex += RawVertexInts;
             ++vertexCount;
 
-            if (vertexCount % 4 == 0 && rawBufferIndex >= bufferSize - 32)
+            if (vertexCount % 4 == 0 && rawBufferIndex >= bufferSize - (RawVertexInts * 4))
             {
                 // In capture mode this draws nothing — it recycles the scratch buffer so a chunk
                 // mesh larger than the buffer can keep accumulating, which is the only way a batch
@@ -664,7 +688,11 @@ public class Tessellator
             int col = hasColor ? scratchBuffer[baseIndex + 5] : 0;
             int norm = hasNormals ? scratchBuffer[baseIndex + 6] : 0;
 
-            capturedVertices.Add(new Vertex(x, y, z, u, v, col, norm) { ArrayLayer = scratchBuffer[baseIndex + 8] });
+            capturedVertices.Add(new Vertex(x, y, z, u, v, col, norm)
+            {
+                ArrayLayer = scratchBuffer[baseIndex + 8],
+                Light = hasLight ? scratchBuffer[baseIndex + 7] : FullBrightLight
+            });
         }
     }
 
@@ -712,6 +740,9 @@ public class Tessellator
         blockLight = ChunkVertexHelper.ToQuarterLevels(block);
         hasLight = true;
     }
+
+    /// <summary>The light the vertices from here on carry, or full brightness if none was set.</summary>
+    private int PackedLight => hasLight ? skyLight | blockLight << 8 : FullBrightLight;
 
     public void setTranslationD(double x, double y, double z)
     {

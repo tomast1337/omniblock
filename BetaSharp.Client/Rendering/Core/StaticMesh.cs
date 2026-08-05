@@ -14,13 +14,14 @@ namespace BetaSharp.Client.Rendering.Core;
 /// </remarks>
 internal static unsafe class TessellatorVertexLayout
 {
-    public const int Stride = 32;
+    public const int Stride = 36;
 
     private const int PositionOffset = 0;
     private const int TextureOffset = 12;
     private const int ColorOffset = 20;
     private const int NormalOffset = 24;
     private const int ArrayLayerOffset = 28;
+    private const int LightOffset = 32;
 
     /// <summary>
     ///     Sets the vertex attribute pointers on the currently bound VAO and buffer.
@@ -57,6 +58,11 @@ internal static unsafe class TessellatorVertexLayout
         gl.VertexAttribIPointer(4, 1, VertexAttribIType.Int, Stride, (void*)ArrayLayerOffset);
         gl.EnableVertexAttribArray(4);
 
+        // Two channels rather than one packed byte, for the same reason the chunk layout splits
+        // them: a smooth-lit corner is a mean of four cells, so a nibble each cannot hold it.
+        gl.VertexAttribIPointer(5, 2, VertexAttribIType.UnsignedByte, Stride, (void*)LightOffset);
+        gl.EnableVertexAttribArray(5);
+
         gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, Stride, (void*)PositionOffset);
         gl.EnableVertexAttribArray(0);
     }
@@ -65,6 +71,7 @@ internal static unsafe class TessellatorVertexLayout
     {
         gl.DisableVertexAttribArray(0);
         gl.DisableVertexAttribArray(4);
+        gl.DisableVertexAttribArray(5);
 
         if (hasTexture)
         {

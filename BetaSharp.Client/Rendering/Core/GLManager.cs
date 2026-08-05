@@ -126,6 +126,17 @@ public class GLManager
         set => _pipeline.ShadeModel = value;
     }
 
+    /// <summary>How the world's light levels turn into brightness right now.</summary>
+    /// <remarks>
+    ///     Set once a frame, from the world the camera is in. Ambient for the same reason the fog is:
+    ///     every pass that draws something standing in the world reads it, and none of them own it.
+    /// </remarks>
+    public static WorldLightState WorldLight
+    {
+        get => _pipeline.WorldLight;
+        set => _pipeline.WorldLight = value;
+    }
+
     /// <summary>What the distance fog looks like, for every pass that draws under it.</summary>
     /// <remarks>
     ///     Set once per pass, in <c>GameRenderer.ApplyFog</c>. Whether fog applies at all is
