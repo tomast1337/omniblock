@@ -138,3 +138,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-04 — refactor(worlds): name the spawn-search flag, and scope the generation window (Nicolas Vyčas Nery; `5e2304ecb802811e13411a8ada53923f1aec6adb`)
 - 2026-08-04 — feat(rendering): put depth bias in the render state, and stop the interface going round it (Nicolas Vyčas Nery; `eb583a0f4b1a376305008a6c4edf45ff5cf81857`)
 - 2026-08-04 — test(network): charge the drain budget a stated cost instead of burning real time (Nicolas Vyčas Nery; `04598c0e0c1ee10c038cccbdb185853e974271db`)
+- 2026-08-04 — feat(worlds): stop a remote world computing light, and hold only what the wire writes (Nicolas Vyčas Nery; `01b58281ab833fd3d854ecf8b8c18a18ff348a89`)
