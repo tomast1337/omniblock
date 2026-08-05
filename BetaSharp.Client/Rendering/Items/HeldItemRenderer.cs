@@ -8,6 +8,7 @@ using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using BetaSharp.Items.Behaviors;
+using BetaSharp.Textures;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Maps;
 
@@ -15,6 +16,9 @@ namespace BetaSharp.Client.Rendering.Items;
 
 public class HeldItemRenderer
 {
+    // The two cells the fire animation writes into, drawn as a crossed pair.
+    private static readonly string[] s_fireLayers = ["fire_layer_0", "fire_layer_1"];
+
     private readonly BetaSharp _game;
     private ItemStack itemToRender;
     private float equippedProgress;
@@ -417,10 +421,10 @@ public class HeldItemRenderer
         GLManager.State.Apply(RenderState.Entity with { Blend = BlendMode.Alpha });
         float quadSize = 1.0F;
 
-        for (int layerIndex = 0; layerIndex < 2; ++layerIndex)
+        for (int layerIndex = 0; layerIndex < s_fireLayers.Length; ++layerIndex)
         {
             GLManager.ModelView.Push();
-            int fireTexture = BlockRegistry.Get("fire").TextureId + layerIndex * 16;
+            int fireTexture = Atlases.Terrain.IndexOf(s_fireLayers[layerIndex]);
             int textureU = (fireTexture & 15) << 4;
             int textureV = fireTexture & 240;
             float minU = textureU / 256.0F;
