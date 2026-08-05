@@ -1,6 +1,6 @@
 {
   "ProtocolId": 321,
-  "TextureId": 26,
+  "TextureId": "betasharp:painting",
   "Behavior": {
     "type": "painting"
   }

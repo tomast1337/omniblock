@@ -1,6 +1,6 @@
 {
   "ProtocolId": 325,
-  "TextureId": 74,
+  "TextureId": "betasharp:bucket",
   "MaxStackSize": 1,
   "Behavior": {
     "type": "bucket",

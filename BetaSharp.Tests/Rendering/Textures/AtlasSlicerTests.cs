@@ -1,4 +1,5 @@
 using BetaSharp.Client.Rendering.Core.Textures.Atlas;
+using BetaSharp.Textures;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Xunit;

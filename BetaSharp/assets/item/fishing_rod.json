@@ -1,7 +1,7 @@
 {
     "ProtocolId": 346,
     "TranslationKey": "fishingRod",
-    "TextureId": 69,
+    "TextureId": "betasharp:fishing_rod",
     "MaxStackSize": 1,
     "MaxDurability": 64,
     "Behavior": {

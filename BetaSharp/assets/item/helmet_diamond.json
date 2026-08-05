@@ -1,7 +1,7 @@
 {
     "ProtocolId": 310,
     "TranslationKey": "helmetDiamond",
-    "TextureId": 3,
+    "TextureId": "betasharp:diamond_helmet",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",

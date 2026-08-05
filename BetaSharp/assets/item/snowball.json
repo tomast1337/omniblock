@@ -1,6 +1,6 @@
 {
   "ProtocolId": 332,
-  "TextureId": 14,
+  "TextureId": "betasharp:snowball",
   "MaxStackSize": 16,
   "Behavior": {
     "type": "throwable",

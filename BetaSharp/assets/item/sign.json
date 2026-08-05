@@ -1,6 +1,6 @@
 {
   "ProtocolId": 323,
-  "TextureId": 42,
+  "TextureId": "betasharp:sign",
   "MaxStackSize": 1,
   "Behavior": {
     "type": "sign"

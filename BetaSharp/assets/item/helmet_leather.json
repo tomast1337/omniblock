@@ -1,7 +1,7 @@
 {
     "ProtocolId": 298,
     "TranslationKey": "helmetLeather",
-    "TextureId": 0,
+    "TextureId": "betasharp:leather_cap",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",

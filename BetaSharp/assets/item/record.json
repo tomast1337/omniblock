@@ -1,6 +1,6 @@
 {
   "ProtocolId": 2256,
-  "TextureId": 240,
+  "TextureId": "betasharp:music_disc_13",
   "MaxStackSize": 1,
   "Behavior": {
     "type": "record",

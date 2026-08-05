@@ -1,6 +1,6 @@
 {
   "ProtocolId": 331,
-  "TextureId": 56,
+  "TextureId": "betasharp:redstone_dust",
   "Behavior": {
     "type": "redstone"
   }

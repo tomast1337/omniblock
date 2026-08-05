@@ -1,6 +1,6 @@
 {
   "ProtocolId": 263,
-  "TextureId": 7,
+  "TextureId": "betasharp:coal",
   "HasSubtypes": true,
   "Behavior": {
     "type": "coal"

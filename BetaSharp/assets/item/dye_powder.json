@@ -1,7 +1,7 @@
 {
     "ProtocolId": 351,
     "TranslationKey": "dyePowder",
-    "TextureId": 78,
+    "TextureId": "betasharp:ink_sac",
     "HasSubtypes": true,
     "Behavior": {
         "type": "dye"

@@ -1,7 +1,7 @@
 {
     "ProtocolId": 302,
     "TranslationKey": "helmetChain",
-    "TextureId": 1,
+    "TextureId": "betasharp:chainmail_helmet",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",

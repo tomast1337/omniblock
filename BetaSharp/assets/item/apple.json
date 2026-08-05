@@ -1,6 +1,6 @@
 {
   "ProtocolId": 260,
-  "TextureId": 10,
+  "TextureId": "betasharp:apple",
   "Behavior": {
     "type": "food",
     "HealAmount": 4,

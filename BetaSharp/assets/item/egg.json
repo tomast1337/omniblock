@@ -1,6 +1,6 @@
 {
   "ProtocolId": 344,
-  "TextureId": 12,
+  "TextureId": "betasharp:egg",
   "MaxStackSize": 16,
   "Behavior": {
     "type": "throwable",

@@ -1,6 +1,6 @@
 {
   "ProtocolId": 359,
-  "TextureId": 93,
+  "TextureId": "betasharp:shears",
   "MaxStackSize": 1,
   "MaxDurability": 238,
   "Behavior": {

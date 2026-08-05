@@ -1,7 +1,7 @@
 {
     "ProtocolId": 274,
     "TranslationKey": "pickaxeStone",
-    "TextureId": 97,
+    "TextureId": "betasharp:stone_pickaxe",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "tool",

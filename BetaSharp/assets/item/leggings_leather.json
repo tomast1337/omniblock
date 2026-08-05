@@ -1,7 +1,7 @@
 {
     "ProtocolId": 300,
     "TranslationKey": "leggingsLeather",
-    "TextureId": 32,
+    "TextureId": "betasharp:leather_pants",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",

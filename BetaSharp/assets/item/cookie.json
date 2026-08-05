@@ -1,6 +1,6 @@
 {
   "ProtocolId": 357,
-  "TextureId": 92,
+  "TextureId": "betasharp:cookie",
   "Behavior": {
     "type": "food",
     "HealAmount": 1,

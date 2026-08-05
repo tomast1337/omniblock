@@ -1,7 +1,7 @@
 {
     "ProtocolId": 324,
     "TranslationKey": "doorWood",
-    "TextureId": 43,
+    "TextureId": "betasharp:wooden_door",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "door",
