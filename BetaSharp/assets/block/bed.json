@@ -8,7 +8,7 @@
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": "betasharp:bed_head_top",
+  "TextureId": "betasharp:bed_foot_top",
   "RenderType": "Bed",
   "NotFullCube": true,
   "BoundingBox": {
@@ -22,7 +22,12 @@
   "PistonBehavior": "Destroy",
   "Behaviors": [
     {
-      "Slots": ["Interactable", "Physics", "Lifecycle", "Visuals"],
+      "Slots": [
+        "Interactable",
+        "Physics",
+        "Lifecycle",
+        "Visuals"
+      ],
       "Type": "bed"
     }
   ]

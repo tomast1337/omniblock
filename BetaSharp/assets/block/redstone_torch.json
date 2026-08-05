@@ -7,7 +7,7 @@
   "NonOpaque": true,
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": "betasharp:redstone_repeater_base_off",
+  "TextureId": "betasharp:redstone_torch_off",
   "RenderType": "Torch",
   "TickRate": 2,
   "NotFullCube": true,
@@ -25,7 +25,13 @@
   },
   "Behaviors": [
     {
-      "Slots": ["Physics", "Lifecycle", "Redstone", "Ticker", "Visuals"],
+      "Slots": [
+        "Physics",
+        "Lifecycle",
+        "Redstone",
+        "Ticker",
+        "Visuals"
+      ],
       "Type": "redstone_torch"
     }
   ]

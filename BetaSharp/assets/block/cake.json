@@ -9,12 +9,16 @@
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": "betasharp:cake_side",
+  "TextureId": "betasharp:cake_top",
   "NotFullCube": true,
   "DropCount": 0,
   "Behaviors": [
     {
-      "Slots": ["Physics", "Visuals", "Interactable"],
+      "Slots": [
+        "Physics",
+        "Visuals",
+        "Interactable"
+      ],
       "Type": "cake"
     }
   ]

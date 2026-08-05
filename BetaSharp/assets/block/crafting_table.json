@@ -6,16 +6,18 @@
   "SoundGroup": "wood",
   "Hardness": 2.5,
   "Resistance": 4.1666665,
-  "TextureId": "betasharp:crafting_table_side_alt",
+  "TextureId": "betasharp:crafting_table_side",
   "FaceTextures": {
     "down": "betasharp:wooden_planks",
-    "up": "betasharp:crafting_table_front",
-    "north": "betasharp:furnace_front_lit",
-    "west": "betasharp:furnace_front_lit"
+    "up": "betasharp:crafting_table_top",
+    "north": "betasharp:crafting_table_front",
+    "west": "betasharp:crafting_table_front"
   },
   "Behaviors": [
     {
-      "Slots": ["Interactable"],
+      "Slots": [
+        "Interactable"
+      ],
       "Type": "workbench_interact"
     }
   ]

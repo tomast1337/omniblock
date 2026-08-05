@@ -7,14 +7,18 @@
   "Resistance": 1.1666666,
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": "betasharp:rails_corner",
+  "TextureId": "betasharp:rail",
   "RenderType": "MinecartTrack",
   "NotFullCube": true,
   "NoCollision": true,
   "PistonBehavior": "Normal",
   "Behaviors": [
     {
-      "Slots": ["Physics", "Lifecycle", "Visuals"],
+      "Slots": [
+        "Physics",
+        "Lifecycle",
+        "Visuals"
+      ],
       "Type": "rail",
       "powered": false
     }

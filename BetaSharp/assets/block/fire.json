@@ -8,7 +8,7 @@
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": "betasharp:spruce_sapling",
+  "TextureId": "betasharp:fire_placeholder_0",
   "RenderType": "Fire",
   "TickRate": 40,
   "NotFullCube": true,
@@ -16,7 +16,11 @@
   "DropCount": 0,
   "Behaviors": [
     {
-      "Slots": ["Ticker", "Physics", "Lifecycle"],
+      "Slots": [
+        "Ticker",
+        "Physics",
+        "Lifecycle"
+      ],
       "Type": "fire",
       "portal_base": "betasharp:obsidian",
       "portal_fill": "betasharp:nether_portal",

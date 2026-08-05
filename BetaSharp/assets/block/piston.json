@@ -8,12 +8,17 @@
   "Resistance": 0.8333333,
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": "betasharp:piston_side",
+  "TextureId": "betasharp:piston_top_normal",
   "RenderType": "PistonBase",
   "NotFullCube": true,
   "Behaviors": [
     {
-      "Slots": ["Physics", "Lifecycle", "Ticker", "Visuals"],
+      "Slots": [
+        "Physics",
+        "Lifecycle",
+        "Ticker",
+        "Visuals"
+      ],
       "Type": "piston_base",
       "sticky": false,
       "top": "betasharp:piston_top_normal",
