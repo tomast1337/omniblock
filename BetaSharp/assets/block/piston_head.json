@@ -8,7 +8,7 @@
   "Resistance": 0.8333333,
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": 107,
+  "TextureId": "betasharp:piston_side",
   "RenderType": "PistonExtension",
   "NotFullCube": true,
   "DropCount": 0,

@@ -8,7 +8,7 @@
   "Opacity": 255,
   "NonOpaque": true,
   "TickRandomly": true,
-  "TextureId": 87,
+  "TextureId": "betasharp:farmland_dry",
   "NotFullCube": true,
   "BoundingBox": {
     "MinX": 0,

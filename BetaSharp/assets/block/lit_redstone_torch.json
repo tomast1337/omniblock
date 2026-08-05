@@ -8,7 +8,7 @@
   "NonOpaque": true,
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": 99,
+  "TextureId": "betasharp:redstone_torch_on",
   "RenderType": "Torch",
   "TickRate": 2,
   "NotFullCube": true,

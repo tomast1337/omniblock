@@ -9,7 +9,7 @@
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": 121,
+  "TextureId": "betasharp:cake_side",
   "NotFullCube": true,
   "DropCount": 0,
   "Behaviors": [

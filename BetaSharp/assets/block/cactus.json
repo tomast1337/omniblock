@@ -7,7 +7,7 @@
   "Resistance": 0.6666667,
   "NonOpaque": true,
   "TickRandomly": true,
-  "TextureId": 70,
+  "TextureId": "betasharp:cactus_side",
   "TopVariance": "All",
   "BottomVariance": "All",
   "SideVariance": "Rotate180",

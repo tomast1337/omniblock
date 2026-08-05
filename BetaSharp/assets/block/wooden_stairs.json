@@ -8,7 +8,7 @@
   "Resistance": 5,
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": 4,
+  "TextureId": "betasharp:wooden_planks",
   "BurnChance": 5,
   "SpreadChance": 20,
   "RenderType": "Stairs",

@@ -7,7 +7,7 @@
   "Resistance": 0.16666667,
   "NonOpaque": true,
   "TickRandomly": true,
-  "TextureId": 66,
+  "TextureId": "betasharp:snow_block",
   "TopVariance": "All",
   "BottomVariance": "All",
   "SideVariance": "FlipBoth",

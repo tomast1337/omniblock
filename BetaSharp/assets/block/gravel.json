@@ -5,7 +5,7 @@
   "SoundGroup": "gravel",
   "Hardness": 0.6,
   "Resistance": 1,
-  "TextureId": 19,
+  "TextureId": "betasharp:gravel",
   "TopVariance": "Rotate270",
   "BottomVariance": "Rotate270",
   "SideVariance": "Rotate270",

@@ -8,7 +8,7 @@
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": 84,
+  "TextureId": "betasharp:trapdoor",
   "NotFullCube": true,
   "Behaviors": [
     {

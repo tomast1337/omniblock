@@ -7,7 +7,7 @@
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": 164,
+  "TextureId": "betasharp:redstone_dust_cross_off",
   "RenderType": "RedstoneWire",
   "NotFullCube": true,
   "NoCollision": true,

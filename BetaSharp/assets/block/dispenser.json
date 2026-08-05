@@ -5,7 +5,7 @@
   "Hardness": 3.5,
   "Resistance": 5.8333335,
   "IgnoreMetaUpdates": true,
-  "TextureId": 45,
+  "TextureId": "betasharp:furnace_side",
   "TickRate": 4,
   "TileEntity": "dispenser",
   "Behaviors": [

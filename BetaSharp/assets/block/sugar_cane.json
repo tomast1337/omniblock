@@ -7,7 +7,7 @@
   "NonOpaque": true,
   "TickRandomly": true,
   "TrackStatistics": false,
-  "TextureId": 73,
+  "TextureId": "betasharp:sugar_cane",
   "RenderType": "Reed",
   "NotFullCube": true,
   "NoCollision": true,

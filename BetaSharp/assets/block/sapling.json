@@ -6,7 +6,7 @@
   "NonOpaque": true,
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": 15,
+  "TextureId": "betasharp:oak_sapling",
   "RenderType": "Reed",
   "NotFullCube": true,
   "NoCollision": true,

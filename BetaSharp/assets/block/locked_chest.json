@@ -4,7 +4,7 @@
   "TranslationKey": "lockedchest",
   "Material": "wood",
   "SoundGroup": "powder",
-  "TextureId": 26,
+  "TextureId": "betasharp:chest_side",
   "Behaviors": [
     {
       "Slots": ["Ticker", "Visuals"],

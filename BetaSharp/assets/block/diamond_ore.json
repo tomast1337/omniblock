@@ -5,7 +5,7 @@
   "SoundGroup": "stone",
   "Hardness": 3,
   "Resistance": 5,
-  "TextureId": 50,
+  "TextureId": "betasharp:diamond_ore",
   "LootTable": {
     "Entries": [
       {

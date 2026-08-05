@@ -11,7 +11,7 @@
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": 205,
+  "TextureId": "betasharp:water_texture",
   "RenderType": "Fluids",
   "RenderLayer": 1,
   "TickRate": 5,

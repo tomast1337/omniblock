@@ -10,7 +10,6 @@
   "TickRandomly": false,
   "IgnoreMetaUpdates": false,
   "TrackStatistics": true,
-  "TextureId": 0,
   "FaceTextures": null,
   "TopVariance": "None",
   "BottomVariance": "None",

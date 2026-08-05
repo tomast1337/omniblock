@@ -8,7 +8,7 @@
   "Opacity": 3,
   "NonOpaque": true,
   "TickRandomly": true,
-  "TextureId": 67,
+  "TextureId": "betasharp:ice",
   "TopVariance": "Rotate180",
   "BottomVariance": "Rotate180",
   "SideVariance": "Rotate180",

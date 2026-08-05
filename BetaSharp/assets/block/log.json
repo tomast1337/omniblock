@@ -6,7 +6,7 @@
   "Hardness": 2,
   "Resistance": 3.3333333,
   "IgnoreMetaUpdates": true,
-  "TextureId": 20,
+  "TextureId": "betasharp:oak_log_side",
   "BurnChance": 5,
   "SpreadChance": 5,
   "PreservesMetaOnDrop": true,

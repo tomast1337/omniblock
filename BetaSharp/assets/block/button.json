@@ -8,7 +8,7 @@
   "NonOpaque": true,
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": 1,
+  "TextureId": "betasharp:stone",
   "TickRate": 20,
   "NotFullCube": true,
   "NoCollision": true,

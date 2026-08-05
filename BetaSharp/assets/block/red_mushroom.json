@@ -6,7 +6,7 @@
   "SoundGroup": "grass",
   "NonOpaque": true,
   "TickRandomly": true,
-  "TextureId": 28,
+  "TextureId": "betasharp:red_mushroom",
   "RenderType": "Reed",
   "NotFullCube": true,
   "NoCollision": true,
