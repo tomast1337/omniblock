@@ -50,6 +50,19 @@ public sealed class UIBatchRenderer : IDisposable
         _silkGL.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
     }
 
+    /// <summary>
+    ///     The blend the interface has selected, which queued geometry is drawn under.
+    /// </summary>
+    /// <remarks>
+    ///     Held here because a flush has to restate the whole interface state — 3D geometry drawn
+    ///     into the interface, an item icon or the inventory's mob preview, applies its own and does
+    ///     not put this one back — and restating it must not silently undo a blend a control chose.
+    ///     The vignette is the case that proves it: it selects <see cref="BlendMode.Darken" /> and
+    ///     queues a full-screen quad, so a flush that reset the blend to alpha drew it as opaque
+    ///     black over the world rather than darkening what was already there.
+    /// </remarks>
+    public BlendMode Blend { get; set; } = BlendMode.Alpha;
+
     public void Begin(Matrix4X4<float> proj)
     {
         GLManager.GL.UseProgram(_shader.ProgramId);
@@ -58,6 +71,7 @@ public sealed class UIBatchRenderer : IDisposable
         _vertexCount = 0;
         _currentTextureId = 0;
         _useTexture = false;
+        Blend = BlendMode.Alpha;
     }
 
     public void End() => Flush();
@@ -181,7 +195,9 @@ public sealed class UIBatchRenderer : IDisposable
         // the batch names what it draws under rather than assuming, and it has to name the whole
         // state: turning blend back on alone used to write it behind the applier, leaving the cache
         // claiming blend was off while it was on, and the next draw asking for off got nothing.
-        GLManager.State.Apply(RenderState.Interface);
+        //
+        // Everything but the blend, which is the caller's to choose; see <see cref="Blend" />.
+        GLManager.State.Apply(RenderState.Interface with { Blend = Blend });
 
         GLManager.GL.UseProgram(_shader.ProgramId);
         _shader.SetUseTexture(_useTexture);
