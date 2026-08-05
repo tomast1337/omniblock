@@ -79,10 +79,12 @@ public unsafe interface IGL
     void ShaderSource(uint shader, string string_);
     void TexImage2D(TextureTarget target, int level, InternalFormat internalformat, uint width, uint height, int border, PixelFormat format, PixelType type, void* pixels);
     void TexImage2D(GLEnum target, int level, int internalformat, uint width, uint height, int border, GLEnum format, GLEnum type, void* pixels);
+    void TexImage3D(GLEnum target, int level, int internalformat, uint width, uint height, uint depth, int border, GLEnum format, GLEnum type, void* pixels);
     void TexParameter(TextureTarget target, TextureParameterName pname, int param);
     void TexParameter(GLEnum target, GLEnum pname, int param);
     void TexParameter(GLEnum target, GLEnum pname, float param);
     void TexSubImage2D(GLEnum target, int level, int xoffset, int yoffset, uint width, uint height, GLEnum format, GLEnum type, void* pixels);
+    void TexSubImage3D(GLEnum target, int level, int xoffset, int yoffset, int zoffset, uint width, uint height, uint depth, GLEnum format, GLEnum type, void* pixels);
     void Uniform1(int location, int v0);
     void Uniform1(int location, float v0);
     void Uniform2(int location, float v0, float v1);

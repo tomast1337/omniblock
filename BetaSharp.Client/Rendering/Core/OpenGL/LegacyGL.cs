@@ -335,6 +335,11 @@ public abstract unsafe class LegacyGL : IGL
         SilkGL.TexImage2D(target.ToModern(), level, internalformat, width, height, border, format.ToModern(), type.ToModern(), pixels);
     }
 
+    public void TexImage3D(GLEnum target, int level, int internalformat, uint width, uint height, uint depth, int border, GLEnum format, GLEnum type, void* pixels)
+    {
+        SilkGL.TexImage3D(target.ToModern(), level, internalformat, width, height, depth, border, format.ToModern(), type.ToModern(), pixels);
+    }
+
     public void TexParameter(TextureTarget target, TextureParameterName pname, int param)
     {
         SilkGL.TexParameter(target, pname, param);
@@ -353,6 +358,11 @@ public abstract unsafe class LegacyGL : IGL
     public void TexSubImage2D(GLEnum target, int level, int xoffset, int yoffset, uint width, uint height, GLEnum format, GLEnum type, void* pixels)
     {
         SilkGL.TexSubImage2D(target.ToModern(), level, xoffset, yoffset, width, height, format.ToModern(), type.ToModern(), pixels);
+    }
+
+    public void TexSubImage3D(GLEnum target, int level, int xoffset, int yoffset, int zoffset, uint width, uint height, uint depth, GLEnum format, GLEnum type, void* pixels)
+    {
+        SilkGL.TexSubImage3D(target.ToModern(), level, xoffset, yoffset, zoffset, width, height, depth, format.ToModern(), type.ToModern(), pixels);
     }
 
     public void Uniform1(int location, int v0)
