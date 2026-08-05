@@ -27,6 +27,8 @@ internal sealed class TexturedLitSlotProgram : ISlotProgram, IDisposable
             "shaders/gbuffers_textured_lit.vert",
             "shaders/gbuffers_textured_lit.frag");
 
+    public VertexLayoutKind VertexLayout => VertexLayoutKind.Generic;
+
     public void Activate()
     {
         _shader.Bind();

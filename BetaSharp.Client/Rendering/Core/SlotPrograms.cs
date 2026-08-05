@@ -28,20 +28,31 @@ public static class SlotPrograms
 
     public static void Register(ProgramSlot slot, ISlotProgram program) => s_programs[slot] = program;
 
-    /// <summary>The program a draw asking for <paramref name="slot" /> should use.</summary>
-    public static ISlotProgram Resolve(ProgramSlot slot)
+    /// <summary>
+    ///     The program a draw asking for <paramref name="slot" /> should use, given the vertex format
+    ///     its buffer is in.
+    /// </summary>
+    /// <remarks>
+    ///     The layout is part of resolution, not a check afterwards. A slot's chain can pass through
+    ///     a program written for a different vertex format — every block-shaped slot names terrain as
+    ///     its parent, and terrain's program reads <see cref="ChunkVertex" /> — and taking it would
+    ///     draw whatever the wrong attribute offsets happen to spell. Skipping it lands on the
+    ///     nearest ancestor that can actually read the buffer.
+    /// </remarks>
+    public static ISlotProgram Resolve(ProgramSlot slot, VertexLayoutKind vertexLayout)
     {
         foreach (ProgramSlot candidate in ProgramSlots.ResolutionChain(slot))
         {
-            if (s_programs.TryGetValue(candidate, out ISlotProgram? program))
+            if (s_programs.TryGetValue(candidate, out ISlotProgram? program) && program.VertexLayout == vertexLayout)
             {
                 return program;
             }
         }
 
         throw new InvalidOperationException(
-            $"No program for slot {slot} or any of its ancestors. Basic claims the root of every " +
-            "chain, so this means a draw ran before SlotPrograms.Initialize.");
+            $"No program for slot {slot} or any of its ancestors reads {vertexLayout} vertices. " +
+            "Basic claims the root of every chain, so this means a draw ran before " +
+            "SlotPrograms.Initialize, or a layout nothing has a program for.");
     }
 
     /// <summary>Builds the programs that exist so far and claims their slots.</summary>
@@ -69,6 +80,12 @@ public static class SlotPrograms
 
     private sealed class CallerBoundProgram : ISlotProgram
     {
+        /// <summary>
+        ///     Whatever the caller bound. Never reached through <see cref="Resolve" /> — it is handed
+        ///     out by name — so its layout is only here to satisfy the interface.
+        /// </summary>
+        public VertexLayoutKind VertexLayout => VertexLayoutKind.Generic;
+
         public void Activate()
         {
         }

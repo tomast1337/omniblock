@@ -124,7 +124,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _meshGenerator = new();
         _world = world;
 
-        _terrainProgram = (TerrainSlotProgram)SlotPrograms.Resolve(ProgramSlot.Terrain);
+        _terrainProgram = (TerrainSlotProgram)SlotPrograms.Resolve(ProgramSlot.Terrain, VertexLayoutKind.Chunk);
         _chunkShader = _terrainProgram.Shader;
         _chunkShader.Changed += BuildChunkShader;
 

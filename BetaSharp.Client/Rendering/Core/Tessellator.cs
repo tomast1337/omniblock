@@ -257,7 +257,7 @@ public class Tessellator
     ///     has cost was some draw inheriting state a previous one left set, and a draw that has to
     ///     name what it is cannot inherit the answer.
     /// </remarks>
-    public void draw(ProgramSlot slot) => draw(SlotPrograms.Resolve(slot));
+    public void draw(ProgramSlot slot) => draw(SlotPrograms.Resolve(slot, VertexLayoutKind.Generic));
 
     private unsafe void draw(ISlotProgram program)
     {
