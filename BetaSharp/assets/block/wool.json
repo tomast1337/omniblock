@@ -32,8 +32,28 @@
   ],
   "Behaviors": [
     {
-      "Slots": ["Visuals"],
-      "Type": "cloth_visual"
+      "Slots": [
+        "Visuals"
+      ],
+      "Type": "cloth_visual",
+      "textures": [
+        "betasharp:white_wool",
+        "betasharp:orange_wool",
+        "betasharp:magenta_wool",
+        "betasharp:light_blue_wool",
+        "betasharp:yellow_wool",
+        "betasharp:lime_wool",
+        "betasharp:pink_wool",
+        "betasharp:gray_wool",
+        "betasharp:light_gray_wool",
+        "betasharp:cyan_wool",
+        "betasharp:purple_wool",
+        "betasharp:blue_wool",
+        "betasharp:brown_wool",
+        "betasharp:green_wool",
+        "betasharp:red_wool",
+        "betasharp:black_wool"
+      ]
     }
   ]
 }

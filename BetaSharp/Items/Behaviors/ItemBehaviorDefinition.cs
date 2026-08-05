@@ -4,6 +4,7 @@ using BetaSharp.Blocks.Materials;
 using BetaSharp.Entities;
 using BetaSharp.Entities.Behaviors;
 using BetaSharp.Registries;
+using BetaSharp.Textures;
 using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items.Behaviors;
@@ -184,7 +185,10 @@ public sealed class ThrowableBehaviorDefinition : ItemBehaviorDefinition
 
 public sealed class DyeBehaviorDefinition : ItemBehaviorDefinition
 {
-    public override IItemBehavior Build() => new DyeBehavior();
+    public string[] Textures { get; init; } = [];
+
+    public override IItemBehavior Build() =>
+        new DyeBehavior([.. Textures.Select(Atlases.Items.IndexOf)]);
 }
 
 public sealed class CoalBehaviorDefinition : ItemBehaviorDefinition

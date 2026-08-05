@@ -49,10 +49,19 @@ public sealed class AtlasTileMap
         return Parse(reader.ReadToEnd());
     }
 
-    /// <summary>The tile named <paramref name="name" />'s legacy grid position, as <c>x + y * GridWidth</c>.</summary>
+    /// <summary>
+    ///     The tile named <paramref name="name" />'s legacy grid position, as <c>x + y * GridWidth</c>.
+    ///     The name may carry a namespace (<c>betasharp:stone</c>) or not — tiles are keyed by path
+    ///     alone, since an atlas is not itself namespaced.
+    /// </summary>
     public int IndexOf(string name)
     {
         _indexByName ??= Tiles.ToDictionary(t => t.Name, t => t.X + t.Y * GridWidth);
+
+        if (name.Contains(':', StringComparison.Ordinal))
+        {
+            name = ResourceLocation.Parse(name).Path;
+        }
 
         return _indexByName.TryGetValue(name, out int index)
             ? index

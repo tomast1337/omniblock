@@ -6,7 +6,7 @@ using BetaSharp.Worlds.Core.Systems;
 
 namespace BetaSharp.Items.Behaviors;
 
-internal sealed class DyeBehavior : IItemBehavior
+internal sealed class DyeBehavior(int[] textures) : IItemBehavior
 {
     internal static readonly string[] ColorNames =
     [
@@ -14,14 +14,10 @@ internal sealed class DyeBehavior : IItemBehavior
         "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
     ];
 
-    internal static readonly int[] ColorValues =
-    [
-        0x1E1B1B, 0xB3312C, 0x3B511A, 0x51301A, 0x253192, 0x7B2FBE, 0x287697, 0x287697,
-        0x434343, 0xD88198, 0x41CD34, 0xDECF2A, 0x6689D3, 0xC354CD, 0xEB8844, 0xF0F0F0
-    ];
-
-    public int GetTextureId(Item item, int meta)
-        => item._textureId + meta % 8 * 16 + meta / 8;
+    // A plain list in damage order, not a base index walked as `base + meta % 8 * 16 + meta / 8`.
+    // That arithmetic hard-coded the dyes sitting in two columns of eight on gui/items.png, which
+    // no definition outside this assembly could reproduce and a seventeenth dye could not extend.
+    public int GetTextureId(Item item, int meta) => textures[meta & 15];
 
     public string GetItemNameIS(Item item, ItemStack itemStack)
         => item.GetItemName() + "." + ColorNames[itemStack.GetDamage()];

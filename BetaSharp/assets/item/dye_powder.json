@@ -1,9 +1,27 @@
 {
-    "ProtocolId": 351,
-    "TranslationKey": "dyePowder",
-    "TextureId": "betasharp:ink_sac",
-    "HasSubtypes": true,
-    "Behavior": {
-        "type": "dye"
-    }
+  "ProtocolId": 351,
+  "TranslationKey": "dyePowder",
+  "TextureId": "betasharp:ink_sac",
+  "HasSubtypes": true,
+  "Behavior": {
+    "type": "dye",
+    "Textures": [
+      "betasharp:ink_sac",
+      "betasharp:rose_red",
+      "betasharp:cactus_green",
+      "betasharp:cocoa_beans",
+      "betasharp:lapis_lazuli",
+      "betasharp:purple_dye",
+      "betasharp:cyan_dye",
+      "betasharp:light_gray_dye",
+      "betasharp:gray_dye",
+      "betasharp:pink_dye",
+      "betasharp:lime_dye",
+      "betasharp:dandelion_yellow",
+      "betasharp:light_blue_dye",
+      "betasharp:magenta_dye",
+      "betasharp:orange_dye",
+      "betasharp:bone_meal"
+    ]
+  }
 }

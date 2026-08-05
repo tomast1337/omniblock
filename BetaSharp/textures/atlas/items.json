@@ -384,7 +384,7 @@
       "y": 4
     },
     {
-      "name": "rose_red",
+      "name": "gray_dye",
       "x": 15,
       "y": 4
     },
@@ -454,7 +454,7 @@
       "y": 5
     },
     {
-      "name": "cactus_green",
+      "name": "rose_red",
       "x": 14,
       "y": 5
     },
@@ -499,7 +499,7 @@
       "y": 6
     },
     {
-      "name": "cocoa_beans",
+      "name": "cactus_green",
       "x": 14,
       "y": 6
     },
@@ -534,7 +534,7 @@
       "y": 7
     },
     {
-      "name": "lapis_lazuli",
+      "name": "cocoa_beans",
       "x": 14,
       "y": 7
     },
@@ -579,12 +579,12 @@
       "y": 8
     },
     {
-      "name": "light_blue_dye",
+      "name": "lapis_lazuli",
       "x": 14,
       "y": 8
     },
     {
-      "name": "magenta_dye",
+      "name": "light_blue_dye",
       "x": 15,
       "y": 8
     },
@@ -599,7 +599,7 @@
       "y": 9
     },
     {
-      "name": "orange_dye",
+      "name": "magenta_dye",
       "x": 15,
       "y": 9
     },
@@ -614,12 +614,12 @@
       "y": 10
     },
     {
-      "name": "light_gray_dye",
+      "name": "orange_dye",
       "x": 15,
       "y": 10
     },
     {
-      "name": "gray_dye",
+      "name": "light_gray_dye",
       "x": 14,
       "y": 11
     },
