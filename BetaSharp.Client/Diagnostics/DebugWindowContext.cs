@@ -1,6 +1,7 @@
 using BetaSharp.Client.Entities;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Chunks;
+using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Sound;
 using BetaSharp.Client.UI;
 using BetaSharp.Client.UI.Screens.InGame;
@@ -48,6 +49,7 @@ internal sealed class DebugWindowContext(BetaSharp game)
     public HUD HUD => game.HUD;
     public UIContext UIContext => game.UIContext;
     public SoundManager SoundManager => game.SoundManager;
+    public TextureManager TextureManager => game.TextureManager;
 
     /// <summary>
     /// The top-left screen position (in ImGui/window pixels) of the game viewport when the

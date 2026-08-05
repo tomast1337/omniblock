@@ -18,8 +18,8 @@ public static class BlockRegistry
             ?? throw new InvalidOperationException($"Block '{name}' is registered but LoadAndBuild has not run yet.");
     }
 
-    /// <summary>Reverse lookup used by <see cref="BetaSharp.ItemLookup" /> to build its block-name table.</summary>
-    internal static string? TryGetName(int protocolId) => s_idToName.GetValueOrDefault(protocolId);
+    /// <summary>Reverse lookup: the registry name a block was defined under, given its protocol id.</summary>
+    public static string? TryGetName(int protocolId) => s_idToName.GetValueOrDefault(protocolId);
 
     internal static void Initialize()
     {

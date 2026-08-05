@@ -51,7 +51,8 @@ internal sealed class DebugWindowManager
             new ProfilerWindow(),
             new TranslationsWindow(),
             _consoleWindow,
-            new UIInspectorWindow(ctx)
+            new UIInspectorWindow(ctx),
+            new ItemBlockBrowserWindow(ctx)
         ];
     }
 
