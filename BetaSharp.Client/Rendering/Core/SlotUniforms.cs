@@ -27,6 +27,23 @@ internal static class SlotUniforms
         shader.SetUniform4("fogColor", fog.Color);
     }
 
+    /// <summary>
+    ///     How dark the sky channel is right now and where the brightness curve floors out, which a
+    ///     shader needs to turn a vertex's light levels into a brightness.
+    /// </summary>
+    /// <remarks>
+    ///     Ambient, like the fog, and for the same reason: it belongs to the world rather than to
+    ///     any one draw, and it moves per tick. A draw with no world behind it -- the main menu,
+    ///     the inventory -- reads the defaults, under which full block light is still full brightness.
+    /// </remarks>
+    public static void UploadWorldLight(Shader shader)
+    {
+        WorldLightState light = GLManager.WorldLight;
+
+        shader.SetUniform1("ambientDarkness", light.AmbientDarkness);
+        shader.SetUniform1("luminanceOffset", light.LuminanceOffset);
+    }
+
     /// <summary>The two directional lights, the ambient term, and the matrix normals arrive under.</summary>
     /// <remarks>
     ///     <para>

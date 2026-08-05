@@ -33,6 +33,7 @@ internal sealed class TexturedSlotProgram : ISlotProgram, IDisposable
         SlotUniforms.UploadTransforms(_shader);
         SlotUniforms.UploadFogAndAlpha(_shader);
         SlotUniforms.UploadLighting(_shader);
+        SlotUniforms.UploadWorldLight(_shader);
         _shader.SetUniformMatrix4("textureMatrix", GLManager.TextureMatrix.Top);
         _shader.SetUniform1("textureSampler", 0);
         _shader.SetUniform1("arraySampler", TextureArrayUnits.Terrain);

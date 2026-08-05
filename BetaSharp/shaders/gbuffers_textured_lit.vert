@@ -14,6 +14,16 @@ layout (location = 3) in vec3 inNormal;
 // mix the two -- an item icon and the block behind it go out together.
 layout (location = 4) in int inArrayLayer;
 
+// The two world-light channels in quarter levels. Full block light for a draw that sets none, which
+// is text, the GUI, and anything else that is not a block sitting in the world.
+layout (location = 5) in uvec2 inWorldLight;
+
+// How far the sky channel is knocked down right now, and the floor of the brightness curve. The
+// same two the terrain shader takes, because this applies the same ramp to the same levels: a block
+// drawn from the Tessellator has to come out lit like the one meshed into a chunk beside it.
+uniform float ambientDarkness;
+uniform float luminanceOffset;
+
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 textureMatrix;
@@ -35,6 +45,21 @@ out vec2 texCoord;
 out float fogDistance;
 flat out int arrayLayer;
 
+// Beta's brightness curve in closed form, matching chunk.vert -- see the longer note there.
+float rampLuminance(float level)
+{
+    float factor = 1.0 - level / 15.0;
+    return (1.0 - factor) / (factor * 3.0 + 1.0) * (1.0 - luminanceOffset) + luminanceOffset;
+}
+
+float worldBrightness(uvec2 packedLight)
+{
+    float sky = float(packedLight.x) * 0.25 - ambientDarkness;
+    float block = float(packedLight.y) * 0.25;
+
+    return rampLuminance(clamp(max(sky, block), 0.0, 15.0));
+}
+
 void main()
 {
     vec4 viewPos = modelViewMatrix * vec4(inPosition, 1.0);
@@ -46,7 +71,10 @@ void main()
 
     texCoord = (textureMatrix * vec4(inUV, 0.0, 1.0)).xy;
 
-    vec4 tint = inColor;
+    // The world light the block sits in, applied here rather than baked into the colour by whoever
+    // built the geometry -- so a pack can relight it, and so the sun can move without the geometry
+    // being rebuilt for it.
+    vec4 tint = vec4(inColor.rgb * worldBrightness(inWorldLight), inColor.a);
     if (lightingEnabled != 0)
     {
         // The light directions arrive already in eye space, put there by whatever model-view was in

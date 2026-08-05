@@ -66,6 +66,9 @@ public unsafe class FixedFunctionPipeline : LegacyGL
     /// <inheritdoc cref="GLManager.Lighting" />
     public LightingState Lighting { get; set; } = LightingState.Default;
 
+    /// <inheritdoc cref="GLManager.WorldLight" />
+    public WorldLightState WorldLight { get; set; } = WorldLightState.Default;
+
     /// <summary>
     ///     The four capabilities a core context does not have, which are values a program reads here.
     /// </summary>

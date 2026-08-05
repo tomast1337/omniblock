@@ -295,6 +295,12 @@ public class GameRenderer
             // item icon, the thing in your hand — samples a layer of one of these.
             _client.TextureManager.BindTextureArrays();
 
+            // Likewise for how those blocks are lit. Cleared to the default with no world, so the
+            // menus do not inherit the last one's nightfall.
+            GLManager.WorldLight = _client.World is { } world
+                ? new WorldLightState((float)world.Environment.AmbientDarkness, world.Dimension.LightLevelToLuminance[0])
+                : WorldLightState.Default;
+
             if (_client.World != null)
             {
                 using (Profiler.Begin("RenderWorld"))
