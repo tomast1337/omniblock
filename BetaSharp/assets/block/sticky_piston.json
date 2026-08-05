@@ -15,7 +15,11 @@
     {
       "Slots": ["Physics", "Lifecycle", "Ticker", "Visuals"],
       "Type": "piston_base",
-      "sticky": true
+      "sticky": true,
+      "top": "betasharp:piston_top_sticky",
+      "side": "betasharp:piston_body_side",
+      "bottom": "betasharp:piston_bottom",
+      "extension_side": "betasharp:piston_extension_side"
     }
   ]
 }

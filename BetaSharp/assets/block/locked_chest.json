@@ -8,7 +8,10 @@
   "Behaviors": [
     {
       "Slots": ["Ticker", "Visuals"],
-      "Type": "locked_chest"
+      "Type": "locked_chest",
+      "top": "betasharp:chest_top",
+      "side": "betasharp:chest_side",
+      "front": "betasharp:chest_front"
     }
   ]
 }

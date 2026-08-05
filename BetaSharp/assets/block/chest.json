@@ -11,7 +11,14 @@
   "Behaviors": [
     {
       "Slots": ["Interactable", "Lifecycle", "Physics", "Visuals"],
-      "Type": "chest"
+      "Type": "chest",
+      "top": "betasharp:chest_top",
+      "side": "betasharp:chest_side",
+      "front": "betasharp:chest_front",
+      "double_front_left": "betasharp:chest_double_front_left",
+      "double_front_right": "betasharp:chest_double_front_right",
+      "double_back_left": "betasharp:chest_double_back_left",
+      "double_back_right": "betasharp:chest_double_back_right"
     }
   ]
 }

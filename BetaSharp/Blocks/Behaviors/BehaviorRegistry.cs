@@ -1,12 +1,15 @@
 using System.Text.Json;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Items;
+using BetaSharp.Textures;
 
 namespace BetaSharp.Blocks.Behaviors;
 
 internal static class BehaviorRegistry
 {
     public delegate object BehaviorFactory(JsonElement json);
+
+    private static readonly AtlasTileMap s_blockTextures = AtlasTileMap.Load("textures/atlas/terrain.json");
 
     private static readonly Dictionary<string, BehaviorFactory> s_factories = new()
     {
@@ -18,7 +21,12 @@ internal static class BehaviorRegistry
         ["slab"] = json => new SlabBehavior(json.TryGetProperty("is_double", out var d) && d.GetBoolean()),
         ["sign"] = json => new SignBehavior(json.TryGetProperty("standing", out var s) && s.GetBoolean()),
         ["pumpkin"] = json => new PumpkinBehavior(json.TryGetProperty("lit", out var pl) && pl.GetBoolean()),
-        ["piston_base"] = json => new PistonBaseBehavior(json.TryGetProperty("sticky", out var st) && st.GetBoolean()),
+        ["piston_base"] = json => new PistonBaseBehavior(
+            json.TryGetProperty("sticky", out var st) && st.GetBoolean(),
+            ResolveTexture(json.GetProperty("top").GetString()!),
+            ResolveTexture(json.GetProperty("side").GetString()!),
+            ResolveTexture(json.GetProperty("bottom").GetString()!),
+            ResolveTexture(json.GetProperty("extension_side").GetString()!)),
         ["pressure_plate"] = json => new PressurePlateBehavior(Enum.Parse<PressurePlateActiviationRule>(json.GetProperty("activation_rule").GetString() ?? "EVERYTHING", true)),
         ["glass_visual"] = json => new GlassVisualBehavior(json.TryGetProperty("hide_adjacent_faces", out var h) && h.GetBoolean()),
         ["wall_mount"] = json => new WallMountBehavior(json.TryGetProperty("is_ladder", out var l) && l.GetBoolean()),
@@ -33,7 +41,14 @@ internal static class BehaviorRegistry
         ["button"] = _ => new ButtonBehavior(),
         ["cactus"] = json => new CactusBehavior(ResolveBlock(json.GetProperty("stem").GetString()!), ResolveBlock(json.GetProperty("soil").GetString()!), json.GetProperty("max_height").GetInt32()),
         ["cake"] = _ => new CakeBehavior(),
-        ["chest"] = _ => new ChestBehavior(),
+        ["chest"] = json => new ChestBehavior(
+            ResolveTexture(json.GetProperty("top").GetString()!),
+            ResolveTexture(json.GetProperty("side").GetString()!),
+            ResolveTexture(json.GetProperty("front").GetString()!),
+            ResolveTexture(json.GetProperty("double_front_left").GetString()!),
+            ResolveTexture(json.GetProperty("double_front_right").GetString()!),
+            ResolveTexture(json.GetProperty("double_back_left").GetString()!),
+            ResolveTexture(json.GetProperty("double_back_right").GetString()!)),
         ["cloth_visual"] = _ => new ClothVisualBehavior(),
         ["crop"] = json => new CropBehavior(ResolveBlock(json.GetProperty("required_soil").GetString()!), ResolveItem(json.GetProperty("mature_crop_item").GetString()!), ResolveItem(json.GetProperty("seeds").GetString()!),
             json.GetProperty("drop_spread").GetSingle(), json.GetProperty("seed_scatter_chance_bound").GetInt32(), json.GetProperty("growth_chance_denominator").GetInt32()),
@@ -51,7 +66,10 @@ internal static class BehaviorRegistry
         ["jukebox"] = json => new JukeboxBehavior(json.GetProperty("drop_spread").GetSingle()),
         ["leaves"] = json => new LeavesBehavior(ResolveBlock(json.GetProperty("trunk").GetString()!), ResolveBlock(json.GetProperty("sapling").GetString()!), ResolveItem(json.GetProperty("harvest_tool").GetString()!)),
         ["lever"] = _ => new LeverBehavior(),
-        ["locked_chest"] = _ => new LockedChestBehavior(),
+        ["locked_chest"] = json => new LockedChestBehavior(
+            ResolveTexture(json.GetProperty("top").GetString()!),
+            ResolveTexture(json.GetProperty("side").GetString()!),
+            ResolveTexture(json.GetProperty("front").GetString()!)),
         ["log"] = json => new LogBehavior(ResolveBlock(json.GetProperty("canopy").GetString()!), json.GetProperty("search_radius").GetInt32()),
         ["mushroom"] = json => new MushroomBehavior(ResolveBlockArray(json.GetProperty("valid_ground")), json.GetProperty("spread_chance_one_in").GetInt32(), json.GetProperty("max_brightness").GetInt32()),
         ["noteblock"] = _ => new NoteBlockBehavior(),
@@ -82,6 +100,8 @@ internal static class BehaviorRegistry
             : throw new ArgumentException($"Unknown block behavior type '{type}'");
 
     private static string ResolveName(string namespaced) => ResourceLocation.Parse(namespaced).Path;
+
+    private static int ResolveTexture(string name) => s_blockTextures.IndexOf(ResolveName(name));
 
     private static Block ResolveBlock(string name) => BlockRegistry.Get(ResolveName(name));
 

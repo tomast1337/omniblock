@@ -1,17 +1,20 @@
 using BetaSharp.Blocks;
+using BetaSharp.Textures;
 
 namespace BetaSharp.Tests.Blocks;
 
 public sealed class BlockChestTests
 {
+    private static readonly AtlasTileMap s_terrain = AtlasTileMap.Load("textures/atlas/terrain.json");
+
     [Fact]
     public void GetTextureId_NorthSouthDoubleChestFacingEast_UsesCorrectFrontHalves()
     {
         FakeWorldContext world = new();
         PlaceNorthSouthDoubleChest(world);
 
-        Assert.Equal(BlockTextures.ChestDoubleFrontRight, BlockRegistry.Get("chest").GetTextureId(world.Reader, 0, 64, 0, Side.East));
-        Assert.Equal(BlockTextures.ChestDoubleFrontLeft, BlockRegistry.Get("chest").GetTextureId(world.Reader, 0, 64, 1, Side.East));
+        Assert.Equal(s_terrain.IndexOf("chest_double_front_right"), BlockRegistry.Get("chest").GetTextureId(world.Reader, 0, 64, 0, Side.East));
+        Assert.Equal(s_terrain.IndexOf("chest_double_front_left"), BlockRegistry.Get("chest").GetTextureId(world.Reader, 0, 64, 1, Side.East));
     }
 
     [Fact]
@@ -22,8 +25,8 @@ public sealed class BlockChestTests
         world.ReaderWriter.SetInitial(1, 64, 0, BlockRegistry.Get("stone").Id);
         world.ReaderWriter.SetInitial(1, 64, 1, BlockRegistry.Get("stone").Id);
 
-        Assert.Equal(BlockTextures.ChestDoubleFrontLeft, BlockRegistry.Get("chest").GetTextureId(world.Reader, 0, 64, 0, Side.West));
-        Assert.Equal(BlockTextures.ChestDoubleFrontRight, BlockRegistry.Get("chest").GetTextureId(world.Reader, 0, 64, 1, Side.West));
+        Assert.Equal(s_terrain.IndexOf("chest_double_front_left"), BlockRegistry.Get("chest").GetTextureId(world.Reader, 0, 64, 0, Side.West));
+        Assert.Equal(s_terrain.IndexOf("chest_double_front_right"), BlockRegistry.Get("chest").GetTextureId(world.Reader, 0, 64, 1, Side.West));
     }
 
     private static void PlaceNorthSouthDoubleChest(FakeWorldContext world)

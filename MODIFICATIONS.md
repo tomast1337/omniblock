@@ -149,3 +149,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-05 — feat(items): name a flat item TextureId instead of spelling out its grid index (Nicolas Vyčas Nery; `e0e0b2a2b93b514e25284ae1f50ffa5bf1ae4be6`)
 - 2026-08-05 — feat(ui): add ItemBlockBrowserWindow for item and block inspection (Nicolas Vyčas Nery; `4fc5bff1ed75fc0fd28e0fc11dac57b934c19af8`)
 - 2026-08-05 — feat(blocks): name a flat block TextureId instead of spelling out its grid index (Nicolas Vyčas Nery; `6114d7773fee6888d9bfc6b127ac1f05bf94c438`)
+- 2026-08-05 — feat(blocks): make chest and piston face textures behavior params, not constants (Nicolas Vyčas Nery; `6f7d81839f77d76e2b4ca8f73c0d57ed3badd0ab`)
