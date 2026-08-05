@@ -11,7 +11,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     item). The meta helpers and <see cref="FindWakeUpPosition" /> are public statics consumed
 ///     externally by <c>EntityPlayer</c>, <c>NaturalSpawner</c>, and the client's bed renderer.
 /// </summary>
-public sealed class BedBehavior : IBlockInteractable, IBlockPhysics, IBlockLifecycle, IBlockVisuals
+public sealed class BedBehavior(int bottom, int footTop, int footSide, int footEnd, int headTop, int headSide, int headEnd) : IBlockInteractable, IBlockPhysics, IBlockLifecycle, IBlockVisuals
 {
     private static readonly int s_bedId = Item.ByName("bed").Id;
 
@@ -141,20 +141,20 @@ public sealed class BedBehavior : IBlockInteractable, IBlockPhysics, IBlockLifec
     {
         int direction = GetDirection(meta);
         Side sideFacing = BedFacings[direction][side.ToInt()];
-        if (side == Side.Down) return BlockTextures.OakPlanks;
+        if (side == Side.Down) return bottom;
 
         if (IsHeadOfBed(meta))
         {
-            if (sideFacing == Side.North) return BlockTextures.BedEndHead;
-            if (sideFacing != Side.East && sideFacing != Side.West) return BlockTextures.BedTopHead;
-            return BlockTextures.BedSideHead;
+            if (sideFacing == Side.North) return headEnd;
+            if (sideFacing != Side.East && sideFacing != Side.West) return headTop;
+            return headSide;
         }
 
-        if (sideFacing == Side.South) return BlockTextures.BedEndFoot;
+        if (sideFacing == Side.South) return footEnd;
 
-        if (sideFacing != Side.East && sideFacing != Side.West) return BlockTextures.BedTopFoot;
+        if (sideFacing != Side.East && sideFacing != Side.West) return footTop;
 
-        return BlockTextures.BedSideFoot;
+        return footSide;
     }
 
     public static int GetDirection(int meta) => meta & 3;

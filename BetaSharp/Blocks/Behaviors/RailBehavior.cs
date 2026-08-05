@@ -14,7 +14,15 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
 {
     private readonly bool _isPoweredTrack;
 
-    public RailBehavior(bool isPoweredTrack) => _isPoweredTrack = isPoweredTrack;
+    private readonly int _turn;
+    private readonly int _unpowered;
+
+    public RailBehavior(bool isPoweredTrack, int turn, int unpowered)
+    {
+        _isPoweredTrack = isPoweredTrack;
+        _turn = turn;
+        _unpowered = unpowered;
+    }
 
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
@@ -99,11 +107,11 @@ public sealed class RailBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
     {
         if (_isPoweredTrack)
         {
-            if (block.Id == BlockRegistry.Get("powered_rail").Id && (meta & 8) == 0) return BlockTextures.PoweredRailOff;
+            if (block.Id == BlockRegistry.Get("powered_rail").Id && (meta & 8) == 0) return _unpowered;
         }
         else if (meta >= 6)
         {
-            return BlockTextures.RailCorner;
+            return _turn;
         }
 
         return defaultTexture;

@@ -15,9 +15,15 @@
   "PistonBehavior": "Normal",
   "Behaviors": [
     {
-      "Slots": ["Physics", "Lifecycle", "Visuals"],
+      "Slots": [
+        "Physics",
+        "Lifecycle",
+        "Visuals"
+      ],
       "Type": "rail",
-      "powered": true
+      "powered": true,
+      "turn": "betasharp:rail_turn",
+      "unpowered": "betasharp:powered_rail_off"
     }
   ]
 }

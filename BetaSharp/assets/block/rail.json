@@ -20,7 +20,9 @@
         "Visuals"
       ],
       "Type": "rail",
-      "powered": false
+      "powered": false,
+      "turn": "betasharp:rail_turn",
+      "unpowered": "betasharp:powered_rail_off"
     }
   ]
 }

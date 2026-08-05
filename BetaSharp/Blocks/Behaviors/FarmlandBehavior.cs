@@ -20,7 +20,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         required.
 ///     </para>
 /// </summary>
-internal sealed class FarmlandBehavior(Block revertBlock, Block crop, int trampleChanceOneIn, int tickChanceOneIn, int waterCheckRadius) : IBlockTicker, IBlockPhysics, IBlockInteractable, IBlockLifecycle, IBlockVisuals
+internal sealed class FarmlandBehavior(Block revertBlock, Block crop, int trampleChanceOneIn, int tickChanceOneIn, int waterCheckRadius, int wet, int dry, int side) : IBlockTicker, IBlockPhysics, IBlockInteractable, IBlockLifecycle, IBlockVisuals
 {
     public void OnSteppedOn(Block block, OnEntityStepEvent @event)
     {
@@ -65,11 +65,11 @@ internal sealed class FarmlandBehavior(Block revertBlock, Block crop, int trampl
         }
     }
 
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture) => side switch
+    public int GetTexture(Block block, Side renderSide, int meta, int defaultTexture) => renderSide switch
     {
-        Side.Up when meta > 0 => BlockTextures.FarmlandWet,
-        Side.Up => BlockTextures.FarmlandDry,
-        _ => BlockTextures.Dirt
+        Side.Up when meta > 0 => wet,
+        Side.Up => dry,
+        _ => side
     };
 
     private bool HasCrop(IBlockReader world, int x, int y, int z)

@@ -153,3 +153,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-05 — feat(items): give an armor material a texture name instead of a render index (Nicolas Vyčas Nery; `43bcab1e3a8bd8dbaa56a86cb38c928fead5d0e8`)
 - 2026-08-05 — feat(textures): list the wool and dye colours instead of walking the atlas grid (Nicolas Vyčas Nery; `f807bdde25945aa5dfbd260cdf70246209ab2924`)
 - 2026-08-05 — fix(textures): name each terrain tile after the tile it actually sits on (Nicolas Vyčas Nery; `c8fbb8fe9e4e8c16e3502f9ad7672dcc85f1faa1`)
+- 2026-08-05 — feat(blocks): make per-face block textures behavior params, not constants (Nicolas Vyčas Nery; `51f4ab76d429966eb87a90e83ef952ff56c1c929`)

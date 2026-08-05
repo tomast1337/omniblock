@@ -10,7 +10,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         Leaf-decay search radius (<paramref name="searchRadius" />) is a required.
 ///     </para>
 /// </summary>
-public sealed class LogBehavior(Block canopy, int searchRadius) : IBlockVisuals, IBlockLifecycle
+public sealed class LogBehavior(Block canopy, int searchRadius, int top, int[] sides) : IBlockVisuals, IBlockLifecycle
 {
     public void OnBreak(Block block, OnBreakEvent @event)
     {
@@ -39,14 +39,8 @@ public sealed class LogBehavior(Block canopy, int searchRadius) : IBlockVisuals,
         }
     }
 
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture) => side switch
-    {
-        Side.Up or Side.Down => BlockTextures.LogTop,
-        _ => meta switch
-        {
-            1 => BlockTextures.LogPineSide,
-            2 => BlockTextures.LogBirchSide,
-            _ => BlockTextures.LogOakSide
-        }
-    };
+    // Four sides for two metadata bits: the species field can hold a value no tree grows, and the
+    // list has to answer for it rather than fall back to a species chosen in C#.
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture) =>
+        side is Side.Up or Side.Down ? top : sides[meta & 3];
 }

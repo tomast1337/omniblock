@@ -9,9 +9,17 @@
   "SpreadChance": 100,
   "Behaviors": [
     {
-      "Slots": ["Physics", "Lifecycle", "Interactable", "Visuals"],
+      "Slots": [
+        "Physics",
+        "Lifecycle",
+        "Interactable",
+        "Visuals"
+      ],
       "Type": "tnt",
-      "igniter": "betasharp:flint_and_steel"
+      "igniter": "betasharp:flint_and_steel",
+      "top": "betasharp:tnt_top",
+      "side": "betasharp:tnt_side",
+      "bottom": "betasharp:tnt_bottom"
     }
   ]
 }

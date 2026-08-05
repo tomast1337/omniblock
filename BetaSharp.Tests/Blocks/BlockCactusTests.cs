@@ -14,7 +14,7 @@ public sealed class BlockCactusTests
         Block customSoil = BlockRegistry.Get("gravel");
         world.ReaderWriter.SetInitial(0, 63, 0, customSoil.Id);
 
-        CactusBehavior behavior = new(customStem, customSoil, 3);
+        CactusBehavior behavior = new(customStem, customSoil, 3, top: 0, side: 0, bottom: 0);
 
         Assert.True(behavior.CanPlaceAt(customStem, new CanPlaceAtContext(world, Side.Up, 0, 64, 0)));
     }
@@ -27,7 +27,7 @@ public sealed class BlockCactusTests
         Block customSoil = BlockRegistry.Get("gravel");
         world.ReaderWriter.SetInitial(0, 63, 0, customStem.Id);
 
-        CactusBehavior behavior = new(customStem, customSoil, 3);
+        CactusBehavior behavior = new(customStem, customSoil, 3, top: 0, side: 0, bottom: 0);
 
         Assert.True(behavior.CanPlaceAt(customStem, new CanPlaceAtContext(world, Side.Up, 0, 64, 0)));
     }
@@ -40,7 +40,7 @@ public sealed class BlockCactusTests
         Block customSoil = BlockRegistry.Get("gravel");
         world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("sand").Id);
 
-        CactusBehavior behavior = new(customStem, customSoil, 3);
+        CactusBehavior behavior = new(customStem, customSoil, 3, top: 0, side: 0, bottom: 0);
 
         Assert.False(behavior.CanPlaceAt(customStem, new CanPlaceAtContext(world, Side.Up, 0, 64, 0)));
     }

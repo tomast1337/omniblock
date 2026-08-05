@@ -12,7 +12,7 @@ namespace BetaSharp.Blocks.Behaviors;
 ///         Igniter tool item is a required, (see <c>BehaviorRegistry</c>'s <c>"tnt"</c> entry).
 ///     </para>
 /// </summary>
-internal sealed class TNTBehavior(Item igniter) : IBlockPhysics, IBlockLifecycle, IBlockInteractable, IBlockVisuals
+internal sealed class TNTBehavior(Item igniter, int top, int side, int bottom) : IBlockPhysics, IBlockLifecycle, IBlockInteractable, IBlockVisuals
 {
     public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event)
     {
@@ -65,11 +65,11 @@ internal sealed class TNTBehavior(Item igniter) : IBlockPhysics, IBlockLifecycle
         Ignite(block, @event.World, @event.X, @event.Y, @event.Z);
     }
 
-    public int GetTexture(Block block, Side side, int defaultTexture) => side switch
+    public int GetTexture(Block block, Side renderSide, int defaultTexture) => renderSide switch
     {
-        Side.Down => BlockTextures.TntBottom,
-        Side.Up => BlockTextures.TntTop,
-        _ => BlockTextures.TntSide
+        Side.Down => bottom,
+        Side.Up => top,
+        _ => side
     };
 
     private void Ignite(Block block, IWorldContext world, int x, int y, int z)

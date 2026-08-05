@@ -10,7 +10,7 @@ public sealed class BlockFarmlandTests
     public void GetDroppedItemId_CustomDirt_ReturnsConfiguredBlocksDrop()
     {
         Block customRevertTarget = BlockRegistry.Get("sand");
-        FarmlandBehavior behavior = new(customRevertTarget, BlockRegistry.Get("wheat"), 4, 5, 4);
+        FarmlandBehavior behavior = new(customRevertTarget, BlockRegistry.Get("wheat"), 4, 5, 4, wet: 0, dry: 0, side: 0);
 
         Assert.Equal(customRevertTarget.GetDroppedItemId(0), behavior.GetDroppedItemId(BlockRegistry.Get("farmland"), 0, 0));
     }
@@ -25,7 +25,7 @@ public sealed class BlockFarmlandTests
         world.ReaderWriter.SetInitial(0, 64, 0, farmlandBlock.Id);
         world.ReaderWriter.SetInitial(0, 65, 0, BlockRegistry.Get("stone").Id);
 
-        FarmlandBehavior behavior = new(customRevertTarget, BlockRegistry.Get("wheat"), 4, 5, 4);
+        FarmlandBehavior behavior = new(customRevertTarget, BlockRegistry.Get("wheat"), 4, 5, 4, wet: 0, dry: 0, side: 0);
         behavior.NeighborUpdate(farmlandBlock, new OnTickEvent(world, 0, 64, 0, 0, farmlandBlock.Id));
 
         Assert.Equal(customRevertTarget.Id, world.Reader.GetBlockId(0, 64, 0));
