@@ -52,7 +52,6 @@ public sealed class UIBatchRenderer : IDisposable
 
     public void Begin(Matrix4X4<float> proj)
     {
-        _silkGL.Enable(EnableCap.Blend);
         GLManager.GL.UseProgram(_shader.ProgramId);
         _shader.SetProjection(proj);
         GLManager.GL.UseProgram(0);
@@ -177,9 +176,12 @@ public sealed class UIBatchRenderer : IDisposable
     {
         if (_vertexCount == 0) return;
 
-        // Legacy GL calls between flushes (e.g. 3D block rendering) can disable blend.
-        // Restore it here so transparent font atlas pixels are not written as opaque black.
-        _silkGL.Enable(EnableCap.Blend);
+        // A batch can be interrupted by 3D geometry drawn into the interface — an item icon, the
+        // inventory's mob preview — which applies its own state and does not put this one back. So
+        // the batch names what it draws under rather than assuming, and it has to name the whole
+        // state: turning blend back on alone used to write it behind the applier, leaving the cache
+        // claiming blend was off while it was on, and the next draw asking for off got nothing.
+        GLManager.State.Apply(RenderState.Interface);
 
         GLManager.GL.UseProgram(_shader.ProgramId);
         _shader.SetUseTexture(_useTexture);

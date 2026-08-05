@@ -7,7 +7,6 @@ using BetaSharp.Client.Rendering.Blocks;
 using BetaSharp.Client.Rendering.Blocks.Entities;
 using BetaSharp.Client.Rendering.Chunks;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Particles;
@@ -788,16 +787,18 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
         GLManager.ModelView.Push();
         GLManager.AlphaTestEnabled = true;
-        GLManager.GL.Enable(GLEnum.PolygonOffsetFill);
 
         // Culling matters here and was previously inherited: this redraws the block's own faces
         // with the crack texture multiplied over them, so with culling off the far faces multiply
         // a second time and the crack comes out twice as dark. GameRenderer calls this from two
         // places — once for the underwater case, straight after the entity pass has left culling
         // off, and once with it on — which is why the crack looked different underwater.
-        GLManager.State.Apply(RenderState.Opaque with { Blend = BlendMode.Multiply });
+        GLManager.State.Apply(RenderState.Opaque with
+        {
+            Blend = BlendMode.Multiply,
+            DepthBias = DepthBias.Decal
+        });
         GLManager.Color = new(1.0F, 1.0F, 1.0F, 0.5F);
-        GLManager.GL.PolygonOffset(-3.0F, -50.0F);
 
         _textureManager.BindTexture(_textureManager.GetTextureId("/terrain.png"));
 
@@ -816,11 +817,11 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         tessellator.draw(ProgramSlot.DamagedBlock);
 
         tessellator.setTranslationD(0.0D, 0.0D, 0.0D);
-        GLManager.GL.PolygonOffset(0.0F, 0.0F);
         GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
 
-        GLManager.GL.Disable(GLEnum.PolygonOffsetFill);
         GLManager.AlphaTestEnabled = false;
+
+        // Takes the bias back off with it, since Opaque carries DepthBias.None.
         GLManager.State.Apply(RenderState.Opaque);
         GLManager.ModelView.Pop();
     }
