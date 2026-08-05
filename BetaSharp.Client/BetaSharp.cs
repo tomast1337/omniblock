@@ -685,14 +685,6 @@ public partial class BetaSharp :
                     SoundManager.UpdateListener(Player, Timer.RenderPartialTicks);
                     GLManager.TextureEnabled = true;
 
-                    if (World != null)
-                    {
-                        using (Profiler.Begin("UpdateLighting"))
-                        {
-                            World.Lighting.DoLightingUpdates();
-                        }
-                    }
-
                     if (!Keyboard.isKeyDown(Keyboard.KEY_F7))
                     {
                         using (Profiler.Begin("DisplayPresent"))
@@ -1590,10 +1582,6 @@ public partial class BetaSharp :
             {
                 _loadingScreen.SetProgress(loadedChunkCount++ * 100 / totalChunksToLoad);
                 World.Reader.GetBlockId(centerPos.X + xOffset, 64, centerPos.Z + zOffset);
-
-                while (World.Lighting.DoLightingUpdates())
-                {
-                }
             }
         }
 
