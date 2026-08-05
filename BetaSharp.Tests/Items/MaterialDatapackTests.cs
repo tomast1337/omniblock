@@ -76,9 +76,9 @@ public sealed class MaterialDatapackTests : IDisposable
     public void WithWorldDatapacks_layers_armor_material_without_touching_server_state()
     {
         WriteMaterial(Path.Combine("assets", "armor_material"), "leather",
-            """{"ArmorLevel": 0, "RenderIndex": 0}""");
+            """{"ArmorLevel": 0, "TexturePrefix": "cloth"}""");
         WriteMaterial(Path.Combine("world", "datapacks", "worldpack", "data", "betasharp", "armor_material"), "emerald",
-            """{"ArmorLevel": 4, "RenderIndex": 4}""");
+            """{"ArmorLevel": 4, "TexturePrefix": "emerald"}""");
         RegistryAccess.AddDynamic(new RegistryDefinition<ArmorMaterialDefinition>(s_armorKey, "armor_material"));
 
         RegistryAccess server = RegistryAccess.Build(basePath: _tempDir);

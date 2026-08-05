@@ -21,7 +21,7 @@ public sealed class MaterialRegistryTests
         ArmorMaterial diamond = ArmorMaterialRegistry.Get("diamond");
 
         Assert.Equal(3, diamond.ArmorLevel);
-        Assert.Equal(3, diamond.RenderIndex);
+        Assert.Equal("diamond", diamond.TexturePrefix);
     }
 
     [Fact]

@@ -18,7 +18,6 @@ public class PlayerEntityRenderer : LivingEntityRenderer
     private readonly ModelBiped _modelBipedMain;
     private readonly ModelBiped _armorChestplate = new(1.0F);
     private readonly ModelBiped _armor = new(0.5F);
-    private static readonly string[] s_armorFilenamePrefix = ["cloth", "chain", "iron", "diamond", "gold"];
 
     public PlayerEntityRenderer() : base(new ModelBiped(0.0F), 0.5F)
     {
@@ -33,7 +32,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
             Item armorItem = armorStack.GetItem();
             if (armorItem.GetBehavior<ArmorBehavior>() is { } armor)
             {
-                loadTexture("/armor/" + s_armorFilenamePrefix[armor.RenderIndex] + "_" + (renderPass == 2 ? 2 : 1) + ".png");
+                loadTexture("/armor/" + armor.TexturePrefix + "_" + (renderPass == 2 ? 2 : 1) + ".png");
                 ModelBiped armorModel = renderPass == 2 ? _modelBipedMain : _armorChestplate;
                 armorModel.BipedHead.Visible = renderPass == 0;
                 armorModel.BipedHeadwear.Visible = renderPass == 0;
