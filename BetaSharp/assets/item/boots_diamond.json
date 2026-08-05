@@ -1,7 +1,7 @@
 {
     "ProtocolId": 313,
     "TranslationKey": "bootsDiamond",
-    "TextureId": 51,
+    "TextureId": "betasharp:diamond_boots",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",

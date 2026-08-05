@@ -1,6 +1,6 @@
 {
   "ProtocolId": 358,
-  "TextureId": 60,
+  "TextureId": "betasharp:map",
   "MaxStackSize": 1,
   "Behavior": {
     "type": "map"

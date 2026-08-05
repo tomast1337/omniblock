@@ -1,6 +1,6 @@
 {
   "ProtocolId": 329,
-  "TextureId": 104,
+  "TextureId": "betasharp:saddle",
   "MaxStackSize": 1,
   "Behavior": {
     "type": "saddle"

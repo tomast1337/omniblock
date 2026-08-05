@@ -1,6 +1,6 @@
 {
   "ProtocolId": 333,
-  "TextureId": 136,
+  "TextureId": "betasharp:boat",
   "MaxStackSize": 1,
   "Behavior": {
     "type": "boat"

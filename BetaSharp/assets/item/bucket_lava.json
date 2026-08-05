@@ -1,7 +1,7 @@
 {
     "ProtocolId": 327,
     "TranslationKey": "bucketLava",
-    "TextureId": 76,
+    "TextureId": "betasharp:lava_bucket",
     "CraftingReturnItemProtocolId": 325,
     "MaxStackSize": 1,
     "Behavior": {

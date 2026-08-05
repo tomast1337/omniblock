@@ -1,7 +1,7 @@
 {
   "ProtocolId": 320,
   "TranslationKey": "porkchopCooked",
-  "TextureId": 88,
+  "TextureId": "betasharp:cooked_porkchop",
   "Behavior": {
     "type": "food",
     "HealAmount": 8,

@@ -1,7 +1,7 @@
 {
     "ProtocolId": 256,
     "TranslationKey": "shovelIron",
-    "TextureId": 82,
+    "TextureId": "betasharp:iron_shovel",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "tool",

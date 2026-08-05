@@ -1,7 +1,7 @@
 {
     "ProtocolId": 299,
     "TranslationKey": "chestplateLeather",
-    "TextureId": 16,
+    "TextureId": "betasharp:leather_tunic",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",

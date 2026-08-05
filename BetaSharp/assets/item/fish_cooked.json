@@ -1,7 +1,7 @@
 {
   "ProtocolId": 350,
   "TranslationKey": "fishCooked",
-  "TextureId": 90,
+  "TextureId": "betasharp:cooked_fish",
   "Behavior": {
     "type": "food",
     "HealAmount": 5,

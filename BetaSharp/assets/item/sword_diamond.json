@@ -1,7 +1,7 @@
 {
     "ProtocolId": 276,
     "TranslationKey": "swordDiamond",
-    "TextureId": 67,
+    "TextureId": "betasharp:diamond_sword",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "sword",

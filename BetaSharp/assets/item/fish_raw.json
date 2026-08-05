@@ -1,7 +1,7 @@
 {
   "ProtocolId": 349,
   "TranslationKey": "fishRaw",
-  "TextureId": 89,
+  "TextureId": "betasharp:raw_fish",
   "Behavior": {
     "type": "food",
     "HealAmount": 2,

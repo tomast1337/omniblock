@@ -1,4 +1,5 @@
 using BetaSharp.Client.Resource.Pack;
+using BetaSharp.Textures;
 using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;

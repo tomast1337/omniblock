@@ -1,6 +1,6 @@
 {
   "ProtocolId": 355,
-  "TextureId": 45,
+  "TextureId": "betasharp:bed",
   "MaxStackSize": 1,
   "Behavior": {
     "type": "bed"

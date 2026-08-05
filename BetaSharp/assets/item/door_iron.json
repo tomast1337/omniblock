@@ -1,7 +1,7 @@
 {
     "ProtocolId": 330,
     "TranslationKey": "doorIron",
-    "TextureId": 44,
+    "TextureId": "betasharp:iron_door",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "door",

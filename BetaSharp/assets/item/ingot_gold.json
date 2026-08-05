@@ -1,5 +1,5 @@
 {
     "ProtocolId": 266,
     "TranslationKey": "ingotGold",
-    "TextureId": 39
+    "TextureId": "betasharp:gold_ingot"
 }

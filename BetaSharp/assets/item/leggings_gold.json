@@ -1,7 +1,7 @@
 {
     "ProtocolId": 316,
     "TranslationKey": "leggingsGold",
-    "TextureId": 36,
+    "TextureId": "betasharp:golden_leggings",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",

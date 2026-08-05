@@ -1,7 +1,7 @@
 {
     "ProtocolId": 304,
     "TranslationKey": "leggingsChain",
-    "TextureId": 33,
+    "TextureId": "betasharp:chainmail_leggings",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",

@@ -146,3 +146,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-05 — feat(rendering): resolve textures by name through a fallback chain, backed by a GPU array (Nicolas Vyčas Nery; `2630e84c0aeb031b926cfde188ec230c49736a81`)
 - 2026-08-05 — feat(worlds): stop a remote world computing light, and hold only what the wire writes (Nicolas Vyčas Nery; `f8dcd3a1cc8401f35870efbd59cbd3e8032e7c4a`)
 - 2026-08-05 — feat(rendering): make a draw carry its pipeline, and give it an array-layer index (Nicolas Vyčas Nery; `5ec02566c5b8e89f107a5e3218785c62f527afb1`)
+- 2026-08-05 — feat(items): name a flat item TextureId instead of spelling out its grid index (Nicolas Vyčas Nery; `e0e0b2a2b93b514e25284ae1f50ffa5bf1ae4be6`)

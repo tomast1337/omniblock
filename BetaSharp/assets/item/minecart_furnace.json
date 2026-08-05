@@ -1,7 +1,7 @@
 {
     "ProtocolId": 343,
     "TranslationKey": "minecartFurnace",
-    "TextureId": 167,
+    "TextureId": "betasharp:minecart_with_furnace",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "minecart",

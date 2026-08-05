@@ -1,7 +1,7 @@
 {
     "ProtocolId": 326,
     "TranslationKey": "bucketWater",
-    "TextureId": 75,
+    "TextureId": "betasharp:water_bucket",
     "CraftingReturnItemProtocolId": 325,
     "MaxStackSize": 1,
     "Behavior": {
