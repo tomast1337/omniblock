@@ -9,8 +9,6 @@ internal static class BehaviorRegistry
 {
     public delegate object BehaviorFactory(JsonElement json);
 
-    private static readonly AtlasTileMap s_blockTextures = AtlasTileMap.Load("textures/atlas/terrain.json");
-
     private static readonly Dictionary<string, BehaviorFactory> s_factories = new()
     {
         // Parameterized behaviors extract their state from JSON data
@@ -49,7 +47,7 @@ internal static class BehaviorRegistry
             ResolveTexture(json.GetProperty("double_front_right").GetString()!),
             ResolveTexture(json.GetProperty("double_back_left").GetString()!),
             ResolveTexture(json.GetProperty("double_back_right").GetString()!)),
-        ["cloth_visual"] = _ => new ClothVisualBehavior(),
+        ["cloth_visual"] = json => new ClothVisualBehavior(ResolveTextures(json.GetProperty("textures"))),
         ["crop"] = json => new CropBehavior(ResolveBlock(json.GetProperty("required_soil").GetString()!), ResolveItem(json.GetProperty("mature_crop_item").GetString()!), ResolveItem(json.GetProperty("seeds").GetString()!),
             json.GetProperty("drop_spread").GetSingle(), json.GetProperty("seed_scatter_chance_bound").GetInt32(), json.GetProperty("growth_chance_denominator").GetInt32()),
         ["detector_rail"] = _ => new DetectorRailBehavior(),
@@ -101,7 +99,19 @@ internal static class BehaviorRegistry
 
     private static string ResolveName(string namespaced) => ResourceLocation.Parse(namespaced).Path;
 
-    private static int ResolveTexture(string name) => s_blockTextures.IndexOf(ResolveName(name));
+    private static int ResolveTexture(string name) => Atlases.Terrain.IndexOf(name);
+
+    private static int[] ResolveTextures(JsonElement array)
+    {
+        int[] textures = new int[array.GetArrayLength()];
+        int i = 0;
+        foreach (JsonElement element in array.EnumerateArray())
+        {
+            textures[i++] = ResolveTexture(element.GetString()!);
+        }
+
+        return textures;
+    }
 
     private static Block ResolveBlock(string name) => BlockRegistry.Get(ResolveName(name));
 

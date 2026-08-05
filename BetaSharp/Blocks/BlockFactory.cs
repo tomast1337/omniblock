@@ -8,13 +8,11 @@ namespace BetaSharp.Blocks;
 
 internal static class BlockFactory
 {
-    private static readonly AtlasTileMap s_blockTextures = AtlasTileMap.Load("textures/atlas/terrain.json");
-
     public static Block Create(BlockDefinition def)
     {
         Material material = MaterialRegistry.Get(def.Material);
         // An unset TextureId keeps the implicit default the int field used to have.
-        int textureId = string.IsNullOrEmpty(def.TextureId) ? 0 : s_blockTextures.IndexOf(ResourceLocation.Parse(def.TextureId).Path);
+        int textureId = string.IsNullOrEmpty(def.TextureId) ? 0 : Atlases.Terrain.IndexOf(def.TextureId);
         Block block = new(def.ProtocolId, textureId, material);
 
         block.SetHardness(def.Hardness);
@@ -31,7 +29,7 @@ internal static class BlockFactory
         {
             foreach ((string sideName, string faceTextureId) in faces)
             {
-                block.SetFaceTexture(Enum.Parse<Side>(sideName, true), s_blockTextures.IndexOf(ResourceLocation.Parse(faceTextureId).Path));
+                block.SetFaceTexture(Enum.Parse<Side>(sideName, true), Atlases.Terrain.IndexOf(faceTextureId));
             }
         }
 
