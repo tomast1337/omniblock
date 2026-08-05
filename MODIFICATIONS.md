@@ -141,3 +141,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-04 — feat(worlds): stop a remote world computing light, and hold only what the wire writes (Nicolas Vyčas Nery; `01b58281ab833fd3d854ecf8b8c18a18ff348a89`)
 - 2026-08-04 — Revert "feat(worlds): stop a remote world computing light, and hold only what the wire writes" (Nicolas Vyčas Nery; `31637e2598916afc7caafeb3d50758e034b97725`)
 - 2026-08-04 — test(network): check a light section survives the wire, not just a direct apply (Nicolas Vyčas Nery; `cd1f069be6d59c439a91eeaddf45513483ab7e2d`)
+- 2026-08-04 — test(network): check both chunk routes carry the light a receiver cannot recompute (Nicolas Vyčas Nery; `58555d8342def2d311fb88c9f750ba044465ccef`)
