@@ -13,7 +13,7 @@ public class ServerChunkCache : IChunkSource
     private readonly Chunk _empty;
     private readonly IChunkSource _generator;
     private readonly IChunkStorage _storage;
-    public bool forceLoad = false;
+    private int _generationScopes;
     private readonly Dictionary<int, Chunk> _chunksByPos = [];
     private readonly List<Chunk> _chunks = [];
     private readonly ServerWorld _world;
@@ -118,7 +118,7 @@ public class ServerChunkCache : IChunkSource
         _chunksByPos.TryGetValue(ChunkPos.GetHashCode(chunkX, chunkZ), out Chunk? chunk);
         if (chunk == null)
         {
-            return !_world.EventProcessingEnabled && !forceLoad ? _empty : LoadChunk(chunkX, chunkZ);
+            return !_world.IsFindingSpawnPoint && _generationScopes == 0 ? _empty : LoadChunk(chunkX, chunkZ);
         }
 
         return chunk;
@@ -317,5 +317,30 @@ public class ServerChunkCache : IChunkSource
             && IsChunkLoaded(chunkX, chunkZ - 1)
             && IsChunkLoaded(chunkX - 1, chunkZ))
             DecorateTerrain(this, chunkX - 1, chunkZ - 1);
+    }
+
+    /// <summary>
+    ///     Lets reads generate chunks for as long as the returned scope is held.
+    /// </summary>
+    /// <remarks>
+    ///     A scope rather than a flag a caller sets and clears by hand. The one caller that needs
+    ///     this builds a portal, which can throw, and a flag left set turns "reading the world
+    ///     generates terrain" on permanently and silently — which is the opposite of what the
+    ///     default is careful to prevent.
+    /// </remarks>
+    public GenerationScope AllowGenerationOnRead() => new(this);
+
+    /// <summary>Counted, so nesting two scopes does not have the inner one end both.</summary>
+    public readonly struct GenerationScope : IDisposable
+    {
+        private readonly ServerChunkCache _cache;
+
+        internal GenerationScope(ServerChunkCache cache)
+        {
+            _cache = cache;
+            cache._generationScopes++;
+        }
+
+        public void Dispose() => _cache._generationScopes--;
     }
 }

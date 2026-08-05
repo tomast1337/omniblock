@@ -34,7 +34,18 @@ public abstract class World : IWorldContext
     private bool _spawnPeacefulMobs = true;
 
     protected int AutosavePeriod = s_autosavePeriod;
-    public bool EventProcessingEnabled;
+    /// <summary>
+    ///     Whether this world is currently searching for its spawn point, during which reading a
+    ///     chunk is allowed to generate it.
+    /// </summary>
+    /// <remarks>
+    ///     Normally a read of an absent chunk yields an empty one rather than generating it, so that
+    ///     lighting, entity AI and block queries near a border cannot pull new terrain into
+    ///     existence just by looking at it — anything that genuinely wants a chunk asks
+    ///     <c>LoadChunk</c> for one. The spawn search is the exception: it probes candidate
+    ///     positions and has nothing else to ask.
+    /// </remarks>
+    public bool IsFindingSpawnPoint { get; private set; }
     public bool IsNewWorld;
 
     protected World(IWorldStorage worldStorage, string levelName, WorldSettings settings, Dimension? dim = null)
@@ -213,7 +224,7 @@ public abstract class World : IWorldContext
 
     private void InitializeSpawnPoint()
     {
-        EventProcessingEnabled = true;
+        IsFindingSpawnPoint = true;
         try
         {
             int x = 0;
@@ -251,7 +262,7 @@ public abstract class World : IWorldContext
         }
         finally
         {
-            EventProcessingEnabled = false;
+            IsFindingSpawnPoint = false;
         }
     }
 
