@@ -128,7 +128,10 @@ public class UIRenderer
     /// </remarks>
     public void PushBlend(BlendMode mode)
     {
+        // Flushed before the mode changes, so whatever is already queued is drawn under the blend
+        // it was queued for rather than under the incoming one.
         _batch.Flush();
+        _batch.Blend = mode;
         GLManager.State.Apply(RenderState.Interface with
         {
             Blend = mode
@@ -138,6 +141,7 @@ public class UIRenderer
     public void PopBlend()
     {
         _batch.Flush();
+        _batch.Blend = BlendMode.Alpha;
         GLManager.State.Apply(RenderState.Interface);
     }
 
