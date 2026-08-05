@@ -1,5 +1,6 @@
 using BetaSharp.Client.Entities;
 using BetaSharp.Client.UI.Rendering;
+using BetaSharp.Textures;
 using Color = BetaSharp.Client.UI.Colors.Color;
 
 namespace BetaSharp.Client.UI.Controls.HUD;
@@ -35,7 +36,11 @@ public class PortalOverlay(Func<ClientPlayerEntity?> getPlayer) : UIElement
             renderer.SetAlphaTest(false);
             renderer.PushColor(new Color(255, 255, 255, (byte)(255 * portal)));
 
-            renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/terrain.png"), 0, 0, 14 * 16, 0 * 16, ComputedWidth, ComputedHeight, 16, 16, -90.0f);
+            int tile = Atlases.Terrain.IndexOf("nether_portal");
+            renderer.DrawTexturedModalRect(renderer.TextureManager.GetTextureId("/terrain.png"), 0, 0,
+                tile % Atlases.Terrain.GridWidth * Atlases.Terrain.TileSize,
+                tile / Atlases.Terrain.GridWidth * Atlases.Terrain.TileSize,
+                ComputedWidth, ComputedHeight, 16, 16, -90.0f);
             renderer.PopColor();
             renderer.SetAlphaTest(true);
         }
