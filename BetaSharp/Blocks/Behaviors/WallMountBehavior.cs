@@ -11,19 +11,15 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     <c>_isLadder</c> rather than sharing formulas; only the random-tick/particle hooks are
 ///     torch-only (ladders never get a Ticker slot assigned, so those simply aren't invoked for them).
 /// </summary>
-public sealed class WallMountBehavior : IBlockPhysics, IBlockLifecycle, IBlockTicker
+public sealed class WallMountBehavior(bool isLadder) : IBlockPhysics, IBlockLifecycle, IBlockTicker
 {
     private const float TorchWidth = 0.15F;
     private const float TorchWidthGround = 0.1F;
     private const float LadderThickness = 2.0F / 16.0F;
 
-    private readonly bool _isLadder;
-
-    public WallMountBehavior(bool isLadder) => _isLadder = isLadder;
-
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        if (_isLadder)
+        if (isLadder)
         {
             OnLadderPlaced(@event);
         }
@@ -38,7 +34,7 @@ public sealed class WallMountBehavior : IBlockPhysics, IBlockLifecycle, IBlockTi
         IBlockReader reader = @event.World.Reader;
         int x = @event.X, y = @event.Y, z = @event.Z;
 
-        if (_isLadder)
+        if (isLadder)
         {
             return reader.ShouldSuffocate(x - 1, y, z) ||
                    reader.ShouldSuffocate(x + 1, y, z) ||
@@ -55,13 +51,13 @@ public sealed class WallMountBehavior : IBlockPhysics, IBlockLifecycle, IBlockTi
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        if (_isLadder) LadderNeighborUpdate(block, @event);
+        if (isLadder) LadderNeighborUpdate(block, @event);
         else TorchNeighborUpdate(block, @event);
     }
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
     {
-        if (_isLadder) UpdateLadderBoundingBox(block, reader, x, y, z);
+        if (isLadder) UpdateLadderBoundingBox(block, reader, x, y, z);
         else UpdateTorchBoundingBox(block, reader, x, y, z);
     }
 

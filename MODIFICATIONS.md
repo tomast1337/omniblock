@@ -157,3 +157,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-05 — feat(blocks): name every block texture, and delete BlockTextures (Nicolas Vyčas Nery; `a7a5b15974141216db837410ed740c2493f797b7`)
 - 2026-08-05 — feat(rendering): name the fire, water, and lava animation targets (Nicolas Vyčas Nery; `ae2a441fd020c5c57d820362da7003fcbad332dc`)
 - 2026-08-05 — feat(ui): name the portal overlay's tile instead of spelling out its pixel offset (Nicolas Vyčas Nery; `66898820a6fceb2c5218f4eb10aeaa743ed2c128`)
+- 2026-08-05 — refactor(behaviors): simplify constructors and field usage in various behavior classes (Nicolas Vyčas Nery; `8ad3114fdda78c6a3504793db4fe79513444b855`)

@@ -8,12 +8,8 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     provider so the behavior can be instantiated before the material block static is
 ///     initialized. The provider is only resolved at texture-sampling time (render thread).
 /// </summary>
-internal sealed class StairsBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
+internal sealed class StairsBehavior(Func<Block> baseBlock) : IBlockPhysics, IBlockLifecycle, IBlockVisuals
 {
-    private readonly Func<Block> _baseBlock;
-
-    public StairsBehavior(Func<Block> baseBlock) => _baseBlock = baseBlock;
-
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
         int meta = 0;
@@ -97,11 +93,11 @@ internal sealed class StairsBehavior : IBlockPhysics, IBlockLifecycle, IBlockVis
     }
 
     public int GetTexture(Block block, Side side, int defaultTexture)
-        => _baseBlock().GetTexture(side);
+        => baseBlock().GetTexture(side);
 
     public int GetTexture(Block block, Side side, int meta, int defaultTexture)
-        => _baseBlock().GetTexture(side, meta);
+        => baseBlock().GetTexture(side, meta);
 
     public int GetTextureId(Block block, IBlockReader reader, int x, int y, int z, Side side, int defaultTexture)
-        => _baseBlock().GetTextureId(reader, x, y, z, side);
+        => baseBlock().GetTextureId(reader, x, y, z, side);
 }

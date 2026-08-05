@@ -7,13 +7,9 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     Physics, interaction, and lifecycle for trapdoor blocks. Wood trapdoors respond to
 ///     right-click and redstone; iron trapdoors only respond to redstone.
 /// </summary>
-internal sealed class TrapDoorBehavior : IBlockPhysics, IBlockInteractable, IBlockLifecycle
+internal sealed class TrapDoorBehavior(Material material) : IBlockPhysics, IBlockInteractable, IBlockLifecycle
 {
     private const float Thickness = 3.0F / 16.0F;
-
-    private readonly Material _material;
-
-    public TrapDoorBehavior(Material material) => _material = material;
 
     public bool OnUse(Block block, OnUseEvent ctx) => ToggleState(block, ctx.World, ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z);
 
@@ -94,7 +90,7 @@ internal sealed class TrapDoorBehavior : IBlockPhysics, IBlockInteractable, IBlo
     private bool ToggleState(Block block, IWorldContext world, WorldEventBroadcaster broadcaster, int x, int y, int z)
     {
         if (world.IsRemote) return true;
-        if (_material == Material.Metal) return true;
+        if (material == Material.Metal) return true;
         int meta = world.Reader.GetBlockMeta(x, y, z);
         world.Writer.SetBlockMeta(x, y, z, meta ^ 4);
         broadcaster.WorldEvent(1003, x, y, z, 0);

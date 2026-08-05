@@ -9,13 +9,9 @@ namespace BetaSharp.Blocks.Behaviors;
 ///     right-click and redstone; iron doors only respond to redstone. Manages the multi-block
 ///     dependency between the top and bottom halves.
 /// </summary>
-internal sealed class DoorBehavior : IBlockPhysics, IBlockInteractable, IBlockLifecycle, IBlockVisuals
+internal sealed class DoorBehavior(Material material) : IBlockPhysics, IBlockInteractable, IBlockLifecycle, IBlockVisuals
 {
     private const float Thickness = 3.0F / 16.0F;
-
-    private readonly Material _material;
-
-    public DoorBehavior(Material material) => _material = material;
 
     public bool OnUse(Block block, OnUseEvent @event)
         => ToggleDoor(block, @event.Player, @event.World, @event.X, @event.Y, @event.Z);
@@ -103,7 +99,7 @@ internal sealed class DoorBehavior : IBlockPhysics, IBlockInteractable, IBlockLi
 
     private bool ToggleDoor(Block block, EntityPlayer player, IWorldContext world, int x, int y, int z)
     {
-        if (_material == Material.Metal) return true;
+        if (material == Material.Metal) return true;
 
         int meta = world.Reader.GetBlockMeta(x, y, z);
         int doorId = block.Id;
