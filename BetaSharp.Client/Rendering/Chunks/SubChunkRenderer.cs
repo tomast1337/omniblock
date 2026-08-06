@@ -1,8 +1,10 @@
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
+using BetaSharp.Client.Rendering.Core.WebGPU;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using Silk.NET.Maths;
+using Silk.NET.WebGPU;
+using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 using Shader = BetaSharp.Client.Rendering.Core.Shader;
 using VertexArray = BetaSharp.Client.Rendering.Core.VertexArray;
 
@@ -36,8 +38,13 @@ public class SubChunkRenderer : IDisposable
     public SubChunkRenderer? AdjacentWest;
     public SubChunkRenderer? AdjacentEast;
 
+    // GL path
     private readonly VertexBuffer<ChunkVertex>[] vertexBuffers = new VertexBuffer<ChunkVertex>[2];
     private readonly VertexArray[] vertexArrays = new VertexArray[2];
+
+    // WebGPU path
+    private readonly WgpuMesh?[] _meshes = new WgpuMesh?[2];
+
     private readonly int[] vertexCounts = new int[2];
     private bool disposed;
 
@@ -86,7 +93,7 @@ public class SubChunkRenderer : IDisposable
             if (solidMesh.Count > 0)
             {
                 Span<ChunkVertex> solidMeshData = solidMesh.Span;
-                UploadMesh(vertexBuffers, 0, solidMeshData);
+                UploadMesh(0, solidMeshData);
             }
 
             solidMesh.Dispose();
@@ -97,33 +104,56 @@ public class SubChunkRenderer : IDisposable
             if (translucentMesh.Count > 0)
             {
                 Span<ChunkVertex> translucentMeshData = translucentMesh.Span;
-                UploadMesh(vertexBuffers, 1, translucentMeshData);
+                UploadMesh(1, translucentMeshData);
             }
 
             translucentMesh.Dispose();
         }
     }
 
-    private unsafe void UploadMesh(VertexBuffer<ChunkVertex>[] buffers, int bufferIdx, Span<ChunkVertex> meshData)
+    private unsafe void UploadMesh(int bufferIdx, Span<ChunkVertex> meshData)
     {
-        if (buffers[bufferIdx] == null)
+        vertexCounts[bufferIdx] = meshData.Length;
+
+        // WebGPU path: create or replace the WgpuMesh.
+        WebGpuDevice? wgpuDevice = WebGpuDevice.Current;
+        if (wgpuDevice is not null)
         {
-            buffers[bufferIdx] = new(meshData);
+            _meshes[bufferIdx]?.Dispose();
+            _meshes[bufferIdx] = WgpuMesh.FromChunkVertices(wgpuDevice, meshData);
+            return;
+        }
+
+        // GL path: keep existing VertexBuffer/VertexArray.
+        if (vertexBuffers[bufferIdx] == null)
+        {
+            vertexBuffers[bufferIdx] = new(meshData);
         }
         else
         {
-            buffers[bufferIdx].BufferData(meshData);
+            vertexBuffers[bufferIdx].BufferData(meshData);
         }
-
-        vertexCounts[bufferIdx] = meshData.Length;
 
         if (vertexArrays[bufferIdx] == null)
         {
             vertexArrays[bufferIdx] = new();
             vertexArrays[bufferIdx].Bind();
-            buffers[bufferIdx].Bind();
+            vertexBuffers[bufferIdx].Bind();
 
-            ChunkVertexLayout.Bind();
+            // Inlined from the now-deleted ChunkVertexLayout.Bind().
+            // Locations: 0=position(Sint16x4), 1=uv(Uint16x2), 2=color(Unorm8x4),
+            // 3=light(Uint8x2), 4=arrayLayer(Uint8x2).
+            const uint stride = 20;
+            GLManager.GL.EnableVertexAttribArray(0);
+            GLManager.GL.VertexAttribPointer(0, 4, GLEnum.Short, false, stride, (void*)0);
+            GLManager.GL.EnableVertexAttribArray(1);
+            GLManager.GL.VertexAttribIPointer(1, 2, GLEnum.UnsignedShort, stride, (void*)12);
+            GLManager.GL.EnableVertexAttribArray(2);
+            GLManager.GL.VertexAttribPointer(2, 4, GLEnum.UnsignedByte, true, stride, (void*)8);
+            GLManager.GL.EnableVertexAttribArray(3);
+            GLManager.GL.VertexAttribIPointer(3, 2, GLEnum.UnsignedByte, stride, (void*)16);
+            GLManager.GL.EnableVertexAttribArray(4);
+            GLManager.GL.VertexAttribIPointer(4, 1, GLEnum.UnsignedByte, stride, (void*)18);
 
             VertexArray.Unbind();
         }
@@ -162,6 +192,20 @@ public class SubChunkRenderer : IDisposable
         GLManager.GL.DrawArrays(GLEnum.Triangles, 0, (uint)vertexCount);
     }
 
+    /// <summary>
+    ///     Draws the mesh for <paramref name="pass" /> through the WebGPU command encoder.
+    ///     The caller has already bound the terrain pipeline and texture-array bind group,
+    ///     and uploaded the per-chunk uniforms.
+    /// </summary>
+    public unsafe void RenderWebGpu(RenderPassEncoder* passEncoder, int pass)
+    {
+        if (disposed) return;
+        if (pass < 0 || pass > 1) return;
+        if (vertexCounts[pass] == 0) return;
+
+        _meshes[pass]?.Draw(passEncoder);
+    }
+
     public void Dispose()
     {
         if (disposed)
@@ -174,6 +218,9 @@ public class SubChunkRenderer : IDisposable
 
         vertexArrays[0]?.Dispose();
         vertexArrays[1]?.Dispose();
+
+        _meshes[0]?.Dispose();
+        _meshes[1]?.Dispose();
 
         vertexCounts[0] = 0;
         vertexCounts[1] = 0;

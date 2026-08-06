@@ -258,6 +258,28 @@ public class Tessellator
         return result;
     }
 
+    /// <summary>
+    ///     Ends capture mode and uploads the accumulated <see cref="ChunkVertex" /> data straight into
+    ///     a <see cref="WebGPU.WgpuMesh" />, skipping the intermediate CPU list.
+    /// </summary>
+    /// <remarks>
+    ///     The caller owns the returned mesh and must dispose it. The mesh is created with
+    ///     <see cref="PrimitiveTopology.TriangleList" /> and the stride the chunk WGSL pipeline expects.
+    /// </remarks>
+    public WebGPU.WgpuMesh EndCaptureChunkMesh(WebGPU.WebGpuDevice device)
+    {
+        if (!isCaptureMode || vertexFormat != TesselatorCaptureVertexFormat.Chunk)
+        {
+            throw new InvalidOperationException("Not capturing chunk vertices!");
+        }
+
+        isCaptureMode = false;
+        PooledList<ChunkVertex> verts = capturedChunkVertices;
+        CleanupCapture();
+
+        return WebGPU.WgpuMesh.FromChunkVertices(device, verts.Span);
+    }
+
     private void CleanupCapture()
     {
         capturedVertices = null;
