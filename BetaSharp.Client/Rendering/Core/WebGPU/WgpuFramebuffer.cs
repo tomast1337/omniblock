@@ -112,6 +112,72 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
         return api.CommandEncoderBeginRenderPass(encoder, in descriptor);
     }
 
+    /// <summary>
+    ///     Recreates the colour and depth textures when the size changes. No-op when sizes match.
+    /// </summary>
+    public void ResizeIfNeeded(WebGpuDevice device, uint width, uint height)
+    {
+        if (width == Width && height == Height) return;
+
+        // Release old textures.
+        Silk.NET.WebGPU.WebGPU api = device.Api;
+        if (ColorView is not null) api.TextureViewRelease(ColorView);
+        if (DepthView is not null) api.TextureViewRelease(DepthView);
+        if (ColorTexture is not null) { api.TextureDestroy(ColorTexture); api.TextureRelease(ColorTexture); }
+        if (DepthTexture is not null) { api.TextureDestroy(DepthTexture); api.TextureRelease(DepthTexture); }
+
+        Width = width;
+        Height = height;
+
+        CreateColorTexture(device, width, height, TextureFormat.Rgba8Unorm,
+            out Texture* cTex, out TextureView* cView);
+        CreateDepthTexture(device, width, height,
+            out Texture* dTex, out TextureView* dView);
+
+        ColorTexture = cTex;
+        ColorView = cView;
+        DepthTexture = dTex;
+        DepthView = dView;
+    }
+
+    /// <summary>
+    ///     Creates a bind group for the colour texture so a blit shader can sample it.
+    /// </summary>
+    public BindGroup* CreateBlitBindGroup(WebGpuDevice device, BindGroupLayout* layout)
+    {
+        Silk.NET.WebGPU.WebGPU api = device.Api;
+
+        SamplerDescriptor samplerDesc = new()
+        {
+            AddressModeU = AddressMode.ClampToEdge,
+            AddressModeV = AddressMode.ClampToEdge,
+            AddressModeW = AddressMode.ClampToEdge,
+            MagFilter = FilterMode.Linear,
+            MinFilter = FilterMode.Linear,
+            MipmapFilter = MipmapFilterMode.Nearest,
+            LodMinClamp = 0.0f,
+            LodMaxClamp = 1.0f,
+            MaxAnisotropy = 1,
+        };
+
+        Sampler* sampler = api.DeviceCreateSampler(device.Device, in samplerDesc);
+
+        BindGroupEntry* entries = stackalloc BindGroupEntry[2];
+        entries[0] = new BindGroupEntry { Binding = 0, TextureView = ColorView };
+        entries[1] = new BindGroupEntry { Binding = 1, Sampler = sampler };
+
+        BindGroupDescriptor desc = new()
+        {
+            Layout = layout,
+            EntryCount = 2,
+            Entries = entries,
+        };
+
+        BindGroup* group = api.DeviceCreateBindGroup(device.Device, in desc);
+        api.SamplerRelease(sampler);
+        return group;
+    }
+
     public void Dispose()
     {
         if (_disposed) return;

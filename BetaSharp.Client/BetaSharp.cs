@@ -125,6 +125,7 @@ public partial class BetaSharp :
     public HitResult ObjectMouseOver = new(HitResultType.Miss);
 
     public GameRenderer GameRenderer { get; private set; }
+    private WebGpuGameRenderer? _webGpuRenderer;
     public WorldRenderer WorldRenderer { get; private set; }
     public FramebufferManager FramebufferManager { get; private set; }
     public TextureManager TextureManager { get; private set; }
@@ -261,15 +262,24 @@ public partial class BetaSharp :
             Display.create();
             Display.getGlfw().SetWindowSizeLimits(Display.GetWindowHandle(), 850, 480, maximumWidth, maximumHeight);
 
-            GLManager.Init(Display.getGL()!);
-            SlotPrograms.Initialize(Options);
-            _debugTelemetry.CaptureSystemInfo(GLManager.GL);
+            if (Display.Backend == GraphicsBackend.OpenGL)
+            {
+                GLManager.Init(Display.getGL()!);
+                SlotPrograms.Initialize(Options);
+                _debugTelemetry.CaptureSystemInfo(GLManager.GL);
 
-            Display.getGlfw().SwapInterval(Options.VSync ? 1 : 0);
+                Display.getGlfw().SwapInterval(Options.VSync ? 1 : 0);
 
 #if DEBUG
-            GLErrorHandler.Install();
+                GLErrorHandler.Install();
 #endif
+            }
+            else
+            {
+                WebGpuDevice.Create(Display.getWindow()!, DisplayWidth, DisplayHeight);
+                _debugTelemetry.CaptureSystemInfo(null);
+                _webGpuRenderer = new WebGpuGameRenderer(this);
+            }
         }
         catch (Exception ex)
         {
@@ -637,7 +647,10 @@ public partial class BetaSharp :
                     bool imguiThisFrame = Options.ShowDebugInfo;
                     if (imguiThisFrame)
                     {
-                        ImGuiImplOpenGL3.NewFrame();
+                        if (Display.Backend == GraphicsBackend.OpenGL)
+                        {
+                            ImGuiImplOpenGL3.NewFrame();
+                        }
                         ImGuiImplGLFW.NewFrame();
 
                         unsafe
@@ -677,7 +690,10 @@ public partial class BetaSharp :
                     CheckGLError("Pre render");
 
                     SoundManager.UpdateListener(Player, Timer.RenderPartialTicks);
-                    GLManager.TextureEnabled = true;
+                    if (Display.Backend == GraphicsBackend.OpenGL)
+                    {
+                        GLManager.TextureEnabled = true;
+                    }
 
                     if (!Keyboard.isKeyDown(Keyboard.KEY_F7))
                     {
@@ -735,7 +751,7 @@ public partial class BetaSharp :
                         }
                     }
 
-                    if (!SkipRenderWorld)
+                    if (!SkipRenderWorld && Display.Backend == GraphicsBackend.OpenGL)
                     {
                         PlayerController?.SetPartialTime(Timer.RenderPartialTicks);
 
@@ -748,6 +764,11 @@ public partial class BetaSharp :
 
                         TextureStats.EndFrame();
                         PushRenderMetrics();
+                    }
+                    else if (!SkipRenderWorld && Display.Backend == GraphicsBackend.WebGpu)
+                    {
+                        long frameTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                        _webGpuRenderer!.RenderFrame(Timer.RenderPartialTicks, frameTime);
                     }
 
                     DisplayWidth = savedWidth;
@@ -768,13 +789,17 @@ public partial class BetaSharp :
                         using (Profiler.Begin("ImguiSubmit"))
                         {
                             ImGui.Render();
-                            ImGuiImplOpenGL3.RenderDrawData(ImGui.GetDrawData());
+                            if (Display.Backend == GraphicsBackend.OpenGL)
+                            {
+                                ImGuiImplOpenGL3.RenderDrawData(ImGui.GetDrawData());
 
-                            // ImGui's backend sets blending, depth and culling itself and puts
-                            // back only what it saved, which is not what the applier last wrote.
-                            // Nothing else in the client changes these behind its back, so this
-                            // is the one place the cache has to be told it no longer knows.
-                            GLManager.State.Invalidate();
+                                // ImGui's backend sets blending, depth and culling itself and puts
+                                // back only what it saved, which is not what the applier last wrote.
+                                // Nothing else in the client changes these behind its back, so this
+                                // is the one place the cache has to be told it no longer knows.
+                                GLManager.State.Invalidate();
+                            }
+                            // WebGPU path: ImGui draw data is submitted inside RenderFrame() above.
                         }
                     }
 
@@ -1950,9 +1975,7 @@ public partial class BetaSharp :
     {
         if (args.Contains("--webgpu"))
         {
-            Bootstrap.Initialize();
-            WebGpuPreview.Run();
-            return;
+            Display.Backend = GraphicsBackend.WebGpu;
         }
 
         args = TakeFrameHashPath(args);
