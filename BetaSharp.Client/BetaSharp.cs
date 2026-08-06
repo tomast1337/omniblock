@@ -278,6 +278,7 @@ public partial class BetaSharp :
             else
             {
                 WebGpuDevice.Create(Display.getWindow()!, DisplayWidth, DisplayHeight);
+                GLManager.InitStub(new WebGpuStubGL());
                 _debugTelemetry.CaptureSystemInfo(null);
                 _webGpuRenderer = new WebGpuGameRenderer(this);
             }
@@ -290,8 +291,13 @@ public partial class BetaSharp :
 
     private void SetupCoreSystems()
     {
-        // Must run before EntityRenderDispatcher.Instance below constructs every entity model.
-        Rendering.Entities.EntityInstanceBatchRenderer.Initialize(Options);
+        // GL-dependent renderers: these create GL shaders, VAOs, and textures immediately on
+        // construction. Under WebGPU they are replaced by native Wgpu* equivalents.
+        if (Display.Backend == GraphicsBackend.OpenGL)
+        {
+            // Must run before EntityRenderDispatcher.Instance below constructs every entity model.
+            Rendering.Entities.EntityInstanceBatchRenderer.Initialize(Options);
+        }
 
         TexturePackList = new TexturePacks(this, new DirectoryInfo(_gameDataDir));
         TextureManager = new TextureManager(this, TexturePackList, Options);
@@ -300,7 +306,10 @@ public partial class BetaSharp :
         TextureHandle terrainTexture = TextureManager.GetTextureId("/terrain.png");
         TextureHandle itemsTexture = TextureManager.GetTextureId("/gui/items.png");
 
-        BuildBatchRenderer(terrainTexture.Id, itemsTexture.Id);
+        if (Display.Backend == GraphicsBackend.OpenGL)
+        {
+            BuildBatchRenderer(terrainTexture.Id, itemsTexture.Id);
+        }
 
         UIContext = new UIContext(
             Options,

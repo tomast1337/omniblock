@@ -181,4 +181,15 @@ public class GLManager
         GL = _pipeline;
         State.Invalidate();
     }
+
+    /// <summary>
+    ///     Installs a stub <see cref="IGL" /> so startup and tick paths do not NullReferenceException
+    ///     while the WebGPU renderer is being wired. The stub throws on every call except
+    ///     <see cref="IGL.FlushQueuedGeometry"/> (no-op) and property getters (return zero/empty).
+    /// </summary>
+    internal static void InitStub(IGL stub)
+    {
+        _pipeline = null!;
+        GL = stub;
+    }
 }
