@@ -50,9 +50,13 @@ public static unsafe class WebGpuPreview
         ImGuiImplGLFW.InitForOther((GLFWwindow*)Display.GetWindowHandle(), true);
 
         using ImGuiWgpuBackend backend = new(device);
-        using WgpuPipeline pipeline = CreateTexturedPipeline(device);
+        using WgpuPipeline pipeline = CreateTexturedPipeline(device, WgpuFramebuffer.DepthFormat);
         using WgpuTexture checkerboard = CreateCheckerboard(device, pipeline.TextureBindGroupLayout);
         using WgpuMesh cube = CreateTexturedCube(device);
+        using WgpuFramebuffer fb = WgpuFramebuffer.CreateColorDepth(device,
+            (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight(),
+            device.SurfaceFormat);
+        CreateBlit(device, fb, out WgpuPipeline blitPipeline, out WgpuMesh blitQuad, out BindGroup* blitBindGroup);
 
         long startTick = Environment.TickCount64;
 
@@ -62,11 +66,12 @@ public static unsafe class WebGpuPreview
             {
                 Display.processMessages();
                 Resize(device);
-                DrawFrame(device, backend, pipeline, checkerboard, cube, startTick);
+                DrawFrame(device, backend, pipeline, checkerboard, cube, fb, blitPipeline, blitQuad, blitBindGroup, startTick);
             }
         }
         finally
         {
+            if (blitBindGroup is not null) device.Api.BindGroupRelease(blitBindGroup);
             ImGuiImplGLFW.Shutdown();
             ImGui.DestroyContext();
             Display.destroy();
@@ -77,7 +82,10 @@ public static unsafe class WebGpuPreview
     {
         uint w = (uint)Math.Max(1, Display.getFramebufferWidth());
         uint h = (uint)Math.Max(1, Display.getFramebufferHeight());
-        if (w != device.Width || h != device.Height) device.Configure(w, h);
+        if (w != device.Width || h != device.Height)
+        {
+            device.Configure(w, h);
+        }
     }
 
     private static WgpuTexture CreateCheckerboard(WebGpuDevice device, BindGroupLayout* texBgl)
@@ -98,7 +106,8 @@ public static unsafe class WebGpuPreview
         return new WgpuTexture(device, size, size, pixels, texBgl);
     }
 
-    private static WgpuPipeline CreateTexturedPipeline(WebGpuDevice device)
+    private static WgpuPipeline CreateTexturedPipeline(WebGpuDevice device,
+        TextureFormat depthFormat = TextureFormat.Undefined)
     {
         string source = AssetManager.Instance.getAsset("shaders/gbuffers_textured.wgsl").GetTextContent();
         Silk.NET.WebGPU.WebGPU api = device.Api;
@@ -172,6 +181,21 @@ public static unsafe class WebGpuPreview
         RenderPipeline* rp;
         try
         {
+            DepthStencilState ds = default;
+            DepthStencilState* pDs = null;
+            if (depthFormat != TextureFormat.Undefined)
+            {
+                ds = new DepthStencilState
+                {
+                    Format = depthFormat,
+                    DepthWriteEnabled = true,
+                    DepthCompare = CompareFunction.LessEqual,
+                    StencilFront = new StencilFaceState { Compare = CompareFunction.Always, FailOp = StencilOperation.Keep, DepthFailOp = StencilOperation.Keep, PassOp = StencilOperation.Keep },
+                    StencilBack = new StencilFaceState { Compare = CompareFunction.Always, FailOp = StencilOperation.Keep, DepthFailOp = StencilOperation.Keep, PassOp = StencilOperation.Keep },
+                };
+                pDs = &ds;
+            }
+
             FragmentState fg = new() { Module = module, EntryPoint = fs, TargetCount = 1, Targets = &ct };
             RenderPipelineDescriptor rpd = new()
             {
@@ -179,6 +203,7 @@ public static unsafe class WebGpuPreview
                 Vertex = new VertexState { Module = module, EntryPoint = vs, BufferCount = 1, Buffers = &vb },
                 Primitive = new PrimitiveState { Topology = PrimitiveTopology.TriangleList, FrontFace = FrontFace.Ccw, CullMode = Silk.NET.WebGPU.CullMode.None },
                 Multisample = new MultisampleState { Count = 1, Mask = uint.MaxValue },
+                DepthStencil = pDs,
                 Fragment = &fg,
             };
             rp = api.DeviceCreateRenderPipeline(device.Device, in rpd);
@@ -229,9 +254,136 @@ public static unsafe class WebGpuPreview
     private static DemoVertex Vtx(Vector3 pos, float u, float v) =>
         new(pos.X, pos.Y, pos.Z, u, v, 0xFFFFFFFF, 0x7F7F7F00, -1, 60u | (60u << 8));
 
+    [StructLayout(LayoutKind.Sequential)]
+    private struct BlitVertex(Vector3 pos, Vector2 uv)
+    {
+        public Vector3 Position = pos;
+        public Vector2 Texcoord = uv;
+        public static readonly uint Stride = (uint)sizeof(BlitVertex);
+    }
+
+    private static void CreateBlit(
+        WebGpuDevice device, WgpuFramebuffer fb,
+        out WgpuPipeline pipeline, out WgpuMesh quad, out BindGroup* bindGroup)
+    {
+        string source = AssetManager.Instance.getAsset("shaders/blit.wgsl").GetTextContent();
+        Silk.NET.WebGPU.WebGPU api = device.Api;
+
+        byte* code = (byte*)SilkMarshal.StringToPtr(source);
+        ShaderModule* module;
+        try
+        {
+            ShaderModuleWGSLDescriptor wgslDesc = new()
+            {
+                Chain = new ChainedStruct { SType = SType.ShaderModuleWgslDescriptor },
+                Code = code,
+            };
+            ShaderModuleDescriptor sd = default;
+            sd.NextInChain = (ChainedStruct*)&wgslDesc;
+            module = api.DeviceCreateShaderModule(device.Device, in sd);
+        }
+        finally { SilkMarshal.Free((nint)code); }
+
+        // Uniform bind group layout (required but unused — the blit shader declares it).
+        BindGroupLayoutEntry ue = new()
+        {
+            Binding = 0,
+            Visibility = ShaderStage.Vertex,
+            Buffer = new BufferBindingLayout { Type = BufferBindingType.Uniform, MinBindingSize = 64 },
+        };
+        BindGroupLayoutDescriptor ubgl = new() { EntryCount = 1, Entries = &ue };
+        BindGroupLayout* uniformBgl = api.DeviceCreateBindGroupLayout(device.Device, in ubgl);
+
+        // Texture bind group layout.
+        BindGroupLayoutEntry* te = stackalloc BindGroupLayoutEntry[2];
+        te[0] = new BindGroupLayoutEntry
+        {
+            Binding = 0,
+            Visibility = ShaderStage.Fragment,
+            Texture = new TextureBindingLayout { SampleType = TextureSampleType.Float, ViewDimension = TextureViewDimension.Dimension2D },
+        };
+        te[1] = new BindGroupLayoutEntry
+        {
+            Binding = 1,
+            Visibility = ShaderStage.Fragment,
+            Sampler = new SamplerBindingLayout { Type = SamplerBindingType.Filtering },
+        };
+        BindGroupLayoutDescriptor tbgl = new() { EntryCount = 2, Entries = te };
+        BindGroupLayout* texBgl = api.DeviceCreateBindGroupLayout(device.Device, in tbgl);
+
+        BindGroupLayout** pp = stackalloc BindGroupLayout*[2]; pp[0] = uniformBgl; pp[1] = texBgl;
+        PipelineLayoutDescriptor pl = new() { BindGroupLayoutCount = 2, BindGroupLayouts = pp };
+        PipelineLayout* layout = api.DeviceCreatePipelineLayout(device.Device, in pl);
+
+        VertexAttribute* attrs = stackalloc VertexAttribute[2];
+        attrs[0] = new VertexAttribute { Format = VertexFormat.Float32x3, Offset = 0, ShaderLocation = 0 };
+        attrs[1] = new VertexAttribute { Format = VertexFormat.Float32x2, Offset = 12, ShaderLocation = 1 };
+        VertexBufferLayout vb = new() { ArrayStride = BlitVertex.Stride, StepMode = VertexStepMode.Vertex, AttributeCount = 2, Attributes = attrs };
+
+        BlendComponent id = new() { Operation = BlendOperation.Add, SrcFactor = BlendFactor.One, DstFactor = BlendFactor.Zero };
+        BlendState blend = new() { Color = id, Alpha = id };
+        ColorTargetState ct = new() { Format = device.SurfaceFormat, Blend = &blend, WriteMask = ColorWriteMask.All };
+
+        byte* vs = (byte*)SilkMarshal.StringToPtr("vs_main");
+        byte* fs = (byte*)SilkMarshal.StringToPtr("fs_main");
+        RenderPipeline* rp;
+        try
+        {
+            FragmentState fg = new() { Module = module, EntryPoint = fs, TargetCount = 1, Targets = &ct };
+            rp = api.DeviceCreateRenderPipeline(device.Device, new RenderPipelineDescriptor
+            {
+                Layout = layout,
+                Vertex = new VertexState { Module = module, EntryPoint = vs, BufferCount = 1, Buffers = &vb },
+                Primitive = new PrimitiveState { Topology = PrimitiveTopology.TriangleList, FrontFace = FrontFace.Ccw, CullMode = Silk.NET.WebGPU.CullMode.None },
+                Multisample = new MultisampleState { Count = 1, Mask = uint.MaxValue },
+                Fragment = &fg,
+            });
+        }
+        finally { SilkMarshal.Free((nint)vs); SilkMarshal.Free((nint)fs); }
+
+        // Dummy uniform buffer (required by layout even though unused).
+        BufferDescriptor bd = new() { Usage = BufferUsage.Uniform | BufferUsage.CopyDst, Size = 64 };
+        WgpuBuffer* ubuf = api.DeviceCreateBuffer(device.Device, in bd);
+        BindGroupEntry bge = new() { Binding = 0, Buffer = ubuf, Offset = 0, Size = 64 };
+        BindGroupDescriptor bgd = new() { Layout = uniformBgl, EntryCount = 1, Entries = &bge };
+        BindGroup* ubg = api.DeviceCreateBindGroup(device.Device, in bgd);
+
+        // Bind group: framebuffer colour + linear sampler.
+        SamplerDescriptor sDesc = new()
+        {
+            AddressModeU = AddressMode.ClampToEdge,
+            AddressModeV = AddressMode.ClampToEdge,
+            MagFilter = FilterMode.Linear,
+            MinFilter = FilterMode.Linear,
+            MipmapFilter = MipmapFilterMode.Linear,
+            LodMinClamp = 0,
+            LodMaxClamp = 1,
+            MaxAnisotropy = 1,
+        };
+        Sampler* sampler = api.DeviceCreateSampler(device.Device, in sDesc);
+
+        BindGroupEntry* bgEntries = stackalloc BindGroupEntry[2];
+        bgEntries[0] = new BindGroupEntry { Binding = 0, TextureView = fb.ColorView };
+        bgEntries[1] = new BindGroupEntry { Binding = 1, Sampler = sampler };
+        BindGroupDescriptor bgDesc = new() { Layout = texBgl, EntryCount = 2, Entries = bgEntries };
+        BindGroup* bg = api.DeviceCreateBindGroup(device.Device, in bgDesc);
+
+        // Full-screen quad in NDC.
+        BlitVertex[] quadVerts =
+        [
+            new(new(-1, -1, 0), new(0, 0)), new(new(1, -1, 0), new(1, 0)), new(new(1, 1, 0), new(1, 1)),
+            new(new(1, 1, 0), new(1, 1)), new(new(-1, 1, 0), new(0, 1)), new(new(-1, -1, 0), new(0, 0)),
+        ];
+
+        pipeline = new WgpuPipeline(module, uniformBgl, texBgl, layout, rp, ubuf, ubg, device);
+        quad = new WgpuMesh(device, MemoryMarshal.AsBytes(quadVerts.AsSpan()), BlitVertex.Stride);
+        bindGroup = bg;
+    }
+
     private static void DrawFrame(
         WebGpuDevice device, ImGuiWgpuBackend backend,
-        WgpuPipeline pipeline, WgpuTexture tex, WgpuMesh cube, long startTick)
+        WgpuPipeline pipeline, WgpuTexture tex, WgpuMesh cube, WgpuFramebuffer fb,
+        WgpuPipeline blitPipeline, WgpuMesh blitQuad, BindGroup* blitBindGroup, long startTick)
     {
         ImGuiImplGLFW.NewFrame();
         ImGuiIO* io = ImGui.GetIO();
@@ -249,6 +401,17 @@ public static unsafe class WebGpuPreview
         Silk.NET.WebGPU.WebGPU api = device.Api;
         CommandEncoder* enc = api.DeviceCreateCommandEncoder(device.Device, default(CommandEncoderDescriptor));
 
+        // Pass 1: cube into the framebuffer with depth.
+        RenderPassEncoder* offPass = fb.BeginPass(enc, s_clearColor);
+        UploadDemoUniforms(pipeline, startTick, device.Width, device.Height);
+        api.RenderPassEncoderSetPipeline(offPass, pipeline.Pipeline);
+        api.RenderPassEncoderSetBindGroup(offPass, 0, pipeline.UniformBindGroup, 0, null);
+        api.RenderPassEncoderSetBindGroup(offPass, 1, tex.BindGroup, 0, null);
+        cube.Draw(offPass);
+        api.RenderPassEncoderEnd(offPass);
+        api.RenderPassEncoderRelease(offPass);
+
+        // Pass 2: blit framebuffer colour to swapchain, then ImGui on top.
         RenderPassColorAttachment att = new()
         {
             View = target,
@@ -260,11 +423,10 @@ public static unsafe class WebGpuPreview
         RenderPassDescriptor pd = new() { ColorAttachmentCount = 1, ColorAttachments = &att };
         RenderPassEncoder* pass = api.CommandEncoderBeginRenderPass(enc, in pd);
 
-        UploadDemoUniforms(pipeline, startTick, device.Width, device.Height);
-        api.RenderPassEncoderSetPipeline(pass, pipeline.Pipeline);
-        api.RenderPassEncoderSetBindGroup(pass, 0, pipeline.UniformBindGroup, 0, null);
-        api.RenderPassEncoderSetBindGroup(pass, 1, tex.BindGroup, 0, null);
-        cube.Draw(pass);
+        api.RenderPassEncoderSetPipeline(pass, blitPipeline.Pipeline);
+        api.RenderPassEncoderSetBindGroup(pass, 0, blitPipeline.UniformBindGroup, 0, null);
+        api.RenderPassEncoderSetBindGroup(pass, 1, blitBindGroup, 0, null);
+        blitQuad.Draw(pass);
 
         backend.RenderDrawData(ImGui.GetDrawData(), pass);
         api.RenderPassEncoderEnd(pass);

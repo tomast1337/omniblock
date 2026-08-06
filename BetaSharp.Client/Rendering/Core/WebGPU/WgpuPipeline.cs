@@ -68,8 +68,10 @@ public sealed unsafe class WgpuPipeline : IDisposable
     ///     and creates a pipeline matching <paramref name="state"/>, the vertex
     ///     <paramref name="buffers"/>, and the colour format.
     /// </summary>
-    /// <param name="bufferCount">How many <c>VertexBufferLayout</c> entries <paramref name="buffers"/> points to.</param>
-    /// <param name="uniformSize">Byte size of the shader's <c>Uniforms</c> struct.</param>
+    /// <param name="depthFormat">
+    ///     The depth texture format, or <c>TextureFormat.Undefined</c> when the pass has no depth
+    ///     attachment. Must match what <see cref="WgpuFramebuffer.BeginPass"/> attaches.
+    /// </param>
     public WgpuPipeline(
         WebGpuDevice device,
         string wgslSource,
@@ -80,7 +82,8 @@ public sealed unsafe class WgpuPipeline : IDisposable
         VertexBufferLayout* buffers,
         nuint bufferCount,
         RenderState state,
-        TextureFormat colorFormat)
+        TextureFormat colorFormat,
+        TextureFormat depthFormat = TextureFormat.Undefined)
     {
         _device = device;
         Silk.NET.WebGPU.WebGPU api = device.Api;
@@ -91,7 +94,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
             ? CreateBindGroupLayout(api, device.Device, textureEntries)
             : null;
         Layout = CreatePipelineLayout(api, device.Device, BindGroupLayout, TextureBindGroupLayout);
-        Pipeline = CreateRenderPipeline(api, device.Device, Module, entryPoint, Layout, buffers, bufferCount, state, colorFormat);
+        Pipeline = CreateRenderPipeline(api, device.Device, Module, entryPoint, Layout, buffers, bufferCount, state, colorFormat, depthFormat);
         CreateUniforms(api, device.Device, BindGroupLayout, uniformSize, out WgpuBuffer* ub, out BindGroup* ug);
         UniformBuffer = ub;
         UniformBindGroup = ug;
@@ -170,7 +173,8 @@ public sealed unsafe class WgpuPipeline : IDisposable
         VertexBufferLayout* buffers,
         nuint bufferCount,
         RenderState state,
-        TextureFormat colorFormat)
+        TextureFormat colorFormat,
+        TextureFormat depthFormat)
     {
         byte* vertexEntry = (byte*)SilkMarshal.StringToPtr(entryPoint);
         byte* fragmentEntry = (byte*)SilkMarshal.StringToPtr("fs_main");
@@ -196,8 +200,29 @@ public sealed unsafe class WgpuPipeline : IDisposable
                 _ => Silk.NET.WebGPU.CullMode.Back,
             };
 
-            // Depth not wired in yet — the preview has no depth attachment.
+            DepthStencilState depthStencil = default;
             DepthStencilState* pDepthStencil = null;
+
+            if (state.DepthTest && depthFormat != TextureFormat.Undefined)
+            {
+                depthStencil = new DepthStencilState
+                {
+                    Format = depthFormat,
+                    DepthWriteEnabled = state.DepthWrite,
+                    DepthCompare = state.DepthCompare switch
+                    {
+                        DepthCompare.Equal => CompareFunction.Equal,
+                        _ => CompareFunction.LessEqual,
+                    },
+                    DepthBias = (int)state.DepthBias.Constant,
+                    DepthBiasSlopeScale = state.DepthBias.SlopeScale,
+                    DepthBiasClamp = 0.0f,
+                    StencilFront = new StencilFaceState { Compare = CompareFunction.Always, FailOp = StencilOperation.Keep, DepthFailOp = StencilOperation.Keep, PassOp = StencilOperation.Keep },
+                    StencilBack = new StencilFaceState { Compare = CompareFunction.Always, FailOp = StencilOperation.Keep, DepthFailOp = StencilOperation.Keep, PassOp = StencilOperation.Keep },
+                };
+
+                pDepthStencil = &depthStencil;
+            }
 
             FragmentState fragment = new()
             {
