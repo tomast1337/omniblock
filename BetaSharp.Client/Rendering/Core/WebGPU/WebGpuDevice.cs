@@ -32,6 +32,7 @@ public sealed unsafe class WebGpuDevice : IDisposable
     public Adapter* Adapter { get; }
     public Device* Device { get; }
     public Queue* Queue { get; }
+    public CommandEncoder* CommandEncoder { get; }
 
     /// <summary>The format the surface's textures are in, and so the format every pipeline that draws to the screen must target.</summary>
     public TextureFormat SurfaceFormat { get; }
@@ -83,6 +84,8 @@ public sealed unsafe class WebGpuDevice : IDisposable
         _errorCallback = new PfnErrorCallback(OnUncapturedError);
         Api.DeviceSetUncapturedErrorCallback(Device, _errorCallback, null);
 
+        CommandEncoder = CreateCommandEncoder();
+
         (SurfaceFormat, _presentMode, _alphaMode) = ChooseSurfaceConfiguration();
 
         s_logger.LogInformation(
@@ -90,6 +93,21 @@ public sealed unsafe class WebGpuDevice : IDisposable
             SurfaceFormat, _presentMode);
 
         Configure(width, height);
+    }
+
+    /// <summary>
+    ///     Creates a fresh command encoder for the current frame. The previous encoder is
+    ///     released; call this once per frame before encoding commands.
+    /// </summary>
+    public CommandEncoder* CreateCommandEncoder()
+    {
+        if (CommandEncoder is not null)
+        {
+            Api.CommandEncoderRelease(CommandEncoder);
+        }
+
+        CommandEncoderDescriptor descriptor = default;
+        return Api.DeviceCreateCommandEncoder(Device, in descriptor);
     }
 
     /// <summary>The device when the backend is WebGPU; null otherwise and during the first frame before creation.</summary>
