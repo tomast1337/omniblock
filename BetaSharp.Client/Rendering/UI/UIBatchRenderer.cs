@@ -1,7 +1,9 @@
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
+using BetaSharp.Client.Rendering.Core.WebGPU;
 using Silk.NET.Maths;
+using Silk.NET.WebGPU;
 
 namespace BetaSharp.Client.Rendering.UI;
 
@@ -15,6 +17,9 @@ public sealed class UIBatchRenderer : IDisposable
     private readonly uint _vaoId;
     private readonly uint _vboId;
     private readonly UIVertex[] _vertices = new UIVertex[MaxVertices];
+
+    // WebGPU path
+    private WgpuDynamicBuffer? _gpuBuffer;
 
     private int _vertexCount;
     private uint _currentTextureId;
@@ -222,10 +227,29 @@ public sealed class UIBatchRenderer : IDisposable
         GLManager.GL.UseProgram(0);
     }
 
+    /// <summary>
+    ///     Draws queued UI geometry through the native WebGPU command encoder.
+    ///     The caller has already uploaded the projection and texture uniforms.
+    /// </summary>
+    public unsafe void FlushWebGpu(RenderPassEncoder* pass, WgpuPipeline pipeline)
+    {
+        if (_vertexCount == 0) return;
+
+        WebGpuDevice device = WebGpuDevice.Current!;
+        _gpuBuffer ??= new WgpuDynamicBuffer(device, (ulong)(MaxVertices * sizeof(UIVertex)));
+
+        _gpuBuffer.Write(new ReadOnlySpan<UIVertex>(_vertices, 0, _vertexCount));
+        _gpuBuffer.Bind(pass);
+
+        device.Api.RenderPassEncoderDraw(pass, (uint)_vertexCount, 1, 0, 0);
+        _vertexCount = 0;
+    }
+
     public void Dispose()
     {
         _gl.DeleteVertexArray(_vaoId);
         _gl.DeleteBuffer(_vboId);
+        _gpuBuffer?.Dispose();
         _shader.Dispose();
     }
 }

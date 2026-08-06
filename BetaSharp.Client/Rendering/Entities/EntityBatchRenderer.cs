@@ -1,7 +1,9 @@
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
+using BetaSharp.Client.Rendering.Core.WebGPU;
 using Silk.NET.Maths;
+using Silk.NET.WebGPU;
 using Shader = BetaSharp.Client.Rendering.Core.Shader;
 
 namespace BetaSharp.Client.Rendering.Entities;
@@ -25,6 +27,9 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
     private readonly uint _vboId;
     private readonly EntityVertex[] _vertices = new EntityVertex[MaxVertices];
     private readonly Dictionary<uint, int> _glTexToLogicalId = [];
+
+    // WebGPU path
+    private WgpuDynamicBuffer? _gpuBuffer;
 
     private int _vertexCount;
     private uint _currentTextureId;
@@ -180,6 +185,24 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
         _gl.BindTexture(GLEnum.Texture2D, callerTexture);
     }
 
+    /// <summary>
+    ///     Draws queued geometry through the native WebGPU command encoder.
+    ///     The caller has already uploaded uniforms and bound the pipeline's uniform group.
+    /// </summary>
+    public unsafe void FlushWebGpu(RenderPassEncoder* pass, WgpuPipeline pipeline)
+    {
+        if (_vertexCount == 0) return;
+
+        WebGpuDevice device = WebGpuDevice.Current!;
+        _gpuBuffer ??= new WgpuDynamicBuffer(device, (ulong)(MaxVertices * sizeof(EntityVertex)));
+
+        _gpuBuffer.Write(new ReadOnlySpan<EntityVertex>(_vertices, 0, _vertexCount));
+        _gpuBuffer.Bind(pass);
+
+        device.Api.RenderPassEncoderDraw(pass, (uint)_vertexCount, 1, 0, 0);
+        _vertexCount = 0;
+    }
+
     /// <summary>Mirrors the fixed-function state the queued vertices were posed under.</summary>
     private void UploadState()
     {
@@ -206,6 +229,7 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
         GLManager.RasterStateChanging -= Flush;
         _gl.DeleteBuffer(_vboId);
         _gl.DeleteVertexArray(_vaoId);
+        _gpuBuffer?.Dispose();
         _shader.Dispose();
     }
 }
