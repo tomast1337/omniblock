@@ -21,27 +21,31 @@ namespace BetaSharp.Client.Rendering.Core.WebGPU;
 public sealed unsafe class WgpuPipeline : IDisposable
 {
     public ShaderModule* Module { get; }
+    /// <summary>The uniform bind group layout (group 0).</summary>
     public BindGroupLayout* BindGroupLayout { get; }
+
+    /// <summary>The texture bind group layout (group 1), or null for untextured pipelines.</summary>
+    public BindGroupLayout* TextureBindGroupLayout { get; }
+
     public PipelineLayout* Layout { get; }
     public RenderPipeline* Pipeline { get; }
 
     /// <summary>The uniform buffer, large enough for the full <c>Uniforms</c> struct.</summary>
     public WgpuBuffer* UniformBuffer { get; }
 
-    /// <summary>The per-frame bind group binding the uniform buffer to the layout.</summary>
+    /// <summary>The per-frame bind group binding the uniform buffer to the layout (group 0).</summary>
     public BindGroup* UniformBindGroup { get; }
 
     private readonly WebGpuDevice _device;
     private bool _disposed;
 
     /// <summary>
-    ///     Wraps an already-built pipeline. Callers that build the pipeline themselves (to match
-    ///     an existing pattern exactly) hand the pieces in; callers that want the builder use the
-    ///     other constructor.
+    ///     Wraps an already-built pipeline.
     /// </summary>
     internal WgpuPipeline(
         ShaderModule* module,
         BindGroupLayout* bindGroupLayout,
+        BindGroupLayout* textureBindGroupLayout,
         PipelineLayout* layout,
         RenderPipeline* pipeline,
         WgpuBuffer* uniformBuffer,
@@ -51,6 +55,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
         _device = device;
         Module = module;
         BindGroupLayout = bindGroupLayout;
+        TextureBindGroupLayout = textureBindGroupLayout;
         Layout = layout;
         Pipeline = pipeline;
         UniformBuffer = uniformBuffer;
@@ -58,9 +63,10 @@ public sealed unsafe class WgpuPipeline : IDisposable
     }
 
     /// <summary>
-    ///     Builds a shader module from WGSL source, creates the bind-group layout from
-    ///     <paramref name="uniformEntries"/>, and creates a pipeline matching
-    ///     <paramref name="state"/>, the vertex <paramref name="buffers"/>, and the colour format.
+    ///     Builds a shader module from WGSL source, creates the bind-group layouts from
+    ///     <paramref name="uniformEntries"/> and optional <paramref name="textureEntries"/>,
+    ///     and creates a pipeline matching <paramref name="state"/>, the vertex
+    ///     <paramref name="buffers"/>, and the colour format.
     /// </summary>
     /// <param name="bufferCount">How many <c>VertexBufferLayout</c> entries <paramref name="buffers"/> points to.</param>
     /// <param name="uniformSize">Byte size of the shader's <c>Uniforms</c> struct.</param>
@@ -70,6 +76,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
         string entryPoint,
         uint uniformSize,
         ReadOnlySpan<BindGroupLayoutEntry> uniformEntries,
+        ReadOnlySpan<BindGroupLayoutEntry> textureEntries,
         VertexBufferLayout* buffers,
         nuint bufferCount,
         RenderState state,
@@ -80,7 +87,10 @@ public sealed unsafe class WgpuPipeline : IDisposable
 
         Module = CreateShaderModule(api, device.Device, wgslSource);
         BindGroupLayout = CreateBindGroupLayout(api, device.Device, uniformEntries);
-        Layout = CreatePipelineLayout(api, device.Device, BindGroupLayout);
+        TextureBindGroupLayout = textureEntries.Length > 0
+            ? CreateBindGroupLayout(api, device.Device, textureEntries)
+            : null;
+        Layout = CreatePipelineLayout(api, device.Device, BindGroupLayout, TextureBindGroupLayout);
         Pipeline = CreateRenderPipeline(api, device.Device, Module, entryPoint, Layout, buffers, bufferCount, state, colorFormat);
         CreateUniforms(api, device.Device, BindGroupLayout, uniformSize, out WgpuBuffer* ub, out BindGroup* ug);
         UniformBuffer = ub;
@@ -124,17 +134,31 @@ public sealed unsafe class WgpuPipeline : IDisposable
     }
 
     private static PipelineLayout* CreatePipelineLayout(
-        Silk.NET.WebGPU.WebGPU api, Device* device, BindGroupLayout* bindGroupLayout)
+        Silk.NET.WebGPU.WebGPU api, Device* device,
+        BindGroupLayout* bindGroupLayout, BindGroupLayout* textureBindGroupLayout)
     {
-        BindGroupLayout** layouts = &bindGroupLayout;
-
-        PipelineLayoutDescriptor descriptor = new()
+        if (textureBindGroupLayout is null)
         {
-            BindGroupLayoutCount = 1,
+            PipelineLayoutDescriptor descriptor = new()
+            {
+                BindGroupLayoutCount = 1,
+                BindGroupLayouts = &bindGroupLayout,
+            };
+
+            return api.DeviceCreatePipelineLayout(device, in descriptor);
+        }
+
+        BindGroupLayout** layouts = stackalloc BindGroupLayout*[2];
+        layouts[0] = bindGroupLayout;
+        layouts[1] = textureBindGroupLayout;
+
+        PipelineLayoutDescriptor descriptor2 = new()
+        {
+            BindGroupLayoutCount = 2,
             BindGroupLayouts = layouts,
         };
 
-        return api.DeviceCreatePipelineLayout(device, in descriptor);
+        return api.DeviceCreatePipelineLayout(device, in descriptor2);
     }
 
     private static RenderPipeline* CreateRenderPipeline(
@@ -341,6 +365,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
         if (UniformBuffer is not null) api.BufferRelease(UniformBuffer);
         if (Pipeline is not null) api.RenderPipelineRelease(Pipeline);
         if (Layout is not null) api.PipelineLayoutRelease(Layout);
+        if (TextureBindGroupLayout is not null) api.BindGroupLayoutRelease(TextureBindGroupLayout);
         if (BindGroupLayout is not null) api.BindGroupLayoutRelease(BindGroupLayout);
         if (Module is not null) api.ShaderModuleRelease(Module);
     }
