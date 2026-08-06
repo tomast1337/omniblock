@@ -2,7 +2,6 @@ using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using Silk.NET.Maths;
-using Silk.NET.OpenGL;
 
 namespace BetaSharp.Client.Rendering.UI;
 
@@ -12,7 +11,7 @@ public sealed class UIBatchRenderer : IDisposable
     private const int MaxVertices = MaxQuads * 6;
 
     private readonly UIShader _shader;
-    private readonly GL _silkGL;
+    private readonly IGL _gl;
     private readonly uint _vaoId;
     private readonly uint _vboId;
     private readonly UIVertex[] _vertices = new UIVertex[MaxVertices];
@@ -28,26 +27,26 @@ public sealed class UIBatchRenderer : IDisposable
     public unsafe UIBatchRenderer(GameOptions gameOptions)
     {
         _shader = new UIShader(gameOptions);
-        _silkGL = ((LegacyGL)GLManager.GL).SilkGL;
+        _gl = GLManager.GL;
 
-        _vaoId = _silkGL.GenVertexArray();
-        _vboId = _silkGL.GenBuffer();
+        _vaoId = _gl.GenVertexArray();
+        _vboId = _gl.GenBuffer();
 
-        _silkGL.BindVertexArray(_vaoId);
-        _silkGL.BindBuffer(BufferTargetARB.ArrayBuffer, _vboId);
-        _silkGL.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(MaxVertices * sizeof(UIVertex)), null, BufferUsageARB.StreamDraw);
+        _gl.BindVertexArray(_vaoId);
+        _gl.BindBuffer(GLEnum.ArrayBuffer, _vboId);
+        _gl.BufferData(GLEnum.ArrayBuffer, (nuint)(MaxVertices * sizeof(UIVertex)), null, GLEnum.StreamDraw);
 
-        _silkGL.EnableVertexAttribArray(0);
-        _silkGL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 20, (void*)0);
+        _gl.EnableVertexAttribArray(0);
+        _gl.VertexAttribPointer(0, 2, GLEnum.Float, false, 20, (void*)0);
 
-        _silkGL.EnableVertexAttribArray(1);
-        _silkGL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 20, (void*)8);
+        _gl.EnableVertexAttribArray(1);
+        _gl.VertexAttribPointer(1, 2, GLEnum.Float, false, 20, (void*)8);
 
-        _silkGL.EnableVertexAttribArray(2);
-        _silkGL.VertexAttribPointer(2, 4, VertexAttribPointerType.UnsignedByte, true, 20, (void*)16);
+        _gl.EnableVertexAttribArray(2);
+        _gl.VertexAttribPointer(2, 4, GLEnum.UnsignedByte, true, 20, (void*)16);
 
-        _silkGL.BindVertexArray(0);
-        _silkGL.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
+        _gl.BindVertexArray(0);
+        _gl.BindBuffer(GLEnum.ArrayBuffer, 0);
     }
 
     /// <summary>
@@ -207,20 +206,17 @@ public sealed class UIBatchRenderer : IDisposable
 
         if (_useTexture && _currentTextureId != 0)
         {
-            _silkGL.ActiveTexture(TextureUnit.Texture0);
-            _silkGL.BindTexture(TextureTarget.Texture2D, _currentTextureId);
+            _gl.ActiveTexture(GLEnum.Texture0);
+            _gl.BindTexture(GLEnum.Texture2D, _currentTextureId);
         }
 
-        _silkGL.BindVertexArray(_vaoId);
-        _silkGL.BindBuffer(BufferTargetARB.ArrayBuffer, _vboId);
+        _gl.BindVertexArray(_vaoId);
+        _gl.BindBuffer(GLEnum.ArrayBuffer, _vboId);
 
-        fixed (UIVertex* ptr = _vertices)
-        {
-            _silkGL.BufferSubData(BufferTargetARB.ArrayBuffer, 0, (nuint)(_vertexCount * sizeof(UIVertex)), ptr);
-        }
+        _gl.BufferSubData(GLEnum.ArrayBuffer, 0, new ReadOnlySpan<UIVertex>(_vertices, 0, _vertexCount));
 
-        _silkGL.DrawArrays(PrimitiveType.Triangles, 0, (uint)_vertexCount);
-        _silkGL.BindVertexArray(0);
+        _gl.DrawArrays(GLEnum.Triangles, 0, (uint)_vertexCount);
+        _gl.BindVertexArray(0);
         _vertexCount = 0;
 
         GLManager.GL.UseProgram(0);
@@ -228,8 +224,8 @@ public sealed class UIBatchRenderer : IDisposable
 
     public void Dispose()
     {
-        _silkGL.DeleteVertexArray(_vaoId);
-        _silkGL.DeleteBuffer(_vboId);
+        _gl.DeleteVertexArray(_vaoId);
+        _gl.DeleteBuffer(_vboId);
         _shader.Dispose();
     }
 }

@@ -1,7 +1,6 @@
 using System.Runtime.InteropServices;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Util;
-using Silk.NET.OpenGL;
 using Color = BetaSharp.Client.UI.Colors.Color;
 using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
@@ -312,7 +311,7 @@ public class Tessellator
             if (vertexCount > 0)
             {
                 // Before anything of ours is bound, because draining binds and unbinds its own.
-                ((LegacyGL)GLManager.GL).FlushQueuedGeometry();
+                GLManager.GL.FlushQueuedGeometry();
 
                 vboIndex = (vboIndex + 1) % vboCount;
                 GLManager.GL.BindBuffer(GLEnum.ArrayBuffer, _vboIds[vboIndex]);
@@ -322,16 +321,16 @@ public class Tessellator
                     GLManager.GL.BufferData(GLEnum.ArrayBuffer, (nuint)(rawBufferIndex * 4), ptr, GLEnum.StreamDraw);
                 }
 
-                GL silkGl = ((LegacyGL)GLManager.GL).SilkGL;
-                silkGl.BindVertexArray(_tessVao);
-                TessellatorVertexLayout.Bind(silkGl, hasTexture, hasColor, hasNormals);
+                IGL gl = GLManager.GL;
+                gl.BindVertexArray(_tessVao);
+                TessellatorVertexLayout.Bind(gl, hasTexture, hasColor, hasNormals);
 
                 program.Activate();
                 GLManager.GL.DrawArrays(SubmittedDrawMode, 0, (uint)vertexCount);
                 program.Deactivate();
 
-                TessellatorVertexLayout.Unbind(silkGl, hasTexture, hasColor, hasNormals);
-                silkGl.BindVertexArray(0);
+                TessellatorVertexLayout.Unbind(gl, hasTexture, hasColor, hasNormals);
+                gl.BindVertexArray(0);
             }
 
             reset();
