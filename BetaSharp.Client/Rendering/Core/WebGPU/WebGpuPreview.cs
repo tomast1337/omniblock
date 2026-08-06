@@ -14,7 +14,14 @@ public static unsafe class WebGpuPreview
 {
     private static readonly Silk.NET.WebGPU.Color s_clearColor = new(0.12, 0.14, 0.18, 1.0);
 
-    /// <summary>Matches what <c>gbuffers_basic.wgsl</c> reads at locations 0, 1 and 3.</summary>
+    /// <summary>The vertex <c>gbuffers_basic.wgsl</c> reads at locations 0, 1 and 3.</summary>
+    /// <remarks>
+    ///     The real Tessellator packs colour as 4 unsigned bytes (Unorm8x4) and the normal as
+    ///     3 signed bytes (Snorm8x3) at offsets 20 and 24 of a 36-byte struct. Snorm8x3 has no
+    ///     WebGPU vertex format, so the Tessellator path will need to widen it. This demo uses
+    ///     float components throughout; the vertex count matters more than the exact byte layout
+    ///     here.
+    /// </remarks>
     [StructLayout(LayoutKind.Sequential)]
     private struct DemoVertex(Vector3 pos, Vector4 color, Vector3 normal)
     {
@@ -45,7 +52,7 @@ public static unsafe class WebGpuPreview
 
         using ImGuiWgpuBackend backend = new(device);
         using WgpuPipeline pipeline = CreateDemoPipeline(device);
-        WgpuBuffer* vertexBuffer = CreateDemoVertices(device);
+        using WgpuMesh cube = CreateCube(device);
 
         long startTick = Environment.TickCount64;
 
@@ -55,13 +62,11 @@ public static unsafe class WebGpuPreview
             {
                 Display.processMessages();
                 Resize(device);
-                DrawFrame(device, backend, pipeline, vertexBuffer, startTick);
+                DrawFrame(device, backend, pipeline, cube, startTick);
             }
         }
         finally
         {
-            device.Api.BufferDestroy(vertexBuffer);
-            device.Api.BufferRelease(vertexBuffer);
             ImGuiImplGLFW.Shutdown();
             ImGui.DestroyContext();
             Display.destroy();
@@ -106,7 +111,7 @@ public static unsafe class WebGpuPreview
         {
             Binding = 0,
             Visibility = ShaderStage.Vertex,
-            Buffer = new BufferBindingLayout { Type = BufferBindingType.Uniform, MinBindingSize = 128 }, // Two mat4x4s.
+            Buffer = new BufferBindingLayout { Type = BufferBindingType.Uniform, MinBindingSize = 128 },
         };
         BindGroupLayoutDescriptor bglDesc = new() { EntryCount = 1, Entries = &uniformEntry };
         BindGroupLayout* bindGroupLayout = api.DeviceCreateBindGroupLayout(device.Device, in bglDesc);
@@ -116,19 +121,19 @@ public static unsafe class WebGpuPreview
         PipelineLayoutDescriptor plDesc = new() { BindGroupLayoutCount = 1, BindGroupLayouts = ppLayout };
         PipelineLayout* pipelineLayout = api.DeviceCreatePipelineLayout(device.Device, in plDesc);
 
-        // Vertex layout.
-        VertexAttribute* attrs = stackalloc VertexAttribute[2];
+        // Vertex layout — locations 0, 1 and 3 matching gbuffers_basic's VertexInput.
+        VertexAttribute* attrs = stackalloc VertexAttribute[3];
         attrs[0] = new VertexAttribute { Format = VertexFormat.Float32x3, Offset = 0, ShaderLocation = 0 };
         attrs[1] = new VertexAttribute { Format = VertexFormat.Float32x4, Offset = 12, ShaderLocation = 1 };
+        attrs[2] = new VertexAttribute { Format = VertexFormat.Float32x3, Offset = 28, ShaderLocation = 3 };
         VertexBufferLayout vbLayout = new()
         {
             ArrayStride = DemoVertex.Stride,
             StepMode = VertexStepMode.Vertex,
-            AttributeCount = 2,
+            AttributeCount = 3,
             Attributes = attrs,
         };
 
-        // Blend — identity (no blending), same as ImGui but with One/Zero.
         BlendComponent idBlend = new() { Operation = BlendOperation.Add, SrcFactor = BlendFactor.One, DstFactor = BlendFactor.Zero };
         BlendState blend = new() { Color = idBlend, Alpha = idBlend };
         ColorTargetState colorTarget = new()
@@ -157,7 +162,7 @@ public static unsafe class WebGpuPreview
         finally { SilkMarshal.Free((nint)vsEntry); SilkMarshal.Free((nint)fsEntry); }
 
         // Uniform buffer + bind group.
-        nuint uniformSize = 128; // Two mat4x4s.
+        nuint uniformSize = 128;
         BufferDescriptor bufDesc = new() { Usage = BufferUsage.Uniform | BufferUsage.CopyDst, Size = (ulong)uniformSize };
         WgpuBuffer* uniformBuffer = api.DeviceCreateBuffer(device.Device, in bufDesc);
 
@@ -168,38 +173,67 @@ public static unsafe class WebGpuPreview
         return new WgpuPipeline(module, bindGroupLayout, pipelineLayout, pipeline, uniformBuffer, uniformBindGroup, device);
     }
 
-    private static WgpuBuffer* CreateDemoVertices(WebGpuDevice device)
+    /// <summary>A unit cube centered at the origin, one colour per face.</summary>
+    private static WgpuMesh CreateCube(WebGpuDevice device)
     {
-        DemoVertex[] vertices =
+        Vector4[] faceColors =
         [
-            new(new Vector3(0.0f, -0.5f, 0.0f), new Vector4(1, 0, 0, 1), Vector3.UnitZ),
-            new(new Vector3(0.5f, 0.5f, 0.0f), new Vector4(0, 1, 0, 1), Vector3.UnitZ),
-            new(new Vector3(-0.5f, 0.5f, 0.0f), new Vector4(0, 0, 1, 1), Vector3.UnitZ),
+            new(1, 0, 0, 1), // +X red
+            new(0, 1, 1, 1), // -X cyan
+            new(0, 1, 0, 1), // +Y green
+            new(1, 0, 1, 1), // -Y magenta
+            new(0, 0, 1, 1), // +Z blue
+            new(1, 1, 0, 1), // -Z yellow
         ];
 
-        ulong size = (ulong)(vertices.Length * DemoVertex.Stride);
+        // Each face: 6 vertices (2 triangles). Normals point outward per face.
+        DemoVertex[] vertices = new DemoVertex[36];
+        ushort[] indices = new ushort[36];
 
-        BufferDescriptor descriptor = new()
+        // Face order: +X, -X, +Y, -Y, +Z, -Z, each with a distinctive colour.
+        (Vector3 Origin, Vector3 U, Vector3 V, Vector3 N)[] faces =
+        [
+            (new(0.5f, -0.5f, -0.5f), new(0, 0, 1), new(0, 1, 0), Vector3.UnitX),
+            (new(-0.5f, -0.5f, 0.5f), new(0, 0, -1), new(0, 1, 0), -Vector3.UnitX),
+            (new(-0.5f, 0.5f, -0.5f), new(1, 0, 0), new(0, 0, 1), Vector3.UnitY),
+            (new(-0.5f, -0.5f, 0.5f), new(1, 0, 0), new(0, 0, -1), -Vector3.UnitY),
+            (new(-0.5f, -0.5f, 0.5f), new(1, 0, 0), new(0, 1, 0), Vector3.UnitZ),
+            (new(0.5f, -0.5f, -0.5f), new(-1, 0, 0), new(0, 1, 0), -Vector3.UnitZ),
+        ];
+
+        for (int f = 0; f < 6; f++)
         {
-            Usage = BufferUsage.Vertex | BufferUsage.CopyDst,
-            Size = size,
-        };
+            var (origin, u, v, n) = faces[f];
+            Vector4 color = faceColors[f];
+            int vi = f * 6;
 
-        WgpuBuffer* buffer = device.Api.DeviceCreateBuffer(device.Device, in descriptor);
+            // Two triangles: 0-1-2 and 2-3-0. CCW winding for the front face.
+            vertices[vi + 0] = new(origin, color, n);
+            vertices[vi + 1] = new(origin + u, color, n);
+            vertices[vi + 2] = new(origin + u + v, color, n);
+            vertices[vi + 3] = new(origin + u + v, color, n);
+            vertices[vi + 4] = new(origin + v, color, n);
+            vertices[vi + 5] = new(origin, color, n);
 
-        fixed (DemoVertex* data = vertices)
-        {
-            device.Api.QueueWriteBuffer(device.Queue, buffer, 0, data, (nuint)size);
+            // Indexed from the same offset.
+            ushort baseIndex = (ushort)vi;
+            for (int k = 0; k < 6; k++)
+            {
+                indices[vi + k] = (ushort)(vi + k);
+            }
         }
 
-        return buffer;
+        ReadOnlySpan<byte> vertexData = MemoryMarshal.AsBytes(vertices.AsSpan());
+        ReadOnlySpan<byte> indexData = MemoryMarshal.AsBytes(indices.AsSpan());
+
+        return new WgpuMesh(device, vertexData, DemoVertex.Stride, indexData, IndexFormat.Uint16);
     }
 
     private static void DrawFrame(
         WebGpuDevice device,
         ImGuiWgpuBackend backend,
         WgpuPipeline pipeline,
-        WgpuBuffer* vertexBuffer,
+        WgpuMesh cube,
         long startTick)
     {
         ImGuiImplGLFW.NewFrame();
@@ -244,13 +278,12 @@ public static unsafe class WebGpuPreview
 
         RenderPassEncoder* pass = api.CommandEncoderBeginRenderPass(encoder, in passDescriptor);
 
-        // --- triangle -------------------------------------------------------
+        // --- cube ------------------------------------------------------------
         UploadDemoUniforms(pipeline, startTick, device.Width, device.Height);
         api.RenderPassEncoderSetPipeline(pass, pipeline.Pipeline);
         api.RenderPassEncoderSetBindGroup(pass, 0, pipeline.UniformBindGroup, 0, null);
-        api.RenderPassEncoderSetVertexBuffer(pass, 0, vertexBuffer, 0, (ulong)(3 * DemoVertex.Stride));
-        api.RenderPassEncoderDraw(pass, 3, 1, 0, 0);
-        // -------------------------------------------------------------------
+        cube.Draw(pass);
+        // ---------------------------------------------------------------------
 
         backend.RenderDrawData(ImGui.GetDrawData(), pass);
         api.RenderPassEncoderEnd(pass);
@@ -272,9 +305,13 @@ public static unsafe class WebGpuPreview
         float elapsed = (Environment.TickCount64 - startTick) / 1000.0f;
         float aspect = (float)width / Math.Max(1u, height);
 
-        float angle = elapsed * 1.2f;
-        Matrix4x4 modelView = Matrix4x4.CreateRotationZ(angle)
-                            * Matrix4x4.CreateTranslation(0.0f, 0.0f, -1.0f);
+        // Two-axis rotation.
+        float angleY = elapsed * 0.7f;
+        float angleX = elapsed * 0.5f;
+        Matrix4x4 modelView =
+            Matrix4x4.CreateRotationY(angleY) *
+            Matrix4x4.CreateRotationX(angleX) *
+            Matrix4x4.CreateTranslation(0.0f, 0.0f, -2.5f);
 
         Matrix4x4 projection = Matrix4x4.CreatePerspectiveFieldOfView(
             MathF.PI / 4.0f, aspect, 0.1f, 100.0f);
@@ -313,9 +350,9 @@ public static unsafe class WebGpuPreview
 
             ImGui.Separator();
             ImGuiTextSafe.TextWrapped(
-                "Phase 2: a spinning triangle from gbuffers_basic.wgsl. If it spins below the "
-                + "ImGui layer, then shader compilation, pipeline creation, uniform upload, "
-                + "vertex buffer upload and draw all work.");
+                "Phase 3: a spinning cube, 36 vertices + 36 indices drawn through "
+                + "gbuffers_basic.wgsl. If the cube spins below the ImGui layer, then "
+                + "vertex buffer upload, index buffer upload and indexed draw all work.");
         }
 
         ImGui.End();
