@@ -4,6 +4,22 @@ using WgpuBuffer = Silk.NET.WebGPU.Buffer;
 namespace BetaSharp.Client.Rendering.Core.WebGPU;
 
 /// <summary>
+///     Sentinel for "the whole buffer" that wgpu-native accepts without panicking.
+/// </summary>
+/// <remarks>
+///     wgpu-native maps the size parameter to Rust's <c>Option&lt;NonZeroU64&gt;</c>.
+///     <c>ulong.MaxValue</c> (<c>WGPU_WHOLE_SIZE</c>) maps to <c>None</c> (use remaining),
+///     a valid non-zero value maps to <c>Some(size)</c>, and zero panics the process with
+///     <c>invalid size</c> — not a validation error, a hard crash. So every call site that
+///     passes a size to <c>SetVertexBuffer</c> or <c>SetIndexBuffer</c> must either know the
+///     exact byte count or pass this sentinel.
+/// </remarks>
+file static class WgpuWholeSize
+{
+    public const ulong Value = ulong.MaxValue;
+}
+
+/// <summary>
 ///     Vertex and optional index buffers with the draw call that submits them.
 /// </summary>
 /// <remarks>
@@ -67,11 +83,11 @@ public sealed unsafe class WgpuMesh : IDisposable
     {
         Silk.NET.WebGPU.WebGPU api = _device.Api;
 
-        api.RenderPassEncoderSetVertexBuffer(pass, 0, VertexBuffer, 0, 0);
+        api.RenderPassEncoderSetVertexBuffer(pass, 0, VertexBuffer, 0, WgpuWholeSize.Value);
 
         if (IndexBuffer is not null)
         {
-            api.RenderPassEncoderSetIndexBuffer(pass, IndexBuffer, IndexFormat, 0, 0);
+            api.RenderPassEncoderSetIndexBuffer(pass, IndexBuffer, IndexFormat, 0, WgpuWholeSize.Value);
             api.RenderPassEncoderDrawIndexed(pass, IndexCount, instanceCount, 0, 0, 0);
         }
         else
