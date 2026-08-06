@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Silk.NET.WebGPU;
 using WgpuBuffer = Silk.NET.WebGPU.Buffer;
 
@@ -77,6 +78,19 @@ public sealed unsafe class WgpuMesh : IDisposable
         VertexBuffer = CreateBuffer(device, vertexData, BufferUsage.Vertex | BufferUsage.CopyDst);
         IndexBuffer = CreateBuffer(device, indexData, BufferUsage.Index | BufferUsage.CopyDst);
     }
+
+    /// <summary>
+    ///     Creates a vertex buffer from a span of <see cref="ChunkVertex" /> structs, using the
+    ///     stride the chunk pipeline expects.
+    /// </summary>
+    public static WgpuMesh FromChunkVertices(WebGpuDevice device, ReadOnlySpan<ChunkVertex> vertices,
+        PrimitiveTopology topology = PrimitiveTopology.TriangleList)
+    {
+        return new WgpuMesh(device, MemoryMarshal.AsBytes(vertices), ChunkVertexStride, topology);
+    }
+
+    /// <summary>The stride of a <see cref="ChunkVertex" />, in bytes.</summary>
+    public const uint ChunkVertexStride = 20;
 
     /// <summary>Records the draw command on the current render pass.</summary>
     public void Draw(RenderPassEncoder* pass, uint instanceCount = 1)

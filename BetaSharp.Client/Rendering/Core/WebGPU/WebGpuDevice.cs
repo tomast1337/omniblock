@@ -92,8 +92,15 @@ public sealed unsafe class WebGpuDevice : IDisposable
         Configure(width, height);
     }
 
-    public static WebGpuDevice Create(INativeWindowSource window, int width, int height) =>
-        new(window, (uint)Math.Max(1, width), (uint)Math.Max(1, height));
+    /// <summary>The device when the backend is WebGPU; null otherwise and during the first frame before creation.</summary>
+    public static WebGpuDevice? Current { get; private set; }
+
+    public static WebGpuDevice Create(INativeWindowSource window, int width, int height)
+    {
+        WebGpuDevice device = new(window, (uint)Math.Max(1, width), (uint)Math.Max(1, height));
+        Current = device;
+        return device;
+    }
 
     /// <summary>Points the surface at a new size. Must be called after every resize, or acquiring a texture fails.</summary>
     public void Configure(uint width, uint height)
@@ -298,6 +305,8 @@ public sealed unsafe class WebGpuDevice : IDisposable
         }
 
         _disposed = true;
+
+        if (Current == this) Current = null;
 
         if (Queue is not null) Api.QueueRelease(Queue);
         if (Device is not null) Api.DeviceRelease(Device);
