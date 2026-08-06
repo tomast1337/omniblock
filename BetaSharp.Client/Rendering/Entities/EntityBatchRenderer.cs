@@ -2,7 +2,6 @@ using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using Silk.NET.Maths;
-using Silk.NET.OpenGL;
 using Shader = BetaSharp.Client.Rendering.Core.Shader;
 
 namespace BetaSharp.Client.Rendering.Entities;
@@ -21,8 +20,7 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
     private const int MaxVertices = 65536;
 
     private readonly Shader _shader;
-    private readonly LegacyGL _legacyGL;
-    private readonly GL _silkGL;
+    private readonly IGL _gl;
     private readonly uint _vaoId;
     private readonly uint _vboId;
     private readonly EntityVertex[] _vertices = new EntityVertex[MaxVertices];
@@ -39,37 +37,36 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
             options.ShaderOptions.GetOrCreate("entity_batch"),
             "shaders/entity_batch.vert",
             "shaders/entity_batch.frag");
-        _legacyGL = (LegacyGL)GLManager.GL;
-        _silkGL = _legacyGL.SilkGL;
+        _gl = GLManager.GL;
 
-        _vaoId = _silkGL.GenVertexArray();
-        _vboId = _silkGL.GenBuffer();
+        _vaoId = _gl.GenVertexArray();
+        _vboId = _gl.GenBuffer();
 
-        _silkGL.BindVertexArray(_vaoId);
-        _silkGL.BindBuffer(BufferTargetARB.ArrayBuffer, _vboId);
-        _silkGL.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(MaxVertices * sizeof(EntityVertex)), null, BufferUsageARB.StreamDraw);
+        _gl.BindVertexArray(_vaoId);
+        _gl.BindBuffer(GLEnum.ArrayBuffer, _vboId);
+        _gl.BufferData(GLEnum.ArrayBuffer, (nuint)(MaxVertices * sizeof(EntityVertex)), null, GLEnum.StreamDraw);
 
         const uint stride = 28;
 
-        _silkGL.EnableVertexAttribArray(0);
-        _silkGL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, stride, (void*)0);
+        _gl.EnableVertexAttribArray(0);
+        _gl.VertexAttribPointer(0, 3, GLEnum.Float, false, stride, (void*)0);
 
-        _silkGL.EnableVertexAttribArray(1);
-        _silkGL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, stride, (void*)12);
+        _gl.EnableVertexAttribArray(1);
+        _gl.VertexAttribPointer(1, 2, GLEnum.Float, false, stride, (void*)12);
 
-        _silkGL.EnableVertexAttribArray(2);
-        _silkGL.VertexAttribPointer(2, 4, VertexAttribPointerType.UnsignedByte, true, stride, (void*)20);
+        _gl.EnableVertexAttribArray(2);
+        _gl.VertexAttribPointer(2, 4, GLEnum.UnsignedByte, true, stride, (void*)20);
 
         // Integer attribute: the I-variant keeps the part id an exact uint instead of converting it.
-        _silkGL.EnableVertexAttribArray(3);
-        _silkGL.VertexAttribIPointer(3, 1, VertexAttribIType.UnsignedInt, stride, (void*)24);
+        _gl.EnableVertexAttribArray(3);
+        _gl.VertexAttribIPointer(3, 1, GLEnum.UnsignedInt, stride, (void*)24);
 
-        _silkGL.BindVertexArray(0);
-        _silkGL.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
+        _gl.BindVertexArray(0);
+        _gl.BindBuffer(GLEnum.ArrayBuffer, 0);
 
         // Queued geometry must be drawn under the blend, depth and alpha state it was posed with,
         // and renderers flip that state freely between parts of the same mob.
-        _legacyGL.RasterStateChanging += Flush;
+        GLManager.RasterStateChanging += Flush;
     }
 
     /// <summary>
@@ -140,7 +137,7 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
         // No pass is open — the first-person hand, the inventory mob preview. Nothing downstream
         // will flush, so draw it now, against whatever texture the caller has bound; those paths
         // bind directly rather than going through EntityRenderer.loadTexture.
-        _currentTextureId = _legacyGL.BoundTexture2D;
+        _currentTextureId = _gl.BoundTexture2D;
         _useTexture = true;
         Flush();
     }
@@ -159,31 +156,28 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
     {
         if (_vertexCount == 0) return;
 
-        uint callerTexture = _legacyGL.BoundTexture2D;
+        uint callerTexture = _gl.BoundTexture2D;
 
         GLManager.GL.UseProgram(_shader.ProgramId);
         UploadState();
 
-        _silkGL.ActiveTexture(TextureUnit.Texture0);
-        _silkGL.BindTexture(TextureTarget.Texture2D, _currentTextureId);
+        _gl.ActiveTexture(GLEnum.Texture0);
+        _gl.BindTexture(GLEnum.Texture2D, _currentTextureId);
 
-        _silkGL.BindVertexArray(_vaoId);
-        _silkGL.BindBuffer(BufferTargetARB.ArrayBuffer, _vboId);
+        _gl.BindVertexArray(_vaoId);
+        _gl.BindBuffer(GLEnum.ArrayBuffer, _vboId);
 
-        fixed (EntityVertex* ptr = _vertices)
-        {
-            _silkGL.BufferSubData(BufferTargetARB.ArrayBuffer, 0, (nuint)(_vertexCount * sizeof(EntityVertex)), ptr);
-        }
+        _gl.BufferSubData(GLEnum.ArrayBuffer, 0, new ReadOnlySpan<EntityVertex>(_vertices, 0, _vertexCount));
 
-        _silkGL.DrawArrays(PrimitiveType.Triangles, 0, (uint)_vertexCount);
+        _gl.DrawArrays(GLEnum.Triangles, 0, (uint)_vertexCount);
 
-        _silkGL.BindVertexArray(0);
+        _gl.BindVertexArray(0);
         // Array-buffer binding is not VAO state, so unbinding the VAO does not release it.
-        _silkGL.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
+        _gl.BindBuffer(GLEnum.ArrayBuffer, 0);
         _vertexCount = 0;
 
         GLManager.GL.UseProgram(0);
-        _silkGL.BindTexture(TextureTarget.Texture2D, callerTexture);
+        _gl.BindTexture(GLEnum.Texture2D, callerTexture);
     }
 
     /// <summary>Mirrors the fixed-function state the queued vertices were posed under.</summary>
@@ -209,9 +203,9 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
 
     public void Dispose()
     {
-        _legacyGL.RasterStateChanging -= Flush;
-        _silkGL.DeleteBuffer(_vboId);
-        _silkGL.DeleteVertexArray(_vaoId);
+        GLManager.RasterStateChanging -= Flush;
+        _gl.DeleteBuffer(_vboId);
+        _gl.DeleteVertexArray(_vaoId);
         _shader.Dispose();
     }
 }

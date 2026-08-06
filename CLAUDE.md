@@ -107,7 +107,7 @@ The fork is called OmniBlock, but **project directories, assembly names, and the
 - **`BetaSharp.cs`** — Main game loop and client initialization; has a static `Instance` singleton.
 - **`Display.cs`** — Window/display management via Silk.NET (GLFW). Requests a GL 4.3 core context.
 - **`Rendering/`** — OpenGL rendering pipeline:
-  - `Core/OpenGL/` — Low-level abstractions, including `EmulatedGL`/`LegacyGL` which stand in for fixed-function state
+  - `Core/OpenGL/` — Low-level abstractions: `FixedFunctionPipeline` (the OpenGL `IGL` backend and fixed-function state holder), `GLEnum`, `GLErrorHandler`
   - `Chunks/` — Chunk mesh building and rendering with frustum culling
   - `Entities/` — Two paths: `EntityInstanceBatchRenderer` (GPU-instanced, SSBO pose matrices, used for the main world entity loop) and `EntityBatchRenderer` (CPU-baked, used for single-draw sites like the held item and GUI mob previews). See `docs/gpu-instanced-entity-rendering.md`.
   - `Blocks/`, `Items/` — Model renderers

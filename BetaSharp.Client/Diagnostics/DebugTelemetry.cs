@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using BetaSharp.Client.Rendering.Core.OpenGL;
+using BetaSharp.Client.Rendering.Core;
 using Silk.NET.OpenGL;
 
 namespace BetaSharp.Client.Diagnostics;
@@ -52,14 +52,14 @@ internal sealed class DebugTelemetry
 
     public DebugSystemSnapshot SystemSnapshot => _systemSnapshot;
 
-    public void CaptureSystemInfo(LegacyGL? gl)
+    public void CaptureSystemInfo(IGL? gl)
     {
-        string glVersion = GetGlString(gl, StringName.Version);
+        string glVersion = gl?.GetString(StringName.Version) ?? UnknownValue;
         _systemSnapshot = new DebugSystemSnapshot(
-            GpuName: GetGlString(gl, StringName.Renderer),
+            GpuName: gl?.GetString(StringName.Renderer) ?? UnknownValue,
             GpuVram: GetGpuVram(gl),
             OpenGlVersion: glVersion,
-            GlslVersion: GetGlString(gl, StringName.ShadingLanguageVersion),
+            GlslVersion: gl?.GetString(StringName.ShadingLanguageVersion) ?? UnknownValue,
             DriverVersion: ParseDriverVersion(glVersion),
             CpuName: GetCpuName(),
             CpuCoreCount: Environment.ProcessorCount,
@@ -132,24 +132,6 @@ internal sealed class DebugTelemetry
         return 1000.0D / frameTimeMs;
     }
 
-    private static string GetGlString(LegacyGL? gl, StringName name)
-    {
-        if (gl == null)
-        {
-            return UnknownValue;
-        }
-
-        try
-        {
-            string? value = gl.SilkGL.GetStringS(name);
-            return SafeValue(value);
-        }
-        catch
-        {
-            return UnknownValue;
-        }
-    }
-
     private static string ParseDriverVersion(string glVersion)
     {
         if (glVersion == UnknownValue)
@@ -186,7 +168,7 @@ internal sealed class DebugTelemetry
         return glVersion;
     }
 
-    private static string GetGpuVram(LegacyGL? gl)
+    private static string GetGpuVram(IGL? gl)
     {
         if (gl == null)
         {
@@ -198,14 +180,14 @@ internal sealed class DebugTelemetry
             // NVIDIA extension that exposes dedicated VRAM size in KB.
             if (gl.IsExtensionPresent("GL_NVX_gpu_memory_info"))
             {
-                int dedicatedVidMemKb = gl.SilkGL.GetInteger((Silk.NET.OpenGL.GLEnum)0x9047);
+                int dedicatedVidMemKb = gl.GetInteger((Silk.NET.OpenGL.GLEnum)0x9047);
                 if (dedicatedVidMemKb > 0)
                 {
                     return FormatMemoryKilobytes(dedicatedVidMemKb);
                 }
 
                 // Fallback to total available memory from the same extension.
-                int totalAvailableKb = gl.SilkGL.GetInteger((Silk.NET.OpenGL.GLEnum)0x9048);
+                int totalAvailableKb = gl.GetInteger((Silk.NET.OpenGL.GLEnum)0x9048);
                 if (totalAvailableKb > 0)
                 {
                     return FormatMemoryKilobytes(totalAvailableKb);

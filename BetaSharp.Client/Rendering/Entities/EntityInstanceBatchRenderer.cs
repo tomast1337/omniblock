@@ -5,6 +5,7 @@ using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Entities.Models;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
+using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 using Shader = BetaSharp.Client.Rendering.Core.Shader;
 
 namespace BetaSharp.Client.Rendering.Entities;
@@ -29,8 +30,7 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
     private const int FloatsPerInstance = ModelPart.MaxPartsPerModel * 16 + 4;
 
     private readonly Shader _shader;
-    private readonly LegacyGL _legacyGL;
-    private readonly GL _silkGL;
+    private readonly IGL _gl;
 
     private readonly uint _vaoId;
     private readonly uint _staticVboId;
@@ -94,24 +94,23 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
             options.ShaderOptions.GetOrCreate("entity_instanced"),
             "shaders/entity_instanced.vert",
             "shaders/entity_instanced.frag");
-        _legacyGL = (LegacyGL)GLManager.GL;
-        _silkGL = _legacyGL.SilkGL;
+        _gl = GLManager.GL;
 
-        _vaoId = _silkGL.GenVertexArray();
-        _staticVboId = _silkGL.GenBuffer();
-        _ssboId = _silkGL.GenBuffer();
+        _vaoId = _gl.GenVertexArray();
+        _staticVboId = _gl.GenBuffer();
+        _ssboId = _gl.GenBuffer();
 
-        _silkGL.BindBuffer(BufferTargetARB.ShaderStorageBuffer, _ssboId);
-        _silkGL.BufferData(BufferTargetARB.ShaderStorageBuffer, (nuint)(_instanceData.Length * sizeof(float)), null, BufferUsageARB.StreamDraw);
-        _silkGL.BindBufferBase(BufferTargetARB.ShaderStorageBuffer, 0, _ssboId);
-        _silkGL.BindBuffer(BufferTargetARB.ShaderStorageBuffer, 0);
+        _gl.BindBuffer(GLEnum.ShaderStorageBuffer, _ssboId);
+        _gl.BufferData(GLEnum.ShaderStorageBuffer, (nuint)(_instanceData.Length * sizeof(float)), null, GLEnum.StreamDraw);
+        _gl.BindBufferBase(BufferTargetARB.ShaderStorageBuffer, 0, _ssboId);
+        _gl.BindBuffer(GLEnum.ShaderStorageBuffer, 0);
 
         // An instance is drawn when the batch is flushed, not where it was submitted, so anything
         // drawn immediately in between would reach the depth buffer first and reject the geometry
         // that was logically in front of it. A burning entity is the case that shows it: its flames
         // are a camera-facing quad drawn straight through the tessellator, so which parts of the
         // still-queued mob they cover changes as the camera moves.
-        _legacyGL.ImmediateGeometryDrawing += Flush;
+        GLManager.ImmediateGeometryDrawing += Flush;
 
         ConfigureVertexAttributes();
     }
@@ -120,26 +119,26 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
     {
         const uint stride = 40;
 
-        _silkGL.BindVertexArray(_vaoId);
-        _silkGL.BindBuffer(BufferTargetARB.ArrayBuffer, _staticVboId);
+        _gl.BindVertexArray(_vaoId);
+        _gl.BindBuffer(GLEnum.ArrayBuffer, _staticVboId);
 
-        _silkGL.EnableVertexAttribArray(0);
-        _silkGL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, stride, (void*)0);
+        _gl.EnableVertexAttribArray(0);
+        _gl.VertexAttribPointer(0, 3, GLEnum.Float, false, stride, (void*)0);
 
-        _silkGL.EnableVertexAttribArray(1);
-        _silkGL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, stride, (void*)12);
+        _gl.EnableVertexAttribArray(1);
+        _gl.VertexAttribPointer(1, 2, GLEnum.Float, false, stride, (void*)12);
 
-        _silkGL.EnableVertexAttribArray(2);
-        _silkGL.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, stride, (void*)20);
+        _gl.EnableVertexAttribArray(2);
+        _gl.VertexAttribPointer(2, 3, GLEnum.Float, false, stride, (void*)20);
 
-        _silkGL.EnableVertexAttribArray(3);
-        _silkGL.VertexAttribIPointer(3, 1, VertexAttribIType.UnsignedInt, stride, (void*)32);
+        _gl.EnableVertexAttribArray(3);
+        _gl.VertexAttribIPointer(3, 1, GLEnum.UnsignedInt, stride, (void*)32);
 
-        _silkGL.EnableVertexAttribArray(4);
-        _silkGL.VertexAttribIPointer(4, 1, VertexAttribIType.UnsignedInt, stride, (void*)36);
+        _gl.EnableVertexAttribArray(4);
+        _gl.VertexAttribIPointer(4, 1, GLEnum.UnsignedInt, stride, (void*)36);
 
-        _silkGL.BindVertexArray(0);
-        _silkGL.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
+        _gl.BindVertexArray(0);
+        _gl.BindBuffer(GLEnum.ArrayBuffer, 0);
     }
 
     /// <summary>
@@ -189,24 +188,22 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
             return;
         }
 
-        _silkGL.BindBuffer(BufferTargetARB.ArrayBuffer, _staticVboId);
+        _gl.BindBuffer(GLEnum.ArrayBuffer, _staticVboId);
 
         if (_staticVertices.Count > _staticVboCapacity)
         {
             // Reserve only. _staticVertices has fewer elements than a grown capacity would
             // request, so it can't be the BufferData source.
             _staticVboCapacity = Math.Max(_staticVertices.Count, _staticVboCapacity * 2);
-            _silkGL.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(_staticVboCapacity * sizeof(EntityInstancedVertex)), null, BufferUsageARB.StaticDraw);
+            _gl.BufferData(GLEnum.ArrayBuffer, (nuint)(_staticVboCapacity * sizeof(EntityInstancedVertex)), null, GLEnum.StaticDraw);
             _staticVertexCountUploaded = 0;
         }
 
         EntityInstancedVertex[] added = [.. _staticVertices.Skip(_staticVertexCountUploaded)];
-        fixed (EntityInstancedVertex* ptr = added)
-        {
-            _silkGL.BufferSubData(BufferTargetARB.ArrayBuffer, _staticVertexCountUploaded * sizeof(EntityInstancedVertex), (nuint)(added.Length * sizeof(EntityInstancedVertex)), ptr);
-        }
+        _gl.BufferSubData(GLEnum.ArrayBuffer, _staticVertexCountUploaded * sizeof(EntityInstancedVertex),
+            new ReadOnlySpan<EntityInstancedVertex>(added));
 
-        _silkGL.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
+        _gl.BindBuffer(GLEnum.ArrayBuffer, 0);
         _staticVertexCountUploaded = _staticVertices.Count;
     }
 
@@ -332,7 +329,7 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
     {
         EnsureStaticBufferUploaded();
 
-        uint callerTexture = _legacyGL.BoundTexture2D;
+        uint callerTexture = _gl.BoundTexture2D;
         RenderState callerState = GLManager.State.Current;
 
         // Submissions interleave by entity, not by bucket, so pack each bucket's instances
@@ -350,16 +347,13 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
             }
         }
 
-        _silkGL.BindBuffer(BufferTargetARB.ShaderStorageBuffer, _ssboId);
-        fixed (float* ptr = _flushData)
-        {
-            _silkGL.BufferSubData(BufferTargetARB.ShaderStorageBuffer, 0, (nuint)(_instanceCount * FloatsPerInstance * sizeof(float)), ptr);
-        }
+        _gl.BindBuffer(GLEnum.ShaderStorageBuffer, _ssboId);
+        _gl.BufferSubData(GLEnum.ShaderStorageBuffer, 0, new ReadOnlySpan<float>(_flushData, 0, _instanceCount * FloatsPerInstance));
 
         GLManager.GL.UseProgram(_shader.ProgramId);
         UploadPassState();
 
-        _silkGL.BindVertexArray(_vaoId);
+        _gl.BindVertexArray(_vaoId);
 
         // Buckets are drawn in the order they were first submitted to, which is what keeps a
         // translucent shell behind the body it covers and a depth-equal flash behind the depths it
@@ -369,16 +363,16 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
             Bucket bucket = _buckets[b];
             UploadDrawState(bucket.Draw);
             _shader.SetUniform1("instanceBase", bucketStarts[b]);
-            _silkGL.ActiveTexture(TextureUnit.Texture0);
-            _silkGL.BindTexture(TextureTarget.Texture2D, bucket.TextureId);
-            _silkGL.DrawArraysInstanced(PrimitiveType.Triangles, bucket.VertexBase, (uint)bucket.VertexCount, (uint)_bucketInstanceIndices[b].Count);
+            _gl.ActiveTexture(GLEnum.Texture0);
+            _gl.BindTexture(GLEnum.Texture2D, bucket.TextureId);
+            _gl.DrawArraysInstanced(GLEnum.Triangles, bucket.VertexBase, (uint)bucket.VertexCount, (uint)_bucketInstanceIndices[b].Count);
         }
 
-        _silkGL.BindVertexArray(0);
-        _silkGL.BindBuffer(BufferTargetARB.ShaderStorageBuffer, 0);
+        _gl.BindVertexArray(0);
+        _gl.BindBuffer(GLEnum.ShaderStorageBuffer, 0);
 
         GLManager.GL.UseProgram(0);
-        _silkGL.BindTexture(TextureTarget.Texture2D, callerTexture);
+        _gl.BindTexture(GLEnum.Texture2D, callerTexture);
 
         // A flush can happen part way through a renderer, so put back the pipeline state the caller
         // was working under rather than leaving it on whichever bucket happened to be drawn last.
@@ -431,10 +425,10 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
 
     public void Dispose()
     {
-        _legacyGL.ImmediateGeometryDrawing -= Flush;
-        _silkGL.DeleteBuffer(_ssboId);
-        _silkGL.DeleteBuffer(_staticVboId);
-        _silkGL.DeleteVertexArray(_vaoId);
+        GLManager.ImmediateGeometryDrawing -= Flush;
+        _gl.DeleteBuffer(_ssboId);
+        _gl.DeleteBuffer(_staticVboId);
+        _gl.DeleteVertexArray(_vaoId);
         _shader.Dispose();
     }
 }

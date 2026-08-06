@@ -109,4 +109,31 @@ public unsafe interface IGL
     void DeleteRenderbuffer(uint renderbuffer);
     void BlitFramebuffer(int srcX0, int srcY0, int srcX1, int srcY1, int dstX0, int dstY0, int dstX1, int dstY1, uint mask, BlitFramebufferFilter filter);
     void ActiveTexture(GLEnum texture);
+
+    /// <summary>
+    ///     Drains any batching renderer that is holding queued geometry, so that it reaches the
+    ///     framebuffer before the next draw that goes through this interface.
+    /// </summary>
+    void FlushQueuedGeometry();
+
+    /// <summary>The texture currently bound to <see cref="GLEnum.Texture2D" /> on unit 0.</summary>
+    uint BoundTexture2D { get; }
+
+    /// <summary>Disables the generic vertex attribute at <paramref name="index" />.</summary>
+    void DisableVertexAttribArray(uint index);
+
+    /// <summary>Returns a driver-info string for <paramref name="name" />, for debug telemetry.</summary>
+    string GetString(StringName name);
+
+    /// <summary>Returns a single integer parameter, for debug telemetry.</summary>
+    int GetInteger(Silk.NET.OpenGL.GLEnum pname);
+
+    /// <summary>Binds a range of a buffer to an indexed target (SSBO, UBO, etc.).</summary>
+    void BindBufferBase(BufferTargetARB target, uint index, uint buffer);
+
+    /// <summary>Writes a sub-range of a buffer object.</summary>
+    void BufferSubData<T>(GLEnum target, nint offset, ReadOnlySpan<T> data) where T : unmanaged;
+
+    /// <summary>Draws <paramref name="count" /> instances of <paramref name="count" /> vertices.</summary>
+    void DrawArraysInstanced(GLEnum mode, int first, uint count, uint instanceCount);
 }

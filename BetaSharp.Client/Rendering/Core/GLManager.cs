@@ -158,6 +158,23 @@ public class GLManager
 
     private static FixedFunctionPipeline _pipeline = null!;
 
+    /// <summary>
+    ///     Raised just before geometry is drawn through <see cref="IGL.DrawArrays" /> (i.e. drawn
+    ///     immediately rather than queued). A renderer holding queued geometry subscribes here so
+    ///     what it is holding reaches the depth buffer first, in the order the caller issued it.
+    /// </summary>
+    public static event Action? ImmediateGeometryDrawing;
+
+    /// <summary>
+    ///     Raised just before a change to state that governs how geometry rasterizes. A renderer
+    ///     that queues geometry instead of drawing it immediately subscribes here, so what it is
+    ///     holding reaches the framebuffer while the state it was queued under is still in force.
+    /// </summary>
+    public static event Action? RasterStateChanging;
+
+    internal static void OnImmediateGeometryDrawing() => ImmediateGeometryDrawing?.Invoke();
+    internal static void OnRasterStateChanging() => RasterStateChanging?.Invoke();
+
     public static void Init(GL silkGl)
     {
         _pipeline = new FixedFunctionPipeline(silkGl);

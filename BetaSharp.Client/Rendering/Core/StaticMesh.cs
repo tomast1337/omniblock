@@ -1,5 +1,4 @@
 using BetaSharp.Client.Rendering.Core.OpenGL;
-using Silk.NET.OpenGL;
 using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client.Rendering.Core;
@@ -35,39 +34,39 @@ internal static unsafe class TessellatorVertexLayout
     ///     have one" question to ask. No current shader declares location 4, so this is inert until
     ///     task #28 adds it.
     /// </remarks>
-    public static void Bind(GL gl, bool hasTexture, bool hasColor, bool hasNormals)
+    public static void Bind(IGL gl, bool hasTexture, bool hasColor, bool hasNormals)
     {
         if (hasTexture)
         {
-            gl.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, Stride, (void*)TextureOffset);
+            gl.VertexAttribPointer(2, 2, GLEnum.Float, false, Stride, (void*)TextureOffset);
             gl.EnableVertexAttribArray(2);
         }
 
         if (hasColor)
         {
-            gl.VertexAttribPointer(1, 4, VertexAttribPointerType.UnsignedByte, true, Stride, (void*)ColorOffset);
+            gl.VertexAttribPointer(1, 4, GLEnum.UnsignedByte, true, Stride, (void*)ColorOffset);
             gl.EnableVertexAttribArray(1);
         }
 
         if (hasNormals)
         {
-            gl.VertexAttribPointer(3, 3, VertexAttribPointerType.Byte, true, Stride, (void*)NormalOffset);
+            gl.VertexAttribPointer(3, 3, GLEnum.Byte, true, Stride, (void*)NormalOffset);
             gl.EnableVertexAttribArray(3);
         }
 
-        gl.VertexAttribIPointer(4, 1, VertexAttribIType.Int, Stride, (void*)ArrayLayerOffset);
+        gl.VertexAttribIPointer(4, 1, GLEnum.Int, Stride, (void*)ArrayLayerOffset);
         gl.EnableVertexAttribArray(4);
 
         // Two channels rather than one packed byte, for the same reason the chunk layout splits
         // them: a smooth-lit corner is a mean of four cells, so a nibble each cannot hold it.
-        gl.VertexAttribIPointer(5, 2, VertexAttribIType.UnsignedByte, Stride, (void*)LightOffset);
+        gl.VertexAttribIPointer(5, 2, GLEnum.UnsignedByte, Stride, (void*)LightOffset);
         gl.EnableVertexAttribArray(5);
 
-        gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, Stride, (void*)PositionOffset);
+        gl.VertexAttribPointer(0, 3, GLEnum.Float, false, Stride, (void*)PositionOffset);
         gl.EnableVertexAttribArray(0);
     }
 
-    public static void Unbind(GL gl, bool hasTexture, bool hasColor, bool hasNormals)
+    public static void Unbind(IGL gl, bool hasTexture, bool hasColor, bool hasNormals)
     {
         gl.DisableVertexAttribArray(0);
         gl.DisableVertexAttribArray(4);
@@ -131,15 +130,15 @@ public sealed class StaticMesh(
         }
 
         // Before the VAO below is bound, for the reason FlushQueuedGeometry gives.
-        ((LegacyGL)GLManager.GL).FlushQueuedGeometry();
+        GLManager.GL.FlushQueuedGeometry();
 
-        GL gl = ((LegacyGL)GLManager.GL).SilkGL;
+        IGL gl = GLManager.GL;
 
         if (_vao == 0)
         {
             _vao = gl.GenVertexArray();
             gl.BindVertexArray(_vao);
-            gl.BindBuffer(BufferTargetARB.ArrayBuffer, _buffer);
+            gl.BindBuffer(GLEnum.ArrayBuffer, _buffer);
             TessellatorVertexLayout.Bind(gl, hasTexture, hasColor, hasNormals);
             gl.BindVertexArray(0);
         }
@@ -155,7 +154,7 @@ public sealed class StaticMesh(
     {
         if (_vao != 0)
         {
-            ((LegacyGL)GLManager.GL).SilkGL.DeleteVertexArray(_vao);
+            GLManager.GL.DeleteVertexArray(_vao);
             _vao = 0;
         }
 

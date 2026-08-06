@@ -263,14 +263,7 @@ public partial class BetaSharp :
 
             GLManager.Init(Display.getGL()!);
             SlotPrograms.Initialize(Options);
-            if (GLManager.GL is LegacyGL legacyGl)
-            {
-                _debugTelemetry.CaptureSystemInfo(legacyGl);
-            }
-            else
-            {
-                _debugTelemetry.CaptureSystemInfo(null);
-            }
+            _debugTelemetry.CaptureSystemInfo(GLManager.GL);
 
             Display.getGlfw().SwapInterval(Options.VSync ? 1 : 0);
 

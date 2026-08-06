@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Entities;
 using Silk.NET.Maths;
 
@@ -91,9 +90,8 @@ public class BbModelEntityModel : ModelBase
                 }
             }
 
-            LegacyGL legacyGl = (LegacyGL)GLManager.GL;
             Vector4D<float> tint = GLManager.Color;
-            EntityInstanceBatchRenderer.Instance.SubmitInstance(this, legacyGl.BoundTexture2D, poseMatrices, tint);
+            EntityInstanceBatchRenderer.Instance.SubmitInstance(this, GLManager.GL.BoundTexture2D, poseMatrices, tint);
         }
         else
         {
