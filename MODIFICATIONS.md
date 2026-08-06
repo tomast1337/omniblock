@@ -175,3 +175,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-06 — refactor(rendering): delete ChunkVertexLayout, make Tessellator yield WgpuMesh (Nicolas Vyčas Nery; `b7fac16d57094dff93c394ba0112f97e4574337e`)
 - 2026-08-06 — feat(rendering): add native WebGPU render path to ChunkRenderer (Nicolas Vyčas Nery; `c6d12060ad1debdb0b279851a0b0b1f963c339f3`)
 - 2026-08-06 — feat(rendering): add native WebGPU flush paths to entity and UI batchers (Nicolas Vyčas Nery; `1032d23019f0c43e424c162b65a657dec7c9e64c`)
+- 2026-08-06 — feat(rendering): replace SSBO with native WebGPU StorageBuffer in instanced entities (Nicolas Vyčas Nery; `916b5cd9626bea4dd9b922d158c7a67360bf2cd8`)
