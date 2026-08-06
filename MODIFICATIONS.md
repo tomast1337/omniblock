@@ -169,3 +169,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-05 — fix(rendering): pass WGPU_WHOLE_SIZE rather than zero to SetVertexBuffer (Nicolas Vyčas Nery; `dc381f84e2966bde54abe68b0e58652c8ed02c8e`)
 - 2026-08-05 — feat(rendering): upload textures to the GPU and sample them in shaders (Nicolas Vyčas Nery; `ab748be803d5ce5fcdf465eb27dc72a707e3fb3f`)
 - 2026-08-06 — feat(rendering): create offscreen framebuffers with depth and blit between passes (Nicolas Vyčas Nery; `a213aa2c245b9a037dcf6dd5cf3cd11daafaec25`)
+- 2026-08-06 — feat(rendering): port the chunk shader to WGSL and sample a texture array (Nicolas Vyčas Nery; `da3025ad451cdc1dcea5be4d770db7ee0d0793a9`)

@@ -305,6 +305,7 @@ public class AssetManager
         defineEmbeddedAsset("shaders/gbuffers_textured.wgsl", AssetType.Text);
         defineEmbeddedAsset("shaders/gbuffers_textured_lit.wgsl", AssetType.Text);
         defineEmbeddedAsset("shaders/blit.wgsl", AssetType.Text);
+        defineEmbeddedAsset("shaders/chunk.wgsl", AssetType.Text);
         defineEmbeddedAsset("shaders/imgui.wgsl", AssetType.Text);
         defineEmbeddedAsset("shaders/quad.vert", AssetType.Text);
         defineEmbeddedAsset("shaders/sky.vert", AssetType.Text);
