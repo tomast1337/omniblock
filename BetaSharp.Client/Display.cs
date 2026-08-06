@@ -33,6 +33,14 @@ public static unsafe class Display
     public static int MSAA_Samples = 0;
     public static bool DebugMode = false;
 
+    /// <summary>Which graphics API <see cref="create" /> gives the window.</summary>
+    /// <remarks>
+    ///     Must be set before <see cref="create" />: a GLFW window is told at creation whether it
+    ///     carries a client API, and a WebGPU surface can only be made from one that does not.
+    ///     Runtime rather than a compile flag so both paths always build.
+    /// </remarks>
+    public static GraphicsBackend Backend { get; set; } = GraphicsBackend.OpenGL;
+
     // Window position
     private static int _x = -1;
     private static int _y = -1;
@@ -549,7 +557,9 @@ public static unsafe class Display
             options.VSync = _swapInterval > 0;
             options.IsVisible = true;
             options.Samples = MSAA_Samples;
-            options.API = new GraphicsAPI(ContextAPI.OpenGL, ContextProfile.Core, DebugMode ? ContextFlags.Debug : ContextFlags.Default, new APIVersion(4, 3));
+            options.API = Backend == GraphicsBackend.WebGpu
+                ? GraphicsAPI.None
+                : new GraphicsAPI(ContextAPI.OpenGL, ContextProfile.Core, DebugMode ? ContextFlags.Debug : ContextFlags.Default, new APIVersion(4, 3));
 
             if (_x >= 0 && _y >= 0)
                 options.Position = new Vector2D<int>(_x, _y);
@@ -571,9 +581,12 @@ public static unsafe class Display
 
     private static void onLoad()
     {
-        _gl = GL.GetApi(_window);
-        _gl.ClearColor(_r, _g, _b, 1.0f);
-        _gl.Enable(EnableCap.Multisample);
+        if (Backend == GraphicsBackend.OpenGL)
+        {
+            _gl = GL.GetApi(_window);
+            _gl.ClearColor(_r, _g, _b, 1.0f);
+            _gl.Enable(EnableCap.Multisample);
+        }
 
         refreshFramebufferSize();
         if (_window != null && _glfw != null)
@@ -638,6 +651,10 @@ public static unsafe class Display
         {
             if (!isCreated())
                 throw new InvalidOperationException("Display not created");
+
+            // WebGPU presents through the surface, which the window knows nothing about.
+            if (Backend == GraphicsBackend.WebGpu)
+                return;
 
             _window!.SwapBuffers();
         }

@@ -13,6 +13,7 @@ using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
+using BetaSharp.Client.Rendering.Core.WebGPU;
 using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Client.Rendering.Items;
 using BetaSharp.Client.Rendering.UI;
@@ -1954,6 +1955,13 @@ public partial class BetaSharp :
 
     public static void Startup(string[] args)
     {
+        if (args.Contains("--webgpu"))
+        {
+            Bootstrap.Initialize();
+            WebGpuPreview.Run();
+            return;
+        }
+
         args = TakeFrameHashPath(args);
 
         (string Name, string Session) result = args.Length switch
