@@ -1,8 +1,11 @@
+using System.Runtime.InteropServices;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Chunks.Occlusion;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
+using BetaSharp.Client.Rendering.Core.WebGPU;
 using BetaSharp.Profiling;
+using Silk.NET.WebGPU;
 using BetaSharp.Textures;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
@@ -772,6 +775,100 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     private static Vector3D<double> ToDoubleVec(Vector3D<int> vec) => new(vec.X, vec.Y, vec.Z);
 
+    /// <summary>
+    ///     Draws solid-pass chunks through the native WebGPU command encoder.
+    ///     Binds the terrain pipeline and texture array once, then iterates chunks.
+    /// </summary>
+    public unsafe void RenderSolidWebGpu(
+        RenderPassEncoder* pass, WgpuPipeline pipeline, WgpuTextureArray textureArray)
+    {
+        pipeline.Bind(pass);
+        WgpuPipeline.BindGroup(pass, 1, textureArray.BindGroup, WebGpuDevice.Current!.Api);
+
+        foreach (SubChunkState state in _renderers.Values)
+        {
+            SubChunkRenderer renderer = state.Renderer;
+            if (renderer.LastVisibleFrame != _frameIndex) continue;
+
+            renderer.Update(0); // delta handled by caller
+
+            float fadeProgress = Math.Clamp(renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
+
+            var camRel = new Vector3D<double>(
+                renderer.PositionMinus.X - _lastViewPos.X,
+                renderer.PositionMinus.Y - _lastViewPos.Y,
+                renderer.PositionMinus.Z - _lastViewPos.Z);
+            camRel += new Vector3D<double>(renderer.ClipPosition.X, renderer.ClipPosition.Y, renderer.ClipPosition.Z);
+
+            Matrix4X4<float> translation = Matrix4X4.CreateTranslation(
+                new Vector3D<float>((float)camRel.X, (float)camRel.Y, (float)camRel.Z));
+            Matrix4X4<float> modelView = translation * _modelView;
+
+            ChunkUniforms uniforms = BuildChunkUniforms(modelView, renderer.Position, fadeProgress);
+            pipeline.UploadUniforms(uniforms);
+            pipeline.BindUniformGroup(pass);
+
+            renderer.RenderWebGpu(pass, 0);
+        }
+    }
+
+    /// <summary>WebGPU translucent pass — sorted back-to-front, same as the GL path.</summary>
+    public unsafe void RenderTranslucentWebGpu(
+        RenderPassEncoder* pass, WgpuPipeline pipeline, WgpuTextureArray textureArray,
+        Vector3D<double> viewPos)
+    {
+        pipeline.Bind(pass);
+        WgpuPipeline.BindGroup(pass, 1, textureArray.BindGroup, WebGpuDevice.Current!.Api);
+
+        _translucentDistanceComparer.Origin = viewPos;
+        _translucentRenderers.Sort(_translucentDistanceComparer);
+
+        foreach (SubChunkRenderer renderer in _translucentRenderers)
+        {
+            float fadeProgress = Math.Clamp(renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
+
+            var camRel = new Vector3D<double>(
+                renderer.PositionMinus.X - viewPos.X,
+                renderer.PositionMinus.Y - viewPos.Y,
+                renderer.PositionMinus.Z - viewPos.Z);
+            camRel += new Vector3D<double>(renderer.ClipPosition.X, renderer.ClipPosition.Y, renderer.ClipPosition.Z);
+
+            Matrix4X4<float> translation = Matrix4X4.CreateTranslation(
+                new Vector3D<float>((float)camRel.X, (float)camRel.Y, (float)camRel.Z));
+            Matrix4X4<float> modelView = translation * _modelView;
+
+            ChunkUniforms uniforms = BuildChunkUniforms(modelView, renderer.Position, fadeProgress);
+            pipeline.UploadUniforms(uniforms);
+            pipeline.BindUniformGroup(pass);
+
+            renderer.RenderWebGpu(pass, 1);
+        }
+
+        _translucentRenderers.Clear();
+    }
+
+    private ChunkUniforms BuildChunkUniforms(Matrix4X4<float> modelView, Vector3D<int> chunkPos, float fadeProgress)
+    {
+        return new ChunkUniforms
+        {
+            ModelViewMatrix = modelView,
+            ProjectionMatrix = _projection,
+            ChunkPosX = chunkPos.X,
+            ChunkPosY = chunkPos.Z,
+            TimeX = 0, TimeY = 0, TimeZ = 0, // caller updates these per frame
+            FadeProgress = fadeProgress,
+            ChunkFadeEnabled = 1,
+            FogMode = (uint)_fogMode,
+            FogDensity = _fogDensity,
+            FogStart = _fogStart,
+            FogEnd = _fogEnd,
+            FogColorR = _fogColor.X,
+            FogColorG = _fogColor.Y,
+            FogColorB = _fogColor.Z,
+            FogColorA = _fogColor.W,
+        };
+    }
+
     public void Dispose()
     {
         foreach (SubChunkState state in _renderers.Values)
@@ -796,4 +893,102 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         _chunkVersions.Clear();
     }
+}
+
+/// <summary>
+///     Mirror of the WGSL <c>Uniforms</c> struct in <c>chunk.wgsl</c>, laid out to match
+///     WGSL's default alignment rules (mat4x4 = 16, vec3 = 16, vec4 = 16, f32/u32 = 4).
+/// </summary>
+[StructLayout(LayoutKind.Explicit, Size = 336)]
+public struct ChunkUniforms
+{
+    // mat4x4<f32> modelViewMatrix at offset 0
+    [FieldOffset(0)] public Matrix4X4<float> ModelViewMatrix;
+
+    // mat4x4<f32> projectionMatrix at offset 64
+    [FieldOffset(64)] public Matrix4X4<float> ProjectionMatrix;
+
+    // vec2<f32> chunkPos at offset 128 (align 8, size 8)
+    [FieldOffset(128)] public float ChunkPosX;
+    [FieldOffset(132)] public float ChunkPosY;
+
+    // vec3<f32> time at offset 144 (align 16, size 12)
+    [FieldOffset(144)] public float TimeX;
+    [FieldOffset(148)] public float TimeY;
+    [FieldOffset(152)] public float TimeZ;
+
+    // f32 ambientDarkness at offset 156
+    [FieldOffset(156)] public float AmbientDarkness;
+
+    // f32 luminanceOffset at offset 160
+    [FieldOffset(160)] public float LuminanceOffset;
+
+    // f32 wavyLeavesStrength at offset 164
+    [FieldOffset(164)] public float WavyLeavesStrength;
+
+    // f32 wavyLeavesSpeed at offset 168
+    [FieldOffset(168)] public float WavyLeavesSpeed;
+
+    // f32 wavyPlantStrength at offset 172
+    [FieldOffset(172)] public float WavyPlantStrength;
+
+    // f32 wavyPlantSpeed at offset 176
+    [FieldOffset(176)] public float WavyPlantSpeed;
+
+    // u32 wavyPlantMode at offset 180
+    [FieldOffset(180)] public uint WavyPlantMode;
+
+    // vec4<u32> wavyLeafLayers0 at offset 192 (align 16)
+    [FieldOffset(192)] public uint WavyLeafLayer0;
+    [FieldOffset(196)] public uint WavyLeafLayer1;
+    [FieldOffset(200)] public uint WavyLeafLayer2;
+    [FieldOffset(204)] public uint WavyLeafLayer3;
+
+    // vec4<u32> wavyLeafLayers1 at offset 208
+    [FieldOffset(208)] public uint WavyLeafLayer4;
+    [FieldOffset(212)] public uint WavyLeafLayer5;
+    [FieldOffset(216)] public uint WavyLeafLayer6;
+    [FieldOffset(220)] public uint WavyLeafLayer7;
+
+    // u32 wavyLeafCount at offset 224
+    [FieldOffset(224)] public uint WavyLeafCount;
+
+    // vec4<u32> wavyPlantLayers0 at offset 240 (align 16)
+    [FieldOffset(240)] public uint WavyPlantLayer0;
+    [FieldOffset(244)] public uint WavyPlantLayer1;
+    [FieldOffset(248)] public uint WavyPlantLayer2;
+    [FieldOffset(252)] public uint WavyPlantLayer3;
+
+    // vec4<u32> wavyPlantLayers1 at offset 256
+    [FieldOffset(256)] public uint WavyPlantLayer4;
+    [FieldOffset(260)] public uint WavyPlantLayer5;
+    [FieldOffset(264)] public uint WavyPlantLayer6;
+    [FieldOffset(268)] public uint WavyPlantLayer7;
+
+    // u32 wavyPlantCount at offset 272
+    [FieldOffset(272)] public uint WavyPlantCount;
+
+    // vec4<f32> fogColor at offset 288 (align 16)
+    [FieldOffset(288)] public float FogColorR;
+    [FieldOffset(292)] public float FogColorG;
+    [FieldOffset(296)] public float FogColorB;
+    [FieldOffset(300)] public float FogColorA;
+
+    // f32 fogStart at offset 304
+    [FieldOffset(304)] public float FogStart;
+
+    // f32 fogEnd at offset 308
+    [FieldOffset(308)] public float FogEnd;
+
+    // f32 fogDensity at offset 312
+    [FieldOffset(312)] public float FogDensity;
+
+    // u32 fogMode at offset 316
+    [FieldOffset(316)] public uint FogMode;
+
+    // u32 chunkFadeEnabled at offset 320
+    [FieldOffset(320)] public uint ChunkFadeEnabled;
+
+    // f32 fadeProgress at offset 324
+    [FieldOffset(324)] public float FadeProgress;
 }

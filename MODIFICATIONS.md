@@ -173,3 +173,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-06 — feat(rendering): fix ChunkVertex to 20 bytes and animate texture layers (Nicolas Vyčas Nery; `fe615ea94840953de476066452f0dbda2c331f73`)
 - 2026-08-06 — refactor(rendering): delete LegacyGL.cs, fold into FixedFunctionPipeline (Nicolas Vyčas Nery; `a1483bfd5657f7a8301c3b72b267bd1ac5763bc7`)
 - 2026-08-06 — refactor(rendering): delete ChunkVertexLayout, make Tessellator yield WgpuMesh (Nicolas Vyčas Nery; `b7fac16d57094dff93c394ba0112f97e4574337e`)
+- 2026-08-06 — feat(rendering): add native WebGPU render path to ChunkRenderer (Nicolas Vyčas Nery; `c6d12060ad1debdb0b279851a0b0b1f963c339f3`)
