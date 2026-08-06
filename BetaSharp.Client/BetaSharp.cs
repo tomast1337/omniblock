@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Linq;
 using System.Numerics;
 using System.Runtime;
 using System.Runtime.InteropServices;
@@ -1976,6 +1977,7 @@ public partial class BetaSharp :
         if (args.Contains("--webgpu"))
         {
             Display.Backend = GraphicsBackend.WebGpu;
+            args = args.Where(a => a != "--webgpu").ToArray();
         }
 
         args = TakeFrameHashPath(args);
