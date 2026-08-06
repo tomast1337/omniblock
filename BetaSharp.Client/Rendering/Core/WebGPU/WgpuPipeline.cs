@@ -302,6 +302,18 @@ public sealed unsafe class WgpuPipeline : IDisposable
     public void UploadUniforms(void* data, nuint size) =>
         _device.Api.QueueWriteBuffer(_device.Queue, UniformBuffer, 0, data, size);
 
+    /// <summary>Binds this pipeline on the render pass.</summary>
+    public void Bind(RenderPassEncoder* pass) =>
+        _device.Api.RenderPassEncoderSetPipeline(pass, Pipeline);
+
+    /// <summary>Binds the uniform bind group at group 0.</summary>
+    public void BindUniformGroup(RenderPassEncoder* pass) =>
+        _device.Api.RenderPassEncoderSetBindGroup(pass, 0, UniformBindGroup, 0, null);
+
+    /// <summary>Binds an external bind group (textures, etc.) at <paramref name="groupIndex"/>.</summary>
+    public static void BindGroup(RenderPassEncoder* pass, uint groupIndex, BindGroup* group, Silk.NET.WebGPU.WebGPU api) =>
+        api.RenderPassEncoderSetBindGroup(pass, groupIndex, group, 0, null);
+
     private static BlendComponent BlendFor(BlendMode mode) => mode switch
     {
         BlendMode.None => new BlendComponent
