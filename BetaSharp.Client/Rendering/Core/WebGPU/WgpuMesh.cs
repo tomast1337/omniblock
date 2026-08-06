@@ -110,6 +110,16 @@ public sealed unsafe class WgpuMesh : IDisposable
         }
     }
 
+    /// <summary>
+    ///     Draws a sub-range of vertices with instancing. Used when multiple buckets share one
+    ///     static geometry buffer — each bucket draws its own range with its own instance count.
+    /// </summary>
+    public void DrawRange(RenderPassEncoder* pass, uint firstVertex, uint vertexCount, uint instanceCount)
+    {
+        _device.Api.RenderPassEncoderSetVertexBuffer(pass, 0, VertexBuffer, 0, WgpuWholeSize.Value);
+        _device.Api.RenderPassEncoderDraw(pass, vertexCount, instanceCount, firstVertex, 0);
+    }
+
     private static WgpuBuffer* CreateBuffer(WebGpuDevice device, ReadOnlySpan<byte> data, BufferUsage usage)
     {
         BufferDescriptor descriptor = new()

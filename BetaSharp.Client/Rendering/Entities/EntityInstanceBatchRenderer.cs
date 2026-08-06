@@ -1,10 +1,13 @@
+using System.Runtime.InteropServices;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
+using BetaSharp.Client.Rendering.Core.WebGPU;
 using BetaSharp.Client.Rendering.Entities.Models;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
+using Silk.NET.WebGPU;
 using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 using Shader = BetaSharp.Client.Rendering.Core.Shader;
 
@@ -35,6 +38,10 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
     private readonly uint _vaoId;
     private readonly uint _staticVboId;
     private readonly uint _ssboId;
+
+    // WebGPU path
+    private WgpuMesh? _staticMesh;
+    private WgpuStorageBuffer? _storageBuffer;
 
     // Grows as ModelParts bake, keyed by ModelPart.StaticVertexOffset. Staged on the CPU and
     // (re)uploaded to _staticVboId lazily, since GL may not exist yet when the first models bake.
@@ -325,6 +332,84 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         }
     }
 
+    /// <summary>
+    ///     Draws queued instances through the native WebGPU command encoder.
+    ///     The caller has already uploaded per-frame uniforms and bound the pipeline.
+    ///     <paramref name="storageLayout"/> is the bind group layout for the storage buffer
+    ///     (group 1, binding 0) from the entity-instanced pipeline.
+    /// </summary>
+    public unsafe void FlushWebGpu(RenderPassEncoder* pass, WgpuPipeline pipeline,
+        BindGroupLayout* storageLayout)
+    {
+        if (_instanceCount == 0 || _flushing) return;
+
+        _flushing = true;
+        try
+        {
+            FlushBucketsWebGpu(pass, pipeline, storageLayout);
+        }
+        finally
+        {
+            _flushing = false;
+        }
+    }
+
+    private unsafe void FlushBucketsWebGpu(RenderPassEncoder* pass, WgpuPipeline pipeline,
+        BindGroupLayout* storageLayout)
+    {
+        WebGpuDevice device = WebGpuDevice.Current!;
+
+        // One-time upload of static geometry as a shared vertex buffer.
+        EnsureStaticMeshUploaded(device);
+
+        // Pack each bucket's instances contiguously — same logic as the GL path.
+        Span<int> bucketStarts = stackalloc int[_buckets.Count];
+        int cursor = 0;
+        for (int b = 0; b < _buckets.Count; b++)
+        {
+            bucketStarts[b] = cursor;
+            foreach (int instanceIndex in _bucketInstanceIndices[b])
+            {
+                Array.Copy(_instanceData, instanceIndex * FloatsPerInstance,
+                    _flushData, cursor * FloatsPerInstance, FloatsPerInstance);
+                cursor++;
+            }
+        }
+
+        // Upload instance data to the storage buffer.
+        nuint instanceBytes = (nuint)(_instanceCount * FloatsPerInstance * sizeof(float));
+        _storageBuffer ??= new WgpuStorageBuffer(device,
+            (ulong)(MaxInstances * FloatsPerInstance * sizeof(float)), storageLayout);
+        _storageBuffer.Write(new ReadOnlySpan<float>(_flushData, 0, _instanceCount * FloatsPerInstance));
+        _storageBuffer.Bind(pass, 1);
+
+        // Buckets are drawn in submission order — translucent behind body, depth-equal behind
+        // depth matches. Reordering breaks both.
+        for (int b = 0; b < _buckets.Count; b++)
+        {
+            Bucket bucket = _buckets[b];
+            uint instanceCount = (uint)_bucketInstanceIndices[b].Count;
+            _staticMesh!.DrawRange(pass, (uint)bucket.VertexBase, (uint)bucket.VertexCount, instanceCount);
+        }
+
+        ResetBuckets();
+    }
+
+    /// <summary>Uploads the static model geometry to a WgpuMesh once.</summary>
+    private void EnsureStaticMeshUploaded(WebGpuDevice device)
+    {
+        if (_staticMesh is not null) return;
+
+        ReadOnlySpan<EntityInstancedVertex> verts = CollectionsMarshal.AsSpan(_staticVertices);
+        _staticMesh = new WgpuMesh(device,
+            MemoryMarshal.AsBytes(verts),
+            EntityInstancedVertexStride,
+            PrimitiveTopology.TriangleList);
+    }
+
+    /// <summary>Stride of <see cref="EntityInstancedVertex"/> in bytes.</summary>
+    private const uint EntityInstancedVertexStride = 40;
+
     private void FlushBuckets()
     {
         EnsureStaticBufferUploaded();
@@ -429,6 +514,8 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         _gl.DeleteBuffer(_ssboId);
         _gl.DeleteBuffer(_staticVboId);
         _gl.DeleteVertexArray(_vaoId);
+        _staticMesh?.Dispose();
+        _storageBuffer?.Dispose();
         _shader.Dispose();
     }
 }
