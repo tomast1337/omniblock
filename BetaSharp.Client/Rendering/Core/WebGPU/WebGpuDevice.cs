@@ -1,0 +1,310 @@
+using System.Runtime.InteropServices;
+using BetaSharp.Util;
+using Microsoft.Extensions.Logging;
+using Silk.NET.Core.Contexts;
+using Silk.NET.WebGPU;
+
+namespace BetaSharp.Client.Rendering.Core.WebGPU;
+
+/// <summary>
+///     The WebGPU instance, surface, adapter, device and queue, and the surface's configuration.
+/// </summary>
+/// <remarks>
+///     <para>
+///         One of these exists per window and outlives every renderer, because everything a
+///         renderer creates — buffers, textures, pipelines — belongs to the device and dies with
+///         it.
+///     </para>
+///     <para>
+///         Adapter and device requests are asynchronous in the WebGPU API and synchronous in every
+///         native implementation of it: the callback runs before the request call returns. This
+///         waits on that rather than pumping an event loop, which is correct for wgpu-native and
+///         Dawn and would deadlock only in a browser, where nothing here runs.
+///     </para>
+/// </remarks>
+public sealed unsafe class WebGpuDevice : IDisposable
+{
+    private static readonly ILogger s_logger = Log.Instance.For<WebGpuDevice>();
+
+    public Silk.NET.WebGPU.WebGPU Api { get; }
+    public Instance* Instance { get; }
+    public Surface* Surface { get; }
+    public Adapter* Adapter { get; }
+    public Device* Device { get; }
+    public Queue* Queue { get; }
+
+    /// <summary>The format the surface's textures are in, and so the format every pipeline that draws to the screen must target.</summary>
+    public TextureFormat SurfaceFormat { get; }
+
+    public uint Width { get; private set; }
+    public uint Height { get; private set; }
+
+    private readonly PresentMode _presentMode;
+    private readonly CompositeAlphaMode _alphaMode;
+
+    /// <summary>Held so the GC cannot collect the thunk while wgpu still holds the pointer.</summary>
+    private readonly PfnErrorCallback _errorCallback;
+
+    /// <summary>
+    ///     The texture behind the frame currently being drawn, held until it has been presented.
+    /// </summary>
+    /// <remarks>
+    ///     A view does not keep its texture alive at this level, so releasing the surface texture
+    ///     as soon as the view exists leaves the render pass writing to a destroyed resource — a
+    ///     validation error at submit rather than at the release that caused it.
+    /// </remarks>
+    private Texture* _frameTexture;
+
+    private bool _disposed;
+
+    private WebGpuDevice(INativeWindowSource window, uint width, uint height)
+    {
+        Api = Silk.NET.WebGPU.WebGPU.GetApi();
+
+        InstanceDescriptor instanceDescriptor = default;
+        Instance = Api.CreateInstance(in instanceDescriptor);
+        if (Instance is null)
+        {
+            throw new InvalidOperationException("WebGPU instance creation failed.");
+        }
+
+        Surface = WebGPUSurface.CreateWebGPUSurface(window, Api, Instance);
+        if (Surface is null)
+        {
+            throw new InvalidOperationException(
+                "WebGPU surface creation failed. The window must have been created with no client " +
+                "API, and the platform must be one Silk.NET has a surface descriptor for.");
+        }
+
+        Adapter = RequestAdapter();
+        Device = RequestDevice(Adapter);
+        Queue = Api.DeviceGetQueue(Device);
+
+        _errorCallback = new PfnErrorCallback(OnUncapturedError);
+        Api.DeviceSetUncapturedErrorCallback(Device, _errorCallback, null);
+
+        (SurfaceFormat, _presentMode, _alphaMode) = ChooseSurfaceConfiguration();
+
+        s_logger.LogInformation(
+            "WebGPU device ready: surface format {Format}, present mode {PresentMode}.",
+            SurfaceFormat, _presentMode);
+
+        Configure(width, height);
+    }
+
+    public static WebGpuDevice Create(INativeWindowSource window, int width, int height) =>
+        new(window, (uint)Math.Max(1, width), (uint)Math.Max(1, height));
+
+    /// <summary>Points the surface at a new size. Must be called after every resize, or acquiring a texture fails.</summary>
+    public void Configure(uint width, uint height)
+    {
+        Width = Math.Max(1, width);
+        Height = Math.Max(1, height);
+
+        SurfaceConfiguration configuration = new()
+        {
+            Device = Device,
+            Format = SurfaceFormat,
+            Usage = TextureUsage.RenderAttachment,
+            AlphaMode = _alphaMode,
+            Width = Width,
+            Height = Height,
+            PresentMode = _presentMode,
+        };
+
+        Api.SurfaceConfigure(Surface, in configuration);
+    }
+
+    /// <summary>
+    ///     The view this frame draws into, or null when the surface needs reconfiguring first —
+    ///     which happens on a resize the window system saw before we did.
+    /// </summary>
+    /// <remarks>
+    ///     A null return is not an error and the caller should skip the frame; the next one gets a
+    ///     texture. <see cref="Present" /> must not be called for a skipped frame.
+    /// </remarks>
+    public TextureView* AcquireFrame()
+    {
+        ReleaseFrameTexture();
+
+        SurfaceTexture surfaceTexture = default;
+        Api.SurfaceGetCurrentTexture(Surface, ref surfaceTexture);
+
+        switch (surfaceTexture.Status)
+        {
+            case SurfaceGetCurrentTextureStatus.Success:
+                break;
+
+            case SurfaceGetCurrentTextureStatus.Timeout:
+            case SurfaceGetCurrentTextureStatus.Outdated:
+            case SurfaceGetCurrentTextureStatus.Lost:
+                if (surfaceTexture.Texture is not null)
+                {
+                    Api.TextureRelease(surfaceTexture.Texture);
+                }
+
+                Configure(Width, Height);
+                return null;
+
+            default:
+                throw new InvalidOperationException(
+                    $"Acquiring the surface texture failed with {surfaceTexture.Status}.");
+        }
+
+        TextureViewDescriptor viewDescriptor = new()
+        {
+            Format = SurfaceFormat,
+            Dimension = TextureViewDimension.Dimension2D,
+            MipLevelCount = 1,
+            ArrayLayerCount = 1,
+            Aspect = TextureAspect.All,
+        };
+
+        _frameTexture = surfaceTexture.Texture;
+        return Api.TextureCreateView(surfaceTexture.Texture, in viewDescriptor);
+    }
+
+    public void Present()
+    {
+        Api.SurfacePresent(Surface);
+        ReleaseFrameTexture();
+    }
+
+    private void ReleaseFrameTexture()
+    {
+        if (_frameTexture is not null)
+        {
+            Api.TextureRelease(_frameTexture);
+            _frameTexture = null;
+        }
+    }
+
+    private Adapter* RequestAdapter()
+    {
+        Adapter* adapter = null;
+        string? message = null;
+
+        RequestAdapterOptions options = new()
+        {
+            CompatibleSurface = Surface,
+            PowerPreference = PowerPreference.HighPerformance,
+        };
+
+        PfnRequestAdapterCallback callback = new((status, result, error, _) =>
+        {
+            if (status == RequestAdapterStatus.Success)
+            {
+                adapter = result;
+            }
+            else
+            {
+                message = $"{status}: {Marshal.PtrToStringUTF8((nint)error)}";
+            }
+        });
+
+        Api.InstanceRequestAdapter(Instance, in options, callback, null);
+
+        return adapter is null
+            ? throw new InvalidOperationException($"No WebGPU adapter available. {message}")
+            : adapter;
+    }
+
+    private Device* RequestDevice(Adapter* adapter)
+    {
+        Device* device = null;
+        string? message = null;
+
+        DeviceDescriptor descriptor = default;
+
+        PfnRequestDeviceCallback callback = new((status, result, error, _) =>
+        {
+            if (status == RequestDeviceStatus.Success)
+            {
+                device = result;
+            }
+            else
+            {
+                message = $"{status}: {Marshal.PtrToStringUTF8((nint)error)}";
+            }
+        });
+
+        Api.AdapterRequestDevice(adapter, in descriptor, callback, null);
+
+        return device is null
+            ? throw new InvalidOperationException($"WebGPU device creation failed. {message}")
+            : device;
+    }
+
+    /// <summary>
+    ///     Picks a non-sRGB surface format when the surface offers one.
+    /// </summary>
+    /// <remarks>
+    ///     Colours reaching the swap chain are already in the space they should be displayed in —
+    ///     the GL path wrote them to a plain framebuffer and this has to match, or everything is
+    ///     gamma-corrected twice and washes out. Only if no linear format is offered does the sRGB
+    ///     one get taken, and then the difference is visible.
+    /// </remarks>
+    private (TextureFormat Format, PresentMode PresentMode, CompositeAlphaMode AlphaMode) ChooseSurfaceConfiguration()
+    {
+        SurfaceCapabilities capabilities = default;
+        Api.SurfaceGetCapabilities(Surface, Adapter, ref capabilities);
+
+        try
+        {
+            Span<TextureFormat> formats = new(capabilities.Formats, (int)capabilities.FormatCount);
+            Span<PresentMode> presentModes = new(capabilities.PresentModes, (int)capabilities.PresentModeCount);
+            Span<CompositeAlphaMode> alphaModes = new(capabilities.AlphaModes, (int)capabilities.AlphaModeCount);
+
+            TextureFormat format = TextureFormat.Undefined;
+            foreach (TextureFormat candidate in formats)
+            {
+                if (candidate is TextureFormat.Bgra8Unorm or TextureFormat.Rgba8Unorm)
+                {
+                    format = candidate;
+                    break;
+                }
+            }
+
+            if (format == TextureFormat.Undefined)
+            {
+                format = formats.Length > 0
+                    ? formats[0]
+                    : Api.SurfaceGetPreferredFormat(Surface, Adapter);
+            }
+
+            // Fifo is the only mode WebGPU guarantees, and is what a vsynced GL swap did anyway.
+            PresentMode presentMode = presentModes.Contains(PresentMode.Fifo) || presentModes.Length == 0
+                ? PresentMode.Fifo
+                : presentModes[0];
+
+            CompositeAlphaMode alphaMode = alphaModes.Length == 0 ? CompositeAlphaMode.Auto : alphaModes[0];
+
+            return (format, presentMode, alphaMode);
+        }
+        finally
+        {
+            Api.SurfaceCapabilitiesFreeMembers(capabilities);
+        }
+    }
+
+    private static void OnUncapturedError(ErrorType type, byte* message, void* _) =>
+        s_logger.LogError("WebGPU {ErrorType}: {Message}", type, Marshal.PtrToStringUTF8((nint)message));
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        if (Queue is not null) Api.QueueRelease(Queue);
+        if (Device is not null) Api.DeviceRelease(Device);
+        if (Adapter is not null) Api.AdapterRelease(Adapter);
+        if (Surface is not null) Api.SurfaceRelease(Surface);
+        if (Instance is not null) Api.InstanceRelease(Instance);
+
+        Api.Dispose();
+    }
+}
