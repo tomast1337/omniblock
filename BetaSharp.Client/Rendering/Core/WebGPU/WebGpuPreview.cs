@@ -1,35 +1,29 @@
 using System.Numerics;
+using System.Runtime.InteropServices;
 using BetaSharp.Client.Diagnostics;
+using BetaSharp.Client.Rendering.Core;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGui.Backends.GLFW;
+using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
+using WgpuBuffer = Silk.NET.WebGPU.Buffer;
 
 namespace BetaSharp.Client.Rendering.Core.WebGPU;
 
-/// <summary>
-///     The WebGPU backend's own window and loop: a cleared surface with the ImGui overlay drawn
-///     over it, and nothing of the game.
-/// </summary>
-/// <remarks>
-///     <para>
-///         Reached with <c>--webgpu</c>. The game's loop reaches OpenGL through a hundred call
-///         sites that have no WebGPU answer yet, so hosting the new backend inside it would mean
-///         maintaining a client that cannot draw a world for as long as the port takes. This
-///         instead exercises what the backend can already do — device, surface, swap chain, shader
-///         compilation, pipeline creation, buffer and texture upload, scissor, indexed drawing and
-///         present — against a data source that is known-good, and grows to host the real
-///         renderers as they are ported.
-///     </para>
-///     <para>
-///         It shares <see cref="Display" /> with the OpenGL client rather than opening its own
-///         window, so the window, input and fullscreen handling stay in one place and the
-///         difference between the backends stays the one line that asks for no client API.
-///     </para>
-/// </remarks>
 public static unsafe class WebGpuPreview
 {
-    /// <summary>What an empty surface clears to, so "nothing drew" is distinguishable from "nothing ran".</summary>
     private static readonly Silk.NET.WebGPU.Color s_clearColor = new(0.12, 0.14, 0.18, 1.0);
+
+    /// <summary>Matches what <c>gbuffers_basic.wgsl</c> reads at locations 0, 1 and 3.</summary>
+    [StructLayout(LayoutKind.Sequential)]
+    private struct DemoVertex(Vector3 pos, Vector4 color, Vector3 normal)
+    {
+        public Vector3 Position = pos;
+        public Vector4 Color = color;
+        public Vector3 Normal = normal;
+
+        public static readonly uint Stride = (uint)sizeof(DemoVertex);
+    }
 
     public static void Run()
     {
@@ -50,6 +44,10 @@ public static unsafe class WebGpuPreview
         ImGuiImplGLFW.InitForOther((GLFWwindow*)Display.GetWindowHandle(), true);
 
         using ImGuiWgpuBackend backend = new(device);
+        using WgpuPipeline pipeline = CreateDemoPipeline(device);
+        WgpuBuffer* vertexBuffer = CreateDemoVertices(device);
+
+        long startTick = Environment.TickCount64;
 
         try
         {
@@ -57,11 +55,13 @@ public static unsafe class WebGpuPreview
             {
                 Display.processMessages();
                 Resize(device);
-                DrawFrame(device, backend);
+                DrawFrame(device, backend, pipeline, vertexBuffer, startTick);
             }
         }
         finally
         {
+            device.Api.BufferDestroy(vertexBuffer);
+            device.Api.BufferRelease(vertexBuffer);
             ImGuiImplGLFW.Shutdown();
             ImGui.DestroyContext();
             Display.destroy();
@@ -79,7 +79,128 @@ public static unsafe class WebGpuPreview
         }
     }
 
-    private static void DrawFrame(WebGpuDevice device, ImGuiWgpuBackend backend)
+    private static WgpuPipeline CreateDemoPipeline(WebGpuDevice device)
+    {
+        string source = AssetManager.Instance.getAsset("shaders/gbuffers_basic.wgsl").GetTextContent();
+
+        Silk.NET.WebGPU.WebGPU api = device.Api;
+
+        // Shader module.
+        byte* code = (byte*)SilkMarshal.StringToPtr(source);
+        ShaderModule* module;
+        try
+        {
+            ShaderModuleWGSLDescriptor wgslDesc = new()
+            {
+                Chain = new ChainedStruct { SType = SType.ShaderModuleWgslDescriptor },
+                Code = code,
+            };
+            ShaderModuleDescriptor shaderDesc = default;
+            shaderDesc.NextInChain = (ChainedStruct*)&wgslDesc;
+            module = api.DeviceCreateShaderModule(device.Device, in shaderDesc);
+        }
+        finally { SilkMarshal.Free((nint)code); }
+
+        // Bind group layout — one uniform buffer at binding 0.
+        BindGroupLayoutEntry uniformEntry = new()
+        {
+            Binding = 0,
+            Visibility = ShaderStage.Vertex,
+            Buffer = new BufferBindingLayout { Type = BufferBindingType.Uniform, MinBindingSize = 128 }, // Two mat4x4s.
+        };
+        BindGroupLayoutDescriptor bglDesc = new() { EntryCount = 1, Entries = &uniformEntry };
+        BindGroupLayout* bindGroupLayout = api.DeviceCreateBindGroupLayout(device.Device, in bglDesc);
+
+        // Pipeline layout.
+        BindGroupLayout** ppLayout = &bindGroupLayout;
+        PipelineLayoutDescriptor plDesc = new() { BindGroupLayoutCount = 1, BindGroupLayouts = ppLayout };
+        PipelineLayout* pipelineLayout = api.DeviceCreatePipelineLayout(device.Device, in plDesc);
+
+        // Vertex layout.
+        VertexAttribute* attrs = stackalloc VertexAttribute[2];
+        attrs[0] = new VertexAttribute { Format = VertexFormat.Float32x3, Offset = 0, ShaderLocation = 0 };
+        attrs[1] = new VertexAttribute { Format = VertexFormat.Float32x4, Offset = 12, ShaderLocation = 1 };
+        VertexBufferLayout vbLayout = new()
+        {
+            ArrayStride = DemoVertex.Stride,
+            StepMode = VertexStepMode.Vertex,
+            AttributeCount = 2,
+            Attributes = attrs,
+        };
+
+        // Blend — identity (no blending), same as ImGui but with One/Zero.
+        BlendComponent idBlend = new() { Operation = BlendOperation.Add, SrcFactor = BlendFactor.One, DstFactor = BlendFactor.Zero };
+        BlendState blend = new() { Color = idBlend, Alpha = idBlend };
+        ColorTargetState colorTarget = new()
+        {
+            Format = device.SurfaceFormat,
+            Blend = &blend,
+            WriteMask = ColorWriteMask.All,
+        };
+
+        byte* vsEntry = (byte*)SilkMarshal.StringToPtr("vs_main");
+        byte* fsEntry = (byte*)SilkMarshal.StringToPtr("fs_main");
+        RenderPipeline* pipeline;
+        try
+        {
+            FragmentState fragment = new() { Module = module, EntryPoint = fsEntry, TargetCount = 1, Targets = &colorTarget };
+            RenderPipelineDescriptor rpDesc = new()
+            {
+                Layout = pipelineLayout,
+                Vertex = new VertexState { Module = module, EntryPoint = vsEntry, BufferCount = 1, Buffers = &vbLayout },
+                Primitive = new PrimitiveState { Topology = PrimitiveTopology.TriangleList, FrontFace = FrontFace.Ccw, CullMode = Silk.NET.WebGPU.CullMode.None },
+                Multisample = new MultisampleState { Count = 1, Mask = uint.MaxValue },
+                Fragment = &fragment,
+            };
+            pipeline = api.DeviceCreateRenderPipeline(device.Device, in rpDesc);
+        }
+        finally { SilkMarshal.Free((nint)vsEntry); SilkMarshal.Free((nint)fsEntry); }
+
+        // Uniform buffer + bind group.
+        nuint uniformSize = 128; // Two mat4x4s.
+        BufferDescriptor bufDesc = new() { Usage = BufferUsage.Uniform | BufferUsage.CopyDst, Size = (ulong)uniformSize };
+        WgpuBuffer* uniformBuffer = api.DeviceCreateBuffer(device.Device, in bufDesc);
+
+        BindGroupEntry bgEntry = new() { Binding = 0, Buffer = uniformBuffer, Offset = 0, Size = (ulong)uniformSize };
+        BindGroupDescriptor bgDesc = new() { Layout = bindGroupLayout, EntryCount = 1, Entries = &bgEntry };
+        BindGroup* uniformBindGroup = api.DeviceCreateBindGroup(device.Device, in bgDesc);
+
+        return new WgpuPipeline(module, bindGroupLayout, pipelineLayout, pipeline, uniformBuffer, uniformBindGroup, device);
+    }
+
+    private static WgpuBuffer* CreateDemoVertices(WebGpuDevice device)
+    {
+        DemoVertex[] vertices =
+        [
+            new(new Vector3(0.0f, -0.5f, 0.0f), new Vector4(1, 0, 0, 1), Vector3.UnitZ),
+            new(new Vector3(0.5f, 0.5f, 0.0f), new Vector4(0, 1, 0, 1), Vector3.UnitZ),
+            new(new Vector3(-0.5f, 0.5f, 0.0f), new Vector4(0, 0, 1, 1), Vector3.UnitZ),
+        ];
+
+        ulong size = (ulong)(vertices.Length * DemoVertex.Stride);
+
+        BufferDescriptor descriptor = new()
+        {
+            Usage = BufferUsage.Vertex | BufferUsage.CopyDst,
+            Size = size,
+        };
+
+        WgpuBuffer* buffer = device.Api.DeviceCreateBuffer(device.Device, in descriptor);
+
+        fixed (DemoVertex* data = vertices)
+        {
+            device.Api.QueueWriteBuffer(device.Queue, buffer, 0, data, (nuint)size);
+        }
+
+        return buffer;
+    }
+
+    private static void DrawFrame(
+        WebGpuDevice device,
+        ImGuiWgpuBackend backend,
+        WgpuPipeline pipeline,
+        WgpuBuffer* vertexBuffer,
+        long startTick)
     {
         ImGuiImplGLFW.NewFrame();
 
@@ -98,7 +219,6 @@ public static unsafe class WebGpuPreview
         TextureView* target = device.AcquireFrame();
         if (target is null)
         {
-            // The surface was reconfigured; ImGui's draw data is dropped with the frame.
             return;
         }
 
@@ -113,8 +233,6 @@ public static unsafe class WebGpuPreview
             LoadOp = LoadOp.Clear,
             StoreOp = StoreOp.Store,
             ClearValue = s_clearColor,
-
-            // Not an array-layer view, but wgpu still validates the field and rejects zero.
             DepthSlice = unchecked((uint)-1),
         };
 
@@ -125,6 +243,15 @@ public static unsafe class WebGpuPreview
         };
 
         RenderPassEncoder* pass = api.CommandEncoderBeginRenderPass(encoder, in passDescriptor);
+
+        // --- triangle -------------------------------------------------------
+        UploadDemoUniforms(pipeline, startTick, device.Width, device.Height);
+        api.RenderPassEncoderSetPipeline(pass, pipeline.Pipeline);
+        api.RenderPassEncoderSetBindGroup(pass, 0, pipeline.UniformBindGroup, 0, null);
+        api.RenderPassEncoderSetVertexBuffer(pass, 0, vertexBuffer, 0, (ulong)(3 * DemoVertex.Stride));
+        api.RenderPassEncoderDraw(pass, 3, 1, 0, 0);
+        // -------------------------------------------------------------------
+
         backend.RenderDrawData(ImGui.GetDrawData(), pass);
         api.RenderPassEncoderEnd(pass);
         api.RenderPassEncoderRelease(pass);
@@ -140,6 +267,41 @@ public static unsafe class WebGpuPreview
         device.Present();
     }
 
+    private static void UploadDemoUniforms(WgpuPipeline pipeline, long startTick, uint width, uint height)
+    {
+        float elapsed = (Environment.TickCount64 - startTick) / 1000.0f;
+        float aspect = (float)width / Math.Max(1u, height);
+
+        float angle = elapsed * 1.2f;
+        Matrix4x4 modelView = Matrix4x4.CreateRotationZ(angle)
+                            * Matrix4x4.CreateTranslation(0.0f, 0.0f, -1.0f);
+
+        Matrix4x4 projection = Matrix4x4.CreatePerspectiveFieldOfView(
+            MathF.PI / 4.0f, aspect, 0.1f, 100.0f);
+
+        // Convert GL-style [-1,1] Z to WebGPU [0,1].
+        projection.M33 = projection.M33 * 0.5f + 0.5f * projection.M43;
+        projection.M34 = projection.M34 * 0.5f;
+
+        // Two mat4x4s, 128 bytes: modelView then projection, matching Uniforms layout.
+        Span<float> data =
+        [
+            modelView.M11, modelView.M12, modelView.M13, modelView.M14,
+            modelView.M21, modelView.M22, modelView.M23, modelView.M24,
+            modelView.M31, modelView.M32, modelView.M33, modelView.M34,
+            modelView.M41, modelView.M42, modelView.M43, modelView.M44,
+            projection.M11, projection.M12, projection.M13, projection.M14,
+            projection.M21, projection.M22, projection.M23, projection.M24,
+            projection.M31, projection.M32, projection.M33, projection.M34,
+            projection.M41, projection.M42, projection.M43, projection.M44,
+        ];
+
+        fixed (float* p = data)
+        {
+            pipeline.UploadUniforms(p, 128);
+        }
+    }
+
     private static void DrawStatusWindow(WebGpuDevice device)
     {
         ImGui.SetNextWindowSize(new Vector2(420, 0), ImGuiCond.FirstUseEver);
@@ -151,10 +313,9 @@ public static unsafe class WebGpuPreview
 
             ImGui.Separator();
             ImGuiTextSafe.TextWrapped(
-                "Everything above this window is a cleared surface. If this text is legible, is "
-                + "clipped to the window, and the window drags and resizes, then the device, swap "
-                + "chain, shader, pipeline, buffer and texture uploads, scissor and indexed draw "
-                + "all work.");
+                "Phase 2: a spinning triangle from gbuffers_basic.wgsl. If it spins below the "
+                + "ImGui layer, then shader compilation, pipeline creation, uniform upload, "
+                + "vertex buffer upload and draw all work.");
         }
 
         ImGui.End();
