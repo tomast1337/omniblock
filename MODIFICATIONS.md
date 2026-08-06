@@ -164,3 +164,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-05 — fix(rendering): resolve a slot's program for the vertex format the draw is in (Nicolas Vyčas Nery; `d01bd3c949587128286c76554543d89c981484cd`)
 - 2026-08-05 — fix(rendering): give a Tessellator vertex the world light it was already being told (Nicolas Vyčas Nery; `998cafa61ae003fcd626bb827fa4b606500d37d4`)
 - 2026-08-05 — feat(rendering): stand up a WebGPU device, surface and ImGui backend (Nicolas Vyčas Nery; `3e28823d6c2fb7f4c3ae9a6cb969d24a91f50020`)
+- 2026-08-05 — feat(rendering): compile WGSL shaders and build render pipelines from them (Nicolas Vyčas Nery; `b311a28207f942824566b8a149849db4c8c93706`)
