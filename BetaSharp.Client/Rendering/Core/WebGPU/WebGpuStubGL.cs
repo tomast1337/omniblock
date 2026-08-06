@@ -13,6 +13,13 @@ namespace BetaSharp.Client.Rendering.Core.WebGPU;
 /// </remarks>
 internal sealed unsafe class WebGpuStubGL : IGL
 {
+    private static uint s_nextBuffer;
+    private static uint s_nextTexture;
+    private static uint s_nextVertexArray;
+    private static uint s_nextFramebuffer;
+    private static uint s_nextProgram;
+    private static uint s_nextShader;
+
     public void AttachShader(uint program, uint shader) { }
     public void BindBuffer(GLEnum target, uint buffer) { }
     public void BindTexture(GLEnum target, uint texture) { }
@@ -27,8 +34,8 @@ internal sealed unsafe class WebGpuStubGL : IGL
     public void ClearDepth(double depth) { }
     public void ColorMask(bool red, bool green, bool blue, bool alpha) { }
     public void CompileShader(uint shader) { }
-    public uint CreateProgram() => 0;
-    public uint CreateShader(ShaderType type) => 0;
+    public uint CreateProgram() => ++s_nextProgram;
+    public uint CreateShader(ShaderType type) => ++s_nextShader;
     public void CullFace(GLEnum mode) { }
     public void DeleteBuffer(uint buffer) { }
     public void DeleteProgram(uint program) { }
@@ -46,21 +53,22 @@ internal sealed unsafe class WebGpuStubGL : IGL
     public void DrawArraysInstanced(GLEnum mode, int first, uint count, uint instanceCount) { }
     public void EnableVertexAttribArray(uint index) { }
     public void DisableVertexAttribArray(uint index) { }
-    public uint GenBuffer() => 1;
+    public uint GenBuffer() => ++s_nextBuffer;
     public void GenBuffers(uint n, Span<uint> buffers)
     {
-        for (int i = 0; i < n; i++) buffers[i] = (uint)(i + 1);
+        for (int i = 0; i < n; i++) buffers[i] = ++s_nextBuffer;
     }
     public void GenBuffers(Span<uint> buffers)
     {
-        for (int i = 0; i < buffers.Length; i++) buffers[i] = (uint)(i + 1);
+        for (int i = 0; i < buffers.Length; i++) buffers[i] = ++s_nextBuffer;
     }
-    public uint GenTexture() => 1;
+    public uint GenTexture() => ++s_nextTexture;
     public void GenTextures(Span<uint> textures)
     {
-        for (int i = 0; i < textures.Length; i++) textures[i] = (uint)(i + 1);
+        for (int i = 0; i < textures.Length; i++) textures[i] = ++s_nextTexture;
     }
-    public uint GenVertexArray() => 1;
+    public uint GenVertexArray() => ++s_nextVertexArray;
+    public uint GenFramebuffer() => ++s_nextFramebuffer;
     public GLEnum GetError() => 0;
     public void GetFloat(GLEnum pname, Span<float> data) { }
     public void GetFloat(GLEnum pname, out float data) { data = 0; }
@@ -97,7 +105,6 @@ internal sealed unsafe class WebGpuStubGL : IGL
     public void VertexAttribPointer(uint index, int size, GLEnum type, bool normalized, uint stride, void* pointer) { }
     public void Viewport(int x, int y, uint width, uint height) { }
     public void Scissor(int x, int y, uint width, uint height) { }
-    public uint GenFramebuffer() => 1;
     public void BindFramebuffer(FramebufferTarget target, uint framebuffer) { }
     public void FramebufferTexture2D(FramebufferTarget target, FramebufferAttachment attachment, TextureTarget textarget, uint texture, int level) { }
     public void GenRenderbuffers(Span<uint> renderbuffers) { }
