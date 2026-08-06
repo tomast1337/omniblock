@@ -16,24 +16,7 @@ public static unsafe class WebGpuPreview
 
     // ---------- Chunk (terrain) demo ------------------------------------------------
 
-    /// <summary>Padded ChunkVertex (20 bytes). The real ChunkVertex is 18 bytes with 3×short
-    /// position; WGSL has no Sint16x3, so 2 bytes of padding widen it to Sint16x4.</summary>
-    [StructLayout(LayoutKind.Sequential, Pack = 2, Size = 22)]
-    private struct ChunkDemoVertex(
-        short x, short y, short z, ushort u, ushort v,
-        uint color, byte skyLight, byte blockLight, ushort arrayLayer)
-    {
-        public int Color = (int)color;  // offset 0, Unorm8x4
-        public short X = x, Y = y, Z = z; // offset 4
-        public short Pad;                 // offset 10, unused
-        public ushort U = u, V = v;       // offset 12, Uint16x2
-        public byte SkyLight = skyLight;   // offset 16
-        public byte BlockLight = blockLight; // offset 17
-        public ushort ArrayLayer = arrayLayer; // offset 18
-        public ushort Pad2;               // offset 20, Uint16x2 needs 4 bytes
-
-        public static readonly uint Stride = 22;
-    }
+    // Uses the real ChunkVertex from Tessellator.cs (20 bytes, FieldOffset-annotated).
 
     public static void Run()
     {
@@ -143,6 +126,26 @@ public static unsafe class WebGpuPreview
         }
     }
 
+    /// <summary>Writes a scrolling stripe into layer 0 each frame, proving
+    /// <c>QueueWriteTexture</c> sub-region upload — the same mechanism
+    /// <c>DynamicTexture</c> uses for fire, water, lava and portals.</summary>
+    private static void AnimateLayer(WgpuTextureArray array, long startTick)
+    {
+        float t = (Environment.TickCount64 - startTick) / 1000.0f;
+        int stripe = ((int)(t * 4.0f)) % 16;
+        byte[] row = new byte[16 * 4];
+        for (int x = 0; x < 16; x++)
+        {
+            row[x * 4 + 0] = (byte)(x == stripe ? 255 : 0);
+            row[x * 4 + 1] = 0;
+            row[x * 4 + 2] = (byte)(x == stripe ? 255 : 0);
+            row[x * 4 + 3] = 255;
+        }
+
+        // Write just one row of one layer — a sub-region upload.
+        array.UploadRegion(0, 0, (uint)stripe, 16, 1, row);
+    }
+
     // ---------- Chunk pipeline ------------------------------------------------------
 
     private static WgpuPipeline CreateChunkPipeline(WebGpuDevice device, WgpuTextureArray terrainArray)
@@ -195,16 +198,16 @@ public static unsafe class WebGpuPreview
         PipelineLayoutDescriptor pl = new() { BindGroupLayoutCount = 2, BindGroupLayouts = pp };
         PipelineLayout* layout = api.DeviceCreatePipelineLayout(device.Device, in pl);
 
-        // 5 vertex attributes matching ChunkDemoVertex.
+        // 5 vertex attributes matching the real ChunkVertex (20 bytes).
         VertexAttribute* attrs = stackalloc VertexAttribute[5];
-        attrs[0] = new VertexAttribute { Format = VertexFormat.Sint16x4, Offset = 4, ShaderLocation = 0 };   // X,Y,Z,pad
+        attrs[0] = new VertexAttribute { Format = VertexFormat.Sint16x4, Offset = 0, ShaderLocation = 0 };   // X,Y,Z,pad
         attrs[1] = new VertexAttribute { Format = VertexFormat.Uint16x2, Offset = 12, ShaderLocation = 1 };  // U,V
-        attrs[2] = new VertexAttribute { Format = VertexFormat.Unorm8x4, Offset = 0, ShaderLocation = 2 };   // Color
+        attrs[2] = new VertexAttribute { Format = VertexFormat.Unorm8x4, Offset = 8, ShaderLocation = 2 };   // Color
         attrs[3] = new VertexAttribute { Format = VertexFormat.Uint8x2, Offset = 16, ShaderLocation = 3 };   // light
-        attrs[4] = new VertexAttribute { Format = VertexFormat.Uint16x2, Offset = 18, ShaderLocation = 4 };     // arrayLayer (vec2<u32>, .x read)
+        attrs[4] = new VertexAttribute { Format = VertexFormat.Uint8x2, Offset = 18, ShaderLocation = 4 };   // arrayLayer (vec2<u32>, .x read)
         VertexBufferLayout vb = new()
         {
-            ArrayStride = ChunkDemoVertex.Stride,
+            ArrayStride = 20,
             StepMode = VertexStepMode.Vertex,
             AttributeCount = 5,
             Attributes = attrs,
@@ -256,33 +259,36 @@ public static unsafe class WebGpuPreview
     private static WgpuMesh CreateTerrainMesh(WebGpuDevice device)
     {
         // A flat 2×2 plane of tiles at y=0, each with a different array layer.
-        ChunkDemoVertex[] v = new ChunkDemoVertex[24]; // 4 tiles × 6 verts
-        sbyte[] layerForTile = [0, 1, 2, 3];
+        ChunkVertex[] v = new ChunkVertex[24]; // 4 tiles × 6 verts
+        byte[] layerForTile = [0, 1, 2, 3];
         const ushort uvFull = 32767;
         const byte fullLight = 60;
+        const int white = unchecked((int)0xFFFFFFFF);
 
         int vi = 0;
         for (int tileZ = 0; tileZ < 2; tileZ++)
             for (int tileX = 0; tileX < 2; tileX++)
             {
-                ushort layer = (ushort)layerForTile[tileZ * 2 + tileX];
-                float bx = tileX * 2.0f - 2.0f; // center the 2×2 at origin
+                byte layer = layerForTile[tileZ * 2 + tileX];
+                float bx = tileX * 2.0f - 2.0f;
                 float bz = tileZ * 2.0f - 2.0f;
 
-                // Position packed as short * 32767/64.
                 short S(float f) => (short)(f * 32767.0f / 64.0f);
 
-                v[vi + 0] = new(S(bx), S(0), S(bz), 0, 0, 0xFFFFFFFF, fullLight, fullLight, layer);
-                v[vi + 1] = new(S(bx + 2), S(0), S(bz), uvFull, 0, 0xFFFFFFFF, fullLight, fullLight, layer);
-                v[vi + 2] = new(S(bx + 2), S(0), S(bz + 2), uvFull, uvFull, 0xFFFFFFFF, fullLight, fullLight, layer);
-                v[vi + 3] = new(S(bx + 2), S(0), S(bz + 2), uvFull, uvFull, 0xFFFFFFFF, fullLight, fullLight, layer);
-                v[vi + 4] = new(S(bx), S(0), S(bz + 2), 0, uvFull, 0xFFFFFFFF, fullLight, fullLight, layer);
-                v[vi + 5] = new(S(bx), S(0), S(bz), 0, 0, 0xFFFFFFFF, fullLight, fullLight, layer);
+                v[vi + 0] = V(S(bx), S(0), S(bz), 0, 0, white, fullLight, layer);
+                v[vi + 1] = V(S(bx + 2), S(0), S(bz), uvFull, 0, white, fullLight, layer);
+                v[vi + 2] = V(S(bx + 2), S(0), S(bz + 2), uvFull, uvFull, white, fullLight, layer);
+                v[vi + 3] = V(S(bx + 2), S(0), S(bz + 2), uvFull, uvFull, white, fullLight, layer);
+                v[vi + 4] = V(S(bx), S(0), S(bz + 2), 0, uvFull, white, fullLight, layer);
+                v[vi + 5] = V(S(bx), S(0), S(bz), 0, 0, white, fullLight, layer);
                 vi += 6;
             }
 
-        return new WgpuMesh(device, MemoryMarshal.AsBytes(v.AsSpan()), ChunkDemoVertex.Stride);
+        return new WgpuMesh(device, MemoryMarshal.AsBytes(v.AsSpan()), 20);
     }
+
+    private static ChunkVertex V(short x, short y, short z, ushort u, ushort v, int color, byte light, byte layer) =>
+        new() { X = x, Y = y, Z = z, PadPosition = 0, Color = color, U = u, V = v, BlockLight = light, SkyLight = light, ArrayLayer = layer, PadTail = 0 };
 
     // ---------- Blit ------------------------------------------------------------------
 
@@ -427,6 +433,9 @@ public static unsafe class WebGpuPreview
         Silk.NET.WebGPU.WebGPU api = device.Api;
         CommandEncoder* enc = api.DeviceCreateCommandEncoder(device.Device, default(CommandEncoderDescriptor));
 
+        // Animate one texture array layer — proves QueueWriteTexture sub-region update.
+        AnimateLayer(terrainArray, startTick);
+
         // Pass 1: terrain into the framebuffer with depth.
         RenderPassEncoder* offPass = fb.BeginPass(enc, s_clearColor);
         UploadChunkUniforms(chunkPipeline, startTick, device.Width, device.Height);
@@ -519,9 +528,13 @@ public static unsafe class WebGpuPreview
             ImGuiTextSafe.Text($"Frame time: {1000.0f / ImGui.GetIO().Framerate:F2} ms");
             ImGui.Separator();
             ImGuiTextSafe.TextWrapped(
-                "Phase 6: a 2×2 patch of terrain tiles drawn through chunk.wgsl with a "
-                + "texture array (4 layers, 16×16 each). All 5 ChunkVertex attributes, the "
-                + "brightness ramp, packed short positions, and array-layer sampling work.");
+                "Phase 6+7: 2×2 terrain patch through chunk.wgsl with a 4-layer texture "
+                + "array. A scrolling stripe on layer 0 proves QueueWriteTexture sub-region "
+                + "upload — the same mechanism DynamicTexture uses for fire, water and lava.");
+            ImGui.Separator();
+            ImGuiTextSafe.TextWrapped(
+                "ChunkVertex is the real 20-byte struct with Sint16x4 position (2 bytes "
+                + "padding after Z) and 4-byte-aligned stride, valid under wgpu-native.");
         }
         ImGui.End();
     }

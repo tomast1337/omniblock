@@ -105,11 +105,11 @@ fn isPlant(layer: u32) -> bool {
 }
 
 struct VertexInput {
-    @location(0) position: vec4<i32>,       // Sint16x4, w padded
-    @location(1) uv: vec2<u32>,             // Uint16x2, /32767 to float
-    @location(2) color: vec4<f32>,          // Unorm8x4
-    @location(3) light: vec2<u32>,          // Uint8x2
-    @location(4) @interpolate(flat) arrayLayer: vec2<u32>, // Uint16x2, .x is the layer
+    @location(0) position: vec4<i32>,       // Sint16x4 at offset 0, w is padding
+    @location(1) uv: vec2<u32>,             // Uint16x2 at offset 12
+    @location(2) color: vec4<f32>,          // Unorm8x4 at offset 8
+    @location(3) light: vec2<u32>,          // Uint8x2 at offset 16
+    @location(4) @interpolate(flat) arrayLayer: vec2<u32>, // Uint8x2 at offset 18, .x is the layer
 }
 
 struct VertexOutput {

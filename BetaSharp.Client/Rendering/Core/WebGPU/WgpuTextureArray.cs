@@ -86,7 +86,12 @@ public sealed unsafe class WgpuTextureArray : IDisposable
     }
 
     /// <summary>Uploads one layer's RGBA8 pixels.</summary>
-    public void UploadLayer(uint layerIndex, ReadOnlySpan<byte> rgba)
+    public void UploadLayer(uint layerIndex, ReadOnlySpan<byte> rgba) =>
+        UploadRegion(0, 0, layerIndex, LayerSize, LayerSize, rgba);
+
+    /// <summary>Uploads a sub-rectangle of one layer. Proves the same path
+    /// <c>DynamicTexture</c> uses for animated tiles.</summary>
+    public void UploadRegion(uint x, uint y, uint layerIndex, uint width, uint height, ReadOnlySpan<byte> rgba)
     {
         Silk.NET.WebGPU.WebGPU api = _device.Api;
 
@@ -94,18 +99,18 @@ public sealed unsafe class WgpuTextureArray : IDisposable
         {
             Texture = Texture,
             MipLevel = 0,
-            Origin = new Origin3D(0, 0, layerIndex),
+            Origin = new Origin3D(x, y, layerIndex),
             Aspect = TextureAspect.All,
         };
 
         TextureDataLayout layout = new()
         {
             Offset = 0,
-            BytesPerRow = LayerSize * 4,
-            RowsPerImage = LayerSize,
+            BytesPerRow = width * 4,
+            RowsPerImage = height,
         };
 
-        Extent3D extent = new(LayerSize, LayerSize, 1);
+        Extent3D extent = new(width, height, 1);
 
         fixed (byte* p = rgba)
         {

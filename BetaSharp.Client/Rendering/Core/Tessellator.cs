@@ -38,28 +38,38 @@ public struct Vertex(float x, float y, float z, float u, float v, int color, int
     public int Light = Tessellator.FullBrightLight; // 36 bytes total
 }
 
-[StructLayout(LayoutKind.Sequential, Size = 18)]
+[StructLayout(LayoutKind.Explicit, Size = 20)]
 public struct ChunkVertex
 {
-    public int Color; // 4 bytes
-    public short X; // 2 bytes + 4 bytes = 6 bytes
-    public short Y; // 2 bytes + 6 bytes = 8 bytes
-    public short Z; // 2 bytes + 8 bytes = 10 bytes
+    // Position: 4×short, the 4th is padding. WebGPU requires Sint16x4 at this location because
+    // no Sint16x3 vertex format exists, and wgpu-native requires ArrayStride to be a multiple of
+    // 4 bytes — 18 would be rejected at pipeline creation.
+    [FieldOffset(0)] public short X;
+    [FieldOffset(2)] public short Y;
+    [FieldOffset(4)] public short Z;
+    [FieldOffset(6)] public short PadPosition;
+
+    // Colour: RGBA as 4 unsigned bytes, sent normalized.
+    [FieldOffset(8)] public int Color;
 
     // Within the vertex's own array layer, 1.0 stored as 32767. Unsigned rather than signed so the
     // spare top half reaches 2.0: flowing water turns its quad about the tile's corner and needs to
     // run past the edge, which the layer's wrap folds back onto itself.
-    public ushort U; // 2 bytes + 10 bytes = 12 bytes
-    public ushort V; // 2 bytes + 12 bytes = 14 bytes
+    [FieldOffset(12)] public ushort U;
+    [FieldOffset(14)] public ushort V;
 
     // The two light channels, in quarter levels: a smooth-lit corner is the mean of four cells each
-    // 0-15, so the value is a multiple of 0.25 and 0..60 holds it exactly. This is where the spare
-    // padding byte went; a vertex attribute for mc_Entity needs the struct to grow.
-    public byte SkyLight; // 1 byte + 14 bytes = 15 bytes
-    public byte BlockLight; // 1 byte + 15 bytes = 16 bytes
+    // 0-15, so the value is a multiple of 0.25 and 0..60 holds it exactly.
+    [FieldOffset(16)] public byte BlockLight;
+    [FieldOffset(17)] public byte SkyLight;
 
     /// <summary>Which layer of the terrain array this vertex samples.</summary>
-    public ushort ArrayLayer; // 18 bytes total
+    /// <remarks>
+    ///     Was a ushort at offset 16 in the 18-byte layout; now a byte at offset 18, which is
+    ///     read as the first component of a Uint8x2 attribute (the pad supplies the second).
+    /// </remarks>
+    [FieldOffset(18)] public byte ArrayLayer;
+    [FieldOffset(19)] public byte PadTail; // 4-byte-stride alignment
 }
 
 public static class ChunkVertexHelper
@@ -87,9 +97,11 @@ public static class ChunkVertexHelper
             Z = FloatToShortPosition(z),
             U = FloatToShortUV(u),
             V = FloatToShortUV(v),
-            ArrayLayer = (ushort)arrayLayer,
+            ArrayLayer = (byte)arrayLayer,
             SkyLight = skyLight,
-            BlockLight = blockLight
+            BlockLight = blockLight,
+            PadPosition = 0,
+            PadTail = 0
         };
     }
 

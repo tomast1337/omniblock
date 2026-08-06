@@ -170,3 +170,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-05 — feat(rendering): upload textures to the GPU and sample them in shaders (Nicolas Vyčas Nery; `ab748be803d5ce5fcdf465eb27dc72a707e3fb3f`)
 - 2026-08-06 — feat(rendering): create offscreen framebuffers with depth and blit between passes (Nicolas Vyčas Nery; `a213aa2c245b9a037dcf6dd5cf3cd11daafaec25`)
 - 2026-08-06 — feat(rendering): port the chunk shader to WGSL and sample a texture array (Nicolas Vyčas Nery; `da3025ad451cdc1dcea5be4d770db7ee0d0793a9`)
+- 2026-08-06 — feat(rendering): fix ChunkVertex to 20 bytes and animate texture layers (Nicolas Vyčas Nery; `fe615ea94840953de476066452f0dbda2c331f73`)
