@@ -47,6 +47,14 @@ public sealed unsafe class WgpuPipeline : IDisposable
     public BindGroup* UniformBindGroup { get; }
 
     private readonly WebGpuDevice _device;
+
+    /// <summary>
+    ///     Spare uniform buffers and their bind groups, handed out one per draw by
+    ///     <see cref="BindNextUniforms{T}" /> and reused from the top of the next frame.
+    /// </summary>
+    private readonly List<(nint Buffer, nint Group)> _uniformPool = [];
+    private int _uniformPoolNext;
+    private readonly uint _uniformSize;
     private bool _disposed;
 
     /// <summary>
@@ -63,6 +71,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
         WebGpuDevice device)
     {
         _device = device;
+        _uniformSize = 0;
         Module = module;
         BindGroupLayout = bindGroupLayout;
         TextureBindGroupLayout = textureBindGroupLayout;
@@ -99,6 +108,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
         ReadOnlySpan<BindGroupLayoutEntry> textureArrayEntries = default)
     {
         _device = device;
+        _uniformSize = Math.Max(uniformSize, 64u);
         Silk.NET.WebGPU.WebGPU api = device.Api;
 
         Module = CreateShaderModule(api, device.Device, wgslSource);
@@ -327,8 +337,50 @@ public sealed unsafe class WgpuPipeline : IDisposable
         _device.Api.RenderPassEncoderSetPipeline(pass, Pipeline);
 
     /// <summary>Binds the uniform bind group at group 0.</summary>
+    /// <remarks>
+    ///     Only safe for a draw that is the pass's only one, or whose uniforms every other draw in
+    ///     the pass shares. Anything varying per draw has to go through
+    ///     <see cref="BindNextUniforms{T}" />.
+    /// </remarks>
     public void BindUniformGroup(RenderPassEncoder* pass) =>
         _device.Api.RenderPassEncoderSetBindGroup(pass, 0, UniformBindGroup, 0, null);
+
+    /// <summary>
+    ///     Writes <paramref name="data" /> to a uniform buffer no draw already recorded is reading
+    ///     from, and binds it at group 0.
+    /// </summary>
+    /// <remarks>
+    ///     A buffer per draw rather than one rewritten between them: queue writes all run before
+    ///     the submitted pass does, so draws sharing a buffer would every one of them read whatever
+    ///     was written last — which looks like every chunk landing on top of the final one.
+    /// </remarks>
+    public void BindNextUniforms<T>(RenderPassEncoder* pass, T data) where T : unmanaged
+    {
+        if (_uniformPoolNext == _uniformPool.Count)
+        {
+            _uniformPool.Add(AllocateUniforms());
+        }
+
+        (nint bufferHandle, nint groupHandle) = _uniformPool[_uniformPoolNext++];
+
+        _device.Api.QueueWriteBuffer(
+            _device.Queue, (WgpuBuffer*)bufferHandle, 0, in data, (nuint)sizeof(T));
+        _device.Api.RenderPassEncoderSetBindGroup(pass, 0, (BindGroup*)groupHandle, 0, null);
+    }
+
+    /// <summary>
+    ///     Hands the pool back for reuse. The caller must have submitted everything that read from
+    ///     it — a buffer handed out again before then would be rewritten under a recorded draw.
+    /// </summary>
+    public void ResetUniformPool() => _uniformPoolNext = 0;
+
+    private (nint Buffer, nint Group) AllocateUniforms()
+    {
+        CreateUniforms(_device.Api, _device.Device, BindGroupLayout, _uniformSize,
+            out WgpuBuffer* buffer, out BindGroup* group);
+
+        return ((nint)buffer, (nint)group);
+    }
 
     /// <summary>Binds an external bind group (textures, etc.) at <paramref name="groupIndex"/>.</summary>
     public static void BindGroup(RenderPassEncoder* pass, uint groupIndex, BindGroup* group, Silk.NET.WebGPU.WebGPU api) =>
@@ -417,6 +469,16 @@ public sealed unsafe class WgpuPipeline : IDisposable
         _disposed = true;
 
         Silk.NET.WebGPU.WebGPU api = _device.Api;
+
+        foreach ((nint buffer, nint group) in _uniformPool)
+        {
+            api.BindGroupRelease((BindGroup*)group);
+            api.BufferDestroy((WgpuBuffer*)buffer);
+            api.BufferRelease((WgpuBuffer*)buffer);
+        }
+
+        _uniformPool.Clear();
+
         if (UniformBindGroup is not null) api.BindGroupRelease(UniformBindGroup);
         if (UniformBuffer is not null) api.BufferDestroy(UniformBuffer);
         if (UniformBuffer is not null) api.BufferRelease(UniformBuffer);

@@ -217,7 +217,16 @@ public class GameRenderer
         }
     }
 
-    public void OnFrameUpdate(float tickDelta)
+    /// <summary>
+    ///     Turns the frame's mouse and controller movement into a look direction, and reads the
+    ///     zoom key.
+    /// </summary>
+    /// <remarks>
+    ///     Per frame rather than per tick, which is what makes looking around smooth at any frame
+    ///     rate. Public because it is the only place the mouse delta is consumed, so a backend that
+    ///     does not go through <see cref="OnFrameUpdate" /> has to call it or the view cannot turn.
+    /// </remarks>
+    public void ProcessLookInput()
     {
         if (!Display.isActive())
         {
@@ -267,6 +276,11 @@ public class GameRenderer
 
         bool zoomHeld = (_client.CurrentScreen == null && _client.InGameHasFocus && Keyboard.isKeyDown(_client.Options.KeyBindZoom.ScanCode)) || ControllerManager.IsZoomHeld();
         CameraController.SetZoomState(zoomHeld, _client.Options.ZoomScale);
+    }
+
+    public void OnFrameUpdate(float tickDelta)
+    {
+        ProcessLookInput();
 
         if (!_client.SkipRenderWorld)
         {
