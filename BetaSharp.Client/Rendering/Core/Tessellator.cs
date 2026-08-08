@@ -1,8 +1,6 @@
 using System.Runtime.InteropServices;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Util;
 using Color = BetaSharp.Client.UI.Colors.Color;
-using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client.Rendering.Core;
 
@@ -181,10 +179,6 @@ public class Tessellator
     private int arrayLayer = NoArrayLayer;
     public static readonly Tessellator instance = new(2097152);
     public bool IsDrawing { get; private set; }
-    private readonly uint[] _vboIds;
-    private readonly uint _tessVao;
-    private int vboIndex;
-    private readonly int vboCount = 10;
     private readonly int bufferSize;
     private bool isCaptureMode;
     private PooledList<Vertex> capturedVertices;
@@ -197,9 +191,6 @@ public class Tessellator
     {
         this.bufferSize = bufferSize;
         rawBuffer = new int[bufferSize];
-        _vboIds = new uint[vboCount];
-        GLManager.GL.GenBuffers((uint)vboCount, _vboIds);
-        _tessVao = GLManager.GL.GenVertexArray();
     }
 
     public Tessellator()
@@ -304,7 +295,7 @@ public class Tessellator
     ///     here. Not a fallback — there is nothing left to fall back to — and not a way to avoid
     ///     naming a slot: a draw that reaches this without a program bound draws with none.
     /// </remarks>
-    public void drawWithBoundProgram() => draw(SlotPrograms.CallerBound);
+    public void drawWithBoundProgram() => Submit(null);
 
     /// <summary>Draws the accumulated vertices under whatever program <paramref name="slot" /> resolves to.</summary>
     /// <remarks>
@@ -312,62 +303,75 @@ public class Tessellator
     ///     has cost was some draw inheriting state a previous one left set, and a draw that has to
     ///     name what it is cannot inherit the answer.
     /// </remarks>
-    public void draw(ProgramSlot slot) => draw(SlotPrograms.Resolve(slot, VertexLayoutKind.Generic));
+    public void draw(ProgramSlot slot) => Submit(slot);
 
-    private unsafe void draw(ISlotProgram program)
+    private void Submit(ProgramSlot? slot)
     {
         if (!IsDrawing)
         {
             throw new InvalidOperationException("Not tesselating!");
         }
-        else
+
+        IsDrawing = false;
+
+        if (isCaptureMode)
         {
-            IsDrawing = false;
-
-            if (isCaptureMode)
-            {
-                scratchBufferIndex = 0;
-                return;
-            }
-
-            if (vertexCount > 0)
-            {
-                // Before anything of ours is bound, because draining binds and unbinds its own.
-                GLManager.GL.FlushQueuedGeometry();
-
-                vboIndex = (vboIndex + 1) % vboCount;
-                GLManager.GL.BindBuffer(GLEnum.ArrayBuffer, _vboIds[vboIndex]);
-
-                fixed (int* ptr = rawBuffer)
-                {
-                    GLManager.GL.BufferData(GLEnum.ArrayBuffer, (nuint)(rawBufferIndex * 4), ptr, GLEnum.StreamDraw);
-                }
-
-                IGL gl = GLManager.GL;
-                gl.BindVertexArray(_tessVao);
-                TessellatorVertexLayout.Bind(gl, hasTexture, hasColor, hasNormals);
-
-                program.Activate();
-                GLManager.GL.DrawArrays(SubmittedDrawMode, 0, (uint)vertexCount);
-                program.Deactivate();
-
-                TessellatorVertexLayout.Unbind(gl, hasTexture, hasColor, hasNormals);
-                gl.BindVertexArray(0);
-            }
-
-            reset();
+            scratchBufferIndex = 0;
+            return;
         }
+
+        if (vertexCount > 0)
+        {
+            GLManager.DrawTarget.Submit(BuildCommand(slot));
+        }
+
+        reset();
     }
+
+    /// <summary>The accumulated vertices as something a backend can be handed.</summary>
+    private DrawCommand BuildCommand(ProgramSlot? slot) => new()
+    {
+        Vertices = MemoryMarshal.AsBytes(rawBuffer.AsSpan(0, rawBufferIndex)),
+        VertexCount = vertexCount,
+        Topology = SubmittedTopology,
+        Channels = Channels,
+        Slot = slot,
+    };
 
     /// <summary>
     ///     The primitive the accumulated vertices are actually submitted as.
     /// </summary>
     /// <remarks>
     ///     Quads are expanded into triangles as vertices are added, so the recorded draw mode is not
-    ///     what gets drawn.
+    ///     what gets drawn. The numbers are OpenGL's, because <see cref="startDrawing" /> takes them
+    ///     from callers that have always spelled them that way.
     /// </remarks>
-    private GLEnum SubmittedDrawMode =>
-        drawMode == 7 && convertQuadsToTriangles ? GLEnum.Triangles : (GLEnum)drawMode;
+    private DrawTopology SubmittedTopology
+    {
+        get
+        {
+            if (drawMode == 7 && convertQuadsToTriangles)
+            {
+                return DrawTopology.Triangles;
+            }
+
+            return drawMode switch
+            {
+                0 => DrawTopology.Points,
+                1 => DrawTopology.Lines,
+                3 => DrawTopology.LineStrip,
+                4 => DrawTopology.Triangles,
+                5 => DrawTopology.TriangleStrip,
+                6 => DrawTopology.TriangleFan,
+                _ => throw new InvalidOperationException($"No topology for draw mode {drawMode}."),
+            };
+        }
+    }
+
+    private VertexChannels Channels =>
+        (hasTexture ? VertexChannels.Texture : VertexChannels.None)
+        | (hasColor ? VertexChannels.Color : VertexChannels.None)
+        | (hasNormals ? VertexChannels.Normal : VertexChannels.None);
 
     /// <summary>
     ///     Ends the batch by handing its vertices to a buffer that outlives the frame, instead of
@@ -378,7 +382,7 @@ public class Tessellator
     ///     buffers, which is the right trade when the contents are rebuilt every frame and the wrong
     ///     one when they are built once and drawn forever.
     /// </remarks>
-    public unsafe StaticMesh captureStatic()
+    public IStaticMesh captureStatic()
     {
         if (!IsDrawing)
         {
@@ -387,15 +391,7 @@ public class Tessellator
 
         IsDrawing = false;
 
-        uint buffer = GLManager.GL.GenBuffer();
-        GLManager.GL.BindBuffer(GLEnum.ArrayBuffer, buffer);
-
-        fixed (int* ptr = rawBuffer)
-        {
-            GLManager.GL.BufferData(GLEnum.ArrayBuffer, (nuint)(rawBufferIndex * 4), ptr, GLEnum.StaticDraw);
-        }
-
-        StaticMesh mesh = new(buffer, vertexCount, SubmittedDrawMode, hasTexture, hasColor, hasNormals);
+        IStaticMesh mesh = GLManager.DrawTarget.Capture(BuildCommand(null));
         reset();
         return mesh;
     }
@@ -683,7 +679,7 @@ public class Tessellator
                         "happened to be bound, so the batch has to be broken up by its caller.");
                 }
 
-                draw(SlotPrograms.CallerBound);
+                Submit(null);
                 IsDrawing = true;
             }
         }

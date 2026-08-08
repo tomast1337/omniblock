@@ -180,3 +180,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-06 — fix(rendering): strip --webgpu from args so player name parses correctly (Nicolas Vyčas Nery; `743c5e19dc7b22f9a033650f246904cf87804b08`)
 - 2026-08-06 — fix(rendering): add no-op IGL stub so startup survives under WebGPU (Nicolas Vyčas Nery; `5c4f9a29477a5f9adb604d6513484eb94f5c6b10`)
 - 2026-08-06 — fix(rendering): give WebGpuStubGL unique IDs per Gen* call (Nicolas Vyčas Nery; `a7a6599b066dc74ca97b48333e221fceca4b5494`)
+- 2026-08-08 — fix(rendering): get the WebGPU backend to a stable frame loop (Nicolas Vyčas Nery; `7ee1b6670b195ee483731a88ddd31dfd3324b4a6`)

@@ -83,7 +83,8 @@ public sealed unsafe class WgpuPipeline : IDisposable
         nuint bufferCount,
         RenderState state,
         TextureFormat colorFormat,
-        TextureFormat depthFormat = TextureFormat.Undefined)
+        TextureFormat depthFormat = TextureFormat.Undefined,
+        PrimitiveTopology topology = PrimitiveTopology.TriangleList)
     {
         _device = device;
         Silk.NET.WebGPU.WebGPU api = device.Api;
@@ -94,7 +95,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
             ? CreateBindGroupLayout(api, device.Device, textureEntries)
             : null;
         Layout = CreatePipelineLayout(api, device.Device, BindGroupLayout, TextureBindGroupLayout);
-        Pipeline = CreateRenderPipeline(api, device.Device, Module, entryPoint, Layout, buffers, bufferCount, state, colorFormat, depthFormat);
+        Pipeline = CreateRenderPipeline(api, device.Device, Module, entryPoint, Layout, buffers, bufferCount, state, colorFormat, depthFormat, topology);
         CreateUniforms(api, device.Device, BindGroupLayout, uniformSize, out WgpuBuffer* ub, out BindGroup* ug);
         UniformBuffer = ub;
         UniformBindGroup = ug;
@@ -174,7 +175,8 @@ public sealed unsafe class WgpuPipeline : IDisposable
         nuint bufferCount,
         RenderState state,
         TextureFormat colorFormat,
-        TextureFormat depthFormat)
+        TextureFormat depthFormat,
+        PrimitiveTopology topology)
     {
         byte* vertexEntry = (byte*)SilkMarshal.StringToPtr(entryPoint);
         byte* fragmentEntry = (byte*)SilkMarshal.StringToPtr("fs_main");
@@ -244,7 +246,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
                 },
                 Primitive = new PrimitiveState
                 {
-                    Topology = PrimitiveTopology.TriangleList,
+                    Topology = topology,
                     StripIndexFormat = IndexFormat.Undefined,
                     FrontFace = FrontFace.Ccw,
                     CullMode = cullMode,

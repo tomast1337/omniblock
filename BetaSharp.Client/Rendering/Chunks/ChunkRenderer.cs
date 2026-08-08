@@ -74,8 +74,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly List<Vector3D<int>> _chunkVersionsToRemove = [];
     private readonly List<ChunkToMeshInfo> _dirtyChunks = [];
     private readonly List<ChunkToMeshInfo> _lightingUpdates = [];
-    private readonly TerrainSlotProgram _terrainProgram;
-    private Shader _chunkShader;
+    private readonly TerrainSlotProgram? _terrainProgram;
+    private Shader? _chunkShader;
     private int _lastRenderDistance;
     private Vector3D<double> _lastViewPos;
     private int _currentIndex;
@@ -127,22 +127,38 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _meshGenerator = new();
         _world = world;
 
-        _terrainProgram = (TerrainSlotProgram)SlotPrograms.Resolve(ProgramSlot.Terrain, VertexLayoutKind.Chunk);
-        _chunkShader = _terrainProgram.Shader;
-        _chunkShader.Changed += BuildChunkShader;
+        // The terrain program is GLSL, and the uniform locations cached off it are GL names. Under
+        // WebGPU chunks draw through the chunk.wgsl pipeline in RenderSolidWebGpu instead, and none
+        // of this exists — so it is built only where it can be, and asking for it elsewhere says so.
+        if (GLManager.GLOrNull is { } gl)
+        {
+            _terrainProgram = (TerrainSlotProgram)SlotPrograms.Resolve(ProgramSlot.Terrain, VertexLayoutKind.Chunk);
+            _chunkShader = _terrainProgram.Shader;
+            _chunkShader.Changed += BuildChunkShader;
 
-        GLManager.GL.UseProgram(0);
+            gl.UseProgram(0);
+        }
     }
+
+    private TerrainSlotProgram TerrainProgram => _terrainProgram
+        ?? throw new InvalidOperationException(
+            "The GL terrain program was never built, so this is the WebGPU backend and a GL chunk "
+            + "render path was reached anyway.");
+
+    private Shader ChunkShader => _chunkShader
+        ?? throw new InvalidOperationException(
+            "The GL chunk shader was never built, so this is the WebGPU backend and a GL chunk "
+            + "render path was reached anyway.");
 
     private void BuildChunkShader(Shader _)
     {
-        _textureSamplerLoc = _chunkShader.GetUniformLocation("textureSampler");
-        _chunkFadeEnabledLoc = _chunkShader.GetUniformLocation("chunkFadeEnabled");
-        _projectionMatrixLoc = _chunkShader.GetUniformLocation("projectionMatrix");
+        _textureSamplerLoc = ChunkShader.GetUniformLocation("textureSampler");
+        _chunkFadeEnabledLoc = ChunkShader.GetUniformLocation("chunkFadeEnabled");
+        _projectionMatrixLoc = ChunkShader.GetUniformLocation("projectionMatrix");
 
         // glUniform writes to whatever program is bound, and nothing has bound this one yet — every
         // other uniform here is set inside a pass that already activated it.
-        _chunkShader.Bind();
+        ChunkShader.Bind();
         UploadWavyLayers("wavyLeaf", s_wavyLeaves);
         UploadWavyLayers("wavyPlant", s_wavyPlants);
         GLManager.GL.UseProgram(0);
@@ -160,10 +176,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         for (int i = 0; i < names.Length; i++)
         {
-            _chunkShader.SetUniform1($"{uniformPrefix}Layers[{i}]", Atlases.Terrain.LayerOf(names[i]));
+            ChunkShader.SetUniform1($"{uniformPrefix}Layers[{i}]", Atlases.Terrain.LayerOf(names[i]));
         }
 
-        _chunkShader.SetUniform1($"{uniformPrefix}Count", names.Length);
+        ChunkShader.SetUniform1($"{uniformPrefix}Count", names.Length);
     }
 
     /// <summary>
@@ -177,15 +193,15 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     ///     drawn outside a chunk mesh — a moving piston, a primed TNT — and those have to be lit by
     ///     the same numbers as the terrain they stand in.
     /// </remarks>
-    private void UploadLightingUniforms() => SlotUniforms.UploadWorldLight(_chunkShader);
+    private void UploadLightingUniforms() => SlotUniforms.UploadWorldLight(ChunkShader);
 
     public void Render(ChunkRenderParams renderParams)
     {
         _lastRenderDistance = renderParams.RenderDistance;
         _lastViewPos = renderParams.ViewPos;
 
-        _terrainProgram.Activate();
-        _chunkShader.SetCommonUniforms(GameRenderer.ShaderInfo);
+        TerrainProgram.Activate();
+        ChunkShader.SetCommonUniforms(GameRenderer.ShaderInfo);
         UploadLightingUniforms();
         GLManager.GL.Uniform1(_textureSamplerLoc, TextureArrayUnits.Terrain);
         GLManager.GL.Uniform1(_chunkFadeEnabledLoc, renderParams.ChunkFade ? 1 : 0);
@@ -280,8 +296,8 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             }
 
             float fadeProgress = Math.Clamp(renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
-            _chunkShader.SetUniform1("fadeProgress", fadeProgress);
-            renderer.Render(_chunkShader, 0, renderParams.ViewPos, modelView);
+            ChunkShader.SetUniform1("fadeProgress", fadeProgress);
+            renderer.Render(ChunkShader, 0, renderParams.ViewPos, modelView);
 
             if (renderer.HasTranslucentMesh)
             {
@@ -314,7 +330,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         ProcessOneLightingMeshUpdate();
         LoadNewMeshes(renderParams.ViewPos);
 
-        _terrainProgram.Deactivate();
+        TerrainProgram.Deactivate();
         Core.VertexArray.Unbind();
     }
 
@@ -348,12 +364,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
     public void RenderTransparent(ChunkRenderParams renderParams)
     {
-        _terrainProgram.Activate();
-        _chunkShader.SetCommonUniforms(GameRenderer.ShaderInfo);
+        TerrainProgram.Activate();
+        ChunkShader.SetCommonUniforms(GameRenderer.ShaderInfo);
         UploadLightingUniforms();
         GLManager.GL.Uniform1(_textureSamplerLoc, TextureArrayUnits.Terrain);
 
-        _chunkShader.SetUniformMatrix4("projectionMatrix", _projection);
+        ChunkShader.SetUniformMatrix4("projectionMatrix", _projection);
 
         _translucentDistanceComparer.Origin = renderParams.ViewPos;
         _translucentRenderers.Sort(_translucentDistanceComparer);
@@ -361,13 +377,13 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         foreach (SubChunkRenderer renderer in _translucentRenderers)
         {
             float fadeProgress = Math.Clamp(renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
-            _chunkShader.SetUniform1("fadeProgress", fadeProgress);
-            renderer.Render(_chunkShader, 1, renderParams.ViewPos, _modelView);
+            ChunkShader.SetUniform1("fadeProgress", fadeProgress);
+            renderer.Render(ChunkShader, 1, renderParams.ViewPos, _modelView);
         }
 
         _translucentRenderers.Clear();
 
-        _terrainProgram.Deactivate();
+        TerrainProgram.Deactivate();
         Core.VertexArray.Unbind();
     }
 
@@ -879,7 +895,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         // Not disposed here: the shader belongs to the TerrainSlotProgram registered with
         // SlotPrograms, shared across every ChunkRenderer a world reload creates, and disposed once
         // with the rest of the registry. Only the subscription below is this instance's own.
-        _chunkShader.Changed -= BuildChunkShader;
+        if (_chunkShader is { } shader) shader.Changed -= BuildChunkShader;
 
         _renderers.Clear();
 

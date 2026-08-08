@@ -6,7 +6,48 @@ namespace BetaSharp.Client.Rendering.Core;
 
 public class GLManager
 {
-    public static IGL GL { get; private set; }
+    /// <summary>The OpenGL entry points, or null when the WebGPU backend is selected.</summary>
+    /// <remarks>
+    ///     Only for the handful of classes that own resources on both backends and have to branch.
+    ///     Everything else takes <see cref="GL" /> and is entitled to assume it exists.
+    /// </remarks>
+    public static IGL? GLOrNull { get; private set; }
+
+    /// <summary>The OpenGL entry points.</summary>
+    /// <remarks>
+    ///     Throws under WebGPU rather than returning something that accepts calls and drops them: a
+    ///     backend that cannot answer a GL call has to fail where the unported call is made, not
+    ///     leave a frame silently missing whatever that call would have drawn.
+    /// </remarks>
+    public static IGL GL => GLOrNull ?? throw new InvalidOperationException(
+        "OpenGL was reached while the WebGPU backend is selected — this call site has not been ported.");
+
+    /// <summary>
+    ///     The values a draw is made under, which both backends read. Held apart from
+    ///     <see cref="GL" /> because none of it is OpenGL — see <see cref="RenderContext" />.
+    /// </summary>
+    public static RenderContext Context { get; } = new();
+
+    /// <summary>
+    ///     What geometry submitted through <see cref="Tessellator" /> is currently drawn by, or null
+    ///     if nothing can draw right now.
+    /// </summary>
+    /// <remarks>
+    ///     Settable, and null for most of a WebGPU frame, because a WebGPU draw needs an open render
+    ///     pass and there is no such thing outside one. The renderer installs a target for the length
+    ///     of its pass and clears it afterwards. Under OpenGL one target is installed at startup and
+    ///     stays.
+    /// </remarks>
+    public static IDrawTarget? DrawTargetOrNull { get; set; }
+
+    /// <inheritdoc cref="DrawTargetOrNull" />
+    public static IDrawTarget DrawTarget => DrawTargetOrNull ?? throw new InvalidOperationException(
+        "Geometry was submitted with no draw target installed — either the backend never set one, or the draw is outside the render pass that would have drawn it.");
+
+    static GLManager()
+    {
+        Context.RasterStateChanging += OnRasterStateChanging;
+    }
 
     /// <summary>The model-view transform stack.</summary>
     /// <remarks>
@@ -14,13 +55,13 @@ public class GLManager
     ///     backend; hierarchical models need it. Reaching it through a mode selector and a global
     ///     was the fixed-function part, and that is gone.
     /// </remarks>
-    public static MatrixStack ModelView => _pipeline.ModelView;
+    public static MatrixStack ModelView => Context.ModelView;
 
     /// <inheritdoc cref="ModelView" />
-    public static MatrixStack Projection => _pipeline.Projection;
+    public static MatrixStack Projection => Context.Projection;
 
     /// <inheritdoc cref="ModelView" />
-    public static MatrixStack TextureMatrix => _pipeline.TextureMatrix;
+    public static MatrixStack TextureMatrix => Context.TextureMatrix;
 
     /// <summary>
     ///     Blend, depth, cull and write masks, said once per draw rather than toggled a global at a
@@ -49,16 +90,16 @@ public class GLManager
     /// </remarks>
     public static Vector4D<float> Color
     {
-        get => _pipeline.Color;
-        set => _pipeline.Color = value;
+        get => Context.Color;
+        set => Context.Color = value;
     }
 
     /// <summary>The normal geometry is lit by when it carries none of its own.</summary>
     /// <inheritdoc cref="Color" />
     public static Vector3D<float> Normal
     {
-        get => _pipeline.Normal;
-        set => _pipeline.Normal = value;
+        get => Context.Normal;
+        set => Context.Normal = value;
     }
 
     /// <summary>Whether a draw samples its bound texture, or is coloured alone.</summary>
@@ -69,32 +110,32 @@ public class GLManager
     /// </remarks>
     public static bool TextureEnabled
     {
-        get => _pipeline.TextureEnabled;
-        set => _pipeline.TextureEnabled = value;
+        get => Context.TextureEnabled;
+        set => Context.TextureEnabled = value;
     }
 
     /// <summary>Whether <see cref="Lighting" /> is applied, or geometry keeps its own colour.</summary>
     /// <inheritdoc cref="TextureEnabled" />
     public static bool LightingEnabled
     {
-        get => _pipeline.LightingEnabled;
-        set => _pipeline.LightingEnabled = value;
+        get => Context.LightingEnabled;
+        set => Context.LightingEnabled = value;
     }
 
     /// <summary>Whether <see cref="AlphaThreshold" /> is applied.</summary>
     /// <inheritdoc cref="TextureEnabled" />
     public static bool AlphaTestEnabled
     {
-        get => _pipeline.AlphaTestEnabled;
-        set => _pipeline.AlphaTestEnabled = value;
+        get => Context.AlphaTestEnabled;
+        set => Context.AlphaTestEnabled = value;
     }
 
     /// <summary>Whether <see cref="Fog" /> is applied.</summary>
     /// <inheritdoc cref="TextureEnabled" />
     public static bool FogEnabled
     {
-        get => _pipeline.FogEnabled;
-        set => _pipeline.FogEnabled = value;
+        get => Context.FogEnabled;
+        set => Context.FogEnabled = value;
     }
 
     /// <summary>
@@ -115,15 +156,15 @@ public class GLManager
     /// </remarks>
     public static LightingState Lighting
     {
-        get => _pipeline.Lighting;
-        set => _pipeline.Lighting = value;
+        get => Context.Lighting;
+        set => Context.Lighting = value;
     }
 
     /// <summary>Whether a shaded colour is taken per vertex or per face.</summary>
     public static ShadeModel ShadeModel
     {
-        get => _pipeline.ShadeModel;
-        set => _pipeline.ShadeModel = value;
+        get => Context.ShadeModel;
+        set => Context.ShadeModel = value;
     }
 
     /// <summary>How the world's light levels turn into brightness right now.</summary>
@@ -133,8 +174,8 @@ public class GLManager
     /// </remarks>
     public static WorldLightState WorldLight
     {
-        get => _pipeline.WorldLight;
-        set => _pipeline.WorldLight = value;
+        get => Context.WorldLight;
+        set => Context.WorldLight = value;
     }
 
     /// <summary>What the distance fog looks like, for every pass that draws under it.</summary>
@@ -145,18 +186,16 @@ public class GLManager
     /// </remarks>
     public static FogState Fog
     {
-        get => _pipeline.Fog;
-        set => _pipeline.Fog = value;
+        get => Context.Fog;
+        set => Context.Fog = value;
     }
 
     /// <summary>The alpha a fragment has to exceed to survive, while the alpha test is on.</summary>
     public static float AlphaThreshold
     {
-        get => _pipeline.AlphaThreshold;
-        set => _pipeline.AlphaThreshold = value;
+        get => Context.AlphaThreshold;
+        set => Context.AlphaThreshold = value;
     }
-
-    private static FixedFunctionPipeline _pipeline = null!;
 
     /// <summary>
     ///     Raised just before geometry is drawn through <see cref="IGL.DrawArrays" /> (i.e. drawn
@@ -177,19 +216,31 @@ public class GLManager
 
     public static void Init(GL silkGl)
     {
-        _pipeline = new FixedFunctionPipeline(silkGl);
-        GL = _pipeline;
+        FixedFunctionPipeline pipeline = new(silkGl);
+        GLOrNull = pipeline;
+
+        // OpenGL wants the tint and facing pushed into default vertex attributes as they change;
+        // WebGPU reads the same values as uniforms at submission and subscribes to neither.
+        Context.ColorChanged += pipeline.SetDefaultColorAttribute;
+        Context.NormalChanged += pipeline.SetDefaultNormalAttribute;
+
+        DrawTargetOrNull = new GlDrawTarget();
+
         State.Invalidate();
     }
 
     /// <summary>
-    ///     Installs a stub <see cref="IGL" /> so startup and tick paths do not NullReferenceException
-    ///     while the WebGPU renderer is being wired. The stub throws on every call except
-    ///     <see cref="IGL.FlushQueuedGeometry"/> (no-op) and property getters (return zero/empty).
+    ///     Selects the WebGPU backend, which has no <see cref="IGL" /> at all.
     /// </summary>
-    internal static void InitStub(IGL stub)
+    /// <remarks>
+    ///     A WebGPU draw goes through the <c>Wgpu*</c> classes. Nothing is installed in
+    ///     <see cref="GLOrNull" />, so anything still reaching for <see cref="GL" /> throws at the
+    ///     unported site instead of no-opping its way to an empty frame.
+    /// </remarks>
+    public static void InitWebGpu()
     {
-        _pipeline = null!;
-        GL = stub;
+        GLOrNull = null;
+        DrawTargetOrNull = null;
+        State.Invalidate();
     }
 }

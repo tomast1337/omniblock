@@ -797,7 +797,7 @@ internal static unsafe class FrameHashHarness
         tessellator.addVertex(208, 48, 0.0);
         tessellator.addVertex(48, 48, 0.0);
 
-        using StaticMesh mesh = tessellator.captureStatic();
+        using IStaticMesh mesh = tessellator.captureStatic();
         GLManager.Color = new(0.95f, 0.75f, 0.15f, 1.0f);
         mesh.Draw(ProgramSlot.Basic);
     }

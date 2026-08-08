@@ -1,0 +1,115 @@
+using Silk.NET.Maths;
+
+namespace BetaSharp.Client.Rendering.Core;
+
+/// <summary>
+///     The per-context rendering state every backend needs: matrix stacks, tint, facing, fog and
+///     lights. None of it is OpenGL — it is the values a draw is made under, which each backend
+///     reads and delivers its own way.
+/// </summary>
+/// <remarks>
+///     <para>
+///         This lived inside <c>FixedFunctionPipeline</c>, which meant reaching a matrix stack went
+///         through the OpenGL object. That made ~750 call sites across the client OpenGL call sites
+///         by accident, and a second backend could only be introduced by faking the whole GL
+///         interface underneath them. The state was never GL's; it is held here so both backends
+///         read the same values and neither owns them.
+///     </para>
+///     <para>
+///         A backend that needs to hear about a change subscribes rather than being called: OpenGL
+///         pushes <see cref="Color" /> and <see cref="Normal" /> into default vertex attributes
+///         eagerly, which WebGPU has no counterpart for — there they become uniforms read at
+///         submission.
+///     </para>
+/// </remarks>
+public sealed class RenderContext
+{
+    // ── Matrix stacks ──────────────────────────────────────────────────────
+
+    /// <inheritdoc cref="GLManager.ModelView" />
+    public MatrixStack ModelView { get; } = new();
+
+    /// <inheritdoc cref="ModelView" />
+    public MatrixStack Projection { get; } = new();
+
+    /// <inheritdoc cref="ModelView" />
+    public MatrixStack TextureMatrix { get; } = new();
+
+    // ── Backend notifications ───────────────────────────────────────────────
+
+    /// <summary>
+    ///     Raised when <see cref="Color" /> changes, for a backend that has to push the value
+    ///     somewhere rather than read it at the draw.
+    /// </summary>
+    public event Action<Vector4D<float>>? ColorChanged;
+
+    /// <summary>Raised when <see cref="Normal" /> changes.</summary>
+    /// <inheritdoc cref="ColorChanged" />
+    public event Action<Vector3D<float>>? NormalChanged;
+
+    /// <summary>
+    ///     Raised just before a change to state that governs how geometry rasterizes, so a renderer
+    ///     holding queued geometry can flush it under the state it was queued with.
+    /// </summary>
+    public event Action? RasterStateChanging;
+
+    // ── Per-vertex defaults ─────────────────────────────────────────────────
+
+    /// <inheritdoc cref="GLManager.Color" />
+    public Vector4D<float> Color
+    {
+        get;
+        set
+        {
+            field = value;
+            ColorChanged?.Invoke(value);
+        }
+    } = Vector4D<float>.One;
+
+    /// <inheritdoc cref="GLManager.Normal" />
+    public Vector3D<float> Normal
+    {
+        get;
+        set
+        {
+            field = value;
+            NormalChanged?.Invoke(value);
+        }
+    }
+
+    // ── Capabilities ────────────────────────────────────────────────────────
+
+    public bool TextureEnabled { get; set; }
+    public bool LightingEnabled { get; set; }
+
+    public bool AlphaTestEnabled
+    {
+        get;
+        set
+        {
+            if (field == value) return;
+            field = value;
+            RasterStateChanging?.Invoke();
+        }
+    }
+
+    public bool FogEnabled
+    {
+        get;
+        set
+        {
+            if (field == value) return;
+            field = value;
+            RasterStateChanging?.Invoke();
+        }
+    }
+
+    public ShadeModel ShadeModel { get; set; } = ShadeModel.Smooth;
+    public float AlphaThreshold { get; set; } = 0.1f;
+
+    // ── Per-pass state ─────────────────────────────────────────────────────
+
+    public FogState Fog { get; set; } = FogState.Default;
+    public LightingState Lighting { get; set; } = LightingState.Default;
+    public WorldLightState WorldLight { get; set; } = WorldLightState.Default;
+}

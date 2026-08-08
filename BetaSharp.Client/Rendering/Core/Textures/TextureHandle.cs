@@ -2,10 +2,10 @@ namespace BetaSharp.Client.Rendering.Core.Textures;
 
 public class TextureHandle
 {
-    public GLTexture? Texture { get; internal set; }
+    public Texture2D? Texture { get; internal set; }
     public int Id => (int)(Texture?.Id ?? 0u);
 
-    internal TextureHandle(GLTexture? texture)
+    internal TextureHandle(Texture2D? texture)
     {
         Texture = texture;
     }

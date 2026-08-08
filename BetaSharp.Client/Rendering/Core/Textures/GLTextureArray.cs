@@ -9,7 +9,7 @@ namespace BetaSharp.Client.Rendering.Core.Textures;
 ///     textures it holds.
 /// </summary>
 /// <remarks>
-///     The first real use of <see cref="GLEnum.Texture2DArray" /> in the client — <see cref="GLTexture" />
+///     The first real use of <see cref="GLEnum.Texture2DArray" /> in the client — <see cref="Texture2D" />
 ///     hardcodes <see cref="GLEnum.Texture2D" /> throughout, so it isn't reused here rather than
 ///     parameterized, matching how little the two share once the target differs.
 /// </remarks>
