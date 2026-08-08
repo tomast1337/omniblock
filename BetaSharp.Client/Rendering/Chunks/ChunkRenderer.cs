@@ -78,6 +78,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private Shader? _chunkShader;
     private int _lastRenderDistance;
     private Vector3D<double> _lastViewPos;
+    private ICuller? _lastCamera;
     private int _currentIndex;
     private Matrix4X4<float> _modelView;
     private Matrix4X4<float> _projection;
@@ -87,6 +88,16 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly TranslucentDistanceComparer _translucentDistanceComparer = new();
     private int _frameIndex = 0;
     private readonly GameOptions _options;
+
+    /// <summary>
+    ///     One chunk.wgsl pipeline per raster state the terrain is drawn under, built on demand.
+    /// </summary>
+    /// <remarks>
+    ///     Empty under OpenGL. WebGPU bakes blend, depth and cull into the pipeline, so what the GL
+    ///     path expresses by changing global state between the solid and the translucent pass has to
+    ///     be a second pipeline here.
+    /// </remarks>
+    private readonly Dictionary<RenderState, WgpuPipeline> _wgpuPipelines = [];
 
     public bool UseOcclusionCulling { get; set; } = true;
 
@@ -203,9 +214,17 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         _lastRenderDistance = renderParams.RenderDistance;
         _lastViewPos = renderParams.ViewPos;
+        _lastCamera = renderParams.Camera;
 
         _modelView = GLManager.ModelView.Top;
         _projection = GLManager.Projection.Top;
+
+        // The frame that took buffers out of these pools has been submitted by now, so they are
+        // free to hand out again. Both terrain passes of this frame draw from them.
+        foreach (WgpuPipeline pipeline in _wgpuPipelines.Values)
+        {
+            pipeline.ResetUniformPool();
+        }
 
         _visibleRenderers.Clear();
         _frameIndex++;
@@ -296,13 +315,18 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     /// </summary>
     /// <remarks>
     ///     After the draw rather than before it, because a mesh replaced here is one the pass just
-    ///     recorded from.
+    ///     recorded from. Takes no parameters so that a backend which has to defer it past the
+    ///     submit does not have to carry the frame's <see cref="ChunkRenderParams" /> along with it;
+    ///     what it needs was kept by <see cref="PrepareFrame" />.
     /// </remarks>
-    public void EndFrame(ChunkRenderParams renderParams)
+    public void EndFrame()
     {
+        // No frame has been prepared, so there is nothing this one drew to tidy up after.
+        if (_lastCamera is not { } camera) return;
+
         foreach (SubChunkState state in _renderers.Values)
         {
-            if (!IsChunkInRenderDistance(state.Renderer.Position, renderParams.ViewPos))
+            if (!IsChunkInRenderDistance(state.Renderer.Position, _lastViewPos))
             {
                 _renderersToRemove.Add(state.Renderer);
             }
@@ -319,14 +343,27 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         _renderersToRemove.Clear();
 
-        ProcessOneMeshUpdate(renderParams.Camera);
+        ProcessOneMeshUpdate(camera);
         ProcessOneLightingMeshUpdate();
-        LoadNewMeshes(renderParams.ViewPos);
+        LoadNewMeshes(_lastViewPos);
     }
 
-    public void Render(ChunkRenderParams renderParams)
+    public unsafe void Render(ChunkRenderParams renderParams)
     {
         PrepareFrame(renderParams);
+
+        if (GLManager.GLOrNull is null)
+        {
+            if (TryGetWebGpuFrame(out RenderPassEncoder* pass, out WgpuTextureArray array))
+            {
+                RenderSolidWebGpu(pass, WgpuPipelineFor(GLManager.State.Current), array);
+            }
+
+            // No EndFrame here, unlike the GL path below: it destroys mesh buffers, and under
+            // WebGPU the draws recorded above have not been submitted yet. The WebGPU renderer
+            // calls it once the frame is presented.
+            return;
+        }
 
         TerrainProgram.Activate();
         ChunkShader.SetCommonUniforms(GameRenderer.ShaderInfo);
@@ -348,14 +385,32 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             renderer.Render(ChunkShader, 0, renderParams.ViewPos, _modelView);
         }
 
-        EndFrame(renderParams);
+        EndFrame();
 
         TerrainProgram.Deactivate();
         Core.VertexArray.Unbind();
     }
 
-    public void RenderTransparent(ChunkRenderParams renderParams)
+    public unsafe void RenderTransparent(ChunkRenderParams renderParams)
     {
+        if (GLManager.GLOrNull is null)
+        {
+            if (TryGetWebGpuFrame(out RenderPassEncoder* pass, out WgpuTextureArray array))
+            {
+                RenderTranslucentWebGpu(pass, WgpuPipelineFor(GLManager.State.Current), array,
+                    renderParams.ViewPos);
+            }
+            else
+            {
+                // The sorted set is filled per frame by PrepareFrame and drained by whichever pass
+                // draws it. Dropping the draw without dropping these would carry them into the next
+                // frame and draw them twice.
+                _translucentRenderers.Clear();
+            }
+
+            return;
+        }
+
         TerrainProgram.Activate();
         ChunkShader.SetCommonUniforms(GameRenderer.ShaderInfo);
         UploadLightingUniforms();
@@ -784,10 +839,111 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private static Vector3D<double> ToDoubleVec(Vector3D<int> vec) => new(vec.X, vec.Y, vec.Z);
 
     /// <summary>
+    ///     The pass the terrain is recorded into and the array its layers index, or false when the
+    ///     frame has neither yet.
+    /// </summary>
+    /// <remarks>
+    ///     Both come from the draw target rather than being passed in, because the terrain draw is
+    ///     reached through the same shared frame the rest of the world is: whoever opened the pass
+    ///     handed it to the target, and the array is restated there each frame since a pack switch
+    ///     replaces it outright. There is no array until a pack has been read into one, and a draw
+    ///     then would sample nothing at all.
+    /// </remarks>
+    private unsafe bool TryGetWebGpuFrame(out RenderPassEncoder* pass, out WgpuTextureArray textureArray)
+    {
+        pass = null;
+        textureArray = null!;
+
+        if (GLManager.DrawTargetOrNull is not WebGpuDrawTarget target) return false;
+        if (target.CurrentPass is null || target.TerrainArray is not { } array) return false;
+
+        pass = target.CurrentPass;
+        textureArray = array;
+        return true;
+    }
+
+    private unsafe WgpuPipeline WgpuPipelineFor(RenderState state)
+    {
+        if (_wgpuPipelines.TryGetValue(state, out WgpuPipeline? cached)) return cached;
+
+        WgpuPipeline pipeline = CreateWgpuPipeline(WebGpuDevice.Current!, state);
+        _wgpuPipelines[state] = pipeline;
+        return pipeline;
+    }
+
+    /// <summary>The chunk.wgsl pipeline for one raster state, matching the chunk vertex layout.</summary>
+    private static unsafe WgpuPipeline CreateWgpuPipeline(WebGpuDevice device, RenderState state)
+    {
+        string source = AssetManager.Instance.getAsset("shaders/chunk.wgsl").GetTextContent();
+
+        VertexAttribute* attrs = stackalloc VertexAttribute[5];
+        attrs[0] = new VertexAttribute { Format = VertexFormat.Sint16x4, Offset = 0, ShaderLocation = 0 };
+        attrs[1] = new VertexAttribute { Format = VertexFormat.Uint16x2, Offset = 12, ShaderLocation = 1 };
+        attrs[2] = new VertexAttribute { Format = VertexFormat.Unorm8x4, Offset = 8, ShaderLocation = 2 };
+        attrs[3] = new VertexAttribute { Format = VertexFormat.Uint8x2, Offset = 16, ShaderLocation = 3 };
+        attrs[4] = new VertexAttribute { Format = VertexFormat.Uint8x2, Offset = 18, ShaderLocation = 4 };
+
+        VertexBufferLayout bufferLayout = new()
+        {
+            ArrayStride = 20,
+            StepMode = VertexStepMode.Vertex,
+            AttributeCount = 5,
+            Attributes = attrs,
+        };
+
+        BindGroupLayoutEntry[] uniformEntries =
+        [
+            new BindGroupLayoutEntry
+            {
+                Binding = 0,
+                Visibility = ShaderStage.Vertex | ShaderStage.Fragment,
+                Buffer = new BufferBindingLayout
+                {
+                    Type = BufferBindingType.Uniform,
+                    MinBindingSize = ChunkUniformSize,
+                },
+            },
+        ];
+
+        BindGroupLayoutEntry[] texEntries =
+        [
+            new BindGroupLayoutEntry
+            {
+                Binding = 0,
+                Visibility = ShaderStage.Fragment,
+                Texture = new TextureBindingLayout
+                {
+                    SampleType = TextureSampleType.Float,
+                    ViewDimension = TextureViewDimension.Dimension2DArray,
+                },
+            },
+            new BindGroupLayoutEntry
+            {
+                Binding = 1,
+                Visibility = ShaderStage.Fragment,
+                Sampler = new SamplerBindingLayout { Type = SamplerBindingType.Filtering },
+            },
+        ];
+
+        return new WgpuPipeline(
+            device, source, "vs_main",
+            ChunkUniformSize,
+            uniformEntries,
+            texEntries,
+            &bufferLayout, 1,
+            state,
+            device.SurfaceFormat,
+            TextureFormat.Depth32float);
+    }
+
+    /// <summary>Bytes of <see cref="ChunkUniforms" />, as chunk.wgsl declares the block.</summary>
+    private const uint ChunkUniformSize = 336;
+
+    /// <summary>
     ///     Draws solid-pass chunks through the native WebGPU command encoder.
     ///     Binds the terrain pipeline and texture array once, then iterates chunks.
     /// </summary>
-    public unsafe void RenderSolidWebGpu(
+    private unsafe void RenderSolidWebGpu(
         RenderPassEncoder* pass, WgpuPipeline pipeline, WgpuTextureArray textureArray)
     {
         pipeline.Bind(pass);
@@ -819,7 +975,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     }
 
     /// <summary>WebGPU translucent pass — sorted back-to-front, same as the GL path.</summary>
-    public unsafe void RenderTranslucentWebGpu(
+    private unsafe void RenderTranslucentWebGpu(
         RenderPassEncoder* pass, WgpuPipeline pipeline, WgpuTextureArray textureArray,
         Vector3D<double> viewPos)
     {
@@ -867,7 +1023,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         return new ChunkUniforms
         {
             ModelViewMatrix = modelView,
-            ProjectionMatrix = _projection,
+            ProjectionMatrix = WgpuClip.FromGl(_projection),
             ChunkPosX = chunkPos.X,
             ChunkPosY = chunkPos.Z,
             // Caller updates these per frame.
@@ -900,6 +1056,13 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         // SlotPrograms, shared across every ChunkRenderer a world reload creates, and disposed once
         // with the rest of the registry. Only the subscription below is this instance's own.
         if (_chunkShader is { } shader) shader.Changed -= BuildChunkShader;
+
+        foreach (WgpuPipeline pipeline in _wgpuPipelines.Values)
+        {
+            pipeline.Dispose();
+        }
+
+        _wgpuPipelines.Clear();
 
         _renderers.Clear();
 

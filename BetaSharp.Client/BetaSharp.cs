@@ -781,7 +781,7 @@ public partial class BetaSharp :
                         DebugViewportOffset = Vector2.Zero;
                     }
 
-                    if (!SkipRenderWorld && Display.Backend == GraphicsBackend.OpenGL)
+                    if (!SkipRenderWorld)
                     {
                         PlayerController?.SetPartialTime(Timer.RenderPartialTicks);
 
@@ -789,16 +789,22 @@ public partial class BetaSharp :
 
                         using (Profiler.Begin("Render"))
                         {
-                            GameRenderer.OnFrameUpdate(Timer.RenderPartialTicks);
+                            // Both drive the same GameRenderer; they differ in who owns the frame
+                            // around it. OpenGL draws straight into the default framebuffer, while
+                            // WebGPU has to open a pass, blit and submit either side of the world.
+                            if (_webGpuRenderer is { } webGpu)
+                            {
+                                webGpu.RenderFrame(Timer.RenderPartialTicks,
+                                    DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+                            }
+                            else
+                            {
+                                GameRenderer.OnFrameUpdate(Timer.RenderPartialTicks);
+                            }
                         }
 
                         TextureStats.EndFrame();
                         PushRenderMetrics();
-                    }
-                    else if (!SkipRenderWorld && Display.Backend == GraphicsBackend.WebGpu)
-                    {
-                        long frameTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                        _webGpuRenderer!.RenderFrame(Timer.RenderPartialTicks, frameTime);
                     }
 
                     DisplayWidth = savedWidth;
