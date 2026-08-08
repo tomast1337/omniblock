@@ -70,6 +70,27 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
         _depthFormat = depthFormat;
     }
 
+    /// <summary>
+    ///     Hands every pooled vertex and uniform buffer back, for a frame whose draws have been
+    ///     submitted.
+    /// </summary>
+    /// <remarks>
+    ///     Per frame and not per pass, though a frame opens several. A queued write is ordered
+    ///     against the submit rather than against the pass it was made during, so all of a frame's
+    ///     writes land before any of its draws run: a buffer handed out in the world pass and again
+    ///     in the interface pass would be read by both draws, holding whatever the second wrote.
+    ///     The caller is what knows where the submit falls, so it is the caller that says when.
+    /// </remarks>
+    public void BeginFrame()
+    {
+        _streamIndex = 0;
+
+        foreach (Program program in _programs.Values)
+        {
+            program.ResetUniforms();
+        }
+    }
+
     /// <summary>Opens the window in which draws are accepted, on a pass the renderer has begun.</summary>
     /// <remarks>
     ///     The attachment size is the caller's to state because the pass does not carry it and a
@@ -80,12 +101,6 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
         _pass = pass;
         _passWidth = width;
         _passHeight = height;
-        _streamIndex = 0;
-
-        foreach (Program program in _programs.Values)
-        {
-            program.ResetUniforms();
-        }
     }
 
     /// <summary>Closes that window. The pass itself is the caller's to end.</summary>
