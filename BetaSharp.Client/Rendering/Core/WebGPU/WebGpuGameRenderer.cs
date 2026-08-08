@@ -16,7 +16,6 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
 {
     private readonly BetaSharp _game;
     private WgpuFramebuffer? _offscreenFb;
-    private WgpuPipeline? _terrainPipeline;
     private WgpuPipeline? _blitPipeline;
     private WgpuMesh? _blitQuad;
     private readonly WebGpuDrawTarget _drawTarget;
@@ -45,10 +44,6 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         CommandEncoder* encoder = device.CreateCommandEncoder();
         EnsureResources(device);
 
-        // The frame that used these last has been submitted, so the buffers they hand out are free
-        // again.
-        _terrainPipeline!.ResetUniformPool();
-
         _game.GameRenderer.ProcessLookInput();
 
         // Null until the pack has been read and the array uploaded, which the first world load
@@ -67,30 +62,33 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             : WorldLightState.Default;
 
         // Null in the menus, before a world is loaded — the frame still runs, so the clear, the
-        // blit and the ImGui overlay are drawn; only the world is not.
-        EntityLiving? camera = _game.Camera;
-        WorldRenderer? world = camera is null ? null : _game.WorldRenderer;
+        // blit and the ImGui overlay are drawn; only the world is not. Drawing the world without
+        // the terrain array would sample nothing, so that is waited on too.
+        bool drawWorld = _game.World is not null && _game.Camera is not null && terrain is not null;
 
-        ChunkRenderParams chunkParams = default;
-        if (camera is not null && world is not null)
+        // Settled before the pass opens, because WebGPU clears as part of beginning one rather than
+        // with a call inside it.
+        Silk.NET.WebGPU.Color clear = new(0.7, 0.8, 1.0, 1.0);
+        if (drawWorld)
         {
-            chunkParams = PrepareWorldFrame(camera, world, tickDelta);
+            _game.GameRenderer.BeginWorldFrame(tickDelta, _game.World!.GetTime());
+            Vector4D<float> fog = _game.GameRenderer.WorldClearColor;
+            clear = new Silk.NET.WebGPU.Color(fog.X, fog.Y, fog.Z, 1.0);
         }
 
-        // --- Offscreen pass: terrain ---
-        RenderPassEncoder* terrainPass = _offscreenFb.BeginPass(encoder,
-            new Silk.NET.WebGPU.Color(0.7, 0.8, 1.0, 1.0));
+        // --- Offscreen pass: the world ---
+        RenderPassEncoder* worldPass = _offscreenFb.BeginPass(encoder, clear);
 
         // Everything drawn through the Tessellator belongs in this pass, so the target is only open
-        // for its length — a draw outside it has nowhere to go and says so.
-        _drawTarget.BeginPass(terrainPass, _offscreenFb.Width, _offscreenFb.Height);
+        // for its length — a draw outside it has nowhere to go and says so. The chunk meshes record
+        // their own draws and take the pass from the target rather than being handed it.
+        _drawTarget.BeginPass(worldPass, _offscreenFb.Width, _offscreenFb.Height);
 
         try
         {
-            // Drawing the terrain without the array would sample nothing, so the frame skips it.
-            if (world != null && terrain != null)
+            if (drawWorld)
             {
-                world.ChunkRenderer.RenderSolidWebGpu(terrainPass, _terrainPipeline!, terrain);
+                _game.GameRenderer.DrawWorld(tickDelta);
             }
         }
         finally
@@ -98,8 +96,8 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             _drawTarget.EndPass();
         }
 
-        api.RenderPassEncoderEnd(terrainPass);
-        api.RenderPassEncoderRelease(terrainPass);
+        api.RenderPassEncoderEnd(worldPass);
+        api.RenderPassEncoderRelease(worldPass);
 
         // --- Swapchain pass: blit + ImGui ---
         RenderPassColorAttachment colorAttach = new()
@@ -156,76 +154,13 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
 
         // Last, because it drops the mesh buffers of chunks that fell out of range and replaces the
         // ones that were rebuilt. A buffer this frame recorded a draw from has to outlive the
-        // submit — destroying it earlier fails validation inside wgpuQueueSubmit.
-        if (world is not null)
+        // submit — destroying it earlier fails validation inside wgpuQueueSubmit, which is why the
+        // GL path can do this inside its terrain draw and this one cannot.
+        if (drawWorld)
         {
-            world.ChunkRenderer.EndFrame(chunkParams);
+            _game.WorldRenderer.ChunkRenderer.EndFrame();
         }
     }
-
-    /// <summary>
-    ///     Places the camera, works out what the frame's fog looks like, and has the chunk renderer
-    ///     choose which sub-chunks are visible — everything the terrain pass reads but does not draw.
-    /// </summary>
-    /// <remarks>
-    ///     The visibility pass is not optional: the WebGPU draw walks the set this fills, and
-    ///     without it the pass records nothing at all and the world is simply absent.
-    /// </remarks>
-    private ChunkRenderParams PrepareWorldFrame(EntityLiving camera, WorldRenderer world, float tickDelta)
-    {
-        _game.GameRenderer.SetupWorldCamera(tickDelta);
-
-        double camX = camera.LastTickX + (camera.X - camera.LastTickX) * tickDelta;
-        double camY = camera.LastTickY + (camera.Y - camera.LastTickY) * tickDelta;
-        double camZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * tickDelta;
-
-        // Built before the depth remap below, because the plane extraction reads the projection and
-        // expects OpenGL's symmetric clip volume.
-        FrustrumCuller culler = new();
-        culler.SetPosition(camX, camY, camZ);
-
-        float viewDistance = _game.Options.RenderDistance * 16.0f;
-
-        // No sky pass here yet, so the fog is the plain distance one and its colour is the clear.
-        GLManager.Fog = GLManager.Fog with
-        {
-            Curve = FogCurve.Linear,
-            Start = viewDistance * 0.25f,
-            End = viewDistance,
-            Color = new Vector4D<float>(0.7f, 0.8f, 1.0f, 1.0f),
-        };
-
-        GLManager.Projection.Load(GLManager.Projection.Top * s_glToWebGpuDepth);
-
-        ChunkRenderParams chunkParams = new()
-        {
-            Camera = culler,
-            ViewPos = new Vector3D<double>(camX, camY, camZ),
-            RenderDistance = _game.Options.RenderDistance,
-            Ticks = _game.World!.GetTime(),
-            PartialTicks = tickDelta,
-            DeltaTime = _game.Timer.DeltaTime,
-            ChunkFade = _game.Options.ChunkFade,
-            RenderOccluded = false,
-        };
-
-        world.ChunkRenderer.PrepareFrame(chunkParams);
-        return chunkParams;
-    }
-
-    /// <summary>
-    ///     Squashes OpenGL's -1..1 clip depth into the 0..1 WebGPU expects.
-    /// </summary>
-    /// <remarks>
-    ///     Applied to the projection rather than fixed in the shaders because the projection is
-    ///     built by the shared camera code, which the OpenGL backend uses unchanged. Right-multiplied
-    ///     under the row-vector convention the matrix stack uses.
-    /// </remarks>
-    private static readonly Matrix4X4<float> s_glToWebGpuDepth = new(
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 0.5f, 0,
-        0, 0, 0.5f, 1);
 
     /// <summary>
     ///     Draws the HUD and the current screen onto the swapchain, over the blitted world.
@@ -307,71 +242,6 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         {
             _offscreenFb = WgpuFramebuffer.CreateColorDepth(device,
                 device.Width, device.Height, device.SurfaceFormat);
-        }
-
-        if (_terrainPipeline == null)
-        {
-            string chunkWgsl = AssetManager.Instance.getAsset("shaders/chunk.wgsl").GetTextContent();
-
-            VertexAttribute* attrs = stackalloc VertexAttribute[5];
-            attrs[0] = new VertexAttribute { Format = VertexFormat.Sint16x4, Offset = 0, ShaderLocation = 0 };
-            attrs[1] = new VertexAttribute { Format = VertexFormat.Uint16x2, Offset = 12, ShaderLocation = 1 };
-            attrs[2] = new VertexAttribute { Format = VertexFormat.Unorm8x4, Offset = 8, ShaderLocation = 2 };
-            attrs[3] = new VertexAttribute { Format = VertexFormat.Uint8x2, Offset = 16, ShaderLocation = 3 };
-            attrs[4] = new VertexAttribute { Format = VertexFormat.Uint8x2, Offset = 18, ShaderLocation = 4 };
-
-            VertexBufferLayout bufferLayout = new()
-            {
-                ArrayStride = 20,
-                StepMode = VertexStepMode.Vertex,
-                AttributeCount = 5,
-                Attributes = attrs,
-            };
-
-            BindGroupLayoutEntry[] uniformEntries =
-            [
-                new BindGroupLayoutEntry
-                {
-                    Binding = 0,
-                    Visibility = ShaderStage.Vertex | ShaderStage.Fragment,
-                    Buffer = new BufferBindingLayout
-                    {
-                        Type = BufferBindingType.Uniform,
-                        MinBindingSize = 336,
-                    },
-                },
-            ];
-
-            BindGroupLayoutEntry[] texEntries =
-            [
-                new BindGroupLayoutEntry
-                {
-                    Binding = 0,
-                    Visibility = ShaderStage.Fragment,
-                    Texture = new TextureBindingLayout
-                    {
-                        SampleType = TextureSampleType.Float,
-                        ViewDimension = TextureViewDimension.Dimension2DArray,
-                    },
-                },
-                new BindGroupLayoutEntry
-                {
-                    Binding = 1,
-                    Visibility = ShaderStage.Fragment,
-                    Sampler = new SamplerBindingLayout { Type = SamplerBindingType.Filtering },
-                },
-            ];
-
-            _terrainPipeline = new WgpuPipeline(
-                device, chunkWgsl, "vs_main",
-                uniformSize: 336,
-                uniformEntries,
-                texEntries,
-                &bufferLayout, 1,
-                RenderState.Opaque,
-                device.SurfaceFormat,
-                TextureFormat.Depth32float);
-
         }
 
         if (_blitPipeline == null)
@@ -469,7 +339,6 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         _disposed = true;
 
         _offscreenFb?.Dispose();
-        _terrainPipeline?.Dispose();
         _blitPipeline?.Dispose();
         _blitQuad?.Dispose();
         _drawTarget.Dispose();

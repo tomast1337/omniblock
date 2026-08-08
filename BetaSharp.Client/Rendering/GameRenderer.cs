@@ -352,7 +352,26 @@ public class GameRenderer
         }
     }
 
-    public void RenderFrame(float tickDelta, long time)
+    /// <summary>
+    ///     The colour the world pass starts from, which is the distance fog's.
+    /// </summary>
+    /// <remarks>
+    ///     Read by a backend that clears as part of opening its pass rather than with a call, and so
+    ///     has to know the colour before the pass exists. Valid once
+    ///     <see cref="BeginWorldFrame" /> has run for the frame.
+    /// </remarks>
+    public Vector4D<float> WorldClearColor => new(_fogColorRed, _fogColorGreen, _fogColorBlue, 1.0f);
+
+    /// <summary>
+    ///     Everything the world pass needs decided before it opens: what the camera is pointed at,
+    ///     the shader clock, and the frame's sky and fog colours.
+    /// </summary>
+    /// <remarks>
+    ///     Split from <see cref="DrawWorld" /> because under WebGPU the clear is part of beginning
+    ///     the pass, so <see cref="WorldClearColor" /> has to be settled while there is still no
+    ///     pass open. Nothing here draws.
+    /// </remarks>
+    public void BeginWorldFrame(float tickDelta, long time)
     {
         // The frame's baseline, and the state every renderer below is traced against. It carries
         // the depth write mask, which the two enables it replaces did not: a depth clear is masked
@@ -369,6 +388,31 @@ public class GameRenderer
         ShaderInfo.DeltaTime = tickDelta;
         ShaderInfo.DayTime = ((int)(time % 24000) + tickDelta) / 20f;
 
+        using (Profiler.Begin("UpdateFog"))
+        {
+            // No framebuffer manager under WebGPU, and no viewport call either: a pass covers its
+            // whole attachment unless something sets otherwise, and nothing here does.
+            if (_client.FramebufferManager is { } framebuffers)
+            {
+                GLManager.GL.Viewport(0, 0, (uint)framebuffers.FramebufferWidth, (uint)framebuffers.FramebufferHeight);
+            }
+
+            UpdateSkyAndFogColors(tickDelta);
+        }
+    }
+
+    public void RenderFrame(float tickDelta, long time)
+    {
+        BeginWorldFrame(tickDelta, time);
+        GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
+        DrawWorld(tickDelta);
+    }
+
+    /// <summary>
+    ///     Draws the world into whatever target is current, which the caller has already cleared.
+    /// </summary>
+    public void DrawWorld(float tickDelta)
+    {
         EntityLiving entity = _client.Camera;
         WorldRenderer worldRenderer = _client.WorldRenderer;
         ParticleManager particleManager = _client.ParticleManager;
@@ -376,13 +420,6 @@ public class GameRenderer
         double entY = entity.LastTickY + (entity.Y - entity.LastTickY) * tickDelta;
         double entZ = entity.LastTickZ + (entity.Z - entity.LastTickZ) * tickDelta;
 
-        using (Profiler.Begin("UpdateFog"))
-        {
-            GLManager.GL.Viewport(0, 0, (uint)_client.FramebufferManager.FramebufferWidth, (uint)_client.FramebufferManager.FramebufferHeight);
-            UpdateSkyAndFogColors(tickDelta);
-        }
-
-        GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
         SetupWorldCamera(tickDelta);
         Frustum.Instance();
         if (_client.Options.RenderDistance >= 8)
@@ -475,7 +512,11 @@ public class GameRenderer
             RenderChunkBorders(tickDelta);
         }
 
-        bool cloudBlurPass = _client.Options is { SoftClouds: true, CloudsQuality: >= 2 };
+        // The blur is a second framebuffer the clouds are drawn into and filtered out of, and there
+        // is no framebuffer manager under WebGPU — the clouds are still drawn, just unblurred.
+        bool cloudBlurPass = _client.Options is { SoftClouds: true, CloudsQuality: >= 2 }
+            && _client.FramebufferManager is not null;
+
         if (cloudBlurPass) _client.FramebufferManager.BeginCloudPass();
         worldRenderer.RenderClouds(tickDelta);
         if (cloudBlurPass) _client.FramebufferManager.EndCloudPass();
@@ -484,7 +525,11 @@ public class GameRenderer
 
         if (!CameraController.IsZoomActive)
         {
-            GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
+            // The hand is drawn over the world rather than into it, so it wants a fresh depth
+            // buffer. Under WebGPU there is no clear inside a pass; until the hand is a pass of its
+            // own it is depth-tested against the world and can be clipped by geometry near the
+            // camera.
+            GLManager.GLOrNull?.Clear(ClearBufferMask.DepthBufferBit);
             RenderFirstPersonHand(tickDelta);
         }
     }
@@ -990,7 +1035,8 @@ public class GameRenderer
         _fogColorGreen *= fogBrightness;
         _fogColorBlue *= fogBrightness;
 
-        GLManager.GL.ClearColor(_fogColorRed, _fogColorGreen, _fogColorBlue, 0.0F);
+        // WebGPU carries the clear colour on the pass descriptor instead; see WorldClearColor.
+        GLManager.GLOrNull?.ClearColor(_fogColorRed, _fogColorGreen, _fogColorBlue, 0.0F);
     }
 
     private void ApplyFog(int mode)

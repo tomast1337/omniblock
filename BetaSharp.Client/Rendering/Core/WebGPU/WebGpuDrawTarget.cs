@@ -55,6 +55,14 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
     /// </remarks>
     public WgpuTextureArray? TerrainArray { get; set; }
 
+    /// <summary>The pass draws are being recorded into, or null outside one.</summary>
+    /// <remarks>
+    ///     For a renderer that records its own draws rather than going through
+    ///     <see cref="Submit" /> — the chunk meshes are the case — and so needs the pass the frame
+    ///     opened without the frame having to hand it down through every caller in between.
+    /// </remarks>
+    public RenderPassEncoder* CurrentPass => _pass;
+
     public WebGpuDrawTarget(WebGpuDevice device, TextureFormat colorFormat, TextureFormat depthFormat)
     {
         _device = device;
@@ -222,7 +230,7 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
         GbuffersUniforms uniforms = new()
         {
             ModelViewMatrix = ToNumerics(context.ModelView.Top),
-            ProjectionMatrix = ToNumerics(context.Projection.Top),
+            ProjectionMatrix = ToNumerics(WgpuClip.FromGl(context.Projection.Top)),
             Tint = new Vector4(tint.X, tint.Y, tint.Z, tint.W),
             UseVertexColor = channels.HasFlag(VertexChannels.Color) ? 1.0f : 0.0f,
             AlphaThreshold = context.AlphaTestEnabled ? context.AlphaThreshold : 0.0f,

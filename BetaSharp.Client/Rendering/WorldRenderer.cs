@@ -406,6 +406,11 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     {
         if (_game.World.Dimension.IsNether) return;
 
+        // Only the geometry goes through the draw-command seam; the gradient, the sun disc and the
+        // star fade are all the GLSL program's work, and it has no WGSL counterpart yet. Skipped
+        // rather than drawn flat, which would paint over the pass's clear with nothing better.
+        if (_skyShader is null) return;
+
         Vector3D<double> skyColorVec = _world.Environment.GetSkyColor(_game.Camera, tickDelta);
         float skyRed = (float)skyColorVec.X;
         float skyGreen = (float)skyColorVec.Y;
@@ -520,6 +525,9 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public void RenderClouds(float tickDelta)
     {
+        // See RenderSky: the cloud shading is GLSL and absent on the WebGPU backend.
+        if (_cloudShader is null) return;
+
         using (Profiler.Begin("RenderClouds"))
         {
             if (!_game.World.Dimension.IsNether)
@@ -849,7 +857,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             // written, so a line lying exactly on a block face does not fight with it.
             GLManager.State.Apply(RenderState.Translucent);
             GLManager.Color = new(0.0F, 0.0F, 0.0F, 0.4F);
-            GLManager.GL.LineWidth(2.0F);
+            // WebGPU draws every line one pixel wide and has no equivalent knob.
+            GLManager.GLOrNull?.LineWidth(2.0F);
             GLManager.TextureEnabled = false;
             float outlinePadding = 0.002F;
             int blockId = _world.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);

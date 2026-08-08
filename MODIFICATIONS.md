@@ -186,3 +186,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-08 — feat(rendering): make texture arrays work on both backends (Nicolas Vyčas Nery; `abd6399495dcaf46b722e8da3c48e6f59f74de55`)
 - 2026-08-08 — fix(rendering): make the WebGPU frame draw the world (Nicolas Vyčas Nery; `f783b49993485f0cf1d26eb3cc4b187c8f8a50bd`)
 - 2026-08-08 — fix(rendering): give each WebGPU chunk draw its own uniforms, and let the view turn (Nicolas Vyčas Nery; `77588c82b7e7547f1d565502b17a45efa77232fb`)
+- 2026-08-08 — feat(rendering): drive the real world frame under WebGPU (Nicolas Vyčas Nery; `407f78b56e0e07b9e8eac352671b4f8d81d03808`)

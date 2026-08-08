@@ -334,6 +334,16 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
             return;
         }
 
+        // Under WebGPU the queued poses are dropped rather than drawn: FlushWebGpu wants a pass, a
+        // pipeline and a storage-buffer layout, and there is no WGSL counterpart of
+        // entity_instanced.vert to build one from yet. Instanced entities are absent on that
+        // backend until there is.
+        if (_gl is null)
+        {
+            ResetBuckets();
+            return;
+        }
+
         _flushing = true;
         try
         {
