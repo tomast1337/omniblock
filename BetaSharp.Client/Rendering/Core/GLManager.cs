@@ -145,6 +145,13 @@ public class GLManager
         set => Context.GuiTextureId = value;
     }
 
+    /// <inheritdoc cref="RenderContext.Scissor" />
+    public static ScissorRect? Scissor
+    {
+        get => Context.Scissor;
+        set => Context.Scissor = value;
+    }
+
     /// <summary>
     ///     The alpha threshold in the form every shader takes it: below zero when the test is off.
     /// </summary>

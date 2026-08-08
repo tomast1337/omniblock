@@ -89,8 +89,8 @@ public sealed unsafe class WebGpuDevice : IDisposable
         (SurfaceFormat, _presentMode, _alphaMode) = ChooseSurfaceConfiguration();
 
         s_logger.LogInformation(
-            "WebGPU device ready: surface format {Format}, present mode {PresentMode}.",
-            SurfaceFormat, _presentMode);
+            "WebGPU device ready: surface format {Format}, present mode {PresentMode}, surface {Width}x{Height}.",
+            SurfaceFormat, _presentMode, width, height);
 
         Configure(width, height);
     }

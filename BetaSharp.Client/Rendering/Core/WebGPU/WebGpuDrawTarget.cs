@@ -38,6 +38,8 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
     private readonly List<WgpuDynamicBuffer> _streams = [];
 
     private RenderPassEncoder* _pass;
+    private uint _passWidth;
+    private uint _passHeight;
     private int _streamIndex;
     private bool _disposed;
 
@@ -49,9 +51,15 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
     }
 
     /// <summary>Opens the window in which draws are accepted, on a pass the renderer has begun.</summary>
-    public void BeginPass(RenderPassEncoder* pass)
+    /// <remarks>
+    ///     The attachment size is the caller's to state because the pass does not carry it and a
+    ///     scissor rectangle has to be flipped against it and clamped to it.
+    /// </remarks>
+    public void BeginPass(RenderPassEncoder* pass, uint width, uint height)
     {
         _pass = pass;
+        _passWidth = width;
+        _passHeight = height;
         _streamIndex = 0;
 
         foreach (Program program in _programs.Values)
@@ -103,6 +111,7 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
 
         Program program = ProgramFor(textured, topology);
         api.RenderPassEncoderSetPipeline(_pass, program.Pipeline.Pipeline);
+        ApplyScissor(api);
 
         program.NextUniforms(out WgpuBuffer* uniformBuffer, out BindGroup* uniformGroup);
         WriteUniforms(uniformBuffer, channels);
@@ -123,6 +132,32 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
 
         api.RenderPassEncoderSetVertexBuffer(_pass, 0, vertices, 0, WholeBuffer);
         api.RenderPassEncoderDraw(_pass, (uint)vertexCount, 1, 0, 0);
+    }
+
+    /// <summary>Clips the next draw to <see cref="RenderContext.Scissor" />, or to the whole pass.</summary>
+    /// <remarks>
+    ///     Restated per draw because the encoder keeps whatever was last set: a draw made after the
+    ///     caller stopped clipping would otherwise inherit the rectangle it clipped to.
+    /// </remarks>
+    private void ApplyScissor(Silk.NET.WebGPU.WebGPU api)
+    {
+        if (GLManager.Scissor is not { } rect)
+        {
+            api.RenderPassEncoderSetScissorRect(_pass, 0, 0, _passWidth, _passHeight);
+            return;
+        }
+
+        // Clamped rather than trusted: wgpu rejects a rectangle that leaves the attachment, and the
+        // caller measured against a target size it worked out for itself.
+        uint x = (uint)Math.Clamp(rect.X, 0, (int)_passWidth);
+        uint width = (uint)Math.Clamp(rect.Width, 0, (int)(_passWidth - x));
+
+        // The caller measures from the bottom-left, as OpenGL does; wgpu measures from the top-left.
+        int top = (int)_passHeight - rect.Y - rect.Height;
+        uint y = (uint)Math.Clamp(top, 0, (int)_passHeight);
+        uint height = (uint)Math.Clamp(rect.Height, 0, (int)(_passHeight - y));
+
+        api.RenderPassEncoderSetScissorRect(_pass, x, y, width, height);
     }
 
     private void RequirePass()
