@@ -5,13 +5,13 @@ using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.WebGPU;
 using BetaSharp.Profiling;
-using Silk.NET.WebGPU;
 using BetaSharp.Textures;
 using BetaSharp.Util;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Chunks;
 using BetaSharp.Worlds.Core;
 using Silk.NET.Maths;
+using Silk.NET.WebGPU;
 
 namespace BetaSharp.Client.Rendering.Chunks;
 
@@ -81,11 +81,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private int _currentIndex;
     private Matrix4X4<float> _modelView;
     private Matrix4X4<float> _projection;
-    private int _fogMode;
-    private float _fogDensity;
-    private float _fogStart;
-    private float _fogEnd;
-    private Vector4D<float> _fogColor;
     private readonly ChunkOcclusionCuller _occlusionCuller = new();
     private readonly List<SubChunkRenderer> _visibleRenderers = [];
     private readonly List<SubChunkRenderer> _occludedRenderersBuffer = [];
@@ -195,27 +190,22 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     /// </remarks>
     private void UploadLightingUniforms() => SlotUniforms.UploadWorldLight(ChunkShader);
 
-    public void Render(ChunkRenderParams renderParams)
+    /// <summary>
+    ///     Chooses which sub-chunks the frame draws and takes the view matrices the draw will
+    ///     transform by off the matrix stacks.
+    /// </summary>
+    /// <remarks>
+    ///     Separate from <see cref="Render" /> because none of it is OpenGL, and the WebGPU pass
+    ///     draws the same chosen set. A pass that skipped this would find every renderer's
+    ///     <c>LastVisibleFrame</c> stale and draw nothing at all.
+    /// </remarks>
+    public void PrepareFrame(ChunkRenderParams renderParams)
     {
         _lastRenderDistance = renderParams.RenderDistance;
         _lastViewPos = renderParams.ViewPos;
 
-        TerrainProgram.Activate();
-        ChunkShader.SetCommonUniforms(GameRenderer.ShaderInfo);
-        UploadLightingUniforms();
-        GLManager.GL.Uniform1(_textureSamplerLoc, TextureArrayUnits.Terrain);
-        GLManager.GL.Uniform1(_chunkFadeEnabledLoc, renderParams.ChunkFade ? 1 : 0);
-
-        Matrix4X4<float> modelView = GLManager.ModelView.Top;
-        Matrix4X4<float> projection = GLManager.Projection.Top;
-
-        _modelView = modelView;
-        _projection = projection;
-
-        unsafe
-        {
-            GLManager.GL.UniformMatrix4(_projectionMatrixLoc, 1, false, (float*)&projection);
-        }
+        _modelView = GLManager.ModelView.Top;
+        _projection = GLManager.Projection.Top;
 
         _visibleRenderers.Clear();
         _frameIndex++;
@@ -293,20 +283,23 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             if (renderer.HasTranslucentMesh)
             {
                 translucentCount++;
-            }
-
-            float fadeProgress = Math.Clamp(renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
-            ChunkShader.SetUniform1("fadeProgress", fadeProgress);
-            renderer.Render(ChunkShader, 0, renderParams.ViewPos, modelView);
-
-            if (renderer.HasTranslucentMesh)
-            {
                 _translucentRenderers.Add(renderer);
             }
         }
 
         TranslucentMeshes = translucentCount;
+    }
 
+    /// <summary>
+    ///     The frame's housekeeping: sub-chunks that fell out of range are dropped, and one queued
+    ///     mesh update is taken.
+    /// </summary>
+    /// <remarks>
+    ///     After the draw rather than before it, because a mesh replaced here is one the pass just
+    ///     recorded from.
+    /// </remarks>
+    public void EndFrame(ChunkRenderParams renderParams)
+    {
         foreach (SubChunkState state in _renderers.Values)
         {
             if (!IsChunkInRenderDistance(state.Renderer.Position, renderParams.ViewPos))
@@ -329,38 +322,37 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         ProcessOneMeshUpdate(renderParams.Camera);
         ProcessOneLightingMeshUpdate();
         LoadNewMeshes(renderParams.ViewPos);
+    }
+
+    public void Render(ChunkRenderParams renderParams)
+    {
+        PrepareFrame(renderParams);
+
+        TerrainProgram.Activate();
+        ChunkShader.SetCommonUniforms(GameRenderer.ShaderInfo);
+        UploadLightingUniforms();
+        GLManager.GL.Uniform1(_textureSamplerLoc, TextureArrayUnits.Terrain);
+        GLManager.GL.Uniform1(_chunkFadeEnabledLoc, renderParams.ChunkFade ? 1 : 0);
+
+        Matrix4X4<float> projection = _projection;
+
+        unsafe
+        {
+            GLManager.GL.UniformMatrix4(_projectionMatrixLoc, 1, false, (float*)&projection);
+        }
+
+        foreach (SubChunkRenderer renderer in _visibleRenderers)
+        {
+            float fadeProgress = Math.Clamp(renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
+            ChunkShader.SetUniform1("fadeProgress", fadeProgress);
+            renderer.Render(ChunkShader, 0, renderParams.ViewPos, _modelView);
+        }
+
+        EndFrame(renderParams);
 
         TerrainProgram.Deactivate();
         Core.VertexArray.Unbind();
     }
-
-    public void SetFogMode(int mode)
-    {
-        _fogMode = mode;
-    }
-
-    public void SetFogDensity(float density)
-    {
-        _fogDensity = density;
-    }
-
-    public void SetFogStart(float start)
-    {
-        _fogStart = start;
-    }
-
-    public void SetFogEnd(float end)
-    {
-        _fogEnd = end;
-    }
-
-    public void SetFogColor(float r, float g, float b, float a)
-    {
-        _fogColor = new(r, g, b, a);
-    }
-
-    public float FogStart => _fogStart;
-    public float FogEnd => _fogEnd;
 
     public void RenderTransparent(ChunkRenderParams renderParams)
     {
@@ -804,13 +796,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         WgpuPipeline.BindGroup(pass, 1,
             textureArray.BindGroupFor(pipeline.TextureBindGroupLayout), WebGpuDevice.Current!.Api);
 
-        foreach (SubChunkState state in _renderers.Values)
+        // The same set the GL pass draws, chosen by PrepareFrame — which the caller is responsible
+        // for having run, since the view matrices this reads come off the stacks there too.
+        foreach (SubChunkRenderer renderer in _visibleRenderers)
         {
-            SubChunkRenderer renderer = state.Renderer;
-            if (renderer.LastVisibleFrame != _frameIndex) continue;
-
-            renderer.Update(0); // delta handled by caller
-
             float fadeProgress = Math.Clamp(renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
 
             var camRel = new Vector3D<double>(
@@ -869,25 +858,38 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         _translucentRenderers.Clear();
     }
 
+    /// <summary>
+    ///     The per-chunk uniform block, from the frame's fog and world light rather than from state
+    ///     of this renderer's own — the GL terrain shader is fed from the same two, so a chunk drawn
+    ///     by either backend is lit and fogged alike.
+    /// </summary>
     private ChunkUniforms BuildChunkUniforms(Matrix4X4<float> modelView, Vector3D<int> chunkPos, float fadeProgress)
     {
+        FogState fog = GLManager.Fog;
+        WorldLightState light = GLManager.WorldLight;
+
         return new ChunkUniforms
         {
             ModelViewMatrix = modelView,
             ProjectionMatrix = _projection,
             ChunkPosX = chunkPos.X,
             ChunkPosY = chunkPos.Z,
-            TimeX = 0, TimeY = 0, TimeZ = 0, // caller updates these per frame
+            // Caller updates these per frame.
+            TimeX = 0,
+            TimeY = 0,
+            TimeZ = 0,
             FadeProgress = fadeProgress,
             ChunkFadeEnabled = 1,
-            FogMode = (uint)_fogMode,
-            FogDensity = _fogDensity,
-            FogStart = _fogStart,
-            FogEnd = _fogEnd,
-            FogColorR = _fogColor.X,
-            FogColorG = _fogColor.Y,
-            FogColorB = _fogColor.Z,
-            FogColorA = _fogColor.W,
+            AmbientDarkness = light.AmbientDarkness,
+            LuminanceOffset = light.LuminanceOffset,
+            FogMode = (uint)fog.Curve,
+            FogDensity = fog.Density,
+            FogStart = fog.Start,
+            FogEnd = fog.End,
+            FogColorR = fog.Color.X,
+            FogColorG = fog.Color.Y,
+            FogColorB = fog.Color.Z,
+            FogColorA = fog.Color.W,
         };
     }
 

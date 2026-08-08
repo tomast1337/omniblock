@@ -1,9 +1,9 @@
+using System.Runtime.InteropServices;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.OpenGL;
-using BetaSharp.Client.Rendering.Core.WebGPU;
+using BetaSharp.Client.Rendering.Core.Textures;
 using Silk.NET.Maths;
-using Silk.NET.WebGPU;
 using Shader = BetaSharp.Client.Rendering.Core.Shader;
 
 namespace BetaSharp.Client.Rendering.Entities;
@@ -28,8 +28,8 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
     private readonly EntityVertex[] _vertices = new EntityVertex[MaxVertices];
     private readonly Dictionary<uint, int> _glTexToLogicalId = [];
 
-    // WebGPU path
-    private WgpuDynamicBuffer? _gpuBuffer;
+    /// <summary>Where the queued vertices are rewritten for the seam. Null under OpenGL.</summary>
+    private readonly Vertex[]? _seamVertices;
 
     private int _vertexCount;
     private uint _currentTextureId;
@@ -38,10 +38,12 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
 
     private EntityBatchRenderer(GameOptions options)
     {
-        // The shader is GLSL and the VAO is a GL object. Under WebGPU neither can exist, and this
-        // renderer has no WebGPU path yet, so it is built empty and any draw through it says so.
+        // The shader is GLSL and the VAO is a GL object, so on a backend that has neither the batch
+        // owns no resources of its own and goes out through the draw-command seam instead.
         if (GLManager.GLOrNull is not { } gl)
         {
+            _seamVertices = new Vertex[MaxVertices];
+            GLManager.RasterStateChanging += Flush;
             return;
         }
 
@@ -81,15 +83,16 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
         GLManager.RasterStateChanging += Flush;
     }
 
-    private IGL Gl => _glOrNull
-        ?? throw new InvalidOperationException(
-            "Entity model geometry reached the GL batch under the WebGPU backend. "
-            + $"{nameof(EntityBatchRenderer)} has not been ported to the draw-command seam yet.");
+    private IGL Gl => _glOrNull ?? throw NotOnThisBackend();
 
-    private Shader Shader => _shader
-        ?? throw new InvalidOperationException(
-            "Entity model geometry reached the GL batch under the WebGPU backend. "
-            + $"{nameof(EntityBatchRenderer)} has not been ported to the draw-command seam yet.");
+    private Shader Shader => _shader ?? throw NotOnThisBackend();
+
+    private static InvalidOperationException NotOnThisBackend() =>
+        new($"{nameof(EntityBatchRenderer)}'s GL batch was reached on a backend that has no GL. "
+            + "The seam path should have taken this draw.");
+
+    /// <summary>What the caller has bound, in whichever name space this backend hands out.</summary>
+    private uint BoundTextureId => _glOrNull?.BoundTexture2D ?? Texture2D.Bound?.Id ?? 0;
 
     /// <summary>
     /// Opens a batching pass. Only affects how long geometry may sit queued; submissions made
@@ -159,7 +162,7 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
         // No pass is open — the first-person hand, the inventory mob preview. Nothing downstream
         // will flush, so draw it now, against whatever texture the caller has bound; those paths
         // bind directly rather than going through EntityRenderer.loadTexture.
-        _currentTextureId = Gl.BoundTexture2D;
+        _currentTextureId = BoundTextureId;
         _useTexture = true;
         Flush();
     }
@@ -177,6 +180,12 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
     public void Flush()
     {
         if (_vertexCount == 0) return;
+
+        if (_seamVertices is not null)
+        {
+            FlushThroughSeam(_seamVertices);
+            return;
+        }
 
         uint callerTexture = Gl.BoundTexture2D;
 
@@ -203,21 +212,57 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
     }
 
     /// <summary>
-    ///     Draws queued geometry through the native WebGPU command encoder.
-    ///     The caller has already uploaded uniforms and bound the pipeline's uniform group.
+    ///     Draws the queued geometry as a <see cref="DrawCommand" />, for a backend with no GLSL
+    ///     program to bind.
     /// </summary>
-    public unsafe void FlushWebGpu(RenderPassEncoder* pass, WgpuPipeline pipeline)
+    /// <remarks>
+    ///     <para>
+    ///         The model-view is identity for the length of the draw because
+    ///         <see cref="Models.ModelPart" /> has already baked it into the positions, along with
+    ///         the lighting and the tint. Leaving the caller's in place would apply it twice.
+    ///     </para>
+    ///     <para>
+    ///         What the seam's vertex cannot carry is the part id, so the per-part effects a pack
+    ///         can drive through <see cref="EntityShaderIds" /> do not reach this path.
+    ///     </para>
+    /// </remarks>
+    private void FlushThroughSeam(Vertex[] scratch)
     {
-        if (_vertexCount == 0) return;
+        // The queued geometry belongs to the texture that was bound when it was posed, which is not
+        // necessarily the one bound now: a texture change flushes before it takes effect.
+        Texture2D? caller = Texture2D.Bound;
+        Texture2D? batch = _useTexture ? Texture2D.Find(_currentTextureId) : null;
+        batch?.Bind();
 
-        WebGpuDevice device = WebGpuDevice.Current!;
-        _gpuBuffer ??= new WgpuDynamicBuffer(device, (ulong)(MaxVertices * sizeof(EntityVertex)));
+        Span<Vertex> converted = scratch.AsSpan(0, _vertexCount);
+        for (int i = 0; i < _vertexCount; i++)
+        {
+            ref readonly EntityVertex source = ref _vertices[i];
+            converted[i] = new Vertex(source.X, source.Y, source.Z, source.U, source.V, (int)source.Color, 0);
+        }
 
-        _gpuBuffer.Write(new ReadOnlySpan<EntityVertex>(_vertices, 0, _vertexCount));
-        _gpuBuffer.Bind(pass);
+        GLManager.ModelView.Push();
+        GLManager.ModelView.LoadIdentity();
 
-        device.Api.RenderPassEncoderDraw(pass, (uint)_vertexCount, 1, 0, 0);
-        _vertexCount = 0;
+        try
+        {
+            GLManager.DrawTarget.Submit(new DrawCommand
+            {
+                Vertices = MemoryMarshal.AsBytes(converted),
+                VertexCount = _vertexCount,
+                Topology = DrawTopology.Triangles,
+                Channels = batch is null
+                    ? VertexChannels.Color
+                    : VertexChannels.Color | VertexChannels.Texture,
+                Slot = ProgramSlot.Textured,
+            });
+        }
+        finally
+        {
+            GLManager.ModelView.Pop();
+            _vertexCount = 0;
+            caller?.Bind();
+        }
     }
 
     /// <summary>Mirrors the fixed-function state the queued vertices were posed under.</summary>
@@ -246,7 +291,6 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
         GLManager.RasterStateChanging -= Flush;
         _glOrNull?.DeleteBuffer(_vboId);
         _glOrNull?.DeleteVertexArray(_vaoId);
-        _gpuBuffer?.Dispose();
         _shader?.Dispose();
     }
 }

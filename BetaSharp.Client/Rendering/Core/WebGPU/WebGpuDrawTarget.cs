@@ -41,7 +41,19 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
     private uint _passWidth;
     private uint _passHeight;
     private int _streamIndex;
+    private WgpuTextureArray? _emptyArray;
     private bool _disposed;
+
+    /// <summary>
+    ///     The named terrain array a vertex's array layer indexes into, or null before a pack has
+    ///     been read into one.
+    /// </summary>
+    /// <remarks>
+    ///     Set by the renderer per frame rather than read from a texture manager here, because the
+    ///     array is replaced outright on a pack switch and a target holding the old one would keep
+    ///     drawing from a texture that is on its way out.
+    /// </remarks>
+    public WgpuTextureArray? TerrainArray { get; set; }
 
     public WebGpuDrawTarget(WebGpuDevice device, TextureFormat colorFormat, TextureFormat depthFormat)
     {
@@ -128,6 +140,7 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
             }
 
             api.RenderPassEncoderSetBindGroup(_pass, 1, texture, 0, null);
+            api.RenderPassEncoderSetBindGroup(_pass, 2, TextureArrayBindGroup(program), 0, null);
         }
 
         api.RenderPassEncoderSetVertexBuffer(_pass, 0, vertices, 0, WholeBuffer);
@@ -182,6 +195,23 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
 
         BindGroupLayout* layout = program.Pipeline.TextureBindGroupLayout;
         return layout is null ? null : texture.BindGroupFor(layout);
+    }
+
+    /// <summary>
+    ///     The bind group for the named array, or for an empty stand-in when there is no pack in one
+    ///     yet.
+    /// </summary>
+    /// <remarks>
+    ///     A stand-in rather than skipping the draw, because whether the geometry names a layer is
+    ///     decided per vertex: a menu drawing nothing but text still runs a shader that declares the
+    ///     array, and WebGPU wants every declared binding filled whether or not it is read.
+    /// </remarks>
+    private BindGroup* TextureArrayBindGroup(Program program)
+    {
+        WgpuTextureArray array = TerrainArray
+            ?? (_emptyArray ??= new WgpuTextureArray(_device, 1, 1, 1, WgpuSamplerDescription.Nearest));
+
+        return array.BindGroupFor(program.Pipeline.TextureArrayBindGroupLayout);
     }
 
     private void WriteUniforms(WgpuBuffer* buffer, VertexChannels channels)
@@ -245,18 +275,19 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
             .getAsset(textured ? "shaders/gbuffers_textured.wgsl" : "shaders/gbuffers_basic.wgsl")
             .GetTextContent();
 
-        // Only the attributes the shader declares. The Tessellator vertex also carries a normal, an
-        // array layer and two light channels; nothing in this pair of programs reads them yet.
-        VertexAttribute* attributes = stackalloc VertexAttribute[3];
+        // Only the attributes the shader declares. The Tessellator vertex also carries a normal and
+        // two light channels; nothing in this pair of programs reads them yet.
+        VertexAttribute* attributes = stackalloc VertexAttribute[4];
         attributes[0] = new VertexAttribute { Format = VertexFormat.Float32x3, Offset = 0, ShaderLocation = 0 };
         attributes[1] = new VertexAttribute { Format = VertexFormat.Unorm8x4, Offset = 20, ShaderLocation = 1 };
         attributes[2] = new VertexAttribute { Format = VertexFormat.Float32x2, Offset = 12, ShaderLocation = 2 };
+        attributes[3] = new VertexAttribute { Format = VertexFormat.Sint32, Offset = 28, ShaderLocation = 3 };
 
         VertexBufferLayout layout = new()
         {
             ArrayStride = TessellatorVertexLayout.Stride,
             StepMode = VertexStepMode.Vertex,
-            AttributeCount = textured ? 3u : 2u,
+            AttributeCount = textured ? 4u : 2u,
             Attributes = attributes,
         };
 
@@ -296,6 +327,28 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
             ]
             : [];
 
+        BindGroupLayoutEntry[] textureArrayEntries = textured
+            ?
+            [
+                new BindGroupLayoutEntry
+                {
+                    Binding = 0,
+                    Visibility = ShaderStage.Fragment,
+                    Texture = new TextureBindingLayout
+                    {
+                        SampleType = TextureSampleType.Float,
+                        ViewDimension = TextureViewDimension.Dimension2DArray,
+                    },
+                },
+                new BindGroupLayoutEntry
+                {
+                    Binding = 1,
+                    Visibility = ShaderStage.Fragment,
+                    Sampler = new SamplerBindingLayout { Type = SamplerBindingType.Filtering },
+                },
+            ]
+            : [];
+
         return new WgpuPipeline(
             _device, source, "vs_main",
             GbuffersUniforms.Size,
@@ -305,7 +358,8 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
             state,
             _colorFormat,
             _depthFormat,
-            ToPrimitiveTopology(topology));
+            ToPrimitiveTopology(topology),
+            textureArrayEntries);
     }
 
     private static PrimitiveTopology ToPrimitiveTopology(DrawTopology topology) => topology switch
@@ -328,6 +382,9 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
 
         foreach (WgpuDynamicBuffer stream in _streams) stream.Dispose();
         _streams.Clear();
+
+        _emptyArray?.Dispose();
+        _emptyArray = null;
     }
 
     /// <inheritdoc cref="IStaticMesh" />
