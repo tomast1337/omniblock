@@ -1,57 +1,44 @@
+using System.Runtime.InteropServices;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
-using BetaSharp.Client.Rendering.Core.WebGPU;
+using BetaSharp.Client.Rendering.Core.Textures;
 using Silk.NET.Maths;
-using Silk.NET.WebGPU;
 
 namespace BetaSharp.Client.Rendering.UI;
 
+/// <summary>
+///     Batches the interface's quads and draws them through the draw-command seam.
+/// </summary>
+/// <remarks>
+///     Owns no buffer and no program: the quads are written in the same vertex layout the
+///     Tessellator produces and submitted as a <see cref="DrawCommand" />, so whichever backend is
+///     running draws them the way it draws everything else. Before this it owned a VAO and a GLSL
+///     program of its own, which meant the interface existed on OpenGL only.
+/// </remarks>
 public sealed class UIBatchRenderer : IDisposable
 {
     private const int MaxQuads = 2048;
     private const int MaxVertices = MaxQuads * 6;
 
-    private readonly UIShader _shader;
-    private readonly IGL _gl;
-    private readonly uint _vaoId;
-    private readonly uint _vboId;
-    private readonly UIVertex[] _vertices = new UIVertex[MaxVertices];
+    /// <summary>Interface quads are flat, unlit and sample the plain 2D texture rather than an array layer.</summary>
+    private const int NoArrayLayer = Tessellator.NoArrayLayer;
 
-    // WebGPU path
-    private WgpuDynamicBuffer? _gpuBuffer;
+    private readonly Vertex[] _vertices = new Vertex[MaxVertices];
+    private readonly Dictionary<uint, int> _texToLogicalId = [];
 
+    private static readonly Dictionary<string, int> s_pathToLogicalId = new(StringComparer.Ordinal);
+    private static bool s_propertiesLoaded;
+
+    private Matrix4X4<float> _projection = Matrix4X4<float>.Identity;
     private int _vertexCount;
     private uint _currentTextureId;
     private bool _useTexture;
-    private readonly Dictionary<uint, int> _glTexToLogicalId = new();
 
-    private static readonly Dictionary<string, int> s_pathToLogicalId = new();
-    private static bool s_propertiesLoaded;
-
-    public unsafe UIBatchRenderer(GameOptions gameOptions)
+    public UIBatchRenderer(GameOptions gameOptions)
     {
-        _shader = new UIShader(gameOptions);
-        _gl = GLManager.GL;
-
-        _vaoId = _gl.GenVertexArray();
-        _vboId = _gl.GenBuffer();
-
-        _gl.BindVertexArray(_vaoId);
-        _gl.BindBuffer(GLEnum.ArrayBuffer, _vboId);
-        _gl.BufferData(GLEnum.ArrayBuffer, (nuint)(MaxVertices * sizeof(UIVertex)), null, GLEnum.StreamDraw);
-
-        _gl.EnableVertexAttribArray(0);
-        _gl.VertexAttribPointer(0, 2, GLEnum.Float, false, 20, (void*)0);
-
-        _gl.EnableVertexAttribArray(1);
-        _gl.VertexAttribPointer(1, 2, GLEnum.Float, false, 20, (void*)8);
-
-        _gl.EnableVertexAttribArray(2);
-        _gl.VertexAttribPointer(2, 4, GLEnum.UnsignedByte, true, 20, (void*)16);
-
-        _gl.BindVertexArray(0);
-        _gl.BindBuffer(GLEnum.ArrayBuffer, 0);
+        // Nothing to build. The parameter stays because the interface constructs this before the
+        // draw target exists, and a later shader option belongs here rather than at every caller.
+        _ = gameOptions;
     }
 
     /// <summary>
@@ -69,9 +56,7 @@ public sealed class UIBatchRenderer : IDisposable
 
     public void Begin(Matrix4X4<float> proj)
     {
-        GLManager.GL.UseProgram(_shader.ProgramId);
-        _shader.SetProjection(proj);
-        GLManager.GL.UseProgram(0);
+        _projection = proj;
         _vertexCount = 0;
         _currentTextureId = 0;
         _useTexture = false;
@@ -89,16 +74,16 @@ public sealed class UIBatchRenderer : IDisposable
         _useTexture = true;
     }
 
-    public void RegisterTexture(uint glTexId, int logicalId)
+    public void RegisterTexture(uint texId, int logicalId)
     {
-        _glTexToLogicalId[glTexId] = logicalId;
+        _texToLogicalId[texId] = logicalId;
     }
 
-    public void RegisterTextureByPath(string assetPath, uint glTexId)
+    public void RegisterTextureByPath(string assetPath, uint texId)
     {
         EnsurePropertiesLoaded();
         if (s_pathToLogicalId.TryGetValue(assetPath, out int logicalId))
-            _glTexToLogicalId[glTexId] = logicalId;
+            _texToLogicalId[texId] = logicalId;
     }
 
     private static void EnsurePropertiesLoaded()
@@ -141,12 +126,12 @@ public sealed class UIBatchRenderer : IDisposable
         if (_vertexCount + 6 > MaxVertices)
             Flush();
 
-        _vertices[_vertexCount++] = new UIVertex { X = x0, Y = y0, U = u0, V = v0, Rgba = rgba };
-        _vertices[_vertexCount++] = new UIVertex { X = x0, Y = y1, U = u0, V = v1, Rgba = rgba };
-        _vertices[_vertexCount++] = new UIVertex { X = x1, Y = y1, U = u1, V = v1, Rgba = rgba };
-        _vertices[_vertexCount++] = new UIVertex { X = x0, Y = y0, U = u0, V = v0, Rgba = rgba };
-        _vertices[_vertexCount++] = new UIVertex { X = x1, Y = y1, U = u1, V = v1, Rgba = rgba };
-        _vertices[_vertexCount++] = new UIVertex { X = x1, Y = y0, U = u1, V = v0, Rgba = rgba };
+        Add(x0, y0, u0, v0, rgba);
+        Add(x0, y1, u0, v1, rgba);
+        Add(x1, y1, u1, v1, rgba);
+        Add(x0, y0, u0, v0, rgba);
+        Add(x1, y1, u1, v1, rgba);
+        Add(x1, y0, u1, v0, rgba);
     }
 
     internal void AddQuadCorners(
@@ -159,12 +144,12 @@ public sealed class UIBatchRenderer : IDisposable
         if (_vertexCount + 6 > MaxVertices)
             Flush();
 
-        _vertices[_vertexCount++] = new UIVertex { X = tlX, Y = tlY, U = u0, V = v0, Rgba = rgba };
-        _vertices[_vertexCount++] = new UIVertex { X = blX, Y = blY, U = u0, V = v1, Rgba = rgba };
-        _vertices[_vertexCount++] = new UIVertex { X = brX, Y = brY, U = u1, V = v1, Rgba = rgba };
-        _vertices[_vertexCount++] = new UIVertex { X = tlX, Y = tlY, U = u0, V = v0, Rgba = rgba };
-        _vertices[_vertexCount++] = new UIVertex { X = brX, Y = brY, U = u1, V = v1, Rgba = rgba };
-        _vertices[_vertexCount++] = new UIVertex { X = trX, Y = trY, U = u1, V = v0, Rgba = rgba };
+        Add(tlX, tlY, u0, v0, rgba);
+        Add(blX, blY, u0, v1, rgba);
+        Add(brX, brY, u1, v1, rgba);
+        Add(tlX, tlY, u0, v0, rgba);
+        Add(brX, brY, u1, v1, rgba);
+        Add(trX, trY, u1, v0, rgba);
     }
 
     public void AddColoredQuad(float x, float y, float w, float h, uint rgba)
@@ -182,15 +167,24 @@ public sealed class UIBatchRenderer : IDisposable
 
         float x1 = x + w, y1 = y + h;
 
-        _vertices[_vertexCount++] = new UIVertex { X = x, Y = y, U = 0, V = 0, Rgba = topRgba };
-        _vertices[_vertexCount++] = new UIVertex { X = x, Y = y1, U = 0, V = 0, Rgba = bottomRgba };
-        _vertices[_vertexCount++] = new UIVertex { X = x1, Y = y1, U = 0, V = 0, Rgba = bottomRgba };
-        _vertices[_vertexCount++] = new UIVertex { X = x, Y = y, U = 0, V = 0, Rgba = topRgba };
-        _vertices[_vertexCount++] = new UIVertex { X = x1, Y = y1, U = 0, V = 0, Rgba = bottomRgba };
-        _vertices[_vertexCount++] = new UIVertex { X = x1, Y = y, U = 0, V = 0, Rgba = topRgba };
+        Add(x, y, 0f, 0f, topRgba);
+        Add(x, y1, 0f, 0f, bottomRgba);
+        Add(x1, y1, 0f, 0f, bottomRgba);
+        Add(x, y, 0f, 0f, topRgba);
+        Add(x1, y1, 0f, 0f, bottomRgba);
+        Add(x1, y, 0f, 0f, topRgba);
     }
 
-    public unsafe void Flush()
+    private void Add(float x, float y, float u, float v, uint rgba)
+    {
+        _vertices[_vertexCount++] = new Vertex(x, y, 0.0f, u, v, (int)rgba, 0)
+        {
+            ArrayLayer = NoArrayLayer,
+            Light = Tessellator.FullBrightLight,
+        };
+    }
+
+    public void Flush()
     {
         if (_vertexCount == 0) return;
 
@@ -203,53 +197,46 @@ public sealed class UIBatchRenderer : IDisposable
         // Everything but the blend, which is the caller's to choose; see <see cref="Blend" />.
         GLManager.State.Apply(RenderState.Interface with { Blend = Blend });
 
-        GLManager.GL.UseProgram(_shader.ProgramId);
-        _shader.SetUseTexture(_useTexture);
+        Texture2D? texture = _useTexture ? Texture2D.Find(_currentTextureId) : null;
+        texture?.Bind();
 
-        int logicalTexId = _useTexture && _glTexToLogicalId.TryGetValue(_currentTextureId, out int id) ? id : 0;
-        _shader.SetTextureId(logicalTexId);
+        GLManager.GuiTextureId = texture is null
+            ? 0
+            : _texToLogicalId.GetValueOrDefault(_currentTextureId);
 
-        if (_useTexture && _currentTextureId != 0)
+        // The quads are already in interface space, under the projection the interface chose. The
+        // ambient matrices belong to whatever was drawing before — a world, a mob preview — so they
+        // are replaced for the length of the submission rather than trusted.
+        GLManager.Projection.Push();
+        GLManager.ModelView.Push();
+        GLManager.Projection.Load(_projection);
+        GLManager.ModelView.LoadIdentity();
+
+        try
         {
-            _gl.ActiveTexture(GLEnum.Texture0);
-            _gl.BindTexture(GLEnum.Texture2D, _currentTextureId);
+            DrawCommand command = new()
+            {
+                Vertices = MemoryMarshal.AsBytes(_vertices.AsSpan(0, _vertexCount)),
+                VertexCount = _vertexCount,
+                Topology = DrawTopology.Triangles,
+                Channels = texture is null
+                    ? VertexChannels.Color
+                    : VertexChannels.Color | VertexChannels.Texture,
+                Slot = texture is null ? ProgramSlot.Basic : ProgramSlot.Gui,
+            };
+
+            GLManager.DrawTarget.Submit(command);
         }
-
-        _gl.BindVertexArray(_vaoId);
-        _gl.BindBuffer(GLEnum.ArrayBuffer, _vboId);
-
-        _gl.BufferSubData(GLEnum.ArrayBuffer, 0, new ReadOnlySpan<UIVertex>(_vertices, 0, _vertexCount));
-
-        _gl.DrawArrays(GLEnum.Triangles, 0, (uint)_vertexCount);
-        _gl.BindVertexArray(0);
-        _vertexCount = 0;
-
-        GLManager.GL.UseProgram(0);
-    }
-
-    /// <summary>
-    ///     Draws queued UI geometry through the native WebGPU command encoder.
-    ///     The caller has already uploaded the projection and texture uniforms.
-    /// </summary>
-    public unsafe void FlushWebGpu(RenderPassEncoder* pass, WgpuPipeline pipeline)
-    {
-        if (_vertexCount == 0) return;
-
-        WebGpuDevice device = WebGpuDevice.Current!;
-        _gpuBuffer ??= new WgpuDynamicBuffer(device, (ulong)(MaxVertices * sizeof(UIVertex)));
-
-        _gpuBuffer.Write(new ReadOnlySpan<UIVertex>(_vertices, 0, _vertexCount));
-        _gpuBuffer.Bind(pass);
-
-        device.Api.RenderPassEncoderDraw(pass, (uint)_vertexCount, 1, 0, 0);
-        _vertexCount = 0;
+        finally
+        {
+            GLManager.ModelView.Pop();
+            GLManager.Projection.Pop();
+            _vertexCount = 0;
+        }
     }
 
     public void Dispose()
     {
-        _gl.DeleteVertexArray(_vaoId);
-        _gl.DeleteBuffer(_vboId);
-        _gpuBuffer?.Dispose();
-        _shader.Dispose();
+        // Nothing owned. Kept so the interface can go on disposing what it built.
     }
 }

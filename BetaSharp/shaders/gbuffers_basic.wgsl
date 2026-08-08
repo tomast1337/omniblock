@@ -33,7 +33,9 @@ struct VertexOutput {
 fn vs_main(in: VertexInput) -> VertexOutput {
     var out: VertexOutput;
     out.position = u.projectionMatrix * u.modelViewMatrix * vec4(in.position, 1.0);
-    out.color = select(u.tint, in.color * u.tint, u.params.x > 0.5);
+    // One or the other, never both: in GL the tint is attribute 1's default value, so a draw that
+    // binds a colour array replaces it rather than modulating by it.
+    out.color = select(u.tint, in.color, u.params.x > 0.5);
     return out;
 }
 

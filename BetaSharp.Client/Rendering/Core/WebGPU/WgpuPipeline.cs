@@ -205,17 +205,23 @@ public sealed unsafe class WgpuPipeline : IDisposable
             DepthStencilState depthStencil = default;
             DepthStencilState* pDepthStencil = null;
 
-            if (state.DepthTest && depthFormat != TextureFormat.Undefined)
+            // Whether the pass has a depth attachment, not whether this draw tests against it: a
+            // pipeline with no depth-stencil state cannot be set on a pass that has one, and
+            // rejecting the pipeline is not what "depth test off" means. GL's off is a test that
+            // always passes and writes nothing, so that is what it becomes here.
+            if (depthFormat != TextureFormat.Undefined)
             {
                 depthStencil = new DepthStencilState
                 {
                     Format = depthFormat,
-                    DepthWriteEnabled = state.DepthWrite,
-                    DepthCompare = state.DepthCompare switch
-                    {
-                        DepthCompare.Equal => CompareFunction.Equal,
-                        _ => CompareFunction.LessEqual,
-                    },
+                    DepthWriteEnabled = state.DepthTest && state.DepthWrite,
+                    DepthCompare = !state.DepthTest
+                        ? CompareFunction.Always
+                        : state.DepthCompare switch
+                        {
+                            DepthCompare.Equal => CompareFunction.Equal,
+                            _ => CompareFunction.LessEqual,
+                        },
                     DepthBias = (int)state.DepthBias.Constant,
                     DepthBiasSlopeScale = state.DepthBias.SlopeScale,
                     DepthBiasClamp = 0.0f,

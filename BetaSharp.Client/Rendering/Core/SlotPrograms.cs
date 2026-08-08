@@ -66,6 +66,7 @@ public static class SlotPrograms
         Register(ProgramSlot.Textured, new TexturedSlotProgram(options));
         Register(ProgramSlot.TexturedLit, new TexturedLitSlotProgram(options));
         Register(ProgramSlot.Terrain, new TerrainSlotProgram(options));
+        Register(ProgramSlot.Gui, new GuiSlotProgram(options));
     }
 
     public static void Dispose()
