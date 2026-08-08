@@ -52,12 +52,6 @@ public sealed unsafe class WgpuTexture : IDisposable
     /// <summary>The format every texture in this path is uploaded as.</summary>
     public const TextureFormat Format = TextureFormat.Rgba8Unorm;
 
-    /// <summary>
-    ///     A row of a <c>QueueWriteTexture</c> has to start on this boundary whenever more than one
-    ///     row is written, so anything narrower than 64 pixels is padded to it before upload.
-    /// </summary>
-    private const uint BytesPerRowAlignment = 256;
-
     private readonly WebGpuDevice _device;
     private readonly Dictionary<nint, nint> _bindGroups = [];
     private WgpuSamplerDescription _samplerDescription;
@@ -121,11 +115,9 @@ public sealed unsafe class WgpuTexture : IDisposable
         if (_samplerDescription == sampler) return;
         _samplerDescription = sampler;
 
-        Silk.NET.WebGPU.WebGPU api = _device.Api;
-        foreach (nint bindGroup in _bindGroups.Values) api.BindGroupRelease((BindGroup*)bindGroup);
+        WgpuRelease.Deferred(_device, [.. _bindGroups.Values], (nint)Sampler, 0, 0);
         _bindGroups.Clear();
 
-        api.SamplerRelease(Sampler);
         Sampler = CreateSampler(sampler);
     }
 
@@ -155,25 +147,8 @@ public sealed unsafe class WgpuTexture : IDisposable
     {
         if (width == 0 || height == 0) return;
 
-        uint tightBytesPerRow = width * 4;
-        uint paddedBytesPerRow = height > 1
-            ? (tightBytesPerRow + BytesPerRowAlignment - 1) / BytesPerRowAlignment * BytesPerRowAlignment
-            : tightBytesPerRow;
-
-        if (paddedBytesPerRow == tightBytesPerRow)
-        {
-            Write(level, x, y, width, height, rgba, tightBytesPerRow);
-            return;
-        }
-
-        byte[] padded = new byte[paddedBytesPerRow * height];
-        for (uint row = 0; row < height; row++)
-        {
-            rgba.Slice((int)(row * tightBytesPerRow), (int)tightBytesPerRow)
-                .CopyTo(padded.AsSpan((int)(row * paddedBytesPerRow)));
-        }
-
-        Write(level, x, y, width, height, padded, paddedBytesPerRow);
+        ReadOnlySpan<byte> rows = WgpuPixelRows.Align(rgba, width, height, out uint bytesPerRow);
+        Write(level, x, y, width, height, rows, bytesPerRow);
     }
 
     private void Write(uint level, uint x, uint y, uint width, uint height,
@@ -227,16 +202,9 @@ public sealed unsafe class WgpuTexture : IDisposable
         if (_disposed) return;
         _disposed = true;
 
-        Silk.NET.WebGPU.WebGPU api = _device.Api;
-        foreach (nint bindGroup in _bindGroups.Values) api.BindGroupRelease((BindGroup*)bindGroup);
+        // Deferred like the sampler swap, and for the same reason: a texture pack reload disposes
+        // every texture it is replacing from inside the frame that is drawing the options screen.
+        WgpuRelease.Deferred(_device, [.. _bindGroups.Values], (nint)Sampler, (nint)View, (nint)Texture);
         _bindGroups.Clear();
-
-        if (Sampler is not null) api.SamplerRelease(Sampler);
-        if (View is not null) api.TextureViewRelease(View);
-        if (Texture is not null)
-        {
-            api.TextureDestroy(Texture);
-            api.TextureRelease(Texture);
-        }
     }
 }

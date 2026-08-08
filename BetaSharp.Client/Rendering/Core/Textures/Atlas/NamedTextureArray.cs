@@ -13,7 +13,7 @@ namespace BetaSharp.Client.Rendering.Core.Textures.Atlas;
 /// </summary>
 /// <remarks>
 ///     One instance per domain — <c>terrain</c>, <c>items</c>, and any future one — each backed by
-///     its own <see cref="AtlasTileMap" /> and its own <see cref="GLTextureArray" />. A pack override
+///     its own <see cref="AtlasTileMap" /> and its own <see cref="TextureArray" />. A pack override
 ///     lives at <c>textures/&lt;domain&gt;/&lt;name&gt;.png</c>; resolution mismatches rebuild every
 ///     layer at the largest size seen (see <see cref="Rebuild" />) rather than silently losing detail
 ///     on a high-resolution pack.
@@ -27,7 +27,7 @@ public sealed class NamedTextureArray : IDisposable
 
     private readonly Dictionary<string, TextureSource> _sourceByName = [];
 
-    public GLTextureArray? Texture { get; private set; }
+    public TextureArray? Texture { get; private set; }
     public int LayerSize { get; private set; }
 
     public NamedTextureArray(string domain, AtlasTileMap tileMap, Func<Image<Rgba32>> loadDefaultGridImage, Func<TexturePack> activePack)
@@ -78,7 +78,7 @@ public sealed class NamedTextureArray : IDisposable
                 if (i != AtlasTileMap.MissingLayer) _sourceByName[_tileMap.Tiles[i - 1].Name] = resolved[i].Source;
             }
 
-            Texture ??= new GLTextureArray($"NamedTextureArray[{_domain}]");
+            Texture ??= new TextureArray($"NamedTextureArray[{_domain}]");
             fixed (byte* ptr = packed)
             {
                 Texture.Upload(targetSize, targetSize, resolved.Length, ptr);

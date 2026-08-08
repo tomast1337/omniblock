@@ -58,6 +58,9 @@ public sealed unsafe class WebGpuDevice : IDisposable
     /// <summary>The encoder the current frame is recording into, released when the next one replaces it.</summary>
     private CommandEncoder* _commandEncoder;
 
+    /// <summary>Releases waiting for the frame that may have recorded against them to be submitted.</summary>
+    private readonly List<Action> _retired = [];
+
     private bool _disposed;
 
     private WebGpuDevice(INativeWindowSource window, uint width, uint height)
@@ -194,10 +197,47 @@ public sealed unsafe class WebGpuDevice : IDisposable
         return Api.TextureCreateView(surfaceTexture.Texture, in viewDescriptor);
     }
 
+    /// <summary>
+    ///     Holds a release back until the frame being recorded has been submitted.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Destroying a texture the current encoder has already recorded a draw against fails
+    ///         validation when that encoder is finished — and a texture pack can be switched from
+    ///         the options screen, which is drawn in the middle of the frame whose terrain pass just
+    ///         sampled the arrays being rebuilt.
+    ///     </para>
+    ///     <para>
+    ///         One frame is enough, and no fence is needed: work already submitted keeps its own
+    ///         reference to everything it uses, so a release after the submit is safe however long
+    ///         the GPU takes to get to it.
+    ///     </para>
+    /// </remarks>
+    public void Retire(Action release)
+    {
+        // Past disposal there is no frame left to wait for, and the device is about to take
+        // everything with it.
+        if (_disposed) return;
+
+        _retired.Add(release);
+    }
+
     public void Present()
     {
         Api.SurfacePresent(Surface);
         ReleaseFrameTexture();
+        DrainRetired();
+    }
+
+    private void DrainRetired()
+    {
+        if (_retired.Count == 0) return;
+
+        // Copied first: a release may retire something of its own, which belongs to the next frame.
+        Action[] releases = [.. _retired];
+        _retired.Clear();
+
+        foreach (Action release in releases) release();
     }
 
     private void ReleaseFrameTexture()
@@ -326,6 +366,9 @@ public sealed unsafe class WebGpuDevice : IDisposable
         {
             return;
         }
+
+        // Before the flag, so what is waiting still runs: nothing else is going to submit a frame.
+        DrainRetired();
 
         _disposed = true;
 
