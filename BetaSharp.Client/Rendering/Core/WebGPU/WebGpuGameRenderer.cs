@@ -45,6 +45,12 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         CommandEncoder* encoder = device.CreateCommandEncoder();
         EnsureResources(device);
 
+        // The frame that used these last has been submitted, so the buffers they hand out are free
+        // again.
+        _terrainPipeline!.ResetUniformPool();
+
+        _game.GameRenderer.ProcessLookInput();
+
         // Null until the pack has been read and the array uploaded, which the first world load
         // does. Restated per frame because a pack switch replaces the array outright.
         WgpuTextureArray? terrain = _game.TextureManager.TerrainArray.Texture?.Wgpu;

@@ -812,9 +812,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 new Vector3D<float>((float)camRel.X, (float)camRel.Y, (float)camRel.Z));
             Matrix4X4<float> modelView = translation * _modelView;
 
-            ChunkUniforms uniforms = BuildChunkUniforms(modelView, renderer.Position, fadeProgress);
-            pipeline.UploadUniforms(uniforms);
-            pipeline.BindUniformGroup(pass);
+            pipeline.BindNextUniforms(pass, BuildChunkUniforms(modelView, renderer.Position, fadeProgress));
 
             renderer.RenderWebGpu(pass, 0);
         }
@@ -848,9 +846,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 new Vector3D<float>((float)camRel.X, (float)camRel.Y, (float)camRel.Z));
             Matrix4X4<float> modelView = translation * _modelView;
 
-            ChunkUniforms uniforms = BuildChunkUniforms(modelView, renderer.Position, fadeProgress);
-            pipeline.UploadUniforms(uniforms);
-            pipeline.BindUniformGroup(pass);
+            pipeline.BindNextUniforms(pass, BuildChunkUniforms(modelView, renderer.Position, fadeProgress));
 
             renderer.RenderWebGpu(pass, 1);
         }
