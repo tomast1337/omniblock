@@ -112,4 +112,15 @@ public sealed class RenderContext
     public FogState Fog { get; set; } = FogState.Default;
     public LightingState Lighting { get; set; } = LightingState.Default;
     public WorldLightState WorldLight { get; set; } = WorldLightState.Default;
+
+    /// <summary>
+    ///     Which interface texture the next GUI draw samples, by the numbering in
+    ///     <c>shaders/ui_textures.properties</c>. Zero for one that is not named there.
+    /// </summary>
+    /// <remarks>
+    ///     Ambient rather than part of the draw because it is a pack's hook, not the client's: the
+    ///     interface arrives at the backend as untyped quads, and this is the only thing that tells
+    ///     a pack it is shading an inventory rather than a button.
+    /// </remarks>
+    public int GuiTextureId { get; set; }
 }

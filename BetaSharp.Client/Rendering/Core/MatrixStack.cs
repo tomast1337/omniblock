@@ -26,6 +26,13 @@ public class MatrixStack
         Version++;
     }
 
+    /// <summary>Replaces the top with a matrix the caller has already built.</summary>
+    public void Load(Matrix4X4<float> matrix)
+    {
+        _current = matrix;
+        Version++;
+    }
+
     public void Push()
     {
         _stack.Push(_current);

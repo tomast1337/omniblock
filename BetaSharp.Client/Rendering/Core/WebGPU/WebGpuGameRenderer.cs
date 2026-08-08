@@ -140,16 +140,23 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             _offscreenFb.GetBlitBindGroup(device, _blitPipeline.TextureBindGroupLayout), 0, null);
         _blitQuad!.Draw(swapPass);
 
+        api.RenderPassEncoderEnd(swapPass);
+        api.RenderPassEncoderRelease(swapPass);
+
+        // --- Interface pass ---
+        RenderInterfacePass(device, encoder, swapView, tickDelta);
+
+        // --- Overlay pass: ImGui ---
         // Null on any frame the game did not open and render an ImGui frame — the overlay is only
         // built when the debug windows are up.
         ImDrawDataPtr drawData = ImGui.GetDrawData();
         if (drawData.Handle is not null)
         {
-            _imguiWgpu!.RenderDrawData(drawData, swapPass);
+            RenderPassEncoder* overlayPass = BeginSwapPass(api, encoder, swapView, null);
+            _imguiWgpu!.RenderDrawData(drawData, overlayPass);
+            api.RenderPassEncoderEnd(overlayPass);
+            api.RenderPassEncoderRelease(overlayPass);
         }
-
-        api.RenderPassEncoderEnd(swapPass);
-        api.RenderPassEncoderRelease(swapPass);
 
         CommandBuffer* cmdBuf = api.CommandEncoderFinish(encoder, null);
         api.QueueSubmit(device.Queue, 1, &cmdBuf);
@@ -160,6 +167,77 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         api.TextureViewRelease(swapView);
 
         device.Present();
+    }
+
+    /// <summary>
+    ///     Draws the HUD and the current screen onto the swapchain, over the blitted world.
+    /// </summary>
+    /// <remarks>
+    ///     A pass of its own rather than more draws in the blit's, because the interface is not all
+    ///     flat: an item icon and the inventory's mob preview are 3D geometry that needs a depth
+    ///     buffer, and the pipelines the draw target builds all declare one. It borrows the
+    ///     offscreen framebuffer's depth texture, which the blit has finished reading from by the
+    ///     time this begins, and clears it — nothing here is meant to be occluded by the world.
+    /// </remarks>
+    private void RenderInterfacePass(WebGpuDevice device, CommandEncoder* encoder,
+        TextureView* swapView, float tickDelta)
+    {
+        Silk.NET.WebGPU.WebGPU api = device.Api;
+        RenderPassEncoder* pass = BeginSwapPass(api, encoder, swapView, _offscreenFb!.DepthView);
+
+        // How a block-shaped draw in the interface is lit. Default with no world, so the menus do
+        // not inherit the last one's nightfall.
+        GLManager.WorldLight = _game.World is { } world
+            ? new WorldLightState((float)world.Environment.AmbientDarkness, world.Dimension.LightLevelToLuminance[0])
+            : WorldLightState.Default;
+
+        _drawTarget.BeginPass(pass);
+
+        try
+        {
+            _game.GameRenderer.RenderInterface(tickDelta);
+        }
+        finally
+        {
+            _drawTarget.EndPass();
+            api.RenderPassEncoderEnd(pass);
+            api.RenderPassEncoderRelease(pass);
+        }
+    }
+
+    /// <summary>
+    ///     Begins a pass on the swapchain view that keeps what is already there, optionally with a
+    ///     depth attachment it clears.
+    /// </summary>
+    private static RenderPassEncoder* BeginSwapPass(Silk.NET.WebGPU.WebGPU api, CommandEncoder* encoder,
+        TextureView* swapView, TextureView* depthView)
+    {
+        RenderPassColorAttachment colorAttach = new()
+        {
+            View = swapView,
+            LoadOp = LoadOp.Load,
+            StoreOp = StoreOp.Store,
+            DepthSlice = unchecked((uint)-1),
+        };
+
+        RenderPassDepthStencilAttachment depthAttach = new()
+        {
+            View = depthView,
+            DepthLoadOp = LoadOp.Clear,
+            DepthStoreOp = StoreOp.Store,
+            DepthClearValue = 1.0f,
+            StencilLoadOp = LoadOp.Undefined,
+            StencilStoreOp = StoreOp.Undefined,
+        };
+
+        RenderPassDescriptor descriptor = new()
+        {
+            ColorAttachmentCount = 1,
+            ColorAttachments = &colorAttach,
+            DepthStencilAttachment = depthView is null ? null : &depthAttach,
+        };
+
+        return api.CommandEncoderBeginRenderPass(encoder, in descriptor);
     }
 
     private void EnsureResources(WebGpuDevice device)

@@ -302,10 +302,7 @@ public partial class BetaSharp :
         TextureHandle terrainTexture = TextureManager.GetTextureId("/terrain.png");
         TextureHandle itemsTexture = TextureManager.GetTextureId("/gui/items.png");
 
-        if (Display.Backend == GraphicsBackend.OpenGL)
-        {
-            BuildBatchRenderer(terrainTexture.Id, itemsTexture.Id);
-        }
+        BuildBatchRenderer(terrainTexture.Id, itemsTexture.Id);
 
         UIContext = new UIContext(
             Options,

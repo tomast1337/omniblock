@@ -29,7 +29,8 @@ struct VertexOutput {
 fn vs_main(in: VertexInput) -> VertexOutput {
     var out: VertexOutput;
     out.position = u.projectionMatrix * u.modelViewMatrix * vec4(in.position, 1.0);
-    out.color = select(u.tint, in.color * u.tint, u.params.x > 0.5);
+    // One or the other — see gbuffers_basic.wgsl.
+    out.color = select(u.tint, in.color, u.params.x > 0.5);
     out.texcoord = in.texcoord;
     return out;
 }

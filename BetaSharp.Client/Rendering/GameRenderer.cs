@@ -262,24 +262,6 @@ public class GameRenderer
 
         if (!_client.SkipRenderWorld)
         {
-            ScaledResolution scaledResolution = new(_client.Options, _client.DisplayWidth, _client.DisplayHeight);
-            int scaledWidth = scaledResolution.ScaledWidth;
-            int scaledHeight = scaledResolution.ScaledHeight;
-            int scaledMouseX;
-            int scaledMouseY;
-            int vpOffsetX = (int)_client.DebugViewportOffset.X;
-            int vpOffsetY = (int)_client.DebugViewportOffset.Y;
-            if (_client.IsControllerMode)
-            {
-                scaledMouseX = (int)(_client.VirtualCursor.X * scaledWidth / _client.DisplayWidth);
-                scaledMouseY = (int)(_client.VirtualCursor.Y * scaledHeight / _client.DisplayHeight);
-            }
-            else
-            {
-                scaledMouseX = (Mouse.getX() - vpOffsetX) * scaledWidth / _client.DisplayWidth;
-                scaledMouseY = scaledHeight - (Mouse.getY() - vpOffsetY) * scaledHeight / _client.DisplayHeight - 1;
-            }
-
             int targetFps = 30 + (int)(_client.Options.LimitFramerate * 210.0f);
             bool desiredVSync = _client.Options.VSync && targetFps >= 240;
 
@@ -307,36 +289,9 @@ public class GameRenderer
                 {
                     RenderFrame(tickDelta, _client.World.GetTime());
                 }
-
-                using (Profiler.Begin("RenderGameOverlay"))
-                {
-                    if (!_client.Options.HideGUI || _client.CurrentScreen != null)
-                    {
-                        SetupHudRender();
-                        _client.HUD.Render(scaledMouseX, scaledMouseY, tickDelta);
-                    }
-                }
-            }
-            else
-            {
-                GLManager.GL.Viewport(0, 0, (uint)_client.FramebufferManager.FramebufferWidth, (uint)_client.FramebufferManager.FramebufferHeight);
-                GLManager.Projection.LoadIdentity();
-                GLManager.ModelView.LoadIdentity();
-                SetupHudRender();
             }
 
-            if (_client.CurrentScreen != null)
-            {
-                GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
-                SetupHudRender();
-                _client.CurrentScreen.Render(scaledMouseX, scaledMouseY, tickDelta);
-
-                if (_client.IsControllerMode)
-                {
-                    DrawVirtualCursor(scaledMouseX, scaledMouseY);
-                }
-            }
-
+            RenderInterface(tickDelta);
 
             _client.FramebufferManager.End();
 
@@ -827,10 +782,86 @@ public class GameRenderer
         }
     }
 
+    /// <summary>
+    ///     Draws the HUD and the current screen over whatever the frame already holds.
+    /// </summary>
+    /// <remarks>
+    ///     Separate from <see cref="OnFrameUpdate" /> because the world and the interface reach the
+    ///     screen by different routes under WebGPU — the world into an offscreen target that is
+    ///     blitted, the interface straight onto the swapchain in a pass of its own — so the WebGPU
+    ///     renderer calls this itself. Everything it does goes through the draw-command seam; the
+    ///     two direct GL calls left are the ones with no meaning off OpenGL, and they are skipped
+    ///     rather than emulated.
+    /// </remarks>
+    public void RenderInterface(float tickDelta)
+    {
+        ScaledResolution scaledResolution = new(_client.Options, _client.DisplayWidth, _client.DisplayHeight);
+        GetScaledMouse(scaledResolution, out int scaledMouseX, out int scaledMouseY);
+
+        if (_client.World != null)
+        {
+            using (Profiler.Begin("RenderGameOverlay"))
+            {
+                if (!_client.Options.HideGUI || _client.CurrentScreen != null)
+                {
+                    SetupHudRender();
+                    _client.HUD.Render(scaledMouseX, scaledMouseY, tickDelta);
+                }
+            }
+        }
+        else
+        {
+            if (_client.FramebufferManager is { } framebuffers)
+            {
+                GLManager.GL.Viewport(0, 0, (uint)framebuffers.FramebufferWidth, (uint)framebuffers.FramebufferHeight);
+            }
+
+            GLManager.Projection.LoadIdentity();
+            GLManager.ModelView.LoadIdentity();
+            SetupHudRender();
+        }
+
+        if (_client.CurrentScreen != null)
+        {
+            // Nothing to clear under WebGPU: the pass the interface is drawn in owns its depth
+            // attachment and clears it when it begins.
+            GLManager.GLOrNull?.Clear(ClearBufferMask.DepthBufferBit);
+            SetupHudRender();
+            _client.CurrentScreen.Render(scaledMouseX, scaledMouseY, tickDelta);
+
+            if (_client.IsControllerMode)
+            {
+                DrawVirtualCursor(scaledMouseX, scaledMouseY);
+            }
+        }
+    }
+
+    /// <summary>Where the pointer is in interface coordinates, past the F3 viewport's offset.</summary>
+    private void GetScaledMouse(ScaledResolution resolution, out int x, out int y)
+    {
+        int scaledWidth = resolution.ScaledWidth;
+        int scaledHeight = resolution.ScaledHeight;
+
+        if (_client.IsControllerMode)
+        {
+            x = (int)(_client.VirtualCursor.X * scaledWidth / _client.DisplayWidth);
+            y = (int)(_client.VirtualCursor.Y * scaledHeight / _client.DisplayHeight);
+            return;
+        }
+
+        int vpOffsetX = (int)_client.DebugViewportOffset.X;
+        int vpOffsetY = (int)_client.DebugViewportOffset.Y;
+
+        x = (Mouse.getX() - vpOffsetX) * scaledWidth / _client.DisplayWidth;
+        y = scaledHeight - (Mouse.getY() - vpOffsetY) * scaledHeight / _client.DisplayHeight - 1;
+    }
+
     public void SetupHudRender()
     {
         ScaledResolution sr = new(_client.Options, _client.DisplayWidth, _client.DisplayHeight);
-        GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
+
+        // See RenderInterface: under WebGPU the pass clears its own depth.
+        GLManager.GLOrNull?.Clear(ClearBufferMask.DepthBufferBit);
         GLManager.Projection.LoadIdentity();
         GLManager.Projection.Ortho(0.0D, sr.ScaledWidthDouble, sr.ScaledHeightDouble, 0.0D, 1000.0D, 3000.0D);
         GLManager.ModelView.LoadIdentity();

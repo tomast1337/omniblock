@@ -138,6 +138,13 @@ public class GLManager
         set => Context.FogEnabled = value;
     }
 
+    /// <inheritdoc cref="RenderContext.GuiTextureId" />
+    public static int GuiTextureId
+    {
+        get => Context.GuiTextureId;
+        set => Context.GuiTextureId = value;
+    }
+
     /// <summary>
     ///     The alpha threshold in the form every shader takes it: below zero when the test is off.
     /// </summary>
