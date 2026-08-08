@@ -134,6 +134,8 @@ public sealed class GlDrawTarget : IDrawTarget
         gl.BindVertexArray(_vao);
         TessellatorVertexLayout.Bind(gl, command.Channels);
 
+        ApplyScissor(gl);
+
         ISlotProgram program = Resolve(command.Slot);
         program.Activate();
         gl.DrawArrays(ToDrawMode(command.Topology), 0, (uint)command.VertexCount);
@@ -156,6 +158,24 @@ public sealed class GlDrawTarget : IDrawTarget
         }
 
         return new GlStaticMesh(buffer, command.VertexCount, ToDrawMode(command.Topology), command.Channels);
+    }
+
+    /// <summary>Clips the next draw to <see cref="RenderContext.Scissor" />, if there is one.</summary>
+    /// <remarks>
+    ///     Restated per draw rather than when the caller sets it, because the scissor test is one of
+    ///     the pieces of state ImGui's backend and the framebuffer blits change behind us. Whoever
+    ///     asked to clip has usually stopped running by the time the draw happens.
+    /// </remarks>
+    internal static void ApplyScissor(IGL gl)
+    {
+        if (GLManager.Scissor is not { } rect)
+        {
+            gl.Disable(GLEnum.ScissorTest);
+            return;
+        }
+
+        gl.Enable(GLEnum.ScissorTest);
+        gl.Scissor(rect.X, rect.Y, (uint)Math.Max(0, rect.Width), (uint)Math.Max(0, rect.Height));
     }
 
     /// <summary>The program a command's slot names, or the caller's own if it named none.</summary>
@@ -211,6 +231,8 @@ internal sealed class GlStaticMesh(
         }
 
         gl.BindVertexArray(_vao);
+
+        GlDrawTarget.ApplyScissor(gl);
 
         ISlotProgram program = GlDrawTarget.Resolve(slot);
         program.Activate();

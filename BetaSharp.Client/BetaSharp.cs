@@ -277,7 +277,11 @@ public partial class BetaSharp :
             }
             else
             {
-                WebGpuDevice.Create(Display.getWindow()!, DisplayWidth, DisplayHeight);
+                // Framebuffer pixels, not window units: on a scaled display the two differ, and
+                // everything measured against a render target — the clip rectangles the interface
+                // computes above all — is in the former.
+                WebGpuDevice.Create(Display.getWindow()!,
+                    Display.getFramebufferWidth(), Display.getFramebufferHeight());
                 GLManager.InitWebGpu();
                 _debugTelemetry.CaptureSystemInfo(null);
                 _webGpuRenderer = new WebGpuGameRenderer(this);
@@ -1817,9 +1821,16 @@ public partial class BetaSharp :
         DisplayHeight = newHeight;
         Mouse.setDisplayDimensions(DisplayWidth, DisplayHeight);
 
+        int framebufferWidth = Display.getFramebufferWidth();
+        int framebufferHeight = Display.getFramebufferHeight();
+
         // Null under WebGPU, where the offscreen targets belong to WebGpuGameRenderer and follow
         // the surface size on their own.
-        FramebufferManager?.Resize(Display.getFramebufferWidth(), Display.getFramebufferHeight());
+        FramebufferManager?.Resize(framebufferWidth, framebufferHeight);
+
+        // The surface does not follow the window on its own, and everything the WebGPU renderer
+        // sizes — the offscreen target, the projection, the scissor rectangles — reads it.
+        WebGpuDevice.Current?.Configure((uint)framebufferWidth, (uint)framebufferHeight);
     }
 
     private void ScreenshotListener()

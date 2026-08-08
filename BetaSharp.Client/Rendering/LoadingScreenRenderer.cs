@@ -13,6 +13,18 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
     private long _lastUpdateMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     private bool _ignoreShutdownCheck;
 
+    /// <summary>
+    ///     Whether this can put anything on screen at all, which under WebGPU it cannot.
+    /// </summary>
+    /// <remarks>
+    ///     The loading screen draws and presents a frame of its own, from wherever world loading
+    ///     happens to be. OpenGL allows that — a draw goes to whatever is bound. WebGPU records
+    ///     draws into a pass on an encoder the game loop owns, and there is no pass open here.
+    ///     Showing progress needs the loading callbacks to drive a real frame; until they do, the
+    ///     load runs with nothing on screen rather than throwing on the first draw.
+    /// </remarks>
+    private static bool CanDraw => GLManager.GLOrNull is not null;
+
     public void BeginLoading(string message)
     {
         _ignoreShutdownCheck = false;
@@ -35,6 +47,9 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
         if (game.Running)
         {
             _titleText = message;
+
+            if (!CanDraw) return;
+
             ScaledResolution resolution = new(game.Options, game.DisplayWidth, game.DisplayHeight);
 
             GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
@@ -68,7 +83,7 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
             throw new BetaSharpShutdownException();
         }
 
-        if (!game.Running) return;
+        if (!game.Running || !CanDraw) return;
 
         long currentTimeMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         if (currentTimeMs - _lastUpdateMs < 20L) return;

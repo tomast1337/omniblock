@@ -123,4 +123,25 @@ public sealed class RenderContext
     ///     a pack it is shading an inventory rather than a button.
     /// </remarks>
     public int GuiTextureId { get; set; }
+
+    /// <summary>
+    ///     The rectangle draws are clipped to, or null for the whole target.
+    /// </summary>
+    /// <remarks>
+    ///     Not a <see cref="RenderState" /> field, even though it reads like one: in a backend with
+    ///     pipelines it is not part of one — WebGPU scissors with a command on the pass encoder,
+    ///     always on and defaulting to the whole attachment — and folding it in would multiply every
+    ///     state by every rectangle a screen happens to clip to. So it is ambient, read by the target
+    ///     at submission the way the matrices and the tint are.
+    /// </remarks>
+    public ScissorRect? Scissor { get; set; }
 }
+
+/// <summary>
+///     A clip rectangle in target pixels, measured from the bottom-left corner.
+/// </summary>
+/// <remarks>
+///     Bottom-left because that is where the callers compute it and where OpenGL wants it. WebGPU
+///     measures from the top-left, so its target flips this against the attachment height.
+/// </remarks>
+public readonly record struct ScissorRect(int X, int Y, int Width, int Height);

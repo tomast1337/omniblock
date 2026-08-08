@@ -97,7 +97,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
 
         // Everything drawn through the Tessellator belongs in this pass, so the target is only open
         // for its length — a draw outside it has nowhere to go and says so.
-        _drawTarget.BeginPass(terrainPass);
+        _drawTarget.BeginPass(terrainPass, _offscreenFb.Width, _offscreenFb.Height);
 
         try
         {
@@ -191,7 +191,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             ? new WorldLightState((float)world.Environment.AmbientDarkness, world.Dimension.LightLevelToLuminance[0])
             : WorldLightState.Default;
 
-        _drawTarget.BeginPass(pass);
+        _drawTarget.BeginPass(pass, device.Width, device.Height);
 
         try
         {

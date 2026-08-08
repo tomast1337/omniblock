@@ -157,7 +157,12 @@ public class UIRenderer
         {
             DepthWrite = true
         });
-        GLManager.GL.Clear((ClearBufferMask)GLEnum.DepthBufferBit);
+
+        // Skipped under WebGPU, where a depth buffer is cleared by the pass that begins on it and
+        // there is no command to clear one partway through. Doing this properly means ending the
+        // interface pass here and beginning another, which the draw target has no way to ask for
+        // yet; until then the item on the cursor can lose the depth test against a slot preview.
+        GLManager.GLOrNull?.Clear((ClearBufferMask)GLEnum.DepthBufferBit);
         GLManager.State.Apply(RenderState.Interface);
     }
 
@@ -247,12 +252,7 @@ public class UIRenderer
         _scissorEnabled = true;
         _scissorRect = (physicalX, physicalY, physicalWidth, physicalHeight);
 
-        // Scissoring is deliberately not a RenderState field, even though it reads like one. It is
-        // not part of a pipeline in a backend that has pipelines: WebGPU scissors with a command on
-        // the pass encoder, always on and defaulting to the whole attachment. Folding it into the
-        // state would multiply every state by every rectangle a screen happens to clip to.
-        GLManager.GL.Enable(GLEnum.ScissorTest);
-        GLManager.GL.Scissor(physicalX, physicalY, (uint)physicalWidth, (uint)physicalHeight);
+        GLManager.Scissor = new ScissorRect(physicalX, physicalY, physicalWidth, physicalHeight);
     }
 
     public void DisableClipping()
@@ -264,8 +264,7 @@ public class UIRenderer
             _scissorRect = (prev.X, prev.Y, prev.W, prev.H);
             if (prev.Enabled)
             {
-                GLManager.GL.Enable(GLEnum.ScissorTest);
-                GLManager.GL.Scissor(prev.X, prev.Y, (uint)Math.Max(0, prev.W), (uint)Math.Max(0, prev.H));
+                GLManager.Scissor = new ScissorRect(prev.X, prev.Y, Math.Max(0, prev.W), Math.Max(0, prev.H));
                 return;
             }
         }
@@ -274,7 +273,7 @@ public class UIRenderer
             _scissorEnabled = false;
         }
 
-        GLManager.GL.Disable(GLEnum.ScissorTest);
+        GLManager.Scissor = null;
     }
 
     public void DrawRect(float x, float y, float width, float height, Color color)
