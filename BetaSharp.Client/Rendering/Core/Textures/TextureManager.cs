@@ -118,7 +118,7 @@ public class TextureManager : IDisposable
 
     public TextureHandle Load(Image<Rgba32> image)
     {
-        var texture = new GLTexture("Image_Direct");
+        var texture = new Texture2D("Image_Direct");
         Load(image, texture, false);
         var handle = new TextureHandle(texture);
         _images[texture.Id] = (image, handle);
@@ -129,7 +129,7 @@ public class TextureManager : IDisposable
     {
         if (_textures.TryGetValue(path, out TextureHandle? handle)) return handle;
 
-        var texture = new GLTexture(path);
+        var texture = new Texture2D(path);
         handle = new TextureHandle(texture);
         _textures[path] = handle;
 
@@ -151,7 +151,7 @@ public class TextureManager : IDisposable
 
     }
 
-    public unsafe void Load(Image<Rgba32> image, GLTexture texture, bool isTerrain)
+    public unsafe void Load(Image<Rgba32> image, Texture2D texture, bool isTerrain)
     {
         texture.Bind();
 
@@ -262,7 +262,7 @@ public class TextureManager : IDisposable
     }
 
 
-    public unsafe void Bind(int[] packedARGB, int width, int height, GLTexture texture)
+    public unsafe void Bind(int[] packedARGB, int width, int height, Texture2D texture)
     {
         //TODO: this is potentially wrong but shouldn't crash
 
@@ -292,7 +292,7 @@ public class TextureManager : IDisposable
         }
     }
 
-    public void Delete(GLTexture texture)
+    public void Delete(Texture2D texture)
     {
         KeyValuePair<string, TextureHandle> textureEntry = _textures.FirstOrDefault(x => x.Value.Texture == texture);
         if (textureEntry.Key != null) _textures.Remove(textureEntry.Key);
@@ -324,7 +324,7 @@ public class TextureManager : IDisposable
         {
             entry.Value.Texture?.Dispose();
 
-            var newTexture = new GLTexture(entry.Key);
+            var newTexture = new Texture2D(entry.Key);
             entry.Value.Texture = newTexture;
 
             try
@@ -347,7 +347,7 @@ public class TextureManager : IDisposable
         {
             entry.Value.Handle.Texture?.Dispose();
 
-            var newTexture = new GLTexture(entry.Value.Handle.Texture?.Source ?? "Image_Direct_Reload");
+            var newTexture = new Texture2D(entry.Value.Handle.Texture?.Source ?? "Image_Direct_Reload");
             entry.Value.Handle.Texture = newTexture;
             Load(entry.Value.Image, newTexture, false);
             _images[newTexture.Id] = entry.Value;
@@ -384,7 +384,7 @@ public class TextureManager : IDisposable
                 ? _terrainHandle
                 : _itemsHandle;
 
-            GLTexture? atlasTexture = atlasHandle?.Texture;
+            Texture2D? atlasTexture = atlasHandle?.Texture;
             if (atlasTexture == null) continue;
 
             int targetTileSize = atlasTexture.Width / 16;
@@ -515,7 +515,7 @@ public class TextureManager : IDisposable
         }
     }
 
-    private unsafe void UpdateTileMipmaps(int baseX, int baseY, int dataSize, int targetTileSize, byte[] tileData, GLTexture texture)
+    private unsafe void UpdateTileMipmaps(int baseX, int baseY, int dataSize, int targetTileSize, byte[] tileData, Texture2D texture)
     {
         int maxMipLevels = (int)Math.Log2(targetTileSize) + 1;
         byte[] currentData = tileData;

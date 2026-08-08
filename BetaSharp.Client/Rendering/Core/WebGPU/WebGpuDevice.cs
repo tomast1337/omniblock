@@ -32,7 +32,6 @@ public sealed unsafe class WebGpuDevice : IDisposable
     public Adapter* Adapter { get; }
     public Device* Device { get; }
     public Queue* Queue { get; }
-    public CommandEncoder* CommandEncoder { get; }
 
     /// <summary>The format the surface's textures are in, and so the format every pipeline that draws to the screen must target.</summary>
     public TextureFormat SurfaceFormat { get; }
@@ -55,6 +54,9 @@ public sealed unsafe class WebGpuDevice : IDisposable
     ///     validation error at submit rather than at the release that caused it.
     /// </remarks>
     private Texture* _frameTexture;
+
+    /// <summary>The encoder the current frame is recording into, released when the next one replaces it.</summary>
+    private CommandEncoder* _commandEncoder;
 
     private bool _disposed;
 
@@ -84,8 +86,6 @@ public sealed unsafe class WebGpuDevice : IDisposable
         _errorCallback = new PfnErrorCallback(OnUncapturedError);
         Api.DeviceSetUncapturedErrorCallback(Device, _errorCallback, null);
 
-        CommandEncoder = CreateCommandEncoder();
-
         (SurfaceFormat, _presentMode, _alphaMode) = ChooseSurfaceConfiguration();
 
         s_logger.LogInformation(
@@ -101,13 +101,18 @@ public sealed unsafe class WebGpuDevice : IDisposable
     /// </summary>
     public CommandEncoder* CreateCommandEncoder()
     {
-        if (CommandEncoder is not null)
+        // The handle has to be stored, not just returned: releasing a local copy that was never
+        // updated freed the same first-frame encoder on every frame, and a freed wgpu handle
+        // released again corrupts the allocator rather than failing.
+        if (_commandEncoder is not null)
         {
-            Api.CommandEncoderRelease(CommandEncoder);
+            Api.CommandEncoderRelease(_commandEncoder);
+            _commandEncoder = null;
         }
 
         CommandEncoderDescriptor descriptor = default;
-        return Api.DeviceCreateCommandEncoder(Device, in descriptor);
+        _commandEncoder = Api.DeviceCreateCommandEncoder(Device, in descriptor);
+        return _commandEncoder;
     }
 
     /// <summary>The device when the backend is WebGPU; null otherwise and during the first frame before creation.</summary>
@@ -325,6 +330,12 @@ public sealed unsafe class WebGpuDevice : IDisposable
         _disposed = true;
 
         if (Current == this) Current = null;
+
+        if (_commandEncoder is not null)
+        {
+            Api.CommandEncoderRelease(_commandEncoder);
+            _commandEncoder = null;
+        }
 
         if (Queue is not null) Api.QueueRelease(Queue);
         if (Device is not null) Api.DeviceRelease(Device);

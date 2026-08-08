@@ -23,6 +23,9 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
     public uint Height { get; private set; }
 
     private readonly WebGpuDevice _device;
+    private readonly TextureFormat _colorFormat;
+    private Sampler* _blitSampler;
+    private BindGroup* _blitBindGroup;
     private bool _disposed;
 
     /// <summary>A format every backend offers for depth.</summary>
@@ -35,7 +38,7 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
         CreateColorTexture(device, width, height, format,
             out Texture* cTex, out TextureView* cView);
 
-        return new WgpuFramebuffer(device, width, height, cTex, cView, null, null);
+        return new WgpuFramebuffer(device, width, height, format, cTex, cView, null, null);
     }
 
     /// <summary>Creates a colour + depth framebuffer.</summary>
@@ -48,14 +51,15 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
         CreateDepthTexture(device, width, height,
             out Texture* dTex, out TextureView* dView);
 
-        return new WgpuFramebuffer(device, width, height, cTex, cView, dTex, dView);
+        return new WgpuFramebuffer(device, width, height, colorFormat, cTex, cView, dTex, dView);
     }
 
-    private WgpuFramebuffer(WebGpuDevice device, uint width, uint height,
+    private WgpuFramebuffer(WebGpuDevice device, uint width, uint height, TextureFormat colorFormat,
         Texture* colorTex, TextureView* colorView,
         Texture* depthTex, TextureView* depthView)
     {
         _device = device;
+        _colorFormat = colorFormat;
         Width = width;
         Height = height;
         ColorTexture = colorTex;
@@ -126,10 +130,14 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
         if (ColorTexture is not null) { api.TextureDestroy(ColorTexture); api.TextureRelease(ColorTexture); }
         if (DepthTexture is not null) { api.TextureDestroy(DepthTexture); api.TextureRelease(DepthTexture); }
 
+        // The pipelines that target this were built against the format it was created with, so a
+        // resize keeps it. Recreating as Rgba8Unorm silently invalidated every one of them.
         Width = width;
         Height = height;
 
-        CreateColorTexture(device, width, height, TextureFormat.Rgba8Unorm,
+        ReleaseBlitBindGroup();
+
+        CreateColorTexture(device, width, height, _colorFormat,
             out Texture* cTex, out TextureView* cView);
         CreateDepthTexture(device, width, height,
             out Texture* dTex, out TextureView* dView);
@@ -141,30 +149,40 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
     }
 
     /// <summary>
-    ///     Creates a bind group for the colour texture so a blit shader can sample it.
+    ///     The bind group a blit shader samples the colour texture through, built once and kept
+    ///     until a resize replaces the texture it points at.
     /// </summary>
-    public BindGroup* CreateBlitBindGroup(WebGpuDevice device, BindGroupLayout* layout)
+    /// <remarks>
+    ///     <paramref name="layout" /> must be the layout of the group the shader declares the
+    ///     texture and sampler in — group 1 in the pipelines built here, not the uniform group.
+    /// </remarks>
+    public BindGroup* GetBlitBindGroup(WebGpuDevice device, BindGroupLayout* layout)
     {
+        if (_blitBindGroup is not null) return _blitBindGroup;
+
         Silk.NET.WebGPU.WebGPU api = device.Api;
 
-        SamplerDescriptor samplerDesc = new()
+        if (_blitSampler is null)
         {
-            AddressModeU = AddressMode.ClampToEdge,
-            AddressModeV = AddressMode.ClampToEdge,
-            AddressModeW = AddressMode.ClampToEdge,
-            MagFilter = FilterMode.Linear,
-            MinFilter = FilterMode.Linear,
-            MipmapFilter = MipmapFilterMode.Nearest,
-            LodMinClamp = 0.0f,
-            LodMaxClamp = 1.0f,
-            MaxAnisotropy = 1,
-        };
+            SamplerDescriptor samplerDesc = new()
+            {
+                AddressModeU = AddressMode.ClampToEdge,
+                AddressModeV = AddressMode.ClampToEdge,
+                AddressModeW = AddressMode.ClampToEdge,
+                MagFilter = FilterMode.Linear,
+                MinFilter = FilterMode.Linear,
+                MipmapFilter = MipmapFilterMode.Nearest,
+                LodMinClamp = 0.0f,
+                LodMaxClamp = 1.0f,
+                MaxAnisotropy = 1,
+            };
 
-        Sampler* sampler = api.DeviceCreateSampler(device.Device, in samplerDesc);
+            _blitSampler = api.DeviceCreateSampler(device.Device, in samplerDesc);
+        }
 
         BindGroupEntry* entries = stackalloc BindGroupEntry[2];
         entries[0] = new BindGroupEntry { Binding = 0, TextureView = ColorView };
-        entries[1] = new BindGroupEntry { Binding = 1, Sampler = sampler };
+        entries[1] = new BindGroupEntry { Binding = 1, Sampler = _blitSampler };
 
         BindGroupDescriptor desc = new()
         {
@@ -173,9 +191,16 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
             Entries = entries,
         };
 
-        BindGroup* group = api.DeviceCreateBindGroup(device.Device, in desc);
-        api.SamplerRelease(sampler);
-        return group;
+        _blitBindGroup = api.DeviceCreateBindGroup(device.Device, in desc);
+        return _blitBindGroup;
+    }
+
+    private void ReleaseBlitBindGroup()
+    {
+        if (_blitBindGroup is null) return;
+
+        _device.Api.BindGroupRelease(_blitBindGroup);
+        _blitBindGroup = null;
     }
 
     public void Dispose()
@@ -184,6 +209,8 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
         _disposed = true;
 
         Silk.NET.WebGPU.WebGPU api = _device.Api;
+        ReleaseBlitBindGroup();
+        if (_blitSampler is not null) { api.SamplerRelease(_blitSampler); _blitSampler = null; }
         if (ColorView is not null) api.TextureViewRelease(ColorView);
         if (DepthView is not null) api.TextureViewRelease(DepthView);
         if (ColorTexture is not null) { api.TextureDestroy(ColorTexture); api.TextureRelease(ColorTexture); }

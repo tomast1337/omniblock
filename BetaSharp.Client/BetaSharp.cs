@@ -278,7 +278,7 @@ public partial class BetaSharp :
             else
             {
                 WebGpuDevice.Create(Display.getWindow()!, DisplayWidth, DisplayHeight);
-                GLManager.InitStub(new WebGpuStubGL());
+                GLManager.InitWebGpu();
                 _debugTelemetry.CaptureSystemInfo(null);
                 _webGpuRenderer = new WebGpuGameRenderer(this);
             }
@@ -291,13 +291,9 @@ public partial class BetaSharp :
 
     private void SetupCoreSystems()
     {
-        // GL-dependent renderers: these create GL shaders, VAOs, and textures immediately on
-        // construction. Under WebGPU they are replaced by native Wgpu* equivalents.
-        if (Display.Backend == GraphicsBackend.OpenGL)
-        {
-            // Must run before EntityRenderDispatcher.Instance below constructs every entity model.
-            Rendering.Entities.EntityInstanceBatchRenderer.Initialize(Options);
-        }
+        // Must run before EntityRenderDispatcher.Instance below constructs every entity model:
+        // each one registers its baked geometry here as it is built, on either backend.
+        Rendering.Entities.EntityInstanceBatchRenderer.Initialize(Options);
 
         TexturePackList = new TexturePacks(this, new DirectoryInfo(_gameDataDir));
         TextureManager = new TextureManager(this, TexturePackList, Options);
@@ -384,18 +380,21 @@ public partial class BetaSharp :
 
     private unsafe void SetupOpenGLAndInput()
     {
-        bool anisotropicFiltering = GLManager.GL.IsExtensionPresent("GL_EXT_texture_filter_anisotropic");
-        _logger.LogInformation($"Anisotropic Filtering Supported: {anisotropicFiltering}");
+        // Anisotropy is an extension under OpenGL and a sampler field under WebGPU, so the ceiling
+        // is queried in one case and assumed in the other.
+        GameOptions.MaxAnisotropy = 1.0f;
 
-        if (anisotropicFiltering)
+        if (GLManager.GLOrNull is { } gl)
         {
-            GLManager.GL.GetFloat(GLEnum.MaxTextureMaxAnisotropy, out float maxAnisotropy);
-            GameOptions.MaxAnisotropy = maxAnisotropy;
-            _logger.LogInformation($"Max Anisotropy: {maxAnisotropy}");
-        }
-        else
-        {
-            GameOptions.MaxAnisotropy = 1.0f;
+            bool anisotropicFiltering = gl.IsExtensionPresent("GL_EXT_texture_filter_anisotropic");
+            _logger.LogInformation($"Anisotropic Filtering Supported: {anisotropicFiltering}");
+
+            if (anisotropicFiltering)
+            {
+                gl.GetFloat(GLEnum.MaxTextureMaxAnisotropy, out float maxAnisotropy);
+                GameOptions.MaxAnisotropy = maxAnisotropy;
+                _logger.LogInformation($"Max Anisotropy: {maxAnisotropy}");
+            }
         }
 
         ImGui.CreateContext();
@@ -404,7 +403,7 @@ public partial class BetaSharp :
         // each with their own GImGui context pointer. We must share the context created
         // by cimgui.dll with both backend DLLs before calling their Init functions.
         ImGuiImplGLFW.SetCurrentContext(ImGui.GetCurrentContext());
-        ImGuiImplOpenGL3.SetCurrentContext(ImGui.GetCurrentContext());
+        if (GLManager.GLOrNull is not null) ImGuiImplOpenGL3.SetCurrentContext(ImGui.GetCurrentContext());
 
         ImGuiIO* io = ImGui.GetIO();
         io->ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard | ImGuiConfigFlags.DockingEnable;
@@ -414,8 +413,10 @@ public partial class BetaSharp :
         Mouse.create(Display.getGlfw(), Display.GetWindowHandle(), Display.getWidth(), Display.getHeight());
         Controller.Create(Display.getGlfw(), Display.GetWindowHandle());
 
+        // InitForOpenGL is only ImGui's GLFW input backend, which both backends need; the renderer
+        // half of ImGui is ImGuiImplOpenGL3 here and ImGuiWgpuBackend there.
         ImGuiImplGLFW.InitForOpenGL((GLFWwindow*)Display.GetWindowHandle(), true);
-        ImGuiImplOpenGL3.Init("#version 330 core");
+        if (GLManager.GLOrNull is not null) ImGuiImplOpenGL3.Init("#version 330 core");
         DebugWindowManager.ApplyStyle();
 
         _debugWindowManager = new DebugWindowManager(this, () => InGameHasFocus);
@@ -441,7 +442,10 @@ public partial class BetaSharp :
         CheckGLError("Pre startup");
         GLManager.TextureEnabled = true;
         GLManager.ShadeModel = ShadeModel.Smooth;
-        GLManager.GL.ClearDepth(1.0D);
+
+        // The depth clear value is a context-wide setting in GL and a per-pass one in WebGPU, where
+        // each render pass descriptor carries its own.
+        GLManager.GLOrNull?.ClearDepth(1.0D);
 
         // The state every frame starts from, and the one the rest of the renderer is traced
         // against. It is named here rather than assembled from a handful of enables so that the
@@ -478,7 +482,9 @@ public partial class BetaSharp :
         TextureManager.AddDynamicTexture(new FireSprite("fire_layer_1", "custom_fire_n_s.png"));
 
         WorldRenderer = new WorldRenderer(this, TextureManager);
-        GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
+        // GL keeps one viewport as global state. WebGPU has none to set here — a render pass covers
+        // its attachments, and anything narrower is set on the pass encoder.
+        GLManager.GLOrNull?.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
         ParticleManager = new ParticleManager(World, TextureManager);
 
         _ = new ResourceManager()
@@ -501,7 +507,12 @@ public partial class BetaSharp :
             () => _isMainMenuOpen
         ));
 
-        FramebufferManager = new FramebufferManager(Display.getFramebufferWidth(), Display.getFramebufferHeight(), Options);
+        // Every framebuffer this owns is an FBO with GL attachments. The WebGPU path renders to the
+        // offscreen targets WebGpuGameRenderer owns instead, so there is nothing here to build.
+        if (GLManager.GLOrNull is not null)
+        {
+            FramebufferManager = new FramebufferManager(Display.getFramebufferWidth(), Display.getFramebufferHeight(), Options);
+        }
 
         EntityRenderDispatcher.Instance.SkinManager.RequestDownload(Session.username, true);
     }
@@ -547,7 +558,7 @@ public partial class BetaSharp :
             // don't bother trying to shutdown imgui because it keeps hanging/crashing
 
             WorldRenderer?.Dispose();
-            UiBatchRenderer.Dispose();
+            UiBatchRenderer?.Dispose();
             SlotPrograms.Dispose();
             SkinManager.Dispose();
             TextureManager.Dispose();
@@ -555,7 +566,7 @@ public partial class BetaSharp :
             Mouse.destroy();
             Keyboard.destroy();
 
-            GLTexture.LogLeakReport();
+            Texture2D.LogLeakReport();
         }
         finally
         {
@@ -719,7 +730,11 @@ public partial class BetaSharp :
                     }
 
                     int savedWidth = DisplayWidth, savedHeight = DisplayHeight;
-                    if (imguiThisFrame)
+
+                    // Rendering the world into the F3 viewport means rendering into an FBO and
+                    // handing ImGui its texture id. That route is GL-only; under WebGPU the frame
+                    // goes to the swapchain and there is no id to hand over.
+                    if (FramebufferManager is not null && imguiThisFrame)
                     {
                         Vector2 vpSize = _debugWindowManager.ViewportSize;
                         if (vpSize.X > 0 && vpSize.Y > 0)
@@ -749,16 +764,20 @@ public partial class BetaSharp :
                             FramebufferManager.SkipBlit = false;
                         }
                     }
-                    else
+                    else if (FramebufferManager is { } framebuffers)
                     {
                         DebugViewportOffset = Vector2.Zero;
-                        FramebufferManager.SkipBlit = false;
+                        framebuffers.SkipBlit = false;
                         if (_lastViewportSize != Vector2.Zero)
                         {
-                            FramebufferManager.Resize(Display.getFramebufferWidth(), Display.getFramebufferHeight());
+                            framebuffers.Resize(Display.getFramebufferWidth(), Display.getFramebufferHeight());
                             _lastViewportSize = Vector2.Zero;
                             _debugWindowManager.ViewportTextureId = 0;
                         }
+                    }
+                    else
+                    {
+                        DebugViewportOffset = Vector2.Zero;
                     }
 
                     if (!SkipRenderWorld && Display.Backend == GraphicsBackend.OpenGL)
@@ -786,9 +805,9 @@ public partial class BetaSharp :
 
                     if (imguiThisFrame)
                     {
-                        if (FramebufferManager.SkipBlit)
+                        if (FramebufferManager is { SkipBlit: true } blitSource)
                         {
-                            _debugWindowManager.ViewportTextureId = FramebufferManager.TextureId;
+                            _debugWindowManager.ViewportTextureId = blitSource.TextureId;
                         }
 
                         using (Profiler.Begin("ImguiBuild"))
@@ -886,7 +905,7 @@ public partial class BetaSharp :
         MetricRegistry.Set(RenderMetrics.MeshVersionReleased, ChunkMeshVersion.TotalReleased);
         MetricRegistry.Set(RenderMetrics.TextureBindsLastFrame, TextureStats.BindsLastFrame);
         MetricRegistry.Set(RenderMetrics.TextureAvgBinds, (float)TextureStats.AverageBindsPerFrame);
-        MetricRegistry.Set(RenderMetrics.TextureActive, GLTexture.ActiveTextureCount);
+        MetricRegistry.Set(RenderMetrics.TextureActive, Texture2D.ActiveTextureCount);
         MetricRegistry.Set(RenderMetrics.EntitiesRendered, WorldRenderer.CountEntitiesRendered);
         MetricRegistry.Set(RenderMetrics.EntitiesHidden, WorldRenderer.CountEntitiesHidden);
         MetricRegistry.Set(RenderMetrics.EntitiesTotal, WorldRenderer.CountEntitiesTotal);
@@ -1801,7 +1820,9 @@ public partial class BetaSharp :
         DisplayHeight = newHeight;
         Mouse.setDisplayDimensions(DisplayWidth, DisplayHeight);
 
-        FramebufferManager.Resize(Display.getFramebufferWidth(), Display.getFramebufferHeight());
+        // Null under WebGPU, where the offscreen targets belong to WebGpuGameRenderer and follow
+        // the surface size on their own.
+        FramebufferManager?.Resize(Display.getFramebufferWidth(), Display.getFramebufferHeight());
     }
 
     private void ScreenshotListener()
@@ -1904,13 +1925,19 @@ public partial class BetaSharp :
 
     private void LoadScreen()
     {
+        // A splash drawn straight to the default framebuffer, outside the game loop. WebGPU has no
+        // default framebuffer to draw it to and no pass open at this point, so it has no splash.
+        if (GLManager.GLOrNull is null) return;
+
         ScaledResolution scaledResolution = new(Options, DisplayWidth, DisplayHeight);
         GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
         GLManager.Projection.LoadIdentity();
         GLManager.Projection.Ortho(0.0D, scaledResolution.ScaledWidth, scaledResolution.ScaledHeight, 0.0D, 1000.0D, 3000.0D);
         GLManager.ModelView.LoadIdentity();
         GLManager.ModelView.Translate(0.0F, 0.0F, -2000.0F);
-        GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
+        // GL keeps one viewport as global state. WebGPU has none to set here — a render pass covers
+        // its attachments, and anything narrower is set on the pass encoder.
+        GLManager.GLOrNull?.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
         GLManager.GL.ClearColor(0.0F, 0.0F, 0.0F, 0.0F);
         Tessellator tessellator = Tessellator.instance;
         GLManager.LightingEnabled = false;

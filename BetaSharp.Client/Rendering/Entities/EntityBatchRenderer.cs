@@ -21,8 +21,8 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
 
     private const int MaxVertices = 65536;
 
-    private readonly Shader _shader;
-    private readonly IGL _gl;
+    private readonly Shader? _shader;
+    private readonly IGL? _glOrNull;
     private readonly uint _vaoId;
     private readonly uint _vboId;
     private readonly EntityVertex[] _vertices = new EntityVertex[MaxVertices];
@@ -38,41 +38,58 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
 
     private EntityBatchRenderer(GameOptions options)
     {
+        // The shader is GLSL and the VAO is a GL object. Under WebGPU neither can exist, and this
+        // renderer has no WebGPU path yet, so it is built empty and any draw through it says so.
+        if (GLManager.GLOrNull is not { } gl)
+        {
+            return;
+        }
+
         _shader = new Shader(
             options.ShaderOptions.GetOrCreate("entity_batch"),
             "shaders/entity_batch.vert",
             "shaders/entity_batch.frag");
-        _gl = GLManager.GL;
+        _glOrNull = gl;
 
-        _vaoId = _gl.GenVertexArray();
-        _vboId = _gl.GenBuffer();
+        _vaoId = gl.GenVertexArray();
+        _vboId = gl.GenBuffer();
 
-        _gl.BindVertexArray(_vaoId);
-        _gl.BindBuffer(GLEnum.ArrayBuffer, _vboId);
-        _gl.BufferData(GLEnum.ArrayBuffer, (nuint)(MaxVertices * sizeof(EntityVertex)), null, GLEnum.StreamDraw);
+        gl.BindVertexArray(_vaoId);
+        gl.BindBuffer(GLEnum.ArrayBuffer, _vboId);
+        gl.BufferData(GLEnum.ArrayBuffer, (nuint)(MaxVertices * sizeof(EntityVertex)), null, GLEnum.StreamDraw);
 
         const uint stride = 28;
 
-        _gl.EnableVertexAttribArray(0);
-        _gl.VertexAttribPointer(0, 3, GLEnum.Float, false, stride, (void*)0);
+        gl.EnableVertexAttribArray(0);
+        gl.VertexAttribPointer(0, 3, GLEnum.Float, false, stride, (void*)0);
 
-        _gl.EnableVertexAttribArray(1);
-        _gl.VertexAttribPointer(1, 2, GLEnum.Float, false, stride, (void*)12);
+        gl.EnableVertexAttribArray(1);
+        gl.VertexAttribPointer(1, 2, GLEnum.Float, false, stride, (void*)12);
 
-        _gl.EnableVertexAttribArray(2);
-        _gl.VertexAttribPointer(2, 4, GLEnum.UnsignedByte, true, stride, (void*)20);
+        gl.EnableVertexAttribArray(2);
+        gl.VertexAttribPointer(2, 4, GLEnum.UnsignedByte, true, stride, (void*)20);
 
         // Integer attribute: the I-variant keeps the part id an exact uint instead of converting it.
-        _gl.EnableVertexAttribArray(3);
-        _gl.VertexAttribIPointer(3, 1, GLEnum.UnsignedInt, stride, (void*)24);
+        gl.EnableVertexAttribArray(3);
+        gl.VertexAttribIPointer(3, 1, GLEnum.UnsignedInt, stride, (void*)24);
 
-        _gl.BindVertexArray(0);
-        _gl.BindBuffer(GLEnum.ArrayBuffer, 0);
+        gl.BindVertexArray(0);
+        gl.BindBuffer(GLEnum.ArrayBuffer, 0);
 
         // Queued geometry must be drawn under the blend, depth and alpha state it was posed with,
         // and renderers flip that state freely between parts of the same mob.
         GLManager.RasterStateChanging += Flush;
     }
+
+    private IGL Gl => _glOrNull
+        ?? throw new InvalidOperationException(
+            "Entity model geometry reached the GL batch under the WebGPU backend. "
+            + $"{nameof(EntityBatchRenderer)} has not been ported to the draw-command seam yet.");
+
+    private Shader Shader => _shader
+        ?? throw new InvalidOperationException(
+            "Entity model geometry reached the GL batch under the WebGPU backend. "
+            + $"{nameof(EntityBatchRenderer)} has not been ported to the draw-command seam yet.");
 
     /// <summary>
     /// Opens a batching pass. Only affects how long geometry may sit queued; submissions made
@@ -142,7 +159,7 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
         // No pass is open — the first-person hand, the inventory mob preview. Nothing downstream
         // will flush, so draw it now, against whatever texture the caller has bound; those paths
         // bind directly rather than going through EntityRenderer.loadTexture.
-        _currentTextureId = _gl.BoundTexture2D;
+        _currentTextureId = Gl.BoundTexture2D;
         _useTexture = true;
         Flush();
     }
@@ -161,28 +178,28 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
     {
         if (_vertexCount == 0) return;
 
-        uint callerTexture = _gl.BoundTexture2D;
+        uint callerTexture = Gl.BoundTexture2D;
 
-        GLManager.GL.UseProgram(_shader.ProgramId);
+        Gl.UseProgram(Shader.ProgramId);
         UploadState();
 
-        _gl.ActiveTexture(GLEnum.Texture0);
-        _gl.BindTexture(GLEnum.Texture2D, _currentTextureId);
+        Gl.ActiveTexture(GLEnum.Texture0);
+        Gl.BindTexture(GLEnum.Texture2D, _currentTextureId);
 
-        _gl.BindVertexArray(_vaoId);
-        _gl.BindBuffer(GLEnum.ArrayBuffer, _vboId);
+        Gl.BindVertexArray(_vaoId);
+        Gl.BindBuffer(GLEnum.ArrayBuffer, _vboId);
 
-        _gl.BufferSubData(GLEnum.ArrayBuffer, 0, new ReadOnlySpan<EntityVertex>(_vertices, 0, _vertexCount));
+        Gl.BufferSubData(GLEnum.ArrayBuffer, 0, new ReadOnlySpan<EntityVertex>(_vertices, 0, _vertexCount));
 
-        _gl.DrawArrays(GLEnum.Triangles, 0, (uint)_vertexCount);
+        Gl.DrawArrays(GLEnum.Triangles, 0, (uint)_vertexCount);
 
-        _gl.BindVertexArray(0);
+        Gl.BindVertexArray(0);
         // Array-buffer binding is not VAO state, so unbinding the VAO does not release it.
-        _gl.BindBuffer(GLEnum.ArrayBuffer, 0);
+        Gl.BindBuffer(GLEnum.ArrayBuffer, 0);
         _vertexCount = 0;
 
-        GLManager.GL.UseProgram(0);
-        _gl.BindTexture(GLEnum.Texture2D, callerTexture);
+        Gl.UseProgram(0);
+        Gl.BindTexture(GLEnum.Texture2D, callerTexture);
     }
 
     /// <summary>
@@ -210,26 +227,26 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
 
         FogState fog = GLManager.Fog;
 
-        _shader.SetUniformMatrix4("projectionMatrix", projection);
-        _shader.SetUniform1("textureSampler", 0);
-        _shader.SetUniform1("useTexture", _useTexture ? 1 : 0);
-        _shader.SetUniform1("entityId",
+        Shader.SetUniformMatrix4("projectionMatrix", projection);
+        Shader.SetUniform1("textureSampler", 0);
+        Shader.SetUniform1("useTexture", _useTexture ? 1 : 0);
+        Shader.SetUniform1("entityId",
             _useTexture ? _glTexToLogicalId.GetValueOrDefault(_currentTextureId) : 0);
-        _shader.SetUniform1("alphaThreshold", GLManager.EffectiveAlphaThreshold);
-        _shader.SetUniform1("fogEnabled", GLManager.FogEnabled ? 1 : 0);
-        _shader.SetUniform1("fogMode", (int)fog.Curve);
-        _shader.SetUniform1("fogStart", fog.Start);
-        _shader.SetUniform1("fogEnd", fog.End);
-        _shader.SetUniform1("fogDensity", fog.Density);
-        _shader.SetUniform4("fogColor", fog.Color);
+        Shader.SetUniform1("alphaThreshold", GLManager.EffectiveAlphaThreshold);
+        Shader.SetUniform1("fogEnabled", GLManager.FogEnabled ? 1 : 0);
+        Shader.SetUniform1("fogMode", (int)fog.Curve);
+        Shader.SetUniform1("fogStart", fog.Start);
+        Shader.SetUniform1("fogEnd", fog.End);
+        Shader.SetUniform1("fogDensity", fog.Density);
+        Shader.SetUniform4("fogColor", fog.Color);
     }
 
     public void Dispose()
     {
         GLManager.RasterStateChanging -= Flush;
-        _gl.DeleteBuffer(_vboId);
-        _gl.DeleteVertexArray(_vaoId);
+        _glOrNull?.DeleteBuffer(_vboId);
+        _glOrNull?.DeleteVertexArray(_vaoId);
         _gpuBuffer?.Dispose();
-        _shader.Dispose();
+        _shader?.Dispose();
     }
 }

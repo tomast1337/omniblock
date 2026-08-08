@@ -54,6 +54,16 @@ public sealed class RenderStateApplier
             return;
         }
 
+        // WebGPU bakes all seven of these into the pipeline a draw is submitted with, so there is
+        // nothing to issue — but Current still has to be right, since that is what the pipeline for
+        // a submission is chosen from.
+        if (GLManager.GLOrNull is null)
+        {
+            _current = state;
+            _known = true;
+            return;
+        }
+
         bool all = !_known;
 
         if (all || _current.Blend != state.Blend)

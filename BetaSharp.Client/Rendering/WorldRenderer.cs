@@ -37,19 +37,19 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     private readonly TextureManager _textureManager;
     private readonly BetaSharp _game;
     private int _cloudOffsetX;
-    private readonly StaticMesh _stars;
-    private readonly StaticMesh _skyAbove;
-    private readonly StaticMesh _skyBelow;
+    private readonly IStaticMesh _stars;
+    private readonly IStaticMesh _skyAbove;
+    private readonly IStaticMesh _skyBelow;
 
     /// <summary>
     ///     One mesh for the shader-based clouds, four for the legacy ones (bottom, top, and the two
     ///     side faces), rebuilt whenever the clouds quality option changes.
     /// </summary>
-    private StaticMesh[] _clouds = [];
+    private IStaticMesh[] _clouds = [];
     private int _renderDistance = -1;
     private int _renderEntitiesStartupCounter = 2;
-    private readonly Shader _skyShader;
-    private readonly Shader _cloudShader;
+    private readonly Shader? _skyShader;
+    private readonly Shader? _cloudShader;
     private Vector3D<float> _fogColor;
     private int _cloudsQuality = -1;
 
@@ -65,15 +65,29 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
         OnCloudsQualityChanged();
 
-        _cloudShader = new Shader(_game.Options.ShaderOptions.GetOrCreate("cloud"), "shaders/cloud.vert", "shaders/cloud.frag");
-        _cloudShader.Changed += OnBuildCloudShader;
-
         _skyAbove = BuildSkyPlane(16.0F, facingUp: true);
         _skyBelow = BuildSkyPlane(-16.0F, facingUp: false);
 
-        _skyShader = new Shader(_game.Options.ShaderOptions.GetOrCreate("sky"), "shaders/sky.vert", "shaders/sky.frag");
-        _skyShader.Changed += OnBuildSkyShader;
+        // The sky and cloud geometry above is backend-agnostic — it goes through the draw-command
+        // seam — but the GLSL programs that shade it are not, so under WebGPU they are absent and
+        // the draws that would bind them say so.
+        if (GLManager.GLOrNull is not null)
+        {
+            _cloudShader = new Shader(_game.Options.ShaderOptions.GetOrCreate("cloud"), "shaders/cloud.vert", "shaders/cloud.frag");
+            _cloudShader.Changed += OnBuildCloudShader;
+
+            _skyShader = new Shader(_game.Options.ShaderOptions.GetOrCreate("sky"), "shaders/sky.vert", "shaders/sky.frag");
+            _skyShader.Changed += OnBuildSkyShader;
+        }
     }
+
+    private Shader SkyShader => _skyShader
+        ?? throw new InvalidOperationException(
+            "The sky was drawn under the WebGPU backend, where its GLSL program does not exist.");
+
+    private Shader CloudShader => _cloudShader
+        ?? throw new InvalidOperationException(
+            "The clouds were drawn under the WebGPU backend, where their GLSL program does not exist.");
 
     private void OnBuildSkyShader(Shader _)
     {
@@ -86,7 +100,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         {
             // The meshes belong to whichever quality built them, so the old set goes before the new
             // one is built rather than leaking a buffer on every change.
-            foreach (StaticMesh mesh in _clouds)
+            foreach (IStaticMesh mesh in _clouds)
             {
                 mesh.Dispose();
             }
@@ -115,7 +129,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     ///     height, one of them starting a batch per quad and the other batching the lot; the
     ///     geometry was always the same.
     /// </remarks>
-    private static StaticMesh BuildSkyPlane(float y, bool facingUp)
+    private static IStaticMesh BuildSkyPlane(float y, bool facingUp)
     {
         const int step = 64;
         const int radius = 256 / step + 2;
@@ -147,7 +161,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         return tessellator.captureStatic();
     }
 
-    private static StaticMesh BuildStars()
+    private static IStaticMesh BuildStars()
     {
         Random random = new(10842);
         Tessellator tessellator = Tessellator.instance;
@@ -234,7 +248,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         _skyAbove.Dispose();
         _skyBelow.Dispose();
 
-        foreach (StaticMesh mesh in _clouds)
+        foreach (IStaticMesh mesh in _clouds)
         {
             mesh.Dispose();
         }
@@ -401,17 +415,17 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         float groundG = _world.Dimension.HasGround ? skyGreen * 0.2F + 0.04F : skyGreen;
         float groundB = _world.Dimension.HasGround ? skyBlue * 0.6F + 0.1F : skyBlue;
 
-        _skyShader.Bind();
-        _skyShader.SetCommonUniforms(GameRenderer.ShaderInfo);
-        _skyShader.SetUniform1("u_Texture", 0);
-        _skyShader.SetUniform1("u_UseTexture", 0);
-        _skyShader.SetUniform3("u_SkyColor", new Vector3D<float>(skyRed, skyGreen, skyBlue));
-        _skyShader.SetUniform3("u_GroundColor", new Vector3D<float>(groundR, groundG, groundB));
+        SkyShader.Bind();
+        SkyShader.SetCommonUniforms(GameRenderer.ShaderInfo);
+        SkyShader.SetUniform1("u_Texture", 0);
+        SkyShader.SetUniform1("u_UseTexture", 0);
+        SkyShader.SetUniform3("u_SkyColor", new Vector3D<float>(skyRed, skyGreen, skyBlue));
+        SkyShader.SetUniform3("u_GroundColor", new Vector3D<float>(groundR, groundG, groundB));
 
         // Tell the shader what the view is now, and again after every model-view mutation below,
         // because the draws are immediate-mode. The projection does not change in this method.
-        _skyShader.SetUniformMatrix4("u_Projection", GLManager.Projection.Top);
-        _skyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
+        SkyShader.SetUniformMatrix4("u_Projection", GLManager.Projection.Top);
+        SkyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
 
         Tessellator tessellator = Tessellator.instance;
 
@@ -422,13 +436,13 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         GLManager.State.Apply(RenderState.Translucent);
 
         // Sky dome (top + bottom) — angle-based gradient
-        _skyShader.SetUniform1("u_GradientMode", 1);
+        SkyShader.SetUniform1("u_GradientMode", 1);
         GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
         _skyAbove.DrawWithBoundProgram();
         _skyBelow.DrawWithBoundProgram();
 
         // Sunrise/sunset fan
-        _skyShader.SetUniform1("u_GradientMode", 0);
+        SkyShader.SetUniform1("u_GradientMode", 0);
         GLManager.AlphaTestEnabled = false;
         Lighting.turnOff();
         float[] backgroundColor = _world.Dimension.GetBackgroundColor(_world.GetTime(tickDelta), tickDelta);
@@ -439,7 +453,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             GLManager.ModelView.Rotate(90.0F, 1.0F, 0.0F, 0.0F);
             float celestialAngle = _world.GetTime(tickDelta);
             GLManager.ModelView.Rotate(celestialAngle > 0.5F ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
-            _skyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
+            SkyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
             tessellator.startDrawing(6);
             tessellator.setColorRGBA_F(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
             tessellator.addVertex(0.0D, 100.0D, 0.0D);
@@ -454,12 +468,12 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
             tessellator.drawWithBoundProgram();
             GLManager.ModelView.Pop();
-            _skyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
+            SkyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
             GLManager.ShadeModel = ShadeModel.Flat;
         }
 
         // Sun and Moon (textured)
-        _skyShader.SetUniform1("u_UseTexture", 1);
+        SkyShader.SetUniform1("u_UseTexture", 1);
 
         // Sun, moon and the stars after them only ever brighten what is behind them, faded in by
         // their own alpha so the rain gradient can dim them.
@@ -468,7 +482,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         float rainFade = 1.0F - _world.Environment.GetRainGradient(tickDelta);
         GLManager.Color = new(1.0F, 1.0F, 1.0F, rainFade);
         GLManager.ModelView.Rotate(_world.GetTime(tickDelta) * 360.0F, 1.0F, 0.0F, 0.0F);
-        _skyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
+        SkyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
         float sunQuadSize = 30.0F;
         _textureManager.BindTexture(_textureManager.GetTextureId("/terrain/sun.png"));
         tessellator.startDrawingQuads();
@@ -487,8 +501,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         tessellator.drawWithBoundProgram();
 
         // Stars
-        _skyShader.SetUniform1("u_UseTexture", 0);
-        _skyShader.SetUniform1("u_GradientMode", 0);
+        SkyShader.SetUniform1("u_UseTexture", 0);
+        SkyShader.SetUniform1("u_GradientMode", 0);
         float starBrightness = _world.CalculateSkyLightIntensity(tickDelta) * rainFade;
         if (starBrightness > 0.0F)
         {
@@ -523,7 +537,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         }
     }
 
-    private static StaticMesh BuildCloudMesh()
+    private static IStaticMesh BuildCloudMesh()
     {
         Tessellator tessellator = Tessellator.instance;
 
@@ -542,10 +556,10 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     }
 
     /// <summary>Bottom, top, and the two side faces, in the order the draw path expects them.</summary>
-    private static StaticMesh[] BuildLegacyCloudMeshes()
+    private static IStaticMesh[] BuildLegacyCloudMeshes()
     {
         Tessellator tessellator = Tessellator.instance;
-        StaticMesh[] meshes = new StaticMesh[4];
+        IStaticMesh[] meshes = new IStaticMesh[4];
 
         for (int i = 0; i < 4; ++i)
         {
@@ -673,24 +687,24 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         float subCloudOffsetX = (float)(cloudOffsetX - MathHelper.Floor(cloudOffsetX)) + (CloudsRenderDistance / 2);
         float subCloudOffsetZ = (float)(cloudOffsetZ - MathHelper.Floor(cloudOffsetZ)) + (CloudsRenderDistance / 2);
 
-        _cloudShader.Bind();
-        _cloudShader.SetCommonUniforms(GameRenderer.ShaderInfo);
-        _cloudShader.SetUniform1("u_Texture", 0);
-        _cloudShader.SetUniform3("u_CloudOffset", new Vector3D<float>(-subCloudOffsetX, cloudY, -subCloudOffsetZ));
-        _cloudShader.SetUniform1("u_CloudScale", cloudScale / 2f);
+        CloudShader.Bind();
+        CloudShader.SetCommonUniforms(GameRenderer.ShaderInfo);
+        CloudShader.SetUniform1("u_Texture", 0);
+        CloudShader.SetUniform3("u_CloudOffset", new Vector3D<float>(-subCloudOffsetX, cloudY, -subCloudOffsetZ));
+        CloudShader.SetUniform1("u_CloudScale", cloudScale / 2f);
         // Upload the matrices now and again after each mutation below — the draws are immediate.
-        _cloudShader.SetUniformMatrix4("u_Projection", GLManager.Projection.Top);
-        _cloudShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
-        _cloudShader.SetUniformMatrix4("u_TextureMatrix", GLManager.TextureMatrix.Top);
+        CloudShader.SetUniformMatrix4("u_Projection", GLManager.Projection.Top);
+        CloudShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
+        CloudShader.SetUniformMatrix4("u_TextureMatrix", GLManager.TextureMatrix.Top);
 
         GLManager.ModelView.Scale(cloudScale, 1.0F, cloudScale);
         GLManager.ModelView.Push();
         GLManager.ModelView.Translate(-subCloudOffsetX, cloudY, -subCloudOffsetZ);
-        _cloudShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
+        CloudShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
 
         GLManager.TextureMatrix.Push();
         GLManager.TextureMatrix.Translate(textureOffsetU, textureOffsetV, 0.0F);
-        _cloudShader.SetUniformMatrix4("u_TextureMatrix", GLManager.TextureMatrix.Top);
+        CloudShader.SetUniformMatrix4("u_TextureMatrix", GLManager.TextureMatrix.Top);
 
         GLManager.Color = new(cloudRed, cloudGreen, cloudBlue, 0.8F);
         _clouds[0].DrawWithBoundProgram();

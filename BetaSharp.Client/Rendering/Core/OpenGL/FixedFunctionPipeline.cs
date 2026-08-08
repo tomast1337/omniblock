@@ -29,76 +29,24 @@ public unsafe class FixedFunctionPipeline : IGL
         _silkGL = gl;
     }
 
-    // ── Matrix stacks ──────────────────────────────────────────────────────
+    // ── Default vertex attributes ───────────────────────────────────────────
 
-    /// <inheritdoc cref="GLManager.ModelView" />
-    public MatrixStack ModelView { get; } = new();
+    /// <summary>
+    ///     Pushes the tint into attribute 1, where a draw that binds no colour array reads it.
+    /// </summary>
+    /// <remarks>
+    ///     Subscribed to <see cref="RenderContext.ColorChanged" /> by <see cref="GLManager.Init" />
+    ///     rather than called directly: the value belongs to the context, and this is only how
+    ///     OpenGL happens to deliver it. WebGPU has no default attribute and reads the same value
+    ///     as a uniform instead.
+    /// </remarks>
+    public void SetDefaultColorAttribute(Vector4D<float> color) =>
+        _silkGL.VertexAttrib4(1, color.X, color.Y, color.Z, color.W);
 
-    /// <inheritdoc cref="ModelView" />
-    public MatrixStack Projection { get; } = new();
-
-    /// <inheritdoc cref="ModelView" />
-    public MatrixStack TextureMatrix { get; } = new();
-
-    // ── Per-vertex defaults ─────────────────────────────────────────────────
-
-    /// <inheritdoc cref="GLManager.Color" />
-    public Vector4D<float> Color
-    {
-        get;
-        set
-        {
-            field = value;
-            _silkGL.VertexAttrib4(1, value.X, value.Y, value.Z, value.W);
-        }
-    } = Vector4D<float>.One;
-
-    /// <inheritdoc cref="GLManager.Normal" />
-    public Vector3D<float> Normal
-    {
-        get;
-        set
-        {
-            field = value;
-            _silkGL.VertexAttrib3(3, value.X, value.Y, value.Z);
-        }
-    }
-
-    // ── Capabilities (formerly Enable/Disable of removed fixed-function caps) ──
-
-    public bool TextureEnabled { get; set; }
-    public bool LightingEnabled { get; set; }
-
-    public bool AlphaTestEnabled
-    {
-        get;
-        set
-        {
-            if (field == value) return;
-            field = value;
-            GLManager.OnRasterStateChanging();
-        }
-    }
-
-    public bool FogEnabled
-    {
-        get;
-        set
-        {
-            if (field == value) return;
-            field = value;
-            GLManager.OnRasterStateChanging();
-        }
-    }
-
-    public ShadeModel ShadeModel { get; set; } = ShadeModel.Smooth;
-    public float AlphaThreshold { get; set; } = 0.1f;
-
-    // ── Per-pass state ─────────────────────────────────────────────────────
-
-    public FogState Fog { get; set; } = FogState.Default;
-    public LightingState Lighting { get; set; } = LightingState.Default;
-    public WorldLightState WorldLight { get; set; } = WorldLightState.Default;
+    /// <summary>Pushes the facing into attribute 3.</summary>
+    /// <inheritdoc cref="SetDefaultColorAttribute" />
+    public void SetDefaultNormalAttribute(Vector3D<float> normal) =>
+        _silkGL.VertexAttrib3(3, normal.X, normal.Y, normal.Z);
 
     // ── IGL: buffer objects ─────────────────────────────────────────────────
 

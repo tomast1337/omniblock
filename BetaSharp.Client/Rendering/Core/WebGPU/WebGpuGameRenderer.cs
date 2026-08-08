@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using BetaSharp.Client.Rendering.Chunks;
 using BetaSharp.Entities;
 using Hexa.NET.ImGui;
@@ -17,12 +18,20 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     private WgpuPipeline? _terrainPipeline;
     private WgpuTextureArray? _terrainTextures;
     private WgpuPipeline? _blitPipeline;
+    private WgpuMesh? _blitQuad;
+    private readonly WebGpuDrawTarget _drawTarget;
     private ImGuiWgpuBackend? _imguiWgpu;
     private bool _disposed;
 
     public WebGpuGameRenderer(BetaSharp game)
     {
         _game = game;
+
+        // Installed here rather than at the first frame because the sky, stars and clouds are built
+        // during startup, and capturing them needs a target even though drawing them needs a pass.
+        WebGpuDevice device = WebGpuDevice.Current!;
+        _drawTarget = new WebGpuDrawTarget(device, device.SurfaceFormat, TextureFormat.Depth32float);
+        GLManager.DrawTargetOrNull = _drawTarget;
     }
 
     public void RenderFrame(float tickDelta, long time)
@@ -40,15 +49,17 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         uint height = device.Height;
         _offscreenFb!.ResizeIfNeeded(device, width, height);
 
-        // Camera position.
-        Entity camera = _game.Camera;
-        double camX = camera.LastTickX + (camera.X - camera.LastTickX) * tickDelta;
-        double camY = camera.LastTickY + (camera.Y - camera.LastTickY) * tickDelta;
-        double camZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * tickDelta;
+        // Camera position. Null in the menus, before a world is loaded — the frame still runs, so
+        // the clear, the blit and the ImGui overlay are drawn; only the world is not.
+        Entity? camera = _game.Camera;
+        double camX = camera is null ? 0 : camera.LastTickX + (camera.X - camera.LastTickX) * tickDelta;
+        double camY = camera is null ? 0 : camera.LastTickY + (camera.Y - camera.LastTickY) * tickDelta;
+        double camZ = camera is null ? 0 : camera.LastTickZ + (camera.Z - camera.LastTickZ) * tickDelta;
 
         // Projection.
         float aspect = width / (float)height;
-        float fov = _game.GameRenderer.CameraController.GetFov(tickDelta);
+        // GetFov reads the player's potion effects and health, so it needs one to read.
+        float fov = camera is null ? 70.0f : _game.GameRenderer.CameraController.GetFov(tickDelta);
         float f = 1.0f / MathF.Tan(fov * MathF.PI / 360.0f);
         float viewDist = _game.Options.RenderDistance * 16.0f * 2.0f;
 
@@ -84,13 +95,25 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         RenderPassEncoder* terrainPass = _offscreenFb.BeginPass(encoder,
             new Silk.NET.WebGPU.Color(0.7, 0.8, 1.0, 1.0));
 
-        WorldRenderer? world = _game.WorldRenderer;
-        if (world != null)
+        // Everything drawn through the Tessellator belongs in this pass, so the target is only open
+        // for its length — a draw outside it has nowhere to go and says so.
+        _drawTarget.BeginPass(terrainPass);
+
+        try
         {
-            world.ChunkRenderer.RenderSolidWebGpu(terrainPass, _terrainPipeline, _terrainTextures!);
+            WorldRenderer? world = camera is null ? null : _game.WorldRenderer;
+            if (world != null)
+            {
+                world.ChunkRenderer.RenderSolidWebGpu(terrainPass, _terrainPipeline, _terrainTextures!);
+            }
+        }
+        finally
+        {
+            _drawTarget.EndPass();
         }
 
         api.RenderPassEncoderEnd(terrainPass);
+        api.RenderPassEncoderRelease(terrainPass);
 
         // --- Swapchain pass: blit + ImGui ---
         RenderPassColorAttachment colorAttach = new()
@@ -109,19 +132,32 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
 
         RenderPassEncoder* swapPass = api.CommandEncoderBeginRenderPass(encoder, in swapDesc);
 
+        // blit.wgsl reads a quad from a vertex buffer and declares the texture and sampler in
+        // group 1, behind the uniform group every pipeline here carries at group 0.
         api.RenderPassEncoderSetPipeline(swapPass, _blitPipeline!.Pipeline);
-        api.RenderPassEncoderSetBindGroup(swapPass, 0,
-            _offscreenFb.CreateBlitBindGroup(device, _blitPipeline.BindGroupLayout), 0, null);
-        api.RenderPassEncoderDraw(swapPass, 3, 1, 0, 0);
+        _blitPipeline.BindUniformGroup(swapPass);
+        api.RenderPassEncoderSetBindGroup(swapPass, 1,
+            _offscreenFb.GetBlitBindGroup(device, _blitPipeline.TextureBindGroupLayout), 0, null);
+        _blitQuad!.Draw(swapPass);
 
-        _imguiWgpu!.RenderDrawData(ImGui.GetDrawData(), swapPass);
+        // Null on any frame the game did not open and render an ImGui frame — the overlay is only
+        // built when the debug windows are up.
+        ImDrawDataPtr drawData = ImGui.GetDrawData();
+        if (drawData.Handle is not null)
+        {
+            _imguiWgpu!.RenderDrawData(drawData, swapPass);
+        }
 
         api.RenderPassEncoderEnd(swapPass);
-        api.TextureViewRelease(swapView);
+        api.RenderPassEncoderRelease(swapPass);
 
         CommandBuffer* cmdBuf = api.CommandEncoderFinish(encoder, null);
         api.QueueSubmit(device.Queue, 1, &cmdBuf);
         api.CommandBufferRelease(cmdBuf);
+
+        // The swapchain view is an attachment of the pass just submitted, so it stays alive until
+        // the submit has taken its own reference.
+        api.TextureViewRelease(swapView);
 
         device.Present();
     }
@@ -210,6 +246,20 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
                 new BindGroupLayoutEntry
                 {
                     Binding = 0,
+                    Visibility = ShaderStage.Vertex,
+                    Buffer = new BufferBindingLayout
+                    {
+                        Type = BufferBindingType.Uniform,
+                        MinBindingSize = 64,
+                    },
+                },
+            ];
+
+            BindGroupLayoutEntry[] blitTextureEntries =
+            [
+                new BindGroupLayoutEntry
+                {
+                    Binding = 0,
                     Visibility = ShaderStage.Fragment,
                     Texture = new TextureBindingLayout
                     {
@@ -217,10 +267,6 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
                         ViewDimension = TextureViewDimension.Dimension2D,
                     },
                 },
-            ];
-
-            BindGroupLayoutEntry[] blitSamplerEntries =
-            [
                 new BindGroupLayoutEntry
                 {
                     Binding = 1,
@@ -229,20 +275,55 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
                 },
             ];
 
+            VertexAttribute* blitAttrs = stackalloc VertexAttribute[2];
+            blitAttrs[0] = new VertexAttribute { Format = VertexFormat.Float32x3, Offset = 0, ShaderLocation = 0 };
+            blitAttrs[1] = new VertexAttribute { Format = VertexFormat.Float32x2, Offset = 12, ShaderLocation = 1 };
+
+            VertexBufferLayout blitLayout = new()
+            {
+                ArrayStride = BlitQuadStride,
+                StepMode = VertexStepMode.Vertex,
+                AttributeCount = 2,
+                Attributes = blitAttrs,
+            };
+
             _blitPipeline = new WgpuPipeline(
                 device, blitWgsl, "vs_main",
                 uniformSize: 64,
                 blitUniformEntries,
-                blitSamplerEntries,
-                null, 0,
-                RenderState.Opaque,
+                blitTextureEntries,
+                &blitLayout, 1,
+                RenderState.PostProcess,
                 device.SurfaceFormat);
+
+            _blitQuad = CreateBlitQuad(device);
         }
 
         if (_imguiWgpu == null)
         {
             _imguiWgpu = new ImGuiWgpuBackend(device);
         }
+    }
+
+    /// <summary>Position (3 floats) then texcoord (2 floats), as blit.wgsl declares them.</summary>
+    private const uint BlitQuadStride = 20;
+
+    /// <summary>
+    ///     The screen-covering quad the offscreen colour texture is sampled onto, in clip space.
+    /// </summary>
+    private static WgpuMesh CreateBlitQuad(WebGpuDevice device)
+    {
+        float[] vertices =
+        [
+            -1, -1, 0, 0, 1,
+             1, -1, 0, 1, 1,
+             1,  1, 0, 1, 0,
+             1,  1, 0, 1, 0,
+            -1,  1, 0, 0, 0,
+            -1, -1, 0, 0, 1,
+        ];
+
+        return new WgpuMesh(device, MemoryMarshal.AsBytes(vertices.AsSpan()), BlitQuadStride);
     }
 
     public void Dispose()
@@ -254,6 +335,8 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         _terrainPipeline?.Dispose();
         _terrainTextures?.Dispose();
         _blitPipeline?.Dispose();
+        _blitQuad?.Dispose();
+        _drawTarget.Dispose();
         _imguiWgpu?.Dispose();
     }
 }
