@@ -44,6 +44,10 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         CommandEncoder* encoder = device.CreateCommandEncoder();
         EnsureResources(device);
 
+        // Every pass below records into that one encoder and is submitted together, which is what
+        // makes this the point the target's buffers become free again rather than each BeginPass.
+        _drawTarget.BeginFrame();
+
         _game.GameRenderer.ProcessLookInput();
 
         // Null until the pack has been read and the array uploaded, which the first world load
