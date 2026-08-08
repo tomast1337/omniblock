@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using BetaSharp.Client.Rendering.Chunks;
+using BetaSharp.Client.Rendering.Entities;
 using BetaSharp.Entities;
 using Hexa.NET.ImGui;
 using Silk.NET.Maths;
@@ -44,51 +45,31 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         CommandEncoder* encoder = device.CreateCommandEncoder();
         EnsureResources(device);
 
+        // Null until the pack has been read and the array uploaded, which the first world load
+        // does. Restated per frame because a pack switch replaces the array outright.
+        WgpuTextureArray? terrain = _game.TextureManager.TerrainArray.Texture?.Wgpu;
+        _drawTarget.TerrainArray = terrain;
+
         uint width = device.Width;
         uint height = device.Height;
         _offscreenFb!.ResizeIfNeeded(device, width, height);
 
-        // Camera position. Null in the menus, before a world is loaded — the frame still runs, so
-        // the clear, the blit and the ImGui overlay are drawn; only the world is not.
-        Entity? camera = _game.Camera;
-        double camX = camera is null ? 0 : camera.LastTickX + (camera.X - camera.LastTickX) * tickDelta;
-        double camY = camera is null ? 0 : camera.LastTickY + (camera.Y - camera.LastTickY) * tickDelta;
-        double camZ = camera is null ? 0 : camera.LastTickZ + (camera.Z - camera.LastTickZ) * tickDelta;
+        // How a block-shaped draw is lit, this frame. Default with no world, so the menus do not
+        // inherit the last one's nightfall. Read by everything that builds a uniform block below.
+        GLManager.WorldLight = _game.World is { } lit
+            ? new WorldLightState((float)lit.Environment.AmbientDarkness, lit.Dimension.LightLevelToLuminance[0])
+            : WorldLightState.Default;
 
-        // Projection.
-        float aspect = width / (float)height;
-        // GetFov reads the player's potion effects and health, so it needs one to read.
-        float fov = camera is null ? 70.0f : _game.GameRenderer.CameraController.GetFov(tickDelta);
-        float f = 1.0f / MathF.Tan(fov * MathF.PI / 360.0f);
-        float viewDist = _game.Options.RenderDistance * 16.0f * 2.0f;
+        // Null in the menus, before a world is loaded — the frame still runs, so the clear, the
+        // blit and the ImGui overlay are drawn; only the world is not.
+        EntityLiving? camera = _game.Camera;
+        WorldRenderer? world = camera is null ? null : _game.WorldRenderer;
 
-        Matrix4X4<float> proj = default;
-        proj.M11 = f / aspect; proj.M22 = f;
-        proj.M33 = viewDist / (viewDist - 0.05f); proj.M34 = 1.0f;
-        proj.M43 = -(0.05f * viewDist) / (viewDist - 0.05f);
-
-        // Model-view: translation only for now.
-        Matrix4X4<float> modelView = default;
-        modelView.M11 = 1.0f; modelView.M22 = 1.0f; modelView.M33 = 1.0f; modelView.M44 = 1.0f;
-        modelView.M41 = -(float)camX;
-        modelView.M42 = -(float)camY;
-        modelView.M43 = -(float)camZ;
-
-        ChunkUniforms uniforms = new()
+        ChunkRenderParams chunkParams = default;
+        if (camera is not null && world is not null)
         {
-            ProjectionMatrix = proj,
-            ModelViewMatrix = modelView,
-            FogMode = 0,
-            FogStart = 0,
-            FogEnd = viewDist,
-            FogDensity = 0,
-            FogColorR = 0.7f, FogColorG = 0.8f, FogColorB = 1.0f, FogColorA = 1.0f,
-            AmbientDarkness = 0,
-            LuminanceOffset = 0.05f,
-            ChunkFadeEnabled = 1,
-            FadeProgress = 1.0f,
-        };
-        _terrainPipeline!.UploadUniforms(uniforms);
+            chunkParams = PrepareWorldFrame(camera, world, tickDelta);
+        }
 
         // --- Offscreen pass: terrain ---
         RenderPassEncoder* terrainPass = _offscreenFb.BeginPass(encoder,
@@ -100,15 +81,10 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
 
         try
         {
-            WorldRenderer? world = camera is null ? null : _game.WorldRenderer;
-
-            // Null until the pack has been read and the array uploaded, which the first world load
-            // does. Drawing the terrain without it would sample nothing, so the frame skips it.
-            WgpuTextureArray? terrain = _game.TextureManager.TerrainArray.Texture?.Wgpu;
-
+            // Drawing the terrain without the array would sample nothing, so the frame skips it.
             if (world != null && terrain != null)
             {
-                world.ChunkRenderer.RenderSolidWebGpu(terrainPass, _terrainPipeline, terrain);
+                world.ChunkRenderer.RenderSolidWebGpu(terrainPass, _terrainPipeline!, terrain);
             }
         }
         finally
@@ -171,7 +147,79 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         api.TextureViewRelease(swapView);
 
         device.Present();
+
+        // Last, because it drops the mesh buffers of chunks that fell out of range and replaces the
+        // ones that were rebuilt. A buffer this frame recorded a draw from has to outlive the
+        // submit — destroying it earlier fails validation inside wgpuQueueSubmit.
+        if (world is not null)
+        {
+            world.ChunkRenderer.EndFrame(chunkParams);
+        }
     }
+
+    /// <summary>
+    ///     Places the camera, works out what the frame's fog looks like, and has the chunk renderer
+    ///     choose which sub-chunks are visible — everything the terrain pass reads but does not draw.
+    /// </summary>
+    /// <remarks>
+    ///     The visibility pass is not optional: the WebGPU draw walks the set this fills, and
+    ///     without it the pass records nothing at all and the world is simply absent.
+    /// </remarks>
+    private ChunkRenderParams PrepareWorldFrame(EntityLiving camera, WorldRenderer world, float tickDelta)
+    {
+        _game.GameRenderer.SetupWorldCamera(tickDelta);
+
+        double camX = camera.LastTickX + (camera.X - camera.LastTickX) * tickDelta;
+        double camY = camera.LastTickY + (camera.Y - camera.LastTickY) * tickDelta;
+        double camZ = camera.LastTickZ + (camera.Z - camera.LastTickZ) * tickDelta;
+
+        // Built before the depth remap below, because the plane extraction reads the projection and
+        // expects OpenGL's symmetric clip volume.
+        FrustrumCuller culler = new();
+        culler.SetPosition(camX, camY, camZ);
+
+        float viewDistance = _game.Options.RenderDistance * 16.0f;
+
+        // No sky pass here yet, so the fog is the plain distance one and its colour is the clear.
+        GLManager.Fog = GLManager.Fog with
+        {
+            Curve = FogCurve.Linear,
+            Start = viewDistance * 0.25f,
+            End = viewDistance,
+            Color = new Vector4D<float>(0.7f, 0.8f, 1.0f, 1.0f),
+        };
+
+        GLManager.Projection.Load(GLManager.Projection.Top * s_glToWebGpuDepth);
+
+        ChunkRenderParams chunkParams = new()
+        {
+            Camera = culler,
+            ViewPos = new Vector3D<double>(camX, camY, camZ),
+            RenderDistance = _game.Options.RenderDistance,
+            Ticks = _game.World!.GetTime(),
+            PartialTicks = tickDelta,
+            DeltaTime = _game.Timer.DeltaTime,
+            ChunkFade = _game.Options.ChunkFade,
+            RenderOccluded = false,
+        };
+
+        world.ChunkRenderer.PrepareFrame(chunkParams);
+        return chunkParams;
+    }
+
+    /// <summary>
+    ///     Squashes OpenGL's -1..1 clip depth into the 0..1 WebGPU expects.
+    /// </summary>
+    /// <remarks>
+    ///     Applied to the projection rather than fixed in the shaders because the projection is
+    ///     built by the shared camera code, which the OpenGL backend uses unchanged. Right-multiplied
+    ///     under the row-vector convention the matrix stack uses.
+    /// </remarks>
+    private static readonly Matrix4X4<float> s_glToWebGpuDepth = new(
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 0.5f, 0,
+        0, 0, 0.5f, 1);
 
     /// <summary>
     ///     Draws the HUD and the current screen onto the swapchain, over the blitted world.
@@ -189,11 +237,14 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         Silk.NET.WebGPU.WebGPU api = device.Api;
         RenderPassEncoder* pass = BeginSwapPass(api, encoder, swapView, _offscreenFb!.DepthView);
 
-        // How a block-shaped draw in the interface is lit. Default with no world, so the menus do
-        // not inherit the last one's nightfall.
-        GLManager.WorldLight = _game.World is { } world
-            ? new WorldLightState((float)world.Environment.AmbientDarkness, world.Dimension.LightLevelToLuminance[0])
-            : WorldLightState.Default;
+        // The inventory's mob preview and the held item render through the entity dispatcher, which
+        // reads the camera, the world and the font from here. WorldRenderer's frame is what normally
+        // fills them in, and this renderer does not drive that frame.
+        if (_game.World is not null && _game.Player is not null)
+        {
+            EntityRenderDispatcher.Instance.CacheRenderInfo(
+                _game.World, _game.TextureManager, _game.TextRenderer, _game.Camera, _game.Options, tickDelta);
+        }
 
         _drawTarget.BeginPass(pass, device.Width, device.Height);
 

@@ -135,7 +135,15 @@ public class GameRenderer
     }
 
 
-    private void RenderWorld(float tickDelta)
+    /// <summary>
+    ///     Loads the projection and model-view the world is seen through, including the zoom, the
+    ///     damage tilt, the view bob and the portal distortion.
+    /// </summary>
+    /// <remarks>
+    ///     Draws nothing — it only writes the matrix stacks, which is why a backend that does not
+    ///     go through <see cref="RenderFrame" /> can still call it to place its own camera.
+    /// </remarks>
+    public void SetupWorldCamera(float tickDelta)
     {
         _viewDistance = _client.Options.RenderDistance * 16.0f;
         GLManager.Projection.LoadIdentity();
@@ -361,7 +369,7 @@ public class GameRenderer
         }
 
         GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
-        RenderWorld(tickDelta);
+        SetupWorldCamera(tickDelta);
         Frustum.Instance();
         if (_client.Options.RenderDistance >= 8)
         {

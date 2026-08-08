@@ -27,6 +27,16 @@ public sealed unsafe class WgpuPipeline : IDisposable
     /// <summary>The texture bind group layout (group 1), or null for untextured pipelines.</summary>
     public BindGroupLayout* TextureBindGroupLayout { get; }
 
+    /// <summary>
+    ///     The texture-array bind group layout (group 2), or null when the shader samples no array.
+    /// </summary>
+    /// <remarks>
+    ///     A group of its own rather than more bindings in group 1 because the two textures have
+    ///     different owners and different lifetimes: the 2D one changes with every bind, while the
+    ///     array is rebuilt only when the pack is.
+    /// </remarks>
+    public BindGroupLayout* TextureArrayBindGroupLayout { get; }
+
     public PipelineLayout* Layout { get; }
     public RenderPipeline* Pipeline { get; }
 
@@ -56,6 +66,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
         Module = module;
         BindGroupLayout = bindGroupLayout;
         TextureBindGroupLayout = textureBindGroupLayout;
+        TextureArrayBindGroupLayout = null;
         Layout = layout;
         Pipeline = pipeline;
         UniformBuffer = uniformBuffer;
@@ -84,7 +95,8 @@ public sealed unsafe class WgpuPipeline : IDisposable
         RenderState state,
         TextureFormat colorFormat,
         TextureFormat depthFormat = TextureFormat.Undefined,
-        PrimitiveTopology topology = PrimitiveTopology.TriangleList)
+        PrimitiveTopology topology = PrimitiveTopology.TriangleList,
+        ReadOnlySpan<BindGroupLayoutEntry> textureArrayEntries = default)
     {
         _device = device;
         Silk.NET.WebGPU.WebGPU api = device.Api;
@@ -94,7 +106,11 @@ public sealed unsafe class WgpuPipeline : IDisposable
         TextureBindGroupLayout = textureEntries.Length > 0
             ? CreateBindGroupLayout(api, device.Device, textureEntries)
             : null;
-        Layout = CreatePipelineLayout(api, device.Device, BindGroupLayout, TextureBindGroupLayout);
+        TextureArrayBindGroupLayout = textureArrayEntries.Length > 0
+            ? CreateBindGroupLayout(api, device.Device, textureArrayEntries)
+            : null;
+        Layout = CreatePipelineLayout(api, device.Device,
+            BindGroupLayout, TextureBindGroupLayout, TextureArrayBindGroupLayout);
         Pipeline = CreateRenderPipeline(api, device.Device, Module, entryPoint, Layout, buffers, bufferCount, state, colorFormat, depthFormat, topology);
         CreateUniforms(api, device.Device, BindGroupLayout, uniformSize, out WgpuBuffer* ub, out BindGroup* ug);
         UniformBuffer = ub;
@@ -139,30 +155,26 @@ public sealed unsafe class WgpuPipeline : IDisposable
 
     private static PipelineLayout* CreatePipelineLayout(
         Silk.NET.WebGPU.WebGPU api, Device* device,
-        BindGroupLayout* bindGroupLayout, BindGroupLayout* textureBindGroupLayout)
+        BindGroupLayout* bindGroupLayout, BindGroupLayout* textureBindGroupLayout,
+        BindGroupLayout* textureArrayBindGroupLayout)
     {
-        if (textureBindGroupLayout is null)
-        {
-            PipelineLayoutDescriptor descriptor = new()
-            {
-                BindGroupLayoutCount = 1,
-                BindGroupLayouts = &bindGroupLayout,
-            };
-
-            return api.DeviceCreatePipelineLayout(device, in descriptor);
-        }
-
-        BindGroupLayout** layouts = stackalloc BindGroupLayout*[2];
+        // Consecutive from group 0, so a null texture group means there is no array group either.
+        BindGroupLayout** layouts = stackalloc BindGroupLayout*[3];
         layouts[0] = bindGroupLayout;
         layouts[1] = textureBindGroupLayout;
+        layouts[2] = textureArrayBindGroupLayout;
 
-        PipelineLayoutDescriptor descriptor2 = new()
+        nuint count = textureBindGroupLayout is null
+            ? 1u
+            : textureArrayBindGroupLayout is null ? 2u : 3u;
+
+        PipelineLayoutDescriptor descriptor = new()
         {
-            BindGroupLayoutCount = 2,
+            BindGroupLayoutCount = count,
             BindGroupLayouts = layouts,
         };
 
-        return api.DeviceCreatePipelineLayout(device, in descriptor2);
+        return api.DeviceCreatePipelineLayout(device, in descriptor);
     }
 
     private static RenderPipeline* CreateRenderPipeline(
@@ -410,6 +422,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
         if (UniformBuffer is not null) api.BufferRelease(UniformBuffer);
         if (Pipeline is not null) api.RenderPipelineRelease(Pipeline);
         if (Layout is not null) api.PipelineLayoutRelease(Layout);
+        if (TextureArrayBindGroupLayout is not null) api.BindGroupLayoutRelease(TextureArrayBindGroupLayout);
         if (TextureBindGroupLayout is not null) api.BindGroupLayoutRelease(TextureBindGroupLayout);
         if (BindGroupLayout is not null) api.BindGroupLayoutRelease(BindGroupLayout);
         if (Module is not null) api.ShaderModuleRelease(Module);
