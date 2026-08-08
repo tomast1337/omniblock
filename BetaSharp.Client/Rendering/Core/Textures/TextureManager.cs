@@ -78,16 +78,21 @@ public class TextureManager : IDisposable
     ///     Once a frame rather than per draw: there is one terrain array and one item array for the
     ///     whole frame, and nothing else uses those units. Leaves unit 0 active, because that is
     ///     where the rest of the renderer assumes it was left.
+    ///
+    ///     Nothing to do under WebGPU, which has no texture units: a pipeline that samples an array
+    ///     is handed it in a bind group by whoever draws with it.
     /// </remarks>
     public void BindTextureArrays()
     {
-        GLManager.GL.ActiveTexture(GLEnum.Texture0 + TextureArrayUnits.Terrain);
+        if (GLManager.GLOrNull is not { } gl) return;
+
+        gl.ActiveTexture(GLEnum.Texture0 + TextureArrayUnits.Terrain);
         TerrainArray.Texture?.Bind();
 
-        GLManager.GL.ActiveTexture(GLEnum.Texture0 + TextureArrayUnits.Items);
+        gl.ActiveTexture(GLEnum.Texture0 + TextureArrayUnits.Items);
         ItemsArray.Texture?.Bind();
 
-        GLManager.GL.ActiveTexture(GLEnum.Texture0);
+        gl.ActiveTexture(GLEnum.Texture0);
     }
 
     public int[] GetColors(string path)

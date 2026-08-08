@@ -183,3 +183,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-08 — fix(rendering): get the WebGPU backend to a stable frame loop (Nicolas Vyčas Nery; `7ee1b6670b195ee483731a88ddd31dfd3324b4a6`)
 - 2026-08-08 — feat(rendering): draw the interface through the draw-command seam (Nicolas Vyčas Nery; `614a02aa6b943b7343629763900d7154ebea44dc`)
 - 2026-08-08 — feat(rendering): clip through the seam, and reconfigure the surface on resize (Nicolas Vyčas Nery; `198966aa56b94ff85690d3d56043af5073b10a3e`)
+- 2026-08-08 — feat(rendering): make texture arrays work on both backends (Nicolas Vyčas Nery; `abd6399495dcaf46b722e8da3c48e6f59f74de55`)

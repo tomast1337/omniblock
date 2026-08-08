@@ -16,7 +16,6 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     private readonly BetaSharp _game;
     private WgpuFramebuffer? _offscreenFb;
     private WgpuPipeline? _terrainPipeline;
-    private WgpuTextureArray? _terrainTextures;
     private WgpuPipeline? _blitPipeline;
     private WgpuMesh? _blitQuad;
     private readonly WebGpuDrawTarget _drawTarget;
@@ -102,9 +101,14 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         try
         {
             WorldRenderer? world = camera is null ? null : _game.WorldRenderer;
-            if (world != null)
+
+            // Null until the pack has been read and the array uploaded, which the first world load
+            // does. Drawing the terrain without it would sample nothing, so the frame skips it.
+            WgpuTextureArray? terrain = _game.TextureManager.TerrainArray.Texture?.Wgpu;
+
+            if (world != null && terrain != null)
             {
-                world.ChunkRenderer.RenderSolidWebGpu(terrainPass, _terrainPipeline, _terrainTextures!);
+                world.ChunkRenderer.RenderSolidWebGpu(terrainPass, _terrainPipeline, terrain);
             }
         }
         finally
@@ -311,8 +315,6 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
                 device.SurfaceFormat,
                 TextureFormat.Depth32float);
 
-            BindGroupLayout* texLayout = _terrainPipeline.TextureBindGroupLayout!;
-            _terrainTextures = new WgpuTextureArray(device, 16, 256, texLayout);
         }
 
         if (_blitPipeline == null)
@@ -411,7 +413,6 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
 
         _offscreenFb?.Dispose();
         _terrainPipeline?.Dispose();
-        _terrainTextures?.Dispose();
         _blitPipeline?.Dispose();
         _blitQuad?.Dispose();
         _drawTarget.Dispose();

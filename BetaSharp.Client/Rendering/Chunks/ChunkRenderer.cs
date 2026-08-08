@@ -799,7 +799,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         RenderPassEncoder* pass, WgpuPipeline pipeline, WgpuTextureArray textureArray)
     {
         pipeline.Bind(pass);
-        WgpuPipeline.BindGroup(pass, 1, textureArray.BindGroup, WebGpuDevice.Current!.Api);
+        // Asked of the array per pass rather than held: a texture-pack switch rebuilds the array
+        // underneath, and a bind group made against the old one points at a destroyed texture.
+        WgpuPipeline.BindGroup(pass, 1,
+            textureArray.BindGroupFor(pipeline.TextureBindGroupLayout), WebGpuDevice.Current!.Api);
 
         foreach (SubChunkState state in _renderers.Values)
         {
@@ -834,7 +837,10 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         Vector3D<double> viewPos)
     {
         pipeline.Bind(pass);
-        WgpuPipeline.BindGroup(pass, 1, textureArray.BindGroup, WebGpuDevice.Current!.Api);
+        // Asked of the array per pass rather than held: a texture-pack switch rebuilds the array
+        // underneath, and a bind group made against the old one points at a destroyed texture.
+        WgpuPipeline.BindGroup(pass, 1,
+            textureArray.BindGroupFor(pipeline.TextureBindGroupLayout), WebGpuDevice.Current!.Api);
 
         _translucentDistanceComparer.Origin = viewPos;
         _translucentRenderers.Sort(_translucentDistanceComparer);

@@ -3,42 +3,48 @@ using Silk.NET.WebGPU;
 namespace BetaSharp.Client.Rendering.Core.WebGPU;
 
 /// <summary>
-///     A 2D texture array with one sampler, and the bind group that hooks them to group 1 of the
-///     chunk shader.
+///     A 2D texture array with its view and sampler, and the bind groups binding them to the
+///     texture group of whatever pipelines sample it.
 /// </summary>
+/// <remarks>
+///     Bind groups are made on demand per layout, for the same reason <see cref="WgpuTexture" />
+///     does it: the arrays are built when the texture pack is read, which is long before the
+///     pipelines that sample them exist.
+/// </remarks>
 public sealed unsafe class WgpuTextureArray : IDisposable
 {
     public Texture* Texture { get; }
     public TextureView* View { get; }
-    public Sampler* Sampler { get; }
+    public Sampler* Sampler { get; private set; }
 
-    /// <summary>The bind group at group 1 binding the array and sampler.</summary>
-    public BindGroup* BindGroup { get; }
-
+    public uint Width { get; }
+    public uint Height { get; }
     public uint LayerCount { get; }
-    public uint LayerSize { get; }
+
+    /// <summary>The format every layer is uploaded as.</summary>
+    public const TextureFormat Format = TextureFormat.Rgba8Unorm;
 
     private readonly WebGpuDevice _device;
+    private readonly Dictionary<nint, nint> _bindGroups = [];
+    private WgpuSamplerDescription _samplerDescription;
     private bool _disposed;
 
-    /// <summary>
-    ///     Creates an array where each layer is a <paramref name="layerSize"/>×<paramref name="layerSize"/>
-    ///     RGBA8 image. The caller uploads each layer with <see cref="UploadLayer"/>.
-    /// </summary>
-    public WgpuTextureArray(WebGpuDevice device, uint layerSize, uint layerCount,
-        BindGroupLayout* textureBindGroupLayout)
+    /// <summary>Creates an empty array; the caller fills layers with <see cref="UploadLayer" />.</summary>
+    public WgpuTextureArray(WebGpuDevice device, uint width, uint height, uint layerCount,
+        WgpuSamplerDescription sampler)
     {
         _device = device;
-        LayerSize = layerSize;
-        LayerCount = layerCount;
+        Width = Math.Max(1, width);
+        Height = Math.Max(1, height);
+        LayerCount = Math.Max(1, layerCount);
         Silk.NET.WebGPU.WebGPU api = device.Api;
 
         TextureDescriptor desc = new()
         {
             Usage = TextureUsage.TextureBinding | TextureUsage.CopyDst,
             Dimension = TextureDimension.Dimension2D,
-            Size = new Extent3D(layerSize, layerSize, layerCount),
-            Format = TextureFormat.Rgba8Unorm,
+            Size = new Extent3D(Width, Height, LayerCount),
+            Format = Format,
             MipLevelCount = 1,
             SampleCount = 1,
         };
@@ -47,29 +53,47 @@ public sealed unsafe class WgpuTextureArray : IDisposable
 
         TextureViewDescriptor viewDesc = new()
         {
-            Format = TextureFormat.Rgba8Unorm,
+            Format = Format,
             Dimension = TextureViewDimension.Dimension2DArray,
             MipLevelCount = 1,
-            ArrayLayerCount = layerCount,
+            ArrayLayerCount = LayerCount,
             Aspect = TextureAspect.All,
         };
 
         View = api.TextureCreateView(Texture, in viewDesc);
 
-        SamplerDescriptor samplerDesc = new()
-        {
-            AddressModeU = AddressMode.Repeat,
-            AddressModeV = AddressMode.Repeat,
-            AddressModeW = AddressMode.ClampToEdge,
-            MagFilter = FilterMode.Nearest,
-            MinFilter = FilterMode.Nearest,
-            MipmapFilter = MipmapFilterMode.Nearest,
-            LodMinClamp = 0.0f,
-            LodMaxClamp = 1.0f,
-            MaxAnisotropy = 1,
-        };
+        _samplerDescription = sampler;
+        Sampler = CreateSampler(sampler);
+    }
 
-        Sampler = api.DeviceCreateSampler(device.Device, in samplerDesc);
+    /// <summary>Creates a square array bound against one layout up front.</summary>
+    public WgpuTextureArray(WebGpuDevice device, uint layerSize, uint layerCount,
+        BindGroupLayout* textureBindGroupLayout)
+        : this(device, layerSize, layerSize, layerCount, WgpuSamplerDescription.Nearest) =>
+        BindGroup = BindGroupFor(textureBindGroupLayout);
+
+    /// <summary>The bind group made by the single-layout constructor.</summary>
+    public BindGroup* BindGroup { get; }
+
+    /// <summary>
+    ///     Replaces the filtering and wrap rules, rebuilding the sampler and dropping the bind
+    ///     groups that referenced the old one. A no-op when nothing changed.
+    /// </summary>
+    public void SetSampler(WgpuSamplerDescription sampler)
+    {
+        if (_samplerDescription == sampler) return;
+        _samplerDescription = sampler;
+
+        WgpuRelease.Deferred(_device, [.. _bindGroups.Values], (nint)Sampler, 0, 0);
+        _bindGroups.Clear();
+
+        Sampler = CreateSampler(sampler);
+    }
+
+    /// <summary>The bind group binding this array and its sampler for a pipeline using <paramref name="layout" />.</summary>
+    public BindGroup* BindGroupFor(BindGroupLayout* layout)
+    {
+        if (_bindGroups.TryGetValue((nint)layout, out nint cached)) return (BindGroup*)cached;
 
         BindGroupEntry* entries = stackalloc BindGroupEntry[2];
         entries[0] = new BindGroupEntry { Binding = 0, TextureView = View };
@@ -77,22 +101,26 @@ public sealed unsafe class WgpuTextureArray : IDisposable
 
         BindGroupDescriptor bgDesc = new()
         {
-            Layout = textureBindGroupLayout,
+            Layout = layout,
             EntryCount = 2,
             Entries = entries,
         };
 
-        BindGroup = api.DeviceCreateBindGroup(device.Device, in bgDesc);
+        BindGroup* bindGroup = _device.Api.DeviceCreateBindGroup(_device.Device, in bgDesc);
+        _bindGroups[(nint)layout] = (nint)bindGroup;
+        return bindGroup;
     }
 
-    /// <summary>Uploads one layer's RGBA8 pixels.</summary>
+    /// <summary>Uploads one whole layer's RGBA8 pixels.</summary>
     public void UploadLayer(uint layerIndex, ReadOnlySpan<byte> rgba) =>
-        UploadRegion(0, 0, layerIndex, LayerSize, LayerSize, rgba);
+        UploadRegion(0, 0, layerIndex, Width, Height, rgba);
 
-    /// <summary>Uploads a sub-rectangle of one layer. Proves the same path
-    /// <c>DynamicTexture</c> uses for animated tiles.</summary>
+    /// <summary>Uploads a sub-rectangle of one layer — a texture-pack override, or an animated tile tick.</summary>
     public void UploadRegion(uint x, uint y, uint layerIndex, uint width, uint height, ReadOnlySpan<byte> rgba)
     {
+        if (width == 0 || height == 0 || layerIndex >= LayerCount) return;
+
+        ReadOnlySpan<byte> rows = WgpuPixelRows.Align(rgba, width, height, out uint bytesPerRow);
         Silk.NET.WebGPU.WebGPU api = _device.Api;
 
         ImageCopyTexture destination = new()
@@ -106,16 +134,34 @@ public sealed unsafe class WgpuTextureArray : IDisposable
         TextureDataLayout layout = new()
         {
             Offset = 0,
-            BytesPerRow = width * 4,
+            BytesPerRow = bytesPerRow,
             RowsPerImage = height,
         };
 
         Extent3D extent = new(width, height, 1);
 
-        fixed (byte* p = rgba)
+        fixed (byte* p = rows)
         {
-            api.QueueWriteTexture(_device.Queue, in destination, p, (nuint)rgba.Length, in layout, in extent);
+            api.QueueWriteTexture(_device.Queue, in destination, p, (nuint)rows.Length, in layout, in extent);
         }
+    }
+
+    private Sampler* CreateSampler(WgpuSamplerDescription description)
+    {
+        SamplerDescriptor samplerDesc = new()
+        {
+            AddressModeU = description.AddressU,
+            AddressModeV = description.AddressV,
+            AddressModeW = AddressMode.ClampToEdge,
+            MagFilter = description.Mag,
+            MinFilter = description.Min,
+            MipmapFilter = description.Mipmap,
+            LodMinClamp = 0.0f,
+            LodMaxClamp = Math.Max(0.0f, description.LodMaxClamp),
+            MaxAnisotropy = (ushort)Math.Max(1u, description.MaxAnisotropy),
+        };
+
+        return _device.Api.DeviceCreateSampler(_device.Device, in samplerDesc);
     }
 
     public void Dispose()
@@ -123,10 +169,9 @@ public sealed unsafe class WgpuTextureArray : IDisposable
         if (_disposed) return;
         _disposed = true;
 
-        Silk.NET.WebGPU.WebGPU api = _device.Api;
-        if (BindGroup is not null) api.BindGroupRelease(BindGroup);
-        if (Sampler is not null) api.SamplerRelease(Sampler);
-        if (View is not null) api.TextureViewRelease(View);
-        if (Texture is not null) { api.TextureDestroy(Texture); api.TextureRelease(Texture); }
+        // The pack switch this defers for is the one that rebuilds these arrays: NamedTextureArray
+        // reallocates every layer at the new resolution while the frame is still being recorded.
+        WgpuRelease.Deferred(_device, [.. _bindGroups.Values], (nint)Sampler, (nint)View, (nint)Texture);
+        _bindGroups.Clear();
     }
 }
