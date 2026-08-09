@@ -193,3 +193,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-09 — fix(rendering): fix sky/block light channel swap and dawn/dusk tessellator crash under WebGPU (Nicolas Vyčas Nery; `875247dec2146d6c137bd8f4b5324b0ee8851ee9`)
 - 2026-08-09 — fix(rendering): fix WebGPU cloud visibility, scroll, and add sun/moon lighting (Nicolas Vyčas Nery; `113164f42d61e851959ab63c7a39e218ebacadd8`)
 - 2026-08-09 — feat(rendering): separate first-person hand rendering into its own pass for improved depth handling (Nicolas Vyčas Nery; `0691e2ca836a2d5a4f76c7c277ce7578df5ea5a1`)
+- 2026-08-09 — feat(rendering): draw particles under WebGPU as instanced billboards (Nicolas Vyčas Nery; `4cff63a68f267a8f9b7cf82f306fe753afdd469e`)

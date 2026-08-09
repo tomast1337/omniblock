@@ -1,5 +1,6 @@
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
+using BetaSharp.Client.Rendering.Core.WebGPU;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core.Systems;
 
@@ -13,6 +14,13 @@ public static class ParticleRenderer
         "/terrain.png",
         "/gui/items.png"
     ];
+
+    // Lazily built: constructing it touches WebGpuDevice.Current, which does not exist under GL.
+    private static WgpuParticleRenderer? s_wgpuRenderer;
+
+    // Reused across frames and layers rather than allocated per draw — the WebGPU path is the one
+    // this exists to avoid a CPU-side per-frame allocation for in the first place.
+    private static readonly ParticleInstance[] s_instanceScratch = new ParticleInstance[ParticleBuffer.MaxParticles];
 
     public static void Render(
         ParticleBuffer[] layers,
@@ -38,6 +46,13 @@ public static class ParticleRenderer
         double interpX = lastTickX + (x - lastTickX) * partialTick;
         double interpY = lastTickY + (y - lastTickY) * partialTick;
         double interpZ = lastTickZ + (z - lastTickZ) * partialTick;
+
+        if (GLManager.GLOrNull is null)
+        {
+            RenderWebGpu(layers, cosYaw, sinYaw, cosPitch, upX, upZ,
+                interpX, interpY, interpZ, partialTick, textureManager, world);
+            return;
+        }
 
         Tessellator t = Tessellator.instance;
 
@@ -78,6 +93,74 @@ public static class ParticleRenderer
             }
 
             t.draw(ProgramSlot.TexturedLit);
+        }
+    }
+
+    /// <summary>
+    ///     The WebGPU path: for each layer, packs one <see cref="ParticleInstance" /> per particle
+    ///     (no quad expansion) and hands the whole layer to <see cref="WgpuParticleRenderer" /> as a
+    ///     single instanced draw.
+    /// </summary>
+    private static void RenderWebGpu(
+        ParticleBuffer[] layers,
+        float cosYaw, float sinYaw, float cosPitch, float upX, float upZ,
+        double interpX, double interpY, double interpZ,
+        float partialTick, TextureManager textureManager, IWorldContext world)
+    {
+        s_wgpuRenderer ??= new WgpuParticleRenderer();
+        s_wgpuRenderer.BeginFrame();
+
+        System.Numerics.Vector3 right = new(cosYaw, 0.0f, sinYaw);
+        System.Numerics.Vector3 up = new(upX, cosPitch, upZ);
+
+        WebGpuDevice device = WebGpuDevice.Current!;
+
+        for (int layer = 0; layer < 3; layer++)
+        {
+            ParticleBuffer buf = layers[layer];
+            if (buf.Count == 0)
+            {
+                continue;
+            }
+
+            WgpuTexture? texture = textureManager.GetTextureId(s_layerTextures[layer]).Texture?.Wgpu;
+            if (texture is null)
+            {
+                continue;
+            }
+
+            for (int i = 0; i < buf.Count; i++)
+            {
+                ref readonly ParticleTypeConfig config = ref ParticleTypeConfig.Configs[(int)buf.Type[i]];
+
+                float rx = (float)(buf.PrevX[i] + (buf.X[i] - buf.PrevX[i]) * partialTick - interpX);
+                float ry = (float)(buf.PrevY[i] + (buf.Y[i] - buf.PrevY[i]) * partialTick - interpY);
+                float rz = (float)(buf.PrevZ[i] + (buf.Z[i] - buf.PrevZ[i]) * partialTick - interpZ);
+
+                float scale = ComputeScale(config.Scale, buf, i, partialTick);
+                float size = 0.1f * scale;
+
+                float brightness = ComputeBrightness(config.Brightness, buf, i, partialTick, world);
+
+                ComputeUVs(config.UV, buf.TextureIndex[i], buf.TexJitterX[i], buf.TexJitterY[i],
+                    out float minU, out float maxU, out float minV, out float maxV);
+
+                s_instanceScratch[i] = new ParticleInstance
+                {
+                    Pos = new System.Numerics.Vector3(rx, ry, rz),
+                    Size = size,
+                    Color = new System.Numerics.Vector4(
+                        buf.Red[i] * brightness, buf.Green[i] * brightness, buf.Blue[i] * brightness, 1.0f),
+                    // The Tessellator path's corner order pairs (minU,minV) with the opposite corner
+                    // from (maxU,maxV) — see the vertex order above — which is exactly uvMin/uvMax.
+                    UvMin = new System.Numerics.Vector2(minU, minV),
+                    UvMax = new System.Numerics.Vector2(maxU, maxV),
+                };
+            }
+
+            s_wgpuRenderer.DrawLayer(device, texture,
+                GLManager.ModelView.Top, GLManager.Projection.Top,
+                right, up, layer, s_instanceScratch.AsSpan(0, buf.Count));
         }
     }
 
