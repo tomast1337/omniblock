@@ -297,13 +297,6 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public void RenderEntities(Vec3D cameraPos, ICuller culler, float partialTicks)
     {
-        if (GLManager.GLOrNull is null)
-        {
-            // Entity rendering (EntityBatchRenderer/EntityInstanceBatchRenderer/BlockEntityRenderer)
-            // is OpenGL-only and not part of this task; skip rather than crash under WebGPU.
-            return;
-        }
-
         if (_renderEntitiesStartupCounter > 0)
         {
             --_renderEntitiesStartupCounter;
