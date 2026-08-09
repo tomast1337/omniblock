@@ -29,7 +29,7 @@ internal static class EntityShaderIds
 
         try
         {
-            string text = AssetManager.Instance.getAsset(assetPath).GetTextContent();
+            string text = AssetManager.Instance.GetAsset(assetPath).GetTextContent();
             foreach (string line in text.Split('\n'))
             {
                 string trimmed = line.Trim();

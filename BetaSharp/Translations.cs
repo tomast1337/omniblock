@@ -30,13 +30,13 @@ public class Translations
 
     private void LoadLanguages()
     {
-        var asset = AssetManager.Instance.getAsset("lang/lang.json");
+        var asset = AssetManager.Instance.GetAsset("lang/lang.json");
         var json = JsonDocument.Parse(asset.GetTextContent());
 
         var element = json.RootElement;
         foreach (var item in element.EnumerateObject())
         {
-            var code = item.Name;
+            string code = item.Name;
             var value = item.Value;
 
             // A JSON null for either reads back as null. Neither is worth refusing to start over:
@@ -69,8 +69,7 @@ public class Translations
         {
             if (CurrentLanguage is null)
             {
-                if (DefaultLanguage is null) return key;
-                return DefaultLanguage.Get(key);
+                return DefaultLanguage is null ? key : DefaultLanguage.Get(key);
             }
 
             return CurrentLanguage.Get(key);
@@ -93,14 +92,14 @@ public class Translations
 
     public static string GetNamed(string key)
     {
-        return Get(key + ".name");
+        return Get($"{key}.name");
     }
 
     public static void SwitchLanguage(string lang)
     {
-        if (!Instance.Languages.ContainsKey(lang)) return;
+        if (!Instance.Languages.TryGetValue(lang, out Language? language)) return;
 
-        Instance.CurrentLanguage = Instance.Languages[lang];
+        Instance.CurrentLanguage = language;
         LanguageChanged?.Invoke();
     }
 }

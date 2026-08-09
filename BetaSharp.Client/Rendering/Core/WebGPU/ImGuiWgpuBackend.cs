@@ -420,7 +420,7 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
 
     private ShaderModule* CreateShaderModule()
     {
-        string source = AssetManager.Instance.getAsset("shaders/imgui.wgsl").GetTextContent();
+        string source = AssetManager.Instance.GetAsset("shaders/imgui.wgsl").GetTextContent();
         byte* code = (byte*)SilkMarshal.StringToPtr(source);
 
         try

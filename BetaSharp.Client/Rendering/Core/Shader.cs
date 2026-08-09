@@ -55,19 +55,19 @@ public class Shader : IDisposable
         uint vertexShader = gl.CreateShader(ShaderType.VertexShader);
         if (_vertexShaderPath == null)
         {
-            string vertexShaderSource = AssetManager.Instance.getAsset("shaders/quad.vert").GetTextContent();
+            string vertexShaderSource = AssetManager.Instance.GetAsset("shaders/quad.vert").GetTextContent();
             gl.ShaderSource(vertexShader, vertexShaderSource);
         }
         else
         {
-            string vertexShaderSource = AssetManager.Instance.getAsset(_vertexShaderPath).GetTextContent();
+            string vertexShaderSource = AssetManager.Instance.GetAsset(_vertexShaderPath).GetTextContent();
             _options.Parse(vertexShaderSource);
             gl.ShaderSource(vertexShader, _options.Inject(vertexShaderSource));
         }
         gl.CompileShader(vertexShader);
         CheckShaderCompilation(vertexShader, "Vertex");
 
-        string fragmentShaderSource = AssetManager.Instance.getAsset(_fragmentShaderPath).GetTextContent();
+        string fragmentShaderSource = AssetManager.Instance.GetAsset(_fragmentShaderPath).GetTextContent();
         uint fragmentShader = gl.CreateShader(ShaderType.FragmentShader);
         _options.Parse(fragmentShaderSource);
         gl.ShaderSource(fragmentShader, _options.Inject(fragmentShaderSource));

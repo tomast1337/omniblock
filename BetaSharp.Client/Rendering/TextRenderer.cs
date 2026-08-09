@@ -191,7 +191,7 @@ public class TextRenderer : IDisposable
 
             try
             {
-                AssetManager.Asset asset = AssetManager.Instance.getAsset("font/default.png");
+                AssetManager.Asset asset = AssetManager.Instance.GetAsset("font/default.png");
                 using var stream = new MemoryStream(asset.GetBinaryContent());
                 using var classicFontImage = Image.Load<Rgba32>(stream);
                 LoadClassicFontIntoAtlas(classicFontImage);
@@ -266,7 +266,7 @@ public class TextRenderer : IDisposable
 
             if (!UseUnifontPrimary)
             {
-                AssetManager.Asset asset = AssetManager.Instance.getAsset("font/default.png");
+                AssetManager.Asset asset = AssetManager.Instance.GetAsset("font/default.png");
                 using var stream = new MemoryStream(asset.GetBinaryContent());
                 using var classicFontImage = Image.Load<Rgba32>(stream);
                 LoadClassicFontIntoAtlas(classicFontImage);

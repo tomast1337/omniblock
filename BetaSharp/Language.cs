@@ -5,26 +5,18 @@ using System.Text.Json;
 
 namespace BetaSharp;
 
-public class Language
+public class Language(string code, string name, string author)
 {
-    public string Code { get; init; }
-    public string Name { get; init; }
-    public string Author { get; init; }
-    public bool Unifont { get; set; }
-    
-    public IReadOnlyDictionary<string, string>? Translations { get; private set; }
+    public string Code { get; } = code;
+    public string Name { get; } = name;
+    public string Author { get; } = author;
+    public bool Unifont { get; set; } = false;
 
-    public Language(string code, string name, string author)
-    {
-        Code = code;
-        Name = name;
-        Author = author;
-        Unifont = false;
-    }
+    public IReadOnlyDictionary<string, string>? Translations { get; private set; }
 
     public void LoadTranslations()
     {
-        var asset = AssetManager.Instance.getAsset("lang/" + Code + ".json");
+        var asset = AssetManager.Instance.GetAsset($"lang/{Code}.json");
         if (asset == null)
             return;
 
@@ -35,7 +27,7 @@ public class Language
         Translations = output;
     }
 
-    private void FlattenJson(Dictionary<string, string> output, JsonElement element, string prefix = "")
+    private static void FlattenJson(Dictionary<string, string> output, JsonElement element, string prefix = "")
     {
         switch (element.ValueKind)
         {
@@ -59,20 +51,14 @@ public class Language
             case JsonValueKind.False:
                 output[prefix] = element.ToString();
                 break;
-
-            default:
-                break;
         }
     }
 
     public string Get(string key)
     {
         if (Translations is null) LoadTranslations();
-
         // still not loaded, must be error
         if (Translations is null) return key;
-
-        if (Translations.ContainsKey(key)) return Translations[key];
-        return key;
+        return Translations.TryGetValue(key, out string? translation) ? translation : key;
     }
 }

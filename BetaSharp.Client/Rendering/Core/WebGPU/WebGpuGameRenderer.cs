@@ -250,7 +250,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
 
         if (_blitPipeline == null)
         {
-            string blitWgsl = AssetManager.Instance.getAsset("shaders/blit.wgsl").GetTextContent();
+            string blitWgsl = AssetManager.Instance.GetAsset("shaders/blit.wgsl").GetTextContent();
 
             BindGroupLayoutEntry[] blitUniformEntries =
             [
