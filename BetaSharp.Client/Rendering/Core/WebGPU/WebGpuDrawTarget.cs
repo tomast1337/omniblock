@@ -1,7 +1,6 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
 using BetaSharp.Client.Rendering.Core.Textures;
-using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
 using Silk.NET.WebGPU;
 using WgpuBuffer = Silk.NET.WebGPU.Buffer;
@@ -452,6 +451,7 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
             Tint = new Vector4(tint.X, tint.Y, tint.Z, tint.W),
             UseVertexColor = channels.HasFlag(VertexChannels.Color) ? 1.0f : 0.0f,
             AlphaThreshold = context.AlphaTestEnabled ? context.AlphaThreshold : 0.0f,
+            TextureMatrix = ToNumerics(context.TextureMatrix.Top),
         };
 
         _device.Api.QueueWriteBuffer(_device.Queue, buffer, 0, &uniforms, GbuffersUniforms.Size);

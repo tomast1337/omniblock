@@ -57,9 +57,9 @@ public struct SkyWgslUniforms
 
 /// <summary>
 ///     The uniform block cloud.wgsl declares, matching
-///     <c>[StructLayout(LayoutKind.Explicit, Size = 240)]</c>.
+///     <c>[StructLayout(LayoutKind.Explicit, Size = 256)]</c>.
 /// </summary>
-[StructLayout(LayoutKind.Explicit, Size = 240)]
+[StructLayout(LayoutKind.Explicit, Size = 256)]
 public struct CloudWgslUniforms
 {
     [FieldOffset(0)]
@@ -86,4 +86,9 @@ public struct CloudWgslUniforms
 
     [FieldOffset(224)]
     public Vector4 Tint;
+
+    /// <summary>Unit vector toward the sun (day) or moon (night), in the same world-relative axes RenderSky rotates the sky dome by.</summary>
+    [FieldOffset(240)]
+    public Vector3 LightDir;
+    // 4 bytes trailing padding — struct size must stay a multiple of 16 for a uniform buffer.
 }

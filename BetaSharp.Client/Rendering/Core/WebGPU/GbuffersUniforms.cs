@@ -20,7 +20,7 @@ namespace BetaSharp.Client.Rendering.Core.WebGPU;
 [StructLayout(LayoutKind.Explicit, Size = Size)]
 public struct GbuffersUniforms
 {
-    public const int Size = 160;
+    public const int Size = 224;
 
     [FieldOffset(0)] public Matrix4x4 ModelViewMatrix;
     [FieldOffset(64)] public Matrix4x4 ProjectionMatrix;
@@ -44,4 +44,11 @@ public struct GbuffersUniforms
 
     [FieldOffset(152)] public float Pad0;
     [FieldOffset(156)] public float Pad1;
+
+    /// <summary>
+    ///     Applied to the texcoord before sampling. Identity for almost every draw; the dynamic
+    ///     textures (compass, clock, scrolling cloud sheets) animate by mutating this instead of the
+    ///     texture itself.
+    /// </summary>
+    [FieldOffset(160)] public Matrix4x4 TextureMatrix;
 }

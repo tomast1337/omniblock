@@ -56,7 +56,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     private int _cloudsQuality = -1;
 
     private const uint SkyUniformSize = 192;
-    private const uint CloudUniformSize = 240;
+    private const uint CloudUniformSize = 256;
 
     /// <summary>Whether the draw target has slot pipelines registered for the sky.</summary>
     private bool HasSkySlotPipeline =>
@@ -695,7 +695,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     // ── Cloud slot-uniform plumbing ────────────────────────────────────────
 
     private void SetCloudUniforms(float offsetX, float offsetY, float offsetZ, float scale,
-        float texOffsetU, float texOffsetV, float tintR, float tintG, float tintB, float tintA)
+        float texOffsetU, float texOffsetV, float tintR, float tintG, float tintB, float tintA,
+        Vector3 lightDir)
     {
         if (!HasCloudSlotPipeline) return;
 
@@ -711,7 +712,19 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             FogStart = fog.Start,
             FogEnd = fog.End,
             Tint = new(tintR, tintG, tintB, tintA),
+            LightDir = lightDir,
         };
+    }
+
+    /// <summary>
+    ///     Unit vector toward the sun (day half) or moon (night half), in the same world-relative
+    ///     axes RenderSky rotates the sky dome by: a rotation about X of celestialAngle * 360°,
+    ///     applied to the sun's local position at +Y.
+    /// </summary>
+    private Vector3 GetCelestialLightDir(float tickDelta)
+    {
+        float theta = _world.GetTime(tickDelta) * MathF.PI * 2.0F;
+        return new Vector3(0.0F, MathF.Cos(theta), MathF.Sin(theta));
     }
 
     private void DrawCloudMesh(IStaticMesh mesh)
@@ -757,6 +770,11 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         byte tileSize = CloudsRenderDistance;
         float tile = tileSize * uvScale;
 
+        // Both cloud.frag and cloud.wgsl multiply the sampled texel by the captured vertex colour
+        // unconditionally. Without this, the tessellator never touches the colour slot for this
+        // draw, and the static mesh captures whatever bytes its shared scratch buffer last held —
+        // tint and visibility both become a coin flip left over from unrelated geometry.
+        tessellator.setColorRGBA_F(1.0F, 1.0F, 1.0F, 1.0F);
         tessellator.setNormal(0.0F, -1.0F, 0.0F);
         tessellator.addVertexWithUV(0, 0.0, tileSize, 0, tile);
         tessellator.addVertexWithUV(tileSize, 0.0, tileSize, tile, tile);
@@ -775,6 +793,9 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         for (int i = 0; i < 4; ++i)
         {
             tessellator.startDrawingQuads();
+            // See BuildCloudMesh: without an explicit colour, the captured mesh's tint comes from
+            // whatever the shared tessellator buffer last held for unrelated geometry.
+            tessellator.setColorRGBA_F(1.0F, 1.0F, 1.0F, 1.0F);
             float cloudHeight = 4.0F;
             float uvScale = 1.0F / 256.0F;
             float edgeInset = 1.0F / 1024.0F;
@@ -922,7 +943,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
         GLManager.Color = new(cloudRed, cloudGreen, cloudBlue, 0.8F);
         SetCloudUniforms(-subCloudOffsetX, cloudY, -subCloudOffsetZ, cloudScale / 2f,
-            textureOffsetU, textureOffsetV, cloudRed, cloudGreen, cloudBlue, 0.8F);
+            textureOffsetU, textureOffsetV, cloudRed, cloudGreen, cloudBlue, 0.8F,
+            GetCelestialLightDir(tickDelta));
         DrawCloudMesh(_clouds[0]);
 
         GLManager.TextureMatrix.Pop();

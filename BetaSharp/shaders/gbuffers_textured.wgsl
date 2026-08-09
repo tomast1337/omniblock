@@ -6,6 +6,9 @@ struct Uniforms {
     projectionMatrix: mat4x4<f32>,
     tint: vec4<f32>,
     params: vec4<f32>,
+    // Applied to the texcoord before sampling. Identity for most draws; the dynamic textures
+    // (compass, clock, scrolling cloud sheets) animate by mutating this instead of the texture.
+    textureMatrix: mat4x4<f32>,
 }
 
 @group(0) @binding(0) var<uniform> u: Uniforms;
@@ -40,7 +43,7 @@ fn vs_main(in: VertexInput) -> VertexOutput {
     out.position = u.projectionMatrix * u.modelViewMatrix * vec4(in.position, 1.0);
     // One or the other — see gbuffers_basic.wgsl.
     out.color = select(u.tint, in.color, u.params.x > 0.5);
-    out.texcoord = in.texcoord;
+    out.texcoord = (u.textureMatrix * vec4(in.texcoord, 0.0, 1.0)).xy;
     out.arrayLayer = in.arrayLayer;
     return out;
 }

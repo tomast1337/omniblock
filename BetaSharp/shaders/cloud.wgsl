@@ -12,6 +12,10 @@ struct Uniforms {
     fogEnd: f32,
     // 8 bytes padding — the next field is a vec4, which needs 16-byte alignment
     tint: vec4<f32>,
+    // Unit vector toward the sun (day) or moon (night). The cloud sheet has no real geometric
+    // normal — it's a flat plane seen from either side — so lighting just compares this against a
+    // fixed "up" to fake a day/night brightness swing.
+    lightDir: vec3<f32>,
 }
 
 @group(0) @binding(0) var<uniform> u: Uniforms;
@@ -203,5 +207,11 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
 
     var result = texColor * color;
     result.a *= fogFactor;
+
+    // Very simple directional light: the sheet has one nominal "up" face, so a low or set
+    // sun/moon just dims it toward an ambient floor rather than shading per-fragment.
+    let sunFactor = clamp(dot(vec3<f32>(0.0, 1.0, 0.0), u.lightDir), 0.35, 1.0);
+    result = vec4<f32>(result.rgb * sunFactor, result.a);
+
     return result;
 }
