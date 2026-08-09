@@ -6,11 +6,11 @@ struct Uniforms {
     projectionMatrix: mat4x4<f32>,
     textureMatrix: mat4x4<f32>,
     cloudOffset: vec3<f32>,
-    // 4 bytes padding — vec3 takes 16 bytes
+    // No padding here: a scalar packs right after a vec3's 12 bytes.
     cloudScale: f32,
     fogStart: f32,
     fogEnd: f32,
-    // 4 bytes padding to reach the next 16-byte boundary
+    // 8 bytes padding — the next field is a vec4, which needs 16-byte alignment
     tint: vec4<f32>,
 }
 

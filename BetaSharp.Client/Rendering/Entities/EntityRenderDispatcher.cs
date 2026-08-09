@@ -9,11 +9,17 @@ using BetaSharp.Items;
 using BetaSharp.Registries;
 using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
+using Microsoft.Extensions.Logging;
 
 namespace BetaSharp.Client.Rendering.Entities;
 
 public class EntityRenderDispatcher
 {
+    private static readonly ILogger s_logger = Log.Instance.For<EntityRenderDispatcher>();
+
+    /// <summary>Renderer types already reported as unported, so the same one is not logged every frame.</summary>
+    private readonly HashSet<Type> _reportedUnported = [];
+
     private readonly Dictionary<Type, EntityRenderer> _entityRenderMap = [];
     private readonly Dictionary<EntityType, EntityRenderer> _declaredRenderMap = [];
     public static readonly EntityRenderDispatcher Instance = new();
@@ -133,9 +139,25 @@ public class EntityRenderDispatcher
         EntityRenderer entityRenderer = GetEntityRenderObject(target);
         if (entityRenderer == null) return;
 
-        entityRenderer.Render(target, x, y, z, yaw, tickDelta);
-        entityRenderer.PostRender(target, new Vec3D(x, y, z), yaw, tickDelta);
-        entityRenderer.RenderBoundingBox(target, new Vec3D(x, y, z), yaw, tickDelta);
+        // A renderer not yet ported to the active backend throws rather than silently drawing
+        // garbage. One bad entity is not allowed to take the whole frame down with it — the world
+        // pass this runs inside still has terrain, sky and clouds queued behind it, and none of that
+        // reaches the screen if the pass is aborted here. Reported once per renderer type rather than
+        // swallowed outright, so the gap stays visible without drowning every other log line.
+        try
+        {
+            entityRenderer.Render(target, x, y, z, yaw, tickDelta);
+            entityRenderer.PostRender(target, new Vec3D(x, y, z), yaw, tickDelta);
+            entityRenderer.RenderBoundingBox(target, new Vec3D(x, y, z), yaw, tickDelta);
+        }
+        catch (InvalidOperationException ex)
+        {
+            if (_reportedUnported.Add(entityRenderer.GetType()))
+            {
+                s_logger.LogWarning(ex, "Skipping {Renderer} for the rest of this session: {Message}",
+                    entityRenderer.GetType().Name, ex.Message);
+            }
+        }
     }
 
     public double GetSquareDistanceTo(double x, double y, double z)

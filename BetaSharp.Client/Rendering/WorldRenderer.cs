@@ -55,7 +55,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     private Vector3D<float> _fogColor;
     private int _cloudsQuality = -1;
 
-    private const uint SkyUniformSize = 196;
+    private const uint SkyUniformSize = 192;
     private const uint CloudUniformSize = 240;
 
     /// <summary>Whether the draw target has slot pipelines registered for the sky.</summary>
@@ -297,6 +297,13 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public void RenderEntities(Vec3D cameraPos, ICuller culler, float partialTicks)
     {
+        if (GLManager.GLOrNull is null)
+        {
+            // Entity rendering (EntityBatchRenderer/EntityInstanceBatchRenderer/BlockEntityRenderer)
+            // is OpenGL-only and not part of this task; skip rather than crash under WebGPU.
+            return;
+        }
+
         if (_renderEntitiesStartupCounter > 0)
         {
             --_renderEntitiesStartupCounter;
@@ -435,7 +442,10 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
         // No shader program for the sky on either backend. On GL the shader was never built; on
         // WebGPU the slot pipelines were never registered (target was not ready at construct).
-        if (_skyShader is null && !HasSkySlotPipeline) return;
+        if (_skyShader is null && !HasSkySlotPipeline)
+        {
+            return;
+        }
 
         Vector3D<double> skyColorVec = _world.Environment.GetSkyColor(_game.Camera, tickDelta);
         float skyRed = (float)skyColorVec.X;
@@ -547,7 +557,10 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         float starBrightness = _world.CalculateSkyLightIntensity(tickDelta) * rainFade;
         if (starBrightness > 0.0F)
         {
-            SetSkyUniforms(SkyUntextured());
+            // The star mesh carries no per-vertex colour — GL dims it by replaying the display
+            // list under a flat glColor instead. WebGPU has no such fallback, so the brightness
+            // has to travel as the uniform tint, not a vertex-colour switch.
+            SetSkyUniforms(SkyStars(starBrightness));
             GLManager.Color = new(starBrightness, starBrightness, starBrightness, starBrightness);
             DrawSkyMesh(_stars, ProgramSlot.SkyBasic);
         }
@@ -616,8 +629,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         {
             SkyColor = new(skyR, skyG, skyB),
             GroundColor = new(groundR, groundG, groundB),
-            FogStart = fog.Density,
-            FogEnd = fog.Start,
+            FogStart = fog.Start,
+            FogEnd = fog.End,
             GradientMode = 1,
             UseTexture = 0,
             UseVertexColor = 0,
@@ -633,8 +646,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         return new()
         {
             Tint = new(1, 1, 1, alpha),
-            FogStart = fog.Density,
-            FogEnd = fog.Start,
+            FogStart = fog.Start,
+            FogEnd = fog.End,
             GradientMode = 0,
             UseTexture = 1,
             UseVertexColor = 0,
@@ -651,11 +664,29 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         return new()
         {
             Tint = Vector4.One,
-            FogStart = fog.Density,
-            FogEnd = fog.Start,
+            FogStart = fog.Start,
+            FogEnd = fog.End,
             GradientMode = 0,
             UseTexture = 0,
             UseVertexColor = 1,
+        };
+    }
+
+    /// <summary>
+    ///     Stars: an untextured flat colour, since the mesh carries no per-vertex colour of its own
+    ///     (see the call site) and dims with <paramref name="brightness" /> instead.
+    /// </summary>
+    private static SkyWgslUniforms SkyStars(float brightness)
+    {
+        FogState fog = GLManager.Fog;
+        return new()
+        {
+            Tint = new(brightness, brightness, brightness, brightness),
+            FogStart = fog.Start,
+            FogEnd = fog.End,
+            GradientMode = 0,
+            UseTexture = 0,
+            UseVertexColor = 0,
         };
     }
 
@@ -675,8 +706,8 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             TextureMatrix = WebGpuDrawTarget.ToNumerics(GLManager.TextureMatrix.Top),
             CloudOffset = new(offsetX, offsetY, offsetZ),
             CloudScale = scale,
-            FogStart = fog.Density,
-            FogEnd = fog.Start,
+            FogStart = fog.Start,
+            FogEnd = fog.End,
             Tint = new(tintR, tintG, tintB, tintA),
         };
     }
@@ -695,6 +726,11 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
         using (Profiler.Begin("RenderClouds"))
         {
+            // The options screen mutates CloudsQuality directly; pick up a change here rather than
+            // only at construct/reset, or a switch to Legacy leaves _clouds sized for Fancy's single
+            // mesh and RenderLegacyCloudsFancy indexes past the end of it.
+            OnCloudsQualityChanged();
+
             if (!_game.World.Dimension.IsNether)
             {
                 if (_game.Options.CloudsQuality <= 0)
