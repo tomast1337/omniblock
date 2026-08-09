@@ -41,15 +41,32 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
 
     private const string WebGpuPathMessage =
         $"{nameof(EntityInstanceBatchRenderer)}'s OpenGL path was used under WebGPU; "
-        + $"the WebGPU path is {nameof(FlushWebGpu)}.";
+        + $"the WebGPU path is {nameof(FlushBucketsWebGpu)}.";
 
     private readonly uint _vaoId;
     private readonly uint _staticVboId;
     private readonly uint _ssboId;
 
-    // WebGPU path
+    // WebGPU path. Keyed by RenderState because a WgpuPipeline bakes blend/depth/cull into an
+    // immutable descriptor — unlike GL, which reads it back off GLManager.State per bucket. Each
+    // RenderState's own storage buffer, not one shared one, because its bind group is locked to
+    // the BindGroupLayout its owning pipeline built; a second pipeline's layout object is not
+    // interchangeable with it even when the entries are identical (see WgpuParticleRenderer's
+    // per-layer buffers for the same shape of trap, there for a different reason).
     private WgpuMesh? _staticMesh;
-    private WgpuStorageBuffer? _storageBuffer;
+    private readonly Dictionary<RenderState, WgpuPipeline> _wgpuPipelines = [];
+
+    // A pool per RenderState, not one buffer rewritten per Flush: GLManager.ImmediateGeometryDrawing
+    // flushes queued instances before every interleaved immediate-mode draw (a burning entity's
+    // flame quad is the case that shows it), so one frame can call Flush more than once. All
+    // QueueWriteBuffer calls run before the frame's draws execute, so a second flush's write would
+    // overwrite the first flush's data out from under its still-pending draw — the same trap
+    // WgpuPipeline's per-draw uniform pool exists to avoid.
+    private readonly Dictionary<RenderState, List<WgpuStorageBuffer>> _wgpuStorageBufferPools = [];
+    private readonly Dictionary<RenderState, int> _wgpuStorageBufferPoolNext = [];
+
+    /// <summary>Stands in for group 2 on a colour-only draw, whose pipeline still declares it.</summary>
+    private WgpuTexture? _emptyTexture2D;
 
     // Grows as ModelParts bake, keyed by ModelPart.StaticVertexOffset. Staged on the CPU and
     // (re)uploaded to _staticVboId lazily, since GL may not exist yet when the first models bake.
@@ -235,6 +252,16 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
     {
         _active = true;
         ResetBuckets();
+        foreach (WgpuPipeline pipeline in _wgpuPipelines.Values)
+        {
+            pipeline.ResetUniformPool();
+        }
+
+        List<RenderState> states = [.. _wgpuStorageBufferPoolNext.Keys];
+        foreach (RenderState state in states)
+        {
+            _wgpuStorageBufferPoolNext[state] = 0;
+        }
     }
 
     // Clears the inner per-bucket List<int>s in place rather than dropping them, so their
@@ -334,88 +361,245 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
             return;
         }
 
-        // Under WebGPU the queued poses are dropped rather than drawn: FlushWebGpu wants a pass, a
-        // pipeline and a storage-buffer layout, and there is no WGSL counterpart of
-        // entity_instanced.vert to build one from yet. Instanced entities are absent on that
-        // backend until there is.
-        if (_gl is null)
+        _flushing = true;
+        try
         {
+            if (_gl is null)
+            {
+                FlushBucketsWebGpu();
+            }
+            else
+            {
+                FlushBuckets();
+            }
+        }
+        finally
+        {
+            _flushing = false;
+        }
+    }
+
+    private unsafe void FlushBucketsWebGpu()
+    {
+        if (GLManager.DrawTargetOrNull is not WebGpuDrawTarget target || target.CurrentPass is null)
+        {
+            // No pass is open to draw into (e.g. a flush forced outside RenderEntities' pass);
+            // dropping is the same failure mode the pre-instancing WebGPU path had.
             ResetBuckets();
             return;
         }
 
-        _flushing = true;
-        try
-        {
-            FlushBuckets();
-        }
-        finally
-        {
-            _flushing = false;
-        }
-    }
-
-    /// <summary>
-    ///     Draws queued instances through the native WebGPU command encoder.
-    ///     The caller has already uploaded per-frame uniforms and bound the pipeline.
-    ///     <paramref name="storageLayout"/> is the bind group layout for the storage buffer
-    ///     (group 1, binding 0) from the entity-instanced pipeline.
-    /// </summary>
-    public unsafe void FlushWebGpu(RenderPassEncoder* pass, WgpuPipeline pipeline,
-        BindGroupLayout* storageLayout)
-    {
-        if (_instanceCount == 0 || _flushing) return;
-
-        _flushing = true;
-        try
-        {
-            FlushBucketsWebGpu(pass, pipeline, storageLayout);
-        }
-        finally
-        {
-            _flushing = false;
-        }
-    }
-
-    private unsafe void FlushBucketsWebGpu(RenderPassEncoder* pass, WgpuPipeline pipeline,
-        BindGroupLayout* storageLayout)
-    {
         WebGpuDevice device = WebGpuDevice.Current!;
-
-        // One-time upload of static geometry as a shared vertex buffer.
         EnsureStaticMeshUploaded(device);
+        RenderPassEncoder* pass = target.CurrentPass;
 
-        // Pack each bucket's instances contiguously — same logic as the GL path.
-        Span<int> bucketStarts = stackalloc int[_buckets.Count];
-        int cursor = 0;
+        // Grouped by RenderState because each one is a different pipeline. Processed in the order
+        // each state was first seen, buckets within a state in submission order: entities whose
+        // raster state actually varies mid-mob (a translucent shell, an additive glow, a
+        // depth-equal flash) opt out of instancing entirely rather than reach this method (see the
+        // DrawState remarks above), so this reproduces the "submission order" guarantee the GL path
+        // relies on for the cases that still go through here.
+        List<RenderState> statesInOrder = [];
+        Dictionary<RenderState, List<int>> bucketsByState = [];
         for (int b = 0; b < _buckets.Count; b++)
         {
-            bucketStarts[b] = cursor;
-            foreach (int instanceIndex in _bucketInstanceIndices[b])
+            RenderState state = _buckets[b].Draw.Raster;
+            if (!bucketsByState.TryGetValue(state, out List<int>? list))
             {
-                Array.Copy(_instanceData, instanceIndex * FloatsPerInstance,
-                    _flushData, cursor * FloatsPerInstance, FloatsPerInstance);
-                cursor++;
+                list = [];
+                bucketsByState[state] = list;
+                statesInOrder.Add(state);
+            }
+
+            list.Add(b);
+        }
+
+        // Sized to the worst case (every bucket in one state) and sliced per state below, rather
+        // than stackalloc'd fresh inside the loop.
+        Span<int> allBucketFirstInstance = stackalloc int[_buckets.Count];
+
+        foreach (RenderState state in statesInOrder)
+        {
+            WgpuPipeline pipeline = WgpuPipelineFor(device, state);
+            WgpuStorageBuffer storage = NextWgpuStorageBuffer(device, state, pipeline);
+
+            List<int> stateBuckets = bucketsByState[state];
+            Span<int> bucketFirstInstance = allBucketFirstInstance[..stateBuckets.Count];
+            int cursor = 0;
+            for (int i = 0; i < stateBuckets.Count; i++)
+            {
+                bucketFirstInstance[i] = cursor;
+                foreach (int instanceIndex in _bucketInstanceIndices[stateBuckets[i]])
+                {
+                    Array.Copy(_instanceData, instanceIndex * FloatsPerInstance,
+                        _flushData, cursor * FloatsPerInstance, FloatsPerInstance);
+                    cursor++;
+                }
+            }
+
+            storage.Write(new ReadOnlySpan<float>(_flushData, 0, cursor * FloatsPerInstance));
+            pipeline.Bind(pass);
+
+            for (int i = 0; i < stateBuckets.Count; i++)
+            {
+                Bucket bucket = _buckets[stateBuckets[i]];
+
+                pipeline.BindNextUniforms(pass, UniformsFor(bucket.Draw));
+                storage.Bind(pass, 1);
+
+                WgpuTexture texture = (bucket.TextureId != 0 ? Texture2D.Find(bucket.TextureId)?.Wgpu : null)
+                    ?? (_emptyTexture2D ??= CreateEmptyTexture2D(device));
+                BindGroup* texGroup = texture.BindGroupFor(pipeline.TextureArrayBindGroupLayout!);
+                WgpuPipeline.BindGroup(pass, 2, texGroup, device.Api);
+
+                uint instanceCount = (uint)_bucketInstanceIndices[stateBuckets[i]].Count;
+                _staticMesh!.DrawRange(pass, (uint)bucket.VertexBase, (uint)bucket.VertexCount,
+                    instanceCount, (uint)bucketFirstInstance[i]);
             }
         }
 
-        // Upload instance data to the storage buffer.
-        nuint instanceBytes = (nuint)(_instanceCount * FloatsPerInstance * sizeof(float));
-        _storageBuffer ??= new WgpuStorageBuffer(device,
-            (ulong)(MaxInstances * FloatsPerInstance * sizeof(float)), storageLayout);
-        _storageBuffer.Write(new ReadOnlySpan<float>(_flushData, 0, _instanceCount * FloatsPerInstance));
-        _storageBuffer.Bind(pass, 1);
+        ResetBuckets();
+    }
 
-        // Buckets are drawn in submission order — translucent behind body, depth-equal behind
-        // depth matches. Reordering breaks both.
-        for (int b = 0; b < _buckets.Count; b++)
+    private static EntityInstancedWgslUniforms UniformsFor(in DrawState draw)
+    {
+        FogState fog = GLManager.Fog;
+        LightingState lighting = draw.Lighting;
+
+        return new EntityInstancedWgslUniforms
         {
-            Bucket bucket = _buckets[b];
-            uint instanceCount = (uint)_bucketInstanceIndices[b].Count;
-            _staticMesh!.DrawRange(pass, (uint)bucket.VertexBase, (uint)bucket.VertexCount, instanceCount);
+            ProjectionMatrix = WebGpuDrawTarget.ToNumerics(WgpuClip.FromGl(GLManager.Projection.Top)),
+            TextureMatrix = WebGpuDrawTarget.ToNumerics(draw.TextureMatrix),
+            Ambient = ToNumerics(lighting.Ambient),
+            LightingEnabled = draw.LightingEnabled ? 1u : 0u,
+            Light0Dir = ToNumerics(lighting.Light0Direction),
+            UseTexture = draw.UseTexture ? 1u : 0u,
+            Light0Diffuse = ToNumerics(lighting.Light0Diffuse),
+            AlphaThreshold = draw.AlphaThreshold,
+            Light1Dir = ToNumerics(lighting.Light1Direction),
+            FogEnabled = GLManager.FogEnabled ? 1u : 0u,
+            Light1Diffuse = ToNumerics(lighting.Light1Diffuse),
+            FogMode = (int)fog.Curve,
+            FogColor = new System.Numerics.Vector4(fog.Color.X, fog.Color.Y, fog.Color.Z, fog.Color.W),
+            FogStart = fog.Start,
+            FogEnd = fog.End,
+            FogDensity = fog.Density,
+        };
+    }
+
+    private static System.Numerics.Vector3 ToNumerics(Vector3D<float> v) => new(v.X, v.Y, v.Z);
+
+    private unsafe WgpuPipeline WgpuPipelineFor(WebGpuDevice device, RenderState state)
+    {
+        if (_wgpuPipelines.TryGetValue(state, out WgpuPipeline? cached)) return cached;
+
+        WgpuPipeline pipeline = CreateWgpuPipeline(device, state);
+        _wgpuPipelines[state] = pipeline;
+        return pipeline;
+    }
+
+    /// <summary>The entity_instanced.wgsl pipeline for one raster state, matching EntityInstancedVertex.</summary>
+    private static unsafe WgpuPipeline CreateWgpuPipeline(WebGpuDevice device, RenderState state)
+    {
+        string source = AssetManager.Instance.GetAsset("shaders/entity_instanced.wgsl").GetTextContent();
+
+        VertexAttribute* attrs = stackalloc VertexAttribute[4];
+        attrs[0] = new VertexAttribute { Format = VertexFormat.Float32x3, Offset = 0, ShaderLocation = 0 };
+        attrs[1] = new VertexAttribute { Format = VertexFormat.Float32x2, Offset = 12, ShaderLocation = 1 };
+        attrs[2] = new VertexAttribute { Format = VertexFormat.Float32x3, Offset = 20, ShaderLocation = 2 };
+        attrs[3] = new VertexAttribute { Format = VertexFormat.Uint32, Offset = 32, ShaderLocation = 3 };
+
+        VertexBufferLayout bufferLayout = new()
+        {
+            ArrayStride = EntityInstancedVertexStride,
+            StepMode = VertexStepMode.Vertex,
+            AttributeCount = 4,
+            Attributes = attrs,
+        };
+
+        BindGroupLayoutEntry[] uniformEntries =
+        [
+            new BindGroupLayoutEntry
+            {
+                Binding = 0,
+                Visibility = ShaderStage.Vertex | ShaderStage.Fragment,
+                Buffer = new BufferBindingLayout { Type = BufferBindingType.Uniform, MinBindingSize = EntityUniformSize },
+            },
+        ];
+
+        // Bound as the pipeline's "texture" group (group 1) even though it carries a storage
+        // buffer — see WgpuParticleRenderer for the same repurposing.
+        BindGroupLayoutEntry[] storageEntries =
+        [
+            new BindGroupLayoutEntry
+            {
+                Binding = 0,
+                Visibility = ShaderStage.Vertex,
+                Buffer = new BufferBindingLayout { Type = BufferBindingType.ReadOnlyStorage },
+            },
+        ];
+
+        BindGroupLayoutEntry[] textureEntries =
+        [
+            new BindGroupLayoutEntry
+            {
+                Binding = 0,
+                Visibility = ShaderStage.Fragment,
+                Texture = new TextureBindingLayout
+                {
+                    SampleType = TextureSampleType.Float,
+                    ViewDimension = TextureViewDimension.Dimension2D,
+                },
+            },
+            new BindGroupLayoutEntry
+            {
+                Binding = 1,
+                Visibility = ShaderStage.Fragment,
+                Sampler = new SamplerBindingLayout { Type = SamplerBindingType.Filtering },
+            },
+        ];
+
+        return new WgpuPipeline(
+            device, source, "vs_main",
+            EntityUniformSize,
+            uniformEntries,
+            storageEntries,
+            &bufferLayout, 1,
+            state,
+            device.SurfaceFormat,
+            WgpuFramebuffer.DepthFormat,
+            textureArrayEntries: textureEntries);
+    }
+
+    /// <summary>Bytes of <see cref="EntityInstancedWgslUniforms" />.</summary>
+    private const uint EntityUniformSize = 240;
+
+    private unsafe WgpuStorageBuffer NextWgpuStorageBuffer(WebGpuDevice device, RenderState state, WgpuPipeline pipeline)
+    {
+        if (!_wgpuStorageBufferPools.TryGetValue(state, out List<WgpuStorageBuffer>? pool))
+        {
+            pool = [];
+            _wgpuStorageBufferPools[state] = pool;
+            _wgpuStorageBufferPoolNext[state] = 0;
         }
 
-        ResetBuckets();
+        int next = _wgpuStorageBufferPoolNext[state];
+        if (next == pool.Count)
+        {
+            pool.Add(new WgpuStorageBuffer(device,
+                (ulong)(MaxInstances * FloatsPerInstance * sizeof(float)), pipeline.TextureBindGroupLayout));
+        }
+
+        _wgpuStorageBufferPoolNext[state] = next + 1;
+        return pool[next];
+    }
+
+    private static unsafe WgpuTexture CreateEmptyTexture2D(WebGpuDevice device)
+    {
+        WgpuTexture texture = new(device, 1, 1, 1, WgpuSamplerDescription.Nearest);
+        ReadOnlySpan<byte> white = [255, 255, 255, 255];
+        texture.WriteLevel(0, 0, 0, 1, 1, white);
+        return texture;
     }
 
     /// <summary>Uploads the static model geometry to a WgpuMesh once.</summary>
@@ -534,11 +718,20 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
     public void Dispose()
     {
         GLManager.ImmediateGeometryDrawing -= Flush;
-        Gl.DeleteBuffer(_ssboId);
-        Gl.DeleteBuffer(_staticVboId);
-        Gl.DeleteVertexArray(_vaoId);
+        if (_gl is not null)
+        {
+            Gl.DeleteBuffer(_ssboId);
+            Gl.DeleteBuffer(_staticVboId);
+            Gl.DeleteVertexArray(_vaoId);
+            _shader?.Dispose();
+        }
+
         _staticMesh?.Dispose();
-        _storageBuffer?.Dispose();
-        _shader?.Dispose();
+        foreach (List<WgpuStorageBuffer> pool in _wgpuStorageBufferPools.Values)
+        {
+            foreach (WgpuStorageBuffer buffer in pool) buffer.Dispose();
+        }
+        foreach (WgpuPipeline pipeline in _wgpuPipelines.Values) pipeline.Dispose();
+        _emptyTexture2D?.Dispose();
     }
 }
