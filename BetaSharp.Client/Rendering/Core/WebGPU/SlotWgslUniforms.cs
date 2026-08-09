@@ -5,14 +5,22 @@ namespace BetaSharp.Client.Rendering.Core.WebGPU;
 
 /// <summary>
 ///     The uniform block sky.wgsl declares, matching
-///     <c>[StructLayout(LayoutKind.Explicit, Size = 196)]</c>.
+///     <c>[StructLayout(LayoutKind.Explicit, Size = 192)]</c>.
 /// </summary>
 /// <remarks>
-///     Set by <see cref="WorldRenderer" /> before each <see cref="ProgramSlot.SkyBasic" /> or
-///     <see cref="ProgramSlot.SkyTextured" /> draw on the WebGPU path, and read by
-///     <see cref="WebGpuDrawTarget" /> when it records one.
+///     <para>
+///         Set by <see cref="WorldRenderer" /> before each <see cref="ProgramSlot.SkyBasic" /> or
+///         <see cref="ProgramSlot.SkyTextured" /> draw on the WebGPU path, and read by
+///         <see cref="WebGpuDrawTarget" /> when it records one.
+///     </para>
+///     <para>
+///         A <c>vec3</c> only forces its successor to a 16-byte boundary when that successor itself
+///         needs one — a plain <c>f32</c>/<c>u32</c> packs immediately after the 12 bytes a vec3
+///         actually uses. <see cref="GroundColor" /> is followed by scalars, not another vector, so
+///         nothing here pads after it.
+///     </para>
 /// </remarks>
-[StructLayout(LayoutKind.Explicit, Size = 196)]
+[StructLayout(LayoutKind.Explicit, Size = 192)]
 public struct SkyWgslUniforms
 {
     [FieldOffset(0)]
@@ -26,25 +34,24 @@ public struct SkyWgslUniforms
 
     [FieldOffset(144)]
     public Vector3 SkyColor;
-    // 4 bytes padding — vec3 takes 16 bytes in the WGSL uniform block
+    // 4 bytes padding — the next field is another vec3, which itself needs 16-byte alignment
 
     [FieldOffset(160)]
     public Vector3 GroundColor;
-    // 4 bytes padding
 
-    [FieldOffset(176)]
+    [FieldOffset(172)]
     public float FogStart;
 
-    [FieldOffset(180)]
+    [FieldOffset(176)]
     public float FogEnd;
 
-    [FieldOffset(184)]
+    [FieldOffset(180)]
     public uint GradientMode;
 
-    [FieldOffset(188)]
+    [FieldOffset(184)]
     public uint UseTexture;
 
-    [FieldOffset(192)]
+    [FieldOffset(188)]
     public uint UseVertexColor;
 }
 
@@ -66,17 +73,16 @@ public struct CloudWgslUniforms
 
     [FieldOffset(192)]
     public Vector3 CloudOffset;
-    // 4 bytes padding — vec3 takes 16 bytes
 
-    [FieldOffset(208)]
+    [FieldOffset(204)]
     public float CloudScale;
 
-    [FieldOffset(212)]
+    [FieldOffset(208)]
     public float FogStart;
 
-    [FieldOffset(216)]
+    [FieldOffset(212)]
     public float FogEnd;
-    // 4 bytes padding to reach the next 16-byte boundary
+    // 8 bytes padding — the next field is a vec4, which needs 16-byte alignment
 
     [FieldOffset(224)]
     public Vector4 Tint;

@@ -11,9 +11,9 @@ struct Uniforms {
     projectionMatrix: mat4x4<f32>,
     tint: vec4<f32>,
     skyColor: vec3<f32>,
-    // 4 bytes padding — vec3 takes 16 bytes in a uniform block
+    // 4 bytes padding — the next field is another vec3, which itself needs 16-byte alignment
     groundColor: vec3<f32>,
-    // 4 bytes padding
+    // No padding here: a scalar packs right after a vec3's 12 bytes.
     fogStart: f32,
     fogEnd: f32,
     gradientMode: u32,

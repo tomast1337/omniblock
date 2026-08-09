@@ -1,6 +1,7 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
 using BetaSharp.Client.Rendering.Core.Textures;
+using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
 using Silk.NET.WebGPU;
 using WgpuBuffer = Silk.NET.WebGPU.Buffer;
@@ -64,13 +65,27 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
     public RenderPassEncoder* CurrentPass => _pass;
 
     /// <summary>
-    ///     One pipeline per slot drawn through this target, built on first use.
+    ///     A slot registered through <see cref="RegisterSlotPipeline" />, kept as source rather than
+    ///     a built pipeline — see <see cref="_slotPipelines" /> for why.
+    /// </summary>
+    private readonly record struct SlotPipelineInfo(string Source, uint UniformSize, bool Textured);
+
+    private readonly Dictionary<ProgramSlot, SlotPipelineInfo> _slotPipelineInfos = [];
+
+    /// <summary>
+    ///     One built pipeline per (slot, <see cref="RenderState" />) pair actually drawn, built on
+    ///     first use.
     /// </summary>
     /// <remarks>
-    ///     Empty until something registers one. When a draw names a slot that has a pipeline here,
-    ///     that pipeline is used instead of the generic gbuffers one the null-slot path builds.
+    ///     A WebGPU pipeline bakes its blend and depth configuration in at creation — unlike GL,
+    ///     where <see cref="RenderState" /> is applied per draw — so a slot drawn under more than one
+    ///     state (the sky's dome pass is opaque-ish translucent, its sun/moon pass additive) needs a
+    ///     distinct pipeline per state it is actually drawn under, exactly like the generic gbuffers
+    ///     path's <see cref="_programs" /> keys on state already. One pipeline for the whole slot,
+    ///     built at registration time under whatever state happened to be current, silently drew
+    ///     every later state through that first one's blend/depth config.
     /// </remarks>
-    private readonly Dictionary<ProgramSlot, SlotPipeline> _slotPipelines = [];
+    private readonly Dictionary<(ProgramSlot Slot, RenderState State), SlotPipeline> _slotPipelines = [];
 
     /// <summary>
     ///     Registers a WGSL pipeline for <paramref name="slot" />, built from
@@ -84,8 +99,25 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
     public void RegisterSlotPipeline(ProgramSlot slot, string wgslAssetPath, uint uniformSize,
         bool textured)
     {
-
         string source = AssetManager.Instance.GetAsset(wgslAssetPath).GetTextContent();
+        _slotPipelineInfos[slot] = new SlotPipelineInfo(source, uniformSize, textured);
+    }
+
+    /// <summary>Whether <see cref="RegisterSlotPipeline" /> was called for <paramref name="slot"/>.</summary>
+    public bool HasSlotPipeline(ProgramSlot slot) => _slotPipelineInfos.ContainsKey(slot);
+
+    /// <summary>
+    ///     The pipeline for <paramref name="slot" /> under <paramref name="state" />, building it the
+    ///     first time that combination is drawn.
+    /// </summary>
+    private SlotPipeline SlotPipelineFor(ProgramSlot slot, RenderState state)
+    {
+        if (_slotPipelines.TryGetValue((slot, state), out SlotPipeline cached))
+        {
+            return cached;
+        }
+
+        SlotPipelineInfo info = _slotPipelineInfos[slot];
 
         // Three attributes, all of which the Tessellator always writes — position, colour and
         // texcoord — matching the layout gbuffers_textured.wgsl declares.
@@ -111,12 +143,12 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
                 Buffer = new BufferBindingLayout
                 {
                     Type = BufferBindingType.Uniform,
-                    MinBindingSize = uniformSize,
+                    MinBindingSize = info.UniformSize,
                 },
             },
         ];
 
-        BindGroupLayoutEntry[] textureEntries = textured
+        BindGroupLayoutEntry[] textureEntries = info.Textured
             ?
             [
                 new BindGroupLayoutEntry
@@ -139,26 +171,25 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
             : [];
 
         WgpuPipeline wgpuPipeline = new(
-            _device, source, "vs_main",
-            uniformSize,
+            _device, info.Source, "vs_main",
+            info.UniformSize,
             uniformEntries,
             textureEntries,
             &layout, 1,
-            GLManager.State.Current,
+            state,
             _colorFormat,
             _depthFormat);
 
-        _slotPipelines[slot] = new SlotPipeline
+        SlotPipeline built = new()
         {
             Pipeline = wgpuPipeline,
-            Program = new Program(wgpuPipeline, _device, uniformSize),
-            UniformSize = uniformSize,
-            Textured = textured,
+            Program = new Program(wgpuPipeline, _device, info.UniformSize),
+            Textured = info.Textured,
         };
-    }
 
-    /// <summary>Whether <see cref="RegisterSlotPipeline" /> was called for <paramref name="slot"/>.</summary>
-    public bool HasSlotPipeline(ProgramSlot slot) => _slotPipelines.ContainsKey(slot);
+        _slotPipelines[(slot, state)] = built;
+        return built;
+    }
 
     public WebGpuDrawTarget(WebGpuDevice device, TextureFormat colorFormat, TextureFormat depthFormat)
     {
@@ -248,8 +279,9 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
 
         // A draw naming a slot this target has been given a pipeline for uses that pipeline and its
         // own uniform block. Everything else goes through the generic gbuffers path.
-        if (slot is { } named && _slotPipelines.TryGetValue(named, out SlotPipeline slotPipeline))
+        if (slot is { } named && _slotPipelineInfos.ContainsKey(named))
         {
+            SlotPipeline slotPipeline = SlotPipelineFor(named, GLManager.State.Current);
             api.RenderPassEncoderSetPipeline(_pass, slotPipeline.Pipeline.Pipeline);
             ApplyScissor(api);
 
@@ -260,7 +292,11 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
             if (slotPipeline.Textured)
             {
                 BindGroup* texture = TextureBindGroup(slotPipeline.Program);
-                if (texture is null) return;
+                if (texture is null)
+                {
+                    return;
+                }
+
                 api.RenderPassEncoderSetBindGroup(_pass, 1, texture, 0, null);
             }
 
@@ -335,16 +371,35 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
     /// <summary>What wgpu-native reads as "the rest of the buffer".</summary>
     private const ulong WholeBuffer = ulong.MaxValue;
 
-    /// <summary>The bind group for whatever texture the caller last bound, materializing it if needed.</summary>
+    /// <summary>A 1x1 white texture, for a textured pipeline drawn before anything was ever bound.</summary>
+    /// <remarks>
+    ///     A slot shares one shader between a textured mode and an untextured one that never calls
+    ///     <see cref="Textures.Texture2D.Bind" /> — the sky dome and stars draw through the same
+    ///     shader as the sun and moon, and never bind a texture of their own. The pipeline layout
+    ///     still declares group 1, so a draw still has to fill it with something; the shader's own
+    ///     "useTexture" uniform is what decides whether the sample is actually read.
+    /// </remarks>
+    private WgpuTexture? _emptyTexture2D;
+
+    /// <summary>The bind group for whatever texture the caller last bound, or the white fallback.</summary>
     private BindGroup* TextureBindGroup(Program program)
     {
-        if (Texture2D.Bound?.Wgpu is not { } texture)
+        BindGroupLayout* layout = program.Pipeline.TextureBindGroupLayout;
+        if (layout is null)
         {
             return null;
         }
 
-        BindGroupLayout* layout = program.Pipeline.TextureBindGroupLayout;
-        return layout is null ? null : texture.BindGroupFor(layout);
+        WgpuTexture texture = Texture2D.Bound?.Wgpu ?? (_emptyTexture2D ??= CreateEmptyTexture2D());
+        return texture.BindGroupFor(layout);
+    }
+
+    private WgpuTexture CreateEmptyTexture2D()
+    {
+        WgpuTexture texture = new(_device, 1, 1, 1, WgpuSamplerDescription.Nearest);
+        ReadOnlySpan<byte> white = [255, 255, 255, 255];
+        texture.WriteLevel(0, 0, 0, 1, 1, white);
+        return texture;
     }
 
     /// <summary>
@@ -560,6 +615,9 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
 
         _emptyArray?.Dispose();
         _emptyArray = null;
+
+        _emptyTexture2D?.Dispose();
+        _emptyTexture2D = null;
     }
 
     /// <inheritdoc cref="IStaticMesh" />
@@ -592,7 +650,6 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
     {
         public WgpuPipeline Pipeline;
         public Program Program;
-        public uint UniformSize;
         public bool Textured;
     }
 

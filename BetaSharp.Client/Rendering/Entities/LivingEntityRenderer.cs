@@ -16,6 +16,9 @@ public class LivingEntityRenderer : EntityRenderer
     protected ModelBase renderPassModel;
     private readonly ILogger<LivingEntityRenderer> _logger = Log.Instance.For<LivingEntityRenderer>();
 
+    /// <summary>Exception messages already logged, so an unported renderer doesn't relog every frame.</summary>
+    private static readonly HashSet<string> s_reportedErrors = [];
+
     public LivingEntityRenderer(ModelBase main, float shadowRadius)
     {
         this.Main = main;
@@ -141,7 +144,10 @@ public class LivingEntityRenderer : EntityRenderer
         }
         catch (Exception e)
         {
-            _logger.LogError(e, e.Message);
+            if (s_reportedErrors.Add(e.GetType().Name + e.Message))
+            {
+                _logger.LogError(e, e.Message);
+            }
         }
 
         GLManager.ModelView.Pop();
