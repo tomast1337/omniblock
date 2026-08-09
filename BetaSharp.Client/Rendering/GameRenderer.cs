@@ -411,7 +411,7 @@ public class GameRenderer
     /// <summary>
     ///     Draws the world into whatever target is current, which the caller has already cleared.
     /// </summary>
-    public void DrawWorld(float tickDelta)
+    public void DrawWorld(float tickDelta, bool includeHand = true)
     {
         EntityLiving entity = _client.Camera;
         WorldRenderer worldRenderer = _client.WorldRenderer;
@@ -523,15 +523,30 @@ public class GameRenderer
         GLManager.FogEnabled = false;
         ApplyFog(1);
 
-        if (!CameraController.IsZoomActive)
+        if (includeHand)
         {
-            // The hand is drawn over the world rather than into it, so it wants a fresh depth
-            // buffer. Under WebGPU there is no clear inside a pass; until the hand is a pass of its
-            // own it is depth-tested against the world and can be clipped by geometry near the
-            // camera.
-            GLManager.GLOrNull?.Clear(ClearBufferMask.DepthBufferBit);
-            RenderFirstPersonHand(tickDelta);
+            RenderFirstPersonHandIfNeeded(tickDelta);
         }
+    }
+
+    /// <summary>
+    ///     Draws the first-person held item/hand over whatever the world pass already left in the
+    ///     depth buffer, unless the camera is zoomed (which hides it entirely).
+    /// </summary>
+    /// <remarks>
+    ///     The hand is drawn over the world rather than into it, so it wants a fresh depth buffer —
+    ///     otherwise it is depth-tested against nearby geometry and gets clipped by it. Under GL
+    ///     that is a mid-pass depth clear, done here. WebGPU has no such call, so
+    ///     <see cref="Core.WebGPU.WebGpuGameRenderer" /> instead skips this from
+    ///     <see cref="DrawWorld" /> via <c>includeHand: false</c> and calls it again itself inside a
+    ///     second pass opened with a cleared depth attachment.
+    /// </remarks>
+    public void RenderFirstPersonHandIfNeeded(float tickDelta)
+    {
+        if (CameraController.IsZoomActive) return;
+
+        GLManager.GLOrNull?.Clear(ClearBufferMask.DepthBufferBit);
+        RenderFirstPersonHand(tickDelta);
     }
 
     private void RenderChunkBorders(float tickDelta)

@@ -92,7 +92,8 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         {
             if (drawWorld)
             {
-                _game.GameRenderer.DrawWorld(tickDelta);
+                // The hand is drawn in a pass of its own below, not here — see RenderFirstPersonHand.
+                _game.GameRenderer.DrawWorld(tickDelta, includeHand: false);
             }
         }
         finally
@@ -102,6 +103,12 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
 
         api.RenderPassEncoderEnd(worldPass);
         api.RenderPassEncoderRelease(worldPass);
+
+        // --- Offscreen pass 2: the first-person hand ---
+        if (drawWorld)
+        {
+            RenderFirstPersonHand(_offscreenFb, encoder, tickDelta);
+        }
 
         // --- Swapchain pass: blit + ImGui ---
         RenderPassColorAttachment colorAttach = new()
@@ -203,6 +210,37 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             api.RenderPassEncoderEnd(pass);
             api.RenderPassEncoderRelease(pass);
         }
+    }
+
+    /// <summary>
+    ///     Draws the first-person hand in its own pass over the offscreen framebuffer, with the
+    ///     colour it already holds kept and its depth reset to far.
+    /// </summary>
+    /// <remarks>
+    ///     WebGPU has no call to clear a buffer partway through a pass — a GL depth clear ahead of
+    ///     the hand draw becomes, here, ending the world pass and opening a second one on the same
+    ///     attachments instead. Without this the hand is depth-tested against the world just drawn
+    ///     and gets clipped by geometry near the camera.
+    /// </remarks>
+    private void RenderFirstPersonHand(WgpuFramebuffer offscreenFb, CommandEncoder* encoder, float tickDelta)
+    {
+        Silk.NET.WebGPU.WebGPU api = WebGpuDevice.Current!.Api;
+
+        RenderPassEncoder* handPass = offscreenFb.BeginPass(encoder, default,
+            clearColorBuffer: false, clearDepth: true);
+        _drawTarget.BeginPass(handPass, offscreenFb.Width, offscreenFb.Height);
+
+        try
+        {
+            _game.GameRenderer.RenderFirstPersonHandIfNeeded(tickDelta);
+        }
+        finally
+        {
+            _drawTarget.EndPass();
+        }
+
+        api.RenderPassEncoderEnd(handPass);
+        api.RenderPassEncoderRelease(handPass);
     }
 
     /// <summary>
