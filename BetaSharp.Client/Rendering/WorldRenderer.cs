@@ -491,7 +491,10 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         GLManager.AlphaTestEnabled = false;
         Lighting.turnOff();
         float[] backgroundColor = _world.Dimension.GetBackgroundColor(_world.GetTime(tickDelta), tickDelta);
-        if (backgroundColor != null)
+        // TriangleFan — GL only. WebGPU has no counterpart, so the whole tessellation is skipped
+        // rather than just the final draw: starting it and never finishing leaves the tessellator
+        // stuck "already tesselating" for every draw after this one.
+        if (backgroundColor != null && _skyShader is not null)
         {
             SetSkyUniforms(SkyUntextured());
             GLManager.ShadeModel = ShadeModel.Smooth;
@@ -499,7 +502,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             GLManager.ModelView.Rotate(90.0F, 1.0F, 0.0F, 0.0F);
             float celestialAngle = _world.GetTime(tickDelta);
             GLManager.ModelView.Rotate(celestialAngle > 0.5F ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
-            if (_skyShader is not null) SkyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
+            SkyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
             RefreshSkyModelView();
             tessellator.startDrawing(6);
             tessellator.setColorRGBA_F(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
@@ -513,10 +516,9 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                 tessellator.addVertex((ringX * 120.0F), (ringY * 120.0F), (-ringY * 40.0F * backgroundColor[3]));
             }
 
-            // TriangleFan — GL only. WebGPU has no counterpart.
-            if (_skyShader is not null) tessellator.drawWithBoundProgram();
+            tessellator.drawWithBoundProgram();
             GLManager.ModelView.Pop();
-            if (_skyShader is not null) SkyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
+            SkyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
             RefreshSkyModelView();
             GLManager.ShadeModel = ShadeModel.Flat;
         }
