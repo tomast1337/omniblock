@@ -57,8 +57,8 @@ public struct ChunkVertex
 
     // The two light channels, in quarter levels: a smooth-lit corner is the mean of four cells each
     // 0-15, so the value is a multiple of 0.25 and 0..60 holds it exactly.
-    [FieldOffset(16)] public byte BlockLight;
-    [FieldOffset(17)] public byte SkyLight;
+    [FieldOffset(16)] public byte SkyLight;
+    [FieldOffset(17)] public byte BlockLight;
 
     /// <summary>Which layer of the terrain array this vertex samples.</summary>
     /// <remarks>
