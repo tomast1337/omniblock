@@ -27,7 +27,7 @@ public class MainMenuSplash : UIElement
         try
         {
             List<string> splashLines = [];
-            string splashesText = AssetManager.Instance.getAsset("title/splashes.txt").GetTextContent();
+            string splashesText = AssetManager.Instance.GetAsset("title/splashes.txt").GetTextContent();
             using (StringReader reader = new(splashesText))
             {
                 string? line;

@@ -150,7 +150,7 @@ public static unsafe class WebGpuPreview
 
     private static WgpuPipeline CreateChunkPipeline(WebGpuDevice device, WgpuTextureArray terrainArray)
     {
-        string source = AssetManager.Instance.getAsset("shaders/chunk.wgsl").GetTextContent();
+        string source = AssetManager.Instance.GetAsset("shaders/chunk.wgsl").GetTextContent();
         Silk.NET.WebGPU.WebGPU api = device.Api;
 
         byte* code = (byte*)SilkMarshal.StringToPtr(source);
@@ -304,7 +304,7 @@ public static unsafe class WebGpuPreview
         WebGpuDevice device, WgpuFramebuffer fb,
         out WgpuPipeline pipeline, out WgpuMesh quad, out BindGroup* bindGroup)
     {
-        string source = AssetManager.Instance.getAsset("shaders/blit.wgsl").GetTextContent();
+        string source = AssetManager.Instance.GetAsset("shaders/blit.wgsl").GetTextContent();
         Silk.NET.WebGPU.WebGPU api = device.Api;
 
         byte* code = (byte*)SilkMarshal.StringToPtr(source);

@@ -13,7 +13,7 @@ internal static class AchievementMap
     {
         try
         {
-            using (var reader = new StringReader(AssetManager.Instance.getAsset("achievement/map.txt").GetTextContent()))
+            using (var reader = new StringReader(AssetManager.Instance.GetAsset("achievement/map.txt").GetTextContent()))
             {
                 while (reader.ReadLine() is { } line)
                 {

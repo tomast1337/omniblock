@@ -135,6 +135,21 @@ public sealed class RenderContext
     ///     at submission the way the matrices and the tint are.
     /// </remarks>
     public ScissorRect? Scissor { get; set; }
+
+    // ── Slot-specific uniform data ─────────────────────────────────────────
+
+    /// <summary>
+    ///     The uniform block for the next <see cref="ProgramSlot.SkyBasic" /> or
+    ///     <see cref="ProgramSlot.SkyTextured" /> draw on the WebGPU path.
+    ///     Set by <see cref="WorldRenderer" /> before the draw call.
+    /// </summary>
+    internal WebGPU.SkyWgslUniforms SkySlot;
+
+    /// <summary>
+    ///     The uniform block for the next <see cref="ProgramSlot.Clouds" /> draw on the WebGPU path.
+    /// </summary>
+    /// <inheritdoc cref="SkySlot" />
+    internal WebGPU.CloudWgslUniforms CloudSlot;
 }
 
 /// <summary>

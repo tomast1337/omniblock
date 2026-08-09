@@ -63,6 +63,103 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
     /// </remarks>
     public RenderPassEncoder* CurrentPass => _pass;
 
+    /// <summary>
+    ///     One pipeline per slot drawn through this target, built on first use.
+    /// </summary>
+    /// <remarks>
+    ///     Empty until something registers one. When a draw names a slot that has a pipeline here,
+    ///     that pipeline is used instead of the generic gbuffers one the null-slot path builds.
+    /// </remarks>
+    private readonly Dictionary<ProgramSlot, SlotPipeline> _slotPipelines = [];
+
+    /// <summary>
+    ///     Registers a WGSL pipeline for <paramref name="slot" />, built from
+    ///     <paramref name="wgslAssetPath" /> under the generic Tessellator vertex layout.
+    /// </summary>
+    /// <remarks>
+    ///     The pipeline declares only the attributes the Tessellator always writes (position, colour,
+    ///     texcoord). A slot that needs lighting or layer-index will need a different vertex layout —
+    ///     those will want their own registration path when they arrive.
+    /// </remarks>
+    public void RegisterSlotPipeline(ProgramSlot slot, string wgslAssetPath, uint uniformSize,
+        bool textured)
+    {
+
+        string source = AssetManager.Instance.GetAsset(wgslAssetPath).GetTextContent();
+
+        // Three attributes, all of which the Tessellator always writes — position, colour and
+        // texcoord — matching the layout gbuffers_textured.wgsl declares.
+        VertexAttribute* attrs = stackalloc VertexAttribute[3];
+        attrs[0] = new VertexAttribute { Format = VertexFormat.Float32x3, Offset = 0, ShaderLocation = 0 };
+        attrs[1] = new VertexAttribute { Format = VertexFormat.Unorm8x4, Offset = 20, ShaderLocation = 1 };
+        attrs[2] = new VertexAttribute { Format = VertexFormat.Float32x2, Offset = 12, ShaderLocation = 2 };
+
+        VertexBufferLayout layout = new()
+        {
+            ArrayStride = TessellatorVertexLayout.Stride,
+            StepMode = VertexStepMode.Vertex,
+            AttributeCount = 3,
+            Attributes = attrs,
+        };
+
+        BindGroupLayoutEntry[] uniformEntries =
+        [
+            new BindGroupLayoutEntry
+            {
+                Binding = 0,
+                Visibility = ShaderStage.Vertex | ShaderStage.Fragment,
+                Buffer = new BufferBindingLayout
+                {
+                    Type = BufferBindingType.Uniform,
+                    MinBindingSize = uniformSize,
+                },
+            },
+        ];
+
+        BindGroupLayoutEntry[] textureEntries = textured
+            ?
+            [
+                new BindGroupLayoutEntry
+                {
+                    Binding = 0,
+                    Visibility = ShaderStage.Fragment,
+                    Texture = new TextureBindingLayout
+                    {
+                        SampleType = TextureSampleType.Float,
+                        ViewDimension = TextureViewDimension.Dimension2D,
+                    },
+                },
+                new BindGroupLayoutEntry
+                {
+                    Binding = 1,
+                    Visibility = ShaderStage.Fragment,
+                    Sampler = new SamplerBindingLayout { Type = SamplerBindingType.Filtering },
+                },
+            ]
+            : [];
+
+        WgpuPipeline wgpuPipeline = new(
+            _device, source, "vs_main",
+            uniformSize,
+            uniformEntries,
+            textureEntries,
+            &layout, 1,
+            GLManager.State.Current,
+            _colorFormat,
+            _depthFormat);
+
+        _slotPipelines[slot] = new SlotPipeline
+        {
+            Pipeline = wgpuPipeline,
+            Program = new Program(wgpuPipeline, _device, uniformSize),
+            UniformSize = uniformSize,
+            Textured = textured,
+        };
+    }
+
+    /// <summary>Whether <see cref="RegisterSlotPipeline" /> was called for <paramref name="slot"/>.</summary>
+    public bool HasSlotPipeline(ProgramSlot slot) => _slotPipelines.ContainsKey(slot);
+
     public WebGpuDrawTarget(WebGpuDevice device, TextureFormat colorFormat, TextureFormat depthFormat)
     {
         _device = device;
@@ -88,6 +185,11 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
         foreach (Program program in _programs.Values)
         {
             program.ResetUniforms();
+        }
+
+        foreach (SlotPipeline slotPipeline in _slotPipelines.Values)
+        {
+            slotPipeline.Program.ResetUniforms();
         }
     }
 
@@ -118,7 +220,7 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
         WgpuDynamicBuffer stream = NextStream();
         stream.Write(command.Vertices);
 
-        Record(stream.Buffer, command.VertexCount, command.Topology, command.Channels);
+        Record(stream.Buffer, command.VertexCount, command.Topology, command.Channels, command.Slot);
     }
 
     /// <summary>
@@ -133,7 +235,8 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
             command.VertexCount, command.Topology, command.Channels);
 
     /// <summary>Records one draw of <paramref name="vertices" /> under the state now in effect.</summary>
-    private void Record(WgpuBuffer* vertices, int vertexCount, DrawTopology topology, VertexChannels channels)
+    private void Record(WgpuBuffer* vertices, int vertexCount, DrawTopology topology, VertexChannels channels,
+        ProgramSlot? slot = null)
     {
         if (topology == DrawTopology.TriangleFan)
         {
@@ -142,6 +245,30 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
         }
 
         Silk.NET.WebGPU.WebGPU api = _device.Api;
+
+        // A draw naming a slot this target has been given a pipeline for uses that pipeline and its
+        // own uniform block. Everything else goes through the generic gbuffers path.
+        if (slot is { } named && _slotPipelines.TryGetValue(named, out SlotPipeline slotPipeline))
+        {
+            api.RenderPassEncoderSetPipeline(_pass, slotPipeline.Pipeline.Pipeline);
+            ApplyScissor(api);
+
+            slotPipeline.Program.NextUniforms(out WgpuBuffer* slotUniformBuffer, out BindGroup* slotUniformGroup);
+            WriteSlotUniforms(slotUniformBuffer, named);
+            api.RenderPassEncoderSetBindGroup(_pass, 0, slotUniformGroup, 0, null);
+
+            if (slotPipeline.Textured)
+            {
+                BindGroup* texture = TextureBindGroup(slotPipeline.Program);
+                if (texture is null) return;
+                api.RenderPassEncoderSetBindGroup(_pass, 1, texture, 0, null);
+            }
+
+            api.RenderPassEncoderSetVertexBuffer(_pass, 0, vertices, 0, WholeBuffer);
+            api.RenderPassEncoderDraw(_pass, (uint)vertexCount, 1, 0, 0);
+            return;
+        }
+
         bool textured = channels.HasFlag(VertexChannels.Texture);
 
         Program program = ProgramFor(textured, topology);
@@ -237,6 +364,27 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
         return array.BindGroupFor(program.Pipeline.TextureArrayBindGroupLayout);
     }
 
+    /// <summary>
+    ///     Writes the uniform block for <paramref name="slot" />, which the caller set on
+    ///     <see cref="RenderContext" /> before the draw.
+    /// </summary>
+    private void WriteSlotUniforms(WgpuBuffer* buffer, ProgramSlot slot)
+    {
+        switch (slot)
+        {
+            case ProgramSlot.SkyBasic:
+            case ProgramSlot.SkyTextured:
+                SkyWgslUniforms sky = GLManager.Context.SkySlot;
+                _device.Api.QueueWriteBuffer(_device.Queue, buffer, 0, &sky, (nuint)sizeof(SkyWgslUniforms));
+                break;
+
+            case ProgramSlot.Clouds:
+                CloudWgslUniforms cloud = GLManager.Context.CloudSlot;
+                _device.Api.QueueWriteBuffer(_device.Queue, buffer, 0, &cloud, (nuint)sizeof(CloudWgslUniforms));
+                break;
+        }
+    }
+
     private void WriteUniforms(WgpuBuffer* buffer, VertexChannels channels)
     {
         RenderContext context = GLManager.Context;
@@ -254,7 +402,7 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
         _device.Api.QueueWriteBuffer(_device.Queue, buffer, 0, &uniforms, GbuffersUniforms.Size);
     }
 
-    private static Matrix4x4 ToNumerics(Matrix4X4<float> m) => new(
+    internal static Matrix4x4 ToNumerics(Matrix4X4<float> m) => new(
         m.M11, m.M12, m.M13, m.M14,
         m.M21, m.M22, m.M23, m.M24,
         m.M31, m.M32, m.M33, m.M34,
@@ -287,7 +435,7 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
             return cached;
         }
 
-        Program program = new(BuildPipeline(textured, topology, state), _device);
+        Program program = new(BuildPipeline(textured, topology, state), _device, GbuffersUniforms.Size);
         _programs[(textured, topology, state)] = program;
         return program;
     }
@@ -295,7 +443,7 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
     private WgpuPipeline BuildPipeline(bool textured, DrawTopology topology, RenderState state)
     {
         string source = AssetManager.Instance
-            .getAsset(textured ? "shaders/gbuffers_textured.wgsl" : "shaders/gbuffers_basic.wgsl")
+            .GetAsset(textured ? "shaders/gbuffers_textured.wgsl" : "shaders/gbuffers_basic.wgsl")
             .GetTextContent();
 
         // Only the attributes the shader declares. The Tessellator vertex also carries a normal and
@@ -403,6 +551,10 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
         foreach (Program program in _programs.Values) program.Dispose();
         _programs.Clear();
 
+        foreach (SlotPipeline slotPipeline in _slotPipelines.Values)
+            slotPipeline.Program.Dispose();
+        _slotPipelines.Clear();
+
         foreach (WgpuDynamicBuffer stream in _streams) stream.Dispose();
         _streams.Clear();
 
@@ -418,19 +570,30 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
         DrawTopology topology,
         VertexChannels channels) : IStaticMesh
     {
-        public void DrawWithBoundProgram() => Draw();
+        public void DrawWithBoundProgram() => Draw(null);
 
-        public void Draw(ProgramSlot slot) => Draw();
+        public void Draw(ProgramSlot slot) => Draw((ProgramSlot?)slot);
 
-        private void Draw()
+        private void Draw(ProgramSlot? slot)
         {
             if (vertexCount == 0) return;
 
             target.RequirePass();
-            target.Record(mesh.VertexBuffer, vertexCount, topology, channels);
+            target.Record(mesh.VertexBuffer, vertexCount, topology, channels, slot);
         }
 
         public void Dispose() => mesh.Dispose();
+    }
+
+    /// <summary>
+    ///     A pipeline registered for a <see cref="ProgramSlot" />, with its own uniform pool.
+    /// </summary>
+    private struct SlotPipeline
+    {
+        public WgpuPipeline Pipeline;
+        public Program Program;
+        public uint UniformSize;
+        public bool Textured;
     }
 
     /// <summary>
@@ -440,7 +603,7 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
     ///     A buffer per draw for the same reason a vertex buffer is: the writes all land before the
     ///     pass runs, so sharing one would give every draw in the pass the last draw's matrices.
     /// </remarks>
-    private sealed class Program(WgpuPipeline pipeline, WebGpuDevice device) : IDisposable
+    private sealed class Program(WgpuPipeline pipeline, WebGpuDevice device, ulong uniformSize) : IDisposable
     {
         public WgpuPipeline Pipeline { get; } = pipeline;
 
@@ -468,7 +631,7 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
             BufferDescriptor bufferDesc = new()
             {
                 Usage = BufferUsage.Uniform | BufferUsage.CopyDst,
-                Size = GbuffersUniforms.Size,
+                Size = uniformSize,
             };
 
             WgpuBuffer* buffer = api.DeviceCreateBuffer(device.Device, in bufferDesc);
@@ -478,7 +641,7 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
                 Binding = 0,
                 Buffer = buffer,
                 Offset = 0,
-                Size = GbuffersUniforms.Size,
+                Size = uniformSize,
             };
 
             BindGroupDescriptor groupDesc = new()

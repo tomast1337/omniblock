@@ -93,7 +93,7 @@ public sealed class UIBatchRenderer : IDisposable
 
         try
         {
-            string text = AssetManager.Instance.getAsset("shaders/ui_textures.properties").GetTextContent();
+            string text = AssetManager.Instance.GetAsset("shaders/ui_textures.properties").GetTextContent();
             foreach (string line in text.Split('\n'))
             {
                 string trimmed = line.Trim();

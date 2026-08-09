@@ -1,6 +1,5 @@
 using System.IO.Compression;
 using System.Reflection;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
 namespace BetaSharp;
@@ -96,24 +95,24 @@ public class AssetManager
     {
         _assetProfile = assetProfile;
 
-        defineHeadlessAssets();
+        DefineHeadlessAssets();
 
         if (_assetProfile == AssetProfile.Full)
         {
-            defineFullAssets();
+            DefineFullAssets();
         }
 
-        loadLanguages();
+        LoadLanguages();
 
         _logger.LogInformation($"Asset profile: {_assetProfile}. Registered {_assetsToLoad.Count} assets.");
 
-        extractNeccessaryAssets();
-        loadAssets();
+        ExtractNeccessaryAssets();
+        LoadAssets();
 
         _logger.LogInformation($"Loaded {_embeddedAssetsLoaded} embedded assets");
     }
 
-    private void loadLanguages()
+    private void LoadLanguages()
     {
         string langPath = Path.Combine("assets", "lang");
 
@@ -123,7 +122,7 @@ public class AssetManager
             {
                 var langFiles = Directory.EnumerateFiles(langPath, "*.json");
 
-                foreach (var file in langFiles)
+                foreach (string file in langFiles)
                 {
                     if (file == "assets/lang/lang.json")
                     {
@@ -132,7 +131,7 @@ public class AssetManager
 
                     string fileName = Path.GetFileName(file);
 
-                    defineAsset("lang/" + fileName, AssetType.Text);
+                    DefineAsset("lang/" + fileName, AssetType.Text);
                 }
             }
             else
@@ -146,57 +145,57 @@ public class AssetManager
         }
     }
 
-    private void defineHeadlessAssets()
+    private void DefineHeadlessAssets()
     {
-        defineAsset("achievement/map.txt", AssetType.Text);
+        DefineAsset("achievement/map.txt", AssetType.Text);
     }
 
-    private void defineFullAssets()
+    private void DefineFullAssets()
     {
-        defineAsset("title/splashes.txt", AssetType.Text);
-        defineAsset("title/black.png", AssetType.Binary);
-        defineAsset("title/mclogo.png", AssetType.Binary);
-        defineAsset("title/mojang.png", AssetType.Binary);
-        defineAsset("achievement/bg.png", AssetType.Binary);
-        defineAsset("achievement/icons.png", AssetType.Binary);
+        DefineAsset("title/splashes.txt", AssetType.Text);
+        DefineAsset("title/black.png", AssetType.Binary);
+        DefineAsset("title/mclogo.png", AssetType.Binary);
+        DefineAsset("title/mojang.png", AssetType.Binary);
+        DefineAsset("achievement/bg.png", AssetType.Binary);
+        DefineAsset("achievement/icons.png", AssetType.Binary);
 
-        defineAsset("armor/chain_1.png", AssetType.Binary);
-        defineAsset("armor/chain_2.png", AssetType.Binary);
-        defineAsset("armor/cloth_1.png", AssetType.Binary);
-        defineAsset("armor/cloth_2.png", AssetType.Binary);
-        defineAsset("armor/diamond_1.png", AssetType.Binary);
-        defineAsset("armor/diamond_2.png", AssetType.Binary);
-        defineAsset("armor/gold_1.png", AssetType.Binary);
-        defineAsset("armor/gold_2.png", AssetType.Binary);
-        defineAsset("armor/iron_1.png", AssetType.Binary);
-        defineAsset("armor/iron_2.png", AssetType.Binary);
-        defineAsset("armor/power.png", AssetType.Binary);
+        DefineAsset("armor/chain_1.png", AssetType.Binary);
+        DefineAsset("armor/chain_2.png", AssetType.Binary);
+        DefineAsset("armor/cloth_1.png", AssetType.Binary);
+        DefineAsset("armor/cloth_2.png", AssetType.Binary);
+        DefineAsset("armor/diamond_1.png", AssetType.Binary);
+        DefineAsset("armor/diamond_2.png", AssetType.Binary);
+        DefineAsset("armor/gold_1.png", AssetType.Binary);
+        DefineAsset("armor/gold_2.png", AssetType.Binary);
+        DefineAsset("armor/iron_1.png", AssetType.Binary);
+        DefineAsset("armor/iron_2.png", AssetType.Binary);
+        DefineAsset("armor/power.png", AssetType.Binary);
 
-        defineAsset("art/kz.png", AssetType.Binary);
+        DefineAsset("art/kz.png", AssetType.Binary);
 
-        defineAsset("environment/clouds.png", AssetType.Binary);
-        defineAsset("environment/rain.png", AssetType.Binary);
-        defineAsset("environment/snow.png", AssetType.Binary);
+        DefineAsset("environment/clouds.png", AssetType.Binary);
+        DefineAsset("environment/rain.png", AssetType.Binary);
+        DefineAsset("environment/snow.png", AssetType.Binary);
 
-        defineAsset("font/default.png", AssetType.Binary);
+        DefineAsset("font/default.png", AssetType.Binary);
 
-        defineAsset("gui/background.png", AssetType.Binary);
-        defineAsset("gui/container.png", AssetType.Binary);
-        defineAsset("gui/crafting.png", AssetType.Binary);
-        defineAsset("gui/furnace.png", AssetType.Binary);
-        defineAsset("gui/gui.png", AssetType.Binary);
-        defineAsset("gui/icons.png", AssetType.Binary);
-        defineAsset("gui/inventory.png", AssetType.Binary);
-        defineAsset("gui/items.png", AssetType.Binary);
-        defineAsset("gui/logo.png", AssetType.Binary);
-        defineAsset("gui/particles.png", AssetType.Binary);
-        defineAsset("gui/slot.png", AssetType.Binary);
-        defineAsset("gui/trap.png", AssetType.Binary);
-        defineAsset("gui/unknown_pack.png", AssetType.Binary);
-        defineAsset("gui/Pointer.png", AssetType.Binary);
-        defineAsset("gui/Globe.png", AssetType.Binary);
+        DefineAsset("gui/background.png", AssetType.Binary);
+        DefineAsset("gui/container.png", AssetType.Binary);
+        DefineAsset("gui/crafting.png", AssetType.Binary);
+        DefineAsset("gui/furnace.png", AssetType.Binary);
+        DefineAsset("gui/gui.png", AssetType.Binary);
+        DefineAsset("gui/icons.png", AssetType.Binary);
+        DefineAsset("gui/inventory.png", AssetType.Binary);
+        DefineAsset("gui/items.png", AssetType.Binary);
+        DefineAsset("gui/logo.png", AssetType.Binary);
+        DefineAsset("gui/particles.png", AssetType.Binary);
+        DefineAsset("gui/slot.png", AssetType.Binary);
+        DefineAsset("gui/trap.png", AssetType.Binary);
+        DefineAsset("gui/unknown_pack.png", AssetType.Binary);
+        DefineAsset("gui/Pointer.png", AssetType.Binary);
+        DefineAsset("gui/Globe.png", AssetType.Binary);
 
-        defineAsset("gui/Logo.png", AssetType.Binary);
+        DefineAsset("gui/Logo.png", AssetType.Binary);
 
         string[] controllerIcons = [
             "back_button", "back_button_pressed", "down_button", "down_button_pressed",
@@ -218,124 +217,117 @@ public class AssetManager
         {
             foreach (string icon in controllerIcons)
             {
-                defineAsset($"gui/controls/{platform}/{icon}.png", AssetType.Binary);
+                DefineAsset($"gui/controls/{platform}/{icon}.png", AssetType.Binary);
             }
 
-            if (platform == "ps4" || platform == "ps5")
+            if (platform != "ps4" && platform != "ps5")
             {
-                defineAsset($"gui/controls/{platform}/touchpad.png", AssetType.Binary);
-                defineAsset($"gui/controls/{platform}/touchpad_pressed.png", AssetType.Binary);
+                continue;
             }
+
+            DefineAsset($"gui/controls/{platform}/touchpad.png", AssetType.Binary);
+            DefineAsset($"gui/controls/{platform}/touchpad_pressed.png", AssetType.Binary);
         }
 
-        defineAsset("gui/world_types/default.png", AssetType.Binary);
-        defineAsset("gui/world_types/flat.png", AssetType.Binary);
-        defineAsset("gui/world_types/sky.png", AssetType.Binary);
+        DefineAsset("gui/world_types/default.png", AssetType.Binary);
+        DefineAsset("gui/world_types/flat.png", AssetType.Binary);
+        DefineAsset("gui/world_types/sky.png", AssetType.Binary);
 
-        defineAsset("item/arrows.png", AssetType.Binary);
-        defineAsset("item/boat.png", AssetType.Binary);
-        defineAsset("item/cart.png", AssetType.Binary);
-        defineAsset("item/door.png", AssetType.Binary);
-        defineAsset("item/sign.png", AssetType.Binary);
+        DefineAsset("item/arrows.png", AssetType.Binary);
+        DefineAsset("item/boat.png", AssetType.Binary);
+        DefineAsset("item/cart.png", AssetType.Binary);
+        DefineAsset("item/door.png", AssetType.Binary);
+        DefineAsset("item/sign.png", AssetType.Binary);
 
-        defineAsset("misc/dial.png", AssetType.Binary);
-        defineAsset("misc/foliagecolor.png", AssetType.Binary);
-        defineAsset("misc/footprint.png", AssetType.Binary);
-        defineAsset("misc/grasscolor.png", AssetType.Binary);
-        defineAsset("misc/mapbg.png", AssetType.Binary);
-        defineAsset("misc/mapicons.png", AssetType.Binary);
-        defineAsset("misc/pumpkinblur.png", AssetType.Binary);
-        defineAsset("misc/shadow.png", AssetType.Binary);
-        defineAsset("misc/vignette.png", AssetType.Binary);
-        defineAsset("misc/water.png", AssetType.Binary);
-        defineAsset("misc/watercolor.png", AssetType.Binary);
+        DefineAsset("misc/dial.png", AssetType.Binary);
+        DefineAsset("misc/foliagecolor.png", AssetType.Binary);
+        DefineAsset("misc/footprint.png", AssetType.Binary);
+        DefineAsset("misc/grasscolor.png", AssetType.Binary);
+        DefineAsset("misc/mapbg.png", AssetType.Binary);
+        DefineAsset("misc/mapicons.png", AssetType.Binary);
+        DefineAsset("misc/pumpkinblur.png", AssetType.Binary);
+        DefineAsset("misc/shadow.png", AssetType.Binary);
+        DefineAsset("misc/vignette.png", AssetType.Binary);
+        DefineAsset("misc/water.png", AssetType.Binary);
+        DefineAsset("misc/watercolor.png", AssetType.Binary);
 
-        defineAsset("mob/char.png", AssetType.Binary);
-        defineAsset("mob/chicken.png", AssetType.Binary);
-        defineAsset("mob/cow.png", AssetType.Binary);
-        defineAsset("mob/creeper.png", AssetType.Binary);
-        defineAsset("mob/ghast.png", AssetType.Binary);
-        defineAsset("mob/ghast_fire.png", AssetType.Binary);
-        defineAsset("mob/pig.png", AssetType.Binary);
-        defineAsset("mob/pigman.png", AssetType.Binary);
-        defineAsset("mob/pigzombie.png", AssetType.Binary);
-        defineAsset("mob/saddle.png", AssetType.Binary);
-        defineAsset("mob/sheep.png", AssetType.Binary);
-        defineAsset("mob/sheep_fur.png", AssetType.Binary);
-        defineAsset("mob/silverfish.png", AssetType.Binary);
-        defineAsset("mob/skeleton.png", AssetType.Binary);
-        defineAsset("mob/slime.png", AssetType.Binary);
-        defineAsset("mob/spider.png", AssetType.Binary);
-        defineAsset("mob/spider_eyes.png", AssetType.Binary);
-        defineAsset("mob/squid.png", AssetType.Binary);
-        defineAsset("mob/wolf.png", AssetType.Binary);
-        defineAsset("mob/wolf_angry.png", AssetType.Binary);
-        defineAsset("mob/wolf_tame.png", AssetType.Binary);
-        defineAsset("mob/zombie.png", AssetType.Binary);
+        DefineAsset("mob/char.png", AssetType.Binary);
+        DefineAsset("mob/chicken.png", AssetType.Binary);
+        DefineAsset("mob/cow.png", AssetType.Binary);
+        DefineAsset("mob/creeper.png", AssetType.Binary);
+        DefineAsset("mob/ghast.png", AssetType.Binary);
+        DefineAsset("mob/ghast_fire.png", AssetType.Binary);
+        DefineAsset("mob/pig.png", AssetType.Binary);
+        DefineAsset("mob/pigman.png", AssetType.Binary);
+        DefineAsset("mob/pigzombie.png", AssetType.Binary);
+        DefineAsset("mob/saddle.png", AssetType.Binary);
+        DefineAsset("mob/sheep.png", AssetType.Binary);
+        DefineAsset("mob/sheep_fur.png", AssetType.Binary);
+        DefineAsset("mob/silverfish.png", AssetType.Binary);
+        DefineAsset("mob/skeleton.png", AssetType.Binary);
+        DefineAsset("mob/slime.png", AssetType.Binary);
+        DefineAsset("mob/spider.png", AssetType.Binary);
+        DefineAsset("mob/spider_eyes.png", AssetType.Binary);
+        DefineAsset("mob/squid.png", AssetType.Binary);
+        DefineAsset("mob/wolf.png", AssetType.Binary);
+        DefineAsset("mob/wolf_angry.png", AssetType.Binary);
+        DefineAsset("mob/wolf_tame.png", AssetType.Binary);
+        DefineAsset("mob/zombie.png", AssetType.Binary);
 
-        defineAsset("terrain/moon.png", AssetType.Binary);
-        defineAsset("terrain/sun.png", AssetType.Binary);
+        DefineAsset("terrain/moon.png", AssetType.Binary);
+        DefineAsset("terrain/sun.png", AssetType.Binary);
 
-        defineAsset("pack.png", AssetType.Binary);
-        defineAsset("pack.txt", AssetType.Text);
+        DefineAsset("pack.png", AssetType.Binary);
+        DefineAsset("pack.txt", AssetType.Text);
 
-        defineAsset("particles.png", AssetType.Binary);
+        DefineAsset("particles.png", AssetType.Binary);
 
-        defineAsset("terrain.png", AssetType.Binary);
+        DefineAsset("terrain.png", AssetType.Binary);
 
-        defineEmbeddedAsset("shaders/blur.frag", AssetType.Text);
-        defineEmbeddedAsset("shaders/chunk.vert", AssetType.Text);
-        defineEmbeddedAsset("shaders/chunk.frag", AssetType.Text);
-        defineEmbeddedAsset("shaders/cloud.vert", AssetType.Text);
-        defineEmbeddedAsset("shaders/cloud.frag", AssetType.Text);
-        defineEmbeddedAsset("shaders/entity_batch.vert", AssetType.Text);
-        defineEmbeddedAsset("shaders/entity_batch.frag", AssetType.Text);
-        defineEmbeddedAsset("shaders/entity_instanced.vert", AssetType.Text);
-        defineEmbeddedAsset("shaders/entity_instanced.frag", AssetType.Text);
-        defineEmbeddedAsset("shaders/entity_textures.properties", AssetType.Text);
-        defineEmbeddedAsset("shaders/entity_parts.properties", AssetType.Text);
-        defineEmbeddedAsset("shaders/gamma.frag", AssetType.Text);
-        defineEmbeddedAsset("shaders/gbuffers_basic.vert", AssetType.Text);
-        defineEmbeddedAsset("shaders/gbuffers_basic.frag", AssetType.Text);
-        defineEmbeddedAsset("shaders/gbuffers_textured.vert", AssetType.Text);
-        defineEmbeddedAsset("shaders/gbuffers_textured.frag", AssetType.Text);
-        defineEmbeddedAsset("shaders/gbuffers_textured_lit.vert", AssetType.Text);
-        defineEmbeddedAsset("shaders/gbuffers_textured_lit.frag", AssetType.Text);
-        defineEmbeddedAsset("shaders/gbuffers_basic.wgsl", AssetType.Text);
-        defineEmbeddedAsset("shaders/gbuffers_textured.wgsl", AssetType.Text);
-        defineEmbeddedAsset("shaders/gbuffers_textured_lit.wgsl", AssetType.Text);
-        defineEmbeddedAsset("shaders/blit.wgsl", AssetType.Text);
-        defineEmbeddedAsset("shaders/chunk.wgsl", AssetType.Text);
-        defineEmbeddedAsset("shaders/imgui.wgsl", AssetType.Text);
-        defineEmbeddedAsset("shaders/quad.vert", AssetType.Text);
-        defineEmbeddedAsset("shaders/sky.vert", AssetType.Text);
-        defineEmbeddedAsset("shaders/sky.frag", AssetType.Text);
-        defineEmbeddedAsset("shaders/ui.vert", AssetType.Text);
-        defineEmbeddedAsset("shaders/ui.frag", AssetType.Text);
-        defineEmbeddedAsset("shaders/ui_textures.properties", AssetType.Text);
-        defineEmbeddedAsset("textures/atlas/terrain.json", AssetType.Text);
-        defineEmbeddedAsset("textures/atlas/items.json", AssetType.Text);
-        defineAsset("lang/lang.json", AssetType.Text);
+        DefineEmbeddedAsset("shaders/blur.frag", AssetType.Text);
+        DefineEmbeddedAsset("shaders/chunk.vert", AssetType.Text);
+        DefineEmbeddedAsset("shaders/chunk.frag", AssetType.Text);
+        DefineEmbeddedAsset("shaders/cloud.vert", AssetType.Text);
+        DefineEmbeddedAsset("shaders/cloud.frag", AssetType.Text);
+        DefineEmbeddedAsset("shaders/entity_batch.vert", AssetType.Text);
+        DefineEmbeddedAsset("shaders/entity_batch.frag", AssetType.Text);
+        DefineEmbeddedAsset("shaders/entity_instanced.vert", AssetType.Text);
+        DefineEmbeddedAsset("shaders/entity_instanced.frag", AssetType.Text);
+        DefineEmbeddedAsset("shaders/entity_textures.properties", AssetType.Text);
+        DefineEmbeddedAsset("shaders/entity_parts.properties", AssetType.Text);
+        DefineEmbeddedAsset("shaders/gamma.frag", AssetType.Text);
+        DefineEmbeddedAsset("shaders/gbuffers_basic.vert", AssetType.Text);
+        DefineEmbeddedAsset("shaders/gbuffers_basic.frag", AssetType.Text);
+        DefineEmbeddedAsset("shaders/gbuffers_textured.vert", AssetType.Text);
+        DefineEmbeddedAsset("shaders/gbuffers_textured.frag", AssetType.Text);
+        DefineEmbeddedAsset("shaders/gbuffers_textured_lit.vert", AssetType.Text);
+        DefineEmbeddedAsset("shaders/gbuffers_textured_lit.frag", AssetType.Text);
+        DefineEmbeddedAsset("shaders/gbuffers_basic.wgsl", AssetType.Text);
+        DefineEmbeddedAsset("shaders/gbuffers_textured.wgsl", AssetType.Text);
+        DefineEmbeddedAsset("shaders/gbuffers_textured_lit.wgsl", AssetType.Text);
+        DefineEmbeddedAsset("shaders/blit.wgsl", AssetType.Text);
+        DefineEmbeddedAsset("shaders/chunk.wgsl", AssetType.Text);
+        DefineEmbeddedAsset("shaders/sky.wgsl", AssetType.Text);
+        DefineEmbeddedAsset("shaders/cloud.wgsl", AssetType.Text);
+        DefineEmbeddedAsset("shaders/imgui.wgsl", AssetType.Text);
+        DefineEmbeddedAsset("shaders/quad.vert", AssetType.Text);
+        DefineEmbeddedAsset("shaders/sky.vert", AssetType.Text);
+        DefineEmbeddedAsset("shaders/sky.frag", AssetType.Text);
+        DefineEmbeddedAsset("shaders/ui.vert", AssetType.Text);
+        DefineEmbeddedAsset("shaders/ui.frag", AssetType.Text);
+        DefineEmbeddedAsset("shaders/ui_textures.properties", AssetType.Text);
+        DefineEmbeddedAsset("textures/atlas/terrain.json", AssetType.Text);
+        DefineEmbeddedAsset("textures/atlas/items.json", AssetType.Text);
+        DefineAsset("lang/lang.json", AssetType.Text);
     }
 
-    public Asset getAsset(string assetPath)
+    public Asset GetAsset(string assetPath)
     {
-        if (assetPath.StartsWith('/'))
-        {
-            assetPath = assetPath[1..];
-        }
-
-        if (_loadedAssets.TryGetValue(assetPath, out Asset? asset))
-        {
-            return asset;
-        }
-        else
-        {
-            throw new Exception($"Unknown asset: {assetPath}");
-        }
+        if (assetPath.StartsWith('/')) assetPath = assetPath[1..];
+        return _loadedAssets.TryGetValue(assetPath, out Asset? asset) ? asset : throw new Exception($"Unknown asset: {assetPath}");
     }
 
-    private void extractNeccessaryAssets()
+    private void ExtractNeccessaryAssets()
     {
         Directory.CreateDirectory("assets");
 
@@ -355,52 +347,54 @@ public class AssetManager
                 Directory.CreateDirectory(directory);
             }
 
-            if (!File.Exists(fsAssetPath))
+            if (File.Exists(fsAssetPath)) continue;
+
+            if (entries.TryGetValue(assetPath, out ZipArchiveEntry? entry))
             {
-                if (entries.TryGetValue(assetPath, out ZipArchiveEntry? entry))
+                entry.ExtractToFile(fsAssetPath);
+            }
+            else
+            {
+                _logger.LogWarning($"Asset does not exist in jar: {assetPath}. Ensuring it exists locally.");
+                if (!File.Exists(fsAssetPath))
                 {
-                    entry.ExtractToFile(fsAssetPath);
-                }
-                else
-                {
-                    _logger.LogWarning($"Asset does not exist in jar: {assetPath}. Ensuring it exists locally.");
-                    if (!File.Exists(fsAssetPath))
-                    {
-                        _logger.LogError($"Asset {assetPath} is missing both from jar and local assets folder!");
-                    }
+                    _logger.LogError($"Asset {assetPath} is missing both from jar and local assets folder!");
                 }
             }
         }
     }
 
-    private void loadAssets()
+    private void LoadAssets()
     {
         foreach (KeyValuePair<string, AssetType> kvp in _assetsToLoad)
         {
             string assetPath = kvp.Key;
             AssetType type = kvp.Value;
 
-            if (type == AssetType.Binary)
+            switch (type)
             {
-                try
-                {
-                    _loadedAssets[assetPath] = new(File.ReadAllBytes("assets/" + assetPath));
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError($"Failed to load binary asset: {assetPath}, {e}");
-                }
-            }
-            else if (type == AssetType.Text)
-            {
-                try
-                {
-                    _loadedAssets[assetPath] = new(File.ReadAllText("assets/" + assetPath));
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError($"Failed to load text asset: {assetPath}, {e}");
-                }
+                case AssetType.Binary:
+                    try
+                    {
+                        _loadedAssets[assetPath] = new(File.ReadAllBytes("assets/" + assetPath));
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError($"Failed to load binary asset: {assetPath}, {e}");
+                    }
+
+                    break;
+                case AssetType.Text:
+                    try
+                    {
+                        _loadedAssets[assetPath] = new(File.ReadAllText("assets/" + assetPath));
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError($"Failed to load text asset: {assetPath}, {e}");
+                    }
+
+                    break;
             }
         }
 
@@ -409,19 +403,18 @@ public class AssetManager
         _assetsToLoad.Clear();
     }
 
-    private void defineAsset(string assetPath, AssetType type)
+    private void DefineAsset(string assetPath, AssetType type)
     {
         _assetsToLoad[assetPath] = type;
 
         int idx = assetPath.IndexOf('/');
-        if (idx != -1)
-        {
-            string directory = assetPath[..idx];
-            _assetDirectories.Add(directory);
-        }
+        if (idx == -1) return;
+
+        string directory = assetPath[..idx];
+        _assetDirectories.Add(directory);
     }
 
-    private void defineEmbeddedAsset(string embeddedAssetPath, AssetType type)
+    private void DefineEmbeddedAsset(string embeddedAssetPath, AssetType type)
     {
         string embeddedAssetPathForPath = embeddedAssetPath.Replace('/', '.');
 

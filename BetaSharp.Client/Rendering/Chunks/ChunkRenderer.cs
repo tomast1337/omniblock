@@ -874,7 +874,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     /// <summary>The chunk.wgsl pipeline for one raster state, matching the chunk vertex layout.</summary>
     private static unsafe WgpuPipeline CreateWgpuPipeline(WebGpuDevice device, RenderState state)
     {
-        string source = AssetManager.Instance.getAsset("shaders/chunk.wgsl").GetTextContent();
+        string source = AssetManager.Instance.GetAsset("shaders/chunk.wgsl").GetTextContent();
 
         VertexAttribute* attrs = stackalloc VertexAttribute[5];
         attrs[0] = new VertexAttribute { Format = VertexFormat.Sint16x4, Offset = 0, ShaderLocation = 0 };
