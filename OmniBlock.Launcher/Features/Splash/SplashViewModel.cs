@@ -30,7 +30,7 @@ internal sealed partial class SplashViewModel(ILogger<SplashViewModel> logger, T
         {
             logger.LogWarning(exception, "Failed to update the title");
 
-            titleService.Set("OmniBlock Launcher development build");
+            titleService.Set("OmniBlock Launcher development build ( a BetaSharp fork )");
         }
 
         var session = await storageService.GetAsync(SessionSerializerContext.Default.Session);
