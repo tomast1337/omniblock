@@ -336,9 +336,20 @@ public partial class BetaSharp :
             navigator: this,
             hasWorld: () => World != null,
             mouseOffset: () => new Vector2D<int>((int)DebugViewportOffset.X, (int)DebugViewportOffset.Y),
-            renderTargetSize: () => FramebufferManager is { } fb
-                ? new Vector2D<int>(fb.FramebufferWidth, fb.FramebufferHeight)
-                : new Vector2D<int>(Display.getFramebufferWidth(), Display.getFramebufferHeight())
+            renderTargetSize: () =>
+            {
+                if (FramebufferManager is { } fb)
+                {
+                    return new Vector2D<int>(fb.FramebufferWidth, fb.FramebufferHeight);
+                }
+
+                if (_webGpuRenderer is { } webGpu && webGpu.FramebufferSize is { Width: > 0, Height: > 0 } size)
+                {
+                    return new Vector2D<int>((int)size.Width, (int)size.Height);
+                }
+
+                return new Vector2D<int>(Display.getFramebufferWidth(), Display.getFramebufferHeight());
+            }
         );
 
         SkinManager = new SkinManager(TextureManager);
