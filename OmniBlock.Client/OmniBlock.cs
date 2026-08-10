@@ -247,7 +247,7 @@ public partial class OmniBlock :
             Display.setLocation((maximumWidth - DisplayWidth) / 2, (maximumHeight - DisplayHeight) / 2);
         }
 
-        Display.setTitle("OmniBlock " + Version);
+        Display.setTitle("OmniBlock " + Version + " ( a BetaSharp fork )");
 
         _gameDataDir = OmniBlockDir;
         SaveLoader = new RegionWorldStorageSource(Path.Combine(_gameDataDir, "saves"));
