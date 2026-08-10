@@ -7,21 +7,19 @@ public readonly record struct LogEntry(DateTime Timestamp, LogLevel Level, strin
 
 public sealed class Log
 {
-    public static Log Instance { get; } = new();
-
     private readonly ILoggerFactory _factory;
     private readonly MemoryLoggerProvider _memoryProvider = new();
-
-    private bool _initialized;
     private string? _directory;
 
-    private Log()
-    {
+    private bool _initialized;
+
+    private Log() =>
         _factory = LoggerFactory.Create(builder => builder
             .SetMinimumLevel(LogLevel.Debug)
             .AddProvider(_memoryProvider)
             .AddSimpleConsole(options => options.TimestampFormat = "yyyy-MM-dd HH:mm:ss "));
-    }
+
+    public static Log Instance { get; } = new();
 
     public void Initialize(string directory)
     {
@@ -47,15 +45,9 @@ public sealed class Log
         TaskScheduler.UnobservedTaskException += (_, eventArgs) => UnhandledException(eventArgs.Exception);
     }
 
-    public ILogger<T> For<T>()
-    {
-        return _factory.CreateLogger<T>();
-    }
+    public ILogger<T> For<T>() => _factory.CreateLogger<T>();
 
-    public ILogger For(string name)
-    {
-        return _factory.CreateLogger(name);
-    }
+    public ILogger For(string name) => _factory.CreateLogger(name);
 
     public LogEntry[] GetRecentEntries() => _memoryProvider.GetEntries();
 
@@ -83,6 +75,41 @@ internal sealed class MemoryLoggerProvider : ILoggerProvider
     private readonly Queue<LogEntry> _entries = new(Capacity);
     private readonly Lock _lock = new();
 
+    public ILogger CreateLogger(string categoryName) => new MemoryLogger(categoryName, this);
+
+    public void Dispose()
+    {
+    }
+
+    private void Add(LogEntry entry)
+    {
+        lock (_lock)
+        {
+            if (_entries.Count >= Capacity)
+            {
+                _entries.Dequeue();
+            }
+
+            _entries.Enqueue(entry);
+        }
+    }
+
+    public LogEntry[] GetEntries()
+    {
+        lock (_lock)
+        {
+            return [.. _entries];
+        }
+    }
+
+    public void Clear()
+    {
+        lock (_lock)
+        {
+            _entries.Clear();
+        }
+    }
+
     private sealed class MemoryLogger(string category, MemoryLoggerProvider provider) : ILogger
     {
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
@@ -95,37 +122,15 @@ internal sealed class MemoryLoggerProvider : ILoggerProvider
 
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
     }
-
-    public void Add(LogEntry entry)
-    {
-        lock (_lock)
-        {
-            if (_entries.Count >= Capacity)
-                _entries.Dequeue();
-            _entries.Enqueue(entry);
-        }
-    }
-
-    public LogEntry[] GetEntries()
-    {
-        lock (_lock)
-            return [.. _entries];
-    }
-
-    public void Clear()
-    {
-        lock (_lock)
-            _entries.Clear();
-    }
-
-    public ILogger CreateLogger(string categoryName) => new MemoryLogger(categoryName, this);
-
-    public void Dispose() { }
 }
 
 internal sealed class FileLoggerProvider(string path) : ILoggerProvider
 {
     private readonly FileStream _stream = File.OpenWrite(path);
+
+    public ILogger CreateLogger(string categoryName) => new FileLogger(categoryName, _stream);
+
+    public void Dispose() => _stream.Dispose();
 
     private sealed class FileLogger(string category, FileStream stream) : ILogger
     {
@@ -145,24 +150,8 @@ internal sealed class FileLoggerProvider(string path) : ILoggerProvider
             stream.Flush();
         }
 
-        public bool IsEnabled(LogLevel logLevel)
-        {
-            return true;
-        }
+        public bool IsEnabled(LogLevel logLevel) => true;
 
-        public IDisposable BeginScope<TState>(TState state) where TState : notnull
-        {
-            throw new InvalidOperationException();
-        }
-    }
-
-    public ILogger CreateLogger(string categoryName)
-    {
-        return new FileLogger(categoryName, _stream);
-    }
-
-    public void Dispose()
-    {
-        _stream.Dispose();
+        public IDisposable BeginScope<TState>(TState state) where TState : notnull => throw new InvalidOperationException();
     }
 }
