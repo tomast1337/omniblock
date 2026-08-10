@@ -217,41 +217,27 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         // regardless of the debug viewport, so this runs the same way here: blit.wgsl now applies
         // the same gamma curve, and every consumer of the composited frame reads it through this,
         // never straight off _offscreenFb.
-        float gammaSlider = _game.Options.Gamma / 100.0f;
-        _blitPipeline!.UploadUniforms(0.25f + gammaSlider * 1.5f);
-
-        RenderPassColorAttachment colorAttach = new()
-        {
-            View = swapView,
-            LoadOp = LoadOp.Clear,
-            StoreOp = StoreOp.Store,
-            ClearValue = new Silk.NET.WebGPU.Color(0, 0, 0, 1),
-        };
-
-        RenderPassDescriptor swapDesc = new()
-        {
-            ColorAttachmentCount = 1,
-            ColorAttachments = &colorAttach,
-        };
-
-        RenderPassEncoder* swapPass = api.CommandEncoderBeginRenderPass(encoder, in swapDesc);
-
         // While the F3 debug viewport is open the frame belongs in its ImGui::Image (drawn into
         // _presentFb below), not blitted full-screen underneath it — leaving the swapchain cleared
-        // above is enough; the compositor still needs *something* to present.
+        // is enough; the compositor still needs *something* to present.
         if (viewport is null)
         {
-            // blit.wgsl reads a quad from a vertex buffer and declares the texture and sampler in
-            // group 1, behind the uniform group every pipeline here carries at group 0.
-            api.RenderPassEncoderSetPipeline(swapPass, _blitPipeline.Pipeline);
-            _blitPipeline.BindUniformGroup(swapPass);
-            api.RenderPassEncoderSetBindGroup(swapPass, 1,
-                _offscreenFb.GetBlitBindGroup(device, _blitPipeline.TextureBindGroupLayout), 0, null);
-            _blitQuad!.Draw(swapPass);
+            BlitToSwapchain(device, encoder, swapView);
         }
-
-        api.RenderPassEncoderEnd(swapPass);
-        api.RenderPassEncoderRelease(swapPass);
+        else
+        {
+            RenderPassColorAttachment colorAttach = new()
+            {
+                View = swapView,
+                LoadOp = LoadOp.Clear,
+                StoreOp = StoreOp.Store,
+                ClearValue = new Silk.NET.WebGPU.Color(0, 0, 0, 1),
+            };
+            RenderPassDescriptor swapDesc = new() { ColorAttachmentCount = 1, ColorAttachments = &colorAttach };
+            RenderPassEncoder* swapPass = api.CommandEncoderBeginRenderPass(encoder, in swapDesc);
+            api.RenderPassEncoderEnd(swapPass);
+            api.RenderPassEncoderRelease(swapPass);
+        }
 
         // --- Present pass: the same gamma-corrected frame again, into the texture ImGui shows
         // while the F3 debug viewport is open, or a screenshot capture reads from — both need a
@@ -260,10 +246,10 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         if (viewport is not null || capturing)
         {
             RenderPassEncoder* presentPass = BeginSwapPass(api, encoder, _presentFb!.ColorView, null);
-            api.RenderPassEncoderSetPipeline(presentPass, _blitPipeline.Pipeline);
+            api.RenderPassEncoderSetPipeline(presentPass, _blitPipeline!.Pipeline);
             _blitPipeline.BindUniformGroup(presentPass);
             api.RenderPassEncoderSetBindGroup(presentPass, 1,
-                _offscreenFb.GetBlitBindGroup(device, _blitPipeline.TextureBindGroupLayout), 0, null);
+                _offscreenFb!.GetBlitBindGroup(device, _blitPipeline.TextureBindGroupLayout), 0, null);
             _blitQuad!.Draw(presentPass);
             api.RenderPassEncoderEnd(presentPass);
             api.RenderPassEncoderRelease(presentPass);
@@ -352,6 +338,112 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         {
             _game.WorldRenderer.ChunkRenderer.EndFrame();
         }
+    }
+
+    /// <summary>
+    ///     Draws and presents one frame outside the main game loop: the boot splash and the in-world
+    ///     loading screen both need to show progress on screen before (or between) real frames exist.
+    /// </summary>
+    /// <remarks>
+    ///     A stripped-down <see cref="RenderFrame" />: acquire, open a pass on the offscreen
+    ///     framebuffer for <paramref name="draw" /> to record into, then blit it to the swapchain
+    ///     through the same gamma-correcting pipeline every real frame uses. That last part is a
+    ///     small, harmless behaviour change from the old GL splash, which drew straight to the
+    ///     backbuffer with no gamma correction at all — this one now reads the gamma slider like
+    ///     everything else does. Runs through the same <see cref="EnsureResources" /> as
+    ///     <see cref="RenderFrame" /> — safe because <see cref="BetaSharp.StartGame" /> now calls
+    ///     <c>SetupOpenGLAndInput</c> (where <c>ImGui.CreateContext()</c> runs) before
+    ///     <c>LoadScreen</c>, so the ImGui backend this pulls in already has a context to attach to.
+    ///     Also replays the last ImGui draw data the same way <see cref="RenderFrame" /> does, so an
+    ///     already-open F3 overlay stays on screen — non-interactively, since nothing pumps a fresh
+    ///     ImGui frame while loading blocks the main loop — instead of disappearing for the load.
+    /// </remarks>
+    public void RenderLoadingFrame(Action draw)
+    {
+        WebGpuDevice device = WebGpuDevice.Current!;
+        Silk.NET.WebGPU.WebGPU api = device.Api;
+
+        TextureView* swapView = device.AcquireFrame();
+        if (swapView == null) return;
+
+        CommandEncoder* encoder = device.CreateCommandEncoder();
+        EnsureResources(device);
+
+        _drawTarget.BeginFrame();
+        _offscreenFb!.ResizeIfNeeded(device, device.Width, device.Height);
+
+        RenderPassEncoder* pass = _offscreenFb.BeginPass(encoder, new Silk.NET.WebGPU.Color(0, 0, 0, 1));
+        _drawTarget.BeginPass(pass, _offscreenFb.Width, _offscreenFb.Height);
+        GLManager.State.Apply(RenderState.Interface);
+
+        try
+        {
+            draw();
+        }
+        finally
+        {
+            _drawTarget.EndPass();
+            api.RenderPassEncoderEnd(pass);
+            api.RenderPassEncoderRelease(pass);
+        }
+
+        BlitToSwapchain(device, encoder, swapView);
+
+        ImDrawDataPtr drawData = ImGui.GetDrawData();
+        if (ImguiOpen && drawData.Handle is not null)
+        {
+            RenderPassEncoder* overlayPass = BeginSwapPass(api, encoder, swapView, null);
+            _imguiWgpu!.RenderDrawData(drawData, overlayPass);
+            api.RenderPassEncoderEnd(overlayPass);
+            api.RenderPassEncoderRelease(overlayPass);
+        }
+
+        CommandBuffer* cmdBuf = api.CommandEncoderFinish(encoder, null);
+        api.QueueSubmit(device.Queue, 1, &cmdBuf);
+        api.CommandBufferRelease(cmdBuf);
+
+        api.TextureViewRelease(swapView);
+        device.Present();
+    }
+
+    /// <summary>
+    ///     Gamma-corrects <see cref="_offscreenFb" /> onto <paramref name="swapView" /> through
+    ///     <see cref="_blitPipeline" />. Shared by <see cref="RenderFrame" /> and
+    ///     <see cref="RenderLoadingFrame" /> rather than duplicated between them.
+    /// </summary>
+    private void BlitToSwapchain(WebGpuDevice device, CommandEncoder* encoder, TextureView* swapView)
+    {
+        Silk.NET.WebGPU.WebGPU api = device.Api;
+
+        float gammaSlider = _game.Options.Gamma / 100.0f;
+        _blitPipeline!.UploadUniforms(0.25f + gammaSlider * 1.5f);
+
+        RenderPassColorAttachment colorAttach = new()
+        {
+            View = swapView,
+            LoadOp = LoadOp.Clear,
+            StoreOp = StoreOp.Store,
+            ClearValue = new Silk.NET.WebGPU.Color(0, 0, 0, 1),
+        };
+
+        RenderPassDescriptor swapDesc = new()
+        {
+            ColorAttachmentCount = 1,
+            ColorAttachments = &colorAttach,
+        };
+
+        RenderPassEncoder* swapPass = api.CommandEncoderBeginRenderPass(encoder, in swapDesc);
+
+        // blit.wgsl reads a quad from a vertex buffer and declares the texture and sampler in
+        // group 1, behind the uniform group every pipeline here carries at group 0.
+        api.RenderPassEncoderSetPipeline(swapPass, _blitPipeline.Pipeline);
+        _blitPipeline.BindUniformGroup(swapPass);
+        api.RenderPassEncoderSetBindGroup(swapPass, 1,
+            _offscreenFb!.GetBlitBindGroup(device, _blitPipeline.TextureBindGroupLayout), 0, null);
+        _blitQuad!.Draw(swapPass);
+
+        api.RenderPassEncoderEnd(swapPass);
+        api.RenderPassEncoderRelease(swapPass);
     }
 
     /// <summary>
@@ -547,15 +639,6 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
                 device.Width, device.Height, device.SurfaceFormat, extraDepthUsage: TextureUsage.CopySrc);
         }
 
-        // The texture ImGui's Game Viewport samples while the F3 debug window is open — see
-        // RenderFrame's gamma pass. Colour-only: it is a copy destination for a full-screen quad,
-        // never a render target anything depth-tests against.
-        if (_presentFb == null)
-        {
-            _presentFb = WgpuFramebuffer.CreateColor(device,
-                device.Width, device.Height, device.SurfaceFormat);
-        }
-
         if (_blitPipeline == null)
         {
             string blitWgsl = AssetManager.Instance.GetAsset("shaders/blit.wgsl").GetTextContent();
@@ -616,6 +699,15 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
                 device.SurfaceFormat);
 
             _blitQuad = CreateBlitQuad(device);
+        }
+
+        // The texture ImGui's Game Viewport samples while the F3 debug window is open — see
+        // RenderFrame's gamma pass. Colour-only: it is a copy destination for a full-screen quad,
+        // never a render target anything depth-tests against.
+        if (_presentFb == null)
+        {
+            _presentFb = WgpuFramebuffer.CreateColor(device,
+                device.Width, device.Height, device.SurfaceFormat);
         }
 
         if (_cloudBlurPass == null)
