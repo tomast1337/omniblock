@@ -22,9 +22,9 @@ public sealed class MessageRegistry
     private static readonly ILogger<MessageRegistry> s_logger = Log.Instance.For<MessageRegistry>();
 
     private readonly Dictionary<ResourceLocation, Registration> _byKey = [];
+    private Registration?[] _byId = [];
 
     private ResourceLocation[] _negotiatedOrder = [];
-    private Registration?[] _byId = [];
 
     /// <summary>Keys registered locally, sorted canonically. Not yet frozen.</summary>
     public IReadOnlyList<ResourceLocation> RegisteredKeys => [.. _byKey.Keys.Order()];
@@ -95,11 +95,13 @@ public sealed class MessageRegistry
         int known = 0;
         for (int id = 0; id < ordering.Count; id++)
         {
-            if (_byKey.TryGetValue(ordering[id], out Registration? registration))
+            if (!_byKey.TryGetValue(ordering[id], out Registration? registration))
             {
-                _byId[id] = registration;
-                known++;
+                continue;
             }
+
+            _byId[id] = registration;
+            known++;
         }
 
         Negotiated = true;
@@ -118,15 +120,7 @@ public sealed class MessageRegistry
     }
 
     /// <summary>Wire ID for a key, or -1 when the peer did not advertise it.</summary>
-    public int GetId(ResourceLocation key)
-    {
-        if (!Negotiated)
-        {
-            throw new InvalidOperationException("The message ID table has not been negotiated yet.");
-        }
-
-        return Array.IndexOf(_negotiatedOrder, key);
-    }
+    public int GetId(ResourceLocation key) => !Negotiated ? throw new InvalidOperationException("The message ID table has not been negotiated yet.") : Array.IndexOf(_negotiatedOrder, key);
 
     /// <summary>
     ///     Creates an empty instance of the message with this wire ID, or null when the ID is

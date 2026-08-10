@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -19,6 +17,8 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class ServerStatusMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "server_status");
+
     /// <summary>
     ///     High, which is safe here for the reason the classification exists: nothing about this
     ///     depends on world data having arrived first, so overtaking a chunk cannot make it wrong.
@@ -37,8 +37,6 @@ public sealed class ServerStatusMessage : Message
     public int EntityCount { get; set; }
 
     public int PlayerCount { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "server_status");
 
     public override ResourceLocation Key => Id;
 
@@ -60,12 +58,9 @@ public sealed class ServerStatusMessage : Message
         stream.WriteVarInt(PlayerCount);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 4
-            + StreamExtensions.VarIntSize(EntityCount)
-            + StreamExtensions.VarIntSize(PlayerCount);
-    }
+    public override int Size() =>
+        4
+        + 4
+        + StreamExtensions.VarIntSize(EntityCount)
+        + StreamExtensions.VarIntSize(PlayerCount);
 }

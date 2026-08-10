@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -14,6 +12,8 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class TimeSyncRequestMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "time_sync_request");
+
     /// <summary>Latency measurement: a probe queued behind a chunk measures the queue, not the network.</summary>
     public override SendPriority Priority => SendPriority.High;
 
@@ -22,8 +22,6 @@ public sealed class TimeSyncRequestMessage : Message
 
     /// <summary>Client's monotonic clock when this was sent — T0.</summary>
     public long ClientSendTime { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "time_sync_request");
 
     public override ResourceLocation Key => Id;
 
@@ -41,10 +39,7 @@ public sealed class TimeSyncRequestMessage : Message
         stream.WriteLong(ClientSendTime);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 8;
-    }
+    public override int Size() =>
+        4
+        + 8;
 }

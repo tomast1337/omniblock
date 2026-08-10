@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -19,6 +17,8 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class SnapshotAckMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "snapshot_ack");
+
     /// <summary>
     ///     An acknowledgement that arrives late costs a snapshot's worth of redundant delta, so it
     ///     travels with the snapshots it is answering rather than behind bulk traffic.
@@ -28,25 +28,13 @@ public sealed class SnapshotAckMessage : Message
     /// <summary>Zero means nothing has been applied yet, and the server must send an absolute snapshot.</summary>
     public uint Sequence { get; set; }
 
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "snapshot_ack");
-
     public override ResourceLocation Key => Id;
 
     public override int SchemaVersion => 1;
 
-    public override void Read(Stream stream)
-    {
-        Sequence = (uint)stream.ReadVarInt();
-    }
+    public override void Read(Stream stream) => Sequence = (uint)stream.ReadVarInt();
 
-    public override void Write(Stream stream)
-    {
-        stream.WriteVarInt((int)Sequence);
-    }
+    public override void Write(Stream stream) => stream.WriteVarInt((int)Sequence);
 
-    public override int Size()
-    {
-        return
-            StreamExtensions.VarIntSize((int)Sequence);
-    }
+    public override int Size() => StreamExtensions.VarIntSize((int)Sequence);
 }

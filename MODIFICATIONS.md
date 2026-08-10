@@ -219,3 +219,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-10 — fix(CLAUDE.md): correct project description and enhance clarity on scripting and network protocol (Nicolas Vyčas Nery; `1206f54aa87b131330b63cf21543615dcd8a89c6`)
 - 2026-08-10 — fix(README.md): update project description and correct repository links (Nicolas Vyčas Nery; `eec227c383875083e23b0139b6f7a686076f07d0`)
 - 2026-08-10 — refactor(Network): drop the Wire source generator, hand-write message serializers (Nicolas Vyčas Nery; `31a87d1f79e80fcc893415fde773e5e654b57837`)
+- 2026-08-10 — Refactor network message classes for improved readability and consistency (Nicolas Vyčas Nery; `45230e7c366c2fcb7689ed7ec75580085f6fa86a`)

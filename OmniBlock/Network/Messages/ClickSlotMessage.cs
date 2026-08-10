@@ -1,4 +1,3 @@
-using OmniBlock;
 using OmniBlock.Items;
 
 namespace OmniBlock.Network.Messages;
@@ -13,6 +12,7 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class ClickSlotMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "click_slot");
     public sbyte SyncId { get; set; }
 
     public short Slot { get; set; }
@@ -25,8 +25,6 @@ public sealed class ClickSlotMessage : Message
     public bool HoldingShift { get; set; }
 
     public ItemStack? Stack { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "click_slot");
 
     public override ResourceLocation Key => Id;
 
@@ -52,14 +50,11 @@ public sealed class ClickSlotMessage : Message
         stream.WriteItemStack(Stack);
     }
 
-    public override int Size()
-    {
-        return
-            1
-            + 2
-            + 1
-            + 2
-            + 1
-            + StreamExtensions.ItemStackSize(Stack);
-    }
+    public override int Size() =>
+        1
+        + 2
+        + 1
+        + 2
+        + 1
+        + StreamExtensions.ItemStackSize(Stack);
 }

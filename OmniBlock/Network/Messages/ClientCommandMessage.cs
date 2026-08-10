@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -8,12 +6,11 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class ClientCommandMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "client_command");
     public int EntityId { get; set; }
 
     /// <summary>1 respawns, 2 opens the inventory, 3 leaves a bed.</summary>
     public sbyte Mode { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "client_command");
 
     public override ResourceLocation Key => Id;
 
@@ -31,10 +28,7 @@ public sealed class ClientCommandMessage : Message
         stream.WriteByte((byte)Mode);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 1;
-    }
+    public override int Size() =>
+        4
+        + 1;
 }

@@ -1,6 +1,5 @@
 using System.IO.Compression;
 using System.Numerics;
-using OmniBlock;
 using OmniBlock.Worlds.Chunks;
 
 namespace OmniBlock.Network.Messages;
@@ -30,6 +29,8 @@ namespace OmniBlock.Network.Messages;
 /// </remarks>
 public sealed class LightSectionsMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "light_sections");
+
     /// <summary>
     ///     Every section of a column at once, which is the largest this can honestly be. Checked
     ///     during decompression, since a limit tested on the result has already paid for the
@@ -49,6 +50,14 @@ public sealed class LightSectionsMessage : Message
 
     /// <summary>The zlib'd run of sections, each sky nibbles then block nibbles.</summary>
     public byte[] Compressed { get; set; } = [];
+
+    /// <summary>Bits that name a section this world actually has.</summary>
+    private static uint SectionMask =>
+        Chunk.LightSectionCount >= 32 ? uint.MaxValue : (1u << Chunk.LightSectionCount) - 1u;
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
 
     /// <summary>Reads the named sections out of a chunk and compresses them.</summary>
     public static LightSectionsMessage Of(Chunk chunk, uint sections)
@@ -70,7 +79,7 @@ public sealed class LightSectionsMessage : Message
         }
 
         MemoryStream output = new(raw.Length / 8);
-        using (ZLibStream compressor = new(output, CompressionLevel.Optimal, leaveOpen: true))
+        using (ZLibStream compressor = new(output, CompressionLevel.Optimal, true))
         {
             compressor.Write(raw);
         }
@@ -80,7 +89,7 @@ public sealed class LightSectionsMessage : Message
             ChunkX = chunk.X,
             ChunkZ = chunk.Z,
             Sections = sections,
-            Compressed = output.ToArray(),
+            Compressed = output.ToArray()
         };
     }
 
@@ -119,15 +128,11 @@ public sealed class LightSectionsMessage : Message
         }
     }
 
-    /// <summary>Bits that name a section this world actually has.</summary>
-    private static uint SectionMask =>
-        Chunk.LightSectionCount >= 32 ? uint.MaxValue : (1u << Chunk.LightSectionCount) - 1u;
-
     private byte[] Decompress()
     {
         int limit = MaxDecodedBytes;
 
-        using MemoryStream input = new(Compressed, writable: false);
+        using MemoryStream input = new(Compressed, false);
         using ZLibStream decompressor = new(input, CompressionMode.Decompress);
 
         MemoryStream output = new(Math.Min(limit, Compressed.Length * 8));
@@ -148,12 +153,6 @@ public sealed class LightSectionsMessage : Message
         return output.ToArray();
     }
 
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "light_sections");
-
-    public override ResourceLocation Key => Id;
-
-    public override int SchemaVersion => 1;
-
     public override void Read(Stream stream)
     {
         ChunkX = stream.ReadInt();
@@ -170,12 +169,9 @@ public sealed class LightSectionsMessage : Message
         stream.WriteByteArray(Compressed);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 4
-            + 4
-            + StreamExtensions.ByteArraySize(Compressed);
-    }
+    public override int Size() =>
+        4
+        + 4
+        + 4
+        + StreamExtensions.ByteArraySize(Compressed);
 }

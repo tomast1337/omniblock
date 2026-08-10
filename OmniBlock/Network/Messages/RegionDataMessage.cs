@@ -1,5 +1,4 @@
 using System.IO.Compression;
-using OmniBlock;
 using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Network.Messages;
@@ -34,15 +33,17 @@ public sealed class RegionDataMessage : Message
     ///     up. Checked during decompression rather than after it, since a limit tested on the result
     ///     has already paid for the allocation it was meant to refuse.
     /// </summary>
-    public const int MaxDecodedBytes = 128 * 1024;
+    private const int MaxDecodedBytes = 128 * 1024;
 
-    public int X { get; set; }
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "region_data");
 
-    public short Y { get; set; }
+    public int X { get; private set; }
 
-    public int Z { get; set; }
+    public short Y { get; private set; }
 
-    public byte SizeX { get; set; }
+    public int Z { get; private set; }
+
+    public byte SizeX { get; private set; }
 
     /// <summary>
     ///     Wider than <see cref="SizeX" /> and <see cref="SizeZ" /> because those are bounded by the
@@ -55,7 +56,11 @@ public sealed class RegionDataMessage : Message
     public byte SizeZ { get; set; }
 
     /// <summary>The zlib'd block/metadata/light run for the box, in <c>GetChunkData</c> order.</summary>
-    public byte[] Compressed { get; set; } = [];
+    private byte[] Compressed { get; set; } = [];
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
 
     /// <summary>Reads the box out of the world and compresses it.</summary>
     public static RegionDataMessage Of(int x, int y, int z, int sizeX, int sizeY, int sizeZ, IWorldContext world)
@@ -71,7 +76,7 @@ public sealed class RegionDataMessage : Message
         byte[] raw = world.ChunkHost.GetChunkData(x, y, z, sizeX, sizeY, sizeZ);
 
         MemoryStream output = new(raw.Length / 4);
-        using (ZLibStream compressor = new(output, CompressionLevel.Optimal, leaveOpen: true))
+        using (ZLibStream compressor = new(output, CompressionLevel.Optimal, true))
         {
             compressor.Write(raw);
         }
@@ -84,7 +89,7 @@ public sealed class RegionDataMessage : Message
             SizeX = (byte)sizeX,
             SizeY = (short)sizeY,
             SizeZ = (byte)sizeZ,
-            Compressed = output.ToArray(),
+            Compressed = output.ToArray()
         };
     }
 
@@ -97,7 +102,7 @@ public sealed class RegionDataMessage : Message
     {
         int limit = Math.Min(MaxDecodedBytes, SizeX * SizeY * SizeZ * 5 / 2 + 1);
 
-        using MemoryStream input = new(Compressed, writable: false);
+        using MemoryStream input = new(Compressed, false);
         using ZLibStream decompressor = new(input, CompressionMode.Decompress);
 
         MemoryStream output = new(Math.Min(limit, Compressed.Length * 4));
@@ -117,12 +122,6 @@ public sealed class RegionDataMessage : Message
 
         return output.ToArray();
     }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "region_data");
-
-    public override ResourceLocation Key => Id;
-
-    public override int SchemaVersion => 1;
 
     public override void Read(Stream stream)
     {
@@ -146,15 +145,12 @@ public sealed class RegionDataMessage : Message
         stream.WriteByteArray(Compressed);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 2
-            + 4
-            + 1
-            + 2
-            + 1
-            + StreamExtensions.ByteArraySize(Compressed);
-    }
+    public override int Size() =>
+        4
+        + 2
+        + 4
+        + 1
+        + 2
+        + 1
+        + StreamExtensions.ByteArraySize(Compressed);
 }

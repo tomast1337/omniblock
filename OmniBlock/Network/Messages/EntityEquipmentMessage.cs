@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -13,6 +11,7 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class EntityEquipmentMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_equipment");
     public override SendPriority Priority => SendPriority.High;
 
     public int EntityId { get; set; }
@@ -24,8 +23,6 @@ public sealed class EntityEquipmentMessage : Message
     public short ItemRawId { get; set; } = -1;
 
     public short ItemDamage { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_equipment");
 
     public override ResourceLocation Key => Id;
 
@@ -47,12 +44,9 @@ public sealed class EntityEquipmentMessage : Message
         stream.WriteShort(ItemDamage);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 2
-            + 2
-            + 2;
-    }
+    public override int Size() =>
+        4
+        + 2
+        + 2
+        + 2;
 }

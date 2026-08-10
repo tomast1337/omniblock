@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -14,6 +12,7 @@ namespace OmniBlock.Network.Messages;
 /// </remarks>
 public class BlockUpdateMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "block_update");
     public int X { get; set; }
 
     /// <summary>Y coordinate on the wire is a single byte — Beta 1.7.3's world height is 128 blocks.</summary>
@@ -24,8 +23,6 @@ public class BlockUpdateMessage : Message
     public byte BlockRawId { get; set; }
 
     public byte BlockMetadata { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "block_update");
 
     public override ResourceLocation Key => Id;
 
@@ -49,13 +46,10 @@ public class BlockUpdateMessage : Message
         stream.WriteByte(BlockMetadata);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 1
-            + 4
-            + 1
-            + 1;
-    }
+    public override int Size() =>
+        4
+        + 1
+        + 4
+        + 1
+        + 1;
 }

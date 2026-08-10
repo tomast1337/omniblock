@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -7,13 +5,20 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class EntityAnimationMessage : Message
 {
+    public enum EntityAnimation : byte
+    {
+        SwingHand = 1,
+        Hurt = 2,
+        WakeUp = 3,
+        Spawn = 4
+    }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_animation");
     public override SendPriority Priority => SendPriority.High;
 
     public int EntityId { get; set; }
 
     public byte AnimationId { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_animation");
 
     public override ResourceLocation Key => Id;
 
@@ -31,18 +36,7 @@ public sealed class EntityAnimationMessage : Message
         stream.WriteByte(AnimationId);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 1;
-    }
-
-    public enum EntityAnimation : byte
-    {
-        SwingHand = 1,
-        Hurt = 2,
-        WakeUp = 3,
-        Spawn = 4,
-    }
+    public override int Size() =>
+        4
+        + 1;
 }

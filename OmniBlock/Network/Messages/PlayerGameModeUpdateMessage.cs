@@ -1,15 +1,13 @@
-using OmniBlock;
 using OmniBlock.Util;
 
 namespace OmniBlock.Network.Messages;
 
 public class PlayerGameModeUpdateMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "player_game_mode_update");
     public string GameModeNamespace { get; set; } = "";
 
     public string GameModeName { get; set; } = "";
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "player_game_mode_update");
 
     public override ResourceLocation Key => Id;
 
@@ -27,10 +25,7 @@ public class PlayerGameModeUpdateMessage : Message
         stream.WriteString(GameModeName);
     }
 
-    public override int Size()
-    {
-        return
-            (2 + ModifiedUtf8.GetByteCount(GameModeNamespace))
-            + (2 + ModifiedUtf8.GetByteCount(GameModeName));
-    }
+    public override int Size() =>
+        2 + ModifiedUtf8.GetByteCount(GameModeNamespace)
+          + 2 + ModifiedUtf8.GetByteCount(GameModeName);
 }

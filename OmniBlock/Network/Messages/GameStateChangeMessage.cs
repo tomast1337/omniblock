@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 public class GameStateChangeMessage : Message
@@ -10,27 +8,17 @@ public class GameStateChangeMessage : Message
     /// </summary>
     public static readonly string?[] Reasons = ["tile.bed.notValid", null, null];
 
-    public sbyte Reason { get; set; }
-
     public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "game_state_change");
+
+    public sbyte Reason { get; set; }
 
     public override ResourceLocation Key => Id;
 
     public override int SchemaVersion => 1;
 
-    public override void Read(Stream stream)
-    {
-        Reason = (sbyte)stream.ReadByte();
-    }
+    public override void Read(Stream stream) => Reason = (sbyte)stream.ReadByte();
 
-    public override void Write(Stream stream)
-    {
-        stream.WriteByte((byte)Reason);
-    }
+    public override void Write(Stream stream) => stream.WriteByte((byte)Reason);
 
-    public override int Size()
-    {
-        return
-            1;
-    }
+    public override int Size() => 1;
 }

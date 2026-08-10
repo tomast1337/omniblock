@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -18,6 +16,8 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class ChunkUnchangedMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "chunk_unchanged");
+
     /// <summary>
     ///     Bulk, matching <see cref="ChunkDataMessage" />. It is small, but it is the same traffic
     ///     class and reordering it ahead of a chunk it replaces would gain nothing.
@@ -27,8 +27,6 @@ public sealed class ChunkUnchangedMessage : Message
     public int ChunkX { get; set; }
 
     public int ChunkZ { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "chunk_unchanged");
 
     public override ResourceLocation Key => Id;
 
@@ -46,10 +44,7 @@ public sealed class ChunkUnchangedMessage : Message
         stream.WriteInt(ChunkZ);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 4;
-    }
+    public override int Size() =>
+        4
+        + 4;
 }

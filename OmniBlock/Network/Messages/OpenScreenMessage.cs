@@ -1,4 +1,3 @@
-using OmniBlock;
 using OmniBlock.Util;
 
 namespace OmniBlock.Network.Messages;
@@ -10,11 +9,24 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class OpenScreenMessage : Message
 {
+    public enum KnownInventories : byte
+    {
+        Crafting = 1,
+        Chest = 2,
+        Furnace = 3,
+
+        /// <summary>Also known as Dispenser.</summary>
+        Trap = 4,
+        Minecart = 5
+    }
+
     /// <summary>
     ///     A screen title, bounded before the allocation. Titles are short labels; a peer naming a
     ///     long one gains nothing but the memory, which is reason enough to refuse it.
     /// </summary>
     public const int MaxNameBytes = 64;
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "open_screen");
 
     public sbyte SyncId { get; set; }
 
@@ -24,8 +36,6 @@ public sealed class OpenScreenMessage : Message
     public string Name { get; set; } = string.Empty;
 
     public sbyte SlotsCount { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "open_screen");
 
     public override ResourceLocation Key => Id;
 
@@ -47,23 +57,9 @@ public sealed class OpenScreenMessage : Message
         stream.WriteByte((byte)SlotsCount);
     }
 
-    public override int Size()
-    {
-        return
-            1
-            + 1
-            + (2 + ModifiedUtf8.GetByteCount(Name))
-            + 1;
-    }
-
-    public enum KnownInventories : byte
-    {
-        Crafting = 1,
-        Chest = 2,
-        Furnace = 3,
-
-        /// <summary>Also known as Dispenser.</summary>
-        Trap = 4,
-        Minecart = 5,
-    }
+    public override int Size() =>
+        1
+        + 1
+        + 2 + ModifiedUtf8.GetByteCount(Name)
+        + 1;
 }

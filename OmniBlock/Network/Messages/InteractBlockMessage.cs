@@ -1,4 +1,3 @@
-using OmniBlock;
 using OmniBlock.Items;
 
 namespace OmniBlock.Network.Messages;
@@ -15,6 +14,7 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class InteractBlockMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "interact_block");
     public int X { get; set; }
 
     public byte Y { get; set; }
@@ -29,8 +29,6 @@ public sealed class InteractBlockMessage : Message
     ///     player's inventory — and carried because the packet it replaces carried it.
     /// </summary>
     public ItemStack? Stack { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "interact_block");
 
     public override ResourceLocation Key => Id;
 
@@ -54,13 +52,10 @@ public sealed class InteractBlockMessage : Message
         stream.WriteItemStack(Stack);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 1
-            + 4
-            + 1
-            + StreamExtensions.ItemStackSize(Stack);
-    }
+    public override int Size() =>
+        4
+        + 1
+        + 4
+        + 1
+        + StreamExtensions.ItemStackSize(Stack);
 }

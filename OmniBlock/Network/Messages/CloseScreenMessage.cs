@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -8,27 +6,16 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class CloseScreenMessage : Message
 {
-    public sbyte SyncId { get; set; }
-
     public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "close_screen");
+    public sbyte SyncId { get; set; }
 
     public override ResourceLocation Key => Id;
 
     public override int SchemaVersion => 1;
 
-    public override void Read(Stream stream)
-    {
-        SyncId = (sbyte)stream.ReadByte();
-    }
+    public override void Read(Stream stream) => SyncId = (sbyte)stream.ReadByte();
 
-    public override void Write(Stream stream)
-    {
-        stream.WriteByte((byte)SyncId);
-    }
+    public override void Write(Stream stream) => stream.WriteByte((byte)SyncId);
 
-    public override int Size()
-    {
-        return
-            1;
-    }
+    public override int Size() => 1;
 }
