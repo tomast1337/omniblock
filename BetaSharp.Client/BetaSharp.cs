@@ -126,12 +126,11 @@ public partial class BetaSharp :
     public HitResult ObjectMouseOver = new(HitResultType.Miss);
 
     public GameRenderer GameRenderer { get; private set; }
-    private WebGpuGameRenderer? _webGpuRenderer;
+    private WebGpuGameRenderer _webGpuRenderer;
 
     /// <summary>Reaches the WebGPU renderer for <see cref="LoadingScreenRenderer" /> and <see cref="LoadScreen" />, both of which draw and present frames of their own outside the main game loop.</summary>
-    internal WebGpuGameRenderer? WebGpuRenderer => _webGpuRenderer;
+    internal WebGpuGameRenderer WebGpuRenderer => _webGpuRenderer;
     public WorldRenderer WorldRenderer { get; private set; }
-    public FramebufferManager FramebufferManager { get; private set; }
     public TextureManager TextureManager { get; private set; }
     public SkinManager SkinManager { get; private set; }
     public TextRenderer TextRenderer { get; private set; }
@@ -179,7 +178,6 @@ public partial class BetaSharp :
     private bool _fullscreen;
     private bool _prevF11Down;
     private bool _prevF3Down;
-    private Vector2 _lastViewportSize;
 
     private bool _hasCrashed;
     private bool _isTakingScreenshot;
@@ -228,8 +226,6 @@ public partial class BetaSharp :
         LoadScreen();
 
         SetupResourcesAndPostProcessing();
-
-        CheckGLError("Post startup");
 
         StatFileWriter.ReadStat(Stats.Stats.StartGameStat, 1);
         Navigate(CreateMainMenuScreen());
@@ -330,12 +326,7 @@ public partial class BetaSharp :
             mouseOffset: () => new Vector2D<int>((int)DebugViewportOffset.X, (int)DebugViewportOffset.Y),
             renderTargetSize: () =>
             {
-                if (FramebufferManager is { } fb)
-                {
-                    return new Vector2D<int>(fb.FramebufferWidth, fb.FramebufferHeight);
-                }
-
-                if (_webGpuRenderer is { } webGpu && webGpu.FramebufferSize is { Width: > 0, Height: > 0 } size)
+                if (_webGpuRenderer.FramebufferSize is { Width: > 0, Height: > 0 } size)
                 {
                     return new Vector2D<int>((int)size.Width, (int)size.Height);
                 }
@@ -387,30 +378,15 @@ public partial class BetaSharp :
 
     private unsafe void SetupOpenGLAndInput()
     {
-        // Anisotropy is an extension under OpenGL and a sampler field under WebGPU, so the ceiling
-        // is queried in one case and assumed in the other.
+        // Anisotropy was a GL extension query; WebGPU has no ceiling to ask for, so this just
+        // states the sampler field's fixed value.
         GameOptions.MaxAnisotropy = 1.0f;
-
-        if (GLManager.GLOrNull is { } gl)
-        {
-            bool anisotropicFiltering = gl.IsExtensionPresent("GL_EXT_texture_filter_anisotropic");
-            _logger.LogInformation($"Anisotropic Filtering Supported: {anisotropicFiltering}");
-
-            if (anisotropicFiltering)
-            {
-                gl.GetFloat(GLEnum.MaxTextureMaxAnisotropy, out float maxAnisotropy);
-                GameOptions.MaxAnisotropy = maxAnisotropy;
-                _logger.LogInformation($"Max Anisotropy: {maxAnisotropy}");
-            }
-        }
 
         ImGui.CreateContext();
 
-        // ImGuiImplGLFW and ImGuiImplOpenGL3 are compiled into separate native DLLs,
-        // each with their own GImGui context pointer. We must share the context created
-        // by cimgui.dll with both backend DLLs before calling their Init functions.
+        // ImGuiImplGLFW is compiled into its own native DLL, with its own GImGui context pointer.
+        // We must share the context created by cimgui.dll with it before calling its Init function.
         ImGuiImplGLFW.SetCurrentContext(ImGui.GetCurrentContext());
-        if (GLManager.GLOrNull is not null) ImGuiImplOpenGL3.SetCurrentContext(ImGui.GetCurrentContext());
 
         ImGuiIO* io = ImGui.GetIO();
         io->ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard | ImGuiConfigFlags.DockingEnable;
@@ -420,10 +396,9 @@ public partial class BetaSharp :
         Mouse.create(Display.getGlfw(), Display.GetWindowHandle(), Display.getWidth(), Display.getHeight());
         Controller.Create(Display.getGlfw(), Display.GetWindowHandle());
 
-        // InitForOpenGL is only ImGui's GLFW input backend, which both backends need; the renderer
-        // half of ImGui is ImGuiImplOpenGL3 here and ImGuiWgpuBackend there.
+        // Despite the name, InitForOpenGL sets up only ImGui's GLFW input backend — the renderer
+        // half is ImGuiWgpuBackend.
         ImGuiImplGLFW.InitForOpenGL((GLFWwindow*)Display.GetWindowHandle(), true);
-        if (GLManager.GLOrNull is not null) ImGuiImplOpenGL3.Init("#version 330 core");
         DebugWindowManager.ApplyStyle();
 
         _debugWindowManager = new DebugWindowManager(this, () => InGameHasFocus);
@@ -446,13 +421,8 @@ public partial class BetaSharp :
             }
         };
 
-        CheckGLError("Pre startup");
         GLManager.TextureEnabled = true;
         GLManager.ShadeModel = ShadeModel.Smooth;
-
-        // The depth clear value is a context-wide setting in GL and a per-pass one in WebGPU, where
-        // each render pass descriptor carries its own.
-        GLManager.GLOrNull?.ClearDepth(1.0D);
 
         // The state every frame starts from, and the one the rest of the renderer is traced
         // against. It is named here rather than assembled from a handful of enables so that the
@@ -468,7 +438,6 @@ public partial class BetaSharp :
         // stating it explicitly means a later stack-owner change doesn't silently infect this.
         GLManager.Projection.LoadIdentity();
         GLManager.ModelView.LoadIdentity();
-        CheckGLError("Startup");
     }
 
     private void SetupResourcesAndPostProcessing()
@@ -489,9 +458,6 @@ public partial class BetaSharp :
         TextureManager.AddDynamicTexture(new FireSprite("fire_layer_1", "custom_fire_n_s.png"));
 
         WorldRenderer = new WorldRenderer(this, TextureManager);
-        // GL keeps one viewport as global state. WebGPU has none to set here — a render pass covers
-        // its attachments, and anything narrower is set on the pass encoder.
-        GLManager.GLOrNull?.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
         ParticleManager = new ParticleManager(World, TextureManager);
 
         _ = new ResourceManager()
@@ -513,13 +479,6 @@ public partial class BetaSharp :
                 : null,
             () => _isMainMenuOpen
         ));
-
-        // Every framebuffer this owns is an FBO with GL attachments. The WebGPU path renders to the
-        // offscreen targets WebGpuGameRenderer owns instead, so there is nothing here to build.
-        if (GLManager.GLOrNull is not null)
-        {
-            FramebufferManager = new FramebufferManager(Display.getFramebufferWidth(), Display.getFramebufferHeight(), Options);
-        }
 
         EntityRenderDispatcher.Instance.SkinManager.RequestDownload(Session.username, true);
     }
@@ -703,7 +662,6 @@ public partial class BetaSharp :
                     }
 
                     long tickElapsedTime = Stopwatch.GetTimestamp() - tickStartTime;
-                    CheckGLError("Pre render");
 
                     SoundManager.UpdateListener(Player, Timer.RenderPartialTicks);
 
@@ -722,52 +680,10 @@ public partial class BetaSharp :
 
                     int savedWidth = DisplayWidth, savedHeight = DisplayHeight;
 
-                    // GL renders the F3 viewport into an FBO and hands ImGui its texture id directly.
-                    // WebGPU has no such id to read back — it hands the offscreen framebuffer's own
-                    // colour view to ImGuiWgpuBackend.RegisterExternalTexture instead, inside
-                    // WebGpuGameRenderer.RenderFrame, once ViewportSize below tells it to.
-                    if (FramebufferManager is not null && imguiThisFrame)
-                    {
-                        Vector2 vpSize = _debugWindowManager.ViewportSize;
-                        if (vpSize.X > 0 && vpSize.Y > 0)
-                        {
-                            int vpW = (int)vpSize.X, vpH = (int)vpSize.Y;
-                            // Compare truncated integer size, not the raw float: ImGui's layout output
-                            // jitters by sub-pixel amounts frame to frame even when visually static, and
-                            // comparing floats here caused FramebufferManager.Resize (which tears down and
-                            // rebuilds the cloud FBOs unconditionally) to fire on nearly every frame while
-                            // the F3 debug viewport was open.
-                            if ((int)_lastViewportSize.X != vpW || (int)_lastViewportSize.Y != vpH)
-                            {
-                                FramebufferManager.Resize(vpW, vpH);
-                                _lastViewportSize = new Vector2(vpW, vpH);
-                            }
-                            DisplayWidth = vpW;
-                            DisplayHeight = vpH;
-
-                            DebugViewportOffset = new Vector2(
-                                _debugWindowManager.ViewportPos.X,
-                                Display.getHeight() - vpH - _debugWindowManager.ViewportPos.Y);
-                            FramebufferManager.SkipBlit = true;
-                        }
-                        else
-                        {
-                            DebugViewportOffset = Vector2.Zero;
-                            FramebufferManager.SkipBlit = false;
-                        }
-                    }
-                    else if (FramebufferManager is { } framebuffers)
-                    {
-                        DebugViewportOffset = Vector2.Zero;
-                        framebuffers.SkipBlit = false;
-                        if (_lastViewportSize != Vector2.Zero)
-                        {
-                            framebuffers.Resize(Display.getFramebufferWidth(), Display.getFramebufferHeight());
-                            _lastViewportSize = Vector2.Zero;
-                            _debugWindowManager.ViewportTextureId = 0;
-                        }
-                    }
-                    else if (_webGpuRenderer is not null && imguiThisFrame)
+                    // WebGPU hands the offscreen framebuffer's own colour view to
+                    // ImGuiWgpuBackend.RegisterExternalTexture, inside WebGpuGameRenderer.RenderFrame,
+                    // once ViewportSize below tells it to.
+                    if (imguiThisFrame)
                     {
                         // Sizing happens below instead, after DebugWindowManager.Render() runs —
                         // see the imgui-build block. Deciding it here, before Render() has produced
@@ -779,24 +695,18 @@ public partial class BetaSharp :
                     }
                     else
                     {
-                        if (_webGpuRenderer is { } webGpuClosed)
-                        {
-                            webGpuClosed.ViewportSize = null;
-                        }
-
+                        _webGpuRenderer.ViewportSize = null;
                         DebugViewportOffset = Vector2.Zero;
                     }
 
                     // WebGPU builds and submits its ImGui draw data as one of the passes recorded
                     // inside RenderFrame() below, so that data has to already exist by the time
-                    // RenderFrame() runs — ImGui.Render() has to come first. GL draws immediately
-                    // into whatever is currently bound, so it is the other way around: its overlay
-                    // has to be issued after the world paints, or the world would draw over it. The
-                    // ViewportTextureId this feeds ImGui.Image is therefore last frame's, same as it
-                    // always was here — RenderFrame() has not run yet to produce a fresher one.
-                    if (imguiThisFrame && _webGpuRenderer is { } webGpuBuild)
+                    // RenderFrame() runs — ImGui.Render() has to come first. The ViewportTextureId
+                    // this feeds ImGui.Image is therefore last frame's, same as it always was here —
+                    // RenderFrame() has not run yet to produce a fresher one.
+                    if (imguiThisFrame)
                     {
-                        _debugWindowManager.ViewportTextureId = webGpuBuild.ViewportTextureId;
+                        _debugWindowManager.ViewportTextureId = _webGpuRenderer.ViewportTextureId;
 
                         using (Profiler.Begin("ImguiBuild"))
                         {
@@ -812,7 +722,7 @@ public partial class BetaSharp :
                         if (vpSize.X > 0 && vpSize.Y > 0)
                         {
                             int vpW = (int)vpSize.X, vpH = (int)vpSize.Y;
-                            webGpuBuild.ViewportSize = ((uint)vpW, (uint)vpH);
+                            _webGpuRenderer.ViewportSize = ((uint)vpW, (uint)vpH);
                             DisplayWidth = vpW;
                             DisplayHeight = vpH;
 
@@ -822,7 +732,7 @@ public partial class BetaSharp :
                         }
                         else
                         {
-                            webGpuBuild.ViewportSize = null;
+                            _webGpuRenderer.ViewportSize = null;
                             DebugViewportOffset = Vector2.Zero;
                         }
 
@@ -840,19 +750,9 @@ public partial class BetaSharp :
 
                         using (Profiler.Begin("Render"))
                         {
-                            // Both drive the same GameRenderer; they differ in who owns the frame
-                            // around it. OpenGL draws straight into the default framebuffer, while
-                            // WebGPU has to open a pass, blit and submit either side of the world.
-                            if (_webGpuRenderer is { } webGpu)
-                            {
-                                webGpu.ImguiOpen = imguiThisFrame;
-                                webGpu.RenderFrame(Timer.RenderPartialTicks,
-                                    DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
-                            }
-                            else
-                            {
-                                GameRenderer.OnFrameUpdate(Timer.RenderPartialTicks);
-                            }
+                            _webGpuRenderer.ImguiOpen = imguiThisFrame;
+                            _webGpuRenderer.RenderFrame(Timer.RenderPartialTicks,
+                                DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
                         }
 
                         TextureStats.EndFrame();
@@ -886,7 +786,6 @@ public partial class BetaSharp :
                         Resize(DisplayWidth, DisplayHeight);
                     }
 
-                    CheckGLError("Post render");
                     ++frameCounter;
 
                     IsGamePaused = (!IsMultiplayerWorld() || InternalServer != null) && (CurrentScreen?.PausesGame ?? false);
@@ -1853,13 +1752,9 @@ public partial class BetaSharp :
         int framebufferWidth = Display.getFramebufferWidth();
         int framebufferHeight = Display.getFramebufferHeight();
 
-        // Null under WebGPU, where the offscreen targets belong to WebGpuGameRenderer and follow
-        // the surface size on their own.
-        FramebufferManager?.Resize(framebufferWidth, framebufferHeight);
-
         // The surface does not follow the window on its own, and everything the WebGPU renderer
         // sizes — the offscreen target, the projection, the scissor rectangles — reads it.
-        WebGpuDevice.Current?.Configure((uint)framebufferWidth, (uint)framebufferHeight);
+        WebGpuDevice.Current!.Configure((uint)framebufferWidth, (uint)framebufferHeight);
     }
 
     private void ScreenshotListener()
@@ -1870,31 +1765,10 @@ public partial class BetaSharp :
             {
                 _isTakingScreenshot = true;
 
-                if (_webGpuRenderer is { } webGpu)
-                {
-                    // Picked up by the next RenderFrame call, not this one — see
-                    // WebGpuGameRenderer.ScreenshotRequested for why a same-frame capture is not
-                    // possible here, and ScreenshotResult below for where the message shows up.
-                    webGpu.ScreenshotRequested = true;
-                }
-                else
-                {
-                    int framebufferWidth = Display.getFramebufferWidth();
-                    int framebufferHeight = Display.getFramebufferHeight();
-                    int size = framebufferWidth * framebufferHeight * 3;
-                    byte[] pixels = new byte[size];
-                    GLManager.GL.PixelStore(PixelStoreParameter.PackAlignment, 1);
-                    unsafe
-                    {
-                        fixed (byte* p = pixels)
-                        {
-                            GLManager.GL.ReadPixels(0, 0, (uint)framebufferWidth, (uint)framebufferHeight, PixelFormat.Rgb, PixelType.UnsignedByte, p);
-                        }
-                    }
-
-                    string result = ScreenShotHelper.saveScreenshot(_gameDataDir, DisplayWidth, DisplayHeight, pixels);
-                    HUD.AddChatMessage(result);
-                }
+                // Picked up by the next RenderFrame call, not this one — see
+                // WebGpuGameRenderer.ScreenshotRequested for why a same-frame capture is not
+                // possible here, and ScreenshotResult below for where the message shows up.
+                _webGpuRenderer.ScreenshotRequested = true;
             }
         }
         else
@@ -1902,7 +1776,7 @@ public partial class BetaSharp :
             _isTakingScreenshot = false;
         }
 
-        if (_webGpuRenderer is { ScreenshotResult: { } webGpuResult })
+        if (_webGpuRenderer.ScreenshotResult is { } webGpuResult)
         {
             HUD.AddChatMessage(webGpuResult);
             _webGpuRenderer.ScreenshotResult = null;
@@ -1964,23 +1838,8 @@ public partial class BetaSharp :
 
     internal DebugSystemSnapshot DebugSystemSnapshot => _debugTelemetry.SystemSnapshot;
 
-    [Conditional("DEBUG")]
-    private void CheckGLError(string location)
-    {
-        GLEnum glError = GLManager.GL.GetError();
-        if (glError != 0)
-        {
-            _logger.LogError($"#### GL ERROR ####");
-            _logger.LogError($"@ {location}");
-            _logger.LogError($"> {glError.ToString()}");
-            _logger.LogError($"");
-        }
-    }
-
     private void LoadScreen()
     {
-        if (GLManager.GLOrNull is null && _webGpuRenderer is null) return;
-
         ScaledResolution scaledResolution = new(Options, DisplayWidth, DisplayHeight);
         GLManager.Projection.LoadIdentity();
         GLManager.Projection.Ortho(0.0D, scaledResolution.ScaledWidth, scaledResolution.ScaledHeight, 0.0D, 1000.0D, 3000.0D);
@@ -2019,20 +1878,7 @@ public partial class BetaSharp :
             GLManager.AlphaThreshold = 0.1F;
         }
 
-        if (_webGpuRenderer is { } webGpu)
-        {
-            webGpu.RenderLoadingFrame(DrawMojangLogo);
-        }
-        else
-        {
-            GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
-            // GL keeps one viewport as global state. WebGPU has none to set here — a render pass
-            // covers its attachments, and anything narrower is set on the pass encoder.
-            GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
-            GLManager.GL.ClearColor(0.0F, 0.0F, 0.0F, 0.0F);
-            DrawMojangLogo();
-            Display.swapBuffers();
-        }
+        _webGpuRenderer.RenderLoadingFrame(DrawMojangLogo);
     }
 
     private static void DrawTextureRegion(int x, int y, int texX, int texY, int width, int height)
