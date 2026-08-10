@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Linq;
 using System.Numerics;
 using System.Runtime;
 using System.Runtime.InteropServices;
@@ -117,7 +116,7 @@ public partial class OmniBlock :
     public Vector2 DebugViewportScreenPos => _debugWindowManager?.ViewportPos ?? Vector2.Zero;
 
     public bool ShowChunkBorders { get; private set; }
-    public bool SkipRenderWorld { get; private set; }
+    private bool SkipRenderWorld { get; set; }
     public string DebugText { get; private set; } = "";
     public HitResult ObjectMouseOver = new(HitResultType.Miss);
 
@@ -193,7 +192,7 @@ public partial class OmniBlock :
 
     #region Initialization & Lifecycle
 
-    public OmniBlock(int width, int height, bool isFullscreen)
+    private OmniBlock(int width, int height, bool isFullscreen)
     {
         _loadingScreen = new LoadingScreenRenderer(this);
         _tempDisplayHeight = height;
@@ -247,7 +246,7 @@ public partial class OmniBlock :
             Display.setLocation((maximumWidth - DisplayWidth) / 2, (maximumHeight - DisplayHeight) / 2);
         }
 
-        Display.setTitle("OmniBlock " + Version + " ( a BetaSharp fork )");
+        Display.setTitle($"OmniBlock {Version} ( a BetaSharp fork )");
 
         _gameDataDir = OmniBlockDir;
         SaveLoader = new RegionWorldStorageSource(Path.Combine(_gameDataDir, "saves"));
@@ -283,7 +282,7 @@ public partial class OmniBlock :
     {
         // Must run before EntityRenderDispatcher.Instance below constructs every entity model:
         // each one registers its baked geometry here as it is built, on either backend.
-        Rendering.Entities.EntityInstanceBatchRenderer.Initialize(Options);
+        EntityInstanceBatchRenderer.Initialize(Options);
 
         TexturePackList = new TexturePacks(this, new DirectoryInfo(_gameDataDir));
         TextureManager = new TextureManager(this, TexturePackList, Options);
@@ -305,13 +304,13 @@ public partial class OmniBlock :
             displaySize: () => new Vector2D<int>(DisplayWidth, DisplayHeight),
             inputDisplaySize: () =>
             {
-                if (Options.ShowDebugInfo && _debugWindowManager != null)
+                if (!Options.ShowDebugInfo || _debugWindowManager == null)
                 {
-                    Vector2 vs = _debugWindowManager.ViewportSize;
-                    if (vs.X > 0 && vs.Y > 0)
-                        return new Vector2D<int>((int)vs.X, (int)vs.Y);
+                    return new Vector2D<int>(DisplayWidth, DisplayHeight);
                 }
-                return new Vector2D<int>(DisplayWidth, DisplayHeight);
+
+                Vector2 vs = _debugWindowManager.ViewportSize;
+                return vs is { X: > 0, Y: > 0 } ? new Vector2D<int>((int)vs.X, (int)vs.Y) : new Vector2D<int>(DisplayWidth, DisplayHeight);
             },
             controllerState: this,
             VirtualCursor,
@@ -403,16 +402,14 @@ public partial class OmniBlock :
         {
             GetUngrabCenter = () =>
             {
-                if (Options.ShowDebugInfo && _debugWindowManager != null)
+                if (!Options.ShowDebugInfo || _debugWindowManager == null)
                 {
-                    Vector2 vp = _debugWindowManager.ViewportPos;
-                    Vector2 vs = _debugWindowManager.ViewportSize;
-                    if (vs.X > 0 && vs.Y > 0)
-                    {
-                        return new((int)(vp.X + vs.X / 2), (int)(vp.Y + vs.Y / 2));
-                    }
+                    return new Vector2D<int>(Display.getWidth() / 2, Display.getHeight() / 2);
                 }
-                return new(Display.getWidth() / 2, Display.getHeight() / 2);
+
+                Vector2 vp = _debugWindowManager.ViewportPos;
+                Vector2 vs = _debugWindowManager.ViewportSize;
+                return vs is { X: > 0, Y: > 0 } ? new Vector2D<int>((int)(vp.X + vs.X / 2), (int)(vp.Y + vs.Y / 2)) : new Vector2D<int>(Display.getWidth() / 2, Display.getHeight() / 2);
             }
         };
 
@@ -482,14 +479,7 @@ public partial class OmniBlock :
     {
         try
         {
-            if (File.Exists("version.txt"))
-            {
-                Version = File.ReadAllText("version.txt").Trim().ToLower();
-            }
-            else
-            {
-                Version = "development build";
-            }
+            Version = File.Exists("version.txt") ? File.ReadAllText("version.txt").Trim().ToLower() : "development build";
         }
         catch (Exception ex)
         {
@@ -498,7 +488,7 @@ public partial class OmniBlock :
         }
     }
 
-    public void Shutdown()
+    private void Shutdown()
     {
         Running = false;
     }
@@ -539,7 +529,7 @@ public partial class OmniBlock :
         }
     }
 
-    public void CrashCleanup()
+    private void CrashCleanup()
     {
         try
         {
@@ -547,10 +537,11 @@ public partial class OmniBlock :
         }
         catch (Exception)
         {
+            // ignored
         }
     }
 
-    public void OnGameCrash(Exception crashInfo)
+    private void OnGameCrash(Exception crashInfo)
     {
         _hasCrashed = true;
         _logger.LogError(crashInfo, "OmniBlock has crashed!");
@@ -560,7 +551,7 @@ public partial class OmniBlock :
 
     #region Main Game Loop
 
-    public void Run()
+    private void Run()
     {
         Running = true;
 
@@ -1510,23 +1501,25 @@ public partial class OmniBlock :
         InternalServer.RunThreaded("Internal Server");
     }
 
-    public void StopInternalServer()
+    private void StopInternalServer()
     {
-        if (InternalServer != null)
+        if (InternalServer == null)
         {
-            InternalServer.Stop();
-            while (!InternalServer.stopped)
-            {
-                Thread.Sleep(1);
-            }
-
-            InternalServer = null;
+            return;
         }
+
+        InternalServer.Stop();
+        while (!InternalServer.stopped)
+        {
+            Thread.Sleep(1);
+        }
+
+        InternalServer = null;
     }
 
-    public bool IsMultiplayerWorld()
+    private bool IsMultiplayerWorld()
     {
-        return World != null && World.IsRemote;
+        return World is { IsRemote: true };
     }
 
     private void ShowText(string loadingText)
@@ -1630,46 +1623,54 @@ public partial class OmniBlock :
 
     public void DisplayInGameMenu()
     {
-        if (CurrentScreen == null)
+        if (CurrentScreen != null)
         {
-            bool isMP = IsMultiplayerWorld() && InternalServer == null;
-            string quitText = isMP ? Translations.Get("menu.disconnect") : Translations.Get("menu.saveAndQuitToTitle");
-            int saveStep = 0;
-            Navigate(new IngameMenuScreen(UIContext, StatFileWriter, SetIngameFocus, quitText, () =>
-            {
-                if (IsMultiplayerWorld()) World.Disconnect();
-                StopInternalServer();
-                ChangeWorld(null);
-            }, () => World?.AttemptSaving(saveStep++) ?? false, TexturePackList));
+            return;
         }
+
+        bool isMp = IsMultiplayerWorld() && InternalServer == null;
+        string quitText = isMp ? Translations.Get("menu.disconnect") : Translations.Get("menu.saveAndQuitToTitle");
+        int saveStep = 0;
+        Navigate(new IngameMenuScreen(UIContext, StatFileWriter, SetIngameFocus, quitText, () =>
+        {
+            if (IsMultiplayerWorld()) World.Disconnect();
+            StopInternalServer();
+            ChangeWorld(null);
+        }, () => World?.AttemptSaving(saveStep++) ?? false, TexturePackList));
     }
 
     public void SetIngameFocus()
     {
-        if (Display.isActive())
+        if (!Display.isActive())
         {
-            if (!InGameHasFocus)
-            {
-                GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
-                InGameHasFocus = true;
-                MouseHelper.GrabMouseCursor();
-                Navigate(null);
-                _leftClickCounter = 10000;
-                MouseTicksRan = TicksRan + 10000;
-            }
+            return;
         }
+
+        if (InGameHasFocus)
+        {
+            return;
+        }
+
+        GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
+        InGameHasFocus = true;
+        MouseHelper.GrabMouseCursor();
+        Navigate(null);
+        _leftClickCounter = 10000;
+        MouseTicksRan = TicksRan + 10000;
     }
 
     private void SetIngameNotInFocus()
     {
-        if (InGameHasFocus)
+        if (!InGameHasFocus)
         {
-            Player?.resetPlayerKeyState();
-            InGameHasFocus = false;
-            GCSettings.LatencyMode = GCLatencyMode.Batch;
-            MouseHelper.UngrabMouseCursor();
-            Mouse.setCursorVisible(!IsControllerMode);
+            return;
         }
+
+        Player?.resetPlayerKeyState();
+        InGameHasFocus = false;
+        GCSettings.LatencyMode = GCLatencyMode.Batch;
+        MouseHelper.UngrabMouseCursor();
+        Mouse.setCursorVisible(!IsControllerMode);
     }
 
     private MainMenuScreen CreateMainMenuScreen() => new(UIContext, Session, this, CreateNetworkContext(), TexturePackList, Shutdown);
@@ -1679,7 +1680,7 @@ public partial class OmniBlock :
 
     #region System Utilities
 
-    public void ToggleFullscreen()
+    private void ToggleFullscreen()
     {
         try
         {
@@ -1838,6 +1839,9 @@ public partial class OmniBlock :
         GLManager.ModelView.LoadIdentity();
         GLManager.ModelView.Translate(0.0F, 0.0F, -2000.0F);
 
+        _webGpuRenderer.RenderLoadingFrame(DrawMojangLogo);
+        return;
+
         void DrawMojangLogo()
         {
             Tessellator tessellator = Tessellator.instance;
@@ -1869,8 +1873,6 @@ public partial class OmniBlock :
             GLManager.AlphaTestEnabled = true;
             GLManager.AlphaThreshold = 0.1F;
         }
-
-        _webGpuRenderer.RenderLoadingFrame(DrawMojangLogo);
     }
 
     private static void DrawTextureRegion(int x, int y, int texX, int texY, int width, int height)
