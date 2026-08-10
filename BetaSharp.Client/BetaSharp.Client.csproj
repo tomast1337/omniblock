@@ -53,8 +53,9 @@
     two independent GLFW instances with separate global state. ImGui then registers its
     input callbacks on the second instance while passing a GLFWwindow* owned by the first,
     which that instance has never seen — so the callbacks never fire and the debug overlay
-    renders but receives no mouse or keyboard input at all (ImGuiImplOpenGL3 draws fine
-    because it only touches OpenGL). A symlink shares the inode and keeps GLFW a singleton.
+    renders but receives no mouse or keyboard input at all (the WebGPU backend still draws
+    fine, since drawing never touches GLFW). A symlink shares the inode and keeps GLFW a
+    singleton.
   -->
   <Target Name="CreateGlfwCompatSymlink" AfterTargets="Build" Condition="'$(OS)' != 'Windows_NT'">
     <ItemGroup>
