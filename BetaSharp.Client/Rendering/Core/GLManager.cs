@@ -44,6 +44,14 @@ public class GLManager
     public static IDrawTarget DrawTarget => DrawTargetOrNull ?? throw new InvalidOperationException(
         "Geometry was submitted with no draw target installed — either the backend never set one, or the draw is outside the render pass that would have drawn it.");
 
+    /// <summary>
+    ///     The Soft Clouds blur, or null when the setting cannot run (no implementation installed).
+    ///     Set by whichever backend owns the buffers it needs — <c>FramebufferManager</c> under
+    ///     OpenGL, <c>WgpuCloudBlurPass</c> under WebGPU — so <c>GameRenderer.DrawWorld</c> can bracket
+    ///     cloud rendering without knowing which.
+    /// </summary>
+    public static ICloudBlurPass? CloudBlurPassOrNull { get; set; }
+
     static GLManager()
     {
         Context.RasterStateChanging += OnRasterStateChanging;

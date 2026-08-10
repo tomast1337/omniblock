@@ -7,7 +7,7 @@ using Shader = BetaSharp.Client.Rendering.Core.Shader;
 
 namespace BetaSharp.Client.Rendering;
 
-public class FramebufferManager
+public class FramebufferManager : ICloudBlurPass
 {
     private readonly Framebuffer _mainFbo;
     private readonly Shader _gammaShader;
@@ -64,6 +64,8 @@ public class FramebufferManager
         gl.BindVertexArray(0);
 
         CreateCloudFbos(w, h);
+
+        GLManager.CloudBlurPassOrNull = this;
     }
 
     /// <summary>The OpenGL texture ID of the rendered frame. Valid after <see cref="End"/> is called.</summary>

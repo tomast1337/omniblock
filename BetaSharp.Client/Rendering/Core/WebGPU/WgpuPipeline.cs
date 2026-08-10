@@ -105,7 +105,8 @@ public sealed unsafe class WgpuPipeline : IDisposable
         TextureFormat colorFormat,
         TextureFormat depthFormat = TextureFormat.Undefined,
         PrimitiveTopology topology = PrimitiveTopology.TriangleList,
-        ReadOnlySpan<BindGroupLayoutEntry> textureArrayEntries = default)
+        ReadOnlySpan<BindGroupLayoutEntry> textureArrayEntries = default,
+        string? label = null)
     {
         _device = device;
         _uniformSize = Math.Max(uniformSize, 64u);
@@ -121,7 +122,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
             : null;
         Layout = CreatePipelineLayout(api, device.Device,
             BindGroupLayout, TextureBindGroupLayout, TextureArrayBindGroupLayout);
-        Pipeline = CreateRenderPipeline(api, device.Device, Module, entryPoint, Layout, buffers, bufferCount, state, colorFormat, depthFormat, topology);
+        Pipeline = CreateRenderPipeline(api, device.Device, Module, entryPoint, Layout, buffers, bufferCount, state, colorFormat, depthFormat, topology, label);
         CreateUniforms(api, device.Device, BindGroupLayout, uniformSize, out WgpuBuffer* ub, out BindGroup* ug);
         UniformBuffer = ub;
         UniformBindGroup = ug;
@@ -198,10 +199,12 @@ public sealed unsafe class WgpuPipeline : IDisposable
         RenderState state,
         TextureFormat colorFormat,
         TextureFormat depthFormat,
-        PrimitiveTopology topology)
+        PrimitiveTopology topology,
+        string? label = null)
     {
         byte* vertexEntry = (byte*)SilkMarshal.StringToPtr(entryPoint);
         byte* fragmentEntry = (byte*)SilkMarshal.StringToPtr("fs_main");
+        byte* labelPtr = label is null ? null : (byte*)SilkMarshal.StringToPtr(label);
 
         try
         {
@@ -264,6 +267,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
 
             RenderPipelineDescriptor descriptor = new()
             {
+                Label = labelPtr,
                 Layout = layout,
                 Vertex = new VertexState
                 {
@@ -290,6 +294,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
         {
             SilkMarshal.Free((nint)vertexEntry);
             SilkMarshal.Free((nint)fragmentEntry);
+            if (labelPtr is not null) SilkMarshal.Free((nint)labelPtr);
         }
     }
 
