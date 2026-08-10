@@ -208,10 +208,5 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     var result = texColor * color;
     result.a *= fogFactor;
 
-    // Very simple directional light: the sheet has one nominal "up" face, so a low or set
-    // sun/moon just dims it toward an ambient floor rather than shading per-fragment.
-    let sunFactor = clamp(dot(vec3<f32>(0.0, 1.0, 0.0), u.lightDir), 0.35, 1.0);
-    result = vec4<f32>(result.rgb * sunFactor, result.a);
-
     return result;
 }

@@ -365,7 +365,14 @@ public sealed unsafe class WebGpuDevice : IDisposable
                 ? PresentMode.Fifo
                 : presentModes[0];
 
-            CompositeAlphaMode alphaMode = alphaModes.Length == 0 ? CompositeAlphaMode.Auto : alphaModes[0];
+            // Opaque explicitly, not alphaModes[0]: the window is never meant to be see-through, and
+            // whatever ends up in the swap chain's alpha channel — the cloud blur composite writes
+            // less than 1 wherever a cloud fades, see cloud_blur.wgsl — must not be handed to the
+            // compositor to blend against the desktop. Driver-reported order isn't Opaque-first on
+            // every platform, so picking alphaModes[0] blind can silently pick a mode that does.
+            CompositeAlphaMode alphaMode = alphaModes.Contains(CompositeAlphaMode.Opaque)
+                ? CompositeAlphaMode.Opaque
+                : alphaModes.Length == 0 ? CompositeAlphaMode.Auto : alphaModes[0];
 
             return (format, presentMode, alphaMode);
         }
