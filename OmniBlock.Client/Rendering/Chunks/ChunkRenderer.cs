@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using OmniBlock.Client.Options;
 using OmniBlock.Client.Rendering.Chunks.Occlusion;
@@ -107,7 +108,13 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     public ChunkRenderer(World world, GameOptions options)
     {
         _options = options;
-        _meshGenerator = new();
+
+        // Left uncapped, every dispatched chunk becomes its own unbounded Task.Run; once the
+        // dispatch side stopped throttling itself to ~2 chunks/frame, an uncapped mesh generator
+        // could flood the ThreadPool with concurrent GenerateMesh calls (each visiting 32K+
+        // blocks plus a flood-fill) and starve the frame thread. Same reservation the chunk
+        // loader's worker pool leaves for the tick thread.
+        _meshGenerator = new((ushort)Math.Max(1, Environment.ProcessorCount - 2));
         _world = world;
     }
 
@@ -253,8 +260,7 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         _renderersToRemove.Clear();
 
-        ProcessOneMeshUpdate(camera);
-        ProcessOneLightingMeshUpdate();
+        DispatchPendingMeshUpdates(camera);
         LoadNewMeshes(_lastViewPos);
     }
 
@@ -287,9 +293,20 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
     }
 
-    private void LoadNewMeshes(Vector3D<double> viewPos, int maxChunks = 8)
+    //TODO: MAKE THIS CONFIGURABLE
+    private const double MeshUploadBudgetMs = 1.5;
+
+    /// <summary>
+    ///     Drains completed meshes for <see cref="MeshUploadBudgetMs" /> instead of a fixed count
+    ///     per frame. The fixed count (8) was sized for the old dispatch rate; now that
+    ///     <see cref="DispatchPendingMeshUpdates" /> can issue far more per frame, a fixed drain
+    ///     cap would let <c>_results</c> back up — completed meshes sitting queued instead of
+    ///     uploaded is exactly the "visual delay" a bigger dispatch rate would otherwise cause.
+    /// </summary>
+    private void LoadNewMeshes(Vector3D<double> viewPos)
     {
-        for (int i = 0; i < maxChunks; i++)
+        var stopwatch = Stopwatch.StartNew();
+        while (stopwatch.Elapsed.TotalMilliseconds < MeshUploadBudgetMs)
         {
             if (!_meshGenerator.TryDequeueMesh(out MeshBuildResult mesh)) break;
 
@@ -310,6 +327,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                     {
                         _meshGenerator.MeshChunk(_world, mesh.Pos, snapshot.Value, _options.AlternateBlocksEnabled);
                     }
+
+                    // Superseded by the requeue above (or by whichever in-flight build already
+                    // owns the next version) — this copy of the vertices is never uploaded, so
+                    // nothing else will return it to the pool.
+                    mesh.Dispose();
                     continue;
                 }
 
@@ -327,6 +349,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                     _renderers[mesh.Pos] = new SubChunkState(mesh.IsLit, renderer);
                     UpdateAdjacency(renderer, true);
                 }
+            }
+            else
+            {
+                // Finished after the chunk fell out of render distance — UploadMeshData (which
+                // would normally return these to the pool) never runs for it.
+                mesh.Dispose();
             }
         }
     }
@@ -403,9 +431,37 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
     }
 
-    private void ProcessOneMeshUpdate(ICuller camera)
+    //TODO: MAKE THIS CONFIGURABLE
+    private const double MeshDispatchBudgetMs = 1.5;
+
+    /// <summary>
+    ///     Issues as many <see cref="ChunkMeshGenerator.MeshChunk" /> calls as fit in
+    ///     <see cref="MeshDispatchBudgetMs" />, instead of the fixed one-dirty-plus-one-lighting
+    ///     cap this used to have. That fixed cap throttled how fast a burst of newly-loaded chunks
+    ///     could drain regardless of how fast the mesh workers or the snapshot copy underneath them
+    ///     could go; a wall-clock budget lets it drain as fast as those actually allow, and still
+    ///     bounds the frame-thread cost of dispatching regardless of how large the backlog gets.
+    /// </summary>
+    private void DispatchPendingMeshUpdates(ICuller camera)
     {
         _dirtyChunks.RemoveAll(c => !IsChunkInRenderDistance(c.Pos, _lastViewPos));
+        _lightingUpdates.RemoveAll(c => !IsChunkInRenderDistance(c.Pos, _lastViewPos));
+
+        var stopwatch = Stopwatch.StartNew();
+        while (stopwatch.Elapsed.TotalMilliseconds < MeshDispatchBudgetMs)
+        {
+            bool dispatchedDirty = TryDispatchBestDirtyMeshUpdate(camera);
+            bool dispatchedLighting = TryDispatchBestLightingMeshUpdate();
+
+            if (!dispatchedDirty && !dispatchedLighting)
+            {
+                break;
+            }
+        }
+    }
+
+    private bool TryDispatchBestDirtyMeshUpdate(ICuller camera)
+    {
         int bestIndex = -1;
         double bestDist = double.MaxValue;
         for (int i = 0; i < _dirtyChunks.Count; i++)
@@ -426,17 +482,19 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             }
         }
 
-        if (bestIndex != -1)
+        if (bestIndex == -1)
         {
-            ChunkToMeshInfo closest = _dirtyChunks[bestIndex];
-            _meshGenerator.MeshChunk(_world, closest.Pos, closest.Version, _options.AlternateBlocksEnabled);
-            _dirtyChunks.RemoveAt(bestIndex);
+            return false;
         }
+
+        ChunkToMeshInfo closest = _dirtyChunks[bestIndex];
+        _meshGenerator.MeshChunk(_world, closest.Pos, closest.Version, _options.AlternateBlocksEnabled);
+        _dirtyChunks.RemoveAt(bestIndex);
+        return true;
     }
 
-    private void ProcessOneLightingMeshUpdate()
+    private bool TryDispatchBestLightingMeshUpdate()
     {
-        _lightingUpdates.RemoveAll(c => !IsChunkInRenderDistance(c.Pos, _lastViewPos));
         int bestIndex = -1;
         double bestDist = double.MaxValue;
         for (int i = 0; i < _lightingUpdates.Count; i++)
@@ -449,12 +507,15 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             }
         }
 
-        if (bestIndex != -1)
+        if (bestIndex == -1)
         {
-            ChunkToMeshInfo update = _lightingUpdates[bestIndex];
-            _meshGenerator.MeshChunk(_world, update.Pos, update.Version, _options.AlternateBlocksEnabled);
-            _lightingUpdates.RemoveAt(bestIndex);
+            return false;
         }
+
+        ChunkToMeshInfo update = _lightingUpdates[bestIndex];
+        _meshGenerator.MeshChunk(_world, update.Pos, update.Version, _options.AlternateBlocksEnabled);
+        _lightingUpdates.RemoveAt(bestIndex);
+        return true;
     }
 
     public void UpdateAllRenderers()

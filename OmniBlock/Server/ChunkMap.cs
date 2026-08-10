@@ -201,9 +201,14 @@ internal class ChunkMap
         player.LastX = player.X;
         player.LastZ = player.Z;
 
+        bool isHomeChunk = true;
         foreach (ChunkPos item in GetChunks(player))
         {
-            if (GetOrCreateChunk(item.X, item.Z, false) is { } centerChunk)
+            // The player's own chunk (always first out of GetChunks) is force-loaded
+            // synchronously — the async worker pool gives no per-tick guarantee it'll be ready
+            // before gameplay starts, and without this the player can fall through unloaded
+            // terrain under their own feet.
+            if (GetOrCreateChunk(item.X, item.Z, isHomeChunk) is { } centerChunk)
             {
                 centerChunk.addPlayer(player);
             }
@@ -211,6 +216,8 @@ internal class ChunkMap
             {
                 loadQueue.Add(item.X, item.Z, player);
             }
+
+            isHomeChunk = false;
         }
 
         players.Add(player);

@@ -1,3 +1,4 @@
+using System.Buffers;
 using OmniBlock.Blocks;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Entities;
@@ -9,42 +10,128 @@ using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Worlds.Core;
 
+/// <summary>
+///     A read-only copy of exactly the block/light cells inside [minX,maxX]x[minY,maxY]x[minZ,maxZ]
+///     (inclusive), not whole chunk columns — safe to read from a worker thread while the live
+///     chunks it was built from keep changing. Chunk mesh building is the only caller today and
+///     requests a 16-block sub-chunk plus 1 block of padding on every side (18x18x18) for face
+///     culling and AO, which is cheap enough to copy synchronously on the calling thread before
+///     handing the actual mesh build off to a worker.
+/// </summary>
 public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 {
     public bool IsLit { get; private set; }
 
     private readonly BiomeSource _biomeSource;
-    private readonly ChunkSnapshot[,] _chunks;
-    private readonly int _chunkX;
-    private readonly int _chunkZ;
     private readonly float[] _lightTable;
     private readonly int _skylightSubtracted;
+
+    private readonly int _minX;
+    private readonly int _minY;
+    private readonly int _minZ;
+    private readonly int _sizeX;
+    private readonly int _sizeY;
+    private readonly int _sizeZ;
+
+    private readonly byte[] _blocks;
+    private readonly byte[] _meta;
+    private readonly byte[] _skyLight;
+    private readonly byte[] _blockLight;
 
     public WorldRegionSnapshot(IWorldContext world, int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
         _biomeSource = world.Dimension.BiomeSource.Clone();
 
-        _chunkX = minX >> 4;
-        _chunkZ = minZ >> 4;
+        _minX = minX;
+        _minY = minY;
+        _minZ = minZ;
+        _sizeX = maxX - minX + 1;
+        _sizeY = maxY - minY + 1;
+        _sizeZ = maxZ - minZ + 1;
+
+        int cellCount = _sizeX * _sizeY * _sizeZ;
+        int nibbleByteCount = (cellCount + 1) >> 1;
+
+        _blocks = ArrayPool<byte>.Shared.Rent(cellCount);
+        _meta = ArrayPool<byte>.Shared.Rent(nibbleByteCount);
+        _skyLight = ArrayPool<byte>.Shared.Rent(nibbleByteCount);
+        _blockLight = ArrayPool<byte>.Shared.Rent(nibbleByteCount);
+
+        // Cells outside [0, WorldHeight) are never read (GetBlockId/GetLightValueExt guard on Y
+        // before touching the arrays above), so the padding rows above/below the world don't
+        // need to be written here.
+        int rowMinY = Math.Max(minY, 0);
+        int rowMaxY = Math.Min(maxY, ChuckFormat.WorldHeight - 1);
+
+        int minChunkX = minX >> 4;
         int maxChunkX = maxX >> 4;
+        int minChunkZ = minZ >> 4;
         int maxChunkZ = maxZ >> 4;
 
-        int width = maxChunkX - _chunkX + 1;
-        int depth = maxChunkZ - _chunkZ + 1;
-
-        _chunks = new ChunkSnapshot[width, depth];
-
-        for (int cx = _chunkX; cx <= maxChunkX; ++cx)
+        for (int cx = minChunkX; cx <= maxChunkX; cx++)
         {
-            for (int cz = _chunkZ; cz <= maxChunkZ; ++cz)
+            int columnMinX = Math.Max(minX, cx << 4);
+            int columnMaxX = Math.Min(maxX, (cx << 4) + 15);
+
+            for (int cz = minChunkZ; cz <= maxChunkZ; cz++)
             {
-                Chunk originalChunk = world.ChunkHost.GetChunk(cx, cz);
-                _chunks[cx - _chunkX, cz - _chunkZ] = new ChunkSnapshot(originalChunk);
+                int columnMinZ = Math.Max(minZ, cz << 4);
+                int columnMaxZ = Math.Min(maxZ, (cz << 4) + 15);
+
+                Chunk chunk = world.ChunkHost.GetChunk(cx, cz);
+
+                for (int worldX = columnMinX; worldX <= columnMaxX; worldX++)
+                {
+                    int chunkLocalX = worldX & 15;
+
+                    for (int worldZ = columnMinZ; worldZ <= columnMaxZ; worldZ++)
+                    {
+                        int chunkLocalZ = worldZ & 15;
+
+                        for (int worldY = rowMinY; worldY <= rowMaxY; worldY++)
+                        {
+                            int index = LocalIndex(worldX - minX, worldY - minY, worldZ - minZ);
+                            _blocks[index] = chunk.Blocks[ChuckFormat.GetIndex(chunkLocalX, worldY, chunkLocalZ)];
+                            SetNibble(_meta, index, chunk.Meta.GetNibble(chunkLocalX, worldY, chunkLocalZ));
+                            SetNibble(_skyLight, index, chunk.SkyLight.GetNibble(chunkLocalX, worldY, chunkLocalZ));
+                            SetNibble(_blockLight, index, chunk.BlockLight.GetNibble(chunkLocalX, worldY, chunkLocalZ));
+                        }
+                    }
+                }
             }
         }
 
         _lightTable = world.Dimension.LightLevelToLuminance;
         _skylightSubtracted = world.Environment.AmbientDarkness;
+    }
+
+    private int LocalIndex(int lx, int ly, int lz) => (lx * _sizeZ + lz) * _sizeY + ly;
+
+    private bool TryGetLocalIndex(int x, int y, int z, out int index)
+    {
+        int lx = x - _minX;
+        int ly = y - _minY;
+        int lz = z - _minZ;
+
+        if ((uint)lx >= (uint)_sizeX || (uint)ly >= (uint)_sizeY || (uint)lz >= (uint)_sizeZ)
+        {
+            index = -1;
+            return false;
+        }
+
+        index = LocalIndex(lx, ly, lz);
+        return true;
+    }
+
+    private static int GetNibble(byte[] nibbles, int index) =>
+        (index & 1) == 0 ? nibbles[index >> 1] & 0x0F : (nibbles[index >> 1] >> 4) & 0x0F;
+
+    private static void SetNibble(byte[] nibbles, int index, int value)
+    {
+        int byteIndex = index >> 1;
+        nibbles[byteIndex] = (index & 1) == 0
+            ? (byte)((nibbles[byteIndex] & 0xF0) | (value & 0x0F))
+            : (byte)((nibbles[byteIndex] & 0x0F) | ((value & 0x0F) << 4));
     }
 
     public int GetBlockId(int x, int y, int z)
@@ -54,16 +141,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
             return 0;
         }
 
-        int chunkIdxX = (x >> 4) - _chunkX;
-        int chunkIdxZ = (z >> 4) - _chunkZ;
-
-        if (chunkIdxX >= 0 && chunkIdxX < _chunks.GetLength(0) &&
-            chunkIdxZ >= 0 && chunkIdxZ < _chunks.GetLength(1))
-        {
-            return _chunks[chunkIdxX, chunkIdxZ].GetBlockID(x & 15, y, z & 15);
-        }
-
-        return 0;
+        return TryGetLocalIndex(x, y, z, out int index) ? _blocks[index] : 0;
     }
 
     public BiomeSource GetBiomeSource() => _biomeSource;
@@ -87,9 +165,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
             return 0;
         }
 
-        int chunkIdxX = (x >> 4) - _chunkX;
-        int chunkIdxZ = (z >> 4) - _chunkZ;
-        return _chunks[chunkIdxX, chunkIdxZ].GetBlockMetadata(x & 15, y, z & 15);
+        return TryGetLocalIndex(x, y, z, out int index) ? GetNibble(_meta, index) : 0;
     }
 
     public Material GetMaterial(int x, int y, int z)
@@ -160,15 +236,21 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
             return LightLevels.FullSky;
         }
 
-        ref ChunkSnapshot chunk = ref _chunks[(x >> 4) - _chunkX, (z >> 4) - _chunkZ];
-        LightLevels levels = chunk.GetLightLevels(x & 15, y, z & 15);
+        // Outside the snapshot's bounded volume: only reachable via the stairs-check probe
+        // right at the edge of the padding. No data to be more precise with, so this reads the
+        // same as "above the world": full sun, no torch.
+        if (!TryGetLocalIndex(x, y, z, out int index))
+        {
+            return LightLevels.FullSky;
+        }
 
-        if (chunk.IsLit)
+        int skyLight = GetNibble(_skyLight, index);
+        if (skyLight > 0)
         {
             IsLit = true;
         }
 
-        return levels;
+        return LightLevels.Of(skyLight, GetNibble(_blockLight, index));
     }
 
     public int GetLightValue(int x, int y, int z) => GetLightValueExt(x, y, z, true);
@@ -205,29 +287,36 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
             return Math.Max(0, 15 - _skylightSubtracted);
         }
 
-        int chunkIdxX = (x >> 4) - _chunkX;
-        int chunkIdxZ = (z >> 4) - _chunkZ;
+        // Outside the snapshot's bounded volume — see GetLightLevelsExt.
+        if (!TryGetLocalIndex(x, y, z, out int index))
+        {
+            return Math.Max(0, 15 - _skylightSubtracted);
+        }
 
-        ref ChunkSnapshot chunk = ref _chunks[chunkIdxX, chunkIdxZ];
-
-        int lightValue = chunk.GetBlockLightValue(x & 15, y, z & 15, _skylightSubtracted);
-
-        if (chunk.IsLit)
+        int skyLight = GetNibble(_skyLight, index);
+        if (skyLight > 0)
         {
             IsLit = true;
         }
 
-        return lightValue;
+        skyLight -= _skylightSubtracted;
+        int blockLight = GetNibble(_blockLight, index);
+        if (blockLight > skyLight)
+        {
+            skyLight = blockLight;
+        }
+
+        return skyLight;
     }
 
     public void Dispose()
     {
         GC.SuppressFinalize(this);
 
-        foreach (ChunkSnapshot snapshot in _chunks)
-        {
-            snapshot.Dispose();
-        }
+        ArrayPool<byte>.Shared.Return(_blocks);
+        ArrayPool<byte>.Shared.Return(_meta);
+        ArrayPool<byte>.Shared.Return(_skyLight);
+        ArrayPool<byte>.Shared.Return(_blockLight);
     }
 
     ~WorldRegionSnapshot()
