@@ -1,3 +1,5 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -10,22 +12,50 @@ namespace OmniBlock.Network.Messages;
 ///     field wrote a real, destructive zero into the receiver. Light travels as whole sections on
 ///     <see cref="LightSectionsMessage" />, where there is no per-message field to leave unset.
 /// </remarks>
-[WireMessage("beta:block_update")]
-public partial class BlockUpdateMessage : Message
+public class BlockUpdateMessage : Message
 {
-    [WireField]
     public int X { get; set; }
 
     /// <summary>Y coordinate on the wire is a single byte — Beta 1.7.3's world height is 128 blocks.</summary>
-    [WireField]
     public sbyte Y { get; set; }
 
-    [WireField]
     public int Z { get; set; }
 
-    [WireField]
     public byte BlockRawId { get; set; }
 
-    [WireField]
     public byte BlockMetadata { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "block_update");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        X = stream.ReadInt();
+        Y = (sbyte)stream.ReadByte();
+        Z = stream.ReadInt();
+        BlockRawId = (byte)stream.ReadByte();
+        BlockMetadata = (byte)stream.ReadByte();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteInt(X);
+        stream.WriteByte((byte)Y);
+        stream.WriteInt(Z);
+        stream.WriteByte(BlockRawId);
+        stream.WriteByte(BlockMetadata);
+    }
+
+    public override int Size()
+    {
+        return
+            4
+            + 1
+            + 4
+            + 1
+            + 1;
+    }
 }

@@ -21,13 +21,13 @@ public static class DefaultMessages
     {
         ArgumentNullException.ThrowIfNull(registry);
 
-        GeneratedMessages.RegisterAll(registry);
+        MessageRegistrations.RegisterAll(registry);
 
-        // The two messages whose payloads the generator has no encoding for: a list of chunk
+        // The two messages whose payloads don't fit the Wire.cs field-list shape: a list of chunk
         // position/hash pairs, and a variable-length run of field-masked entity deltas. Both are
         // shapes a declarative field list cannot express, and inventing a list encoding to cover one
         // of them would be a worse format than the one they already have. They stay hand-written and
-        // are registered here; everything above this line is derived from the declarations.
+        // are registered here; everything above this line comes from a companion *.Wire.cs file.
         registry.Register(ChunkCacheOfferMessage.Id, 1, static () => new ChunkCacheOfferMessage());
         registry.Register(EntitySnapshotMessage.Id, 1, static () => new EntitySnapshotMessage());
         registry.Register(RegistryDataMessage.Id, 1, static () => new RegistryDataMessage());

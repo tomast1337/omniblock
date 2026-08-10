@@ -1,3 +1,4 @@
+using OmniBlock;
 using OmniBlock.Items;
 
 namespace OmniBlock.Network.Messages;
@@ -10,25 +11,55 @@ namespace OmniBlock.Network.Messages;
 ///         here is trusted on its own.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:click_slot")]
-public sealed partial class ClickSlotMessage : Message
+public sealed class ClickSlotMessage : Message
 {
-    [WireField]
     public sbyte SyncId { get; set; }
 
-    [WireField]
     public short Slot { get; set; }
 
-    [WireField]
     public sbyte Button { get; set; }
 
     /// <summary>Revision, matched by the acknowledgement the server sends back.</summary>
-    [WireField]
     public short ActionType { get; set; }
 
-    [WireField]
     public bool HoldingShift { get; set; }
 
-    [WireField]
     public ItemStack? Stack { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "click_slot");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        SyncId = (sbyte)stream.ReadByte();
+        Slot = stream.ReadShort();
+        Button = (sbyte)stream.ReadByte();
+        ActionType = stream.ReadShort();
+        HoldingShift = stream.ReadBoolean();
+        Stack = stream.ReadItemStack();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteByte((byte)SyncId);
+        stream.WriteShort(Slot);
+        stream.WriteByte((byte)Button);
+        stream.WriteShort(ActionType);
+        stream.WriteBoolean(HoldingShift);
+        stream.WriteItemStack(Stack);
+    }
+
+    public override int Size()
+    {
+        return
+            1
+            + 2
+            + 1
+            + 2
+            + 1
+            + StreamExtensions.ItemStackSize(Stack);
+    }
 }

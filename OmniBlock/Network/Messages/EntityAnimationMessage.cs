@@ -1,18 +1,42 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     A one-shot animation on an entity. Replaces <c>EntityAnimationPacket</c>.
 /// </summary>
-[WireMessage("omniblock:entity_animation")]
-public sealed partial class EntityAnimationMessage : Message
+public sealed class EntityAnimationMessage : Message
 {
     public override SendPriority Priority => SendPriority.High;
 
-    [WireField]
     public int EntityId { get; set; }
 
-    [WireField]
     public byte AnimationId { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_animation");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        EntityId = stream.ReadInt();
+        AnimationId = (byte)stream.ReadByte();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteInt(EntityId);
+        stream.WriteByte(AnimationId);
+    }
+
+    public override int Size()
+    {
+        return
+            4
+            + 1;
+    }
 
     public enum EntityAnimation : byte
     {

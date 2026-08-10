@@ -1,14 +1,40 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
-[WireMessage("beta:chunk_status_update")]
-public partial class ChunkStatusUpdateMessage : Message
+public class ChunkStatusUpdateMessage : Message
 {
-    [WireField]
     public int X { get; set; }
 
-    [WireField]
     public int Z { get; set; }
 
-    [WireField]
     public bool Loaded { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "chunk_status_update");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        X = stream.ReadInt();
+        Z = stream.ReadInt();
+        Loaded = stream.ReadBoolean();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteInt(X);
+        stream.WriteInt(Z);
+        stream.WriteBoolean(Loaded);
+    }
+
+    public override int Size()
+    {
+        return
+            4
+            + 4
+            + 1;
+    }
 }

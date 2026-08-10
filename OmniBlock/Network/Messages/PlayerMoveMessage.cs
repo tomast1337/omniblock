@@ -1,3 +1,5 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -10,9 +12,29 @@ namespace OmniBlock.Network.Messages;
 ///         same ordering domain as world data.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:player_move")]
-public sealed partial class PlayerMoveMessage : Message, IPlayerMove
+public sealed class PlayerMoveMessage : Message, IPlayerMove
 {
-    [WireField]
     public bool OnGround { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "player_move");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        OnGround = stream.ReadBoolean();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteBoolean(OnGround);
+    }
+
+    public override int Size()
+    {
+        return
+            1;
+    }
 }

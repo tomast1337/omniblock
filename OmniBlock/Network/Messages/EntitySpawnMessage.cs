@@ -1,3 +1,5 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -12,43 +14,79 @@ namespace OmniBlock.Network.Messages;
 ///         unable to write one wrongly is.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:entity_spawn")]
-public sealed partial class EntitySpawnMessage : Message
+public sealed class EntitySpawnMessage : Message
 {
     /// <summary>Spawns travel with the updates that follow them, or a move can overtake its own spawn.</summary>
     public override SendPriority Priority => SendPriority.High;
 
-    [WireField]
     public int EntityId { get; set; }
 
     /// <summary>The object-spawn id, which is not the entity type id — see <c>EntityDefinition</c>.</summary>
-    [WireField]
     public sbyte EntityType { get; set; }
 
     /// <summary>Fixed point in sixteenths of a block.</summary>
-    [WireField]
     public int X { get; set; }
 
-    [WireField]
     public int Y { get; set; }
 
-    [WireField]
     public int Z { get; set; }
 
     /// <summary>
     ///     Type-specific: an arrow's shooter, a falling block's block id. Zero where the type has
     ///     nothing to say, which is also what tells the client the velocity below is meaningless.
     /// </summary>
-    [WireField]
     public int EntityData { get; set; }
 
     /// <summary>Blocks per tick times 8000. Only meaningful when <see cref="EntityData" /> is positive.</summary>
-    [WireField]
     public short VelocityX { get; set; }
 
-    [WireField]
     public short VelocityY { get; set; }
 
-    [WireField]
     public short VelocityZ { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_spawn");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        EntityId = stream.ReadInt();
+        EntityType = (sbyte)stream.ReadByte();
+        X = stream.ReadInt();
+        Y = stream.ReadInt();
+        Z = stream.ReadInt();
+        EntityData = stream.ReadInt();
+        VelocityX = stream.ReadShort();
+        VelocityY = stream.ReadShort();
+        VelocityZ = stream.ReadShort();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteInt(EntityId);
+        stream.WriteByte((byte)EntityType);
+        stream.WriteInt(X);
+        stream.WriteInt(Y);
+        stream.WriteInt(Z);
+        stream.WriteInt(EntityData);
+        stream.WriteShort(VelocityX);
+        stream.WriteShort(VelocityY);
+        stream.WriteShort(VelocityZ);
+    }
+
+    public override int Size()
+    {
+        return
+            4
+            + 1
+            + 4
+            + 4
+            + 4
+            + 4
+            + 2
+            + 2
+            + 2;
+    }
 }

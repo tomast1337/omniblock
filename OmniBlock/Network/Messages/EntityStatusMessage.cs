@@ -1,16 +1,15 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     A one-off visual or audible event on an entity — hurt, death, a wolf shaking off water.
 ///     Replaces <c>EntityStatusS2CPacket</c>.
 /// </summary>
-[WireMessage("omniblock:entity_status")]
-public sealed partial class EntityStatusMessage : Message
+public sealed class EntityStatusMessage : Message
 {
-    [WireField]
     public int EntityId { get; set; }
 
-    [WireField]
     public sbyte Status { get; set; }
 
     /// <summary>
@@ -18,6 +17,32 @@ public sealed partial class EntityStatusMessage : Message
     ///     values this enum has no name for, and decoding into it would be a lie the compiler
     ///     believes.
     /// </summary>
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_status");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        EntityId = stream.ReadInt();
+        Status = (sbyte)stream.ReadByte();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteInt(EntityId);
+        stream.WriteByte((byte)Status);
+    }
+
+    public override int Size()
+    {
+        return
+            4
+            + 1;
+    }
+
     public enum EntityState : byte
     {
         Hurt = 2,

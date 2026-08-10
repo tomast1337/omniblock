@@ -1,3 +1,5 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -23,8 +25,7 @@ namespace OmniBlock.Network.Messages;
 ///         send instant, which is the wrong quantity.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:tick_stamp")]
-public sealed partial class TickStampMessage : Message
+public sealed class TickStampMessage : Message
 {
     /// <summary>A stamp that arrives late drags the whole interpolation timeline with it.</summary>
     public override SendPriority Priority => SendPriority.High;
@@ -34,6 +35,27 @@ public sealed partial class TickStampMessage : Message
     ///     tick whose updates follow. Same clock domain as the time-sync T1/T2 stamps, which is what
     ///     makes it comparable to the client's estimate of server time.
     /// </summary>
-    [WireField]
     public long ServerTimeMs { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "tick_stamp");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        ServerTimeMs = stream.ReadLong();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteLong(ServerTimeMs);
+    }
+
+    public override int Size()
+    {
+        return
+            8;
+    }
 }

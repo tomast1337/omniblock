@@ -1,3 +1,5 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -9,21 +11,47 @@ namespace OmniBlock.Network.Messages;
 ///         turn a fast knockback into a slow one in the opposite direction.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:entity_velocity")]
-public sealed partial class EntityVelocityMessage : Message
+public sealed class EntityVelocityMessage : Message
 {
     public override SendPriority Priority => SendPriority.High;
 
-    [WireField]
     public int EntityId { get; set; }
 
     /// <summary>Blocks per tick times 8000.</summary>
-    [WireField]
     public short MotionX { get; set; }
 
-    [WireField]
     public short MotionY { get; set; }
 
-    [WireField]
     public short MotionZ { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_velocity");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        EntityId = stream.ReadInt();
+        MotionX = stream.ReadShort();
+        MotionY = stream.ReadShort();
+        MotionZ = stream.ReadShort();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteInt(EntityId);
+        stream.WriteShort(MotionX);
+        stream.WriteShort(MotionY);
+        stream.WriteShort(MotionZ);
+    }
+
+    public override int Size()
+    {
+        return
+            4
+            + 2
+            + 2
+            + 2;
+    }
 }

@@ -1,3 +1,5 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -9,16 +11,40 @@ namespace OmniBlock.Network.Messages;
 ///         screen as a whole.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:screen_ack")]
-public sealed partial class ScreenHandlerAckMessage : Message
+public sealed class ScreenHandlerAckMessage : Message
 {
-    [WireField]
     public sbyte SyncId { get; set; }
 
     /// <summary>The click's revision, matching <c>ClickSlotMessage.ActionType</c>.</summary>
-    [WireField]
     public short ActionType { get; set; }
 
-    [WireField]
     public bool Accepted { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "screen_ack");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        SyncId = (sbyte)stream.ReadByte();
+        ActionType = stream.ReadShort();
+        Accepted = stream.ReadBoolean();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteByte((byte)SyncId);
+        stream.WriteShort(ActionType);
+        stream.WriteBoolean(Accepted);
+    }
+
+    public override int Size()
+    {
+        return
+            1
+            + 2
+            + 1;
+    }
 }

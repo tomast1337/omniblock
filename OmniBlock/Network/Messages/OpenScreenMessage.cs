@@ -1,3 +1,6 @@
+using OmniBlock;
+using OmniBlock.Util;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -5,8 +8,7 @@ namespace OmniBlock.Network.Messages;
 ///     <c>3 + Name.Length</c> for a payload of five plus the name's encoded bytes — wrong by two,
 ///     and wrong again for any name that is not pure ASCII.
 /// </summary>
-[WireMessage("omniblock:open_screen")]
-public sealed partial class OpenScreenMessage : Message
+public sealed class OpenScreenMessage : Message
 {
     /// <summary>
     ///     A screen title, bounded before the allocation. Titles are short labels; a peer naming a
@@ -14,18 +16,45 @@ public sealed partial class OpenScreenMessage : Message
     /// </summary>
     public const int MaxNameBytes = 64;
 
-    [WireField]
     public sbyte SyncId { get; set; }
 
     /// <summary>Which screen to open — see <see cref="KnownInventories" />.</summary>
-    [WireField]
     public sbyte ScreenHandlerId { get; set; }
 
-    [WireField(MaxLength = MaxNameBytes)]
     public string Name { get; set; } = string.Empty;
 
-    [WireField]
     public sbyte SlotsCount { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "open_screen");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        SyncId = (sbyte)stream.ReadByte();
+        ScreenHandlerId = (sbyte)stream.ReadByte();
+        Name = stream.ReadString(64);
+        SlotsCount = (sbyte)stream.ReadByte();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteByte((byte)SyncId);
+        stream.WriteByte((byte)ScreenHandlerId);
+        stream.WriteString(Name);
+        stream.WriteByte((byte)SlotsCount);
+    }
+
+    public override int Size()
+    {
+        return
+            1
+            + 1
+            + (2 + ModifiedUtf8.GetByteCount(Name))
+            + 1;
+    }
 
     public enum KnownInventories : byte
     {

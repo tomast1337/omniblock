@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Numerics;
+using OmniBlock;
 using OmniBlock.Worlds.Chunks;
 
 namespace OmniBlock.Network.Messages;
@@ -27,8 +28,7 @@ namespace OmniBlock.Network.Messages;
 ///         the sender works from a dirty mask and sends only sections that were actually written.
 ///     </para>
 /// </remarks>
-[WireMessage("omniblock:light_sections")]
-public sealed partial class LightSectionsMessage : Message
+public sealed class LightSectionsMessage : Message
 {
     /// <summary>
     ///     Every section of a column at once, which is the largest this can honestly be. Checked
@@ -37,21 +37,17 @@ public sealed partial class LightSectionsMessage : Message
     /// </summary>
     public static int MaxDecodedBytes => Chunk.LightSectionCount * Chunk.LightSectionPayloadBytes;
 
-    [WireField]
     public int ChunkX { get; set; }
 
-    [WireField]
     public int ChunkZ { get; set; }
 
     /// <summary>
     ///     One bit per section, lowest bit lowest section. The payload holds one section's worth of
     ///     bytes for each set bit, in ascending section order.
     /// </summary>
-    [WireField]
     public uint Sections { get; set; }
 
     /// <summary>The zlib'd run of sections, each sky nibbles then block nibbles.</summary>
-    [WireField(MaxLength = 1 << 20)]
     public byte[] Compressed { get; set; } = [];
 
     /// <summary>Reads the named sections out of a chunk and compresses them.</summary>
@@ -150,5 +146,36 @@ public sealed partial class LightSectionsMessage : Message
         }
 
         return output.ToArray();
+    }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "light_sections");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        ChunkX = stream.ReadInt();
+        ChunkZ = stream.ReadInt();
+        Sections = (uint)stream.ReadInt();
+        Compressed = stream.ReadByteArray(1048576);
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteInt(ChunkX);
+        stream.WriteInt(ChunkZ);
+        stream.WriteInt((int)Sections);
+        stream.WriteByteArray(Compressed);
+    }
+
+    public override int Size()
+    {
+        return
+            4
+            + 4
+            + 4
+            + StreamExtensions.ByteArraySize(Compressed);
     }
 }

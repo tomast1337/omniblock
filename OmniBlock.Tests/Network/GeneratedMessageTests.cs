@@ -4,13 +4,14 @@ using OmniBlock.Network.Messages;
 namespace OmniBlock.Tests.Network;
 
 /// <summary>
-///     Exercises the serialization the source generator emits.
+///     Exercises the serialization each message's <c>*.Wire.cs</c> companion file implements.
 ///     <para>
-///         The tests worth having here are the ones that pin the two failures hand-writing
-///         <c>Read</c>, <c>Write</c> and <c>Size</c> separately used to allow: a field written but
-///         not read back, and a <c>Size()</c> that disagrees with the bytes <c>Write()</c> produces.
-///         Neither raises an exception in production — the first silently zeroes a field, the second
-///         mis-frames every message after it — so a test is the only place they surface.
+///         The tests worth having here are the ones that pin the two failures writing
+///         <c>Read</c>, <c>Write</c> and <c>Size</c> as three separate members allows: a field
+///         written but not read back, and a <c>Size()</c> that disagrees with the bytes
+///         <c>Write()</c> produces. Neither raises an exception in production — the first silently
+///         zeroes a field, the second mis-frames every message after it — so a test is the only
+///         place they surface.
 ///     </para>
 /// </summary>
 public sealed class GeneratedMessageTests
@@ -85,12 +86,13 @@ public sealed class GeneratedMessageTests
     }
 
     [Fact]
-    public void The_generated_registration_list_covers_every_generated_message()
+    public void The_registration_list_covers_every_wire_message()
     {
         MessageRegistry registry = Negotiated();
 
-        // Named individually rather than counted, so that a message dropped from the generated list
-        // fails here instead of being absorbed by a total that happens to still match.
+        // Named individually rather than counted, so that a message dropped from
+        // MessageRegistrations fails here instead of being absorbed by a total that happens to
+        // still match.
         foreach (ResourceLocation key in new[]
         {
             TimeSyncRequestMessage.Id,
@@ -187,8 +189,8 @@ public sealed class GeneratedMessageTests
 
     /// <summary>
     ///     The declared bound is applied before the allocation, so a hostile length is refused
-    ///     rather than honoured. <c>[WireField(MaxLength = ...)]</c> exists to make that check
-    ///     impossible to leave out.
+    ///     rather than honoured. <c>MaxLength</c> is baked into the message's <c>Read</c> for exactly
+    ///     that reason: it cannot be left out of one field's reader without editing that reader.
     /// </summary>
     [Fact]
     public void A_blob_longer_than_the_declared_bound_is_refused()

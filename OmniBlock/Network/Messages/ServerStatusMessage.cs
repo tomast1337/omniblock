@@ -1,3 +1,5 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -15,8 +17,7 @@ namespace OmniBlock.Network.Messages;
 ///         bytes it is cheaper to send unconditionally than to negotiate who wants it.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:server_status")]
-public sealed partial class ServerStatusMessage : Message
+public sealed class ServerStatusMessage : Message
 {
     /// <summary>
     ///     High, which is safe here for the reason the classification exists: nothing about this
@@ -28,16 +29,43 @@ public sealed partial class ServerStatusMessage : Message
     public override SendPriority Priority => SendPriority.High;
 
     /// <summary>Ticks per second over the last second. 20 is the target.</summary>
-    [WireField]
     public float Tps { get; set; }
 
     /// <summary>Milliseconds the most recent tick took.</summary>
-    [WireField]
     public float Mspt { get; set; }
 
-    [WireField(Encoding = WireEncoding.VarInt)]
     public int EntityCount { get; set; }
 
-    [WireField(Encoding = WireEncoding.VarInt)]
     public int PlayerCount { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "server_status");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        Tps = stream.ReadFloat();
+        Mspt = stream.ReadFloat();
+        EntityCount = stream.ReadVarInt();
+        PlayerCount = stream.ReadVarInt();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteFloat(Tps);
+        stream.WriteFloat(Mspt);
+        stream.WriteVarInt(EntityCount);
+        stream.WriteVarInt(PlayerCount);
+    }
+
+    public override int Size()
+    {
+        return
+            4
+            + 4
+            + StreamExtensions.VarIntSize(EntityCount)
+            + StreamExtensions.VarIntSize(PlayerCount);
+    }
 }

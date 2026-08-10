@@ -1,27 +1,57 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Spawns an entity every player in the dimension sees, wherever they are — lightning.
 ///     Replaces <c>GlobalEntitySpawnS2CPacket</c>.
 /// </summary>
-[WireMessage("omniblock:global_entity_spawn")]
-public sealed partial class GlobalEntitySpawnMessage : Message
+public sealed class GlobalEntitySpawnMessage : Message
 {
     public override SendPriority Priority => SendPriority.High;
 
-    [WireField]
     public int EntityId { get; set; }
 
-    [WireField]
     public byte Type { get; set; }
 
     /// <summary>Fixed point in sixteenths of a block.</summary>
-    [WireField]
     public int X { get; set; }
 
-    [WireField]
     public int Y { get; set; }
 
-    [WireField]
     public int Z { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "global_entity_spawn");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        EntityId = stream.ReadInt();
+        Type = (byte)stream.ReadByte();
+        X = stream.ReadInt();
+        Y = stream.ReadInt();
+        Z = stream.ReadInt();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteInt(EntityId);
+        stream.WriteByte(Type);
+        stream.WriteInt(X);
+        stream.WriteInt(Y);
+        stream.WriteInt(Z);
+    }
+
+    public override int Size()
+    {
+        return
+            4
+            + 1
+            + 4
+            + 4
+            + 4;
+    }
 }
