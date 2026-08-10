@@ -18,11 +18,10 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
     /// </summary>
     /// <remarks>
     ///     The loading screen draws and presents a frame of its own, from wherever world loading
-    ///     happens to be — GL allows that directly (a draw goes to whatever is bound), WebGPU
-    ///     through <see cref="WebGpuGameRenderer.RenderLoadingFrame" />, which opens and presents a
-    ///     pass of its own for exactly this. False only before either backend exists yet.
+    ///     happens to be, through <see cref="WebGpuGameRenderer.RenderLoadingFrame" />, which opens
+    ///     and presents a pass of its own for exactly this. False only before it exists yet.
     /// </remarks>
-    private bool CanDraw => GLManager.GLOrNull is not null || game.WebGpuRenderer is not null;
+    private bool CanDraw => game.WebGpuRenderer is not null;
 
     public void BeginLoading(string message)
     {
@@ -147,14 +146,7 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
             game.TextRenderer.DrawStringWithShadow(_currentStage, stageX, stageY, Color.White);
         }
 
-        if (game.WebGpuRenderer is { } webGpu)
-        {
-            webGpu.RenderLoadingFrame(DrawContents);
-        }
-        else
-        {
-            DrawContents();
-        }
+        game.WebGpuRenderer.RenderLoadingFrame(DrawContents);
 
         Display.update();
         Thread.Yield();

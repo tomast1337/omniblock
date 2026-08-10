@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using BetaSharp.Blocks;
 using BetaSharp.Blocks.Materials;
 using BetaSharp.Client.Input;
@@ -14,8 +13,6 @@ using BetaSharp.Util.Maths;
 using BetaSharp.Worlds.Core;
 using BetaSharp.Worlds.Generation.Biomes;
 using Silk.NET.Maths;
-using Silk.NET.OpenGL;
-using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client.Rendering;
 
@@ -39,9 +36,6 @@ public class GameRenderer
     private float _fogColorRed;
     private float _fogColorGreen;
     private float _fogColorBlue;
-    private bool? _appliedVSyncState;
-
-    private readonly Stopwatch _fpsTimer = Stopwatch.StartNew();
 
     public GameRenderer(BetaSharp game)
     {
@@ -278,80 +272,6 @@ public class GameRenderer
         CameraController.SetZoomState(zoomHeld, _client.Options.ZoomScale);
     }
 
-    public void OnFrameUpdate(float tickDelta)
-    {
-        ProcessLookInput();
-
-        if (!_client.SkipRenderWorld)
-        {
-            int targetFps = 30 + (int)(_client.Options.LimitFramerate * 210.0f);
-            bool desiredVSync = _client.Options.VSync && targetFps >= 240;
-
-            if (_appliedVSyncState != desiredVSync)
-            {
-                Display.setVSyncEnabled(desiredVSync);
-                _appliedVSyncState = desiredVSync;
-            }
-
-            _client.FramebufferManager.Begin();
-
-            // Before anything draws, because a block-shaped draw anywhere in the frame — terrain, an
-            // item icon, the thing in your hand — samples a layer of one of these.
-            _client.TextureManager.BindTextureArrays();
-
-            // Likewise for how those blocks are lit. Cleared to the default with no world, so the
-            // menus do not inherit the last one's nightfall.
-            GLManager.WorldLight = _client.World is { } world
-                ? new WorldLightState((float)world.Environment.AmbientDarkness, world.Dimension.LightLevelToLuminance[0])
-                : WorldLightState.Default;
-
-            if (_client.World != null)
-            {
-                using (Profiler.Begin("RenderWorld"))
-                {
-                    RenderFrame(tickDelta, _client.World.GetTime());
-                }
-            }
-
-            RenderInterface(tickDelta);
-
-            _client.FramebufferManager.End();
-
-
-            if (targetFps < 240)
-            {
-                //frametime in milliseconds
-                double targetMs = 1000.0 / targetFps;
-
-                double elapsedMs = _fpsTimer.Elapsed.TotalMilliseconds;
-                double waitTime = targetMs - elapsedMs;
-
-                if (waitTime > 0)
-                {
-                    while (true)
-                    {
-                        double remainingMs = targetMs - _fpsTimer.Elapsed.TotalMilliseconds;
-                        if (remainingMs <= 0)
-                        {
-                            break;
-                        }
-
-                        if (remainingMs > 2.0)
-                        {
-                            Thread.Sleep(1);
-                        }
-                        else
-                        {
-                            Thread.Yield();
-                        }
-                    }
-                }
-
-                _fpsTimer.Restart();
-            }
-        }
-    }
-
     /// <summary>
     ///     The colour the world pass starts from, which is the distance fog's.
     /// </summary>
@@ -390,22 +310,10 @@ public class GameRenderer
 
         using (Profiler.Begin("UpdateFog"))
         {
-            // No framebuffer manager under WebGPU, and no viewport call either: a pass covers its
-            // whole attachment unless something sets otherwise, and nothing here does.
-            if (_client.FramebufferManager is { } framebuffers)
-            {
-                GLManager.GL.Viewport(0, 0, (uint)framebuffers.FramebufferWidth, (uint)framebuffers.FramebufferHeight);
-            }
-
+            // A pass covers its whole attachment unless something sets otherwise, and nothing here
+            // does, so no viewport call is needed.
             UpdateSkyAndFogColors(tickDelta);
         }
-    }
-
-    public void RenderFrame(float tickDelta, long time)
-    {
-        BeginWorldFrame(tickDelta, time);
-        GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
-        DrawWorld(tickDelta);
     }
 
     /// <summary>
@@ -543,7 +451,6 @@ public class GameRenderer
     {
         if (CameraController.IsZoomActive) return;
 
-        GLManager.GLOrNull?.Clear(ClearBufferMask.DepthBufferBit);
         RenderFirstPersonHand(tickDelta);
     }
 
@@ -891,11 +798,6 @@ public class GameRenderer
         }
         else
         {
-            if (_client.FramebufferManager is { } framebuffers)
-            {
-                GLManager.GL.Viewport(0, 0, (uint)framebuffers.FramebufferWidth, (uint)framebuffers.FramebufferHeight);
-            }
-
             GLManager.Projection.LoadIdentity();
             GLManager.ModelView.LoadIdentity();
             SetupHudRender();
@@ -903,9 +805,8 @@ public class GameRenderer
 
         if (_client.CurrentScreen != null)
         {
-            // Nothing to clear under WebGPU: the pass the interface is drawn in owns its depth
+            // Nothing to clear here: the pass the interface is drawn in owns its depth
             // attachment and clears it when it begins.
-            GLManager.GLOrNull?.Clear(ClearBufferMask.DepthBufferBit);
             SetupHudRender();
             _client.CurrentScreen.Render(scaledMouseX, scaledMouseY, tickDelta);
 
@@ -940,8 +841,7 @@ public class GameRenderer
     {
         ScaledResolution sr = new(_client.Options, _client.DisplayWidth, _client.DisplayHeight);
 
-        // See RenderInterface: under WebGPU the pass clears its own depth.
-        GLManager.GLOrNull?.Clear(ClearBufferMask.DepthBufferBit);
+        // See RenderInterface: the pass clears its own depth.
         GLManager.Projection.LoadIdentity();
         GLManager.Projection.Ortho(0.0D, sr.ScaledWidthDouble, sr.ScaledHeightDouble, 0.0D, 1000.0D, 3000.0D);
         GLManager.ModelView.LoadIdentity();
@@ -977,9 +877,8 @@ public class GameRenderer
             tess.addVertexWithUV(x, y, zLevel, 0.0, 0.0);
             tess.draw(ProgramSlot.Textured);
 
-            // Nothing reads what is left here: FramebufferManager.End runs next and sets its own
-            // blending and depth test. Leaving the interface state named is still better than
-            // leaving half of it toggled back.
+            // Leaving the interface state named here is still better than leaving half of it
+            // toggled back for whatever draws next.
             GLManager.State.Apply(RenderState.Interface);
         }
     }
@@ -1048,8 +947,7 @@ public class GameRenderer
         _fogColorGreen *= fogBrightness;
         _fogColorBlue *= fogBrightness;
 
-        // WebGPU carries the clear colour on the pass descriptor instead; see WorldClearColor.
-        GLManager.GLOrNull?.ClearColor(_fogColorRed, _fogColorGreen, _fogColorBlue, 0.0F);
+        // The clear colour is carried on the pass descriptor instead; see WorldClearColor.
     }
 
     private void ApplyFog(int mode)
