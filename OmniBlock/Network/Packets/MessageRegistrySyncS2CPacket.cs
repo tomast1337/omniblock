@@ -89,8 +89,10 @@ public class MessageRegistrySyncS2CPacket() : ExtendedProtocolPacket(PacketId.Me
 
         foreach (ResourceLocation key in Keys)
         {
-            // Namespace and path each go out as a length-prefixed ASCII-256 string.
-            size += 1 + key.Namespace.ToString().Length + 1 + key.Path.Length;
+            // Path always goes out as a length-prefixed ASCII-256 string. The namespace does
+            // too, except WriteNamespace takes a 1-byte fast path for the default namespace.
+            int namespaceSize = key.Namespace.GetHashCode() == 0 ? 1 : 1 + key.Namespace.ToString().Length;
+            size += namespaceSize + 1 + key.Path.Length;
         }
 
         return size;
