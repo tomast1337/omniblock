@@ -118,7 +118,8 @@ public partial class TextField : UIElement
 
             if (IsFocused && _cursorCounter / 10 % 2 == 0)
             {
-                int cursorX = 4 + renderer.TextRenderer.GetStringWidth(Text.AsSpan(0, _buffer.CursorPosition));
+                int cursorX =
+                    4 + renderer.TextRenderer.GetStringWidth(Text[.._buffer.CursorPosition]);
                 renderer.DrawRect(cursorX, ComputedHeight / 2 - 5, 1, 10, Color.White);
             }
         }
@@ -150,8 +151,8 @@ public partial class TextField : UIElement
     {
         int start = Math.Min(_buffer.SelectionStart, _buffer.CursorPosition);
         int end = Math.Max(_buffer.SelectionStart, _buffer.CursorPosition);
-        int x1 = 4 + renderer.TextRenderer.GetStringWidth(Text.AsSpan(0, start));
-        int x2 = 4 + renderer.TextRenderer.GetStringWidth(Text.AsSpan(0, end));
+        int x1 = 4 + renderer.TextRenderer.GetStringWidth(Text[..start]);
+        int x2 = 4 + renderer.TextRenderer.GetStringWidth(Text[..end]);
         renderer.DrawRect(x1, ComputedHeight / 2 - 5, x2 - x1, 10, new Color(0, 0, 255, 128));
     }
 
@@ -170,7 +171,7 @@ public partial class TextField : UIElement
 
         for (int i = 0; i <= Text.Length; i++)
         {
-            float width = _textRenderer.GetStringWidth(Text.AsSpan(0, i));
+            float width = _textRenderer.GetStringWidth(Text[..i]);
             float dist = MathF.Abs(xOffset + width - localX);
             if (!(dist < bestDist)) continue;
 

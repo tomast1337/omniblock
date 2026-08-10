@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Text;
 using OmniBlock.Client.Options;
 using OmniBlock.Client.Rendering.Core;
 using OmniBlock.Client.Rendering.Core.Textures;
@@ -17,10 +18,11 @@ public class TextRenderer : IDisposable
 {
     private readonly ILogger<TextRenderer> _logger = Log.Instance.For<TextRenderer>();
 
-    private const char ColorCodeChar = '§';
+    private readonly Rune ColorCodeChar = new Rune('§');
 
     private const string MonocraftFontPath = "assets/font/Monocraft.ttc";
     private const string UnifontPath = "assets/font/unifont.ttf";
+    private const string SevenishPath = "assets/font/sevenish.ttf";
 
     private const int AtlasSize = 2048;
     private const int AtlasFontSize = 64;
@@ -29,10 +31,11 @@ public class TextRenderer : IDisposable
 
     private FontFamily _monoFamily;
     private FontFamily _uniFamily;
+    private FontFamily _sevenFamily;
     private Font _font;
     private TextOptions _textOptions;
     private readonly Image<Rgba32> _atlasImage;
-    private readonly Dictionary<char, GlyphInfo> _glyphCache = [];
+    private readonly Dictionary<Rune, GlyphInfo> _glyphCache = [];
     private int _atlasX;
     private int _atlasY;
     private readonly int _rowHeight;
@@ -118,7 +121,7 @@ public class TextRenderer : IDisposable
             float u1 = (float)(_atlasX + cellW) / AtlasSize;
             float v1 = (float)(_atlasY + cellH) / AtlasSize;
 
-            char c = (char)charIndex;
+            Rune c = (Rune)charIndex;
 
             float advanceWidth = advancePixels * scale;
             _glyphCache[c] = new GlyphInfo(advanceWidth, u0, v0, u1, v1, cellW, cellH);
@@ -135,6 +138,7 @@ public class TextRenderer : IDisposable
 
         string monoPath = Path.Combine(AppContext.BaseDirectory, "font", "Monocraft.ttc");
         string uniPath = Path.Combine(AppContext.BaseDirectory, "font", "unifont.ttf");
+        string sevenPath = Path.Combine(AppContext.BaseDirectory, "font", "sevenPath.ttf");
 
         if (!File.Exists(monoPath))
             monoPath = MonocraftFontPath;
@@ -142,15 +146,22 @@ public class TextRenderer : IDisposable
         if (!File.Exists(uniPath))
             uniPath = UnifontPath;
 
+        if (!File.Exists(sevenPath))
+            sevenPath = SevenishPath;
+
         if (!File.Exists(monoPath))
             throw new FileNotFoundException("Monocraft font not found", monoPath);
 
         if (!File.Exists(uniPath))
             throw new FileNotFoundException("Unifont font not found", uniPath);
 
+        if (!File.Exists(sevenPath))
+            throw new FileNotFoundException("Sevenish font not found", sevenPath);
+
         var collection = new FontCollection();
         _monoFamily = collection.AddCollection(monoPath).First();
         _uniFamily = collection.Add(uniPath);
+        _sevenFamily = collection.Add(sevenPath);
 
         _rowHeight = AtlasFontSize + GlyphPadding;
         _atlasImage = new Image<Rgba32>(AtlasSize, AtlasSize);
@@ -169,6 +180,9 @@ public class TextRenderer : IDisposable
     private bool UseUnifontPrimary =>
         Translations.Instance.CurrentLanguage.Unifont;
 
+    private bool UseSevenishPrimary =>
+        Translations.Instance.CurrentLanguage.Sevenish;
+
     private void ApplyFontForLanguage()
     {
         ClearAtlasRegion(0, 0, AtlasSize, AtlasSize);
@@ -181,12 +195,17 @@ public class TextRenderer : IDisposable
             _font = _uniFamily.CreateFont(AtlasFontSize);
             _textOptions = new TextOptions(_font);
         }
+        else if (UseSevenishPrimary)
+        {
+            _font = _sevenFamily.CreateFont(AtlasFontSize);
+            _textOptions = new TextOptions(_font);
+        }
         else
         {
             _font = _monoFamily.CreateFont(AtlasFontSize);
             _textOptions = new TextOptions(_font)
             {
-                FallbackFontFamilies = [_uniFamily]
+                FallbackFontFamilies = [_uniFamily, _sevenFamily]
             };
 
             try
@@ -223,29 +242,23 @@ public class TextRenderer : IDisposable
         ClearAtlasRegion(_atlasImage, x, y, w, h);
     }
 
-    private GlyphInfo GetOrCreateGlyph(char c)
+    public static FontRectangle MeasureRune(Rune rune, TextOptions options)
+    {
+        Span<char> buffer = stackalloc char[2];
+        int len = rune.EncodeToUtf16(buffer);
+
+        return TextMeasurer.MeasureAdvance(buffer.Slice(0, len), options);
+    }
+
+    private GlyphInfo GetOrCreateGlyph(Rune c)
     {
         if (_glyphCache.TryGetValue(c, out GlyphInfo info))
             return info;
 
-        if (char.IsControl(c))
-            c = '?';
+        if (Rune.IsControl(c))
+            c = new Rune('?');
 
-        char[] charArray = [c];
-        ReadOnlySpan<char> charSpan = charArray;
-
-        FontRectangle advanceRect;
-
-        try
-        {
-            advanceRect = TextMeasurer.MeasureAdvance(charSpan, _textOptions);
-        }
-        catch
-        {
-            c = '?';
-            charSpan = "?";
-            advanceRect = TextMeasurer.MeasureAdvance(charSpan, _textOptions);
-        }
+        var advanceRect = MeasureRune(c, _textOptions);
 
         float advanceWidth = advanceRect.Width;
         int cellW = Math.Max(1, (int)Math.Ceiling(advanceRect.Width) + GlyphPadding);
@@ -359,18 +372,52 @@ public class TextRenderer : IDisposable
         }
     }
 
-    public void DrawStringWithShadow(ReadOnlySpan<char> text, float x, float y, Client.UI.Colors.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null, float scale = 1f, float cos = 1f, float sin = 0f, float pivotX = 0f, float pivotY = 0f)
+    private static ReadOnlySpan<Rune> ToRunes(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return [];
+
+        // fast path: ASCII only (no allocation of an enumerator, just an array)
+        bool ascii = true;
+        for (int i = 0; i < text.Length; i++)
+        {
+            if (text[i] > 127) { ascii = false; break; }
+        }
+
+        if (ascii)
+        {
+            Rune[] runes = new Rune[text.Length];
+            for (int i = 0; i < text.Length; i++)
+                runes[i] = new Rune(text[i]);
+
+            return runes;
+        }
+
+        return text.EnumerateRunes().ToArray();
+    }
+
+    public void DrawStringWithShadow(string text, float x, float y, Client.UI.Colors.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null, float scale = 1f, float cos = 1f, float sin = 0f, float pivotX = 0f, float pivotY = 0f)
+    {
+        DrawStringWithShadow(ToRunes(text), x, y, color, align, batch, scale, cos, sin, pivotX, pivotY);
+    }
+
+    public void DrawStringWithShadow(ReadOnlySpan<Rune> text, float x, float y, Client.UI.Colors.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null, float scale = 1f, float cos = 1f, float sin = 0f, float pivotX = 0f, float pivotY = 0f)
     {
         RenderString(text, x + 1, y + 1, color, true, align, batch, scale, cos, sin, pivotX, pivotY);
         DrawString(text, x, y, color, align, batch, scale, cos, sin, pivotX, pivotY);
     }
 
-    public void DrawString(ReadOnlySpan<char> text, float x, float y, Client.UI.Colors.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null, float scale = 1f, float cos = 1f, float sin = 0f, float pivotX = 0f, float pivotY = 0f)
+    public void DrawString(string text, float x, float y, Client.UI.Colors.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null, float scale = 1f, float cos = 1f, float sin = 0f, float pivotX = 0f, float pivotY = 0f)
+    {
+        DrawString(ToRunes(text), x, y, color, align, batch, scale, cos, sin, pivotX, pivotY);
+    }
+
+    public void DrawString(ReadOnlySpan<Rune> text, float x, float y, Client.UI.Colors.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null, float scale = 1f, float cos = 1f, float sin = 0f, float pivotX = 0f, float pivotY = 0f)
     {
         RenderString(text, x, y, color, false, align, batch, scale, cos, sin, pivotX, pivotY);
     }
 
-    public void RenderString(ReadOnlySpan<char> text, float x, float y, Client.UI.Colors.Color color, bool darken, HorizontalAlignment align, UIBatchRenderer? batch = null, float scale = 1f, float cos = 1f, float sin = 0f, float pivotX = 0f, float pivotY = 0f)
+    public void RenderString(ReadOnlySpan<Rune> text, float x, float y, Client.UI.Colors.Color color, bool darken, HorizontalAlignment align, UIBatchRenderer? batch = null, float scale = 1f, float cos = 1f, float sin = 0f, float pivotX = 0f, float pivotY = 0f)
     {
         if (text.IsEmpty) return;
 
@@ -478,28 +525,33 @@ public class TextRenderer : IDisposable
         return v <= 0 ? 0 : v;
     }
 
-    private static bool TryHexToDec(char c, out int result)
+    private static bool TryHexToDec(Rune c, out int result)
     {
-        int v = c;
-        if (c <= '9') v -= '0';
-        else if (c <= 'F') v += 10 - 'A';
-        else if (c <= 'f') v += 10 - 'a';
-        else
+        int v = c.Value;
+
+        if (v >= '0' && v <= '9')
         {
-            result = 15;
-            return false;
+            result = v - '0';
+            return true;
         }
 
-        if (v <= 0)
+        if (v >= 'A' && v <= 'F')
         {
-            result = 0;
-            return false;
+            result = v - 'A' + 10;
+            return true;
         }
-        result = v;
-        return true;
+
+        if (v >= 'a' && v <= 'f')
+        {
+            result = v - 'a' + 10;
+            return true;
+        }
+
+        result = 0;
+        return false;
     }
 
-    public int GetStringWidth(ReadOnlySpan<char> text)
+    public int GetStringWidth(ReadOnlySpan<Rune> text)
     {
         if (text.IsEmpty) return 0;
         float total = 0;
@@ -514,26 +566,36 @@ public class TextRenderer : IDisposable
         return (int)Math.Ceiling(total);
     }
 
-    private int GetStringFitLength(ReadOnlySpan<char> text, int maxWidth)
+    public int GetStringWidth(string text)
+    {
+        return GetStringWidth(ToRunes(text));
+    }
+
+    private int GetStringFitLength(ReadOnlySpan<Rune> text, int maxWidth)
     {
         float width = 0;
         int lastSpaceIndex = -1;
-        int i = 0;
-        for (; i < text.Length; ++i)
+
+        for (int i = 0; i < text.Length; i++)
         {
-            if (text[i] == ColorCodeChar)
+            Rune r = text[i];
+
+            if (r == ColorCodeChar)
             {
-                ++i;
+                i++; // skip next rune as part of color code sequence
                 continue;
             }
 
-            if (text[i] == ' ')
+            if (r == new Rune(' '))
                 lastSpaceIndex = i;
-            width += GetOrCreateGlyph(text[i]).AdvanceWidth * DisplayScale;
+
+            width += GetOrCreateGlyph(r).AdvanceWidth * DisplayScale;
+
             if (width > maxWidth)
             {
-                if (lastSpaceIndex > 0)
+                if (lastSpaceIndex >= 0)
                     return lastSpaceIndex;
+
                 return Math.Max(1, i);
             }
         }
@@ -541,7 +603,7 @@ public class TextRenderer : IDisposable
         return text.Length;
     }
 
-    private void ProcessWrappedText(ReadOnlySpan<char> text, int x, int y, int maxWidth, Client.UI.Colors.Color color, bool draw, ref int outHeight, HorizontalAlignment align, UIBatchRenderer? batch = null)
+    private void ProcessWrappedText(ReadOnlySpan<Rune> text, int x, int y, int maxWidth, Client.UI.Colors.Color color, bool draw, ref int outHeight, HorizontalAlignment align, UIBatchRenderer? batch = null)
     {
         if (text.IsEmpty) return;
 
@@ -550,8 +612,8 @@ public class TextRenderer : IDisposable
         int lineHeight = (int)((AtlasFontSize + GlyphPadding) * DisplayScale);
         while (text.Length > 0)
         {
-            int newlineIndex = text.IndexOf('\n');
-            ReadOnlySpan<char> line;
+            int newlineIndex = text.IndexOf(new Rune('\n'));
+            ReadOnlySpan<Rune> line;
             if (newlineIndex >= 0)
             {
                 line = text.Slice(0, newlineIndex);
@@ -566,9 +628,9 @@ public class TextRenderer : IDisposable
             while (line.Length > 0)
             {
                 int fitLength = GetStringFitLength(line, maxWidth);
-                ReadOnlySpan<char> subline = line.Slice(0, Math.Min(fitLength, line.Length));
+                ReadOnlySpan<Rune> subline = line.Slice(0, Math.Min(fitLength, line.Length));
 
-                while (subline.Length > 0 && subline[subline.Length - 1] == ' ')
+                while (subline.Length > 0 && subline[^1] == new Rune(' '))
                     subline = subline.Slice(0, subline.Length - 1);
 
                 if (subline.Length > 0 || fitLength > 0)
@@ -580,7 +642,7 @@ public class TextRenderer : IDisposable
                 }
 
                 line = line.Slice(Math.Min(fitLength, line.Length));
-                while (line.Length > 0 && line[0] == ' ')
+                while (line.Length > 0 && line[0] == new Rune(' '))
                     line = line.Slice(1);
             }
         }
@@ -589,13 +651,18 @@ public class TextRenderer : IDisposable
         outHeight = totalHeight;
     }
 
-    public void DrawStringWrapped(ReadOnlySpan<char> text, int x, int y, int maxWidth, Client.UI.Colors.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null)
+    public void DrawStringWrapped(string text, int x, int y, int maxWidth, Client.UI.Colors.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null)
+    {
+        DrawStringWrapped(ToRunes(text), x, y, maxWidth, color, align, batch);
+    }
+
+    public void DrawStringWrapped(ReadOnlySpan<Rune> text, int x, int y, int maxWidth, Client.UI.Colors.Color color, HorizontalAlignment align = HorizontalAlignment.Left, UIBatchRenderer? batch = null)
     {
         int dummyHeight = 0;
         ProcessWrappedText(text, x, y, maxWidth, color, true, ref dummyHeight, align, batch);
     }
 
-    public int GetStringHeight(ReadOnlySpan<char> text, int maxWidth)
+    public int GetStringHeight(ReadOnlySpan<Rune> text, int maxWidth)
     {
         int height = 0;
         ProcessWrappedText(text, 0, 0, maxWidth, Client.UI.Colors.Color.Black, false, ref height, HorizontalAlignment.Left);

@@ -1,0 +1,1349 @@
+﻿{
+    "lang": {
+        "name": "toki pona"
+    },
+    "gui": {
+        "joinServer": "o musi",
+        "rename": "o ante e nimi",
+        "edit": "o ante",
+        "refresh": "o sin",
+        "done": "pona",
+        "cancel": "o ala",
+        "delete": "o weka",
+        "toMenu": "o tawa lipu open",
+        "up": "o sewi",
+        "down": "o anpa",
+        "yes": "wile",
+        "no": "ala",
+        "connect": "o musi",
+        "directConnect": "o musi lon tenpo wan",
+        "addServer": "ma kulupu sin",
+        "create": "o pali",
+        "customize": "o ante",
+        "achievements": "pali pona",
+        "stats": "sona nanpa",
+        "container": {
+            "crafting": "pali",
+            "inventory": "jo sina",
+            "dispenser": "poki pi pana wawa",
+            "furnace": "poki seli",
+            "tip": {
+                "move": "o tawa",
+                "quickMove": "o tawa wawa",
+                "takeHalf": "o kipisi",
+                "place": "o pana",
+                "placeOne": "o pana wan"
+            }
+        }
+    },
+    "menu": {
+        "singleplayer": "musi pi jan wan",
+        "multiplayer": "musi kulupu",
+        "texturePacks": "poki sitelen",
+        "options": "ante nasin...",
+        "language": "toki",
+        "quit": "o pini e musi",
+        "credits": "nimi pi jan pali",
+        "sendFeedback": "o toki tawa jan lawa",
+        "reportBugs": "o toki e pakala musi",
+        "saveAndQuitToTitle": "o awen e musi o tawa lipu open",
+        "disconnect": "o weka tan ma kulupu"
+    },
+    "selectWorld": {
+        "title": "sina wile e ma seme?",
+        "empty": "ala",
+        "world": "ma",
+        "select": "o open e ma ni",
+        "create": "o pali e ma sin",
+        "createDemo": "o musi lon ma pi tenpo lili",
+        "deleteQuestion": "sina wile ala wile weka e ma ni?",
+        "deleteWarning": "li weka lon tenpo ale! (tenpo ni li suli!)",
+        "renameTitle": "o ante e nimi ma",
+        "conversion": "sina wile ante e sona nanpa pi ma ni!",
+        "newWorld": "ma sin",
+        "enterName": "nimi ma",
+        "resultFolder": "mi awen e ona lon:",
+        "enterSeed": "nanpa tan pi ilo pali ma",
+        "seedInfo": "sina sitelen ala la mi pali e nimi namako",
+        "selectWorldType": "sina wile e nasin ma seme?",
+        "worldType": "nasin ma",
+        "customize": "o ante",
+        "moreWorldOptions": "o ante e ma...",
+        "type": {
+            "default": {
+                "title": "nasin pi ante ala",
+                "description": "ma ni li ante ala."
+            },
+            "flat": {
+                "title": "supa suli",
+                "description": "ma ni li supa."
+            },
+            "sky": {
+                "title": "sewi",
+                "description": "ma ni li sewi mute."
+            }
+        }
+    },
+    "newWorld": {
+        "customize": {
+            "superflatWorld": {
+                "title": "o ante e ma pi supa suli"
+            },
+            "removeLayer": "o weka e ijo ni",
+            "presets": "ma namako",
+            "height": "mute sewi",
+            "unknown": "???"
+        }
+    },
+    "world": {
+        "world": "ma",
+        "unsupportedFormat": "mi sona ala e ma ni!"
+    },
+    "multiplayer": {
+        "title": "o musi kulupu",
+        "betasharpServer": "ma kulupu pi musi OmniBlock",
+        "info1": "pali pi musi Manka lon ma kulupu li pini ala, taso",
+        "info2": "sina ken musi. sina musi lon ma kulupu la musi li ken pakala.",
+        "ipinfo": "o pana e nimi ilo pi ma kulupu:",
+        "deleteQuestion": "sina wile ala wile weka e ma kulupu ni?",
+        "deleteWarning": "li weka lon tenpo ale! (tenpo suli a!)",
+        "downloadingTerrain": "mi lon e ma...",
+        "stopSleeping": "o weka tan supa lape",
+        "editServerTitle": "o ante",
+        "addServerTitle": "o pana",
+        "serverName": "nimi pi musi kulupu",
+        "serverAddress": "nimi ilo pi ma kulupu"
+    },
+    "loading": {
+        "loadingLevel": "mi kama e ma",
+        "startingServer": "mi open e ma kulupu...",
+        "preparingSpawnArea": "mi pali e ma open"
+    },
+    "achievements": {
+        "title": "pali pona"
+    },
+    "gameover": {
+        "title": "musi li pini!",
+        "score": "nanpa wawa",
+        "respawn": "o lon sin",
+        "titleMenu": "lipu open"
+    },
+    "gamemenu": {
+        "title": "lipu lawa",
+        "backToGame": "o musi"
+    },
+    "sign": {
+        "title": "o sitelen lon lipu sitelen:"
+    },
+    "stats": {
+        "title": "sona nanpa",
+        "general": "ijo ante",
+        "blocks": {
+            "name": "leko",
+            "mined": "pakala",
+            "crafted": "pali",
+            "used": "kepeken"
+        },
+        "items": {
+            "name": "ijo",
+            "broken": "pakala",
+            "crafted": "pali",
+            "used": "kepeken"
+        },
+        "item": "ijo"
+    },
+    "connect": {
+        "connecting": "mi kama jo e sona nanpa...",
+        "authorizing": "ma kulupu li kama jo e nimi sina...",
+        "failed": "tawa ma li pakala ike"
+    },
+    "disconnect": {
+        "genericReason": "{0}",
+        "disconnected": "sina weka",
+        "lost": "mi ken ala toki tawa kulupu",
+        "kicked": "jan lawa li weka e sina",
+        "timeout": "sina kepeken tenpo suli ike",
+        "closed": "pana sitelen li pini",
+        "loginFailed": "kama sina li ike",
+        "quitting": "sina kama weka",
+        "endOfStream": "pana sitelen li pini",
+        "overflow": "pana sitelen li suli ike"
+    },
+    "options": {
+        "off": "ala",
+        "on": "wile",
+        "disabled": "ken ala",
+        "title": "ante",
+        "controls": "ilo lawa...",
+        "keyboardControls": "ante pi ilo nena...",
+        "controllerSettings": "ante pi ilo nena musi...",
+        "controllerType": "ilo nena musi",
+        "video": {
+            "text": "ante sitelen...",
+            "performance": "wawa",
+            "display": "sitelen"
+        },
+        "uiSettings": "ante GUI...",
+        "audioSettings": "ante kalama...",
+        "audioTitle": "ante kalama",
+        "videoTitle": "ante sitelen",
+        "language": "toki...",
+        "anisoLevel": "nanpa Aniso",
+        "music": "kalama musi",
+        "sound": "kalama",
+        "invertMouse": "o ante e nasin lukin",
+        "alternateBlocks": "leko ante",
+        "chunkFade": "ma kama",
+        "environmentAnim": "tawa ma",
+        "sensitivity": {
+            "text": "wawa pi tawa lukin",
+            "controllerText": "wawa pi ilo nena musi",
+            "min": "*mu lape*",
+            "max": "WAWA A!!!"
+        },
+        "renderDistance": {
+            "text": "suli pi ken lukin",
+            "chunks": "leko suli",
+            "tiny": "lili mute",
+            "short": "lili",
+            "normal": "pona",
+            "far": "suli"
+        },
+        "viewBobbing": "tawa lili tan noka",
+        "ao": "wan suno pimeja",
+        "anaglyph": "loje en laso",
+        "framerateLimit": "wawa",
+        "difficulty": {
+            "text": "mute ike",
+            "peaceful": "monsuta ala",
+            "easy": "ike ala",
+            "normal": "ike lili",
+            "hard": "ike mute"
+        },
+        "graphics": {
+            "text": "sitelen",
+            "fancy": "pona lukin",
+            "fast": "pona tawa ilo"
+        },
+        "cloudsQuality": {
+            "text": "kon telo sewi",
+            "off": "ala",
+            "legacy": "majuna",
+            "shader": "ilo sitelen"
+        },
+        "softClouds": {
+            "text": "kon telo sewi li lukin suwi"
+        },
+        "guiScale": {
+            "text": "suli GUI",
+            "auto": "wile ilo",
+            "small": "lili",
+            "normal": "pona",
+            "large": "suli"
+        },
+        "chatScale": {
+            "text": "suli toki"
+        },
+        "chatWidth": {
+            "text": "suli toki poka"
+        },
+        "advancedOpengl": "nasin OpenGL wawa",
+        "fps": {
+            "text": "sitelen tenpo",
+            "maxFps": "mute pi sitelen tenpo",
+            "unlimited": "sitelen ale"
+        },
+        "showCoordinates": "pana pi nanpa lon",
+        "uiCursors": "sitelen ante pi ilo luka",
+        "gamma": "wawa suno",
+        "vSync": "wan supa sinpin",
+        "mipmaps": "pona ijo lon poka ala",
+        "menuMusic": "kalama musi lon lipu open",
+        "msaa": "MSAA",
+        "fov": "mute lukin",
+        "movement": {
+            "text": "tawa"
+        },
+        "view": {
+            "text": "lukin"
+        },
+        "other": {
+            "text": "ante"
+        },
+        "editBindings": "o ante e nena...",
+        "resetBindings": "o weka e ante",
+        "controllerBindings": "kepeken pi ilo nena musi",
+        "shader": {
+            "text": "ante pi ilo sitelen",
+            "cloud": {
+                "text": "kon telo sewi",
+                "minParallax": "tawa ante lili",
+                "maxParallax": "tawa ante suli",
+                "minGradient": "kule ante lili",
+                "maxGradient": "kule ante suli",
+                "cloudHeight": "sewi",
+                "shadow": "suno pimeja kule",
+                "smoothWidth": "sike poka",
+                "smoothSamples": "sike nanpa",
+                "closeFade": "weka lon poka",
+                "smoothTop": "sike sewi",
+                "smoothEdge": "sike poka",
+                "smoothBottom": "sike anpa",
+                "smoothBottomTopDown": "sike anpa tawa sewi"
+            },
+            "preset": {
+                "text": "ma mi",
+                "disabled": "ala",
+                "default": "ante ala",
+                "custom": "ante",
+                "2d": "2D",
+                "3d": "3D",
+                "low": "lili",
+                "medium": "pona",
+                "high": "wawa",
+                "ultra": "wawa mute"
+            }
+        }
+    },
+    "performance": {
+        "max": "mute pi sitelen tenpo",
+        "balanced": "pona tawa ale",
+        "powersaver": "pona nanpa wan tawa ilo"
+    },
+    "controls": {
+        "title": "nasin lawa"
+    },
+    "key": {
+        "forward": "o tawa sinpin",
+        "left": "tawa poka open",
+        "back": "o tawa monsi",
+        "right": "o tawa pini",
+        "jump": "tawa sewi",
+        "inventory": "lukin pi jo sina",
+        "drop": "pana anpa",
+        "chat": "open toki",
+        "fog": "ante kon",
+        "sneak": "tawa anpa",
+        "playerlist": "pana pi nimi jan",
+        "zoom": "lukin suli",
+        "hotbarLeft": "ilo jo poka open",
+        "hotbarRight": "ilo jo poka pini",
+        "pickBlock": "o jo e ijo pi lukin sina",
+        "camera": "o kepeken nasin lukin pi sitelen tawa",
+        "pause": "nena pi lape musi"
+    },
+    "texturePack": {
+        "openFolder": "o open e poki lon ilo nanpa",
+        "title": "sina wile ante e sitelen kepeken seme?",
+        "folderInfo": "(o pana e ijo tawa lipu ni tawa kepeken ona)"
+    },
+    "tile": {
+        "tallgrass": {
+            "name": "kasi anpa suli",
+            "desc": ""
+        },
+        "stone": {
+            "name": "kiwen",
+            "desc": ""
+        },
+        "grass": {
+            "name": "kasi anpa",
+            "desc": ""
+        },
+        "dirt": {
+            "name": "ma",
+            "desc": ""
+        },
+        "stonebrick": {
+            "name": "kiwen nena",
+            "desc": ""
+        },
+        "wood": {
+            "name": "kiwen kipisi kasi",
+            "desc": ""
+        },
+        "sapling": {
+            "name": "kasi sin",
+            "desc": ""
+        },
+        "bedrock": {
+            "name": "kiwen pi pakala ala",
+            "desc": ""
+        },
+        "water": {
+            "name": "telo",
+            "desc": ""
+        },
+        "lava": {
+            "name": "telo seli",
+            "desc": ""
+        },
+        "sand": {
+            "name": "ko",
+            "desc": ""
+        },
+        "sandStone": { "name": "kiwen ko" },
+        "gravel": {
+            "name": "kiwen lili mute",
+            "desc": ""
+        },
+        "oreGold": {
+            "name": "kiwen jelo pi insa kiwen",
+            "desc": ""
+        },
+        "oreIron": {
+            "name": "kiwen walo pi insa kiwen",
+            "desc": ""
+        },
+        "oreCoal": {
+            "name": "ko pimeja pi insa kiwen",
+            "desc": ""
+        },
+        "log": {
+            "name": "sijelo kasi",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "lipu kasi",
+            "desc": ""
+        },
+        "sponge": {
+            "name": "ko pi weka telo",
+            "desc": ""
+        },
+        "glass": {
+            "name": "kiwen lukin",
+            "desc": ""
+        },
+        "cloth": {
+            "name": "len",
+            "desc": "",
+            "black": {
+                "name": "len pimeja",
+                "desc": ""
+            },
+            "red": {
+                "name": "len loje",
+                "desc": ""
+            },
+            "green": {
+                "name": "len pi laso kasi",
+                "desc": ""
+            },
+            "brown": {
+                "name": "len pi loje ma",
+                "desc": ""
+            },
+            "blue": {
+                "name": "len pi laso sewi",
+                "desc": ""
+            },
+            "purple": {
+                "name": "len pi laso loje",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "len laso",
+                "desc": ""
+            },
+            "silver": {
+                "name": "len pi walo pimeja",
+                "desc": ""
+            },
+            "gray": {
+                "name": "len pi pimeja walo",
+                "desc": ""
+            },
+            "pink": {
+                "name": "len pi loje walo",
+                "desc": ""
+            },
+            "lime": {
+                "name": "len pi laso jelo",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "len jelo",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "len pi laso sewi",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "len pi loje laso",
+                "desc": ""
+            },
+            "orange": {
+                "name": "len pi loje jelo",
+                "desc": ""
+            },
+            "white": {
+                "name": "len",
+                "desc": ""
+            }
+        },
+        "flower": {
+            "name": "kasi lili",
+            "desc": ""
+        },
+        "rose": {
+            "name": "kasi loje lili",
+            "desc": ""
+        },
+        "mushroom": {
+            "name": "soko",
+            "desc": ""
+        },
+        "blockGold": {
+            "name": "leko pi kiwen jelo",
+            "desc": ""
+        },
+        "blockIron": {
+            "name": "leko pi kiwen walo",
+            "desc": ""
+        },
+        "stoneSlab": {
+            "stone": {
+                "name": "supa kiwen",
+                "desc": ""
+            },
+            "sand": {
+                "name": "supa pi kiwen ko",
+                "desc": ""
+            },
+            "wood": {
+                "name": "supa kasi",
+                "desc": ""
+            },
+            "cobble": {
+                "name": "supa kiwen",
+                "desc": ""
+            }
+        },
+        "brick": {
+            "name": "kiwen leko loje",
+            "desc": ""
+        },
+        "tnt": {
+            "name": "ilo pi seli pakala",
+            "desc": ""
+        },
+        "bookshelf": {
+            "name": "leko lipu",
+            "desc": ""
+        },
+        "stoneMoss": {
+            "name": "kiwen kasi",
+            "desc": ""
+        },
+        "obsidian": {
+            "name": "kiwen pimeja wawa",
+            "desc": ""
+        },
+        "torch": {
+            "name": "palisa suno",
+            "desc": ""
+        },
+        "fire": {
+            "name": "seli",
+            "desc": ""
+        },
+        "mobSpawner": {
+            "name": "ilo kama",
+            "desc": ""
+        },
+        "stairsWood": {
+            "name": "leko sewi kasi",
+            "desc": ""
+        },
+        "chest": {
+            "name": "poki",
+            "desc": ""
+        },
+        "redstoneDust": {
+            "name": "ko wawa",
+            "desc": ""
+        },
+        "oreDiamond": {
+            "name": "kiwen laso pi insa kiwen",
+            "desc": ""
+        },
+        "blockDiamond": {
+            "name": "leko pi kiwen laso",
+            "desc": ""
+        },
+        "workbench": {
+            "name": "supa pali",
+            "desc": ""
+        },
+        "crops": {
+            "name": "kasi moku",
+            "desc": ""
+        },
+        "farmland": {
+            "name": "ma mama",
+            "desc": ""
+        },
+        "furnace": {
+            "name": "poki seli",
+            "desc": ""
+        },
+        "sign": {
+            "name": "lipu sitelen",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "lupa kasi",
+            "desc": ""
+        },
+        "ladder": {
+            "name": "nasin palisa sewi",
+            "desc": ""
+        },
+        "rail": {
+            "name": "nasin palisa",
+            "desc": ""
+        },
+        "goldenRail": {
+            "name": "nasin palisa wawa",
+            "desc": ""
+        },
+        "detectorRail": {
+            "name": "nasin palisa lukin",
+            "desc": ""
+        },
+        "stairsStone": {
+            "name": "leko sewi kiwen",
+            "desc": ""
+        },
+        "lever": {
+            "name": "palisa ilo",
+            "desc": ""
+        },
+        "pressurePlate": {
+            "name": "supa noka",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "lupa pi kiwen walo",
+            "desc": ""
+        },
+        "oreRedstone": {
+            "name": "ko wawa pi insa kiwen",
+            "desc": ""
+        },
+        "notGate": {
+            "name": "palisa suno pi ko wawa",
+            "desc": ""
+        },
+        "button": {
+            "name": "nena ilo",
+            "desc": ""
+        },
+        "snow": {
+            "name": "ko lete",
+            "desc": ""
+        },
+        "ice": {
+            "name": "kiwen telo",
+            "desc": ""
+        },
+        "cactus": {
+            "name": "kasi kipisi",
+            "desc": ""
+        },
+        "clay": {
+            "name": "ma ko",
+            "desc": ""
+        },
+        "reeds": {
+            "name": "kasi palisa suwi",
+            "desc": ""
+        },
+        "jukebox": {
+            "name": "ilo pi kalama musi",
+            "desc": ""
+        },
+        "fence": {
+            "name": "sinpin palisa",
+            "desc": ""
+        },
+        "pumpkin": {
+            "name": "kili suli jelo",
+            "desc": ""
+        },
+        "litpumpkin": {
+            "name": "kili suli suno",
+            "desc": ""
+        },
+        "hellrock": {
+            "name": "kiwen loje",
+            "desc": ""
+        },
+        "hellsand": {
+            "name": "ko kon",
+            "desc": ""
+        },
+        "lightgem": {
+            "name": "kiwen suno",
+            "desc": ""
+        },
+        "portal": {
+            "name": "lupa nasa",
+            "desc": ""
+        },
+        "oreLapis": {
+            "name": "kiwen pi laso telo pi insa kiwen",
+            "desc": ""
+        },
+        "blockLapis": {
+            "name": "kiwen suli pi laso telo",
+            "desc": ""
+        },
+        "dispenser": {
+            "name": "poki pi pana wawa",
+            "desc": ""
+        },
+        "musicBlock": {
+            "name": "leko kalama",
+            "desc": ""
+        },
+        "cake": {
+            "name": "pan suwi",
+            "desc": ""
+        },
+        "bed": {
+            "name": "supa lape",
+            "desc": "",
+            "occupied": "jan li kepeken supa lape ni",
+            "noSleep": "sina ken lape lon tenpo pimeja",
+            "notValid": "sina jo ala e supa lape. ken la ona li pakala"
+        },
+        "lockedchest": {
+            "name": "poki pi ken ala open",
+            "desc": ""
+        },
+        "trapdoor": {
+            "name": "lupa anpa",
+            "desc": ""
+        },
+        "web": {
+            "name": "linja pipi",
+            "desc": ""
+        },
+        "stonebricksmooth": {
+            "name": "kiwen leko",
+            "desc": ""
+        },
+        "pistonBase": {
+            "name": "ilo tawa",
+            "desc": ""
+        },
+        "pistonStickyBase": {
+            "name": "ilo tawa ko",
+            "desc": ""
+        }
+    },
+    "item": {
+        "shovelIron": {
+            "name": "ilo ma walo",
+            "desc": ""
+        },
+        "pickaxeIron": {
+            "name": "ilo pakala walo",
+            "desc": ""
+        },
+        "hatchetIron": {
+            "name": "ilo kipisi walo",
+            "desc": ""
+        },
+        "flintAndSteel": {
+            "name": "ilo seli",
+            "desc": ""
+        },
+        "apple": {
+            "name": "kili loje",
+            "desc": ""
+        },
+        "cookie": {
+            "name": "pan sike suwi",
+            "desc": ""
+        },
+        "bow": {
+            "name": "ilo alasa",
+            "desc": ""
+        },
+        "arrow": {
+            "name": "palisa alasa",
+            "desc": ""
+        },
+        "coal": {
+            "name": "ko pimeja",
+            "desc": ""
+        },
+        "charcoal": {
+            "name": "kiwen kasi pi moku seli",
+            "desc": ""
+        },
+        "emerald": {
+            "name": "kiwen laso",
+            "desc": ""
+        },
+        "ingotIron": {
+            "name": "kiwen walo",
+            "desc": ""
+        },
+        "ingotGold": {
+            "name": "kiwen jelo",
+            "desc": ""
+        },
+        "swordIron": {
+            "name": "palisa utala walo",
+            "desc": ""
+        },
+        "swordWood": {
+            "name": "palisa utala kasi",
+            "desc": ""
+        },
+        "shovelWood": {
+            "name": "ilo ma kasi",
+            "desc": ""
+        },
+        "pickaxeWood": {
+            "name": "ilo pakala kasi",
+            "desc": ""
+        },
+        "hatchetWood": {
+            "name": "ilo kipisi kasi",
+            "desc": ""
+        },
+        "swordStone": {
+            "name": "palisa utala kiwen",
+            "desc": ""
+        },
+        "shovelStone": {
+            "name": "ilo ma kiwen",
+            "desc": ""
+        },
+        "pickaxeStone": {
+            "name": "ilo pakala kasi",
+            "desc": ""
+        },
+        "hatchetStone": {
+            "name": "ilo kipisi kiwen",
+            "desc": ""
+        },
+        "swordDiamond": {
+            "name": "palisa utala laso",
+            "desc": ""
+        },
+        "shovelDiamond": {
+            "name": "ilo ma laso",
+            "desc": ""
+        },
+        "pickaxeDiamond": {
+            "name": "ilo pakala laso",
+            "desc": ""
+        },
+        "hatchetDiamond": {
+            "name": "ilo kipisi laso",
+            "desc": ""
+        },
+        "stick": {
+            "name": "palisa",
+            "desc": ""
+        },
+        "bowl": {
+            "name": "poki moku",
+            "desc": ""
+        },
+        "mushroomStew": {
+            "name": "telo moku soko",
+            "desc": ""
+        },
+        "swordGold": {
+            "name": "telo moku soko",
+            "desc": ""
+        },
+        "shovelGold": {
+            "name": "ilo ma jelo",
+            "desc": ""
+        },
+        "pickaxeGold": {
+            "name": "ilo pakala jelo",
+            "desc": ""
+        },
+        "hatchetGold": {
+            "name": "ilo kipisi jelo",
+            "desc": ""
+        },
+        "string": {
+            "name": "linja",
+            "desc": ""
+        },
+        "feather": {
+            "name": "lipu waso",
+            "desc": ""
+        },
+        "sulphur": {
+            "name": "ko pi seli pakala",
+            "desc": ""
+        },
+        "hoeWood": {
+            "name": "ilo kasi tan kasi",
+            "desc": ""
+        },
+        "hoeStone": {
+            "name": "ilo kasi kiwen",
+            "desc": ""
+        },
+        "hoeIron": {
+            "name": "ilo kasi walo",
+            "desc": ""
+        },
+        "hoeDiamond": {
+            "name": "ilo kasi laso",
+            "desc": ""
+        },
+        "hoeGold": {
+            "name": "ilo kasi jelo",
+            "desc": ""
+        },
+        "seeds": {
+            "name": "sike mama",
+            "desc": ""
+        },
+        "wheat": {
+            "name": "kasi pan",
+            "desc": ""
+        },
+        "bread": {
+            "name": "pan",
+            "desc": ""
+        },
+        "helmetCloth": {
+            "name": "len lawa selo",
+            "desc": ""
+        },
+        "chestplateCloth": {
+            "name": "len sijelo selo",
+            "desc": ""
+        },
+        "leggingsCloth": {
+            "name": "len noka selo",
+            "desc": ""
+        },
+        "bootsCloth": {
+            "name": "len noka anpa selo",
+            "desc": ""
+        },
+        "helmetChain": {
+            "name": "len lawa pi sike lili",
+            "desc": ""
+        },
+        "chestplateChain": {
+            "name": "len sijelo pi sike lili",
+            "desc": ""
+        },
+        "leggingsChain": {
+            "name": "len noka pi sike lili",
+            "desc": ""
+        },
+        "bootsChain": {
+            "name": "len noka anpa pi sike lili",
+            "desc": ""
+        },
+        "helmetIron": {
+            "name": "len lawa walo",
+            "desc": ""
+        },
+        "chestplateIron": {
+            "name": "len sijelo walo",
+            "desc": ""
+        },
+        "leggingsIron": {
+            "name": "len noka walo",
+            "desc": ""
+        },
+        "bootsIron": {
+            "name": "len noka anpa walo",
+            "desc": ""
+        },
+        "helmetDiamond": {
+            "name": "len lawa laso",
+            "desc": ""
+        },
+        "chestplateDiamond": {
+            "name": "len sijelo laso",
+            "desc": ""
+        },
+        "leggingsDiamond": {
+            "name": "len noka laso",
+            "desc": ""
+        },
+        "bootsDiamond": {
+            "name": "len noka anpa laso",
+            "desc": ""
+        },
+        "helmetGold": {
+            "name": "len lawa jelo",
+            "desc": ""
+        },
+        "chestplateGold": {
+            "name": "len sijelo jelo",
+            "desc": ""
+        },
+        "leggingsGold": {
+            "name": "len noka jelo",
+            "desc": ""
+        },
+        "bootsGold": {
+            "name": "len noka anpa jelo",
+            "desc": ""
+        },
+        "flint": {
+            "name": "kiwen pimeja kipisi",
+            "desc": ""
+        },
+        "porkchopRaw": {
+            "name": "moku soweli lete",
+            "desc": ""
+        },
+        "porkchopCooked": {
+            "name": "moku soweli seli",
+            "desc": ""
+        },
+        "painting": {
+            "name": "sitelen",
+            "desc": ""
+        },
+        "appleGold": {
+            "name": "kili mani",
+            "desc": ""
+        },
+        "sign": {
+            "name": "lipu sitelen",
+            "desc": ""
+        },
+        "doorWood": {
+            "name": "lupa kasi",
+            "desc": ""
+        },
+        "bucket": {
+            "name": "poki telo",
+            "desc": ""
+        },
+        "bucketWater": {
+            "name": "telo lon poki",
+            "desc": ""
+        },
+        "bucketLava": {
+            "name": "telo seli lon poki",
+            "desc": ""
+        },
+        "minecart": {
+            "name": "poki tawa",
+            "desc": ""
+        },
+        "saddle": {
+            "name": "len monsi soweli",
+            "desc": ""
+        },
+        "doorIron": {
+            "name": "lupa pi kiwen walo",
+            "desc": ""
+        },
+        "redstone": {
+            "name": "ko wawa",
+            "desc": ""
+        },
+        "snowball": {
+            "name": "sike pi ko lete",
+            "desc": ""
+        },
+        "boat": {
+            "name": "ilo tawa telo",
+            "desc": ""
+        },
+        "leather": {
+            "name": "selo soweli",
+            "desc": ""
+        },
+        "milk": {
+            "name": "telo walo lon poki",
+            "desc": ""
+        },
+        "brick": {
+            "name": "leko lili",
+            "desc": ""
+        },
+        "clay": {
+            "name": "ma ko",
+            "desc": ""
+        },
+        "reeds": {
+            "name": "kasi palisa suwi",
+            "desc": ""
+        },
+        "paper": {
+            "name": "lipu",
+            "desc": ""
+        },
+        "book": {
+            "name": "lipu suli",
+            "desc": ""
+        },
+        "slimeball": {
+            "name": "ko monsuta",
+            "desc": ""
+        },
+        "minecartChest": {
+            "name": "poki ijo lon poki tawa",
+            "desc": ""
+        },
+        "minecartFurnace": {
+            "name": "poki seli lon poki tawa",
+            "desc": ""
+        },
+        "egg": {
+            "name": "sike mama pana",
+            "desc": ""
+        },
+        "compass": {
+            "name": "ilo nasin",
+            "desc": ""
+        },
+        "fishingRod": {
+            "name": "ilo kala",
+            "desc": ""
+        },
+        "clock": {
+            "name": "ilo tenpo",
+            "desc": ""
+        },
+        "yellowDust": {
+            "name": "ko suno",
+            "desc": ""
+        },
+        "fishRaw": {
+            "name": "moku kala lete",
+            "desc": ""
+        },
+        "fishCooked": {
+            "name": "moku kala seli",
+            "desc": ""
+        },
+        "record": {
+            "name": "sike kalama",
+            "desc": ""
+        },
+        "bone": {
+            "name": "palisa sijelo",
+            "desc": ""
+        },
+        "dyePowder": {
+            "black": {
+                "name": "telo pimeja",
+                "desc": ""
+            },
+            "red": {
+                "name": "kule loje",
+                "desc": ""
+            },
+            "green": {
+                "name": "kule kasi",
+                "desc": ""
+            },
+            "brown": {
+                "name": "kili pi kule ma",
+                "desc": ""
+            },
+            "blue": {
+                "name": "kiwen pi laso telo",
+                "desc": ""
+            },
+            "purple": {
+                "name": "kule pi laso loje",
+                "desc": ""
+            },
+            "cyan": {
+                "name": "kule laso",
+                "desc": ""
+            },
+            "silver": {
+                "name": "kule pi walo pimeja",
+                "desc": ""
+            },
+            "gray": {
+                "name": "kule pi pimeja walo",
+                "desc": ""
+            },
+            "pink": {
+                "name": "kule pi loje walo",
+                "desc": ""
+            },
+            "lime": {
+                "name": "kule pi laso jelo",
+                "desc": ""
+            },
+            "yellow": {
+                "name": "kule jelo",
+                "desc": ""
+            },
+            "lightBlue": {
+                "name": "kule pi laso sewi",
+                "desc": ""
+            },
+            "magenta": {
+                "name": "kule pi loje laso",
+                "desc": ""
+            },
+            "orange": {
+                "name": "kule pi loje jelo",
+                "desc": ""
+            },
+            "white": {
+                "name": "ko pi palisa sijelo",
+                "desc": ""
+            }
+        },
+        "sugar": {
+            "name": "suwi kasi",
+            "desc": ""
+        },
+        "cake": {
+            "name": "pan suwi",
+            "desc": ""
+        },
+        "bed": {
+            "name": "supa lape",
+            "desc": ""
+        },
+        "diode": {
+            "name": "ilo pi tenpo wawa",
+            "desc": ""
+        },
+        "map": {
+            "name": "sitelen ma",
+            "desc": ""
+        },
+        "leaves": {
+            "name": "lipu kasi",
+            "desc": ""
+        },
+        "shears": {
+            "name": "ilo kipisi lili",
+            "desc": ""
+        }
+    },
+    "stat": {
+        "generalButton": "ijo ante",
+        "blocksButton": "leko",
+        "itemsButton": "ijo",
+        "used": "kepeken",
+        "mined": "pakala",
+        "depleted": "nanpa pi ijo kepeken ale",
+        "crafted": "pali",
+        "startGame": "musi",
+        "createWorld": "ma",
+        "loadWorld": "kama ma",
+        "joinMultiplayer": "kama pi ma kulupu",
+        "leaveGame": "pini musi",
+        "playOneMinute": "mute pi tenpo musi",
+        "walkOneCm": "mute pi tawa noka",
+        "fallOneCm": "mute pi tawa anpa",
+        "swimOneCm": "mute tawa lon insa telo",
+        "flyOneCm": "mute pi tawa kon",
+        "climbOneCm": "mute pi tawa sewi",
+        "diveOneCm": "mute pi tawa anpa lon insa telo",
+        "minecartOneCm": "mute tawa lon poki tawa",
+        "boatOneCm": "mute tawa kepeken ilo tawa telo",
+        "pigOneCm": "tawa kepeken soweli",
+        "jump": "nanpa pi tawa sewi",
+        "drop": "pana anpa ijo",
+        "damageDealt": "pana pakala",
+        "damageTaken": "pakala pi sijelo sina",
+        "deaths": "moli sina",
+        "mobKills": "pana moli monsuta",
+        "playerKills": "pana moli jan",
+        "fishCaught": "alasa kala",
+        "mineBlock": "{0} pakala",
+        "craftItem": "{0} pali",
+        "useItem": "{0} kepeken",
+        "breakItem": "{0} kepeken ale"
+    },
+    "achievements.title": "pali pona",
+    "achievement": {
+        "get": "pali li pini!",
+        "taken": "kama jo!",
+        "challenge": "SEWI",
+        "unlocked": "KEN ALA",
+        "locked": "KEN",
+        "requires": "ni li wile e ijo '{0}'",
+        "openInventory": {
+            "title": "ijo mi",
+            "desc": "o lukin e jo sina."
+        },
+        "mineWood": {
+            "title": "ni li kasi mi a!",
+            "desc": "o pakala e kasi"
+        },
+        "buildWorkBench": {
+            "title": "pali pona",
+            "desc": "o pali e supa pali"
+        },
+        "buildPickaxe": {
+            "title": "mi o pakala e kiwen a!",
+            "desc": "o pali e ilo pakala"
+        },
+        "buildFurnace": {
+            "title": "seli mute",
+            "desc": "o pali e poki seli"
+        },
+        "acquireIron": {
+            "title": "ken pali li suli!",
+            "desc": "o pali e kiwen walo"
+        },
+        "buildHoe": {
+            "title": "mi o pali e kasi!",
+            "desc": "o pali e ilo kasi"
+        },
+        "makeBread": {
+            "title": "o pali e pan",
+            "desc": "o ante e kasi pan"
+        },
+        "bakeCake": {
+            "title": "lon ala",
+            "desc": "kasi en suwi en telo en sike!"
+        },
+        "buildBetterPickaxe": {
+            "title": "ilo ni li pona",
+            "desc": "o pali e ilo pakala pona"
+        },
+        "cookFish": {
+            "title": "kala pona",
+            "desc": "o alasa e kala, o seli e kala"
+        },
+        "onARail": {
+            "title": "lon nasin",
+            "desc": "o tawa suli kepeken poki tawa"
+        },
+        "buildSword": {
+            "title": "mi o moli!",
+            "desc": "o pali e palisa utala"
+        },
+        "killEnemy": {
+            "title": "o moli e monsuta",
+            "desc": "monsuta o weka!"
+        },
+        "killCow": {
+            "title": "soweli li anpa!",
+            "desc": "o kama jo e selo soweli"
+        },
+        "flyPig": {
+            "title": "soweli li waso",
+            "desc": "o tawa anpa kepeken soweli"
+        }
+    }
+}

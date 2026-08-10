@@ -51,6 +51,11 @@ public class Translations
                 Languages[code].Unifont = propertyValue.GetBoolean();
             }
 
+            if (value.TryGetProperty("sevenish", out JsonElement sevenishValue))
+            {
+                Languages[code].Sevenish = sevenishValue.GetBoolean();
+            }
+
             if (code == "en_us") DefaultLanguage = Languages[code];
         }
 
