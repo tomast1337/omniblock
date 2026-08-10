@@ -213,3 +213,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-10 — Fixed, tested, unstaged. Rename work still staged from before, this fix sits on top unstaged. Commit message update: (Nicolas Vyčas Nery; `ba1ab402f440797d9712eeed0ea4927a4cbb9af3`)
 - 2026-08-10 — feat(debug-ui): darken ImGui debug theme to near-black (Nicolas Vyčas Nery; `8dca0df33bb5a510aae0f50bbffa0a59f21f9a0c`)
 - 2026-08-10 — feat(client): add sitelen pona (sit) and toki pona (tok) languages (soweli Keli; `2de46b41448cf7b7145dbb9f3ebe4b23f610c1c4`)
+- 2026-08-10 — fix(LanguageSelectionScreen): correct language selection condition (Nicolas Vyčas Nery; `95802dd34f1241c8b2abaa06395019853b87e4e0`)
