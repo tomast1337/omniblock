@@ -11,7 +11,6 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using static BetaSharp.Client.Rendering.Core.Textures.TextureAtlasMipmapGenerator;
-using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client.Rendering.Core.Textures;
 
@@ -68,31 +67,6 @@ public class TextureManager : IDisposable
 
         array.Rebuild();
         return array;
-    }
-
-    /// <summary>
-    ///     Puts each named array on its own unit, where every program that samples one expects to
-    ///     find it.
-    /// </summary>
-    /// <remarks>
-    ///     Once a frame rather than per draw: there is one terrain array and one item array for the
-    ///     whole frame, and nothing else uses those units. Leaves unit 0 active, because that is
-    ///     where the rest of the renderer assumes it was left.
-    ///
-    ///     Nothing to do under WebGPU, which has no texture units: a pipeline that samples an array
-    ///     is handed it in a bind group by whoever draws with it.
-    /// </remarks>
-    public void BindTextureArrays()
-    {
-        if (GLManager.GLOrNull is not { } gl) return;
-
-        gl.ActiveTexture(GLEnum.Texture0 + TextureArrayUnits.Terrain);
-        TerrainArray.Texture?.Bind();
-
-        gl.ActiveTexture(GLEnum.Texture0 + TextureArrayUnits.Items);
-        ItemsArray.Texture?.Bind();
-
-        gl.ActiveTexture(GLEnum.Texture0);
     }
 
     public int[] GetColors(string path)

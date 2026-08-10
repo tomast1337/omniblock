@@ -205,3 +205,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-10 — feat(rendering): remove frame hash path handling and associated diagnostics code (Nicolas Vyčas Nery; `f05d15af71b46a9118f2e217209e3aa28ccc97a5`)
 - 2026-08-10 — feat(rendering): refactor to remove OpenGL backend support and streamline WebGPU integration (Nicolas Vyčas Nery; `5ffb26d9b3ed434f97065078b1be6fd091c1f933`)
 - 2026-08-10 — feat(rendering): refactor to remove OpenGL dependencies and streamline WebGPU integration in rendering classes (Nicolas Vyčas Nery; `950b2c22f66c2c06d2f3f3d607ca7c12303c7b5e`)
+- 2026-08-10 — Refactor rendering code to remove OpenGL dependencies (Nicolas Vyčas Nery; `02c3c03493adba159e191552856800ba19732b0c`)

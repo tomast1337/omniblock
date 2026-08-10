@@ -1,15 +1,11 @@
 using System.Runtime.InteropServices;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Core.WebGPU;
 using BetaSharp.Client.Rendering.Entities.Models;
 using Silk.NET.Maths;
-using Silk.NET.OpenGL;
 using Silk.NET.WebGPU;
-using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
-using Shader = BetaSharp.Client.Rendering.Core.Shader;
 
 namespace BetaSharp.Client.Rendering.Entities;
 
@@ -31,21 +27,6 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
 
     /// <summary>Floats per <c>EntityInstance</c> struct: MaxPartsPerModel 4x4 matrices, plus a vec4 tint.</summary>
     private const int FloatsPerInstance = ModelPart.MaxPartsPerModel * 16 + 4;
-
-    private readonly Shader? _shader;
-    private readonly IGL? _gl;
-
-    /// <summary>The GL entry points and program, for the paths that only the GL backend reaches.</summary>
-    private IGL Gl => _gl ?? throw new InvalidOperationException(WebGpuPathMessage);
-    private Shader ShaderProgram => _shader ?? throw new InvalidOperationException(WebGpuPathMessage);
-
-    private const string WebGpuPathMessage =
-        $"{nameof(EntityInstanceBatchRenderer)}'s OpenGL path was used under WebGPU; "
-        + $"the WebGPU path is {nameof(FlushBucketsWebGpu)}.";
-
-    private readonly uint _vaoId;
-    private readonly uint _staticVboId;
-    private readonly uint _ssboId;
 
     // WebGPU path. Keyed by RenderState because a WgpuPipeline bakes blend/depth/cull into an
     // immutable descriptor — unlike GL, which reads it back off GLManager.State per bucket. Each
@@ -69,10 +50,8 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
     private WgpuTexture? _emptyTexture2D;
 
     // Grows as ModelParts bake, keyed by ModelPart.StaticVertexOffset. Staged on the CPU and
-    // (re)uploaded to _staticVboId lazily, since GL may not exist yet when the first models bake.
+    // uploaded to a WgpuMesh once, lazily, in EnsureStaticMeshUploaded.
     private readonly List<EntityInstancedVertex> _staticVertices = [];
-    private int _staticVertexCountUploaded;
-    private int _staticVboCapacity;
 
     // Layout mirrors the SSBO's std430 EntityInstance array: MaxPartsPerModel*16 floats of pose
     // matrices then 4 floats of tint, per instance. Written in submission order, which interleaves
@@ -122,66 +101,18 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
 
     private EntityInstanceBatchRenderer(GameOptions options)
     {
-        // Constructed on both backends, because every entity model registers its baked geometry
-        // here as it is built and that staging is backend-agnostic. Only the GPU resources below
-        // are GL's; WebGPU builds its own from the same staged vertices in EnsureStaticMeshUploaded.
-        _gl = GLManager.GLOrNull;
-        if (_gl is null) return;
-
-        _shader = new Shader(
-            options.ShaderOptions.GetOrCreate("entity_instanced"),
-            "shaders/entity_instanced.vert",
-            "shaders/entity_instanced.frag");
-
-        _vaoId = Gl.GenVertexArray();
-        _staticVboId = Gl.GenBuffer();
-        _ssboId = Gl.GenBuffer();
-
-        Gl.BindBuffer(GLEnum.ShaderStorageBuffer, _ssboId);
-        Gl.BufferData(GLEnum.ShaderStorageBuffer, (nuint)(_instanceData.Length * sizeof(float)), null, GLEnum.StreamDraw);
-        Gl.BindBufferBase(BufferTargetARB.ShaderStorageBuffer, 0, _ssboId);
-        Gl.BindBuffer(GLEnum.ShaderStorageBuffer, 0);
-
         // An instance is drawn when the batch is flushed, not where it was submitted, so anything
         // drawn immediately in between would reach the depth buffer first and reject the geometry
         // that was logically in front of it. A burning entity is the case that shows it: its flames
         // are a camera-facing quad drawn straight through the tessellator, so which parts of the
         // still-queued mob they cover changes as the camera moves.
         GLManager.ImmediateGeometryDrawing += Flush;
-
-        ConfigureVertexAttributes();
-    }
-
-    private void ConfigureVertexAttributes()
-    {
-        const uint stride = 40;
-
-        Gl.BindVertexArray(_vaoId);
-        Gl.BindBuffer(GLEnum.ArrayBuffer, _staticVboId);
-
-        Gl.EnableVertexAttribArray(0);
-        Gl.VertexAttribPointer(0, 3, GLEnum.Float, false, stride, (void*)0);
-
-        Gl.EnableVertexAttribArray(1);
-        Gl.VertexAttribPointer(1, 2, GLEnum.Float, false, stride, (void*)12);
-
-        Gl.EnableVertexAttribArray(2);
-        Gl.VertexAttribPointer(2, 3, GLEnum.Float, false, stride, (void*)20);
-
-        Gl.EnableVertexAttribArray(3);
-        Gl.VertexAttribIPointer(3, 1, GLEnum.UnsignedInt, stride, (void*)32);
-
-        Gl.EnableVertexAttribArray(4);
-        Gl.VertexAttribIPointer(4, 1, GLEnum.UnsignedInt, stride, (void*)36);
-
-        Gl.BindVertexArray(0);
-        Gl.BindBuffer(GLEnum.ArrayBuffer, 0);
     }
 
     /// <summary>
     /// Stages one <see cref="ModelPart"/>'s baked local geometry at its assigned
     /// <see cref="ModelPart.StaticVertexOffset"/>. Safe to call before the GPU buffer exists;
-    /// <see cref="EnsureStaticBufferUploaded"/> uploads lazily. No-op if already staged.
+    /// <see cref="EnsureStaticMeshUploaded"/> uploads lazily. No-op if already staged.
     /// </summary>
     internal void RegisterStaticGeometry(ModelPart part, ReadOnlySpan<ModelVertexLocal> localVertices)
     {
@@ -216,32 +147,6 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
                 PartId = partId,
             });
         }
-    }
-
-    private void EnsureStaticBufferUploaded()
-    {
-        if (_staticVertexCountUploaded == _staticVertices.Count)
-        {
-            return;
-        }
-
-        Gl.BindBuffer(GLEnum.ArrayBuffer, _staticVboId);
-
-        if (_staticVertices.Count > _staticVboCapacity)
-        {
-            // Reserve only. _staticVertices has fewer elements than a grown capacity would
-            // request, so it can't be the BufferData source.
-            _staticVboCapacity = Math.Max(_staticVertices.Count, _staticVboCapacity * 2);
-            Gl.BufferData(GLEnum.ArrayBuffer, (nuint)(_staticVboCapacity * sizeof(EntityInstancedVertex)), null, GLEnum.StaticDraw);
-            _staticVertexCountUploaded = 0;
-        }
-
-        EntityInstancedVertex[] added = [.. _staticVertices.Skip(_staticVertexCountUploaded)];
-        Gl.BufferSubData(GLEnum.ArrayBuffer, _staticVertexCountUploaded * sizeof(EntityInstancedVertex),
-            new ReadOnlySpan<EntityInstancedVertex>(added));
-
-        Gl.BindBuffer(GLEnum.ArrayBuffer, 0);
-        _staticVertexCountUploaded = _staticVertices.Count;
     }
 
     /// <summary>Whether a pass is open. Gates <see cref="Models.BbModelEntityModel.Render"/>'s choice of path.</summary>
@@ -364,14 +269,7 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
         _flushing = true;
         try
         {
-            if (_gl is null)
-            {
-                FlushBucketsWebGpu();
-            }
-            else
-            {
-                FlushBuckets();
-            }
+            FlushBucketsWebGpu();
         }
         finally
         {
@@ -617,114 +515,9 @@ public sealed unsafe class EntityInstanceBatchRenderer : IDisposable
     /// <summary>Stride of <see cref="EntityInstancedVertex"/> in bytes.</summary>
     private const uint EntityInstancedVertexStride = 40;
 
-    private void FlushBuckets()
-    {
-        EnsureStaticBufferUploaded();
-
-        uint callerTexture = Gl.BoundTexture2D;
-        RenderState callerState = GLManager.State.Current;
-
-        // Submissions interleave by entity, not by bucket, so pack each bucket's instances
-        // contiguously into _flushData before upload — DrawArraysInstanced needs its instances
-        // at a single contiguous [instanceBase, instanceBase+count) range.
-        Span<int> bucketStarts = stackalloc int[_buckets.Count];
-        int cursor = 0;
-        for (int b = 0; b < _buckets.Count; b++)
-        {
-            bucketStarts[b] = cursor;
-            foreach (int instanceIndex in _bucketInstanceIndices[b])
-            {
-                Array.Copy(_instanceData, instanceIndex * FloatsPerInstance, _flushData, cursor * FloatsPerInstance, FloatsPerInstance);
-                cursor++;
-            }
-        }
-
-        Gl.BindBuffer(GLEnum.ShaderStorageBuffer, _ssboId);
-        Gl.BufferSubData(GLEnum.ShaderStorageBuffer, 0, new ReadOnlySpan<float>(_flushData, 0, _instanceCount * FloatsPerInstance));
-
-        GLManager.GL.UseProgram(ShaderProgram.ProgramId);
-        UploadPassState();
-
-        Gl.BindVertexArray(_vaoId);
-
-        // Buckets are drawn in the order they were first submitted to, which is what keeps a
-        // translucent shell behind the body it covers and a depth-equal flash behind the depths it
-        // matches. Reordering them would break both.
-        for (int b = 0; b < _buckets.Count; b++)
-        {
-            Bucket bucket = _buckets[b];
-            UploadDrawState(bucket.Draw);
-            ShaderProgram.SetUniform1("instanceBase", bucketStarts[b]);
-            Gl.ActiveTexture(GLEnum.Texture0);
-            Gl.BindTexture(GLEnum.Texture2D, bucket.TextureId);
-            Gl.DrawArraysInstanced(GLEnum.Triangles, bucket.VertexBase, (uint)bucket.VertexCount, (uint)_bucketInstanceIndices[b].Count);
-        }
-
-        Gl.BindVertexArray(0);
-        Gl.BindBuffer(GLEnum.ShaderStorageBuffer, 0);
-
-        GLManager.GL.UseProgram(0);
-        Gl.BindTexture(GLEnum.Texture2D, callerTexture);
-
-        // A flush can happen part way through a renderer, so put back the pipeline state the caller
-        // was working under rather than leaving it on whichever bucket happened to be drawn last.
-        GLManager.State.Apply(callerState);
-
-        ResetBuckets();
-    }
-
-    /// <summary>
-    ///     The part of the shader's state that is the same for every bucket in the flush.
-    /// </summary>
-    /// <remarks>
-    ///     Read from GL now rather than recorded at submission, which is only correct because
-    ///     nothing between a <see cref="Begin" /> and its <see cref="End" /> changes the projection
-    ///     or the fog. See <see cref="DrawState" /> for the ones that could not stay here.
-    /// </remarks>
-    private void UploadPassState()
-    {
-        Matrix4X4<float> projection = GLManager.Projection.Top;
-
-        FogState fog = GLManager.Fog;
-
-        ShaderProgram.SetUniformMatrix4("projectionMatrix", projection);
-        ShaderProgram.SetUniform1("textureSampler", 0);
-
-        ShaderProgram.SetUniform1("fogEnabled", GLManager.FogEnabled ? 1 : 0);
-        ShaderProgram.SetUniform1("fogMode", (int)fog.Curve);
-        ShaderProgram.SetUniform1("fogStart", fog.Start);
-        ShaderProgram.SetUniform1("fogEnd", fog.End);
-        ShaderProgram.SetUniform1("fogDensity", fog.Density);
-        ShaderProgram.SetUniform4("fogColor", fog.Color);
-    }
-
-    /// <summary>Puts back the state one bucket's instances were submitted under.</summary>
-    private void UploadDrawState(in DrawState draw)
-    {
-        GLManager.State.Apply(draw.Raster);
-
-        ShaderProgram.SetUniform1("useTexture", draw.UseTexture ? 1 : 0);
-        ShaderProgram.SetUniform1("alphaThreshold", draw.AlphaThreshold);
-        ShaderProgram.SetUniformMatrix4("textureMatrix", draw.TextureMatrix);
-
-        ShaderProgram.SetUniform1("lightingEnabled", draw.LightingEnabled ? 1 : 0);
-        ShaderProgram.SetUniform3("ambient", draw.Lighting.Ambient);
-        ShaderProgram.SetUniform3("light0Dir", draw.Lighting.Light0Direction);
-        ShaderProgram.SetUniform3("light0Diffuse", draw.Lighting.Light0Diffuse);
-        ShaderProgram.SetUniform3("light1Dir", draw.Lighting.Light1Direction);
-        ShaderProgram.SetUniform3("light1Diffuse", draw.Lighting.Light1Diffuse);
-    }
-
     public void Dispose()
     {
         GLManager.ImmediateGeometryDrawing -= Flush;
-        if (_gl is not null)
-        {
-            Gl.DeleteBuffer(_ssboId);
-            Gl.DeleteBuffer(_staticVboId);
-            Gl.DeleteVertexArray(_vaoId);
-            _shader?.Dispose();
-        }
 
         _staticMesh?.Dispose();
         foreach (List<WgpuStorageBuffer> pool in _wgpuStorageBufferPools.Values)

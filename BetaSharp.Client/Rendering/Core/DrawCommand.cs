@@ -36,15 +36,25 @@ public enum VertexChannels
     Normal = 4,
 }
 
+/// <summary>The interleaved vertex layout <see cref="Tessellator" /> writes.</summary>
+/// <remarks>
+///     Shared rather than spelled out at each draw site, because a reader that binds different
+///     offsets than the writer produced does not fail — it draws garbage. Anything that submits
+///     Tessellator output goes through here.
+/// </remarks>
+public static class TessellatorVertexLayout
+{
+    public const int Stride = 36;
+}
+
 /// <summary>
 ///     A batch of geometry and everything a backend needs to draw it.
 /// </summary>
 /// <remarks>
 ///     <para>
-///         This is the seam between the renderers and the graphics API. An <see cref="IGL" />-shaped
-///         seam cannot be one: it is a list of GL calls, and WebGPU can implement it only by lying.
-///         A draw command can be honoured by both, because it says what is being drawn rather than
-///         how to draw it.
+///         This is the seam between the renderers and the graphics API — it says what is being
+///         drawn rather than how to draw it, so a backend implements it by interpreting the command
+///         instead of replaying a recorded list of calls.
 ///     </para>
 ///     <para>
 ///         What it deliberately does not carry is the ambient state — matrices, tint, fog, lighting,

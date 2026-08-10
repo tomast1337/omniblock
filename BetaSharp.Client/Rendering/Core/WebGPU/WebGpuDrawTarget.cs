@@ -12,10 +12,10 @@ namespace BetaSharp.Client.Rendering.Core.WebGPU;
 /// </summary>
 /// <remarks>
 ///     <para>
-///         The pass is the reason this exists at all rather than being a set of calls behind
-///         <see cref="IGL" />: WebGPU has nowhere to record a draw outside one, so a target is only
-///         able to answer between <see cref="BeginPass" /> and <see cref="EndPass" />, and a draw
-///         that arrives outside that window is a bug in the caller rather than something to swallow.
+///         The pass is the reason this exists at all: WebGPU has nowhere to record a draw outside
+///         one, so a target is only able to answer between <see cref="BeginPass" /> and
+///         <see cref="EndPass" />, and a draw that arrives outside that window is a bug in the
+///         caller rather than something to swallow.
 ///     </para>
 ///     <para>
 ///         Everything a GL draw would have inherited from global state — the matrices, the tint,

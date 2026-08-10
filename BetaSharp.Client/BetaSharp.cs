@@ -12,7 +12,6 @@ using BetaSharp.Client.Network;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
 using BetaSharp.Client.Rendering.Core.WebGPU;
 using BetaSharp.Client.Rendering.Entities;
@@ -45,11 +44,8 @@ using BetaSharp.Worlds.Core.Systems;
 using BetaSharp.Worlds.Storage;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGui.Backends.GLFW;
-using Hexa.NET.ImGui.Backends.OpenGL3;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
-using Silk.NET.OpenGL;
-using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client;
 
@@ -274,8 +270,7 @@ public partial class BetaSharp :
             // computes above all — is in the former.
             WebGpuDevice.Create(Display.getWindow()!,
                 Display.getFramebufferWidth(), Display.getFramebufferHeight());
-            GLManager.InitWebGpu();
-            _debugTelemetry.CaptureSystemInfo(null);
+            GLManager.Init();
             _webGpuRenderer = new WebGpuGameRenderer(this);
         }
         catch (Exception ex)
@@ -519,13 +514,11 @@ public partial class BetaSharp :
             _logger.LogInformation("Stopping!");
 
             try { ChangeWorld(null); } catch (Exception) { }
-            try { GLAllocation.deleteTextures(); } catch (Exception) { }
 
             // don't bother trying to shutdown imgui because it keeps hanging/crashing
 
             WorldRenderer?.Dispose();
             UiBatchRenderer?.Dispose();
-            SlotPrograms.Dispose();
             SkinManager.Dispose();
             TextureManager.Dispose();
             SoundManager.Dispose();
@@ -829,7 +822,6 @@ public partial class BetaSharp :
         MetricRegistry.Set(RenderMetrics.ChunksFrustum, cr.ChunksInFrustum);
         MetricRegistry.Set(RenderMetrics.ChunksOccluded, cr.ChunksOccluded);
         MetricRegistry.Set(RenderMetrics.ChunksRendered, cr.ChunksRendered);
-        MetricRegistry.Set(RenderMetrics.VboAllocatedMb, (float)(VertexBuffer<ChunkVertex>.Allocated / 1_000_000.0));
         MetricRegistry.Set(RenderMetrics.MeshVersionAllocated, ChunkMeshVersion.TotalAllocated);
         MetricRegistry.Set(RenderMetrics.MeshVersionReleased, ChunkMeshVersion.TotalReleased);
         MetricRegistry.Set(RenderMetrics.TextureBindsLastFrame, TextureStats.BindsLastFrame);

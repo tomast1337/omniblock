@@ -3,7 +3,6 @@ using BetaSharp.Blocks.Behaviors;
 using BetaSharp.Blocks.Entities;
 using BetaSharp.Client.Rendering.Blocks.Renderers;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Util.Maths;
 
 namespace BetaSharp.Client.Rendering.Blocks.Entities;

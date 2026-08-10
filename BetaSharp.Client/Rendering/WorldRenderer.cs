@@ -50,8 +50,6 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     private IStaticMesh[] _clouds = [];
     private int _renderDistance = -1;
     private int _renderEntitiesStartupCounter = 2;
-    private readonly Shader? _skyShader;
-    private readonly Shader? _cloudShader;
     private Vector3D<float> _fogColor;
     private int _cloudsQuality = -1;
 
@@ -84,21 +82,11 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         _skyBelow = BuildSkyPlane(-16.0F, facingUp: false);
 
         // The sky and cloud geometry above is backend-agnostic — it goes through the draw-command
-        // seam — but the GLSL programs that shade it are not, so under WebGPU they are absent and
-        // the draws that would bind them say so.
-        if (GLManager.GLOrNull is not null)
+        // seam. Registrations rather than a lazy build, because the sky and cloud shaders are not
+        // built from GL state (unlike gbuffers, which vary by RenderState). One pipeline per slot —
+        // the draw target matches the slot it was given, so each pipeline is built once.
+        if (GLManager.DrawTargetOrNull is WebGpuDrawTarget wgpuTarget)
         {
-            _cloudShader = new Shader(_game.Options.ShaderOptions.GetOrCreate("cloud"), "shaders/cloud.vert", "shaders/cloud.frag");
-            _cloudShader.Changed += OnBuildCloudShader;
-
-            _skyShader = new Shader(_game.Options.ShaderOptions.GetOrCreate("sky"), "shaders/sky.vert", "shaders/sky.frag");
-            _skyShader.Changed += OnBuildSkyShader;
-        }
-        else if (GLManager.DrawTargetOrNull is WebGpuDrawTarget wgpuTarget)
-        {
-            // Registrations rather than a lazy build, because the sky and cloud shaders are not
-            // built from GL state (unlike gbuffers, which vary by RenderState). One pipeline per
-            // slot — the draw target matches the slot it was given, so each pipeline is built once.
             wgpuTarget.RegisterSlotPipeline(ProgramSlot.SkyBasic, "shaders/sky.wgsl",
                 SkyUniformSize, textured: true);
             wgpuTarget.RegisterSlotPipeline(ProgramSlot.SkyTextured, "shaders/sky.wgsl",
@@ -106,18 +94,6 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             wgpuTarget.RegisterSlotPipeline(ProgramSlot.Clouds, "shaders/cloud.wgsl",
                 CloudUniformSize, textured: true);
         }
-    }
-
-    private Shader SkyShader => _skyShader
-        ?? throw new InvalidOperationException(
-            "The sky was drawn under the WebGPU backend, where its GLSL program does not exist.");
-
-    private Shader CloudShader => _cloudShader
-        ?? throw new InvalidOperationException(
-            "The clouds were drawn under the WebGPU backend, where their GLSL program does not exist.");
-
-    private void OnBuildSkyShader(Shader _)
-    {
     }
 
     private void OnCloudsQualityChanged()
@@ -139,10 +115,6 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         }
 
         _cloudsQuality = _game.Options.CloudsQuality;
-    }
-
-    private void OnBuildCloudShader(Shader _)
-    {
     }
 
     public void SetFogColor(float r, float g, float b) => _fogColor = new(r, g, b);
@@ -268,7 +240,6 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     public void Dispose()
     {
-        _cloudShader?.Dispose();
         ChunkRenderer?.Dispose();
 
         _stars.Dispose();
@@ -433,9 +404,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     {
         if (_game.World.Dimension.IsNether) return;
 
-        // No shader program for the sky on either backend. On GL the shader was never built; on
-        // WebGPU the slot pipelines were never registered (target was not ready at construct).
-        if (_skyShader is null && !HasSkySlotPipeline)
+        if (!HasSkySlotPipeline)
         {
             return;
         }
@@ -449,21 +418,6 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         float groundG = _world.Dimension.HasGround ? skyGreen * 0.2F + 0.04F : skyGreen;
         float groundB = _world.Dimension.HasGround ? skyBlue * 0.6F + 0.1F : skyBlue;
 
-        if (_skyShader is not null)
-        {
-            SkyShader.Bind();
-            SkyShader.SetCommonUniforms(GameRenderer.ShaderInfo);
-            SkyShader.SetUniform1("u_Texture", 0);
-            SkyShader.SetUniform1("u_UseTexture", 0);
-            SkyShader.SetUniform3("u_SkyColor", new Vector3D<float>(skyRed, skyGreen, skyBlue));
-            SkyShader.SetUniform3("u_GroundColor", new Vector3D<float>(groundR, groundG, groundB));
-
-            // Tell the shader what the view is now, and again after every model-view mutation below,
-            // because the draws are immediate-mode. The projection does not change in this method.
-            SkyShader.SetUniformMatrix4("u_Projection", GLManager.Projection.Top);
-            SkyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
-        }
-
         Tessellator tessellator = Tessellator.instance;
 
         // The sky is drawn after the world, not before it, so it has to be depth tested — terrain
@@ -473,52 +427,17 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         GLManager.State.Apply(RenderState.Translucent);
 
         // Sky dome (top + bottom) — angle-based gradient
-        if (_skyShader is not null) SkyShader.SetUniform1("u_GradientMode", 1);
         SetSkyUniforms(SkyGradient(skyRed, skyGreen, skyBlue, groundR, groundG, groundB));
         GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
         DrawSkyMesh(_skyAbove, ProgramSlot.SkyBasic);
         DrawSkyMesh(_skyBelow, ProgramSlot.SkyBasic);
 
-        // Sunrise/sunset fan. Triangle-fan topology (WebGPU has no counterpart — skipped).
-        if (_skyShader is not null) SkyShader.SetUniform1("u_GradientMode", 0);
+        // Sunrise/sunset fan was TriangleFan topology, which has no WebGPU counterpart, and is
+        // skipped entirely rather than ported.
         GLManager.AlphaTestEnabled = false;
         Lighting.turnOff();
-        float[] backgroundColor = _world.Dimension.GetBackgroundColor(_world.GetTime(tickDelta), tickDelta);
-        // TriangleFan — GL only. WebGPU has no counterpart, so the whole tessellation is skipped
-        // rather than just the final draw: starting it and never finishing leaves the tessellator
-        // stuck "already tesselating" for every draw after this one.
-        if (backgroundColor != null && _skyShader is not null)
-        {
-            SetSkyUniforms(SkyUntextured());
-            GLManager.ShadeModel = ShadeModel.Smooth;
-            GLManager.ModelView.Push();
-            GLManager.ModelView.Rotate(90.0F, 1.0F, 0.0F, 0.0F);
-            float celestialAngle = _world.GetTime(tickDelta);
-            GLManager.ModelView.Rotate(celestialAngle > 0.5F ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
-            SkyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
-            RefreshSkyModelView();
-            tessellator.startDrawing(6);
-            tessellator.setColorRGBA_F(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
-            tessellator.addVertex(0.0D, 100.0D, 0.0D);
-            tessellator.setColorRGBA_F(backgroundColor[0], backgroundColor[1], backgroundColor[2], 0.0F);
-            for (int segment = 0; segment <= 16; ++segment)
-            {
-                float angle = segment * (float)Math.PI * 2.0F / 16;
-                float ringX = MathHelper.Sin(angle);
-                float ringY = MathHelper.Cos(angle);
-                tessellator.addVertex((ringX * 120.0F), (ringY * 120.0F), (-ringY * 40.0F * backgroundColor[3]));
-            }
-
-            tessellator.drawWithBoundProgram();
-            GLManager.ModelView.Pop();
-            SkyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
-            RefreshSkyModelView();
-            GLManager.ShadeModel = ShadeModel.Flat;
-        }
 
         // Sun and Moon (textured)
-        if (_skyShader is not null) SkyShader.SetUniform1("u_UseTexture", 1);
-
         // Sun, moon and the stars after them only ever brighten what is behind them, faded in by
         // their own alpha so the rain gradient can dim them.
         GLManager.State.Apply(RenderState.Translucent with { Blend = BlendMode.AdditiveByAlpha });
@@ -526,7 +445,6 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         float rainFade = 1.0F - _world.Environment.GetRainGradient(tickDelta);
         GLManager.Color = new(1.0F, 1.0F, 1.0F, rainFade);
         GLManager.ModelView.Rotate(_world.GetTime(tickDelta) * 360.0F, 1.0F, 0.0F, 0.0F);
-        if (_skyShader is not null) SkyShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
         RefreshSkyModelView();
         SetSkyUniforms(SkyTextured(rainFade));
         float sunQuadSize = 30.0F;
@@ -547,14 +465,9 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         DrawSkyTessellator(ProgramSlot.SkyTextured);
 
         // Stars
-        if (_skyShader is not null) SkyShader.SetUniform1("u_UseTexture", 0);
-        if (_skyShader is not null) SkyShader.SetUniform1("u_GradientMode", 0);
         float starBrightness = _world.CalculateSkyLightIntensity(tickDelta) * rainFade;
         if (starBrightness > 0.0F)
         {
-            // The star mesh carries no per-vertex colour — GL dims it by replaying the display
-            // list under a flat glColor instead. WebGPU has no such fallback, so the brightness
-            // has to travel as the uniform tint, not a vertex-colour switch.
             SetSkyUniforms(SkyStars(starBrightness));
             GLManager.Color = new(starBrightness, starBrightness, starBrightness, starBrightness);
             DrawSkyMesh(_stars, ProgramSlot.SkyBasic);
@@ -564,7 +477,6 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         GLManager.AlphaTestEnabled = true;
         GLManager.ModelView.Pop();
 
-        GLManager.GLOrNull?.UseProgram(0);
         GLManager.State.Apply(RenderState.Opaque);
     }
 
@@ -594,21 +506,11 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         GLManager.Context.SkySlot = u;
     }
 
-    /// <summary>Draws <paramref name="mesh" /> under the sky shader (GL) or slot (WebGPU).</summary>
-    private void DrawSkyMesh(IStaticMesh mesh, ProgramSlot slot)
-    {
-        if (_skyShader is not null) { mesh.DrawWithBoundProgram(); return; }
+    /// <summary>Draws <paramref name="mesh" /> under the sky's WebGPU slot.</summary>
+    private static void DrawSkyMesh(IStaticMesh mesh, ProgramSlot slot) => mesh.Draw(slot);
 
-        mesh.Draw(slot);
-    }
-
-    /// <summary>Submits the tessellator under the sky shader (GL) or slot (WebGPU).</summary>
-    private void DrawSkyTessellator(ProgramSlot slot)
-    {
-        if (_skyShader is not null) { Tessellator.instance.drawWithBoundProgram(); return; }
-
-        Tessellator.instance.draw(slot);
-    }
+    /// <summary>Submits the tessellator under the sky's WebGPU slot.</summary>
+    private static void DrawSkyTessellator(ProgramSlot slot) => Tessellator.instance.draw(slot);
 
     // ── Sky uniform templates ──────────────────────────────────────────────
 
@@ -720,17 +622,11 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         return new Vector3(0.0F, MathF.Cos(theta), MathF.Sin(theta));
     }
 
-    private void DrawCloudMesh(IStaticMesh mesh)
-    {
-        if (_cloudShader is not null) { mesh.DrawWithBoundProgram(); return; }
-
-        mesh.Draw(ProgramSlot.Clouds);
-    }
+    private static void DrawCloudMesh(IStaticMesh mesh) => mesh.Draw(ProgramSlot.Clouds);
 
     public void RenderClouds(float tickDelta)
     {
-        // No shader program for clouds on either backend.
-        if (_cloudShader is null && !HasCloudSlotPipeline) return;
+        if (!HasCloudSlotPipeline) return;
 
         using (Profiler.Begin("RenderClouds"))
         {
@@ -912,27 +808,12 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         float subCloudOffsetX = (float)(cloudOffsetX - MathHelper.Floor(cloudOffsetX)) + (CloudsRenderDistance / 2);
         float subCloudOffsetZ = (float)(cloudOffsetZ - MathHelper.Floor(cloudOffsetZ)) + (CloudsRenderDistance / 2);
 
-        if (_cloudShader is not null)
-        {
-            CloudShader.Bind();
-            CloudShader.SetCommonUniforms(GameRenderer.ShaderInfo);
-            CloudShader.SetUniform1("u_Texture", 0);
-            CloudShader.SetUniform3("u_CloudOffset", new Vector3D<float>(-subCloudOffsetX, cloudY, -subCloudOffsetZ));
-            CloudShader.SetUniform1("u_CloudScale", cloudScale / 2f);
-            // Upload the matrices now and again after each mutation below — the draws are immediate.
-            CloudShader.SetUniformMatrix4("u_Projection", GLManager.Projection.Top);
-            CloudShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
-            CloudShader.SetUniformMatrix4("u_TextureMatrix", GLManager.TextureMatrix.Top);
-        }
-
         GLManager.ModelView.Scale(cloudScale, 1.0F, cloudScale);
         GLManager.ModelView.Push();
         GLManager.ModelView.Translate(-subCloudOffsetX, cloudY, -subCloudOffsetZ);
-        if (_cloudShader is not null) CloudShader.SetUniformMatrix4("u_ModelView", GLManager.ModelView.Top);
 
         GLManager.TextureMatrix.Push();
         GLManager.TextureMatrix.Translate(textureOffsetU, textureOffsetV, 0.0F);
-        if (_cloudShader is not null) CloudShader.SetUniformMatrix4("u_TextureMatrix", GLManager.TextureMatrix.Top);
 
         GLManager.Color = new(cloudRed, cloudGreen, cloudBlue, 0.8F);
         SetCloudUniforms(-subCloudOffsetX, cloudY, -subCloudOffsetZ, cloudScale / 2f,
@@ -943,8 +824,6 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         GLManager.TextureMatrix.Pop();
 
         GLManager.ModelView.Pop();
-
-        GLManager.GLOrNull?.UseProgram(0);
 
         GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
 
@@ -1080,8 +959,6 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             // written, so a line lying exactly on a block face does not fight with it.
             GLManager.State.Apply(RenderState.Translucent);
             GLManager.Color = new(0.0F, 0.0F, 0.0F, 0.4F);
-            // WebGPU draws every line one pixel wide and has no equivalent knob.
-            GLManager.GLOrNull?.LineWidth(2.0F);
             GLManager.TextureEnabled = false;
             float outlinePadding = 0.002F;
             int blockId = _world.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);

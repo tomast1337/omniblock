@@ -1,8 +1,6 @@
 using BetaSharp.Client.Rendering.Core;
 using BetaSharp.Client.Rendering.Core.Textures;
-using Silk.NET.OpenGL;
 using Color = BetaSharp.Client.UI.Colors.Color;
-using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 
 namespace BetaSharp.Client.Rendering;
 
@@ -12,16 +10,6 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
     private string _titleText = string.Empty;
     private long _lastUpdateMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     private bool _ignoreShutdownCheck;
-
-    /// <summary>
-    ///     Whether this can put anything on screen at all.
-    /// </summary>
-    /// <remarks>
-    ///     The loading screen draws and presents a frame of its own, from wherever world loading
-    ///     happens to be, through <see cref="WebGpuGameRenderer.RenderLoadingFrame" />, which opens
-    ///     and presents a pass of its own for exactly this. False only before it exists yet.
-    /// </remarks>
-    private bool CanDraw => game.WebGpuRenderer is not null;
 
     public void BeginLoading(string message)
     {
@@ -46,11 +34,8 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
         {
             _titleText = message;
 
-            if (!CanDraw) return;
-
             ScaledResolution resolution = new(game.Options, game.DisplayWidth, game.DisplayHeight);
 
-            GLManager.GLOrNull?.Clear(ClearBufferMask.DepthBufferBit);
             GLManager.Projection.LoadIdentity();
             GLManager.Projection.Ortho(0.0, resolution.ScaledWidth, resolution.ScaledHeight, 0.0, 100.0, 300.0);
             GLManager.ModelView.LoadIdentity();
@@ -81,7 +66,7 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
             throw new BetaSharpShutdownException();
         }
 
-        if (!game.Running || !CanDraw) return;
+        if (!game.Running) return;
 
         long currentTimeMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         if (currentTimeMs - _lastUpdateMs < 20L) return;
@@ -91,12 +76,10 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
         int width = resolution.ScaledWidth;
         int height = resolution.ScaledHeight;
 
-        GLManager.GLOrNull?.Clear(ClearBufferMask.DepthBufferBit);
         GLManager.Projection.LoadIdentity();
         GLManager.Projection.Ortho(0.0, width, height, 0.0, 100.0, 300.0);
         GLManager.ModelView.LoadIdentity();
         GLManager.ModelView.Translate(0.0f, 0.0f, -200.0f);
-        GLManager.GLOrNull?.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
 
         void DrawContents()
         {

@@ -1,27 +1,9 @@
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using Silk.NET.Maths;
-using Silk.NET.OpenGL;
 
 namespace BetaSharp.Client.Rendering.Core;
 
 public class GLManager
 {
-    /// <summary>The OpenGL entry points, or null when the WebGPU backend is selected.</summary>
-    /// <remarks>
-    ///     Only for the handful of classes that own resources on both backends and have to branch.
-    ///     Everything else takes <see cref="GL" /> and is entitled to assume it exists.
-    /// </remarks>
-    public static IGL? GLOrNull { get; private set; }
-
-    /// <summary>The OpenGL entry points.</summary>
-    /// <remarks>
-    ///     Throws under WebGPU rather than returning something that accepts calls and drops them: a
-    ///     backend that cannot answer a GL call has to fail where the unported call is made, not
-    ///     leave a frame silently missing whatever that call would have drawn.
-    /// </remarks>
-    public static IGL GL => GLOrNull ?? throw new InvalidOperationException(
-        "OpenGL was reached while the WebGPU backend is selected — this call site has not been ported.");
-
     /// <summary>
     ///     The values a draw is made under, which both backends read. Held apart from
     ///     <see cref="GL" /> because none of it is OpenGL — see <see cref="RenderContext" />.
@@ -220,8 +202,8 @@ public class GLManager
     }
 
     /// <summary>
-    ///     Raised just before geometry is drawn through <see cref="IGL.DrawArrays" /> (i.e. drawn
-    ///     immediately rather than queued). A renderer holding queued geometry subscribes here so
+    ///     Raised just before geometry is drawn immediately rather than queued. A renderer holding
+    ///     queued geometry subscribes here so
     ///     what it is holding reaches the depth buffer first, in the order the caller issued it.
     /// </summary>
     public static event Action? ImmediateGeometryDrawing;
@@ -236,32 +218,15 @@ public class GLManager
     internal static void OnImmediateGeometryDrawing() => ImmediateGeometryDrawing?.Invoke();
     internal static void OnRasterStateChanging() => RasterStateChanging?.Invoke();
 
-    public static void Init(GL silkGl)
-    {
-        FixedFunctionPipeline pipeline = new(silkGl);
-        GLOrNull = pipeline;
-
-        // OpenGL wants the tint and facing pushed into default vertex attributes as they change;
-        // WebGPU reads the same values as uniforms at submission and subscribes to neither.
-        Context.ColorChanged += pipeline.SetDefaultColorAttribute;
-        Context.NormalChanged += pipeline.SetDefaultNormalAttribute;
-
-        DrawTargetOrNull = new GlDrawTarget();
-
-        State.Invalidate();
-    }
-
     /// <summary>
-    ///     Selects the WebGPU backend, which has no <see cref="IGL" /> at all.
+    ///     Selects the WebGPU backend.
     /// </summary>
     /// <remarks>
-    ///     A WebGPU draw goes through the <c>Wgpu*</c> classes. Nothing is installed in
-    ///     <see cref="GLOrNull" />, so anything still reaching for <see cref="GL" /> throws at the
-    ///     unported site instead of no-opping its way to an empty frame.
+    ///     A WebGPU draw goes through the <c>Wgpu*</c> classes. <see cref="DrawTargetOrNull" /> is
+    ///     installed by that backend for the length of each pass, not here.
     /// </remarks>
-    public static void InitWebGpu()
+    public static void Init()
     {
-        GLOrNull = null;
         DrawTargetOrNull = null;
         State.Invalidate();
     }

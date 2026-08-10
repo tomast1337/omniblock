@@ -1,4 +1,3 @@
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Util.Maths;
 using Silk.NET.Maths;
 

@@ -2,7 +2,6 @@ using System.Runtime.InteropServices;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Chunks.Occlusion;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.WebGPU;
 using BetaSharp.Profiling;
 using BetaSharp.Textures;
@@ -74,8 +73,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private readonly List<Vector3D<int>> _chunkVersionsToRemove = [];
     private readonly List<ChunkToMeshInfo> _dirtyChunks = [];
     private readonly List<ChunkToMeshInfo> _lightingUpdates = [];
-    private readonly TerrainSlotProgram? _terrainProgram;
-    private Shader? _chunkShader;
     private int _lastRenderDistance;
     private Vector3D<double> _lastViewPos;
     private ICuller? _lastCamera;
@@ -107,99 +104,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     public int ChunksRendered { get; private set; }
     public int TranslucentMeshes { get; private set; }
 
-    private int _textureSamplerLoc;
-    private int _chunkFadeEnabledLoc;
-    private int _projectionMatrixLoc;
-
-    // Only the fancy canopies sway; the fast ones are the flat fallback and stayed still in Beta too.
-    private static readonly string[] s_wavyLeaves =
-    [
-        "betasharp:oak_leaves_fancy",
-        "betasharp:spruce_leaves_fancy",
-    ];
-
-    private static readonly string[] s_wavyPlants =
-    [
-        "betasharp:rose",
-        "betasharp:dandelion",
-        "betasharp:tallgrass",
-        "betasharp:dead_bush",
-        "betasharp:fern_tall_grass",
-    ];
-
     public ChunkRenderer(World world, GameOptions options)
     {
         _options = options;
         _meshGenerator = new();
         _world = world;
-
-        // The terrain program is GLSL, and the uniform locations cached off it are GL names. Under
-        // WebGPU chunks draw through the chunk.wgsl pipeline in RenderSolidWebGpu instead, and none
-        // of this exists — so it is built only where it can be, and asking for it elsewhere says so.
-        if (GLManager.GLOrNull is { } gl)
-        {
-            _terrainProgram = (TerrainSlotProgram)SlotPrograms.Resolve(ProgramSlot.Terrain, VertexLayoutKind.Chunk);
-            _chunkShader = _terrainProgram.Shader;
-            _chunkShader.Changed += BuildChunkShader;
-
-            gl.UseProgram(0);
-        }
     }
-
-    private TerrainSlotProgram TerrainProgram => _terrainProgram
-        ?? throw new InvalidOperationException(
-            "The GL terrain program was never built, so this is the WebGPU backend and a GL chunk "
-            + "render path was reached anyway.");
-
-    private Shader ChunkShader => _chunkShader
-        ?? throw new InvalidOperationException(
-            "The GL chunk shader was never built, so this is the WebGPU backend and a GL chunk "
-            + "render path was reached anyway.");
-
-    private void BuildChunkShader(Shader _)
-    {
-        _textureSamplerLoc = ChunkShader.GetUniformLocation("textureSampler");
-        _chunkFadeEnabledLoc = ChunkShader.GetUniformLocation("chunkFadeEnabled");
-        _projectionMatrixLoc = ChunkShader.GetUniformLocation("projectionMatrix");
-
-        // glUniform writes to whatever program is bound, and nothing has bound this one yet — every
-        // other uniform here is set inside a pass that already activated it.
-        ChunkShader.Bind();
-        UploadWavyLayers("wavyLeaf", s_wavyLeaves);
-        UploadWavyLayers("wavyPlant", s_wavyPlants);
-        GLManager.GL.UseProgram(0);
-    }
-
-    /// <summary>
-    ///     Tells the vertex shader which array layers sway in the wind, by name rather than by the
-    ///     atlas indices it used to compare against.
-    /// </summary>
-    /// <remarks>
-    ///     Uploaded once with the shader rather than per frame: which textures are a leaf does not
-    ///     change while the game runs, and the layer a name resolves to does not either.
-    /// </remarks>
-    private void UploadWavyLayers(string uniformPrefix, string[] names)
-    {
-        for (int i = 0; i < names.Length; i++)
-        {
-            ChunkShader.SetUniform1($"{uniformPrefix}Layers[{i}]", Atlases.Terrain.LayerOf(names[i]));
-        }
-
-        ChunkShader.SetUniform1($"{uniformPrefix}Count", names.Length);
-    }
-
-    /// <summary>
-    ///     The time of day and the dimension's brightness floor, which the terrain shader needs
-    ///     because it applies the light rather than reading it pre-applied.
-    /// </summary>
-    /// <remarks>
-    ///     Uniforms rather than mesh data, which is what stops the sun setting from dirtying every
-    ///     chunk in view. Taken from the frame's ambient state rather than read off this renderer's
-    ///     own world, because the same two reach the Tessellator's programs for the blocks that are
-    ///     drawn outside a chunk mesh — a moving piston, a primed TNT — and those have to be lit by
-    ///     the same numbers as the terrain they stand in.
-    /// </remarks>
-    private void UploadLightingUniforms() => SlotUniforms.UploadWorldLight(ChunkShader);
 
     /// <summary>
     ///     Chooses which sub-chunks the frame draws and takes the view matrices the draw will
@@ -352,86 +262,29 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         PrepareFrame(renderParams);
 
-        if (GLManager.GLOrNull is null)
+        if (TryGetWebGpuFrame(out RenderPassEncoder* pass, out WgpuTextureArray array))
         {
-            if (TryGetWebGpuFrame(out RenderPassEncoder* pass, out WgpuTextureArray array))
-            {
-                RenderSolidWebGpu(pass, WgpuPipelineFor(GLManager.State.Current), array);
-            }
-
-            // No EndFrame here, unlike the GL path below: it destroys mesh buffers, and under
-            // WebGPU the draws recorded above have not been submitted yet. The WebGPU renderer
-            // calls it once the frame is presented.
-            return;
+            RenderSolidWebGpu(pass, WgpuPipelineFor(GLManager.State.Current), array);
         }
 
-        TerrainProgram.Activate();
-        ChunkShader.SetCommonUniforms(GameRenderer.ShaderInfo);
-        UploadLightingUniforms();
-        GLManager.GL.Uniform1(_textureSamplerLoc, TextureArrayUnits.Terrain);
-        GLManager.GL.Uniform1(_chunkFadeEnabledLoc, renderParams.ChunkFade ? 1 : 0);
-
-        Matrix4X4<float> projection = _projection;
-
-        unsafe
-        {
-            GLManager.GL.UniformMatrix4(_projectionMatrixLoc, 1, false, (float*)&projection);
-        }
-
-        foreach (SubChunkRenderer renderer in _visibleRenderers)
-        {
-            float fadeProgress = Math.Clamp(renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
-            ChunkShader.SetUniform1("fadeProgress", fadeProgress);
-            renderer.Render(ChunkShader, 0, renderParams.ViewPos, _modelView);
-        }
-
-        EndFrame();
-
-        TerrainProgram.Deactivate();
-        Core.VertexArray.Unbind();
+        // No EndFrame here: it destroys mesh buffers, and the draws recorded above have not been
+        // submitted yet. The WebGPU renderer calls it once the frame is presented.
     }
 
     public unsafe void RenderTransparent(ChunkRenderParams renderParams)
     {
-        if (GLManager.GLOrNull is null)
+        if (TryGetWebGpuFrame(out RenderPassEncoder* pass, out WgpuTextureArray array))
         {
-            if (TryGetWebGpuFrame(out RenderPassEncoder* pass, out WgpuTextureArray array))
-            {
-                RenderTranslucentWebGpu(pass, WgpuPipelineFor(GLManager.State.Current), array,
-                    renderParams.ViewPos);
-            }
-            else
-            {
-                // The sorted set is filled per frame by PrepareFrame and drained by whichever pass
-                // draws it. Dropping the draw without dropping these would carry them into the next
-                // frame and draw them twice.
-                _translucentRenderers.Clear();
-            }
-
-            return;
+            RenderTranslucentWebGpu(pass, WgpuPipelineFor(GLManager.State.Current), array,
+                renderParams.ViewPos);
         }
-
-        TerrainProgram.Activate();
-        ChunkShader.SetCommonUniforms(GameRenderer.ShaderInfo);
-        UploadLightingUniforms();
-        GLManager.GL.Uniform1(_textureSamplerLoc, TextureArrayUnits.Terrain);
-
-        ChunkShader.SetUniformMatrix4("projectionMatrix", _projection);
-
-        _translucentDistanceComparer.Origin = renderParams.ViewPos;
-        _translucentRenderers.Sort(_translucentDistanceComparer);
-
-        foreach (SubChunkRenderer renderer in _translucentRenderers)
+        else
         {
-            float fadeProgress = Math.Clamp(renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
-            ChunkShader.SetUniform1("fadeProgress", fadeProgress);
-            renderer.Render(ChunkShader, 1, renderParams.ViewPos, _modelView);
+            // The sorted set is filled per frame by PrepareFrame and drained by whichever pass
+            // draws it. Dropping the draw without dropping these would carry them into the next
+            // frame and draw them twice.
+            _translucentRenderers.Clear();
         }
-
-        _translucentRenderers.Clear();
-
-        TerrainProgram.Deactivate();
-        Core.VertexArray.Unbind();
     }
 
     private void LoadNewMeshes(Vector3D<double> viewPos, int maxChunks = 8)
@@ -1051,11 +904,6 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         {
             state.Renderer.Dispose();
         }
-
-        // Not disposed here: the shader belongs to the TerrainSlotProgram registered with
-        // SlotPrograms, shared across every ChunkRenderer a world reload creates, and disposed once
-        // with the rest of the registry. Only the subscription below is this instance's own.
-        if (_chunkShader is { } shader) shader.Changed -= BuildChunkShader;
 
         foreach (WgpuPipeline pipeline in _wgpuPipelines.Values)
         {
