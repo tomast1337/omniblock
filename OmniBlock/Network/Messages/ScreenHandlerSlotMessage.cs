@@ -1,3 +1,4 @@
+using OmniBlock;
 using OmniBlock.Items;
 
 namespace OmniBlock.Network.Messages;
@@ -6,16 +7,40 @@ namespace OmniBlock.Network.Messages;
 ///     One slot of an open screen. Replaces <c>ScreenHandlerSlotUpdateS2CPacket</c>, which declared
 ///     a constant 8 bytes for a payload of 5 or 8.
 /// </summary>
-[WireMessage("omniblock:screen_slot")]
-public sealed partial class ScreenHandlerSlotMessage : Message
+public sealed class ScreenHandlerSlotMessage : Message
 {
     /// <summary>-1 with slot -1 addresses the cursor stack rather than a screen.</summary>
-    [WireField]
     public sbyte SyncId { get; set; }
 
-    [WireField]
     public short Slot { get; set; }
 
-    [WireField]
     public ItemStack? Stack { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "screen_slot");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        SyncId = (sbyte)stream.ReadByte();
+        Slot = stream.ReadShort();
+        Stack = stream.ReadItemStack();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteByte((byte)SyncId);
+        stream.WriteShort(Slot);
+        stream.WriteItemStack(Stack);
+    }
+
+    public override int Size()
+    {
+        return
+            1
+            + 2
+            + StreamExtensions.ItemStackSize(Stack);
+    }
 }

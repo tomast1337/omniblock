@@ -1,3 +1,6 @@
+using OmniBlock;
+using OmniBlock.Util;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -14,37 +17,29 @@ namespace OmniBlock.Network.Messages;
 ///         the position, the four length prefixes and the UTF-16 doubling — every term but one.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:update_sign")]
-public sealed partial class UpdateSignMessage : Message
+public sealed class UpdateSignMessage : Message
 {
     /// <summary>What a sign renders before it starts clipping, and the bound the reader applies.</summary>
     public const int MaxLineBytes = 15;
 
-    [WireField]
     public int X { get; set; }
 
-    [WireField]
     public short Y { get; set; }
 
-    [WireField]
     public int Z { get; set; }
 
-    [WireField(MaxLength = MaxLineBytes)]
     public string Line0 { get; set; } = string.Empty;
 
-    [WireField(MaxLength = MaxLineBytes)]
     public string Line1 { get; set; } = string.Empty;
 
-    [WireField(MaxLength = MaxLineBytes)]
     public string Line2 { get; set; } = string.Empty;
 
-    [WireField(MaxLength = MaxLineBytes)]
     public string Line3 { get; set; } = string.Empty;
 
     /// <summary>
-    ///     The four lines as an array, for the call sites that hold them that way. Not a
-    ///     <c>[WireField]</c>: it is a view over the four that are, and serialising it as well would
-    ///     put every line on the wire twice.
+    ///     The four lines as an array, for the call sites that hold them that way. Not itself part
+    ///     of the wire payload: it is a view over the four fields that are, and serialising it as
+    ///     well would put every line on the wire twice.
     /// </summary>
     public string[] Lines
     {
@@ -62,5 +57,45 @@ public sealed partial class UpdateSignMessage : Message
             Line2 = value.Length > 2 ? value[2] : string.Empty;
             Line3 = value.Length > 3 ? value[3] : string.Empty;
         }
+    }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "update_sign");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        X = stream.ReadInt();
+        Y = stream.ReadShort();
+        Z = stream.ReadInt();
+        Line0 = stream.ReadString(15);
+        Line1 = stream.ReadString(15);
+        Line2 = stream.ReadString(15);
+        Line3 = stream.ReadString(15);
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteInt(X);
+        stream.WriteShort(Y);
+        stream.WriteInt(Z);
+        stream.WriteString(Line0);
+        stream.WriteString(Line1);
+        stream.WriteString(Line2);
+        stream.WriteString(Line3);
+    }
+
+    public override int Size()
+    {
+        return
+            4
+            + 2
+            + 4
+            + (2 + ModifiedUtf8.GetByteCount(Line0))
+            + (2 + ModifiedUtf8.GetByteCount(Line1))
+            + (2 + ModifiedUtf8.GetByteCount(Line2))
+            + (2 + ModifiedUtf8.GetByteCount(Line3));
     }
 }

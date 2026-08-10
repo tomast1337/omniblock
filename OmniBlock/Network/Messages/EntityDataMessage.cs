@@ -1,3 +1,5 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -11,8 +13,7 @@ namespace OmniBlock.Network.Messages;
 ///         confused by its own contents.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:entity_data")]
-public sealed partial class EntityDataMessage : Message
+public sealed class EntityDataMessage : Message
 {
     /// <summary>
     ///     Well above what 32 synchronised properties can produce, and finite, which is the part
@@ -22,9 +23,32 @@ public sealed partial class EntityDataMessage : Message
 
     public override SendPriority Priority => SendPriority.High;
 
-    [WireField]
     public int EntityId { get; set; }
 
-    [WireField(MaxLength = MaxDataBytes)]
     public byte[] Data { get; set; } = [];
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_data");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        EntityId = stream.ReadInt();
+        Data = stream.ReadByteArray(4096);
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteInt(EntityId);
+        stream.WriteByteArray(Data);
+    }
+
+    public override int Size()
+    {
+        return
+            4
+            + StreamExtensions.ByteArraySize(Data);
+    }
 }

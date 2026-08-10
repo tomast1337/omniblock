@@ -1,3 +1,5 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -18,8 +20,7 @@ namespace OmniBlock.Network.Messages;
 ///         at all.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:entity_move")]
-public sealed partial class EntityMoveMessage : Message
+public sealed class EntityMoveMessage : Message
 {
     /// <summary>
     ///     Entity replication, which is what the priority split was built for: this must not queue
@@ -27,29 +28,62 @@ public sealed partial class EntityMoveMessage : Message
     /// </summary>
     public override SendPriority Priority => SendPriority.High;
 
-    [WireField]
     public int EntityId { get; set; }
 
     /// <summary>Which of the two groups below carry meaning. Zero is a bare "still here".</summary>
-    [WireField]
     public Field Mask { get; set; }
 
     /// <summary>Sixteenths of a block, the units the tracker already worked in.</summary>
-    [WireField]
     public sbyte DeltaX { get; set; }
 
-    [WireField]
     public sbyte DeltaY { get; set; }
 
-    [WireField]
     public sbyte DeltaZ { get; set; }
 
     /// <summary>A full turn in 256 steps, absolute rather than relative.</summary>
-    [WireField]
     public sbyte Yaw { get; set; }
 
-    [WireField]
     public sbyte Pitch { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_move");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        EntityId = stream.ReadInt();
+        Mask = (Field)((byte)stream.ReadByte());
+        DeltaX = (sbyte)stream.ReadByte();
+        DeltaY = (sbyte)stream.ReadByte();
+        DeltaZ = (sbyte)stream.ReadByte();
+        Yaw = (sbyte)stream.ReadByte();
+        Pitch = (sbyte)stream.ReadByte();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteInt(EntityId);
+        stream.WriteByte(((byte)Mask));
+        stream.WriteByte((byte)DeltaX);
+        stream.WriteByte((byte)DeltaY);
+        stream.WriteByte((byte)DeltaZ);
+        stream.WriteByte((byte)Yaw);
+        stream.WriteByte((byte)Pitch);
+    }
+
+    public override int Size()
+    {
+        return
+            4
+            + 1
+            + 1
+            + 1
+            + 1
+            + 1
+            + 1;
+    }
 
     [Flags]
     public enum Field : byte

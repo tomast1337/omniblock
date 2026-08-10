@@ -1,7 +1,8 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
-[WireMessage("beta:game_state_change")]
-public partial class GameStateChangeMessage : Message
+public class GameStateChangeMessage : Message
 {
     /// <summary>
     ///     Human-readable reason strings indexed by reason code, for the three reasons
@@ -9,6 +10,27 @@ public partial class GameStateChangeMessage : Message
     /// </summary>
     public static readonly string?[] Reasons = ["tile.bed.notValid", null, null];
 
-    [WireField]
     public sbyte Reason { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "game_state_change");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        Reason = (sbyte)stream.ReadByte();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteByte((byte)Reason);
+    }
+
+    public override int Size()
+    {
+        return
+            1;
+    }
 }

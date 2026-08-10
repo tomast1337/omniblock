@@ -1,3 +1,4 @@
+using OmniBlock;
 using OmniBlock.Items;
 
 namespace OmniBlock.Network.Messages;
@@ -12,26 +13,54 @@ namespace OmniBlock.Network.Messages;
 ///         duplicate both.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:interact_block")]
-public sealed partial class InteractBlockMessage : Message
+public sealed class InteractBlockMessage : Message
 {
-    [WireField]
     public int X { get; set; }
 
-    [WireField]
     public byte Y { get; set; }
 
-    [WireField]
     public int Z { get; set; }
 
     /// <summary>Block face, or 255 for an interaction with no block behind it.</summary>
-    [WireField]
     public byte Side { get; set; }
 
     /// <summary>
     ///     What the client believes it is holding. Advisory — the server uses its own record of the
     ///     player's inventory — and carried because the packet it replaces carried it.
     /// </summary>
-    [WireField]
     public ItemStack? Stack { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "interact_block");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        X = stream.ReadInt();
+        Y = (byte)stream.ReadByte();
+        Z = stream.ReadInt();
+        Side = (byte)stream.ReadByte();
+        Stack = stream.ReadItemStack();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteInt(X);
+        stream.WriteByte(Y);
+        stream.WriteInt(Z);
+        stream.WriteByte(Side);
+        stream.WriteItemStack(Stack);
+    }
+
+    public override int Size()
+    {
+        return
+            4
+            + 1
+            + 4
+            + 1
+            + StreamExtensions.ItemStackSize(Stack);
+    }
 }

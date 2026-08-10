@@ -1,3 +1,5 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -14,22 +16,16 @@ namespace OmniBlock.Network.Messages;
 ///         <c>int</c> meant the range was never the field's type.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:player_action")]
-public sealed partial class PlayerActionMessage : Message
+public sealed class PlayerActionMessage : Message
 {
-    [WireField]
     public byte Action { get; set; }
 
-    [WireField]
     public int X { get; set; }
 
-    [WireField]
     public byte Y { get; set; }
 
-    [WireField]
     public int Z { get; set; }
 
-    [WireField]
     public byte Direction { get; set; }
 
     /// <summary>
@@ -37,6 +33,41 @@ public sealed partial class PlayerActionMessage : Message
     ///     byte rather than this enum: the wire carries values this type has no name for, and
     ///     decoding into an enum that cannot represent them would be a lie the compiler believes.
     /// </summary>
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "player_action");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        Action = (byte)stream.ReadByte();
+        X = stream.ReadInt();
+        Y = (byte)stream.ReadByte();
+        Z = stream.ReadInt();
+        Direction = (byte)stream.ReadByte();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteByte(Action);
+        stream.WriteInt(X);
+        stream.WriteByte(Y);
+        stream.WriteInt(Z);
+        stream.WriteByte(Direction);
+    }
+
+    public override int Size()
+    {
+        return
+            1
+            + 4
+            + 1
+            + 4
+            + 1;
+    }
+
     public enum Actions : byte
     {
         BlockClick = 0,

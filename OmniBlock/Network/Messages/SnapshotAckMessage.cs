@@ -1,3 +1,5 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -15,8 +17,7 @@ namespace OmniBlock.Network.Messages;
 ///         wrong positions instead of a visible fault.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:snapshot_ack")]
-public sealed partial class SnapshotAckMessage : Message
+public sealed class SnapshotAckMessage : Message
 {
     /// <summary>
     ///     An acknowledgement that arrives late costs a snapshot's worth of redundant delta, so it
@@ -25,6 +26,27 @@ public sealed partial class SnapshotAckMessage : Message
     public override SendPriority Priority => SendPriority.High;
 
     /// <summary>Zero means nothing has been applied yet, and the server must send an absolute snapshot.</summary>
-    [WireField(Encoding = WireEncoding.VarInt)]
     public uint Sequence { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "snapshot_ack");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        Sequence = (uint)stream.ReadVarInt();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteVarInt((int)Sequence);
+    }
+
+    public override int Size()
+    {
+        return
+            StreamExtensions.VarIntSize((int)Sequence);
+    }
 }

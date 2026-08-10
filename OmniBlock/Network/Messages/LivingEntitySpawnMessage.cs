@@ -1,3 +1,5 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -10,34 +12,68 @@ namespace OmniBlock.Network.Messages;
 ///         payload not happening to contain it.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:living_entity_spawn")]
-public sealed partial class LivingEntitySpawnMessage : Message
+public sealed class LivingEntitySpawnMessage : Message
 {
     public override SendPriority Priority => SendPriority.High;
 
-    [WireField]
     public int EntityId { get; set; }
 
-    [WireField]
     public sbyte Type { get; set; }
 
     /// <summary>Fixed point in sixteenths of a block.</summary>
-    [WireField]
     public int X { get; set; }
 
-    [WireField]
     public int Y { get; set; }
 
-    [WireField]
     public int Z { get; set; }
 
-    [WireField]
     public sbyte Yaw { get; set; }
 
-    [WireField]
     public sbyte Pitch { get; set; }
 
     /// <summary>The full <c>DataSynchronizer</c> state, not a delta — this is the entity's first sight.</summary>
-    [WireField(MaxLength = EntityDataMessage.MaxDataBytes)]
     public byte[] Data { get; set; } = [];
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "living_entity_spawn");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        EntityId = stream.ReadInt();
+        Type = (sbyte)stream.ReadByte();
+        X = stream.ReadInt();
+        Y = stream.ReadInt();
+        Z = stream.ReadInt();
+        Yaw = (sbyte)stream.ReadByte();
+        Pitch = (sbyte)stream.ReadByte();
+        Data = stream.ReadByteArray(4096);
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteInt(EntityId);
+        stream.WriteByte((byte)Type);
+        stream.WriteInt(X);
+        stream.WriteInt(Y);
+        stream.WriteInt(Z);
+        stream.WriteByte((byte)Yaw);
+        stream.WriteByte((byte)Pitch);
+        stream.WriteByteArray(Data);
+    }
+
+    public override int Size()
+    {
+        return
+            4
+            + 1
+            + 4
+            + 4
+            + 4
+            + 1
+            + 1
+            + StreamExtensions.ByteArraySize(Data);
+    }
 }

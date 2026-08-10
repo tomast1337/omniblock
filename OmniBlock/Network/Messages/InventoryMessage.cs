@@ -1,3 +1,4 @@
+using OmniBlock;
 using OmniBlock.Items;
 
 namespace OmniBlock.Network.Messages;
@@ -10,8 +11,7 @@ namespace OmniBlock.Network.Messages;
 ///         was wrong on essentially every send, and wrong by more the emptier the inventory was.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:inventory")]
-public sealed partial class InventoryMessage : Message
+public sealed class InventoryMessage : Message
 {
     /// <summary>
     ///     Far above the largest screen the game opens, and finite, which is the part that matters:
@@ -20,9 +20,32 @@ public sealed partial class InventoryMessage : Message
     public const int MaxSlots = 1024;
 
     /// <summary>-1 addresses the player's own inventory rather than an open screen.</summary>
-    [WireField]
     public sbyte SyncId { get; set; }
 
-    [WireField(MaxLength = MaxSlots)]
     public ItemStack?[] Contents { get; set; } = [];
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "inventory");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        SyncId = (sbyte)stream.ReadByte();
+        Contents = stream.ReadItemStacks(1024);
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteByte((byte)SyncId);
+        stream.WriteItemStacks(Contents);
+    }
+
+    public override int Size()
+    {
+        return
+            1
+            + StreamExtensions.ItemStacksSize(Contents);
+    }
 }

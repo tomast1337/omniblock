@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using OmniBlock;
 using OmniBlock.Network.Chunks;
 
 namespace OmniBlock.Network.Messages;
@@ -18,8 +19,7 @@ namespace OmniBlock.Network.Messages;
 ///         rests on, to save bytes on a path that is already rare.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:chunk_data")]
-public sealed partial class ChunkDataMessage : Message
+public sealed class ChunkDataMessage : Message
 {
     /// <summary>
     ///     Bulk, and the reason the priority split exists at all. A chunk must never overtake an
@@ -35,14 +35,11 @@ public sealed partial class ChunkDataMessage : Message
     /// </summary>
     public const int MaxDecodedBytes = 256 * 1024;
 
-    [WireField]
     public int ChunkX { get; set; }
 
-    [WireField]
     public int ChunkZ { get; set; }
 
     /// <summary>The zlib'd output of <see cref="ChunkBlobCodec.Encode" />.</summary>
-    [WireField(MaxLength = MaxDecodedBytes)]
     public byte[] Compressed { get; set; } = [];
 
     /// <summary>
@@ -122,5 +119,33 @@ public sealed partial class ChunkDataMessage : Message
         }
 
         return output.ToArray();
+    }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "chunk_data");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        ChunkX = stream.ReadInt();
+        ChunkZ = stream.ReadInt();
+        Compressed = stream.ReadByteArray(262144);
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteInt(ChunkX);
+        stream.WriteInt(ChunkZ);
+        stream.WriteByteArray(Compressed);
+    }
+
+    public override int Size()
+    {
+        return
+            4
+            + 4
+            + StreamExtensions.ByteArraySize(Compressed);
     }
 }

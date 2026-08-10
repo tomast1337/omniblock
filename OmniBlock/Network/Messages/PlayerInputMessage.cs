@@ -1,3 +1,5 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -10,24 +12,54 @@ namespace OmniBlock.Network.Messages;
 ///         replace.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:player_input")]
-public sealed partial class PlayerInputMessage : Message
+public sealed class PlayerInputMessage : Message
 {
-    [WireField]
     public float Sideways { get; set; }
 
-    [WireField]
     public float Forward { get; set; }
 
-    [WireField]
     public float Pitch { get; set; }
 
-    [WireField]
     public float Yaw { get; set; }
 
-    [WireField]
     public bool Jumping { get; set; }
 
-    [WireField]
     public bool Sneaking { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "player_input");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        Sideways = stream.ReadFloat();
+        Forward = stream.ReadFloat();
+        Pitch = stream.ReadFloat();
+        Yaw = stream.ReadFloat();
+        Jumping = stream.ReadBoolean();
+        Sneaking = stream.ReadBoolean();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteFloat(Sideways);
+        stream.WriteFloat(Forward);
+        stream.WriteFloat(Pitch);
+        stream.WriteFloat(Yaw);
+        stream.WriteBoolean(Jumping);
+        stream.WriteBoolean(Sneaking);
+    }
+
+    public override int Size()
+    {
+        return
+            4
+            + 4
+            + 4
+            + 4
+            + 1
+            + 1;
+    }
 }

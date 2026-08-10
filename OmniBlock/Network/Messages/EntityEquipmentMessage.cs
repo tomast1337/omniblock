@@ -1,3 +1,5 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -9,22 +11,48 @@ namespace OmniBlock.Network.Messages;
 ///         wire that means nothing and invite the receiver to believe it.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:entity_equipment")]
-public sealed partial class EntityEquipmentMessage : Message
+public sealed class EntityEquipmentMessage : Message
 {
     public override SendPriority Priority => SendPriority.High;
 
-    [WireField]
     public int EntityId { get; set; }
 
     /// <summary>0 is the held item; 1 to 4 are the armour slots.</summary>
-    [WireField]
     public short Slot { get; set; }
 
     /// <summary>-1 for an empty slot.</summary>
-    [WireField]
     public short ItemRawId { get; set; } = -1;
 
-    [WireField]
     public short ItemDamage { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_equipment");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        EntityId = stream.ReadInt();
+        Slot = stream.ReadShort();
+        ItemRawId = stream.ReadShort();
+        ItemDamage = stream.ReadShort();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteInt(EntityId);
+        stream.WriteShort(Slot);
+        stream.WriteShort(ItemRawId);
+        stream.WriteShort(ItemDamage);
+    }
+
+    public override int Size()
+    {
+        return
+            4
+            + 2
+            + 2
+            + 2;
+    }
 }

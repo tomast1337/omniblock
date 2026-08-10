@@ -1,3 +1,5 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -9,11 +11,31 @@ namespace OmniBlock.Network.Messages;
 ///         to an error.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:entity_destroy")]
-public sealed partial class EntityDestroyMessage : Message
+public sealed class EntityDestroyMessage : Message
 {
     public override SendPriority Priority => SendPriority.High;
 
-    [WireField]
     public int EntityId { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_destroy");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        EntityId = stream.ReadInt();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteInt(EntityId);
+    }
+
+    public override int Size()
+    {
+        return
+            4;
+    }
 }

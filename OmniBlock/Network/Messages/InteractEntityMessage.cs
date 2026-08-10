@@ -1,3 +1,5 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -22,8 +24,7 @@ namespace OmniBlock.Network.Messages;
 ///         which is what happened before this existed.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:interact_entity")]
-public sealed partial class InteractEntityMessage : Message
+public sealed class InteractEntityMessage : Message
 {
     /// <summary>
     ///     A hit queued behind bulk traffic is a hit that arrives after the rewind window has moved
@@ -31,11 +32,9 @@ public sealed partial class InteractEntityMessage : Message
     /// </summary>
     public override SendPriority Priority => SendPriority.High;
 
-    [WireField]
     public int EntityId { get; set; }
 
     /// <summary>Same encoding as <c>PlayerInteractEntityC2SPacket.IsLeftClick</c>: 0 interacts, 1 attacks.</summary>
-    [WireField]
     public byte Action { get; set; }
 
     /// <summary>
@@ -43,6 +42,33 @@ public sealed partial class InteractEntityMessage : Message
     ///     <c>ServerClock</c> less that entity's interpolation delay. Zero when the clock has not
     ///     synchronised yet, which the server reads as "no rewind" rather than as the epoch.
     /// </summary>
-    [WireField]
     public long RenderTimeMs { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "interact_entity");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        EntityId = stream.ReadInt();
+        Action = (byte)stream.ReadByte();
+        RenderTimeMs = stream.ReadLong();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteInt(EntityId);
+        stream.WriteByte(Action);
+        stream.WriteLong(RenderTimeMs);
+    }
+
+    public override int Size()
+    {
+        return
+            4
+            + 1
+            + 8;
+    }
 }

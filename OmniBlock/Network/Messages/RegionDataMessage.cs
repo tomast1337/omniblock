@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using OmniBlock;
 using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Network.Messages;
@@ -25,8 +26,7 @@ namespace OmniBlock.Network.Messages;
 ///         reported size.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:region_data")]
-public sealed partial class RegionDataMessage : Message
+public sealed class RegionDataMessage : Message
 {
     /// <summary>
     ///     Refuses a payload that would expand past what the declared box can possibly hold. The
@@ -36,16 +36,12 @@ public sealed partial class RegionDataMessage : Message
     /// </summary>
     public const int MaxDecodedBytes = 128 * 1024;
 
-    [WireField]
     public int X { get; set; }
 
-    [WireField]
     public short Y { get; set; }
 
-    [WireField]
     public int Z { get; set; }
 
-    [WireField]
     public byte SizeX { get; set; }
 
     /// <summary>
@@ -54,14 +50,11 @@ public sealed partial class RegionDataMessage : Message
     ///     <c>ChuckFormat.WorldHeight</c> documents as changeable. A byte works today and would
     ///     silently truncate the first time it is raised.
     /// </summary>
-    [WireField]
     public short SizeY { get; set; }
 
-    [WireField]
     public byte SizeZ { get; set; }
 
     /// <summary>The zlib'd block/metadata/light run for the box, in <c>GetChunkData</c> order.</summary>
-    [WireField(MaxLength = MaxDecodedBytes)]
     public byte[] Compressed { get; set; } = [];
 
     /// <summary>Reads the box out of the world and compresses it.</summary>
@@ -123,5 +116,45 @@ public sealed partial class RegionDataMessage : Message
         }
 
         return output.ToArray();
+    }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "region_data");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        X = stream.ReadInt();
+        Y = stream.ReadShort();
+        Z = stream.ReadInt();
+        SizeX = (byte)stream.ReadByte();
+        SizeY = stream.ReadShort();
+        SizeZ = (byte)stream.ReadByte();
+        Compressed = stream.ReadByteArray(131072);
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteInt(X);
+        stream.WriteShort(Y);
+        stream.WriteInt(Z);
+        stream.WriteByte(SizeX);
+        stream.WriteShort(SizeY);
+        stream.WriteByte(SizeZ);
+        stream.WriteByteArray(Compressed);
+    }
+
+    public override int Size()
+    {
+        return
+            4
+            + 2
+            + 4
+            + 1
+            + 2
+            + 1
+            + StreamExtensions.ByteArraySize(Compressed);
     }
 }

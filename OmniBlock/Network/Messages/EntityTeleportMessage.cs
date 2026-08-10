@@ -1,3 +1,5 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -8,27 +10,57 @@ namespace OmniBlock.Network.Messages;
 ///         length; the generated size is measured.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:entity_teleport")]
-public sealed partial class EntityTeleportMessage : Message
+public sealed class EntityTeleportMessage : Message
 {
     public override SendPriority Priority => SendPriority.High;
 
-    [WireField]
     public int EntityId { get; set; }
 
     /// <summary>Fixed point in sixteenths of a block.</summary>
-    [WireField]
     public int X { get; set; }
 
-    [WireField]
     public int Y { get; set; }
 
-    [WireField]
     public int Z { get; set; }
 
-    [WireField]
     public sbyte Yaw { get; set; }
 
-    [WireField]
     public sbyte Pitch { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_teleport");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        EntityId = stream.ReadInt();
+        X = stream.ReadInt();
+        Y = stream.ReadInt();
+        Z = stream.ReadInt();
+        Yaw = (sbyte)stream.ReadByte();
+        Pitch = (sbyte)stream.ReadByte();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteInt(EntityId);
+        stream.WriteInt(X);
+        stream.WriteInt(Y);
+        stream.WriteInt(Z);
+        stream.WriteByte((byte)Yaw);
+        stream.WriteByte((byte)Pitch);
+    }
+
+    public override int Size()
+    {
+        return
+            4
+            + 4
+            + 4
+            + 4
+            + 1
+            + 1;
+    }
 }

@@ -1,12 +1,34 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Closes an open screen. Replaces <c>CloseScreenS2CPacket</c>, and travels both ways: the
 ///     client says it has closed one, the server says one is no longer valid.
 /// </summary>
-[WireMessage("omniblock:close_screen")]
-public sealed partial class CloseScreenMessage : Message
+public sealed class CloseScreenMessage : Message
 {
-    [WireField]
     public sbyte SyncId { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "close_screen");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        SyncId = (sbyte)stream.ReadByte();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteByte((byte)SyncId);
+    }
+
+    public override int Size()
+    {
+        return
+            1;
+    }
 }

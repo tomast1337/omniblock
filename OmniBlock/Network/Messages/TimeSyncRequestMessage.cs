@@ -1,3 +1,5 @@
+using OmniBlock;
+
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -10,17 +12,39 @@ namespace OmniBlock.Network.Messages;
 ///         would measure the tick phase rather than the network.
 ///     </para>
 /// </summary>
-[WireMessage("omniblock:time_sync_request")]
-public sealed partial class TimeSyncRequestMessage : Message
+public sealed class TimeSyncRequestMessage : Message
 {
     /// <summary>Latency measurement: a probe queued behind a chunk measures the queue, not the network.</summary>
     public override SendPriority Priority => SendPriority.High;
 
     /// <summary>Rolling serial, for diagnostics and to guard against reordered responses.</summary>
-    [WireField]
     public uint Sequence { get; set; }
 
     /// <summary>Client's monotonic clock when this was sent — T0.</summary>
-    [WireField]
     public long ClientSendTime { get; set; }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "time_sync_request");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public override void Read(Stream stream)
+    {
+        Sequence = (uint)stream.ReadInt();
+        ClientSendTime = stream.ReadLong();
+    }
+
+    public override void Write(Stream stream)
+    {
+        stream.WriteInt((int)Sequence);
+        stream.WriteLong(ClientSendTime);
+    }
+
+    public override int Size()
+    {
+        return
+            4
+            + 8;
+    }
 }
