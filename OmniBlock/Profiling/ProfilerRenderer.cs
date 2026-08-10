@@ -6,7 +6,7 @@ public static class ProfilerRenderer
 {
     private class ProfilerNode(string name)
     {
-        public string Name = name;
+        public readonly string Name = name;
         public readonly Dictionary<string, ProfilerNode> Children = new();
         public double Last;
         public double Avg;
