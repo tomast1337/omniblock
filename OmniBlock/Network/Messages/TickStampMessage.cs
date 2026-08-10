@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -27,6 +25,8 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class TickStampMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "tick_stamp");
+
     /// <summary>A stamp that arrives late drags the whole interpolation timeline with it.</summary>
     public override SendPriority Priority => SendPriority.High;
 
@@ -37,25 +37,13 @@ public sealed class TickStampMessage : Message
     /// </summary>
     public long ServerTimeMs { get; set; }
 
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "tick_stamp");
-
     public override ResourceLocation Key => Id;
 
     public override int SchemaVersion => 1;
 
-    public override void Read(Stream stream)
-    {
-        ServerTimeMs = stream.ReadLong();
-    }
+    public override void Read(Stream stream) => ServerTimeMs = stream.ReadLong();
 
-    public override void Write(Stream stream)
-    {
-        stream.WriteLong(ServerTimeMs);
-    }
+    public override void Write(Stream stream) => stream.WriteLong(ServerTimeMs);
 
-    public override int Size()
-    {
-        return
-            8;
-    }
+    public override int Size() => 8;
 }

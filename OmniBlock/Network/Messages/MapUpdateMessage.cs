@@ -1,16 +1,13 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 public class MapUpdateMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "map_update");
     public short ItemRawId { get; set; }
 
     public short MapId { get; set; }
 
     public byte[] Data { get; set; } = [];
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "map_update");
 
     public override ResourceLocation Key => Id;
 
@@ -30,11 +27,8 @@ public class MapUpdateMessage : Message
         stream.WriteByteArray(Data);
     }
 
-    public override int Size()
-    {
-        return
-            2
-            + 2
-            + StreamExtensions.ByteArraySize(Data);
-    }
+    public override int Size() =>
+        2
+        + 2
+        + StreamExtensions.ByteArraySize(Data);
 }

@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -8,14 +6,13 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class EntityVehicleMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_vehicle");
     public override SendPriority Priority => SendPriority.High;
 
     public int EntityId { get; set; }
 
     /// <summary>-1 dismounts.</summary>
     public int VehicleEntityId { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_vehicle");
 
     public override ResourceLocation Key => Id;
 
@@ -33,10 +30,7 @@ public sealed class EntityVehicleMessage : Message
         stream.WriteInt(VehicleEntityId);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 4;
-    }
+    public override int Size() =>
+        4
+        + 4;
 }

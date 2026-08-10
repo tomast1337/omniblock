@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -14,19 +12,18 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class PlayerInputMessage : Message
 {
-    public float Sideways { get; set; }
-
-    public float Forward { get; set; }
-
-    public float Pitch { get; set; }
-
-    public float Yaw { get; set; }
-
-    public bool Jumping { get; set; }
-
-    public bool Sneaking { get; set; }
-
     public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "player_input");
+    public float Sideways { get; private set; }
+
+    public float Forward { get; private set; }
+
+    public float Pitch { get; private set; }
+
+    public float Yaw { get; private set; }
+
+    public bool Jumping { get; private set; }
+
+    public bool Sneaking { get; private set; }
 
     public override ResourceLocation Key => Id;
 
@@ -52,14 +49,11 @@ public sealed class PlayerInputMessage : Message
         stream.WriteBoolean(Sneaking);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 4
-            + 4
-            + 4
-            + 1
-            + 1;
-    }
+    public override int Size() =>
+        4
+        + 4
+        + 4
+        + 4
+        + 1
+        + 1;
 }

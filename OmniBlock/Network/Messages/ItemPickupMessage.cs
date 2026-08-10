@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -8,13 +6,12 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class ItemPickupMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "item_pickup");
     public override SendPriority Priority => SendPriority.High;
 
     public int EntityId { get; set; }
 
     public int CollectorEntityId { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "item_pickup");
 
     public override ResourceLocation Key => Id;
 
@@ -32,10 +29,7 @@ public sealed class ItemPickupMessage : Message
         stream.WriteInt(CollectorEntityId);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 4;
-    }
+    public override int Size() =>
+        4
+        + 4;
 }

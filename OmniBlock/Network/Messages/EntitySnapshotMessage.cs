@@ -29,35 +29,6 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class EntitySnapshotMessage : Message
 {
-    public static readonly ResourceLocation Id = new(Namespace.OmniBlock, "entity_snapshot");
-
-    public override ResourceLocation Key => Id;
-
-    /// <summary>
-    ///     Entity motion is the thing interpolation is measuring, so a snapshot delayed behind bulk
-    ///     traffic is measured as network jitter and paid for in interpolation delay.
-    /// </summary>
-    public override SendPriority Priority => SendPriority.High;
-
-    /// <summary>
-    ///     Records a peer will accept in one snapshot. A view distance of 32 with mobs tracked to 160
-    ///     blocks does not approach this; it is here so a malformed count cannot make this peer
-    ///     allocate on a stranger's word.
-    /// </summary>
-    public const int MaxRecords = 8192;
-
-    /// <summary>Per-recipient, starting at 1. Zero is reserved for "no baseline".</summary>
-    public uint Sequence { get; set; }
-
-    /// <summary>
-    ///     The snapshot these records are differences from, or zero when every record is absolute.
-    ///     A receiver that cannot reconstruct this sequence must drop the whole message — a delta
-    ///     applied to the wrong baseline is silently wrong rather than detectably broken.
-    /// </summary>
-    public uint Baseline { get; set; }
-
-    public List<EntityDelta> Deltas { get; set; } = [];
-
     /// <summary>Which of an entity's fields a record carries, and whether they are absolute.</summary>
     [Flags]
     public enum Field : byte
@@ -82,19 +53,37 @@ public sealed class EntitySnapshotMessage : Message
 
         Position = X | Y | Z,
         Rotation = Yaw | Pitch,
-        All = Position | Rotation,
+        All = Position | Rotation
     }
 
     /// <summary>
-    ///     One entity's changes.
-    ///     <para>
-    ///         <see cref="X" />, <see cref="Y" /> and <see cref="Z" /> are differences from the
-    ///         baseline unless <see cref="Field.Absolute" /> is set, in which case they are the
-    ///         values themselves. Rotation is always absolute: it is a byte either way, so a
-    ///         difference would cost the same at best and two bytes when an entity spins.
-    ///     </para>
+    ///     Records a peer will accept in one snapshot. A view distance of 32 with mobs tracked to 160
+    ///     blocks does not approach this; it is here so a malformed count cannot make this peer
+    ///     allocate on a stranger's word.
     /// </summary>
-    public readonly record struct EntityDelta(int EntityId, Field Mask, int X, int Y, int Z, byte Yaw, byte Pitch);
+    public const int MaxRecords = 8192;
+
+    public static readonly ResourceLocation Id = new(Namespace.OmniBlock, "entity_snapshot");
+
+    public override ResourceLocation Key => Id;
+
+    /// <summary>
+    ///     Entity motion is the thing interpolation is measuring, so a snapshot delayed behind bulk
+    ///     traffic is measured as network jitter and paid for in interpolation delay.
+    /// </summary>
+    public override SendPriority Priority => SendPriority.High;
+
+    /// <summary>Per-recipient, starting at 1. Zero is reserved for "no baseline".</summary>
+    public uint Sequence { get; set; }
+
+    /// <summary>
+    ///     The snapshot these records are differences from, or zero when every record is absolute.
+    ///     A receiver that cannot reconstruct this sequence must drop the whole message — a delta
+    ///     applied to the wrong baseline is silently wrong rather than detectably broken.
+    /// </summary>
+    public uint Baseline { get; set; }
+
+    public List<EntityDelta> Deltas { get; set; } = [];
 
     public override void Read(Stream stream)
     {
@@ -174,8 +163,8 @@ public sealed class EntitySnapshotMessage : Message
     public override int Size()
     {
         int size = StreamExtensions.VarIntSize((int)Sequence)
-            + StreamExtensions.VarIntSize((int)Baseline)
-            + StreamExtensions.VarIntSize(Deltas.Count);
+                   + StreamExtensions.VarIntSize((int)Baseline)
+                   + StreamExtensions.VarIntSize(Deltas.Count);
 
         int previousId = 0;
         foreach (EntityDelta delta in Deltas)
@@ -295,4 +284,15 @@ public sealed class EntitySnapshotMessage : Message
             (delta.Mask & Field.Yaw) != 0 ? delta.Yaw : previous.Yaw,
             (delta.Mask & Field.Pitch) != 0 ? delta.Pitch : previous.Pitch);
     }
+
+    /// <summary>
+    ///     One entity's changes.
+    ///     <para>
+    ///         <see cref="X" />, <see cref="Y" /> and <see cref="Z" /> are differences from the
+    ///         baseline unless <see cref="Field.Absolute" /> is set, in which case they are the
+    ///         values themselves. Rotation is always absolute: it is a byte either way, so a
+    ///         difference would cost the same at best and two bytes when an entity spins.
+    ///     </para>
+    /// </summary>
+    public readonly record struct EntityDelta(int EntityId, Field Mask, int X, int Y, int Z, byte Yaw, byte Pitch);
 }

@@ -1,16 +1,15 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 public class IncreaseStatMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "increase_stat");
     public int StatId { get; set; }
 
-    /// <summary>The amount written is a signed byte; the stat itself is interpreted
-    /// by the client from its registry entry.</summary>
+    /// <summary>
+    ///     The amount written is a signed byte; the stat itself is interpreted
+    ///     by the client from its registry entry.
+    /// </summary>
     public sbyte Amount { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "increase_stat");
 
     public override ResourceLocation Key => Id;
 
@@ -28,10 +27,7 @@ public class IncreaseStatMessage : Message
         stream.WriteByte((byte)Amount);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 1;
-    }
+    public override int Size() =>
+        4
+        + 1;
 }

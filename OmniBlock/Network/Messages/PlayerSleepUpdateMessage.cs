@@ -1,9 +1,8 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 public class PlayerSleepUpdateMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "player_sleep_update");
     public int PlayerId { get; set; }
 
     /// <summary>0 when entering a bed; the exact meaning of other values is unknown.</summary>
@@ -11,13 +10,13 @@ public class PlayerSleepUpdateMessage : Message
 
     public int X { get; set; }
 
-    /// <summary>The bed's Y coordinate. Stored as a signed byte on the wire because
-    /// Beta 1.7.3's world height was 128 blocks, so 0–127 fits in an sbyte.</summary>
+    /// <summary>
+    ///     The bed's Y coordinate. Stored as a signed byte on the wire because
+    ///     Beta 1.7.3's world height was 128 blocks, so 0–127 fits in an sbyte.
+    /// </summary>
     public sbyte Y { get; set; }
 
     public int Z { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "player_sleep_update");
 
     public override ResourceLocation Key => Id;
 
@@ -41,13 +40,10 @@ public class PlayerSleepUpdateMessage : Message
         stream.WriteInt(Z);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 1
-            + 4
-            + 1
-            + 4;
-    }
+    public override int Size() =>
+        4
+        + 1
+        + 4
+        + 1
+        + 4;
 }

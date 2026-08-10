@@ -1,16 +1,13 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 public class PlayerSpawnPositionMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "player_spawn_position");
     public int X { get; set; }
 
     public int Y { get; set; }
 
     public int Z { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "player_spawn_position");
 
     public override ResourceLocation Key => Id;
 
@@ -30,11 +27,8 @@ public class PlayerSpawnPositionMessage : Message
         stream.WriteInt(Z);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 4
-            + 4;
-    }
+    public override int Size() =>
+        4
+        + 4
+        + 4;
 }

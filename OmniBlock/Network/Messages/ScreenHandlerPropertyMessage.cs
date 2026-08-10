@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -8,13 +6,12 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class ScreenHandlerPropertyMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "screen_property");
     public sbyte SyncId { get; set; }
 
     public short PropertyId { get; set; }
 
     public short Value { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "screen_property");
 
     public override ResourceLocation Key => Id;
 
@@ -34,11 +31,8 @@ public sealed class ScreenHandlerPropertyMessage : Message
         stream.WriteShort(Value);
     }
 
-    public override int Size()
-    {
-        return
-            1
-            + 2
-            + 2;
-    }
+    public override int Size() =>
+        1
+        + 2
+        + 2;
 }

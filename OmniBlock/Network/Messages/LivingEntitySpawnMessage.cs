@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -14,6 +12,7 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class LivingEntitySpawnMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "living_entity_spawn");
     public override SendPriority Priority => SendPriority.High;
 
     public int EntityId { get; set; }
@@ -33,8 +32,6 @@ public sealed class LivingEntitySpawnMessage : Message
 
     /// <summary>The full <c>DataSynchronizer</c> state, not a delta — this is the entity's first sight.</summary>
     public byte[] Data { get; set; } = [];
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "living_entity_spawn");
 
     public override ResourceLocation Key => Id;
 
@@ -64,16 +61,13 @@ public sealed class LivingEntitySpawnMessage : Message
         stream.WriteByteArray(Data);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 1
-            + 4
-            + 4
-            + 4
-            + 1
-            + 1
-            + StreamExtensions.ByteArraySize(Data);
-    }
+    public override int Size() =>
+        4
+        + 1
+        + 4
+        + 4
+        + 4
+        + 1
+        + 1
+        + StreamExtensions.ByteArraySize(Data);
 }

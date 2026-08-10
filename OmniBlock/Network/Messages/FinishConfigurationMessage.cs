@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 public class FinishConfigurationMessage : Message
@@ -18,8 +16,5 @@ public class FinishConfigurationMessage : Message
     {
     }
 
-    public override int Size()
-    {
-        return 0;
-    }
+    public override int Size() => 0;
 }

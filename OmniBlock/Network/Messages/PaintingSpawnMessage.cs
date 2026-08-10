@@ -1,4 +1,3 @@
-using OmniBlock;
 using OmniBlock.Util;
 
 namespace OmniBlock.Network.Messages;
@@ -14,6 +13,8 @@ public sealed class PaintingSpawnMessage : Message
     ///     is computed rather than a constant. <c>PaintingSpawnBoundsTest</c> holds the two together.
     /// </summary>
     public const int MaxTitleBytes = 32;
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "painting_spawn");
 
     public override SendPriority Priority => SendPriority.High;
 
@@ -34,8 +35,6 @@ public sealed class PaintingSpawnMessage : Message
     public int Z { get; set; }
 
     public int Direction { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "painting_spawn");
 
     public override ResourceLocation Key => Id;
 
@@ -61,14 +60,11 @@ public sealed class PaintingSpawnMessage : Message
         stream.WriteInt(Direction);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + (2 + ModifiedUtf8.GetByteCount(Title))
-            + 4
-            + 4
-            + 4
-            + 4;
-    }
+    public override int Size() =>
+        4
+        + 2 + ModifiedUtf8.GetByteCount(Title)
+        + 4
+        + 4
+        + 4
+        + 4;
 }

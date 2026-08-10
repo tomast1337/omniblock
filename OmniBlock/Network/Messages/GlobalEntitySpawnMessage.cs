@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -8,6 +6,7 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class GlobalEntitySpawnMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "global_entity_spawn");
     public override SendPriority Priority => SendPriority.High;
 
     public int EntityId { get; set; }
@@ -20,8 +19,6 @@ public sealed class GlobalEntitySpawnMessage : Message
     public int Y { get; set; }
 
     public int Z { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "global_entity_spawn");
 
     public override ResourceLocation Key => Id;
 
@@ -45,13 +42,10 @@ public sealed class GlobalEntitySpawnMessage : Message
         stream.WriteInt(Z);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 1
-            + 4
-            + 4
-            + 4;
-    }
+    public override int Size() =>
+        4
+        + 1
+        + 4
+        + 4
+        + 4;
 }

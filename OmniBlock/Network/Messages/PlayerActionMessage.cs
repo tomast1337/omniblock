@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -18,6 +16,20 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class PlayerActionMessage : Message
 {
+    public enum Actions : byte
+    {
+        BlockClick = 0,
+        BlockBroken = 2,
+        DropSelectedItem = 4
+    }
+
+    /// <summary>
+    ///     The named actions. Not exhaustive — 1 and 3 are also sent — which is why the field is a
+    ///     byte rather than this enum: the wire carries values this type has no name for, and
+    ///     decoding into an enum that cannot represent them would be a lie the compiler believes.
+    /// </summary>
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "player_action");
+
     public byte Action { get; set; }
 
     public int X { get; set; }
@@ -27,14 +39,6 @@ public sealed class PlayerActionMessage : Message
     public int Z { get; set; }
 
     public byte Direction { get; set; }
-
-    /// <summary>
-    ///     The named actions. Not exhaustive — 1 and 3 are also sent — which is why the field is a
-    ///     byte rather than this enum: the wire carries values this type has no name for, and
-    ///     decoding into an enum that cannot represent them would be a lie the compiler believes.
-    /// </summary>
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "player_action");
 
     public override ResourceLocation Key => Id;
 
@@ -58,20 +62,10 @@ public sealed class PlayerActionMessage : Message
         stream.WriteByte(Direction);
     }
 
-    public override int Size()
-    {
-        return
-            1
-            + 4
-            + 1
-            + 4
-            + 1;
-    }
-
-    public enum Actions : byte
-    {
-        BlockClick = 0,
-        BlockBroken = 2,
-        DropSelectedItem = 4,
-    }
+    public override int Size() =>
+        1
+        + 4
+        + 1
+        + 4
+        + 1;
 }

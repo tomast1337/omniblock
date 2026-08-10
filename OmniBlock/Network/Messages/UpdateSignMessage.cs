@@ -1,4 +1,3 @@
-using OmniBlock;
 using OmniBlock.Util;
 
 namespace OmniBlock.Network.Messages;
@@ -22,19 +21,21 @@ public sealed class UpdateSignMessage : Message
     /// <summary>What a sign renders before it starts clipping, and the bound the reader applies.</summary>
     public const int MaxLineBytes = 15;
 
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "update_sign");
+
     public int X { get; set; }
 
     public short Y { get; set; }
 
     public int Z { get; set; }
 
-    public string Line0 { get; set; } = string.Empty;
+    private string Line0 { get; set; } = string.Empty;
 
-    public string Line1 { get; set; } = string.Empty;
+    private string Line1 { get; set; } = string.Empty;
 
-    public string Line2 { get; set; } = string.Empty;
+    private string Line2 { get; set; } = string.Empty;
 
-    public string Line3 { get; set; } = string.Empty;
+    private string Line3 { get; set; } = string.Empty;
 
     /// <summary>
     ///     The four lines as an array, for the call sites that hold them that way. Not itself part
@@ -58,8 +59,6 @@ public sealed class UpdateSignMessage : Message
             Line3 = value.Length > 3 ? value[3] : string.Empty;
         }
     }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "update_sign");
 
     public override ResourceLocation Key => Id;
 
@@ -87,15 +86,12 @@ public sealed class UpdateSignMessage : Message
         stream.WriteString(Line3);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 2
-            + 4
-            + (2 + ModifiedUtf8.GetByteCount(Line0))
-            + (2 + ModifiedUtf8.GetByteCount(Line1))
-            + (2 + ModifiedUtf8.GetByteCount(Line2))
-            + (2 + ModifiedUtf8.GetByteCount(Line3));
-    }
+    public override int Size() =>
+        4
+        + 2
+        + 4
+        + 2 + ModifiedUtf8.GetByteCount(Line0)
+        + 2 + ModifiedUtf8.GetByteCount(Line1)
+        + 2 + ModifiedUtf8.GetByteCount(Line2)
+        + 2 + ModifiedUtf8.GetByteCount(Line3);
 }

@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -26,6 +24,8 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class InteractEntityMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "interact_entity");
+
     /// <summary>
     ///     A hit queued behind bulk traffic is a hit that arrives after the rewind window has moved
     ///     past the moment it describes.
@@ -43,8 +43,6 @@ public sealed class InteractEntityMessage : Message
     ///     synchronised yet, which the server reads as "no rewind" rather than as the epoch.
     /// </summary>
     public long RenderTimeMs { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "interact_entity");
 
     public override ResourceLocation Key => Id;
 
@@ -64,11 +62,8 @@ public sealed class InteractEntityMessage : Message
         stream.WriteLong(RenderTimeMs);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 1
-            + 8;
-    }
+    public override int Size() =>
+        4
+        + 1
+        + 8;
 }

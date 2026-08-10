@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -8,14 +6,20 @@ namespace OmniBlock.Network.Messages;
 ///     <para>
 ///         <b>The velocity fields are unconditional now.</b> The packet wrote them only when
 ///         <see cref="EntityData" /> was positive, which made the payload's length depend on one of
-///         its own fields — and produced the worst size bug in the tree: <c>17 + 4 + EntityData > 0
-///         ? 6 : 0</c> parses as <c>(21 + EntityData) &gt; 0 ? 6 : 0</c>, so <c>Size()</c> answered
+///         its own fields — and produced the worst size bug in the tree:
+///         <c>
+///             17 + 4 + EntityData > 0
+///             ? 6 : 0
+///         </c>
+///         parses as <c>(21 + EntityData) &gt; 0 ? 6 : 0</c>, so <c>Size()</c> answered
 ///         6 for a packet of 21 or 27 bytes. Six bytes on a spawn is not worth a conditional; being
 ///         unable to write one wrongly is.
 ///     </para>
 /// </summary>
 public sealed class EntitySpawnMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_spawn");
+
     /// <summary>Spawns travel with the updates that follow them, or a move can overtake its own spawn.</summary>
     public override SendPriority Priority => SendPriority.High;
 
@@ -43,8 +47,6 @@ public sealed class EntitySpawnMessage : Message
     public short VelocityY { get; set; }
 
     public short VelocityZ { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_spawn");
 
     public override ResourceLocation Key => Id;
 
@@ -76,17 +78,14 @@ public sealed class EntitySpawnMessage : Message
         stream.WriteShort(VelocityZ);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 1
-            + 4
-            + 4
-            + 4
-            + 4
-            + 2
-            + 2
-            + 2;
-    }
+    public override int Size() =>
+        4
+        + 1
+        + 4
+        + 4
+        + 4
+        + 4
+        + 2
+        + 2
+        + 2;
 }

@@ -1,12 +1,9 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 public class KeepAliveMessage : Message
 {
-    public override SendPriority Priority => SendPriority.High;
-
     public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "keep_alive");
+    public override SendPriority Priority => SendPriority.High;
 
     public override ResourceLocation Key => Id;
 
@@ -20,8 +17,5 @@ public class KeepAliveMessage : Message
     {
     }
 
-    public override int Size()
-    {
-        return 0;
-    }
+    public override int Size() => 0;
 }

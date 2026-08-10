@@ -25,16 +25,16 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class ChunkCacheOfferMessage : Message
 {
-    public static readonly ResourceLocation Id = new(Namespace.OmniBlock, "chunk_cache_offer");
-
-    public override ResourceLocation Key => Id;
-
     /// <summary>
     ///     Bounds what one offer can cost, in upstream bytes and in server memory. At sixteen bytes
     ///     an entry this is half a megabyte, which already covers a radius far past any view distance
     ///     — the offer is sized to where the player is, not to everything they have ever seen.
     /// </summary>
     public const int MaxEntries = 32_768;
+
+    public static readonly ResourceLocation Id = new(Namespace.OmniBlock, "chunk_cache_offer");
+
+    public override ResourceLocation Key => Id;
 
     /// <summary>Chunk position to the hash the client holds for it.</summary>
     public List<KeyValuePair<ChunkPos, ulong>> Entries { get; } = [];
@@ -44,7 +44,7 @@ public sealed class ChunkCacheOfferMessage : Message
         Entries.Clear();
 
         int count = stream.ReadInt();
-        if (count < 0 || count > MaxEntries)
+        if (count is < 0 or > MaxEntries)
         {
             throw new InvalidDataException($"Chunk cache offer declares {count} entries; the limit is {MaxEntries}.");
         }
@@ -72,5 +72,5 @@ public sealed class ChunkCacheOfferMessage : Message
         }
     }
 
-    public override int Size() => sizeof(int) + (Entries.Count * ((sizeof(int) * 2) + sizeof(long)));
+    public override int Size() => sizeof(int) + Entries.Count * (sizeof(int) * 2 + sizeof(long));
 }

@@ -1,5 +1,4 @@
 using System.IO.Compression;
-using OmniBlock;
 using OmniBlock.Network.Chunks;
 
 namespace OmniBlock.Network.Messages;
@@ -22,18 +21,20 @@ namespace OmniBlock.Network.Messages;
 public sealed class ChunkDataMessage : Message
 {
     /// <summary>
-    ///     Bulk, and the reason the priority split exists at all. A chunk must never overtake an
-    ///     entity update or a clock probe: it is the one payload large enough that letting it go
-    ///     first is visible as a stall.
-    /// </summary>
-    public override SendPriority Priority => SendPriority.Normal;
-
-    /// <summary>
     ///     Refuses a blob that would expand past what a chunk can possibly hold. Without it a
     ///     hostile or corrupt payload decides how much memory this peer allocates, and the
     ///     decompressor has no reason of its own to stop.
     /// </summary>
     public const int MaxDecodedBytes = 256 * 1024;
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "chunk_data");
+
+    /// <summary>
+    ///     Bulk, and the reason the priority split exists at all. A chunk must never overtake an
+    ///     entity update or a clock probe: it is the one payload large enough that letting it go
+    ///     first is visible as a stall.
+    /// </summary>
+    public override SendPriority Priority => SendPriority.Normal;
 
     public int ChunkX { get; set; }
 
@@ -41,6 +42,10 @@ public sealed class ChunkDataMessage : Message
 
     /// <summary>The zlib'd output of <see cref="ChunkBlobCodec.Encode" />.</summary>
     public byte[] Compressed { get; set; } = [];
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
 
     /// <summary>
     ///     Encodes and compresses a chunk's arrays into a message.
@@ -59,11 +64,11 @@ public sealed class ChunkDataMessage : Message
         ReadOnlySpan<byte> meta,
         ReadOnlySpan<byte> blockLight,
         ReadOnlySpan<byte> skyLight) => new()
-        {
-            ChunkX = chunkX,
-            ChunkZ = chunkZ,
-            Compressed = Compress(ChunkBlobCodec.Encode(blocks, meta, blockLight, skyLight)),
-        };
+    {
+        ChunkX = chunkX,
+        ChunkZ = chunkZ,
+        Compressed = Compress(ChunkBlobCodec.Encode(blocks, meta, blockLight, skyLight))
+    };
 
     /// <summary>
     ///     Compresses an encoded blob. Separate from <see cref="Of" /> because the content-hash path
@@ -73,7 +78,7 @@ public sealed class ChunkDataMessage : Message
     public static byte[] Compress(ReadOnlySpan<byte> blob)
     {
         MemoryStream output = new(blob.Length / 4);
-        using (ZLibStream compressor = new(output, CompressionLevel.Optimal, leaveOpen: true))
+        using (ZLibStream compressor = new(output, CompressionLevel.Optimal, true))
         {
             compressor.Write(blob);
         }
@@ -100,7 +105,7 @@ public sealed class ChunkDataMessage : Message
     {
         ArgumentNullException.ThrowIfNull(compressed);
 
-        using MemoryStream input = new(compressed, writable: false);
+        using MemoryStream input = new(compressed, false);
         using ZLibStream decompressor = new(input, CompressionMode.Decompress);
 
         MemoryStream output = new(compressed.Length * 4);
@@ -121,12 +126,6 @@ public sealed class ChunkDataMessage : Message
         return output.ToArray();
     }
 
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "chunk_data");
-
-    public override ResourceLocation Key => Id;
-
-    public override int SchemaVersion => 1;
-
     public override void Read(Stream stream)
     {
         ChunkX = stream.ReadInt();
@@ -141,11 +140,8 @@ public sealed class ChunkDataMessage : Message
         stream.WriteByteArray(Compressed);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 4
-            + StreamExtensions.ByteArraySize(Compressed);
-    }
+    public override int Size() =>
+        4
+        + 4
+        + StreamExtensions.ByteArraySize(Compressed);
 }

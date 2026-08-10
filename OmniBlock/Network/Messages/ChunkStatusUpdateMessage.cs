@@ -1,16 +1,13 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 public class ChunkStatusUpdateMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "chunk_status_update");
     public int X { get; set; }
 
     public int Z { get; set; }
 
     public bool Loaded { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "chunk_status_update");
 
     public override ResourceLocation Key => Id;
 
@@ -30,11 +27,8 @@ public class ChunkStatusUpdateMessage : Message
         stream.WriteBoolean(Loaded);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 4
-            + 1;
-    }
+    public override int Size() =>
+        4
+        + 4
+        + 1;
 }

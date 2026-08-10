@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -12,6 +10,7 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class EntityTeleportMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_teleport");
     public override SendPriority Priority => SendPriority.High;
 
     public int EntityId { get; set; }
@@ -26,8 +25,6 @@ public sealed class EntityTeleportMessage : Message
     public sbyte Yaw { get; set; }
 
     public sbyte Pitch { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_teleport");
 
     public override ResourceLocation Key => Id;
 
@@ -53,14 +50,11 @@ public sealed class EntityTeleportMessage : Message
         stream.WriteByte((byte)Pitch);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 4
-            + 4
-            + 4
-            + 1
-            + 1;
-    }
+    public override int Size() =>
+        4
+        + 4
+        + 4
+        + 4
+        + 1
+        + 1;
 }

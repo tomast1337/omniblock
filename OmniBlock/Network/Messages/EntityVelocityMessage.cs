@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -13,6 +11,7 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class EntityVelocityMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_velocity");
     public override SendPriority Priority => SendPriority.High;
 
     public int EntityId { get; set; }
@@ -23,8 +22,6 @@ public sealed class EntityVelocityMessage : Message
     public short MotionY { get; set; }
 
     public short MotionZ { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_velocity");
 
     public override ResourceLocation Key => Id;
 
@@ -46,12 +43,9 @@ public sealed class EntityVelocityMessage : Message
         stream.WriteShort(MotionZ);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 2
-            + 2
-            + 2;
-    }
+    public override int Size() =>
+        4
+        + 2
+        + 2
+        + 2;
 }

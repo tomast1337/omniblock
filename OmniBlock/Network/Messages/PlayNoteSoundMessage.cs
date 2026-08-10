@@ -1,9 +1,8 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 public class PlayNoteSoundMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "play_note_sound");
     public int X { get; set; }
 
     /// <summary>Y travels as a short on the wire — note block positions need the extra range.</summary>
@@ -14,8 +13,6 @@ public class PlayNoteSoundMessage : Message
     public byte Instrument { get; set; }
 
     public byte Pitch { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "play_note_sound");
 
     public override ResourceLocation Key => Id;
 
@@ -39,13 +36,10 @@ public class PlayNoteSoundMessage : Message
         stream.WriteByte(Pitch);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 2
-            + 4
-            + 1
-            + 1;
-    }
+    public override int Size() =>
+        4
+        + 2
+        + 4
+        + 1
+        + 1;
 }

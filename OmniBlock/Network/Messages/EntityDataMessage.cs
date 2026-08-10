@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -21,13 +19,13 @@ public sealed class EntityDataMessage : Message
     /// </summary>
     public const int MaxDataBytes = 4096;
 
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_data");
+
     public override SendPriority Priority => SendPriority.High;
 
     public int EntityId { get; set; }
 
     public byte[] Data { get; set; } = [];
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_data");
 
     public override ResourceLocation Key => Id;
 
@@ -45,10 +43,7 @@ public sealed class EntityDataMessage : Message
         stream.WriteByteArray(Data);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + StreamExtensions.ByteArraySize(Data);
-    }
+    public override int Size() =>
+        4
+        + StreamExtensions.ByteArraySize(Data);
 }

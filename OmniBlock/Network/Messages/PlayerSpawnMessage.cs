@@ -1,4 +1,3 @@
-using OmniBlock;
 using OmniBlock.Util;
 
 namespace OmniBlock.Network.Messages;
@@ -14,6 +13,8 @@ public sealed class PlayerSpawnMessage : Message
 {
     /// <summary>The account name's limit, and the bound the reader applies before allocating.</summary>
     public const int MaxNameBytes = 16;
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "player_spawn");
 
     public override SendPriority Priority => SendPriority.High;
 
@@ -34,8 +35,6 @@ public sealed class PlayerSpawnMessage : Message
 
     /// <summary>The item in hand, for rendering only. 0 is an empty hand.</summary>
     public short CurrentItem { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "player_spawn");
 
     public override ResourceLocation Key => Id;
 
@@ -65,16 +64,13 @@ public sealed class PlayerSpawnMessage : Message
         stream.WriteShort(CurrentItem);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + (2 + ModifiedUtf8.GetByteCount(Name))
-            + 4
-            + 4
-            + 4
-            + 1
-            + 1
-            + 2;
-    }
+    public override int Size() =>
+        4
+        + 2 + ModifiedUtf8.GetByteCount(Name)
+        + 4
+        + 4
+        + 4
+        + 1
+        + 1
+        + 2;
 }

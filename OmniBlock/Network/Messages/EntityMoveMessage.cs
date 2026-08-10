@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -22,6 +20,16 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class EntityMoveMessage : Message
 {
+    [Flags]
+    public enum Field : byte
+    {
+        None = 0,
+        Moved = 1,
+        Rotated = 2
+    }
+
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_move");
+
     /// <summary>
     ///     Entity replication, which is what the priority split was built for: this must not queue
     ///     behind a chunk.
@@ -45,8 +53,6 @@ public sealed class EntityMoveMessage : Message
 
     public sbyte Pitch { get; set; }
 
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_move");
-
     public override ResourceLocation Key => Id;
 
     public override int SchemaVersion => 1;
@@ -54,7 +60,7 @@ public sealed class EntityMoveMessage : Message
     public override void Read(Stream stream)
     {
         EntityId = stream.ReadInt();
-        Mask = (Field)((byte)stream.ReadByte());
+        Mask = (Field)(byte)stream.ReadByte();
         DeltaX = (sbyte)stream.ReadByte();
         DeltaY = (sbyte)stream.ReadByte();
         DeltaZ = (sbyte)stream.ReadByte();
@@ -65,7 +71,7 @@ public sealed class EntityMoveMessage : Message
     public override void Write(Stream stream)
     {
         stream.WriteInt(EntityId);
-        stream.WriteByte(((byte)Mask));
+        stream.WriteByte((byte)Mask);
         stream.WriteByte((byte)DeltaX);
         stream.WriteByte((byte)DeltaY);
         stream.WriteByte((byte)DeltaZ);
@@ -73,23 +79,12 @@ public sealed class EntityMoveMessage : Message
         stream.WriteByte((byte)Pitch);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 1
-            + 1
-            + 1
-            + 1
-            + 1
-            + 1;
-    }
-
-    [Flags]
-    public enum Field : byte
-    {
-        None = 0,
-        Moved = 1,
-        Rotated = 2,
-    }
+    public override int Size() =>
+        4
+        + 1
+        + 1
+        + 1
+        + 1
+        + 1
+        + 1;
 }

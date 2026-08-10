@@ -1,9 +1,8 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 public class WorldEventMessage : Message
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "world_event");
     public int EventId { get; set; }
 
     public int X { get; set; }
@@ -14,8 +13,6 @@ public class WorldEventMessage : Message
     public int Z { get; set; }
 
     public int Data { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("beta"), "world_event");
 
     public override ResourceLocation Key => Id;
 
@@ -39,13 +36,10 @@ public class WorldEventMessage : Message
         stream.WriteInt(Data);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 4
-            + 1
-            + 4
-            + 4;
-    }
+    public override int Size() =>
+        4
+        + 4
+        + 1
+        + 4
+        + 4;
 }

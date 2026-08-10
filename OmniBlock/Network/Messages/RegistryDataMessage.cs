@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using OmniBlock.Registries;
 using OmniBlock.Registries.Data;
+using OmniBlock.Util;
 
 namespace OmniBlock.Network.Messages;
 
@@ -12,12 +13,10 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class RegistryDataMessage : Message
 {
-    public static readonly ResourceLocation Id = new(Namespace.OmniBlock, "registry_data");
-
-    public override ResourceLocation Key => Id;
-
     /// <summary>One registry worth of entries before it strains the envelope.</summary>
-    public const int MaxEntries = 8192;
+    private const int MaxEntries = 8192;
+
+    public static readonly ResourceLocation Id = new(Namespace.OmniBlock, "registry_data");
 
     private static readonly JsonSerializerOptions s_writeOptions = new()
     {
@@ -36,10 +35,14 @@ public sealed class RegistryDataMessage : Message
     /// </summary>
     private static readonly ResourceLocation s_unset = new(Namespace.OmniBlock, "unset");
 
+    public override ResourceLocation Key => Id;
+
     public ResourceLocation RegistryId { get; set; } = s_unset;
 
-    /// <summary>The entries, each a key and an optional JSON payload. Null JSON means the entry was
-    /// deleted — the key is present so the client knows which one to remove.</summary>
+    /// <summary>
+    ///     The entries, each a key and an optional JSON payload. Null JSON means the entry was
+    ///     deleted — the key is present so the client knows which one to remove.
+    /// </summary>
     public List<Entry> Entries { get; } = [];
 
     /// <summary>
@@ -113,7 +116,7 @@ public sealed class RegistryDataMessage : Message
             size += StreamExtensions.ResourceLocationSize(entry.Key)
                     + 1
                     + (entry.JsonData is not null
-                        ? 2 + global::OmniBlock.Util.ModifiedUtf8.GetByteCount(entry.JsonData)
+                        ? 2 + ModifiedUtf8.GetByteCount(entry.JsonData)
                         : 0);
         }
 

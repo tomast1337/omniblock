@@ -1,10 +1,13 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>The player moved without turning. See <see cref="PlayerMoveMessage" /> for the priority.</summary>
 public sealed class PlayerMovePositionMessage : Message, IPlayerMovePosition
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "player_move_position");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
     public double X { get; set; }
 
     public double Y { get; set; }
@@ -14,12 +17,6 @@ public sealed class PlayerMovePositionMessage : Message, IPlayerMovePosition
     public double Z { get; set; }
 
     public bool OnGround { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "player_move_position");
-
-    public override ResourceLocation Key => Id;
-
-    public override int SchemaVersion => 1;
 
     public override void Read(Stream stream)
     {
@@ -39,13 +36,10 @@ public sealed class PlayerMovePositionMessage : Message, IPlayerMovePosition
         stream.WriteBoolean(OnGround);
     }
 
-    public override int Size()
-    {
-        return
-            8
-            + 8
-            + 8
-            + 8
-            + 1;
-    }
+    public override int Size() =>
+        8
+        + 8
+        + 8
+        + 8
+        + 1;
 }

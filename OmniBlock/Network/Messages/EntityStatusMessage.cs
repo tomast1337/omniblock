@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -8,17 +6,25 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class EntityStatusMessage : Message
 {
-    public int EntityId { get; set; }
-
-    public sbyte Status { get; set; }
+    public enum EntityState : byte
+    {
+        Hurt = 2,
+        Death = 3,
+        WolfSmokeFx = 6,
+        WolfHeartsFx = 7,
+        WolfShaking = 8
+    }
 
     /// <summary>
     ///     The named statuses. Sparse, and deliberately not the field's type: the wire carries
     ///     values this enum has no name for, and decoding into it would be a lie the compiler
     ///     believes.
     /// </summary>
-
     public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "entity_status");
+
+    public int EntityId { get; set; }
+
+    public sbyte Status { get; set; }
 
     public override ResourceLocation Key => Id;
 
@@ -36,19 +42,7 @@ public sealed class EntityStatusMessage : Message
         stream.WriteByte((byte)Status);
     }
 
-    public override int Size()
-    {
-        return
-            4
-            + 1;
-    }
-
-    public enum EntityState : byte
-    {
-        Hurt = 2,
-        Death = 3,
-        WolfSmokeFx = 6,
-        WolfHeartsFx = 7,
-        WolfShaking = 8,
-    }
+    public override int Size() =>
+        4
+        + 1;
 }

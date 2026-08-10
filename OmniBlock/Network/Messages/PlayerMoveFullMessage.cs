@@ -1,5 +1,3 @@
-using OmniBlock;
-
 namespace OmniBlock.Network.Messages;
 
 /// <summary>
@@ -8,6 +6,15 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class PlayerMoveFullMessage : Message, IPlayerMovePosition, IPlayerMoveLook
 {
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "player_move_full");
+
+    public override ResourceLocation Key => Id;
+
+    public override int SchemaVersion => 1;
+
+    public float Yaw { get; set; }
+
+    public float Pitch { get; set; }
     public double X { get; set; }
 
     public double Y { get; set; }
@@ -16,17 +23,7 @@ public sealed class PlayerMoveFullMessage : Message, IPlayerMovePosition, IPlaye
 
     public double Z { get; set; }
 
-    public float Yaw { get; set; }
-
-    public float Pitch { get; set; }
-
     public bool OnGround { get; set; }
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "player_move_full");
-
-    public override ResourceLocation Key => Id;
-
-    public override int SchemaVersion => 1;
 
     public override void Read(Stream stream)
     {
@@ -50,15 +47,12 @@ public sealed class PlayerMoveFullMessage : Message, IPlayerMovePosition, IPlaye
         stream.WriteBoolean(OnGround);
     }
 
-    public override int Size()
-    {
-        return
-            8
-            + 8
-            + 8
-            + 8
-            + 4
-            + 4
-            + 1;
-    }
+    public override int Size() =>
+        8
+        + 8
+        + 8
+        + 8
+        + 4
+        + 4
+        + 1;
 }

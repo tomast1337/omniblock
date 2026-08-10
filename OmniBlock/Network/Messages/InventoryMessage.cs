@@ -1,4 +1,3 @@
-using OmniBlock;
 using OmniBlock.Items;
 
 namespace OmniBlock.Network.Messages;
@@ -19,12 +18,12 @@ public sealed class InventoryMessage : Message
     /// </summary>
     public const int MaxSlots = 1024;
 
+    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "inventory");
+
     /// <summary>-1 addresses the player's own inventory rather than an open screen.</summary>
     public sbyte SyncId { get; set; }
 
     public ItemStack?[] Contents { get; set; } = [];
-
-    public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "inventory");
 
     public override ResourceLocation Key => Id;
 
@@ -42,10 +41,7 @@ public sealed class InventoryMessage : Message
         stream.WriteItemStacks(Contents);
     }
 
-    public override int Size()
-    {
-        return
-            1
-            + StreamExtensions.ItemStacksSize(Contents);
-    }
+    public override int Size() =>
+        1
+        + StreamExtensions.ItemStacksSize(Contents);
 }
