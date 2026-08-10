@@ -1,7 +1,6 @@
 using System.Runtime.InteropServices;
 using Silk.NET.GLFW;
 using Silk.NET.Maths;
-using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 
 namespace BetaSharp.Client;
@@ -15,7 +14,6 @@ public static unsafe class Display
     private static readonly object _lock = new();
     private static readonly bool _isMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
     private static IWindow? _window;
-    private static GL? _gl;
     private static readonly Glfw? _glfw;
 
     // Display properties
@@ -31,15 +29,6 @@ public static unsafe class Display
     private static int _framebufferHeight;
     private static GlfwCallbacks.FramebufferSizeCallback? _framebufferSizeCallback;
     public static int MSAA_Samples = 0;
-    public static bool DebugMode = false;
-
-    /// <summary>Which graphics API <see cref="create" /> gives the window.</summary>
-    /// <remarks>
-    ///     Must be set before <see cref="create" />: a GLFW window is told at creation whether it
-    ///     carries a client API, and a WebGPU surface can only be made from one that does not.
-    ///     Runtime rather than a compile flag so both paths always build.
-    /// </remarks>
-    public static GraphicsBackend Backend { get; set; } = GraphicsBackend.OpenGL;
 
     // Window position
     private static int _x = -1;
@@ -557,9 +546,7 @@ public static unsafe class Display
             options.VSync = _swapInterval > 0;
             options.IsVisible = true;
             options.Samples = MSAA_Samples;
-            options.API = Backend == GraphicsBackend.WebGpu
-                ? GraphicsAPI.None
-                : new GraphicsAPI(ContextAPI.OpenGL, ContextProfile.Core, DebugMode ? ContextFlags.Debug : ContextFlags.Default, new APIVersion(4, 3));
+            options.API = GraphicsAPI.None;
 
             if (_x >= 0 && _y >= 0)
                 options.Position = new Vector2D<int>(_x, _y);
@@ -581,13 +568,6 @@ public static unsafe class Display
 
     private static void onLoad()
     {
-        if (Backend == GraphicsBackend.OpenGL)
-        {
-            _gl = GL.GetApi(_window);
-            _gl.ClearColor(_r, _g, _b, 1.0f);
-            _gl.Enable(EnableCap.Multisample);
-        }
-
         refreshFramebufferSize();
         if (_window != null && _glfw != null)
         {
@@ -647,17 +627,10 @@ public static unsafe class Display
     /// </summary>
     public static void swapBuffers()
     {
-        lock (_lock)
-        {
-            if (!isCreated())
-                throw new InvalidOperationException("Display not created");
-
-            // WebGPU presents through the surface, which the window knows nothing about.
-            if (Backend == GraphicsBackend.WebGpu)
-                return;
-
-            _window!.SwapBuffers();
-        }
+        // Presentation happens through WebGpuDevice.Present() instead, called from
+        // WebGpuGameRenderer.RenderFrame/RenderLoadingFrame. Kept callable, not deleted: its
+        // call sites (the per-frame Display.update() and the F7 screenshot branch) stay
+        // unconditional and backend-agnostic on purpose.
     }
 
     /// <summary>
@@ -702,12 +675,10 @@ public static unsafe class Display
             if (!isCreated())
                 return;
 
-            _gl?.Dispose();
             _window?.Close();
             _window?.Dispose();
 
             _window = null;
-            _gl = null;
             _closeRequested = false;
             _wasResized = false;
             _framebufferWidth = 0;
@@ -716,14 +687,6 @@ public static unsafe class Display
 
             ResetDisplayMode();
         }
-    }
-
-    /// <summary>
-    /// Gets the OpenGL context.
-    /// </summary>
-    public static GL? getGL()
-    {
-        return _gl;
     }
 
     public static WindowHandle* GetWindowHandle()
