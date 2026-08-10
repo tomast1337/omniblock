@@ -64,13 +64,12 @@ internal class ChunkMeshGenerator : IDisposable
     //TODO: Make a chunk mesh config struct for alternateBlocks and other flags
     public void MeshChunk(World world, Vector3D<int> pos, long version, bool alternateBlocks)
     {
-        //TODO: OPTIMIZE THIS
+        // 1 block of padding on every side of the 16-block sub-chunk (18x18x18 total) — exactly
+        // what face culling and AO need to look at a block's immediate neighbours.
         WorldRegionSnapshot cache = new(
             world,
             pos.X - 1, pos.Y - 1, pos.Z - 1,
-            pos.X + SubChunkRenderer.Size + 1,
-            pos.Y + SubChunkRenderer.Size + 1,
-            pos.Z + SubChunkRenderer.Size + 1
+            pos.X + SubChunkRenderer.Size, pos.Y + SubChunkRenderer.Size, pos.Z + SubChunkRenderer.Size
         );
 
         Task.Run(async () =>
