@@ -83,7 +83,7 @@ public class LanguageSelectionScreen(UIContext context, UIScreen? parent) : Base
             item.OnClick += e => SelectListItem(item, lang.Key);
             _scrollView.AddContent(item);
             _listItems.Add(item);
-            if (lang.Key.Remove(5) == Options.Language)
+            if (lang.Key == Options.Language)
             {
                 item.IsSelected = true;
                 _selectedLanguage = item;
