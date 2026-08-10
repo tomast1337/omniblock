@@ -95,6 +95,11 @@
         "name": "Română",
         "author": "(To be claimed by a human reviewer)"
     },
+    "sit": {
+        "name": "󱥬󱥔 (󱥠󱥔)",
+        "author": "soweli Keli",
+        "sevenish": true
+    },
     "sk_sk": {
         "name": "Slovenčina",
         "author": "(To be claimed by a human reviewer)"
@@ -182,6 +187,10 @@
     "th_th": {
         "name": "ไทย",
         "author": "(To be claimed by a human reviewer)"
+    },
+    "tok": {
+        "name": "toki pona",
+        "author": "soweli Keli"
     },
     "tr_tr": {
         "name": "Türkçe",

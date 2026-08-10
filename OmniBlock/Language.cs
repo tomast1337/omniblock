@@ -11,6 +11,7 @@ public class Language(string code, string name, string author)
     public string Name { get; } = name;
     public string Author { get; } = author;
     public bool Unifont { get; set; } = false;
+    public bool Sevenish { get; set; } = false;
 
     public IReadOnlyDictionary<string, string>? Translations { get; private set; }
 
