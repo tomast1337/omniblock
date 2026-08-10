@@ -66,6 +66,16 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     /// </summary>
     public string? ScreenshotResult { get; set; }
 
+    /// <summary>
+    ///     Pixel size of the framebuffer the world/HUD pass is currently drawing into: the window's
+    ///     size normally, or the smaller F3 viewport's size while it is open. Mirrors GL's
+    ///     <c>FramebufferManager.FramebufferWidth/Height</c> so <c>UIContext.RenderTargetSize</c> can
+    ///     report the right scale for scissor rects (<see cref="UI.Rendering.UIRenderer.EnableClipping" />)
+    ///     under either backend — before the first frame runs this is (0, 0), which the caller falls
+    ///     back away from.
+    /// </summary>
+    public (uint Width, uint Height) FramebufferSize => (_offscreenFb?.Width ?? 0, _offscreenFb?.Height ?? 0);
+
     public WebGpuGameRenderer(BetaSharp game)
     {
         _game = game;
