@@ -114,8 +114,14 @@ internal sealed class ItemBlockBrowserWindow : DebugWindow
             }
 
             ImGui.PopStyleVar();
-            ImGui.EndChild();
         }
+
+        // Unconditional: BeginChild's return value is only whether the child is visible (scrolled
+        // out, collapsed, zero size), not whether a matching EndChild is owed — that is owed every
+        // time BeginChild is called, visible or not. Nesting this inside the if above meant a
+        // window in the invisible state left ImGui's window stack unbalanced, and the very next
+        // End() elsewhere asserted "Must call EndChild() and not End()!".
+        ImGui.EndChild();
     }
 
     private void DrawCell(BrowserEntry entry, bool canGive, float iconSize)

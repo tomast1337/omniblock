@@ -170,6 +170,9 @@ public partial class BetaSharp :
     private DebugWindowManager _debugWindowManager;
     private string _gameDataDir;
 
+    /// <summary>The directory saves, options and screenshots live under.</summary>
+    public string GameDataDir => _gameDataDir;
+
     private bool _fullscreen;
     private bool _prevF11Down;
     private bool _prevF3Down;
@@ -1904,26 +1907,43 @@ public partial class BetaSharp :
             if (!_isTakingScreenshot)
             {
                 _isTakingScreenshot = true;
-                int framebufferWidth = Display.getFramebufferWidth();
-                int framebufferHeight = Display.getFramebufferHeight();
-                int size = framebufferWidth * framebufferHeight * 3;
-                byte[] pixels = new byte[size];
-                GLManager.GL.PixelStore(PixelStoreParameter.PackAlignment, 1);
-                unsafe
-                {
-                    fixed (byte* p = pixels)
-                    {
-                        GLManager.GL.ReadPixels(0, 0, (uint)framebufferWidth, (uint)framebufferHeight, PixelFormat.Rgb, PixelType.UnsignedByte, p);
-                    }
-                }
 
-                string result = ScreenShotHelper.saveScreenshot(_gameDataDir, DisplayWidth, DisplayHeight, pixels);
-                HUD.AddChatMessage(result);
+                if (_webGpuRenderer is { } webGpu)
+                {
+                    // Picked up by the next RenderFrame call, not this one — see
+                    // WebGpuGameRenderer.ScreenshotRequested for why a same-frame capture is not
+                    // possible here, and ScreenshotResult below for where the message shows up.
+                    webGpu.ScreenshotRequested = true;
+                }
+                else
+                {
+                    int framebufferWidth = Display.getFramebufferWidth();
+                    int framebufferHeight = Display.getFramebufferHeight();
+                    int size = framebufferWidth * framebufferHeight * 3;
+                    byte[] pixels = new byte[size];
+                    GLManager.GL.PixelStore(PixelStoreParameter.PackAlignment, 1);
+                    unsafe
+                    {
+                        fixed (byte* p = pixels)
+                        {
+                            GLManager.GL.ReadPixels(0, 0, (uint)framebufferWidth, (uint)framebufferHeight, PixelFormat.Rgb, PixelType.UnsignedByte, p);
+                        }
+                    }
+
+                    string result = ScreenShotHelper.saveScreenshot(_gameDataDir, DisplayWidth, DisplayHeight, pixels);
+                    HUD.AddChatMessage(result);
+                }
             }
         }
         else
         {
             _isTakingScreenshot = false;
+        }
+
+        if (_webGpuRenderer is { ScreenshotResult: { } webGpuResult })
+        {
+            HUD.AddChatMessage(webGpuResult);
+            _webGpuRenderer.ScreenshotResult = null;
         }
     }
 

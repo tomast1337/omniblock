@@ -1,4 +1,6 @@
-struct Uniforms { _pad: mat4x4<f32> }
+// gamma.frag's GL equivalent: washes the sampled colour out by the same inverse power curve, so
+// the two backends' gamma sliders read the same at the same value.
+struct Uniforms { gamma: f32 }
 
 @group(0) @binding(0) var<uniform> u: Uniforms;
 @group(1) @binding(0) var src: texture_2d<f32>;
@@ -24,5 +26,7 @@ fn vs_main(in: VertexInput) -> VertexOutput {
 
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
-    return textureSample(src, smp, in.texcoord);
+    let col = textureSample(src, smp, in.texcoord);
+    let washedOut = pow(col.rgb, vec3<f32>(1.0 / u.gamma));
+    return vec4<f32>(washedOut, col.a);
 }

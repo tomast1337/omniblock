@@ -229,6 +229,24 @@ public sealed unsafe class WebGpuDevice : IDisposable
         DrainRetired();
     }
 
+    /// <summary>
+    ///     Blocks until the GPU has caught up with every submission so far, running due callbacks
+    ///     (a buffer map's, for one) along the way.
+    /// </summary>
+    /// <remarks>
+    ///     <c>wgpuInstanceProcessEvents</c> — the portable webgpu.h call for pumping callbacks — is
+    ///     an unimplemented stub in this wgpu-native build and aborts the process outright, not
+    ///     throws, on the mere act of calling it. <c>wgpuDevicePoll</c> is wgpu-native's own,
+    ///     original polling entry point, predating that portable one; it is not part of the
+    ///     standard webgpu.h Silk.NET.WebGPU binds, which is why it needs its own P/Invoke here
+    ///     instead of a call through <see cref="Api" />, but the native library both are already
+    ///     loaded from exports it all the same.
+    /// </remarks>
+    public void Poll() => WgpuDevicePoll(Device, 1, 0);
+
+    [DllImport("wgpu_native", EntryPoint = "wgpuDevicePoll")]
+    private static extern void WgpuDevicePoll(Device* device, uint wait, nint wrappedSubmissionIndex);
+
     private void DrainRetired()
     {
         if (_retired.Count == 0) return;
