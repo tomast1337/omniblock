@@ -24,6 +24,8 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
 
     private readonly WebGpuDevice _device;
     private readonly TextureFormat _colorFormat;
+    private readonly TextureUsage _extraDepthUsage;
+    private readonly bool _hasDepth;
     private Sampler* _blitSampler;
     private BindGroup* _blitBindGroup;
     private bool _disposed;
@@ -38,28 +40,36 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
         CreateColorTexture(device, width, height, format,
             out Texture* cTex, out TextureView* cView);
 
-        return new WgpuFramebuffer(device, width, height, format, cTex, cView, null, null);
+        return new WgpuFramebuffer(device, width, height, format, 0, cTex, cView, null, null);
     }
 
     /// <summary>Creates a colour + depth framebuffer.</summary>
+    /// <param name="extraDepthUsage">
+    ///     Additional <see cref="TextureUsage" /> flags for the depth texture beyond
+    ///     <see cref="TextureUsage.RenderAttachment" />, e.g. <see cref="TextureUsage.CopySrc" /> or
+    ///     <see cref="TextureUsage.CopyDst" /> for the cloud-blur depth copy. Preserved across
+    ///     <see cref="ResizeIfNeeded" />.
+    /// </param>
     public static WgpuFramebuffer CreateColorDepth(WebGpuDevice device, uint width, uint height,
-        TextureFormat colorFormat = TextureFormat.Rgba8Unorm)
+        TextureFormat colorFormat = TextureFormat.Rgba8Unorm, TextureUsage extraDepthUsage = 0)
     {
         CreateColorTexture(device, width, height, colorFormat,
             out Texture* cTex, out TextureView* cView);
 
-        CreateDepthTexture(device, width, height,
+        CreateDepthTexture(device, width, height, extraDepthUsage,
             out Texture* dTex, out TextureView* dView);
 
-        return new WgpuFramebuffer(device, width, height, colorFormat, cTex, cView, dTex, dView);
+        return new WgpuFramebuffer(device, width, height, colorFormat, extraDepthUsage, cTex, cView, dTex, dView);
     }
 
     private WgpuFramebuffer(WebGpuDevice device, uint width, uint height, TextureFormat colorFormat,
-        Texture* colorTex, TextureView* colorView,
+        TextureUsage extraDepthUsage, Texture* colorTex, TextureView* colorView,
         Texture* depthTex, TextureView* depthView)
     {
         _device = device;
         _colorFormat = colorFormat;
+        _extraDepthUsage = extraDepthUsage;
+        _hasDepth = depthTex is not null;
         Width = width;
         Height = height;
         ColorTexture = colorTex;
@@ -150,8 +160,19 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
 
         CreateColorTexture(device, width, height, _colorFormat,
             out Texture* cTex, out TextureView* cView);
-        CreateDepthTexture(device, width, height,
-            out Texture* dTex, out TextureView* dView);
+
+        // Only for a framebuffer that was built with one — a colour-only framebuffer (WgpuCloudBlurPass's
+        // ping-pong buffer, WebGpuGameRenderer's _presentFb) staying colour-only across a resize matters
+        // to any pipeline built with depthFormat: Undefined for it: wgpu rejects binding a no-depth
+        // pipeline to a pass that has a depth attachment, so growing one here on a resize this
+        // framebuffer never had would silently break every such pipeline the next time the window
+        // resized.
+        Texture* dTex = null;
+        TextureView* dView = null;
+        if (_hasDepth)
+        {
+            CreateDepthTexture(device, width, height, _extraDepthUsage, out dTex, out dView);
+        }
 
         ColorTexture = cTex;
         ColorView = cView;
@@ -263,13 +284,13 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
     }
 
     private static void CreateDepthTexture(WebGpuDevice device, uint width, uint height,
-        out Texture* tex, out TextureView* view)
+        TextureUsage extraUsage, out Texture* tex, out TextureView* view)
     {
         Silk.NET.WebGPU.WebGPU api = device.Api;
 
         TextureDescriptor desc = new()
         {
-            Usage = TextureUsage.RenderAttachment,
+            Usage = TextureUsage.RenderAttachment | extraUsage,
             Dimension = TextureDimension.Dimension2D,
             Size = new Extent3D(width, height, 1),
             Format = DepthFormat,

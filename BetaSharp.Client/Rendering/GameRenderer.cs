@@ -512,14 +512,12 @@ public class GameRenderer
             RenderChunkBorders(tickDelta);
         }
 
-        // The blur is a second framebuffer the clouds are drawn into and filtered out of, and there
-        // is no framebuffer manager under WebGPU — the clouds are still drawn, just unblurred.
         bool cloudBlurPass = _client.Options is { SoftClouds: true, CloudsQuality: >= 2 }
-            && _client.FramebufferManager is not null;
+            && GLManager.CloudBlurPassOrNull is not null;
 
-        if (cloudBlurPass) _client.FramebufferManager.BeginCloudPass();
+        if (cloudBlurPass) GLManager.CloudBlurPassOrNull!.Begin();
         worldRenderer.RenderClouds(tickDelta);
-        if (cloudBlurPass) _client.FramebufferManager.EndCloudPass();
+        if (cloudBlurPass) GLManager.CloudBlurPassOrNull!.End();
         GLManager.FogEnabled = false;
         ApplyFog(1);
 

@@ -20,6 +20,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     private WgpuFramebuffer? _presentFb;
     private WgpuPipeline? _blitPipeline;
     private WgpuMesh? _blitQuad;
+    private WgpuCloudBlurPass? _cloudBlurPass;
     private readonly WebGpuDrawTarget _drawTarget;
     private ImGuiWgpuBackend? _imguiWgpu;
     private bool _disposed;
@@ -115,6 +116,8 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
 
         bool resized = _offscreenFb!.ResizeIfNeeded(device, width, height);
         _presentFb!.ResizeIfNeeded(device, width, height);
+        _cloudBlurPass!.Resize(device, width, height);
+        _cloudBlurPass.Encoder = encoder;
 
         if (viewport is not null)
         {
@@ -164,6 +167,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             _game.GameRenderer.BeginWorldFrame(tickDelta, _game.World!.GetTime());
             Vector4D<float> fog = _game.GameRenderer.WorldClearColor;
             clear = new Silk.NET.WebGPU.Color(fog.X, fog.Y, fog.Z, 1.0);
+            _cloudBlurPass!.FogColor = new System.Numerics.Vector3(fog.X, fog.Y, fog.Z);
         }
 
         // --- Offscreen pass: the world ---
@@ -184,6 +188,11 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         }
         finally
         {
+            // Not necessarily the pass opened above: the Soft Clouds bracket inside DrawWorld
+            // (GLManager.CloudBlurPassOrNull) ends that pass and reopens a new one on the same
+            // attachments while capturing and compositing the blur, and _drawTarget.CurrentPass is
+            // how the replacement is found here instead of ending/releasing the stale local.
+            worldPass = _drawTarget.CurrentPass;
             _drawTarget.EndPass();
         }
 
@@ -532,8 +541,10 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     {
         if (_offscreenFb == null)
         {
+            // CopySrc on the depth texture: WgpuCloudBlurPass copies it into its own capture buffer
+            // so clouds draw depth-tested against terrain already in this frame.
             _offscreenFb = WgpuFramebuffer.CreateColorDepth(device,
-                device.Width, device.Height, device.SurfaceFormat);
+                device.Width, device.Height, device.SurfaceFormat, extraDepthUsage: TextureUsage.CopySrc);
         }
 
         // The texture ImGui's Game Viewport samples while the F3 debug window is open — see
@@ -607,6 +618,12 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
             _blitQuad = CreateBlitQuad(device);
         }
 
+        if (_cloudBlurPass == null)
+        {
+            _cloudBlurPass = new WgpuCloudBlurPass(device, _drawTarget, _offscreenFb, _blitQuad!);
+            GLManager.CloudBlurPassOrNull = _cloudBlurPass;
+        }
+
         if (_imguiWgpu == null)
         {
             _imguiWgpu = new ImGuiWgpuBackend(device);
@@ -643,6 +660,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
         _presentFb?.Dispose();
         _blitPipeline?.Dispose();
         _blitQuad?.Dispose();
+        _cloudBlurPass?.Dispose();
         _drawTarget.Dispose();
         _imguiWgpu?.Dispose();
     }

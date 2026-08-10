@@ -309,6 +309,7 @@ public class AssetManager
         DefineEmbeddedAsset("shaders/chunk.wgsl", AssetType.Text);
         DefineEmbeddedAsset("shaders/sky.wgsl", AssetType.Text);
         DefineEmbeddedAsset("shaders/cloud.wgsl", AssetType.Text);
+        DefineEmbeddedAsset("shaders/cloud_blur.wgsl", AssetType.Text);
         DefineEmbeddedAsset("shaders/particle.wgsl", AssetType.Text);
         DefineEmbeddedAsset("shaders/entity_instanced.wgsl", AssetType.Text);
         DefineEmbeddedAsset("shaders/imgui.wgsl", AssetType.Text);

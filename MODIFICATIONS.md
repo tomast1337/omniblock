@@ -199,3 +199,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-09 — feat(rendering): wire the F3 debug viewport up under WebGPU (Nicolas Vyčas Nery; `0362e031f072aaff17efbfff153935956f059bd1`)
 - 2026-08-09 — feat(rendering): enhance screenshot functionality and gamma correction in WebGPU (Nicolas Vyčas Nery; `1c432040b6aed86cbf6d42ed3bcb093392f93d72`)
 - 2026-08-09 — feat(rendering): enhance framebuffer size handling in WebGPU for accurate UI scaling (Nicolas Vyčas Nery; `c2fa9239b9ed2bf37e954be5cd6ebc76446433c5`)
+- 2026-08-09 — feat(rendering): implement cloud blur pass for enhanced visual effects in WebGPU (Nicolas Vyčas Nery; `d1c71f9524948a4976338b86783a0ecda17447b7`)
