@@ -217,3 +217,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-10 — fix(ProfilerRenderer): change Name field to readonly for immutability (Nicolas Vyčas Nery; `c16add5a4870d94865b295441e197f806082d880`)
 - 2026-08-10 — refactor(OmniBlock): improve access modifiers and simplify conditions (Nicolas Vyčas Nery; `31d61de600c7f3eca834db227ac4442cecbd9175`)
 - 2026-08-10 — fix(CLAUDE.md): correct project description and enhance clarity on scripting and network protocol (Nicolas Vyčas Nery; `1206f54aa87b131330b63cf21543615dcd8a89c6`)
+- 2026-08-10 — fix(README.md): update project description and correct repository links (Nicolas Vyčas Nery; `eec227c383875083e23b0139b6f7a686076f07d0`)
