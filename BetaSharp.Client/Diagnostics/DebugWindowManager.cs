@@ -137,12 +137,10 @@ internal sealed class DebugWindowManager
                 GameViewportFocused = ImGui.IsMouseHoveringRect(ViewportPos, ViewportPos + contentSize, false);
                 if (ViewportTextureId != 0 && contentSize.X > 0 && contentSize.Y > 0)
                 {
-                    // Y-flipped UVs only under OpenGL: its FBOs have their origin at bottom-left,
-                    // where WebGPU's offscreen colour view (sampled the same way the swapchain blit
-                    // already does) does not need the flip to come out right-side up.
-                    (Vector2 uv0, Vector2 uv1) = Display.Backend == GraphicsBackend.OpenGL
-                        ? (new Vector2(0, 1), new Vector2(1, 0))
-                        : (new Vector2(0, 0), new Vector2(1, 1));
+                    // No Y-flip: WebGPU's offscreen colour view (sampled the same way the swapchain
+                    // blit already does) has its origin at top-left, unlike a GL FBO's bottom-left.
+                    Vector2 uv0 = new(0, 0);
+                    Vector2 uv1 = new(1, 1);
 
                     unsafe
                     {

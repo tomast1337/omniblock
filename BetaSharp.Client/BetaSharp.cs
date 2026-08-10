@@ -273,29 +273,14 @@ public partial class BetaSharp :
             Display.create();
             Display.getGlfw().SetWindowSizeLimits(Display.GetWindowHandle(), 850, 480, maximumWidth, maximumHeight);
 
-            if (Display.Backend == GraphicsBackend.OpenGL)
-            {
-                GLManager.Init(Display.getGL()!);
-                SlotPrograms.Initialize(Options);
-                _debugTelemetry.CaptureSystemInfo(GLManager.GL);
-
-                Display.getGlfw().SwapInterval(Options.VSync ? 1 : 0);
-
-#if DEBUG
-                GLErrorHandler.Install();
-#endif
-            }
-            else
-            {
-                // Framebuffer pixels, not window units: on a scaled display the two differ, and
-                // everything measured against a render target — the clip rectangles the interface
-                // computes above all — is in the former.
-                WebGpuDevice.Create(Display.getWindow()!,
-                    Display.getFramebufferWidth(), Display.getFramebufferHeight());
-                GLManager.InitWebGpu();
-                _debugTelemetry.CaptureSystemInfo(null);
-                _webGpuRenderer = new WebGpuGameRenderer(this);
-            }
+            // Framebuffer pixels, not window units: on a scaled display the two differ, and
+            // everything measured against a render target — the clip rectangles the interface
+            // computes above all — is in the former.
+            WebGpuDevice.Create(Display.getWindow()!,
+                Display.getFramebufferWidth(), Display.getFramebufferHeight());
+            GLManager.InitWebGpu();
+            _debugTelemetry.CaptureSystemInfo(null);
+            _webGpuRenderer = new WebGpuGameRenderer(this);
         }
         catch (Exception ex)
         {
@@ -682,10 +667,6 @@ public partial class BetaSharp :
                     bool imguiThisFrame = Options.ShowDebugInfo;
                     if (imguiThisFrame)
                     {
-                        if (Display.Backend == GraphicsBackend.OpenGL)
-                        {
-                            ImGuiImplOpenGL3.NewFrame();
-                        }
                         ImGuiImplGLFW.NewFrame();
 
                         unsafe
@@ -725,10 +706,6 @@ public partial class BetaSharp :
                     CheckGLError("Pre render");
 
                     SoundManager.UpdateListener(Player, Timer.RenderPartialTicks);
-                    if (Display.Backend == GraphicsBackend.OpenGL)
-                    {
-                        GLManager.TextureEnabled = true;
-                    }
 
                     if (!Keyboard.isKeyDown(Keyboard.KEY_F7))
                     {
@@ -884,31 +861,6 @@ public partial class BetaSharp :
 
                     DisplayWidth = savedWidth;
                     DisplayHeight = savedHeight;
-
-                    if (imguiThisFrame && Display.Backend == GraphicsBackend.OpenGL)
-                    {
-                        if (FramebufferManager is { SkipBlit: true } blitSource)
-                        {
-                            _debugWindowManager.ViewportTextureId = blitSource.TextureId;
-                        }
-
-                        using (Profiler.Begin("ImguiBuild"))
-                        {
-                            _debugWindowManager.Render(Timer.DeltaTime);
-                        }
-
-                        using (Profiler.Begin("ImguiSubmit"))
-                        {
-                            ImGui.Render();
-                            ImGuiImplOpenGL3.RenderDrawData(ImGui.GetDrawData());
-
-                            // ImGui's backend sets blending, depth and culling itself and puts
-                            // back only what it saved, which is not what the applier last wrote.
-                            // Nothing else in the client changes these behind its back, so this
-                            // is the one place the cache has to be told it no longer knows.
-                            GLManager.State.Invalidate();
-                        }
-                    }
 
                     if (!Display.isActive())
                     {
@@ -2123,12 +2075,6 @@ public partial class BetaSharp :
 
     public static void Startup(string[] args)
     {
-        if (args.Contains("--webgpu"))
-        {
-            Display.Backend = GraphicsBackend.WebGpu;
-            args = args.Where(a => a != "--webgpu").ToArray();
-        }
-
         (string Name, string Session) result = args.Length switch
         {
             0 => ($"Player{Random.Shared.Next()}", "-"),
