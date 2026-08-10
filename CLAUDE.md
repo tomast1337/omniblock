@@ -97,7 +97,7 @@ The fork is called OmniBlock, but **project directories, assembly names, and the
 - **`assets/`** — JSON definitions loaded into those registries: `block/`, `item/`, `entity/`, `recipe/`, `material/`, `item_material/`, `armor_material/`, `sound_group/`, `biome_spawn/`, `gamemode/`. Content changes usually belong here, not in C#.
 - **`Blocks/`, `Items/`, `Entities/`** — Definitions and behavior. All three are composition-based: behavior is assembled from named behavior classes (`Entities/Behaviors/`, `Blocks/Behaviors/`) referenced by the JSON, rather than by subclassing.
 - **`Worlds/`** — `Core/` (server world), `Chunks/`, `Storage/` (NBT persistence), `Gen/` + `Generation/` (terrain), `Lighting/`, `Mechanics/`, `ClientData/`. See Hard Invariants before touching `Storage/`, `Gen/`, or `Generation/`.
-- **`Server/BetaSharpServer.cs`** — Base server shared by multiplayer and dedicated server. Contains `ChunkMap`, `PlayerManager`, and `Commands/`.
+- **`Server/OmniBlockServer.cs`** — Base server shared by multiplayer and dedicated server. Contains `ChunkMap`, `PlayerManager`, and `Commands/`.
 - **`Network/`** — `Connection`, `NetHandler`, and packets split into `C2SPlay`/`S2CPlay`/`Play` namespaces, dispatched off the `PacketId : byte` enum. `ExtendedProtocolPacket` is the current (thin) extension point. This whole subsystem is the fork's main rewrite target.
 - **`NBT/`** — Named Binary Tag serialization. Frozen; see Hard Invariants.
 - **`PathFinding/`** — Entity AI pathfinding. `PathingCoordinator` batches path requests and applies results a tick later, off the game-tick thread (see `docs/parallel-pathfinding.md`).

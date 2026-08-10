@@ -1,0 +1,195 @@
+using OmniBlock.Entities;
+using OmniBlock.Network;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Packets;
+using OmniBlock.Server.Internal;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core;
+using Microsoft.Extensions.Logging;
+using Exception = System.Exception;
+
+namespace OmniBlock.Server.Network;
+
+public class ServerLoginNetworkHandler : NetHandler
+{
+    private static JavaRandom random = new();
+    public Connection connection;
+    public bool closed;
+    private OmniBlockServer server;
+    private int loginTicks;
+    private string username;
+    private LoginHelloPacket loginPacket;
+    private string serverId = "";
+
+    private readonly ILogger<ServerLoginNetworkHandler> _logger = Log.Instance.For<ServerLoginNetworkHandler>();
+
+    public ServerLoginNetworkHandler(OmniBlockServer server, Connection connection)
+    {
+        this.server = server;
+        this.connection = connection;
+        connection.setNetworkHandler(this);
+    }
+
+    public void tick()
+    {
+        if (loginPacket != null)
+        {
+            accept(loginPacket);
+            loginPacket = null;
+        }
+
+        if (loginTicks++ == 600)
+        {
+            disconnect("Took too long to log in");
+        }
+        else
+        {
+            connection.tick();
+        }
+    }
+
+    public void disconnect(string reason)
+    {
+        try
+        {
+            _logger.LogInformation($"Disconnecting {getConnectionInfo()}: {reason}");
+            connection.disconnect();
+            closed = true;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, e.Message);
+        }
+    }
+
+    public override void onHandshake(HandshakePacket packet)
+    {
+        if (server.onlineMode)
+        {
+            serverId = random.NextLong().ToString("x");
+            connection.sendPacket(HandshakePacket.Get(serverId));
+        }
+        else
+        {
+            connection.sendPacket(HandshakePacket.Get("-"));
+        }
+    }
+
+    public override void onHello(LoginHelloPacket packet)
+    {
+        if (server is InternalServer)
+        {
+            packet.Username = "player";
+        }
+        // A vanilla client declares nothing here and stays connectable; extended packets are simply
+        // never sent to it.
+        if (ProtocolHandshake.TryDecode(packet.WorldSeed, out int clientProtocol))
+        {
+            connection.NotePeerProtocol(clientProtocol);
+        }
+
+        username = packet.Username;
+        if (packet.ProtocolVersion != 14)
+        {
+            if (packet.ProtocolVersion > 14)
+            {
+                disconnect("Outdated server!");
+            }
+            else
+            {
+                disconnect("Outdated client!");
+            }
+        }
+        else
+        {
+            if (!server.onlineMode)
+            {
+                accept(packet);
+            }
+            else
+            {
+                //TODO: ADD SOME KIND OF AUTH
+                //new C_15575233(this, packet).start();
+                throw new InvalidOperationException("Auth not supported");
+            }
+        }
+    }
+
+    public void accept(LoginHelloPacket packet)
+    {
+        try
+        {
+            PlayerNameValidator.Validate(packet.Username);
+        }
+        catch (InvalidPlayerNameException ex)
+        {
+            _logger.LogWarning("Rejected login from {Remote}: Kicked: {Reason}", getConnectionInfo(), ex.Message);
+            disconnect($"Kicked: {ex.Message}");
+            return;
+        }
+
+        ServerPlayerEntity? ent = server.playerManager.connectPlayer(this, packet.Username);
+        if (ent != null)
+        {
+            server.playerManager.loadPlayerData(ent);
+            ent.SetWorld(server.getWorld(ent.DimensionId));
+            _logger.LogInformation($"{getConnectionInfo()} logged in with entity id {ent.ID} at ({ent.X}, {ent.Y}, {ent.Z})");
+            ServerWorld playerWorld = server.getWorld(ent.DimensionId);
+            Vec3I spawnPos = playerWorld.Properties.GetSpawnPos();
+            ServerPlayNetworkHandler handler = new ServerPlayNetworkHandler(server, connection, ent);
+            handler.SendPacket(LoginHelloPacket.Get("", ent.ID, playerWorld.Seed, (sbyte)playerWorld.Dimension.Id));
+            server.SendConfigurationTo(handler.SendPacket);
+            handler.SendMessage(new PlayerGameModeUpdateMessage
+            {
+                GameModeNamespace = ent.GameMode.Namespace.ToString(),
+                GameModeName = ent.GameMode.Name
+            });
+            handler.SendMessage(new PlayerSpawnPositionMessage
+            {
+                X = spawnPos.X,
+                Y = spawnPos.Y,
+                Z = spawnPos.Z
+            });
+            PlayerManager.sendWorldInfo(ent, playerWorld);
+            server.playerManager.sendToAll(new PlayerConnectionUpdateMessage
+            {
+                EntityId = ent.ID,
+                Type = PlayerConnectionUpdateMessage.UpdateType.Join,
+                Name = ent.Name
+            });
+            server.playerManager.sendToAll(new ChatMessage { Text = "§e" + ent.Name + " joined the game." });
+            server.playerManager.addPlayer(ent);
+            handler.teleport(ent.X, ent.Y, ent.Z, ent.Yaw, ent.Pitch);
+            server.connections.AddConnection(handler);
+            handler.SendMessage(new WorldTimeUpdateMessage { Time = playerWorld.GetTime() });
+            ent.initScreenHandler();
+        }
+
+        closed = true;
+    }
+
+    public override void onDisconnected(string reason, object[]? objects)
+    {
+        _logger.LogInformation($"{getConnectionInfo()} lost connection");
+        closed = true;
+    }
+
+    public override void handle(Packet packet)
+    {
+        disconnect("Protocol error");
+    }
+
+    public string getConnectionInfo()
+    {
+        var endPoint = connection.getAddress();
+
+        if (endPoint == null) return "Internal";
+
+        return !string.IsNullOrWhiteSpace(username) ? username : endPoint.ToString();
+    }
+
+    public override bool isServerSide()
+    {
+        return true;
+    }
+}
