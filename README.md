@@ -1,14 +1,14 @@
 <p align="center">
 <img height="128" src="OmniBlock.Launcher/logo.png" alt="OmniBlock">
 <h1 align="center">OmniBlock</h1>
-<p align="center">An enhanced version of Minecraft Beta 1.7.3, written in C#.</p>
+<p align="center">A heavily modified fork of <a href="https://git.gay/betasharp-official/betasharp">BetaSharp</a>.</p>
 </p>
 <p align="center">
 <a href="https://discord.gg/x9AGsjnWv4"><img src="https://img.shields.io/badge/chat%20on-discord-7289DA" alt="Discord"></a>
 <img src="https://img.shields.io/badge/language-C%23-512BD4" alt="C#">
 <img src="https://img.shields.io/badge/framework-.NET-512BD4" alt=".NET">
-<img src="https://img.shields.io/github/issues/Fazin85/omniblock" alt="Issues">
-<img src="https://img.shields.io/github/issues-pr/Fazin85/omniblock" alt="Pull requests">
+<img src="https://img.shields.io/github/issues/tomast1337/omniblock" alt="Issues">
+<img src="https://img.shields.io/github/issues-pr/tomast1337/omniblock" alt="Pull requests">
 </p>
 
 
@@ -16,6 +16,18 @@
 
 > [!IMPORTANT]
 > OmniBlock requires a legally purchased copy of Minecraft. We do not support or condone piracy. Please purchase Minecraft at [minecraft.net](https://www.minecraft.net).
+
+## Fork of BetaSharp
+
+OmniBlock is a **heavily modified fork** of [BetaSharp](https://git.gay/betasharp-official/betasharp), a C# recreation of Minecraft Beta 1.7.3.
+
+It keeps Beta 1.7.3's *world* - the terrain a seed produces, and the saves on disk - and rebuilds everything around it. Where this fork departs from upstream:
+
+- **Scripting-based modding** - content is authored, not compiled in: JSON assets plus TypeScript/JS mods running on Jint (a pure C# JavaScript engine). Mods ship as assets and scripts, not as forks of the engine.
+- **A rebuilt network protocol** - UDP-based, versioned, extensible; replaces Beta 1.7.3's flat `PacketId : byte` wire protocol. Expected to be wire-incompatible with upstream.
+- **WebGPU rendering** - the sole rendering backend (wgpu native, WGSL shaders).
+
+World generation and save format stay 1:1 compatible with Beta 1.7.3.
 
 ## Running
 
@@ -44,13 +56,3 @@ dotnet build
 
 Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for the code of conduct and pull request process. \
 This is a personal project, so review and merge timelines aren't guaranteed, but submissions are appreciated.
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=omniblock-official%2Fbetasharp&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=omniblock-official/omniblock&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=omniblock-official/omniblock&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=omniblock-official/omniblock&type=date&legend=top-left" />
- </picture>
-</a>
