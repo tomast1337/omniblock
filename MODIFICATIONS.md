@@ -208,3 +208,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-10 — Refactor rendering code to remove OpenGL dependencies (Nicolas Vyčas Nery; `02c3c03493adba159e191552856800ba19732b0c`)
 - 2026-08-10 — fix(rendering): update comments to clarify WebGPU backend behavior with GLFW (Nicolas Vyčas Nery; `b6adce507a0c3cc4352ca2063392a1eafe8cbbce`)
 - 2026-08-10 — phase one rename project (Nicolas Vyčas Nery; `d702d65f802e0dfdb06ec2bc7ec62178c2597fab`)
+- 2026-08-10 — rename project directories, csproj files, and leftover BetaSharp identifiers to OmniBlock (Nicolas Vyčas Nery; `0fd4a4288275de38fafc18a08de6c21b475e5961`)

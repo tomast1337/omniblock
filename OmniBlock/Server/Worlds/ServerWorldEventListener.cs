@@ -1,0 +1,66 @@
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Entities;
+using OmniBlock.Network.Messages;
+using OmniBlock.Worlds.Core;
+
+namespace OmniBlock.Server.Worlds;
+
+internal class ServerWorldEventListener : IWorldEventListener
+{
+    private readonly OmniBlockServer server;
+    private readonly ServerWorld world;
+
+    public ServerWorldEventListener(OmniBlockServer server, ServerWorld world)
+    {
+        this.server = server;
+        this.world = world;
+    }
+
+    public void NotifyEntityAdded(Entity entity)
+    {
+        server.getEntityTracker(world.Dimension.Id).onEntityAdded(entity);
+    }
+
+    public void NotifyEntityRemoved(Entity entity)
+    {
+        server.getEntityTracker(world.Dimension.Id).onEntityRemoved(entity);
+    }
+
+    public void BlockUpdate(int x, int y, int z)
+    {
+        server.playerManager.markDirty(x, y, z, world.Dimension.Id);
+    }
+
+    public void UpdateBlockEntity(int x, int y, int z, BlockEntity blockEntity)
+    {
+        PlayerManager.updateBlockEntity(x, y, z, blockEntity);
+    }
+
+    public void WorldEvent(EntityPlayer? player, int @event, int x, int y, int z, int data)
+    {
+        server.playerManager.sendToAround(player, x, y, z, 64.0, world.Dimension.Id,
+            new WorldEventMessage { EventId = @event, X = x, Y = (sbyte)y, Z = z, Data = data });
+    }
+
+    public void BroadcastEntityEvent(Entity entity, byte @event)
+    {
+        server.getEntityTracker(world.Dimension.Id)
+            .sendToAround(entity, new EntityStatusMessage { EntityId = entity.ID, Status = (sbyte)@event });
+    }
+
+    public void PlayNote(int x, int y, int z, int soundType, int pitch)
+    {
+        server.playerManager.sendToAround(x, y, z, 64.0, world.Dimension.Id,
+            new PlayNoteSoundMessage { X = x, Y = (short)y, Z = z, Instrument = (byte)soundType, Pitch = (byte)pitch });
+    }
+
+    public void SpawnParticle(string particle, double x, double y, double z, double velocityX, double velocityY, double velocityZ) { }
+
+    public void PlaySound(string sound, double x, double y, double z, float volume, float pitch) { }
+
+    public void PlayStreaming(string stream, int x, int y, int z) { }
+
+    public void SetBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) { }
+
+    public void NotifyAmbientDarknessChanged() { }
+}
