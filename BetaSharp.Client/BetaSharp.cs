@@ -127,6 +127,9 @@ public partial class BetaSharp :
 
     public GameRenderer GameRenderer { get; private set; }
     private WebGpuGameRenderer? _webGpuRenderer;
+
+    /// <summary>Reaches the WebGPU renderer for <see cref="LoadingScreenRenderer" /> and <see cref="LoadScreen" />, both of which draw and present frames of their own outside the main game loop.</summary>
+    internal WebGpuGameRenderer? WebGpuRenderer => _webGpuRenderer;
     public WorldRenderer WorldRenderer { get; private set; }
     public FramebufferManager FramebufferManager { get; private set; }
     public TextureManager TextureManager { get; private set; }
@@ -217,9 +220,13 @@ public partial class BetaSharp :
         SetupDisplay();
         SetupCoreSystems();
 
+        // After SetupOpenGLAndInput, not before: that's where ImGui.CreateContext() runs, and the
+        // WebGPU splash goes through the same ImGuiWgpuBackend/RenderState machinery every other
+        // frame does — drawing it any earlier means drawing before that machinery exists.
+        SetupOpenGLAndInput();
+
         LoadScreen();
 
-        SetupOpenGLAndInput();
         SetupResourcesAndPostProcessing();
 
         CheckGLError("Post startup");
@@ -2028,43 +2035,60 @@ public partial class BetaSharp :
 
     private void LoadScreen()
     {
-        // A splash drawn straight to the default framebuffer, outside the game loop. WebGPU has no
-        // default framebuffer to draw it to and no pass open at this point, so it has no splash.
-        if (GLManager.GLOrNull is null) return;
+        if (GLManager.GLOrNull is null && _webGpuRenderer is null) return;
 
         ScaledResolution scaledResolution = new(Options, DisplayWidth, DisplayHeight);
-        GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
         GLManager.Projection.LoadIdentity();
         GLManager.Projection.Ortho(0.0D, scaledResolution.ScaledWidth, scaledResolution.ScaledHeight, 0.0D, 1000.0D, 3000.0D);
         GLManager.ModelView.LoadIdentity();
         GLManager.ModelView.Translate(0.0F, 0.0F, -2000.0F);
-        // GL keeps one viewport as global state. WebGPU has none to set here — a render pass covers
-        // its attachments, and anything narrower is set on the pass encoder.
-        GLManager.GLOrNull?.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
-        GLManager.GL.ClearColor(0.0F, 0.0F, 0.0F, 0.0F);
-        Tessellator tessellator = Tessellator.instance;
-        GLManager.LightingEnabled = false;
-        GLManager.TextureEnabled = true;
-        GLManager.FogEnabled = false;
-        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
-        TextureManager.BindTexture(TextureManager.GetTextureId("/title/mojang.png"));
-        tessellator.startDrawingQuads();
-        tessellator.setColorOpaque_I(0xFFFFFF);
-        tessellator.addVertexWithUV(0.0D, (double)DisplayHeight, 0.0D, 0.0D, 0.0D);
-        tessellator.addVertexWithUV((double)DisplayWidth, (double)DisplayHeight, 0.0D, 0.0D, 0.0D);
-        tessellator.addVertexWithUV((double)DisplayWidth, 0.0D, 0.0D, 0.0D, 0.0D);
-        tessellator.addVertexWithUV(0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
-        tessellator.draw(ProgramSlot.Gui);
-        short logoWidth = 256;
-        short logoHeight = 256;
-        GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
-        tessellator.setColorOpaque_I(0xFFFFFF);
-        DrawTextureRegion((scaledResolution.ScaledWidth - logoWidth) / 2, (scaledResolution.ScaledHeight - logoHeight) / 2, 0, 0, logoWidth, logoHeight);
-        GLManager.LightingEnabled = false;
-        GLManager.FogEnabled = false;
-        GLManager.AlphaTestEnabled = true;
-        GLManager.AlphaThreshold = 0.1F;
-        Display.swapBuffers();
+
+        void DrawMojangLogo()
+        {
+            Tessellator tessellator = Tessellator.instance;
+            GLManager.LightingEnabled = false;
+            GLManager.FogEnabled = false;
+
+            // Solid white backdrop, filling the ortho space set up above (scaled coordinates, not
+            // raw display pixels — the old version quaded 0..DisplayWidth/Height, which is a
+            // different, usually larger, space than what the projection here maps to the window).
+            GLManager.TextureEnabled = false;
+            GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
+            tessellator.startDrawingQuads();
+            tessellator.setColorOpaque_I(0xFFFFFF);
+            tessellator.addVertex(0.0D, scaledResolution.ScaledHeight, 0.0D);
+            tessellator.addVertex(scaledResolution.ScaledWidth, scaledResolution.ScaledHeight, 0.0D);
+            tessellator.addVertex(scaledResolution.ScaledWidth, 0.0D, 0.0D);
+            tessellator.addVertex(0.0D, 0.0D, 0.0D);
+            tessellator.draw(ProgramSlot.Basic);
+
+            GLManager.TextureEnabled = true;
+            TextureManager.BindTexture(TextureManager.GetTextureId("/title/mojang.png"));
+            short logoWidth = 256;
+            short logoHeight = 256;
+            GLManager.Color = new(1.0F, 1.0F, 1.0F, 1.0F);
+            tessellator.setColorOpaque_I(0xFFFFFF);
+            DrawTextureRegion((scaledResolution.ScaledWidth - logoWidth) / 2, (scaledResolution.ScaledHeight - logoHeight) / 2, 0, 0, logoWidth, logoHeight);
+            GLManager.LightingEnabled = false;
+            GLManager.FogEnabled = false;
+            GLManager.AlphaTestEnabled = true;
+            GLManager.AlphaThreshold = 0.1F;
+        }
+
+        if (_webGpuRenderer is { } webGpu)
+        {
+            webGpu.RenderLoadingFrame(DrawMojangLogo);
+        }
+        else
+        {
+            GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
+            // GL keeps one viewport as global state. WebGPU has none to set here — a render pass
+            // covers its attachments, and anything narrower is set on the pass encoder.
+            GLManager.GL.Viewport(0, 0, (uint)Display.getFramebufferWidth(), (uint)Display.getFramebufferHeight());
+            GLManager.GL.ClearColor(0.0F, 0.0F, 0.0F, 0.0F);
+            DrawMojangLogo();
+            Display.swapBuffers();
+        }
     }
 
     private static void DrawTextureRegion(int x, int y, int texX, int texY, int width, int height)

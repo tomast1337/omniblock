@@ -14,16 +14,15 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
     private bool _ignoreShutdownCheck;
 
     /// <summary>
-    ///     Whether this can put anything on screen at all, which under WebGPU it cannot.
+    ///     Whether this can put anything on screen at all.
     /// </summary>
     /// <remarks>
     ///     The loading screen draws and presents a frame of its own, from wherever world loading
-    ///     happens to be. OpenGL allows that — a draw goes to whatever is bound. WebGPU records
-    ///     draws into a pass on an encoder the game loop owns, and there is no pass open here.
-    ///     Showing progress needs the loading callbacks to drive a real frame; until they do, the
-    ///     load runs with nothing on screen rather than throwing on the first draw.
+    ///     happens to be — GL allows that directly (a draw goes to whatever is bound), WebGPU
+    ///     through <see cref="WebGpuGameRenderer.RenderLoadingFrame" />, which opens and presents a
+    ///     pass of its own for exactly this. False only before either backend exists yet.
     /// </remarks>
-    private static bool CanDraw => GLManager.GLOrNull is not null;
+    private bool CanDraw => GLManager.GLOrNull is not null || game.WebGpuRenderer is not null;
 
     public void BeginLoading(string message)
     {
@@ -52,7 +51,7 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
 
             ScaledResolution resolution = new(game.Options, game.DisplayWidth, game.DisplayHeight);
 
-            GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
+            GLManager.GLOrNull?.Clear(ClearBufferMask.DepthBufferBit);
             GLManager.Projection.LoadIdentity();
             GLManager.Projection.Ortho(0.0, resolution.ScaledWidth, resolution.ScaledHeight, 0.0, 100.0, 300.0);
             GLManager.ModelView.LoadIdentity();
@@ -93,57 +92,69 @@ public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
         int width = resolution.ScaledWidth;
         int height = resolution.ScaledHeight;
 
-        GLManager.GL.Clear(ClearBufferMask.DepthBufferBit);
+        GLManager.GLOrNull?.Clear(ClearBufferMask.DepthBufferBit);
         GLManager.Projection.LoadIdentity();
         GLManager.Projection.Ortho(0.0, width, height, 0.0, 100.0, 300.0);
         GLManager.ModelView.LoadIdentity();
         GLManager.ModelView.Translate(0.0f, 0.0f, -200.0f);
-        GLManager.GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
+        GLManager.GLOrNull?.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
 
-        Tessellator tessellator = Tessellator.instance;
-        TextureHandle backgroundHandle = game.TextureManager.GetTextureId("/gui/background.png");
-        game.TextureManager.BindTexture(backgroundHandle);
-
-        float textureScale = 32.0f;
-        tessellator.startDrawingQuads();
-        tessellator.setColorOpaque_I(0x404040);
-        tessellator.addVertexWithUV(0.0, height, 0.0, 0.0, height / textureScale);
-        tessellator.addVertexWithUV(width, height, 0.0, width / textureScale, height / textureScale);
-        tessellator.addVertexWithUV(width, 0.0, 0.0, width / textureScale, 0.0);
-        tessellator.addVertexWithUV(0.0, 0.0, 0.0, 0.0, 0.0);
-        tessellator.draw(ProgramSlot.Textured);
-
-        if (progress >= 0)
+        void DrawContents()
         {
-            const int progressBarWidth = 100;
-            const int progressBarHeight = 2;
-            int x = width / 2 - progressBarWidth / 2;
-            int y = height / 2 + 16;
+            Tessellator tessellator = Tessellator.instance;
+            TextureHandle backgroundHandle = game.TextureManager.GetTextureId("/gui/background.png");
+            game.TextureManager.BindTexture(backgroundHandle);
 
-            GLManager.TextureEnabled = false;
+            float textureScale = 32.0f;
             tessellator.startDrawingQuads();
-            tessellator.setColorOpaque_I(0x808080);
-            tessellator.addVertex(x, y, 0.0);
-            tessellator.addVertex(x, y + progressBarHeight, 0.0);
-            tessellator.addVertex(x + progressBarWidth, y + progressBarHeight, 0.0);
-            tessellator.addVertex(x + progressBarWidth, y, 0.0);
+            tessellator.setColorOpaque_I(0x404040);
+            tessellator.addVertexWithUV(0.0, height, 0.0, 0.0, height / textureScale);
+            tessellator.addVertexWithUV(width, height, 0.0, width / textureScale, height / textureScale);
+            tessellator.addVertexWithUV(width, 0.0, 0.0, width / textureScale, 0.0);
+            tessellator.addVertexWithUV(0.0, 0.0, 0.0, 0.0, 0.0);
+            tessellator.draw(ProgramSlot.Textured);
 
-            tessellator.setColorOpaque_I(0x80FF80);
-            tessellator.addVertex(x, y, 0.0);
-            tessellator.addVertex(x, y + progressBarHeight, 0.0);
-            tessellator.addVertex(x + progress, y + progressBarHeight, 0.0);
-            tessellator.addVertex(x + progress, y, 0.0);
-            tessellator.draw(ProgramSlot.Basic);
-            GLManager.TextureEnabled = true;
+            if (progress >= 0)
+            {
+                const int progressBarWidth = 100;
+                const int progressBarHeight = 2;
+                int x = width / 2 - progressBarWidth / 2;
+                int y = height / 2 + 16;
+
+                GLManager.TextureEnabled = false;
+                tessellator.startDrawingQuads();
+                tessellator.setColorOpaque_I(0x808080);
+                tessellator.addVertex(x, y, 0.0);
+                tessellator.addVertex(x, y + progressBarHeight, 0.0);
+                tessellator.addVertex(x + progressBarWidth, y + progressBarHeight, 0.0);
+                tessellator.addVertex(x + progressBarWidth, y, 0.0);
+
+                tessellator.setColorOpaque_I(0x80FF80);
+                tessellator.addVertex(x, y, 0.0);
+                tessellator.addVertex(x, y + progressBarHeight, 0.0);
+                tessellator.addVertex(x + progress, y + progressBarHeight, 0.0);
+                tessellator.addVertex(x + progress, y, 0.0);
+                tessellator.draw(ProgramSlot.Basic);
+                GLManager.TextureEnabled = true;
+            }
+
+            int titleX = (width - game.TextRenderer.GetStringWidth(_titleText)) / 2;
+            int titleY = height / 2 - 4 - 16;
+            game.TextRenderer.DrawStringWithShadow(_titleText, titleX, titleY, Color.White);
+
+            int stageX = (width - game.TextRenderer.GetStringWidth(_currentStage)) / 2;
+            int stageY = height / 2 - 4 + 8;
+            game.TextRenderer.DrawStringWithShadow(_currentStage, stageX, stageY, Color.White);
         }
 
-        int titleX = (width - game.TextRenderer.GetStringWidth(_titleText)) / 2;
-        int titleY = height / 2 - 4 - 16;
-        game.TextRenderer.DrawStringWithShadow(_titleText, titleX, titleY, Color.White);
-
-        int stageX = (width - game.TextRenderer.GetStringWidth(_currentStage)) / 2;
-        int stageY = height / 2 - 4 + 8;
-        game.TextRenderer.DrawStringWithShadow(_currentStage, stageX, stageY, Color.White);
+        if (game.WebGpuRenderer is { } webGpu)
+        {
+            webGpu.RenderLoadingFrame(DrawContents);
+        }
+        else
+        {
+            DrawContents();
+        }
 
         Display.update();
         Thread.Yield();
