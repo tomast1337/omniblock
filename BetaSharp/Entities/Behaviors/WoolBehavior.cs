@@ -1,11 +1,11 @@
 using System.Text.Json;
-using BetaSharp.Blocks;
-using BetaSharp.Items;
-using BetaSharp.NBT;
-using BetaSharp.Util;
-using BetaSharp.Util.Maths;
+using OmniBlock.Blocks;
+using OmniBlock.Items;
+using OmniBlock.NBT;
+using OmniBlock.Util;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     A sheep's fleece: its colour, whether it has been sheared, and the shears interaction that

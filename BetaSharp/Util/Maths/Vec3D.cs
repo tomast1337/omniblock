@@ -1,4 +1,4 @@
-namespace BetaSharp.Util.Maths;
+namespace OmniBlock.Util.Maths;
 
 public record struct Vec3D
 {

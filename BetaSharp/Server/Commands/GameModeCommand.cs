@@ -1,11 +1,11 @@
-using BetaSharp.Entities;
-using BetaSharp.Network.Messages;
-using BetaSharp.Registries;
+using OmniBlock.Entities;
+using OmniBlock.Network.Messages;
+using OmniBlock.Registries;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Server.Commands;
+namespace OmniBlock.Server.Commands;
 
 public class GameModeCommand : Command.Command
 {

@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Snapshots;
+namespace OmniBlock.Network.Snapshots;
 
 /// <summary>
 ///     One entity's replicated position and facing, in the units the wire uses.

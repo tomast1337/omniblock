@@ -1,9 +1,9 @@
-using BetaSharp.Blocks;
-using BetaSharp.Entities;
-using BetaSharp.Inventories;
-using BetaSharp.Items;
+using OmniBlock.Blocks;
+using OmniBlock.Entities;
+using OmniBlock.Inventories;
+using OmniBlock.Items;
 
-namespace BetaSharp.Screens.Slots;
+namespace OmniBlock.Screens.Slots;
 
 internal class CraftingResultSlot : Slot
 {

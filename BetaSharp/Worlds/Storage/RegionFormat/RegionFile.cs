@@ -1,8 +1,8 @@
 using System.IO.Compression;
-using BetaSharp.Worlds.Chunks.Storage;
+using OmniBlock.Worlds.Chunks.Storage;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Worlds.Storage.RegionFormat;
+namespace OmniBlock.Worlds.Storage.RegionFormat;
 
 internal class RegionFile
 {

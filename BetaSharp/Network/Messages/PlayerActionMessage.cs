@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     A player's action against a block, or a drop.
@@ -14,7 +14,7 @@ namespace BetaSharp.Network.Messages;
 ///         <c>int</c> meant the range was never the field's type.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:player_action")]
+[WireMessage("omniblock:player_action")]
 public sealed partial class PlayerActionMessage : Message
 {
     [WireField]

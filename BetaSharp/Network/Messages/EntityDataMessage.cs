@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     The changed entries of an entity's <c>DataSynchronizer</c>. Replaces
@@ -11,7 +11,7 @@ namespace BetaSharp.Network.Messages;
 ///         confused by its own contents.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:entity_data")]
+[WireMessage("omniblock:entity_data")]
 public sealed partial class EntityDataMessage : Message
 {
     /// <summary>

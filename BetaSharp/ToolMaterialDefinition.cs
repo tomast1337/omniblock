@@ -1,6 +1,6 @@
-using BetaSharp.Registries.Data;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp;
+namespace OmniBlock;
 
 public sealed class ToolMaterialDefinition : DataAsset
 {

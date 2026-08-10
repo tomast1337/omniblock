@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Rendering.Core.WebGPU;
+namespace OmniBlock.Client.Rendering.Core.WebGPU;
 
 /// <summary>
 ///     Puts tightly packed RGBA8 rows into the layout <c>QueueWriteTexture</c> demands.

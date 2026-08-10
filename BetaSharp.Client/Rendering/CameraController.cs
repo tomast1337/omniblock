@@ -1,16 +1,16 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Client.Options;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Entities;
-using BetaSharp.Util.Hit;
-using BetaSharp.Util.Maths;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Client.Options;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Entities;
+using OmniBlock.Util.Hit;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Client.Rendering;
+namespace OmniBlock.Client.Rendering;
 
 public class CameraController
 {
-    private readonly BetaSharp _game;
+    private readonly OmniBlock _game;
     private readonly float _thirdPersonDistance = 4.0F;
     private readonly float _frontThirdPersonDistance = 4.0F;
     public float ViewBob { get; private set; }
@@ -33,7 +33,7 @@ public class CameraController
     public double CameraPitch { get; } = 0.0D;
     public bool IsZoomActive => _isZoomHeld;
 
-    public CameraController(BetaSharp game)
+    public CameraController(OmniBlock game)
     {
         _game = game;
     }

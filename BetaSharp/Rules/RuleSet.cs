@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
-using BetaSharp.NBT;
+using OmniBlock.NBT;
 
-namespace BetaSharp.Rules;
+namespace OmniBlock.Rules;
 
 public sealed class RuleSet(RuleRegistry registry)
 {

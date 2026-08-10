@@ -1,6 +1,6 @@
 using Silk.NET.Maths;
 
-namespace BetaSharp.Client.Rendering.Core;
+namespace OmniBlock.Client.Rendering.Core;
 
 /// <summary>
 ///     The per-context rendering state every backend needs: matrix stacks, tint, facing, fog and

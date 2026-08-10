@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "เล่นหลายคน",
-        "betasharpServer": "เซิร์ฟเวอร์ BetaSharp",
+        "betasharpServer": "เซิร์ฟเวอร์ OmniBlock",
         "info1": "Minecraft เล่นหลายคนยังไม่เสร็จสมบูรณ์ แต่",
         "info2": "กำลังมีการทดสอบเบื้องต้นที่ยังมีข้อผิดพลาดอยู่",
         "ipinfo": "ป้อน IP ของเซิร์ฟเวอร์เพื่อเชื่อมต่อ:",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "BetaSharp เวอร์ชัน %1$s",
+        "version": "OmniBlock เวอร์ชัน %1$s",
         "description": "รุ่นปรับปรุงของ Minecraft Beta 1.7.3 เขียนด้วย C#",
         "github": "บน GitHub",
         "author": "สร้างโดย Fazin85",

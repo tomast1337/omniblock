@@ -1,10 +1,10 @@
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.Worlds.Core;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.Worlds.Core;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 
-namespace BetaSharp.Server.Commands;
+namespace OmniBlock.Server.Commands;
 
 public class KillAllCommand : Command.Command
 {

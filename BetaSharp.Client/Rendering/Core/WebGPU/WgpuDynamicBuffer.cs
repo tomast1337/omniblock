@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 using Silk.NET.WebGPU;
 using WgpuBuffer = Silk.NET.WebGPU.Buffer;
 
-namespace BetaSharp.Client.Rendering.Core.WebGPU;
+namespace OmniBlock.Client.Rendering.Core.WebGPU;
 
 /// <summary>
 ///     A GPU buffer whose contents are replaced every frame — the WebGPU equivalent of a GL

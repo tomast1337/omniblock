@@ -1,9 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Entities;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Entities;
 using Silk.NET.Maths;
 
-namespace BetaSharp.Client.Rendering.Entities.Models;
+namespace OmniBlock.Client.Rendering.Entities.Models;
 
 public class BbModelEntityModel : ModelBase
 {

@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace BetaSharp.Util.Maths;
+namespace OmniBlock.Util.Maths;
 
 /// <summary>
 /// C# port of Java's 48-bit LCG (Linear Congruential Generator) from Random.

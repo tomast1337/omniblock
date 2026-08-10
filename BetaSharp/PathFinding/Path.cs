@@ -1,4 +1,4 @@
-namespace BetaSharp.PathFinding;
+namespace OmniBlock.PathFinding;
 
 internal class Path
 {

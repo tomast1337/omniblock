@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace BetaSharp.Launcher.Features.Sessions;
+namespace OmniBlock.Launcher.Features.Sessions;
 
 [JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
 [JsonSerializable(typeof(Session))]

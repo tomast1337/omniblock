@@ -1,12 +1,12 @@
-using BetaSharp.Blocks;
-using BetaSharp.Entities;
-using BetaSharp.Inventories;
-using BetaSharp.Items;
-using BetaSharp.Recipes;
-using BetaSharp.Screens.Slots;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Entities;
+using OmniBlock.Inventories;
+using OmniBlock.Items;
+using OmniBlock.Recipes;
+using OmniBlock.Screens.Slots;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Screens;
+namespace OmniBlock.Screens;
 
 public class CraftingScreenHandler : ScreenHandler
 {

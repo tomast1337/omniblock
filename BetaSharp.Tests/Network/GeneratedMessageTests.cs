@@ -1,7 +1,7 @@
-using BetaSharp.Items;
-using BetaSharp.Network.Messages;
+using OmniBlock.Items;
+using OmniBlock.Network.Messages;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 /// <summary>
 ///     Exercises the serialization the source generator emits.

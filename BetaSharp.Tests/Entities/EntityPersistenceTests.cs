@@ -1,9 +1,9 @@
-using BetaSharp.Entities;
-using BetaSharp.Entities.State;
-using BetaSharp.NBT;
-using BetaSharp.Util;
+using OmniBlock.Entities;
+using OmniBlock.Entities.State;
+using OmniBlock.NBT;
+using OmniBlock.Util;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Covers the Persistence capability slot and its data-driven shortcut: a synced property that

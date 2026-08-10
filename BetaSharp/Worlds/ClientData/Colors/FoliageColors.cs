@@ -1,4 +1,4 @@
-namespace BetaSharp.Worlds.Colors;
+namespace OmniBlock.Worlds.Colors;
 
 public class FoliageColors
 {

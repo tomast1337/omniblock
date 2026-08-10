@@ -5,9 +5,9 @@
         "##"
     ],
     "key": {
-        "#": "betasharp:Sand"
+        "#": "omniblock:Sand"
     },
     "result": {
-        "id": "betasharp:Sandstone"
+        "id": "omniblock:Sandstone"
     }
 }

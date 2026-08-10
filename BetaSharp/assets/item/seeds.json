@@ -1,8 +1,8 @@
 {
   "ProtocolId": 295,
-  "TextureId": "betasharp:seeds",
+  "TextureId": "omniblock:seeds",
   "Behavior": {
     "type": "seeds",
-    "PlacesBlock": "betasharp:wheat"
+    "PlacesBlock": "omniblock:wheat"
   }
 }

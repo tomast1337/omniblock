@@ -1,6 +1,6 @@
-using BetaSharp.Util.Maths;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Client.Sound;
+namespace OmniBlock.Client.Sound;
 
 public class MusicCategory
 {

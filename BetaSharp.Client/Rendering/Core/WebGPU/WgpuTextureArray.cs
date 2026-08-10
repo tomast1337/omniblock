@@ -1,6 +1,6 @@
 using Silk.NET.WebGPU;
 
-namespace BetaSharp.Client.Rendering.Core.WebGPU;
+namespace OmniBlock.Client.Rendering.Core.WebGPU;
 
 /// <summary>
 ///     A 2D texture array with its view and sampler, and the bind groups binding them to the

@@ -1,4 +1,4 @@
-namespace BetaSharp.Rules;
+namespace OmniBlock.Rules;
 
 internal interface IRulesProvider
 {

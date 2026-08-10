@@ -1,6 +1,6 @@
-using BetaSharp.Items;
+using OmniBlock.Items;
 
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     A right-click against a block, or against nothing. Replaces
@@ -12,7 +12,7 @@ namespace BetaSharp.Network.Messages;
 ///         duplicate both.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:interact_block")]
+[WireMessage("omniblock:interact_block")]
 public sealed partial class InteractBlockMessage : Message
 {
     [WireField]

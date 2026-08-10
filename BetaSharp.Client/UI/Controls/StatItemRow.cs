@@ -1,8 +1,8 @@
-using BetaSharp.Client.UI.Rendering;
-using BetaSharp.Items;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.UI.Rendering;
+using OmniBlock.Items;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Controls;
+namespace OmniBlock.Client.UI.Controls;
 
 public class StatItemRow : UIElement
 {

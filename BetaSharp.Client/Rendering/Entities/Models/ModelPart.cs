@@ -1,9 +1,9 @@
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.Textures;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Core.Textures;
 using Silk.NET.Maths;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.Rendering.Entities.Models;
+namespace OmniBlock.Client.Rendering.Entities.Models;
 
 public class ModelPart
 {

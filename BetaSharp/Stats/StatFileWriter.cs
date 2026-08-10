@@ -1,9 +1,9 @@
 using System.Text;
 using System.Text.Json;
-using BetaSharp.Util;
+using OmniBlock.Util;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Stats;
+namespace OmniBlock.Stats;
 
 public class StatFileWriter
 {

@@ -1,8 +1,8 @@
-using BetaSharp.Entities;
-using BetaSharp.Items;
-using BetaSharp.Screens;
+using OmniBlock.Entities;
+using OmniBlock.Items;
+using OmniBlock.Screens;
 
-namespace BetaSharp.Inventories;
+namespace OmniBlock.Inventories;
 
 public class InventoryCrafting : IInventory
 {

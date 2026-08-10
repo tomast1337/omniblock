@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Resource;
+namespace OmniBlock.Client.Resource;
 
 public interface IResourceLoader
 {

@@ -1,7 +1,7 @@
 {
     "ProtocolId": 2257,
     "TranslationKey": "record",
-    "TextureId": "betasharp:music_disc_cat",
+    "TextureId": "omniblock:music_disc_cat",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "record",

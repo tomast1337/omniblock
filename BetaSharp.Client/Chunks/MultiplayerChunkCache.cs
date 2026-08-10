@@ -1,8 +1,8 @@
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core;
 
-namespace BetaSharp.Client.Chunks;
+namespace OmniBlock.Client.Chunks;
 
 public class MultiplayerChunkCache(World world) : IChunkSource
 {

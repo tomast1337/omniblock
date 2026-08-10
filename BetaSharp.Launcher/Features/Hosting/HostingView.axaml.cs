@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace BetaSharp.Launcher.Features.Hosting;
+namespace OmniBlock.Launcher.Features.Hosting;
 
 internal sealed partial class HostingView : UserControl
 {

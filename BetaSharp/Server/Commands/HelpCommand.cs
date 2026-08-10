@@ -1,11 +1,11 @@
-using BetaSharp.Server.Command;
-using BetaSharp.Server.Internal;
+using OmniBlock.Server.Command;
+using OmniBlock.Server.Internal;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 using Brigadier.NET.Tree;
 using StringReader = Brigadier.NET.StringReader;
 
-namespace BetaSharp.Server.Commands;
+namespace OmniBlock.Server.Commands;
 
 public class HelpCommand : Command.Command
 {

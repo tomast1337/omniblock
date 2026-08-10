@@ -1,4 +1,4 @@
-namespace BetaSharp.Util.Maths;
+namespace OmniBlock.Util.Maths;
 
 public readonly record struct BlockPos(int X, int Y, int Z)
 {

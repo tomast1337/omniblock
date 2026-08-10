@@ -5,10 +5,10 @@
         "XXX"
     ],
     "key": {
-        "#": "betasharp:Wool",
-        "X": "betasharp:Planks"
+        "#": "omniblock:Wool",
+        "X": "omniblock:Planks"
     },
     "result": {
-        "id": "betasharp:bed"
+        "id": "omniblock:bed"
     }
 }

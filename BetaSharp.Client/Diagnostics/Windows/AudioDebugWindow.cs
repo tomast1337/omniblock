@@ -1,7 +1,7 @@
-using BetaSharp.Client.Sound;
+using OmniBlock.Client.Sound;
 using Hexa.NET.ImGui;
 
-namespace BetaSharp.Client.Diagnostics.Windows;
+namespace OmniBlock.Client.Diagnostics.Windows;
 
 internal sealed class AudioDebugWindow(DebugWindowContext ctx) : DebugWindow
 {

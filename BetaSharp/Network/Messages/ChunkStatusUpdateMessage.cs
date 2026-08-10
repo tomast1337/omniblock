@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 [WireMessage("beta:chunk_status_update")]
 public partial class ChunkStatusUpdateMessage : Message

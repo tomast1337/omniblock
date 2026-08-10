@@ -1,7 +1,7 @@
 {
     "type": "smelting",
-    "input": "betasharp:Cobblestone",
+    "input": "omniblock:Cobblestone",
     "result": {
-        "id": "betasharp:Stone"
+        "id": "omniblock:Stone"
     }
 }

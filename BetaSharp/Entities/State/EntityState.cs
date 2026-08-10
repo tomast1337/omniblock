@@ -1,4 +1,4 @@
-namespace BetaSharp.Entities.State;
+namespace OmniBlock.Entities.State;
 
 /// <summary>
 ///     Per-entity storage for the slots its shared behaviors declared. Backed by right-sized typed

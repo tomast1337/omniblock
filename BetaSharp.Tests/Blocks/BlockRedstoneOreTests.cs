@@ -1,8 +1,8 @@
 using System.Text.Json;
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
 
-namespace BetaSharp.Tests.Blocks;
+namespace OmniBlock.Tests.Blocks;
 
 public sealed class BlockRedstoneOreTests
 {
@@ -56,14 +56,14 @@ public sealed class BlockRedstoneOreTests
     [Fact]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"redstone_ore","unlit_ore":"betasharp:redstone_ore"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"redstone_ore","unlit_ore":"omniblock:redstone_ore"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("redstone_ore", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"redstone_ore","unlit_ore":"not_a_real_block","lit_ore":"betasharp:lit_redstone_ore"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"redstone_ore","unlit_ore":"not_a_real_block","lit_ore":"omniblock:lit_redstone_ore"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("redstone_ore", json.RootElement));
     }
 }

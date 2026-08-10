@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     The player's movement intent for a tick. Replaces <c>PlayerInputC2SPacket</c>.
@@ -10,7 +10,7 @@ namespace BetaSharp.Network.Messages;
 ///         replace.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:player_input")]
+[WireMessage("omniblock:player_input")]
 public sealed partial class PlayerInputMessage : Message
 {
     [WireField]

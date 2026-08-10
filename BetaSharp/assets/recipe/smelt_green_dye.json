@@ -1,7 +1,7 @@
 {
     "type": "smelting",
-    "input": "betasharp:Cactus",
+    "input": "omniblock:Cactus",
     "result": {
-        "id": "betasharp:dye_powder:2"
+        "id": "omniblock:dye_powder:2"
     }
 }

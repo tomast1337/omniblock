@@ -1,6 +1,6 @@
-using BetaSharp.Entities;
+using OmniBlock.Entities;
 
-namespace BetaSharp.Worlds.Maps;
+namespace OmniBlock.Worlds.Maps;
 
 internal class MapUpdateTracker
 {

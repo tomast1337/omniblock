@@ -1,4 +1,4 @@
-namespace BetaSharp.Worlds.Chunks;
+namespace OmniBlock.Worlds.Chunks;
 
 public interface IChunkSource
 {

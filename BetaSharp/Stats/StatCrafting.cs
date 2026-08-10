@@ -1,4 +1,4 @@
-namespace BetaSharp.Stats;
+namespace OmniBlock.Stats;
 
 public class StatCrafting : StatBase
 {

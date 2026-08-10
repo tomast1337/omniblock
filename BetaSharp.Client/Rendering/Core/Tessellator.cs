@@ -1,8 +1,8 @@
 using System.Runtime.InteropServices;
-using BetaSharp.Util;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Util;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.Rendering.Core;
+namespace OmniBlock.Client.Rendering.Core;
 
 [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 36)]
 public struct Vertex(float x, float y, float z, float u, float v, int color, int normal)

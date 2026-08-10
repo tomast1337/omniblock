@@ -1,9 +1,9 @@
-using BetaSharp.Client.Options;
-using BetaSharp.Client.Resource.Pack;
-using BetaSharp.Client.UI.Controls.Core;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.Options;
+using OmniBlock.Client.Resource.Pack;
+using OmniBlock.Client.UI.Controls.Core;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Screens.Menu.Options;
+namespace OmniBlock.Client.UI.Screens.Menu.Options;
 
 public class OptionsScreen(
     UIContext context,

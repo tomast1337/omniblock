@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "Žaisti su keliais žaidėjais",
-        "betasharpServer": "BetaSharp serveris",
+        "betasharpServer": "OmniBlock serveris",
         "info1": "Minecraft kelių žaidėjų režimas šiuo metu nebaigtas, bet",
         "info2": "vyksta ankstyvasis testavimas su klaidomis.",
         "ipinfo": "Įveskite IP serverį, kad prie jo prisijungtumėte:",

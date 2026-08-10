@@ -1,8 +1,8 @@
-using BetaSharp.Blocks;
-using BetaSharp.Items;
-using BetaSharp.Stats;
+using OmniBlock.Blocks;
+using OmniBlock.Items;
+using OmniBlock.Stats;
 
-namespace BetaSharp;
+namespace OmniBlock;
 
 public class Achievement : StatBase
 {

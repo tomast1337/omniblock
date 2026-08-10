@@ -1,9 +1,9 @@
-using BetaSharp.Client.Rendering.Core.Textures;
+using OmniBlock.Client.Rendering.Core.Textures;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace BetaSharp.Client.Resource.Pack;
+namespace OmniBlock.Client.Resource.Pack;
 
 public class BuiltInTexturePack : TexturePack
 {

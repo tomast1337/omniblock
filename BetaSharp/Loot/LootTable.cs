@@ -1,13 +1,13 @@
-using BetaSharp.Items;
+using OmniBlock.Items;
 
-namespace BetaSharp.Loot;
+namespace OmniBlock.Loot;
 
 /// <summary>
 ///     A declarative set of loot pools. Every pool whose condition passes contributes stacks, so a
 ///     table expresses both "one of these" (weighted entries inside a pool) and "all of these"
 ///     (multiple pools).
 ///     <para>
-///         Not to be confused with the older <see cref="BetaSharp.Blocks.LootTable" />, which blocks
+///         Not to be confused with the older <see cref="OmniBlock.Blocks.LootTable" />, which blocks
 ///         still use. Moving them onto this one is outstanding.
 ///     </para>
 /// </summary>

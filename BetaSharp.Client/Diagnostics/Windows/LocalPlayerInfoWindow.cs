@@ -1,9 +1,9 @@
-using BetaSharp.Blocks;
-using BetaSharp.Util.Hit;
-using BetaSharp.Util.Maths;
+using OmniBlock.Blocks;
+using OmniBlock.Util.Hit;
+using OmniBlock.Util.Maths;
 using Hexa.NET.ImGui;
 
-namespace BetaSharp.Client.Diagnostics.Windows;
+namespace OmniBlock.Client.Diagnostics.Windows;
 
 internal sealed class LocalPlayerInfoWindow(DebugWindowContext ctx) : DebugWindow
 {

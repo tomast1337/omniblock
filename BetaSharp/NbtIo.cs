@@ -1,7 +1,7 @@
 using System.IO.Compression;
-using BetaSharp.NBT;
+using OmniBlock.NBT;
 
-namespace BetaSharp;
+namespace OmniBlock;
 
 public static class NbtIo
 {

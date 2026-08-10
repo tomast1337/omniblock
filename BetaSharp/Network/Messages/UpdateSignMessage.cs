@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     The four lines of a sign. Replaces <c>UpdateSignPacket</c>, and travels both ways: the client
@@ -14,7 +14,7 @@ namespace BetaSharp.Network.Messages;
 ///         the position, the four length prefixes and the UTF-16 doubling — every term but one.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:update_sign")]
+[WireMessage("omniblock:update_sign")]
 public sealed partial class UpdateSignMessage : Message
 {
     /// <summary>What a sign renders before it starts clipping, and the bound the reader applies.</summary>

@@ -1,4 +1,4 @@
-namespace BetaSharp.Server.Command;
+namespace OmniBlock.Server.Command;
 
 internal class PendingCommand(string contents, ICommandOutput output)
 {

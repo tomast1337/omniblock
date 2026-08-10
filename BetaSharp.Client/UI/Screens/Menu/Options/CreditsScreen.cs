@@ -1,9 +1,9 @@
-using BetaSharp.Client.UI.Controls;
-using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Layout.Flexbox;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.UI.Controls;
+using OmniBlock.Client.UI.Controls.Core;
+using OmniBlock.Client.UI.Layout.Flexbox;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Screens.Menu.Options;
+namespace OmniBlock.Client.UI.Screens.Menu.Options;
 
 public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(context)
 {
@@ -115,9 +115,9 @@ public class CreditsScreen(UIContext context, UIScreen parent) : UIScreen(contex
         image.Style.MarginBottom = 10;
         scroll.AddContent(image);
 
-        ColoredTextUntranslated(Translations.GetFormat("credits.version", BetaSharp.Version), Color.Yellow, 1f);
+        ColoredTextUntranslated(Translations.GetFormat("credits.version", OmniBlock.Version), Color.Yellow, 1f);
         Text("credits.description");
-        Link("credits.github", "https://git.gay/betasharp-official/betasharp");
+        Link("credits.github", "https://git.gay/omniblock-official/omniblock");
         Link("credits.author", "https://git.gay/Fazin85");
         Seperator();
 

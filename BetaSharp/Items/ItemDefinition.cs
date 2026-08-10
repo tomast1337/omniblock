@@ -1,7 +1,7 @@
-using BetaSharp.Items.Behaviors;
-using BetaSharp.Registries.Data;
+using OmniBlock.Items.Behaviors;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Items;
+namespace OmniBlock.Items;
 
 public sealed class ItemDefinition : DataAsset
 {

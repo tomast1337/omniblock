@@ -1,10 +1,10 @@
 {
     "type": "shapeless",
     "ingredients": [
-        "betasharp:Rose"
+        "omniblock:Rose"
     ],
     "result": {
-        "id": "betasharp:dye_powder:1",
+        "id": "omniblock:dye_powder:1",
         "count": 2
     }
 }

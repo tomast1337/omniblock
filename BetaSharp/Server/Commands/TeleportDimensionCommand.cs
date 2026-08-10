@@ -1,8 +1,8 @@
-using BetaSharp.Entities;
+using OmniBlock.Entities;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 
-namespace BetaSharp.Server.Commands;
+namespace OmniBlock.Server.Commands;
 
 public class TeleportDimensionCommand : Command.Command
 {

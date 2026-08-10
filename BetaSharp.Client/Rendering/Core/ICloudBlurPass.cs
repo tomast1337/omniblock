@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Rendering.Core;
+namespace OmniBlock.Client.Rendering.Core;
 
 /// <summary>
 ///     Captures whatever geometry is drawn between <see cref="Begin" /> and <see cref="End" /> into

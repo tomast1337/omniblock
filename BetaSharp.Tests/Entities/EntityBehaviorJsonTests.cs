@@ -1,12 +1,12 @@
 using System.Text.Json;
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.Entities.State;
-using BetaSharp.Items;
-using BetaSharp.Loot;
-using BetaSharp.Loot.Conditions;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.Entities.State;
+using OmniBlock.Items;
+using OmniBlock.Loot;
+using OmniBlock.Loot.Conditions;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Covers behavior loading: capability slots are declared in <c>assets/entity/*.json</c> and built
@@ -86,8 +86,8 @@ public sealed class EntityBehaviorJsonTests
         LootTable table = LootJson.ParseTable(Json("""
         {
           "Pools": [
-            { "Entries": [{"Item":"betasharp:arrow"}], "MinCount": 1, "MaxCount": 1 },
-            { "Entries": [{"Item":"betasharp:bone"}], "MinCount": 1, "MaxCount": 1 }
+            { "Entries": [{"Item":"omniblock:arrow"}], "MinCount": 1, "MaxCount": 1 },
+            { "Entries": [{"Item":"omniblock:bone"}], "MinCount": 1, "MaxCount": 1 }
           ]
         }
         """));
@@ -103,18 +103,18 @@ public sealed class EntityBehaviorJsonTests
     public void Loot_entry_can_name_a_block_as_well_as_an_item()
     {
         LootTable table = LootJson.ParseTable(Json("""
-        { "Pools": [ { "Entries": [{"Item":"betasharp:wool"}], "MinCount": 1, "MaxCount": 1 } ] }
+        { "Pools": [ { "Entries": [{"Item":"omniblock:wool"}], "MinCount": 1, "MaxCount": 1 } ] }
         """));
 
         ItemStack stack = Assert.Single(table.Roll(new LootContext(null, null, 0, System.Random.Shared)));
-        Assert.Equal(BetaSharp.Blocks.BlockRegistry.Get("wool").Id, stack.ItemId);
+        Assert.Equal(OmniBlock.Blocks.BlockRegistry.Get("wool").Id, stack.ItemId);
     }
 
     [Fact]
     public void Unknown_item_in_a_loot_entry_fails_when_rolled()
     {
         LootTable table = LootJson.ParseTable(Json("""
-        { "Pools": [ { "Entries": [{"Item":"betasharp:not_a_real_item"}], "MinCount": 1, "MaxCount": 1 } ] }
+        { "Pools": [ { "Entries": [{"Item":"omniblock:not_a_real_item"}], "MinCount": 1, "MaxCount": 1 } ] }
         """));
 
         ArgumentException error = Assert.Throws<ArgumentException>(
@@ -130,7 +130,7 @@ public sealed class EntityBehaviorJsonTests
         ((WoolBehavior)EntityRegistry.ByName("sheep").Behaviors.Interactable!).SetColorOn(sheep, 11);
 
         LootTable table = LootJson.ParseTable(Json("""
-        { "Pools": [ { "Entries": [{"Item":"betasharp:wool","MetaFrom":"FleeceColor"}], "MinCount": 1, "MaxCount": 1 } ] }
+        { "Pools": [ { "Entries": [{"Item":"omniblock:wool","MetaFrom":"FleeceColor"}], "MinCount": 1, "MaxCount": 1 } ] }
         """));
 
         ItemStack stack = Assert.Single(table.Roll(LootContext.ForMob(sheep, null)));
@@ -191,13 +191,13 @@ public sealed class EntityBehaviorJsonTests
               "Slots": ["Ticker"],
               "Type": "boat",
               "break_damage": 25,
-              "wreckage": [{ "Item": "betasharp:planks", "Count": 3 }]
+              "wreckage": [{ "Item": "omniblock:planks", "Count": 3 }]
             }
             """));
 
         Assert.Equal(["Ticker"], boat.Slots);
         Assert.Equal(25, boat.BreakDamage);
-        Assert.Equal("betasharp:planks", Assert.Single(boat.Wreckage).Item);
+        Assert.Equal("omniblock:planks", Assert.Single(boat.Wreckage).Item);
         Assert.Equal(3, boat.Wreckage[0].Count);
     }
 
@@ -222,7 +222,7 @@ public sealed class EntityBehaviorJsonTests
             ProtocolId = 55,
             Name = "test_boat",
             Behaviors = [Behavior("""
-                {"Slots":["Ticker"],"Type":"boat","wreckage":[{"Item":"betasharp:not_a_real_item","Count":1}]}
+                {"Slots":["Ticker"],"Type":"boat","wreckage":[{"Item":"omniblock:not_a_real_item","Count":1}]}
                 """)]
         };
 

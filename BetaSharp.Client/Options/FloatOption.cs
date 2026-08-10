@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace BetaSharp.Client.Options;
+namespace OmniBlock.Client.Options;
 
 public class FloatOption : GameOption
 {

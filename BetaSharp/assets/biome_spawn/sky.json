@@ -2,7 +2,7 @@
   "Monsters": [],
   "Creatures": [
     {
-      "Entity": "betasharp:chicken",
+      "Entity": "omniblock:chicken",
       "Weight": 10
     }
   ],

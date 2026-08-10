@@ -1,10 +1,10 @@
 using System.Collections;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using BetaSharp.Registries;
-using BetaSharp.Registries.Data;
+using OmniBlock.Registries;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Entities;
+namespace OmniBlock.Entities;
 
 /// <summary>
 ///     Loads <see cref="EntityDefinition" />s from <c>assets/entity/*.json</c>, merged over
@@ -37,7 +37,7 @@ internal sealed class EntityDefinitionJsonLoader(string path, LoadLocations loca
     private readonly Dictionary<ResourceLocation, EntityDefinition> _byLocation = [];
     private JsonElement? _defaults;
 
-    public ResourceLocation RegistryKey => new(Namespace.BetaSharp, path);
+    public ResourceLocation RegistryKey => new(Namespace.OmniBlock, path);
 
     public Holder<EntityDefinition>? Get(ResourceLocation key) =>
         _byLocation.TryGetValue(key, out EntityDefinition? value) ? new Holder<EntityDefinition>(value) : null;
@@ -83,7 +83,7 @@ internal sealed class EntityDefinitionJsonLoader(string path, LoadLocations loca
         }
         else
         {
-            LoadAssets(Namespace.BetaSharp, assetPath, location);
+            LoadAssets(Namespace.OmniBlock, assetPath, location);
         }
     }
 

@@ -1,7 +1,7 @@
 using System.Text;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp;
+namespace OmniBlock;
 
 public readonly record struct LogEntry(DateTime Timestamp, LogLevel Level, string Category, string Message, Exception? Exception);
 

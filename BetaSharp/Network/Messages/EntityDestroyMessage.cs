@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     An entity has left this client's view. Replaces <c>EntityDestroyS2CPacket</c>.
@@ -9,7 +9,7 @@ namespace BetaSharp.Network.Messages;
 ///         to an error.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:entity_destroy")]
+[WireMessage("omniblock:entity_destroy")]
 public sealed partial class EntityDestroyMessage : Message
 {
     public override SendPriority Priority => SendPriority.High;

@@ -1,4 +1,4 @@
-namespace BetaSharp.Worlds.Maps;
+namespace OmniBlock.Worlds.Maps;
 
 public record struct MapColor // TODO: Move Color from Client project to Core and use it here instead of uint
 {

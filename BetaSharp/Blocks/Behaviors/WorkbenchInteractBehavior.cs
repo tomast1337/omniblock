@@ -1,4 +1,4 @@
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 public sealed class WorkbenchInteractBehavior : IBlockInteractable
 {

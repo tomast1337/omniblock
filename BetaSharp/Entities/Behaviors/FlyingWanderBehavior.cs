@@ -1,7 +1,7 @@
-using BetaSharp.Entities.State;
-using BetaSharp.Util.Maths;
+using OmniBlock.Entities.State;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     The ghast's idle flight: drifts towards a waypoint picked at random, re-picking it once

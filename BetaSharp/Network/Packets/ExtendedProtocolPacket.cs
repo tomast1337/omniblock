@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Packets;
+namespace OmniBlock.Network.Packets;
 
 public abstract class ExtendedProtocolPacket : Packet
 {

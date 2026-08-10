@@ -1,8 +1,8 @@
-using BetaSharp.Registries;
-using BetaSharp.Registries.Data;
+using OmniBlock.Registries;
+using OmniBlock.Registries.Data;
 using Xunit;
 
-namespace BetaSharp.Tests;
+namespace OmniBlock.Tests;
 
 [Collection("RegistryAccess")]
 public class AssetLoadErrorTests : IDisposable
@@ -53,7 +53,7 @@ public class AssetLoadErrorTests : IDisposable
         RegistryAccess.AddDynamic(def);
 
         RegistryAccess v1 = RegistryAccess.Build(basePath: _tempDir);
-        Assert.Equal(5, v1.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
+        Assert.Equal(5, v1.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("omniblock:sharpness"))!.MaxLevel);
 
         // Introduce a syntax error in a NEW file
         WriteEnchantment("broken", "{\"MaxLevel\":10"); 
@@ -62,6 +62,6 @@ public class AssetLoadErrorTests : IDisposable
         Assert.Throws<AssetLoadException>(() => v1.Rebuild());
 
         // V1 should still be working and have the old data
-        Assert.Equal(5, v1.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
+        Assert.Equal(5, v1.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("omniblock:sharpness"))!.MaxLevel);
     }
 }

@@ -1,9 +1,9 @@
-using BetaSharp.Client.Network;
-using BetaSharp.Diagnostics;
-using BetaSharp.Network;
+using OmniBlock.Client.Network;
+using OmniBlock.Diagnostics;
+using OmniBlock.Network;
 using Hexa.NET.ImGui;
 
-namespace BetaSharp.Client.Diagnostics.Windows;
+namespace OmniBlock.Client.Diagnostics.Windows;
 
 /// <summary>
 ///     The network overlay, organised by subject rather than by which phase of the rewrite added the

@@ -1,6 +1,6 @@
-using BetaSharp.Items;
+using OmniBlock.Items;
 
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Every slot of an open screen at once. Replaces <c>InventoryS2CPacket</c>.
@@ -10,7 +10,7 @@ namespace BetaSharp.Network.Messages;
 ///         was wrong on essentially every send, and wrong by more the emptier the inventory was.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:inventory")]
+[WireMessage("omniblock:inventory")]
 public sealed partial class InventoryMessage : Message
 {
     /// <summary>

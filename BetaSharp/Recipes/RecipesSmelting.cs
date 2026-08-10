@@ -1,6 +1,6 @@
-using BetaSharp.Items;
+using OmniBlock.Items;
 
-namespace BetaSharp.Recipes;
+namespace OmniBlock.Recipes;
 
 public class SmeltingCraftingRegistry : ICraftingRegistry
 {

@@ -1,7 +1,7 @@
 using System.Text.Json;
-using BetaSharp.Registries.Data;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Tests;
+namespace OmniBlock.Tests;
 
 public class DataAssetBugTests
 {
@@ -15,7 +15,7 @@ public class DataAssetBugTests
     [Fact]
     public void Lazy_asset_with_null_json_content_throws_instead_of_recursing()
     {
-        var id = new ResourceLocation(Namespace.BetaSharp, "test");
+        var id = new ResourceLocation(Namespace.OmniBlock, "test");
         var holder = DataAssetLoader<GameMode>.CreateLazyHolder("null", id);
 
         Assert.Throws<InvalidOperationException>(() => _ = holder.Value);
@@ -32,7 +32,7 @@ public class DataAssetBugTests
     [Fact]
     public void Lazy_asset_with_invalid_json_content_throws_invalid_operation()
     {
-        var id = new ResourceLocation(Namespace.BetaSharp, "test");
+        var id = new ResourceLocation(Namespace.OmniBlock, "test");
         var holder = DataAssetLoader<GameMode>.CreateLazyHolder("{not valid json", id);
 
         Assert.Throws<InvalidOperationException>(() => _ = holder.Value);

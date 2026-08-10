@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     A click on another entity, carrying the instant the clicking player was rendering it at.
@@ -22,7 +22,7 @@ namespace BetaSharp.Network.Messages;
 ///         which is what happened before this existed.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:interact_entity")]
+[WireMessage("omniblock:interact_entity")]
 public sealed partial class InteractEntityMessage : Message
 {
     /// <summary>

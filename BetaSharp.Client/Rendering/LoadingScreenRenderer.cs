@@ -1,10 +1,10 @@
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.Textures;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Core.Textures;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.Rendering;
+namespace OmniBlock.Client.Rendering;
 
-public class LoadingScreenRenderer(BetaSharp game) : LoadingDisplay
+public class LoadingScreenRenderer(OmniBlock game) : LoadingDisplay
 {
     private string _currentStage = string.Empty;
     private string _titleText = string.Empty;

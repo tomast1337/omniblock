@@ -5,10 +5,10 @@
         "#"
     ],
     "key": {
-        "#": "betasharp:Cobblestone",
-        "X": "betasharp:stick"
+        "#": "omniblock:Cobblestone",
+        "X": "omniblock:stick"
     },
     "result": {
-        "id": "betasharp:Lever"
+        "id": "omniblock:Lever"
     }
 }

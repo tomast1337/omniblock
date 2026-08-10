@@ -1,4 +1,4 @@
-namespace BetaSharp.Worlds.Core.Systems;
+namespace OmniBlock.Worlds.Core.Systems;
 
 /// <summary>The two light values for a cell, before either the ramp or the time of day.</summary>
 /// <remarks>

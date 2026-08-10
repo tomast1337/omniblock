@@ -1,10 +1,10 @@
-using BetaSharp.Entities;
-using BetaSharp.Server.Worlds;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Dimensions;
-using BetaSharp.Worlds.Storage.RegionFormat;
+using OmniBlock.Entities;
+using OmniBlock.Server.Worlds;
+using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Dimensions;
+using OmniBlock.Worlds.Storage.RegionFormat;
 
-namespace BetaSharp.Worlds.Storage;
+namespace OmniBlock.Worlds.Storage;
 
 public class EmptyWorldStorage : IWorldStorage
 {

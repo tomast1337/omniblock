@@ -1,8 +1,8 @@
-using BetaSharp.Blocks;
-using BetaSharp.Tests.TestSupport;
-using BetaSharp.Worlds.Lighting;
+using OmniBlock.Blocks;
+using OmniBlock.Tests.TestSupport;
+using OmniBlock.Worlds.Lighting;
 
-namespace BetaSharp.Tests.Worlds;
+namespace OmniBlock.Tests.Worlds;
 
 /// <summary>
 ///     A remote world holds only the light the wire writes and propagates none of its own —

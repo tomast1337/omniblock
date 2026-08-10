@@ -1,9 +1,9 @@
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.NBT;
-using BetaSharp.Tests.TestSupport;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.NBT;
+using OmniBlock.Tests.TestSupport;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Covers the fireball, the seventh non-living entity to lose its class. Its flight is powered —

@@ -6,10 +6,10 @@
         "###"
     ],
     "key": {
-        "#": "betasharp:Planks",
-        "X": "betasharp:diamond"
+        "#": "omniblock:Planks",
+        "X": "omniblock:diamond"
     },
     "result": {
-        "id": "betasharp:Jukebox"
+        "id": "omniblock:Jukebox"
     }
 }

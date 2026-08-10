@@ -9,7 +9,7 @@
   "HurtSound": "mob.zombiepig.zpighurt",
   "DeathSound": "mob.zombiepig.zpigdeath",
   "FireImmune": true,
-  "HeldItem": "betasharp:sword_gold",
+  "HeldItem": "omniblock:sword_gold",
   "Behaviors": [
     {
       "Slots": [
@@ -54,7 +54,7 @@
         {
           "Entries": [
             {
-              "Item": "betasharp:porkchop_cooked"
+              "Item": "omniblock:porkchop_cooked"
             }
           ],
           "MinCount": 0,

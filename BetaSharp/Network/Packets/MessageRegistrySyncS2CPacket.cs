@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Packets;
+namespace OmniBlock.Network.Packets;
 
 /// <summary>
 ///     Advertises the server's message table so both peers agree on which integer means which

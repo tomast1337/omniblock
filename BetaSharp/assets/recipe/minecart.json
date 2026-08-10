@@ -5,9 +5,9 @@
         "###"
     ],
     "key": {
-        "#": "betasharp:ingot_iron"
+        "#": "omniblock:ingot_iron"
     },
     "result": {
-        "id": "betasharp:minecart"
+        "id": "omniblock:minecart"
     }
 }

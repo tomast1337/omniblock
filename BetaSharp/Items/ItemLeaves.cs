@@ -1,7 +1,7 @@
-using BetaSharp.Blocks;
-using BetaSharp.Worlds.Colors;
+using OmniBlock.Blocks;
+using OmniBlock.Worlds.Colors;
 
-namespace BetaSharp.Items;
+namespace OmniBlock.Items;
 
 internal class ItemLeaves : ItemBlock
 {

@@ -1,12 +1,12 @@
 using System.Net;
-using BetaSharp.Recipes;
-using BetaSharp.Registries;
-using BetaSharp.Server.Network;
-using BetaSharp.Server.Threading;
+using OmniBlock.Recipes;
+using OmniBlock.Registries;
+using OmniBlock.Server.Network;
+using OmniBlock.Server.Threading;
 using Microsoft.Extensions.Logging;
 using Exception = System.Exception;
 
-namespace BetaSharp.Server;
+namespace OmniBlock.Server;
 
 internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(config)
 {
@@ -23,7 +23,7 @@ internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(co
     {
         new ConsoleInputThread(this).Run();
 
-        s_logger.LogInformation("Starting BetaSharp server version Beta 1.7.3");
+        s_logger.LogInformation("Starting OmniBlock server version Beta 1.7.3");
 
         long availableMb = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / (1024L * 1024L);
         if (availableMb < 512)
@@ -48,7 +48,7 @@ internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(co
         }
 
         int port = config.GetServerPort(25565);
-        s_logger.LogInformation($"Starting BetaSharp server on {(addressInput.Length == 0 ? "*" : addressInput)}:{port}");
+        s_logger.LogInformation($"Starting OmniBlock server on {(addressInput.Length == 0 ? "*" : addressInput)}:{port}");
 
         try
         {
@@ -87,7 +87,7 @@ internal class DedicatedServer(IServerConfiguration config) : BetaSharpServer(co
         }
         catch (Exception e)
         {
-            s_logger.LogError($"Failed to start the BetaSharp server: {e}");
+            s_logger.LogError($"Failed to start the OmniBlock server: {e}");
         }
     }
 }

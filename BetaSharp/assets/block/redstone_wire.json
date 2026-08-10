@@ -7,7 +7,7 @@
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": "betasharp:redstone_dust_cross_off",
+  "TextureId": "omniblock:redstone_dust_cross_off",
   "RenderType": "RedstoneWire",
   "NotFullCube": true,
   "NoCollision": true,
@@ -34,10 +34,10 @@
     {
       "Slots": ["Redstone", "Physics", "Ticker", "Lifecycle", "Visuals"],
       "Type": "redstone_wire",
-      "wire": "betasharp:redstone_wire",
-      "conductors": ["betasharp:stone_pressure_plate", "betasharp:wooden_pressure_plate", "betasharp:button", "betasharp:lever"],
-      "repeater": "betasharp:repeater",
-      "powered_repeater": "betasharp:powered_repeater"
+      "wire": "omniblock:redstone_wire",
+      "conductors": ["omniblock:stone_pressure_plate", "omniblock:wooden_pressure_plate", "omniblock:button", "omniblock:lever"],
+      "repeater": "omniblock:repeater",
+      "powered_repeater": "omniblock:powered_repeater"
     }
   ]
 }

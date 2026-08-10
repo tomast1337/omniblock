@@ -1,6 +1,6 @@
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Worlds.Storage;
+namespace OmniBlock.Worlds.Storage;
 
 public interface IWorldStorageSource
 {

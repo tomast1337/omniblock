@@ -1,13 +1,13 @@
-using BetaSharp.Client.Options;
-using BetaSharp.Client.UI;
-using BetaSharp.Client.UI.Screens.InGame.Containers;
+using OmniBlock.Client.Options;
+using OmniBlock.Client.UI;
+using OmniBlock.Client.UI.Screens.InGame.Containers;
 using Silk.NET.GLFW;
 
-namespace BetaSharp.Client.Input;
+namespace OmniBlock.Client.Input;
 
 public static class ControllerManager
 {
-    private static BetaSharp? s_game;
+    private static OmniBlock? s_game;
 
     private static bool s_wasAttackDown;
     private static bool s_wasInteractDown;
@@ -28,7 +28,7 @@ public static class ControllerManager
     public static bool SneakToggle { get; set; }
     private static bool s_suppressInGameInput;
 
-    public static void Initialize(BetaSharp game)
+    public static void Initialize(OmniBlock game)
     {
         s_game = game;
     }

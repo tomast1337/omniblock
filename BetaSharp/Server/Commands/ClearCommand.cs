@@ -1,9 +1,9 @@
-using BetaSharp.Entities;
-using BetaSharp.Items;
+using OmniBlock.Entities;
+using OmniBlock.Items;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 
-namespace BetaSharp.Server.Commands;
+namespace OmniBlock.Server.Commands;
 
 public class ClearCommand : Command.Command
 {

@@ -6,10 +6,10 @@
         "X#X"
     ],
     "key": {
-        "X": "betasharp:gunpowder",
-        "#": "betasharp:Sand"
+        "X": "omniblock:gunpowder",
+        "#": "omniblock:Sand"
     },
     "result": {
-        "id": "betasharp:TNT"
+        "id": "omniblock:TNT"
     }
 }

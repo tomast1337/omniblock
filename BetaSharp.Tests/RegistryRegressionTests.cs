@@ -1,6 +1,6 @@
-using BetaSharp.Registries;
+using OmniBlock.Registries;
 
-namespace BetaSharp.Tests;
+namespace OmniBlock.Tests;
 
 /// <summary>
 /// Regression tests for bugs discovered during development of the registry infrastructure.
@@ -40,7 +40,7 @@ public class RegistryRegressionTests : IDisposable
 
     private void WriteWorldEnchantment(string packName, string name, int maxLevel)
     {
-        string dir = Path.Combine(_tempDir, "world", "datapacks", packName, "data", "betasharp", "enchantment");
+        string dir = Path.Combine(_tempDir, "world", "datapacks", packName, "data", "omniblock", "enchantment");
         Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, $"{name}.json"), $"{{\"MaxLevel\":{maxLevel}}}");
     }
@@ -73,7 +73,7 @@ public class RegistryRegressionTests : IDisposable
         // Before the fix: the server registry also returned 99 because the
         // world-datapack write mutated the shared Holder<T>.
         int serverLevel = serverRa.GetOrThrow(s_enchKey)
-            .GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel;
+            .GetValue(ResourceLocation.Parse("omniblock:sharpness"))!.MaxLevel;
 
         Assert.Equal(5, serverLevel);
     }
@@ -105,7 +105,7 @@ public class RegistryRegressionTests : IDisposable
         // Before the fix: the lazy holder in `snapshot` would read the updated file
         // on first access and return 99.
         int level = snapshot.GetOrThrow(s_enchKey)
-            .GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel;
+            .GetValue(ResourceLocation.Parse("omniblock:sharpness"))!.MaxLevel;
 
         Assert.Equal(5, level);
     }
@@ -162,7 +162,7 @@ public class RegistryRegressionTests : IDisposable
 
         // Before the fix: this threw InvalidOperationException because
         // no GameMode holder had been resolved yet and First() yielded nothing.
-        Holder<BetaSharp.GameMode>? result = null;
+        Holder<OmniBlock.GameMode>? result = null;
         var ex = Record.Exception(() => result = DefaultGameModeListener.ResolveDefaultGameMode(registry, ""));
 
         Assert.Null(ex);
@@ -186,8 +186,8 @@ public class RegistryRegressionTests : IDisposable
 
         string worldADir = Path.Combine(_tempDir, "worldA");
         string worldBDir = Path.Combine(_tempDir, "worldB");
-        string packA = Path.Combine(worldADir, "datapacks", "pack", "data", "betasharp", "enchantment");
-        string packB = Path.Combine(worldBDir, "datapacks", "pack", "data", "betasharp", "enchantment");
+        string packA = Path.Combine(worldADir, "datapacks", "pack", "data", "omniblock", "enchantment");
+        string packB = Path.Combine(worldBDir, "datapacks", "pack", "data", "omniblock", "enchantment");
         Directory.CreateDirectory(packA);
         Directory.CreateDirectory(packB);
         File.WriteAllText(Path.Combine(packA, "sharpness.json"), "{\"MaxLevel\":10}");
@@ -198,8 +198,8 @@ public class RegistryRegressionTests : IDisposable
         RegistryAccess raA = serverRa.WithWorldDatapacks(worldADir);
         RegistryAccess raB = serverRa.WithWorldDatapacks(worldBDir);
 
-        int levelA = raA.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel;
-        int levelB = raB.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel;
+        int levelA = raA.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("omniblock:sharpness"))!.MaxLevel;
+        int levelB = raB.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("omniblock:sharpness"))!.MaxLevel;
 
         // Before the fix: one world's write would bleed into the other.
         Assert.Equal(10, levelA);

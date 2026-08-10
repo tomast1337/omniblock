@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace BetaSharp.Network.Chunks;
+namespace OmniBlock.Network.Chunks;
 
 /// <summary>
 ///     Content hash of an encoded chunk, used to skip sending a chunk the peer already holds.

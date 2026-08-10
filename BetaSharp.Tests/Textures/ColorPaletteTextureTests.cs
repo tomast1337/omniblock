@@ -1,8 +1,8 @@
-using BetaSharp.Blocks;
-using BetaSharp.Items;
-using BetaSharp.Textures;
+using OmniBlock.Blocks;
+using OmniBlock.Items;
+using OmniBlock.Textures;
 
-namespace BetaSharp.Tests.Textures;
+namespace OmniBlock.Tests.Textures;
 
 /// <summary>
 ///     Pins wool and dye to the exact tiles the grid arithmetic they replaced produced. Both walked

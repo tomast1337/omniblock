@@ -7,14 +7,14 @@
   "Resistance": 10,
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": "betasharp:cobblestone",
+  "TextureId": "omniblock:cobblestone",
   "RenderType": "Stairs",
   "NotFullCube": true,
   "Behaviors": [
     {
       "Slots": ["Physics", "Lifecycle", "Visuals"],
       "Type": "stairs",
-      "base": "betasharp:cobblestone"
+      "base": "omniblock:cobblestone"
     }
   ]
 }

@@ -1,11 +1,11 @@
 using System.Net;
-using BetaSharp.Network;
-using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets;
-using BetaSharp.Network.Transport;
-using BetaSharp.Util;
+using OmniBlock.Network;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Packets;
+using OmniBlock.Network.Transport;
+using OmniBlock.Util;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 /// <summary>
 ///     <see cref="UdpConnection" />: packets in and out of datagrams.

@@ -1,7 +1,7 @@
-using BetaSharp.Network;
-using BetaSharp.Network.Packets;
+using OmniBlock.Network;
+using OmniBlock.Network.Packets;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 /// <summary>
 ///     The drain that replaced <c>Connection</c>'s fixed cap of 100 packets per tick. At 20 TPS that

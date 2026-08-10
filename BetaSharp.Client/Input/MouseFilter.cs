@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Input;
+namespace OmniBlock.Client.Input;
 
 public class MouseFilter
 {

@@ -1,9 +1,9 @@
 using System.Net;
-using BetaSharp.Network.Transport;
+using OmniBlock.Network.Transport;
 using LiteNetLib;
 using Xunit.Abstractions;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 /// <summary>
 ///     How many datagrams a chunk actually becomes.

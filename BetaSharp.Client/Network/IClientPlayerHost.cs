@@ -1,7 +1,7 @@
-using BetaSharp.Client.Entities;
-using BetaSharp.Client.Input;
+using OmniBlock.Client.Entities;
+using OmniBlock.Client.Input;
 
-namespace BetaSharp.Client.Network;
+namespace OmniBlock.Client.Network;
 
 public interface IClientPlayerHost
 {

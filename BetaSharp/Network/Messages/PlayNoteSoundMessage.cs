@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 [WireMessage("beta:play_note_sound")]
 public partial class PlayNoteSoundMessage : Message

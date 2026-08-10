@@ -1,12 +1,12 @@
-using BetaSharp.Client.UI.Rendering;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.UI.Rendering;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Controls.Achievement;
+namespace OmniBlock.Client.UI.Controls.Achievement;
 
 public class AchievementToast : UIElement
 {
     private const long Duration = 3000L;
-    private global::BetaSharp.Achievement? _achievement;
+    private global::OmniBlock.Achievement? _achievement;
     private string? _description;
     private bool _isInfo;
     private long _startTime;
@@ -18,7 +18,7 @@ public class AchievementToast : UIElement
         Style.Height = 32;
     }
 
-    public void QueueAchievement(global::BetaSharp.Achievement ach)
+    public void QueueAchievement(global::OmniBlock.Achievement ach)
     {
         _achievement = ach;
         _title = Translations.Get("achievement.get");
@@ -27,7 +27,7 @@ public class AchievementToast : UIElement
         _isInfo = false;
     }
 
-    public void QueueInfo(global::BetaSharp.Achievement ach)
+    public void QueueInfo(global::OmniBlock.Achievement ach)
     {
         _achievement = ach;
         _title = ach.GetTranslatedTitle;

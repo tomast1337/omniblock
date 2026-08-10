@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace BetaSharp.Worlds.Storage;
+namespace OmniBlock.Worlds.Storage;
 
 public partial class DimensionFileFilter
 {

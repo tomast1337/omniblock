@@ -1,8 +1,8 @@
-using BetaSharp.Blocks;
-using BetaSharp.Util.Hit;
-using BetaSharp.Util.Maths;
+using OmniBlock.Blocks;
+using OmniBlock.Util.Hit;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Worlds.Core.Systems;
+namespace OmniBlock.Worlds.Core.Systems;
 
 /// <summary>
 ///     Walks a ray through the block grid, stopping at the first block whose shape it actually hits.

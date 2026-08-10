@@ -1,4 +1,4 @@
-namespace BetaSharp;
+namespace OmniBlock;
 
 public enum SleepAttemptResult
 {

@@ -1,9 +1,9 @@
-using BetaSharp.Client.Entities;
-using BetaSharp.Client.UI.Rendering;
-using BetaSharp.Textures;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.Entities;
+using OmniBlock.Client.UI.Rendering;
+using OmniBlock.Textures;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Controls.HUD;
+namespace OmniBlock.Client.UI.Controls.HUD;
 
 public class PortalOverlay(Func<ClientPlayerEntity?> getPlayer) : UIElement
 {

@@ -6,10 +6,10 @@
         " X "
     ],
     "key": {
-        "#": "betasharp:Planks",
-        "X": "betasharp:stick"
+        "#": "omniblock:Planks",
+        "X": "omniblock:stick"
     },
     "result": {
-        "id": "betasharp:sign"
+        "id": "omniblock:sign"
     }
 }

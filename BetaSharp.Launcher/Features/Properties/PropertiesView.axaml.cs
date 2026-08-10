@@ -3,7 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Launcher.Features.Properties;
+namespace OmniBlock.Launcher.Features.Properties;
 
 internal sealed partial class PropertiesView : UserControl
 {

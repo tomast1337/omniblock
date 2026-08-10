@@ -8,7 +8,7 @@
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": "betasharp:trapdoor",
+  "TextureId": "omniblock:trapdoor",
   "NotFullCube": true,
   "Behaviors": [
     {

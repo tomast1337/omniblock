@@ -1,7 +1,7 @@
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
 ///     Physics, interaction, and lifecycle for trapdoor blocks. Wood trapdoors respond to

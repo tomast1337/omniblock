@@ -1,4 +1,4 @@
-namespace BetaSharp.NBT;
+namespace OmniBlock.NBT;
 
 public abstract class NBTBase
 {

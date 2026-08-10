@@ -1,11 +1,11 @@
 {
     "type": "shapeless",
     "ingredients": [
-        "betasharp:dye_powder:4",
-        "betasharp:dye_powder:2"
+        "omniblock:dye_powder:4",
+        "omniblock:dye_powder:2"
     ],
     "result": {
-        "id": "betasharp:dye_powder:6",
+        "id": "omniblock:dye_powder:6",
         "count": 2
     }
 }

@@ -1,7 +1,7 @@
 using System.Numerics;
 using Hexa.NET.ImGui;
 
-namespace BetaSharp.Client.Diagnostics;
+namespace OmniBlock.Client.Diagnostics;
 
 public sealed class FrameGraph(string label, int capacity = 100)
 {

@@ -1,9 +1,9 @@
-using BetaSharp.Entities;
-using BetaSharp.Items;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
+using OmniBlock.Entities;
+using OmniBlock.Items;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core;
 
-namespace BetaSharp.Client.Network;
+namespace OmniBlock.Client.Network;
 
 public class OtherPlayerEntity : EntityPlayer
 {

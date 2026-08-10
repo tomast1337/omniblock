@@ -1,7 +1,7 @@
-using BetaSharp.Entities.State;
-using BetaSharp.NBT;
+using OmniBlock.Entities.State;
+using OmniBlock.NBT;
 
-namespace BetaSharp.Entities;
+namespace OmniBlock.Entities;
 
 /// <summary>
 ///     Saving and loading. <see cref="Write" /> and <see cref="Read" /> handle what every entity

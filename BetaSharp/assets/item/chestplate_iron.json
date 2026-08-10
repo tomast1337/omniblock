@@ -1,7 +1,7 @@
 {
     "ProtocolId": 307,
     "TranslationKey": "chestplateIron",
-    "TextureId": "betasharp:iron_chestplate",
+    "TextureId": "omniblock:iron_chestplate",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",

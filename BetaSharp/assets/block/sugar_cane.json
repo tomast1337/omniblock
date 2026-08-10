@@ -7,7 +7,7 @@
   "NonOpaque": true,
   "TickRandomly": true,
   "TrackStatistics": false,
-  "TextureId": "betasharp:sugar_cane",
+  "TextureId": "omniblock:sugar_cane",
   "RenderType": "Reed",
   "NotFullCube": true,
   "NoCollision": true,
@@ -34,7 +34,7 @@
     {
       "Slots": ["Ticker", "Physics"],
       "Type": "reed",
-      "valid_ground": ["betasharp:grass_block", "betasharp:dirt", "betasharp:sand", "betasharp:gravel"]
+      "valid_ground": ["omniblock:grass_block", "omniblock:dirt", "omniblock:sand", "omniblock:gravel"]
     }
   ]
 }

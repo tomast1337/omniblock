@@ -1,4 +1,4 @@
-namespace BetaSharp.Client;
+namespace OmniBlock.Client;
 
 /// <summary>
 /// Bridges ImGui keyboard-capture state to game code that doesn't directly depend on ImGui.

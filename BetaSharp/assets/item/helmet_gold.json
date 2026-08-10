@@ -1,7 +1,7 @@
 {
     "ProtocolId": 314,
     "TranslationKey": "helmetGold",
-    "TextureId": "betasharp:golden_helmet",
+    "TextureId": "omniblock:golden_helmet",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",

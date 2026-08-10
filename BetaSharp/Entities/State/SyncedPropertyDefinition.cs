@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace BetaSharp.Entities.State;
+namespace OmniBlock.Entities.State;
 
 /// <summary>Value kinds a declared synced property may take, mapping onto <see cref="Util.SyncedDataType" />.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<SyncedValueKind>))]

@@ -1,10 +1,10 @@
-using BetaSharp.Client.Input;
-using BetaSharp.Client.Options;
-using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Layout.Flexbox;
-using Button = BetaSharp.Client.UI.Controls.Core.Button;
+using OmniBlock.Client.Input;
+using OmniBlock.Client.Options;
+using OmniBlock.Client.UI.Controls.Core;
+using OmniBlock.Client.UI.Layout.Flexbox;
+using Button = OmniBlock.Client.UI.Controls.Core.Button;
 
-namespace BetaSharp.Client.UI.Screens.Menu.Options;
+namespace OmniBlock.Client.UI.Screens.Menu.Options;
 
 public class ControlsScreen : BaseOptionsScreen
 {

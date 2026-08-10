@@ -46,7 +46,7 @@
         {
           "Entries": [
             {
-              "Item": "betasharp:porkchop_cooked"
+              "Item": "omniblock:porkchop_cooked"
             }
           ],
           "MinCount": 0,
@@ -58,7 +58,7 @@
         {
           "Entries": [
             {
-              "Item": "betasharp:porkchop_raw"
+              "Item": "omniblock:porkchop_raw"
             }
           ],
           "MinCount": 0,

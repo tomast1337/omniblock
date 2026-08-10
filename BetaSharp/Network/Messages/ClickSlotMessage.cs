@@ -1,6 +1,6 @@
-using BetaSharp.Items;
+using OmniBlock.Items;
 
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     A click inside an open screen. Replaces <c>ClickSlotC2SPacket</c>.
@@ -10,7 +10,7 @@ namespace BetaSharp.Network.Messages;
 ///         here is trusted on its own.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:click_slot")]
+[WireMessage("omniblock:click_slot")]
 public sealed partial class ClickSlotMessage : Message
 {
     [WireField]

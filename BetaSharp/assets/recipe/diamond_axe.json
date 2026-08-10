@@ -6,10 +6,10 @@
         " #"
     ],
     "key": {
-        "X": "betasharp:diamond",
-        "#": "betasharp:stick"
+        "X": "omniblock:diamond",
+        "#": "omniblock:stick"
     },
     "result": {
-        "id": "betasharp:hatchet_diamond"
+        "id": "omniblock:hatchet_diamond"
     }
 }

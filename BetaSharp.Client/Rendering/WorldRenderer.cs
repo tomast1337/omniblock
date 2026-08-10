@@ -1,29 +1,29 @@
 using System.Numerics;
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Client.Entities.FX;
-using BetaSharp.Client.Options;
-using BetaSharp.Client.Rendering.Blocks;
-using BetaSharp.Client.Rendering.Blocks.Entities;
-using BetaSharp.Client.Rendering.Chunks;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.Rendering.Core.WebGPU;
-using BetaSharp.Client.Rendering.Entities;
-using BetaSharp.Client.Rendering.Particles;
-using BetaSharp.Entities;
-using BetaSharp.Items;
-using BetaSharp.Items.Behaviors;
-using BetaSharp.Profiling;
-using BetaSharp.Util;
-using BetaSharp.Util.Hit;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Client.Entities.FX;
+using OmniBlock.Client.Options;
+using OmniBlock.Client.Rendering.Blocks;
+using OmniBlock.Client.Rendering.Blocks.Entities;
+using OmniBlock.Client.Rendering.Chunks;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Client.Rendering.Core.WebGPU;
+using OmniBlock.Client.Rendering.Entities;
+using OmniBlock.Client.Rendering.Particles;
+using OmniBlock.Entities;
+using OmniBlock.Items;
+using OmniBlock.Items.Behaviors;
+using OmniBlock.Profiling;
+using OmniBlock.Util;
+using OmniBlock.Util.Hit;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core;
 using Silk.NET.Maths;
 
-namespace BetaSharp.Client.Rendering;
+namespace OmniBlock.Client.Rendering;
 
 public class WorldRenderer : IWorldEventListener, IDisposable
 {
@@ -37,7 +37,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
     private World _world;
     private readonly TextureManager _textureManager;
-    private readonly BetaSharp _game;
+    private readonly OmniBlock _game;
     private int _cloudOffsetX;
     private readonly IStaticMesh _stars;
     private readonly IStaticMesh _skyAbove;
@@ -66,7 +66,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         GLManager.DrawTargetOrNull is WebGpuDrawTarget t
         && t.HasSlotPipeline(ProgramSlot.Clouds);
 
-    public WorldRenderer(BetaSharp gameInstance, TextureManager textureManager)
+    public WorldRenderer(OmniBlock gameInstance, TextureManager textureManager)
     {
         _game = gameInstance;
         _textureManager = textureManager;

@@ -1,51 +1,51 @@
 {
   "Monsters": [
     {
-      "Entity": "betasharp:spider",
+      "Entity": "omniblock:spider",
       "Weight": 10
     },
     {
-      "Entity": "betasharp:zombie",
+      "Entity": "omniblock:zombie",
       "Weight": 10
     },
     {
-      "Entity": "betasharp:skeleton",
+      "Entity": "omniblock:skeleton",
       "Weight": 10
     },
     {
-      "Entity": "betasharp:creeper",
+      "Entity": "omniblock:creeper",
       "Weight": 10
     },
     {
-      "Entity": "betasharp:slime",
+      "Entity": "omniblock:slime",
       "Weight": 10
     }
   ],
   "Creatures": [
     {
-      "Entity": "betasharp:sheep",
+      "Entity": "omniblock:sheep",
       "Weight": 12
     },
     {
-      "Entity": "betasharp:pig",
+      "Entity": "omniblock:pig",
       "Weight": 10
     },
     {
-      "Entity": "betasharp:chicken",
+      "Entity": "omniblock:chicken",
       "Weight": 10
     },
     {
-      "Entity": "betasharp:cow",
+      "Entity": "omniblock:cow",
       "Weight": 8
     },
     {
-      "Entity": "betasharp:wolf",
+      "Entity": "omniblock:wolf",
       "Weight": 2
     }
   ],
   "WaterCreatures": [
     {
-      "Entity": "betasharp:squid",
+      "Entity": "omniblock:squid",
       "Weight": 10
     }
   ]

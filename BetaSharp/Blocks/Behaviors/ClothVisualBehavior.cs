@@ -1,4 +1,4 @@
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>Picks the wool texture for a colour, by block metadata.</summary>
 /// <remarks>

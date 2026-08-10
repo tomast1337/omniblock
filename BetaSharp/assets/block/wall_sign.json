@@ -9,7 +9,7 @@
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": "betasharp:wooden_planks",
+  "TextureId": "omniblock:wooden_planks",
   "RenderType": "Entity",
   "NotFullCube": true,
   "NoCollision": true,

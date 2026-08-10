@@ -6,5 +6,5 @@
   "SoundGroup": "metal",
   "Hardness": 5,
   "Resistance": 10,
-  "TextureId": "betasharp:block_of_iron"
+  "TextureId": "omniblock:block_of_iron"
 }

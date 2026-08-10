@@ -1,6 +1,6 @@
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>Vanilla Beta's unused locked-chest stub: renders as a facing-aware chest but
 /// self-destructs the tick after it's placed (never had real lock functionality).</summary>

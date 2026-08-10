@@ -1,9 +1,9 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Worlds.Generation.Generators.Features;
+namespace OmniBlock.Worlds.Generation.Generators.Features;
 
 internal class LakeFeature : Feature
 {

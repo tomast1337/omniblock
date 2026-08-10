@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
-using BetaSharp.Entities;
-using BetaSharp.Items;
-using BetaSharp.Loot;
-using BetaSharp.Loot.Conditions;
+using OmniBlock.Entities;
+using OmniBlock.Items;
+using OmniBlock.Loot;
+using OmniBlock.Loot.Conditions;
 
-namespace BetaSharp.Tests.Loot;
+namespace OmniBlock.Tests.Loot;
 
 /// <summary>
 /// Covers the shared pool-based loot model: additive pools, weighted entries within a pool,
@@ -144,7 +144,7 @@ public sealed class LootTableTests
         public bool Test(in LootContext context) => false;
     }
 
-    private sealed class BurningPig(BetaSharp.Worlds.Core.Systems.IWorldContext world) : EntityCreature(world, EntityRegistry.ByName("pig"))
+    private sealed class BurningPig(OmniBlock.Worlds.Core.Systems.IWorldContext world) : EntityCreature(world, EntityRegistry.ByName("pig"))
     {
         public void Ignite() => FireTicks = 100;
     }

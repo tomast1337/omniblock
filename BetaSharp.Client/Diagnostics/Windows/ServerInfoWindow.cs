@@ -1,7 +1,7 @@
-using BetaSharp.Diagnostics;
+using OmniBlock.Diagnostics;
 using Hexa.NET.ImGui;
 
-namespace BetaSharp.Client.Diagnostics.Windows;
+namespace OmniBlock.Client.Diagnostics.Windows;
 
 internal sealed class ServerInfoWindow : DebugWindow
 {

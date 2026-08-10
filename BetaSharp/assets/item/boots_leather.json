@@ -1,7 +1,7 @@
 {
     "ProtocolId": 301,
     "TranslationKey": "bootsLeather",
-    "TextureId": "betasharp:leather_boots",
+    "TextureId": "omniblock:leather_boots",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",

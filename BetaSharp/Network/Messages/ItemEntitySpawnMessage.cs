@@ -1,9 +1,9 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Spawns a dropped item. Replaces <c>ItemEntitySpawnS2CPacket</c>.
 /// </summary>
-[WireMessage("betasharp:item_entity_spawn")]
+[WireMessage("omniblock:item_entity_spawn")]
 public sealed partial class ItemEntitySpawnMessage : Message
 {
     public override SendPriority Priority => SendPriority.High;

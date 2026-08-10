@@ -1,4 +1,4 @@
-﻿namespace BetaSharp.Recipes;
+﻿namespace OmniBlock.Recipes;
 
 public class OverlappingRecipeException(string item, string type) : Exception
 {

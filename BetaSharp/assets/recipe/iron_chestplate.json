@@ -6,9 +6,9 @@
         "XXX"
     ],
     "key": {
-        "X": "betasharp:ingot_iron"
+        "X": "omniblock:ingot_iron"
     },
     "result": {
-        "id": "betasharp:chestplate_iron"
+        "id": "omniblock:chestplate_iron"
     }
 }

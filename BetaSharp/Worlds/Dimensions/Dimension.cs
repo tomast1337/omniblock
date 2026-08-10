@@ -1,12 +1,12 @@
-using BetaSharp.Blocks;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Biomes.Source;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Gen.Chunks;
+using OmniBlock.Blocks;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Biomes.Source;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Gen.Chunks;
 using Silk.NET.Maths;
 
-namespace BetaSharp.Worlds.Dimensions;
+namespace OmniBlock.Worlds.Dimensions;
 
 public abstract class Dimension
 {

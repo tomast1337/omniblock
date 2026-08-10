@@ -1,10 +1,10 @@
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.Items;
-using BetaSharp.NBT;
-using BetaSharp.Tests.TestSupport;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.Items;
+using OmniBlock.NBT;
+using OmniBlock.Tests.TestSupport;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Covers the painting, the tenth non-living entity to lose its class — and the first whose box is

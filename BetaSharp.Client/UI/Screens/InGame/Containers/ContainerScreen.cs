@@ -1,15 +1,15 @@
-using BetaSharp.Client.Entities;
-using BetaSharp.Client.Input;
-using BetaSharp.Client.UI.Controls;
-using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Layout.Flexbox;
-using BetaSharp.Items;
-using BetaSharp.Screens;
-using BetaSharp.Screens.Slots;
+using OmniBlock.Client.Entities;
+using OmniBlock.Client.Input;
+using OmniBlock.Client.UI.Controls;
+using OmniBlock.Client.UI.Controls.Core;
+using OmniBlock.Client.UI.Layout.Flexbox;
+using OmniBlock.Items;
+using OmniBlock.Screens;
+using OmniBlock.Screens.Slots;
 using Silk.NET.GLFW;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Screens.InGame.Containers;
+namespace OmniBlock.Client.UI.Screens.InGame.Containers;
 
 public abstract class ContainerScreen(
     UIContext context,

@@ -1,7 +1,7 @@
-using BetaSharp.Entities;
-using BetaSharp.Worlds.Core;
+using OmniBlock.Entities;
+using OmniBlock.Worlds.Core;
 
-namespace BetaSharp.Client.Network;
+namespace OmniBlock.Client.Network;
 
 /// <summary>
 ///     Drives remote entities from buffered server snapshots sampled at render time, rather than

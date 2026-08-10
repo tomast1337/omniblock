@@ -1,8 +1,8 @@
-using BetaSharp.Entities;
-using BetaSharp.Stats;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Entities;
+using OmniBlock.Stats;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Tests.TestSupport;
+namespace OmniBlock.Tests.TestSupport;
 
 /// <summary>Minimal concrete player for tests that need a real <see cref="EntityPlayer"/> in the world (AI, interaction).</summary>
 public sealed class TestEntityPlayer : EntityPlayer

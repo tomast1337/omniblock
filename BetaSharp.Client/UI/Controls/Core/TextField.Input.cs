@@ -1,6 +1,6 @@
-using BetaSharp.Client.Input;
+using OmniBlock.Client.Input;
 
-namespace BetaSharp.Client.UI.Controls.Core;
+namespace OmniBlock.Client.UI.Controls.Core;
 
 public partial class TextField
 {

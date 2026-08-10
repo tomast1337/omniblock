@@ -1,7 +1,7 @@
 using System.Text;
 using Microsoft.CodeAnalysis;
 
-namespace BetaSharp.Tests.Determinism;
+namespace OmniBlock.Tests.Determinism;
 
 /// <summary>
 ///     Proves statically that the player movement path contains no platform-dependent math, no
@@ -79,7 +79,7 @@ public sealed class StepPurityTests
         Assert.True(
             graph.CompilationErrors.IsEmpty,
             $"""
-             The synthesised compilation of BetaSharp/ reported errors. Symbol binding is degraded,
+             The synthesised compilation of OmniBlock/ reported errors. Symbol binding is degraded,
              so reachability results below cannot be trusted. Usually this means a new package
              reference, or an SDK-generated source the analysis does not synthesise.
 
@@ -116,7 +116,7 @@ public sealed class StepPurityTests
         CallGraph graph = CallGraph.Instance;
         CallGraph.Reachability core = WalkCore(graph);
 
-        Assert.True(graph.AllMethods.Length > 2000, $"Only {graph.AllMethods.Length} methods found in BetaSharp — the compilation did not load.");
+        Assert.True(graph.AllMethods.Length > 2000, $"Only {graph.AllMethods.Length} methods found in OmniBlock — the compilation did not load.");
         Assert.True(core.Count > 50, $"Only {core.Count} methods reachable from the physics core — the call graph collapsed.");
 
         double unresolvedRatio = graph.TotalInvocations == 0
@@ -265,7 +265,7 @@ public sealed class StepPurityTests
         Console.WriteLine(
             $"""
              Step frontier reachability
-               methods in BetaSharp     : {graph.AllMethods.Length:N0}
+               methods in OmniBlock     : {graph.AllMethods.Length:N0}
                reachable from core      : {core.Count:N0}
                reachable from tail      : {tail.Count:N0}   (budget {TailBudget:N0})
                invocations bound        : {graph.TotalInvocations - graph.UnresolvedInvocations:N0}/{graph.TotalInvocations:N0}

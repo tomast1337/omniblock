@@ -1,7 +1,7 @@
-using BetaSharp.Network;
-using BetaSharp.Util;
+using OmniBlock.Network;
+using OmniBlock.Util;
 
-namespace BetaSharp.Client.Network;
+namespace OmniBlock.Client.Network;
 
 /// <summary>
 ///     NTP-style clock synchronisation over TCP, so the client and server agree on what "now" is

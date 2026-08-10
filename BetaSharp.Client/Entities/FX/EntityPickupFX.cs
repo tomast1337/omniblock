@@ -1,10 +1,10 @@
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Entities;
-using BetaSharp.Entities;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Entities;
+using OmniBlock.Entities;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Client.Entities.FX;
+namespace OmniBlock.Client.Entities.FX;
 
 public class EntityPickupFX : EntityFX
 {

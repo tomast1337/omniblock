@@ -1,4 +1,4 @@
-namespace BetaSharp.Tests;
+namespace OmniBlock.Tests;
 
 /// <summary>
 /// Prevents xUnit from running <see cref="RegistryAccessTests"/> and

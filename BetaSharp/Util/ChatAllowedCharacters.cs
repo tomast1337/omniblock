@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace BetaSharp.Util;
+namespace OmniBlock.Util;
 
 public static class ChatAllowedCharacters
 {

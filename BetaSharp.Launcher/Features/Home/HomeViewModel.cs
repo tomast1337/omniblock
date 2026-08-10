@@ -2,16 +2,16 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using BetaSharp.Launcher.Features.Authentication;
-using BetaSharp.Launcher.Features.Home.GitHub;
-using BetaSharp.Launcher.Features.Hosting;
-using BetaSharp.Launcher.Features.Sessions;
+using OmniBlock.Launcher.Features.Authentication;
+using OmniBlock.Launcher.Features.Home.GitHub;
+using OmniBlock.Launcher.Features.Hosting;
+using OmniBlock.Launcher.Features.Sessions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Launcher.Features.Home;
+namespace OmniBlock.Launcher.Features.Home;
 
 internal sealed partial class HomeViewModel : ObservableObject
 {
@@ -88,7 +88,7 @@ internal sealed partial class HomeViewModel : ObservableObject
                 return;
             }
 
-            var releases = await _gitHubClient.GetReleasesAsync("betasharp-official", nameof(BetaSharp));
+            var releases = await _gitHubClient.GetReleasesAsync("omniblock-official", nameof(OmniBlock));
 
             foreach (var release in releases)
             {

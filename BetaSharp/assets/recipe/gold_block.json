@@ -6,9 +6,9 @@
         "###"
     ],
     "key": {
-        "#": "betasharp:ingot_gold"
+        "#": "omniblock:ingot_gold"
     },
     "result": {
-        "id": "betasharp:GoldBlock"
+        "id": "omniblock:GoldBlock"
     }
 }

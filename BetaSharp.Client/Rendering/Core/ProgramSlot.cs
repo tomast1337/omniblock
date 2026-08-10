@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Rendering.Core;
+namespace OmniBlock.Client.Rendering.Core;
 
 /// <summary>What is being drawn, named so that a shader pack can address it.</summary>
 /// <remarks>

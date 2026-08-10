@@ -7,7 +7,7 @@
   "Hardness": 0.8,
   "Resistance": 1.3333334,
   "IgnoreMetaUpdates": true,
-  "TextureId": "betasharp:note_block",
+  "TextureId": "omniblock:note_block",
   "TileEntity": "note",
   "Behaviors": [
     {

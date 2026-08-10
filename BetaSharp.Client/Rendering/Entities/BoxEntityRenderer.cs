@@ -1,8 +1,8 @@
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Entities;
-using BetaSharp.Util.Maths;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Entities;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Client.Rendering.Entities;
+namespace OmniBlock.Client.Rendering.Entities;
 
 public class BoxEntityRenderer : EntityRenderer
 {

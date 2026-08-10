@@ -6,12 +6,12 @@
         "Y"
     ],
     "key": {
-        "X": "betasharp:flint",
-        "#": "betasharp:stick",
-        "Y": "betasharp:feather"
+        "X": "omniblock:flint",
+        "#": "omniblock:stick",
+        "Y": "omniblock:feather"
     },
     "result": {
-        "id": "betasharp:arrow",
+        "id": "omniblock:arrow",
         "count": 4
     }
 }

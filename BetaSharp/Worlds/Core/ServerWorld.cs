@@ -1,18 +1,18 @@
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Entities;
-using BetaSharp.Network.Messages;
-using BetaSharp.Server;
-using BetaSharp.Server.Internal;
-using BetaSharp.Server.Worlds;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Dimensions;
-using BetaSharp.Worlds.Mechanics;
-using BetaSharp.Worlds.Storage;
-using BetaSharp.Worlds.Storage.RegionFormat;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Entities;
+using OmniBlock.Network.Messages;
+using OmniBlock.Server;
+using OmniBlock.Server.Internal;
+using OmniBlock.Server.Worlds;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Dimensions;
+using OmniBlock.Worlds.Mechanics;
+using OmniBlock.Worlds.Storage;
+using OmniBlock.Worlds.Storage.RegionFormat;
 
-namespace BetaSharp.Worlds.Core;
+namespace OmniBlock.Worlds.Core;
 
 public class ServerWorld : World
 {

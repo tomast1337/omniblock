@@ -1,6 +1,6 @@
-using BetaSharp.Items;
+using OmniBlock.Items;
 
-namespace BetaSharp.Tests.Items;
+namespace OmniBlock.Tests.Items;
 
 public sealed class MaterialRegistryTests
 {

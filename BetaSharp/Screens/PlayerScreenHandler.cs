@@ -1,11 +1,11 @@
-using BetaSharp.Entities;
-using BetaSharp.Inventories;
-using BetaSharp.Items;
-using BetaSharp.Items.Behaviors;
-using BetaSharp.Recipes;
-using BetaSharp.Screens.Slots;
+using OmniBlock.Entities;
+using OmniBlock.Inventories;
+using OmniBlock.Items;
+using OmniBlock.Items.Behaviors;
+using OmniBlock.Recipes;
+using OmniBlock.Screens.Slots;
 
-namespace BetaSharp.Screens;
+namespace OmniBlock.Screens;
 
 public class PlayerScreenHandler : ScreenHandler
 {

@@ -4,14 +4,14 @@
   "TranslationKey": "lockedchest",
   "Material": "wood",
   "SoundGroup": "powder",
-  "TextureId": "betasharp:chest_side",
+  "TextureId": "omniblock:chest_side",
   "Behaviors": [
     {
       "Slots": ["Ticker", "Visuals"],
       "Type": "locked_chest",
-      "top": "betasharp:chest_top",
-      "side": "betasharp:chest_side",
-      "front": "betasharp:chest_front"
+      "top": "omniblock:chest_top",
+      "side": "omniblock:chest_side",
+      "front": "omniblock:chest_front"
     }
   ]
 }

@@ -1,7 +1,7 @@
-using BetaSharp.Client.Entities.FX;
-using BetaSharp.Client.Rendering.Core;
+using OmniBlock.Client.Entities.FX;
+using OmniBlock.Client.Rendering.Core;
 
-namespace BetaSharp.Client.Rendering.Particles;
+namespace OmniBlock.Client.Rendering.Particles;
 
 public class LegacyParticleAdapter(EntityFX fx) : ISpecialParticle
 {

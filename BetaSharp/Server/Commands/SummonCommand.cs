@@ -1,9 +1,9 @@
-using BetaSharp.Entities;
-using BetaSharp.Worlds.Core;
+using OmniBlock.Entities;
+using OmniBlock.Worlds.Core;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 
-namespace BetaSharp.Server.Commands;
+namespace OmniBlock.Server.Commands;
 
 public class SummonCommand : Command.Command
 {

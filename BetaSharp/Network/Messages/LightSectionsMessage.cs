@@ -1,8 +1,8 @@
 using System.IO.Compression;
 using System.Numerics;
-using BetaSharp.Worlds.Chunks;
+using OmniBlock.Worlds.Chunks;
 
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     The sky and block light for whole 16-block sections of one chunk column, compressed.
@@ -27,7 +27,7 @@ namespace BetaSharp.Network.Messages;
 ///         the sender works from a dirty mask and sends only sections that were actually written.
 ///     </para>
 /// </remarks>
-[WireMessage("betasharp:light_sections")]
+[WireMessage("omniblock:light_sections")]
 public sealed partial class LightSectionsMessage : Message
 {
     /// <summary>

@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "Hrát hru více hráčů",
-        "betasharpServer": "BetaSharp Server",
+        "betasharpServer": "OmniBlock Server",
         "info1": "Minecraft pro více hráčů zatím není dokončen, ale probíhá",
         "info2": "nějaké počáteční testování s chybami.",
         "ipinfo": "Zadejte IP serveru pro připojení:",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "BetaSharp verze %1$s",
+        "version": "OmniBlock verze %1$s",
         "description": "Vylepšená verze Minecraftu Beta 1.7.3, napsaná v C#.",
         "github": "Na GitHubu",
         "author": "Vytvořil Fazin85",

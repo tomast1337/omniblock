@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Util;
+namespace OmniBlock.Util;
 
 public class ObjectRegistry<T>(int initialSize = 0) : ObjectRegistry<T, RegistryItem<T>>(initialSize) where T : class;
 

@@ -8,7 +8,7 @@
   "NonOpaque": true,
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": "betasharp:stone",
+  "TextureId": "omniblock:stone",
   "TickRate": 20,
   "NotFullCube": true,
   "NoCollision": true,

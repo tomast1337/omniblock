@@ -1,12 +1,12 @@
-using BetaSharp.Entities;
-using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets;
-using BetaSharp.Registries;
-using BetaSharp.Registries.Data;
-using BetaSharp.Server;
+using OmniBlock.Entities;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Packets;
+using OmniBlock.Registries;
+using OmniBlock.Registries.Data;
+using OmniBlock.Server;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp;
+namespace OmniBlock;
 
 internal sealed class DefaultGameModeListener(BetaSharpServer server) : IRegistryReloadListener
 {

@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace BetaSharp.Registries.Data;
+namespace OmniBlock.Registries.Data;
 
 /// <summary>
 /// Shared JSON object-merge logic used by both <see cref="DataAssetLoader{T}"/> (merging a

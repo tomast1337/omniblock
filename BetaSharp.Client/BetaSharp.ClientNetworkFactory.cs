@@ -1,11 +1,11 @@
-using BetaSharp.Client.Input;
-using BetaSharp.Client.Network;
-using BetaSharp.Client.UI;
-using BetaSharp.Client.UI.Screens.Menu.Net;
+using OmniBlock.Client.Input;
+using OmniBlock.Client.Network;
+using OmniBlock.Client.UI;
+using OmniBlock.Client.UI.Screens.Menu.Net;
 
-namespace BetaSharp.Client;
+namespace OmniBlock.Client;
 
-public partial class BetaSharp : IClientNetworkFactory
+public partial class OmniBlock : IClientNetworkFactory
 {
     public PlayerController CreatePlayerController(ClientNetworkHandler handler) =>
         new PlayerControllerMP(this, handler);

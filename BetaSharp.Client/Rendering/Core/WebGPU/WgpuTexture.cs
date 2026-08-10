@@ -1,6 +1,6 @@
 using Silk.NET.WebGPU;
 
-namespace BetaSharp.Client.Rendering.Core.WebGPU;
+namespace OmniBlock.Client.Rendering.Core.WebGPU;
 
 /// <summary>How a texture is filtered and how it behaves outside [0,1].</summary>
 /// <remarks>

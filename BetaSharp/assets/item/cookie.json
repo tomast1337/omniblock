@@ -1,6 +1,6 @@
 {
   "ProtocolId": 357,
-  "TextureId": "betasharp:cookie",
+  "TextureId": "omniblock:cookie",
   "Behavior": {
     "type": "food",
     "HealAmount": 1,

@@ -1,18 +1,18 @@
-using BetaSharp.Blocks;
-using BetaSharp.Client.Entities;
-using BetaSharp.Entities;
-using BetaSharp.Items;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Client.Entities;
+using OmniBlock.Entities;
+using OmniBlock.Items;
+using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Client.Input;
+namespace OmniBlock.Client.Input;
 
 public class PlayerController
 {
-    protected readonly BetaSharp Game;
+    protected readonly OmniBlock Game;
     public bool IsTestPlayer = false;
 
-    public PlayerController(BetaSharp game)
+    public PlayerController(OmniBlock game)
     {
         Game = game;
     }

@@ -4,9 +4,9 @@
         "##"
     ],
     "key": {
-        "#": "betasharp:Stone"
+        "#": "omniblock:Stone"
     },
     "result": {
-        "id": "betasharp:StonePressurePlate"
+        "id": "omniblock:StonePressurePlate"
     }
 }

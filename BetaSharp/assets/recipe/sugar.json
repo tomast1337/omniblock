@@ -4,9 +4,9 @@
         "#"
     ],
     "key": {
-        "#": "betasharp:sugar_canes"
+        "#": "omniblock:sugar_canes"
     },
     "result": {
-        "id": "betasharp:sugar"
+        "id": "omniblock:sugar"
     }
 }

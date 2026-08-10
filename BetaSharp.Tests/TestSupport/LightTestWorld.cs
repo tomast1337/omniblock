@@ -1,14 +1,14 @@
-using BetaSharp.Entities;
-using BetaSharp.Server.Worlds;
-using BetaSharp.Worlds;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Dimensions;
-using BetaSharp.Worlds.Storage;
-using BetaSharp.Worlds.Storage.RegionFormat;
+using OmniBlock.Entities;
+using OmniBlock.Server.Worlds;
+using OmniBlock.Worlds;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Dimensions;
+using OmniBlock.Worlds.Storage;
+using OmniBlock.Worlds.Storage.RegionFormat;
 
-namespace BetaSharp.Tests.TestSupport;
+namespace OmniBlock.Tests.TestSupport;
 
 /// <summary>
 ///     A real <see cref="World" /> whose chunks appear only when a test asks for them.

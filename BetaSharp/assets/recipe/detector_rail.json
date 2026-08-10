@@ -6,12 +6,12 @@
         "XRX"
     ],
     "key": {
-        "X": "betasharp:ingot_iron",
-        "#": "betasharp:StonePressurePlate",
-        "R": "betasharp:redstone"
+        "X": "omniblock:ingot_iron",
+        "#": "omniblock:StonePressurePlate",
+        "R": "omniblock:redstone"
     },
     "result": {
-        "id": "betasharp:DetectorRail",
+        "id": "omniblock:DetectorRail",
         "count": 6
     }
 }

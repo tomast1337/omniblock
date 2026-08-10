@@ -6,7 +6,7 @@
   "LivingSound": "mob.skeleton",
   "HurtSound": "mob.skeletonhurt",
   "DeathSound": "mob.skeletonhurt",
-  "HeldItem": "betasharp:bow",
+  "HeldItem": "omniblock:bow",
   "Renderer": {
     "Type": "undead",
     "Model": "skeleton",
@@ -38,12 +38,12 @@
       "Type": "loot_table",
       "Pools": [
         {
-          "Entries": [{"Item": "betasharp:arrow"}],
+          "Entries": [{"Item": "omniblock:arrow"}],
           "MinCount": 0,
           "MaxCount": 2
         },
         {
-          "Entries": [{"Item": "betasharp:bone"}],
+          "Entries": [{"Item": "omniblock:bone"}],
           "MinCount": 0,
           "MaxCount": 2
         }

@@ -1,7 +1,7 @@
-using BetaSharp.Entities;
-using BetaSharp.Util.Maths;
+using OmniBlock.Entities;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.PathFinding;
+namespace OmniBlock.PathFinding;
 
 internal class PathEntity(PathPoint[] points)
 {

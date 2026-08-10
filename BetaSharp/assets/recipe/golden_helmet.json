@@ -5,9 +5,9 @@
         "X X"
     ],
     "key": {
-        "X": "betasharp:ingot_gold"
+        "X": "omniblock:ingot_gold"
     },
     "result": {
-        "id": "betasharp:helmet_gold"
+        "id": "omniblock:helmet_gold"
     }
 }

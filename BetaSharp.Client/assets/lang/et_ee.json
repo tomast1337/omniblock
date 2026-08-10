@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "Mängi mitmikmängu",
-        "betasharpServer": "BetaSharp Server",
+        "betasharpServer": "OmniBlock Server",
         "info1": "Minecrafti mitmikmäng pole veel valmis, kuid seal",
         "info2": "toimub mõningane vigane varajane testimine.",
         "ipinfo": "Serveriga ühendumiseks sisesta serveri IP:",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "BetaSharp versioon %1$s",
+        "version": "OmniBlock versioon %1$s",
         "description": "Minecraft Beta 1.7.3 täiustatud versioon, kirjutatud C# keeles.",
         "github": "GitHubis",
         "author": "Autor: Fazin85",

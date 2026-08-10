@@ -1,4 +1,4 @@
-namespace BetaSharp.Util;
+namespace OmniBlock.Util;
 
 public enum SyncedDataType
 {

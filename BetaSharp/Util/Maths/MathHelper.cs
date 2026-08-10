@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace BetaSharp.Util.Maths;
+namespace OmniBlock.Util.Maths;
 
 public static class MathHelper
 {

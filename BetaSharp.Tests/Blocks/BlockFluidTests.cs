@@ -1,38 +1,38 @@
 using System.Text.Json;
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Entities;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Entities;
 
-namespace BetaSharp.Tests.Blocks;
+namespace OmniBlock.Tests.Blocks;
 
 public sealed class BlockFluidTests
 {
     [Fact]
     public void BehaviorRegistry_Build_StationaryFluid_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"stationary_fluid","source_solidified":"betasharp:obsidian","flow_solidified":"betasharp:cobblestone"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"stationary_fluid","source_solidified":"omniblock:obsidian","flow_solidified":"omniblock:cobblestone"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("stationary_fluid", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_StationaryFluid_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"stationary_fluid","ignition_target":"betasharp:fire","source_solidified":"not_a_real_block","flow_solidified":"betasharp:cobblestone"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"stationary_fluid","ignition_target":"omniblock:fire","source_solidified":"not_a_real_block","flow_solidified":"omniblock:cobblestone"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("stationary_fluid", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_FlowingFluid_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"flowing_fluid","source_solidified":"betasharp:obsidian","flow_solidified":"betasharp:cobblestone"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"flowing_fluid","source_solidified":"omniblock:obsidian","flow_solidified":"omniblock:cobblestone"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("flowing_fluid", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_FlowingFluid_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"flowing_fluid","passable":["not_a_real_block"],"source_solidified":"betasharp:obsidian","flow_solidified":"betasharp:cobblestone"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"flowing_fluid","passable":["not_a_real_block"],"source_solidified":"omniblock:obsidian","flow_solidified":"omniblock:cobblestone"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("flowing_fluid", json.RootElement));
     }
 

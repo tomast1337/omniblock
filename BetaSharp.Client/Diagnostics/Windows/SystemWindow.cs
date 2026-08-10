@@ -1,6 +1,6 @@
 using Hexa.NET.ImGui;
 
-namespace BetaSharp.Client.Diagnostics.Windows;
+namespace OmniBlock.Client.Diagnostics.Windows;
 
 internal sealed class SystemWindow(DebugWindowContext ctx) : DebugWindow
 {
@@ -11,7 +11,7 @@ internal sealed class SystemWindow(DebugWindowContext ctx) : DebugWindow
     {
         DebugSystemSnapshot s = ctx.DebugSystemSnapshot;
 
-        ImGuiTextSafe.Text("Build: " + BetaSharp.Version);
+        ImGuiTextSafe.Text("Build: " + OmniBlock.Version);
         ImGuiTextSafe.Text($"OS:     {s.OsDescription}");
         ImGuiTextSafe.Text($"Runtime:{s.DotNetRuntime}");
 

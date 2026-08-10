@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace BetaSharp.Worlds.Chunks;
+namespace OmniBlock.Worlds.Chunks;
 
 public readonly struct ChunkNibbleArray
 {

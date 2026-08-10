@@ -1,8 +1,8 @@
-using BetaSharp.Registries.Data;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Worlds.Generation.Biomes;
+namespace OmniBlock.Worlds.Generation.Biomes;
 
-/// <summary>One weighted mob in a biome's spawn list. <c>Entity</c> is a registry path, e.g. <c>"betasharp:wolf"</c>.</summary>
+/// <summary>One weighted mob in a biome's spawn list. <c>Entity</c> is a registry path, e.g. <c>"omniblock:wolf"</c>.</summary>
 public sealed record BiomeSpawnEntry(string Entity, int Weight);
 
 /// <summary>

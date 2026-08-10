@@ -3,7 +3,7 @@ using Silk.NET.GLFW;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 
-namespace BetaSharp.Client;
+namespace OmniBlock.Client;
 
 /// <summary>
 /// Display manager class that provides functionality similar to LWJGL's Display class.

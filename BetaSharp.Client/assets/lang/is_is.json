@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "Spila fjölspilun",
-        "betasharpServer": "BetaSharp netþjónn",
+        "betasharpServer": "OmniBlock netþjónn",
         "info1": "Fjölspilun í Minecraft er ekki fullkláruð enn, en það",
         "info2": "er í gangi einhver ófullkomin frumprófun.",
         "ipinfo": "Settu inn IP tölu netþjóns til að tengjast:",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "BetaSharp Útgáfa %1$s",
+        "version": "OmniBlock Útgáfa %1$s",
         "description": "Endurbætt útgáfa af Minecraft Beta 1.7.3, skrifuð í C#.",
         "github": "Á GitHub",
         "author": "Búið til af Fazin85",

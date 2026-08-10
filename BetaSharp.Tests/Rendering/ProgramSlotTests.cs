@@ -1,7 +1,7 @@
-using BetaSharp.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Core;
 using Xunit;
 
-namespace BetaSharp.Tests.Rendering;
+namespace OmniBlock.Tests.Rendering;
 
 public class ProgramSlotTests
 {

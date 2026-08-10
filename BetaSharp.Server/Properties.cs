@@ -1,4 +1,4 @@
-namespace BetaSharp.Server;
+namespace OmniBlock.Server;
 
 using System.Text;
 

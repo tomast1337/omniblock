@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 
-namespace BetaSharp;
+namespace OmniBlock;
 
 public class Language(string code, string name, string author)
 {

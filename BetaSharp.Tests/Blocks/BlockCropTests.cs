@@ -1,9 +1,9 @@
 using System.Text.Json;
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
-using BetaSharp.Items;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Items;
 
-namespace BetaSharp.Tests.Blocks;
+namespace OmniBlock.Tests.Blocks;
 
 public sealed class BlockCropTests
 {
@@ -38,21 +38,21 @@ public sealed class BlockCropTests
     [Fact]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"crop","mature_crop_item":"betasharp:wheat","seeds":"betasharp:seeds"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"crop","mature_crop_item":"omniblock:wheat","seeds":"omniblock:seeds"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("crop", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"crop","required_soil":"not_a_real_block","mature_crop_item":"betasharp:wheat","seeds":"betasharp:seeds"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"crop","required_soil":"not_a_real_block","mature_crop_item":"omniblock:wheat","seeds":"omniblock:seeds"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("crop", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_MissingDropSpread_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"crop","required_soil":"betasharp:farmland","mature_crop_item":"betasharp:wheat","seeds":"betasharp:seeds"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"crop","required_soil":"omniblock:farmland","mature_crop_item":"omniblock:wheat","seeds":"omniblock:seeds"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("crop", json.RootElement));
     }
 }

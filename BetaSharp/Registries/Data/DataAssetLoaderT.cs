@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Registries.Data;
+namespace OmniBlock.Registries.Data;
 
 public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T : class, IDataAsset
 {
@@ -46,7 +46,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
     private protected override void OnLoadAssets(string assetPath, bool namespaced, LoadLocations location)
     {
         if (namespaced) LoadAssetsFromFolders(assetPath, location);
-        else LoadAssets(Namespace.BetaSharp, assetPath, location);
+        else LoadAssets(Namespace.OmniBlock, assetPath, location);
     }
 
     private void LoadAssetsFromFolders(string path, LoadLocations location)
@@ -380,7 +380,7 @@ public class DataAssetLoader<T> : DataAssetLoader, IReadableRegistry<T> where T 
 
     // ---- IReadableRegistry<T> implementation ----
 
-    public ResourceLocation RegistryKey => new(Namespace.BetaSharp, _path);
+    public ResourceLocation RegistryKey => new(Namespace.OmniBlock, _path);
 
     Holder<T>? IReadableRegistry<T>.Get(ResourceLocation key)
     {

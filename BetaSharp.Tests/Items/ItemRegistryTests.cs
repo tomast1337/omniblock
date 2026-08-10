@@ -1,15 +1,15 @@
-using BetaSharp.Items;
-using BetaSharp.Items.Behaviors;
-using BetaSharp.Registries;
+using OmniBlock.Items;
+using OmniBlock.Items.Behaviors;
+using OmniBlock.Registries;
 
-namespace BetaSharp.Tests.Items;
+namespace OmniBlock.Tests.Items;
 
 public sealed class ItemRegistryTests
 {
     [Fact]
     public void Apple_RegistersUnderExpectedResourceLocation()
     {
-        Holder<ItemDefinition>? holder = DefaultRegistries.Items.Get(ResourceLocation.Parse("betasharp:apple"));
+        Holder<ItemDefinition>? holder = DefaultRegistries.Items.Get(ResourceLocation.Parse("omniblock:apple"));
 
         Assert.NotNull(holder);
         Assert.Equal(Item.ByName("apple").Id, holder.Value.ProtocolId);
@@ -21,8 +21,8 @@ public sealed class ItemRegistryTests
     {
         // Both records share the translation key "record"; the first declared keeps the plain
         // name and the second is disambiguated with its protocol ID suffix.
-        Holder<ItemDefinition>? thirteen = DefaultRegistries.Items.Get(ResourceLocation.Parse("betasharp:record"));
-        Holder<ItemDefinition>? cat = DefaultRegistries.Items.Get(ResourceLocation.Parse($"betasharp:record_{Item.ByName("record_2257").Id}"));
+        Holder<ItemDefinition>? thirteen = DefaultRegistries.Items.Get(ResourceLocation.Parse("omniblock:record"));
+        Holder<ItemDefinition>? cat = DefaultRegistries.Items.Get(ResourceLocation.Parse($"omniblock:record_{Item.ByName("record_2257").Id}"));
 
         Assert.NotNull(thirteen);
         Assert.NotNull(cat);

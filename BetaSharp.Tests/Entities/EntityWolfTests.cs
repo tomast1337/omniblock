@@ -1,9 +1,9 @@
 using System.Linq;
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.Items;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.Items;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Covers the wolf, the last mob to lose its class. Everything it was — taming, sitting, anger,
@@ -261,7 +261,7 @@ public sealed class EntityWolfTests
 
         Assert.False(shake.IsShaking(wolf));
 
-        world.ReaderWriter.SetBlock(8, 65, 8, BetaSharp.Blocks.BlockRegistry.Get("water").Id, 0);
+        world.ReaderWriter.SetBlock(8, 65, 8, OmniBlock.Blocks.BlockRegistry.Get("water").Id, 0);
         wolf.Tick();
 
         Assert.True(shake.IsShaking(wolf), "A wolf standing in water needs a shake.");

@@ -1,7 +1,7 @@
-using BetaSharp.Stats;
+using OmniBlock.Stats;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Threading;
+namespace OmniBlock.Threading;
 
 internal class ThreadStatSynchronizerReceive
 {

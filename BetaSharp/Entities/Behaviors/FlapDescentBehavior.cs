@@ -1,7 +1,7 @@
-using BetaSharp.Entities.State;
-using BetaSharp.Util.Maths;
+using OmniBlock.Entities.State;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     A chicken's wings: they damp its fall, spare it any landing damage, and drive the flap

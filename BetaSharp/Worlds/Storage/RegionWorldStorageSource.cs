@@ -1,9 +1,9 @@
-using BetaSharp.NBT;
-using BetaSharp.Worlds.Chunks.Storage;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.NBT;
+using OmniBlock.Worlds.Chunks.Storage;
+using OmniBlock.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Worlds.Storage;
+namespace OmniBlock.Worlds.Storage;
 
 public class RegionWorldStorageSource : IWorldStorageSource
 {

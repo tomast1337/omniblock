@@ -1,4 +1,4 @@
-namespace BetaSharp.Util.Maths;
+namespace OmniBlock.Util.Maths;
 
 public record struct Vec3I(int X, int Y, int Z) : IComparable<Vec3I>
 {

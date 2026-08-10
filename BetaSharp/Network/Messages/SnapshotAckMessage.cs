@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     The newest snapshot this peer has actually applied, so the server knows which state its next
@@ -15,7 +15,7 @@ namespace BetaSharp.Network.Messages;
 ///         wrong positions instead of a visible fault.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:snapshot_ack")]
+[WireMessage("omniblock:snapshot_ack")]
 public sealed partial class SnapshotAckMessage : Message
 {
     /// <summary>

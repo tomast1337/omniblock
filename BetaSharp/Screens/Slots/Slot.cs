@@ -1,7 +1,7 @@
-using BetaSharp.Inventories;
-using BetaSharp.Items;
+using OmniBlock.Inventories;
+using OmniBlock.Items;
 
-namespace BetaSharp.Screens.Slots;
+namespace OmniBlock.Screens.Slots;
 
 public class Slot
 {

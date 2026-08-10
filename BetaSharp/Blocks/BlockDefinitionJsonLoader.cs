@@ -1,10 +1,10 @@
 using System.Collections;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using BetaSharp.Registries;
-using BetaSharp.Registries.Data;
+using OmniBlock.Registries;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Blocks;
+namespace OmniBlock.Blocks;
 
 internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locations) : DataAssetLoader(locations), IReadableRegistry<BlockDefinition>
 {
@@ -28,7 +28,7 @@ internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locat
     private protected override void OnLoadAssets(string assetPath, bool namespaced, LoadLocations location)
     {
         if (namespaced) LoadAssetsFromFolders(assetPath, location);
-        else LoadAssets(Namespace.BetaSharp, assetPath, location);
+        else LoadAssets(Namespace.OmniBlock, assetPath, location);
     }
 
     private void LoadAssetsFromFolders(string assetPath, LoadLocations location)
@@ -127,7 +127,7 @@ internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locat
         return clone;
     }
 
-    public ResourceLocation RegistryKey => new(Namespace.BetaSharp, path);
+    public ResourceLocation RegistryKey => new(Namespace.OmniBlock, path);
 
     public Holder<BlockDefinition>? Get(ResourceLocation key) =>
         _byLocation.TryGetValue(key, out BlockDefinition? value) ? new Holder<BlockDefinition>(value) : null;

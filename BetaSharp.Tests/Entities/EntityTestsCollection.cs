@@ -1,7 +1,7 @@
-using BetaSharp.Blocks;
-using BetaSharp.Items;
+using OmniBlock.Blocks;
+using OmniBlock.Items;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Initializes global registries and core static tables once for entity tests.

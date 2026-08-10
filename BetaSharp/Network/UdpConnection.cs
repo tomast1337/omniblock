@@ -1,10 +1,10 @@
 using System.Net;
-using BetaSharp.Network.Packets;
-using BetaSharp.Network.Transport;
-using BetaSharp.Util;
+using OmniBlock.Network.Packets;
+using OmniBlock.Network.Transport;
+using OmniBlock.Util;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Network;
+namespace OmniBlock.Network;
 
 /// <summary>
 ///     A <see cref="Connection" /> over <see cref="ITransportConnection" />. The UDP path, and the

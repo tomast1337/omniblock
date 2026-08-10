@@ -6,7 +6,7 @@
   "Hardness": 0.3,
   "Resistance": 0.5,
   "Luminance": 1,
-  "TextureId": "betasharp:glowstone",
+  "TextureId": "omniblock:glowstone",
   "TopVariance": "All",
   "BottomVariance": "All",
   "SideVariance": "FlipBoth",

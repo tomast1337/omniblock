@@ -1,6 +1,6 @@
 using Silk.NET.WebGPU;
 
-namespace BetaSharp.Client.Rendering.Core.WebGPU;
+namespace OmniBlock.Client.Rendering.Core.WebGPU;
 
 /// <summary>
 ///     Hands a texture's objects back to wgpu at a point where no encoder can still be recording

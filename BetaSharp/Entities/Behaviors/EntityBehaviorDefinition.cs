@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using BetaSharp.Entities.State;
+using OmniBlock.Entities.State;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     One behavior entry in an entity's JSON, deserialized into typed properties instead of read

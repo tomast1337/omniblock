@@ -1,4 +1,4 @@
-namespace BetaSharp;
+namespace OmniBlock;
 
 public sealed partial class ResourceLocation : IEquatable<ResourceLocation>, IComparable<ResourceLocation>
 {
@@ -28,7 +28,7 @@ public sealed partial class ResourceLocation : IEquatable<ResourceLocation>, ICo
         int colon = location.IndexOf(':');
         return colon switch
         {
-            -1 => new ResourceLocation(Namespace.BetaSharp, location),
+            -1 => new ResourceLocation(Namespace.OmniBlock, location),
             0 => throw new FormatException($"Missing namespace in '{location}'."),
             _ => new ResourceLocation(location[..colon], location[(colon + 1)..])
         };
@@ -91,7 +91,7 @@ public sealed partial class ResourceLocation : IEquatable<ResourceLocation>, ICo
 
     public ResourceLocation Append(string child) => new(Namespace, $"{Path}/{child}");
 
-    public bool IsVanilla => Namespace.GetHashCode() == Namespace.BetaSharp.GetHashCode();
+    public bool IsVanilla => Namespace.GetHashCode() == Namespace.OmniBlock.GetHashCode();
 
     [System.Text.RegularExpressions.GeneratedRegex(@"^[a-z0-9_\-\.]+$", System.Text.RegularExpressions.RegexOptions.Compiled)]
     private static partial System.Text.RegularExpressions.Regex Reg();

@@ -1,4 +1,4 @@
-namespace BetaSharp.Launcher.Features.Xbox.User;
+namespace OmniBlock.Launcher.Features.Xbox.User;
 
 internal sealed class UserRequest
 {

@@ -1,6 +1,6 @@
-using BetaSharp.Blocks;
+using OmniBlock.Blocks;
 
-namespace BetaSharp.Worlds.Core.Systems;
+namespace OmniBlock.Worlds.Core.Systems;
 
 public class RedstoneEngine(IBlockReader world)
 {

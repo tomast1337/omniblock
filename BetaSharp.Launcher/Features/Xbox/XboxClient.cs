@@ -1,9 +1,9 @@
 using System.Net.Http;
 using System.Threading.Tasks;
-using BetaSharp.Launcher.Features.Xbox.Token;
-using BetaSharp.Launcher.Features.Xbox.User;
+using OmniBlock.Launcher.Features.Xbox.Token;
+using OmniBlock.Launcher.Features.Xbox.User;
 
-namespace BetaSharp.Launcher.Features.Xbox;
+namespace OmniBlock.Launcher.Features.Xbox;
 
 internal sealed class XboxClient(IHttpClientFactory clientFactory)
 {

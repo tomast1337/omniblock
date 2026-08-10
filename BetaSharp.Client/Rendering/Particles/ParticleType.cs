@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Rendering.Particles;
+namespace OmniBlock.Client.Rendering.Particles;
 
 public enum ParticleType : byte
 {

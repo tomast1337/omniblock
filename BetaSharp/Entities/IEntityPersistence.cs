@@ -1,6 +1,6 @@
-using BetaSharp.NBT;
+using OmniBlock.NBT;
 
-namespace BetaSharp.Entities;
+namespace OmniBlock.Entities;
 
 /// <summary>
 ///     Composable NBT persistence, for state a declared synced property cannot express: packed bit

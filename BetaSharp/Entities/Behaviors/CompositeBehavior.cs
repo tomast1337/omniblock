@@ -1,7 +1,7 @@
 using System.Text.Json;
-using BetaSharp.NBT;
+using OmniBlock.NBT;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     Runs several behaviors from a single slot, in declared order, for a mob whose work in that

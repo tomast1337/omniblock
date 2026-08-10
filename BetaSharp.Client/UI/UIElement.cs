@@ -1,6 +1,6 @@
-using BetaSharp.Client.UI.Rendering;
+using OmniBlock.Client.UI.Rendering;
 
-namespace BetaSharp.Client.UI;
+namespace OmniBlock.Client.UI;
 
 public class UIElement
 {

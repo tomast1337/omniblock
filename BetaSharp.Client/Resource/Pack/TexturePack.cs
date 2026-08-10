@@ -1,6 +1,6 @@
-using BetaSharp.Client.Rendering.Core.Textures;
+using OmniBlock.Client.Rendering.Core.Textures;
 
-namespace BetaSharp.Client.Resource.Pack;
+namespace OmniBlock.Client.Resource.Pack;
 
 public abstract class TexturePack
 {
@@ -17,7 +17,7 @@ public abstract class TexturePack
     {
     }
 
-    public virtual void func_6485_a(BetaSharp game)
+    public virtual void func_6485_a(OmniBlock game)
     {
     }
 

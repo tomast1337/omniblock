@@ -1,4 +1,4 @@
-namespace BetaSharp.Worlds.Generation.Biomes;
+namespace OmniBlock.Worlds.Generation.Biomes;
 
 internal class BiomeGenSky : Biome
 {

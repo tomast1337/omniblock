@@ -1,7 +1,7 @@
 {
     "ProtocolId": 315,
     "TranslationKey": "chestplateGold",
-    "TextureId": "betasharp:golden_chestplate",
+    "TextureId": "omniblock:golden_chestplate",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",

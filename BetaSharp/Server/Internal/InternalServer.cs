@@ -1,9 +1,9 @@
-using BetaSharp.Network.Messages;
-using BetaSharp.Server.Network;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Network.Messages;
+using OmniBlock.Server.Network;
+using OmniBlock.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Server.Internal;
+namespace OmniBlock.Server.Internal;
 
 public class InternalServer : BetaSharpServer
 {

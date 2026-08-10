@@ -5,9 +5,9 @@
         "#"
     ],
     "key": {
-        "#": "betasharp:Stone"
+        "#": "omniblock:Stone"
     },
     "result": {
-        "id": "betasharp:Button"
+        "id": "omniblock:Button"
     }
 }

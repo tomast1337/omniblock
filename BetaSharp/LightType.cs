@@ -1,4 +1,4 @@
-namespace BetaSharp;
+namespace OmniBlock;
 
 public readonly struct LightType : IEquatable<LightType>
 {

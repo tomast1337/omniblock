@@ -1,7 +1,7 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace BetaSharp.Client.Rendering.Core.Textures.Atlas;
+namespace OmniBlock.Client.Rendering.Core.Textures.Atlas;
 
 /// <summary>Which link of the fallback chain answered a <see cref="TextureFallbackChain.Resolve" /> call.</summary>
 public enum TextureSource

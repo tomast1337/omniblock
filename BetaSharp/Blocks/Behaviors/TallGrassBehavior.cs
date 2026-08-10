@@ -1,8 +1,8 @@
-using BetaSharp.Items;
-using BetaSharp.Worlds.ClientData.Colors;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Items;
+using OmniBlock.Worlds.ClientData.Colors;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
 ///     Tall grass / fern: meta-driven texture and biome-tinted color (meta 0 = dead bush palette,

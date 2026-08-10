@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <RootNamespace>BetaSharp</RootNamespace>
+    <RootNamespace>OmniBlock</RootNamespace>
   </PropertyGroup>
 
   <!--
@@ -50,7 +50,7 @@
     single home anyway — a message type has to exist identically on both peers.
   -->
   <ItemGroup>
-    <ProjectReference Include="..\BetaSharp.Generators\BetaSharp.Generators.csproj"
+    <ProjectReference Include="..\OmniBlock.Generators\OmniBlock.Generators.csproj"
                       OutputItemType="Analyzer"
                       ReferenceOutputAssembly="false" />
   </ItemGroup>
@@ -60,6 +60,6 @@
     <EmbeddedResource Include="textures\**\*" />
   </ItemGroup>
   <ItemGroup>
-    <InternalsVisibleTo Include="BetaSharp.Tests" />
+    <InternalsVisibleTo Include="OmniBlock.Tests" />
   </ItemGroup>
 </Project>

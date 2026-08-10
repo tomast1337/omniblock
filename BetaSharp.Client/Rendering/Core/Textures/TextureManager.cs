@@ -1,18 +1,18 @@
 using System.Buffers;
-using BetaSharp.Client.Options;
-using BetaSharp.Client.Rendering.Core.Textures.Atlas;
-using BetaSharp.Client.Resource.Pack;
-using BetaSharp.Registries.Data;
-using BetaSharp.Textures;
+using OmniBlock.Client.Options;
+using OmniBlock.Client.Rendering.Core.Textures.Atlas;
+using OmniBlock.Client.Resource.Pack;
+using OmniBlock.Registries.Data;
+using OmniBlock.Textures;
 using Microsoft.Extensions.Logging;
 using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using static BetaSharp.Client.Rendering.Core.Textures.TextureAtlasMipmapGenerator;
+using static OmniBlock.Client.Rendering.Core.Textures.TextureAtlasMipmapGenerator;
 
-namespace BetaSharp.Client.Rendering.Core.Textures;
+namespace OmniBlock.Client.Rendering.Core.Textures;
 
 public class TextureManager : IDisposable
 {
@@ -30,10 +30,10 @@ public class TextureManager : IDisposable
     private bool _clamp;
     private bool _blur;
     private readonly TexturePacks _texturePacks;
-    private readonly BetaSharp _game;
+    private readonly OmniBlock _game;
     private readonly Image<Rgba32> _missingTextureImage = new(256, 256);
 
-    public TextureManager(BetaSharp game, TexturePacks texturePacks, GameOptions options)
+    public TextureManager(OmniBlock game, TexturePacks texturePacks, GameOptions options)
     {
         _game = game;
         _texturePacks = texturePacks;

@@ -1,7 +1,7 @@
-using BetaSharp.Client.Input;
-using BetaSharp.Client.UI.Controls.Core;
+using OmniBlock.Client.Input;
+using OmniBlock.Client.UI.Controls.Core;
 
-namespace BetaSharp.Client.UI.Screens.Menu.Options;
+namespace OmniBlock.Client.UI.Screens.Menu.Options;
 
 public class ControllerControlsScreen : BaseOptionsScreen
 {

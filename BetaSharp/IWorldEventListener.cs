@@ -1,7 +1,7 @@
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Entities;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Entities;
 
-namespace BetaSharp;
+namespace OmniBlock;
 
 public interface IWorldEventListener
 {

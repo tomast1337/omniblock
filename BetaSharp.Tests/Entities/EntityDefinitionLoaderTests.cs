@@ -1,9 +1,9 @@
 using System.Linq;
-using BetaSharp.Entities;
-using BetaSharp.Registries;
-using BetaSharp.Registries.Data;
+using OmniBlock.Entities;
+using OmniBlock.Registries;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Integration coverage for <see cref="EntityDefinitionJsonLoader"/> against real files in a temp
@@ -49,7 +49,7 @@ public sealed class EntityDefinitionLoaderTests : IDisposable
     }
 
     private static EntityDefinition? Get(EntityDefinitionJsonLoader loader, string name) =>
-        loader.Get(new ResourceLocation(Namespace.BetaSharp, name))?.Value;
+        loader.Get(new ResourceLocation(Namespace.OmniBlock, name))?.Value;
 
     [Fact]
     public void Loads_a_definition_and_names_it_from_the_filename()
@@ -130,7 +130,7 @@ public sealed class EntityDefinitionLoaderTests : IDisposable
     public void Datapack_layer_overrides_the_base_asset()
     {
         WriteAsset("wolf", """{"ProtocolId": 95, "Health": 8}""");
-        WriteDatapackAsset("buffed", "betasharp", "wolf", """{"ProtocolId": 95, "Health": 40}""");
+        WriteDatapackAsset("buffed", "omniblock", "wolf", """{"ProtocolId": 95, "Health": 40}""");
 
         EntityDefinition definition = Assert.IsType<EntityDefinition>(
             Get(Load(LoadLocations.AllInit), "wolf"));

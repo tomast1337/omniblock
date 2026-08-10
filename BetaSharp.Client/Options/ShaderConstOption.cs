@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Options;
+namespace OmniBlock.Client.Options;
 
 public class ShaderConstOption : GameOption
 {

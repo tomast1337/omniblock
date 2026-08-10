@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace BetaSharp.Rules;
+namespace OmniBlock.Rules;
 
 public sealed record BoolValue(bool Value) : IRuleValue
 {

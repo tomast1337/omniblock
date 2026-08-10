@@ -1,8 +1,8 @@
 using System.Numerics;
-using BetaSharp.Network;
+using OmniBlock.Network;
 using Hexa.NET.ImGui;
 
-namespace BetaSharp.Client.Diagnostics;
+namespace OmniBlock.Client.Diagnostics;
 
 /// <summary>
 ///     Draws a <see cref="PacketArrivalHistogram" /> as bars, one per bucket.

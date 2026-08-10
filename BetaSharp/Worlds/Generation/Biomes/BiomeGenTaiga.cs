@@ -1,7 +1,7 @@
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Generation.Generators.Features;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Generation.Generators.Features;
 
-namespace BetaSharp.Worlds.Generation.Biomes;
+namespace OmniBlock.Worlds.Generation.Biomes;
 
 internal class BiomeGenTaiga : Biome
 {

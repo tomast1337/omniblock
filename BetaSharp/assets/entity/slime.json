@@ -67,7 +67,7 @@
       "Type": "loot_table",
       "Pools": [
         {
-          "Entries": [{"Item": "betasharp:slimeball"}],
+          "Entries": [{"Item": "omniblock:slimeball"}],
           "MinCount": 0,
           "MaxCount": 2,
           "Condition": {

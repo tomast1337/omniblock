@@ -1,6 +1,6 @@
-using BetaSharp.Worlds.Chunks;
+using OmniBlock.Worlds.Chunks;
 
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
 ///     Mushroom: darkness-gated survival/spread.

@@ -5,7 +5,7 @@
   "SoundGroup": "stone",
   "Hardness": 0.4,
   "Resistance": 0.6666667,
-  "TextureId": "betasharp:netherrack",
+  "TextureId": "omniblock:netherrack",
   "TopVariance": "All",
   "BottomVariance": "All",
   "SideVariance": "All"

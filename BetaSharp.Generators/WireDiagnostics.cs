@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 
-namespace BetaSharp.Generators;
+namespace OmniBlock.Generators;
 
 /// <summary>
 ///     A diagnostic reduced to values, so it can travel through the incremental pipeline.
@@ -62,7 +62,7 @@ internal readonly record struct TextSpanInfo(
 /// </summary>
 internal static class WireDiagnostics
 {
-    private const string Category = "BetaSharp.Network";
+    private const string Category = "OmniBlock.Network";
 
     public static readonly DiagnosticDescriptor MustBePartial = new(
         "OMNI001",

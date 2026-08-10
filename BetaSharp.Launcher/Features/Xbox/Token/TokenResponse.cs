@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace BetaSharp.Launcher.Features.Xbox.Token;
+namespace OmniBlock.Launcher.Features.Xbox.Token;
 
 internal sealed class TokenResponse
 {

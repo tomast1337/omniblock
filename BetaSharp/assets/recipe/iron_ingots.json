@@ -4,10 +4,10 @@
         "#"
     ],
     "key": {
-        "#": "betasharp:IronBlock"
+        "#": "omniblock:IronBlock"
     },
     "result": {
-        "id": "betasharp:ingot_iron",
+        "id": "omniblock:ingot_iron",
         "count": 9
     }
 }

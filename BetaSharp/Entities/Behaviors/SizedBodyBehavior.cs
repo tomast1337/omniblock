@@ -1,8 +1,8 @@
 using System.Text.Json;
-using BetaSharp.Entities.State;
-using BetaSharp.NBT;
+using OmniBlock.Entities.State;
+using OmniBlock.NBT;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     A mob that comes in sizes, where the size sets the bounding box and the health and everything

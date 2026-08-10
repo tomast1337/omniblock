@@ -1,4 +1,4 @@
-namespace BetaSharp;
+namespace OmniBlock;
 
 public record BlockSoundGroup(string GroupName, float Volume, float Pitch, string? CustomBreakSound = null)
 {

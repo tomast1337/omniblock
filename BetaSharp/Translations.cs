@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Hexa.NET.ImGui.Backends.Vulkan;
 
-namespace BetaSharp;
+namespace OmniBlock;
 
 public class Translations
 {

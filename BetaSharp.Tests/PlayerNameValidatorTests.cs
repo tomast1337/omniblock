@@ -1,4 +1,4 @@
-namespace BetaSharp.Tests;
+namespace OmniBlock.Tests;
 
 public class PlayerNameValidatorTests
 {

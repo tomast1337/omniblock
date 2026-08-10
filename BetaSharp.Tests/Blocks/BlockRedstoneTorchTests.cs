@@ -1,7 +1,7 @@
-using BetaSharp.Blocks;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Tests.Blocks;
+namespace OmniBlock.Tests.Blocks;
 
 public sealed class BlockRedstoneTorchTests
 {

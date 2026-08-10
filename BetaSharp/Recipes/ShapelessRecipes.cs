@@ -1,6 +1,6 @@
-using BetaSharp.Inventories;
-using BetaSharp.Items;
-namespace BetaSharp.Recipes;
+using OmniBlock.Inventories;
+using OmniBlock.Items;
+namespace OmniBlock.Recipes;
 
 internal class ShapelessRecipes : IRecipe
 {

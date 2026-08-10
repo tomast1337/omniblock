@@ -1,7 +1,7 @@
-using BetaSharp.Network.Messages;
-using BetaSharp.Registries.Data;
+using OmniBlock.Network.Messages;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Registries;
+namespace OmniBlock.Registries;
 
 /// <summary>
 /// A frozen, contextual container of registries — both static built-ins and dynamic

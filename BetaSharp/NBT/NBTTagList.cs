@@ -1,4 +1,4 @@
-namespace BetaSharp.NBT;
+namespace OmniBlock.NBT;
 
 public sealed class NBTTagList : NBTBase
 {

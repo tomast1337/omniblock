@@ -1,6 +1,6 @@
 using Silk.NET.Maths;
 
-namespace BetaSharp.Client.Rendering.Chunks;
+namespace OmniBlock.Client.Rendering.Chunks;
 
 public struct ChunkRenderParams
 {

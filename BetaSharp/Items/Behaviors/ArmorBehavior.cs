@@ -1,4 +1,4 @@
-namespace BetaSharp.Items.Behaviors;
+namespace OmniBlock.Items.Behaviors;
 
 public sealed class ArmorBehavior : IItemBehavior
 {

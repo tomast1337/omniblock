@@ -1,6 +1,6 @@
-using BetaSharp.Network.Packets;
+using OmniBlock.Network.Packets;
 
-namespace BetaSharp.Network;
+namespace OmniBlock.Network;
 
 /// <summary>
 ///     Which of <see cref="Connection" />'s two send queues a packet is drained from.

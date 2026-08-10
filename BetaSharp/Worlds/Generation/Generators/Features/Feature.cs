@@ -1,7 +1,7 @@
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Worlds.Generation.Generators.Features;
+namespace OmniBlock.Worlds.Generation.Generators.Features;
 
 public abstract class Feature
 {

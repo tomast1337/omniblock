@@ -5,7 +5,7 @@
   "SoundGroup": "grass",
   "Hardness": 0.6,
   "Resistance": 1,
-  "TextureId": "betasharp:sponge",
+  "TextureId": "omniblock:sponge",
   "TopVariance": "All",
   "BottomVariance": "All",
   "SideVariance": "FlipBoth",

@@ -1,19 +1,19 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.Inventories;
-using BetaSharp.Items;
-using BetaSharp.NBT;
-using BetaSharp.Registries;
-using BetaSharp.Screens;
-using BetaSharp.Stats;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.Inventories;
+using OmniBlock.Items;
+using OmniBlock.NBT;
+using OmniBlock.Registries;
+using OmniBlock.Screens;
+using OmniBlock.Stats;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Entities;
+namespace OmniBlock.Entities;
 
 public abstract class EntityPlayer : EntityLiving
 {

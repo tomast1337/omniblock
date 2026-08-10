@@ -1,7 +1,7 @@
-using BetaSharp.Inventories;
-using BetaSharp.Items;
+using OmniBlock.Inventories;
+using OmniBlock.Items;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     The chest a chest minecart carries. Its own object rather than something the cart entity

@@ -1,8 +1,8 @@
-using BetaSharp.Entities;
-using BetaSharp.Network.Packets;
-using BetaSharp.Server;
+using OmniBlock.Entities;
+using OmniBlock.Network.Packets;
+using OmniBlock.Server;
 
-namespace BetaSharp.Registries;
+namespace OmniBlock.Registries;
 
 /// <summary>
 /// Implemented by any system that holds cached data derived from registry entries and

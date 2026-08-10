@@ -1,6 +1,6 @@
-using BetaSharp.NBT;
+using OmniBlock.NBT;
 
-namespace BetaSharp.Blocks.Entities;
+namespace OmniBlock.Blocks.Entities;
 
 internal class BlockEntityRecordPlayer : BlockEntity
 {

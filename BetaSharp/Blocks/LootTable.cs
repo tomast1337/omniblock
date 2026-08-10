@@ -1,6 +1,6 @@
 using System;
 
-namespace BetaSharp.Blocks;
+namespace OmniBlock.Blocks;
 
 public sealed record LootEntryDefinition(string ItemName, int Weight = 1);
 

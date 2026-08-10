@@ -1,9 +1,9 @@
-using BetaSharp.Entities;
-using BetaSharp.Items;
-using BetaSharp.NBT;
-using BetaSharp.Worlds.Storage;
+using OmniBlock.Entities;
+using OmniBlock.Items;
+using OmniBlock.NBT;
+using OmniBlock.Worlds.Storage;
 
-namespace BetaSharp.Worlds.Maps;
+namespace OmniBlock.Worlds.Maps;
 
 public class MapState(string id) : PersistentState(id)
 {

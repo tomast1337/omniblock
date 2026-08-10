@@ -1,6 +1,6 @@
-using BetaSharp.Registries.Data;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp;
+namespace OmniBlock;
 
 /// <summary>
 /// JSON shape of <c>assets/sound_group/*.json</c>. Converted once by

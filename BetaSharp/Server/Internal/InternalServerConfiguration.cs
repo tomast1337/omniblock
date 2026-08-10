@@ -1,4 +1,4 @@
-namespace BetaSharp.Server.Internal;
+namespace OmniBlock.Server.Internal;
 
 internal class InternalServerConfiguration : IServerConfiguration
 {

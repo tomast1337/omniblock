@@ -1,6 +1,6 @@
-using BetaSharp.Util.Maths;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Carries an explosion event and the blocks it destroyed. Block positions are sent
@@ -9,7 +9,7 @@ namespace BetaSharp.Network.Messages;
 /// </summary>
 public sealed class ExplosionMessage : Message
 {
-    public static readonly ResourceLocation Id = new(Namespace.BetaSharp, "explosion");
+    public static readonly ResourceLocation Id = new(Namespace.OmniBlock, "explosion");
 
     public override ResourceLocation Key => Id;
 

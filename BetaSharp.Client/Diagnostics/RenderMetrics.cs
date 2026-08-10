@@ -1,6 +1,6 @@
-using BetaSharp.Diagnostics;
+using OmniBlock.Diagnostics;
 
-namespace BetaSharp.Client.Diagnostics;
+namespace OmniBlock.Client.Diagnostics;
 
 internal static class RenderMetrics
 {

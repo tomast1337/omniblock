@@ -1,15 +1,15 @@
 using System.Collections.Concurrent;
-using BetaSharp.Blocks;
-using BetaSharp.Client.Rendering.Blocks;
-using BetaSharp.Client.Rendering.Chunks.Occlusion;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Util;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
+using OmniBlock.Blocks;
+using OmniBlock.Client.Rendering.Blocks;
+using OmniBlock.Client.Rendering.Chunks.Occlusion;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Util;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
 
-namespace BetaSharp.Client.Rendering.Chunks;
+namespace OmniBlock.Client.Rendering.Chunks;
 
 internal struct MeshBuildResult : IDisposable
 {

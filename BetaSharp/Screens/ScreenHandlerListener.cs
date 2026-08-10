@@ -1,6 +1,6 @@
-using BetaSharp.Items;
+using OmniBlock.Items;
 
-namespace BetaSharp.Screens;
+namespace OmniBlock.Screens;
 
 public interface ScreenHandlerListener
 {

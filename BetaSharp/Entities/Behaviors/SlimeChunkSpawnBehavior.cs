@@ -1,7 +1,7 @@
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Chunks;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Chunks;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     The slime chunk rule: spawns only deep underground, rarely, and only in chunks a fixed seed

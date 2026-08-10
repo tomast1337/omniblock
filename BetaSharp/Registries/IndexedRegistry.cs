@@ -1,6 +1,6 @@
 using System.Collections;
 
-namespace BetaSharp.Registries;
+namespace OmniBlock.Registries;
 
 public class IndexedRegistry<T>(ResourceLocation registryKey) : IRegistry<T> where T : class
 {

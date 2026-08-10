@@ -1,6 +1,6 @@
 {
   "ProtocolId": 261,
-  "TextureId": "betasharp:bow",
+  "TextureId": "omniblock:bow",
   "MaxStackSize": 1,
   "Behavior": {
     "type": "bow"

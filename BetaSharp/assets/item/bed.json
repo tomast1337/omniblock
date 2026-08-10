@@ -1,6 +1,6 @@
 {
   "ProtocolId": 355,
-  "TextureId": "betasharp:bed",
+  "TextureId": "omniblock:bed",
   "MaxStackSize": 1,
   "Behavior": {
     "type": "bed"

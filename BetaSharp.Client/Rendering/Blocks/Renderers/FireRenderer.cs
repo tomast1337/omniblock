@@ -1,13 +1,13 @@
-using BetaSharp.Blocks;
-using BetaSharp.Textures;
-using BetaSharp.Util.Maths;
+using OmniBlock.Blocks;
+using OmniBlock.Textures;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Client.Rendering.Blocks.Renderers;
+namespace OmniBlock.Client.Rendering.Blocks.Renderers;
 
 public class FireRenderer : IBlockRenderer
 {
     /// <summary>The other half of the crossed pair, which the fire animation writes into too.</summary>
-    private static readonly int s_secondFrameLayer = Atlases.Terrain.LayerOf("betasharp:fire_layer_1");
+    private static readonly int s_secondFrameLayer = Atlases.Terrain.LayerOf("omniblock:fire_layer_1");
 
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {

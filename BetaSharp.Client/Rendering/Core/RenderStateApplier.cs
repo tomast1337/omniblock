@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Rendering.Core;
+namespace OmniBlock.Client.Rendering.Core;
 
 /// <summary>
 ///     Puts a <see cref="RenderState" /> into effect, issuing only the calls that change something.

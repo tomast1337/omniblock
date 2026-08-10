@@ -1,7 +1,7 @@
 {
     "type": "smelting",
-    "input": "betasharp:Sand",
+    "input": "omniblock:Sand",
     "result": {
-        "id": "betasharp:Glass"
+        "id": "omniblock:Glass"
     }
 }

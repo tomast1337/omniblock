@@ -1,8 +1,8 @@
-using BetaSharp.Network.Chunks;
-using BetaSharp.Tests.TestSupport;
-using BetaSharp.Worlds.Chunks;
+using OmniBlock.Network.Chunks;
+using OmniBlock.Tests.TestSupport;
+using OmniBlock.Worlds.Chunks;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 /// <summary>
 ///     That a chunk's light reaches the other side, by both routes a chunk travels.

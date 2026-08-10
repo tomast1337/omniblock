@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Worlds;
+namespace OmniBlock.Client.Worlds;
 
 public class BlockReset(ClientWorld world, int x, int y, int z, int blockId, int meta)
 {

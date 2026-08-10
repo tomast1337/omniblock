@@ -1,7 +1,7 @@
 using System.Buffers;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Worlds.Chunks;
+namespace OmniBlock.Worlds.Chunks;
 
 internal struct ChunkSnapshot : IDisposable
 {

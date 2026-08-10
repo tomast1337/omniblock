@@ -1,11 +1,11 @@
-using BetaSharp.Entities.State;
-using BetaSharp.Items;
-using BetaSharp.NBT;
-using BetaSharp.Util.Hit;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Entities.State;
+using OmniBlock.Items;
+using OmniBlock.NBT;
+using OmniBlock.Util.Hit;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     A small thrown projectile: flies on a shallow arc, remembers who threw it so it cannot hit

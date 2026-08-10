@@ -1,10 +1,10 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
-using BetaSharp.Textures;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Textures;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Client.Rendering.Blocks.Renderers;
+namespace OmniBlock.Client.Rendering.Blocks.Renderers;
 
 public class RedstoneWireRenderer : IBlockRenderer
 {
@@ -14,11 +14,11 @@ public class RedstoneWireRenderer : IBlockRenderer
     ///     The wire's brighter twin, drawn underneath at half colour. Beta reached it as the tile one
     ///     row below the unpowered dust, which is what these two are.
     /// </summary>
-    private static readonly int s_crossShroudLayer = Atlases.Terrain.LayerOf("betasharp:redstone_dust_cross_on");
-    private static readonly int s_lineShroudLayer = Atlases.Terrain.LayerOf("betasharp:redstone_dust_line_on");
+    private static readonly int s_crossShroudLayer = Atlases.Terrain.LayerOf("omniblock:redstone_dust_cross_on");
+    private static readonly int s_lineShroudLayer = Atlases.Terrain.LayerOf("omniblock:redstone_dust_line_on");
 
     /// <summary>A run of wire with no branch, which is the cross tile's neighbour on the atlas.</summary>
-    private static readonly int s_lineLayer = Atlases.Terrain.LayerOf("betasharp:redstone_dust_line_off");
+    private static readonly int s_lineLayer = Atlases.Terrain.LayerOf("omniblock:redstone_dust_line_off");
 
     public bool Draw(Block block, in BlockPos pos, ref BlockRenderContext ctx)
     {

@@ -1,4 +1,4 @@
-namespace BetaSharp.Items;
+namespace OmniBlock.Items;
 
 public enum ArmorSlot
 {

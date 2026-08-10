@@ -1,7 +1,7 @@
-using BetaSharp.Textures;
-using BetaSharp.Util.Maths;
+using OmniBlock.Textures;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Client.DynamicTexture;
+namespace OmniBlock.Client.DynamicTexture;
 
 internal class LavaSideSprite : Rendering.Core.Textures.DynamicTexture
 {
@@ -13,7 +13,7 @@ internal class LavaSideSprite : Rendering.Core.Textures.DynamicTexture
 
     public LavaSideSprite() : base(Atlases.Terrain.IndexOf("lava_texture")) => Replicate = 2;
 
-    public override void Setup(BetaSharp game) => TryLoadCustomTexture(game, "custom_lava_flowing.png");
+    public override void Setup(OmniBlock game) => TryLoadCustomTexture(game, "custom_lava_flowing.png");
 
     public override void tick()
     {

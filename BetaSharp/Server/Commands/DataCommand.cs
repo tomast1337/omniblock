@@ -1,13 +1,13 @@
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Entities;
-using BetaSharp.Inventories;
-using BetaSharp.Server.Command;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Entities;
+using OmniBlock.Inventories;
+using OmniBlock.Server.Command;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 
-namespace BetaSharp.Server.Commands;
+namespace OmniBlock.Server.Commands;
 
 public class DataCommand : Command.Command
 {

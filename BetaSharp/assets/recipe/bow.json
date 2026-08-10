@@ -6,10 +6,10 @@
         " #X"
     ],
     "key": {
-        "#": "betasharp:stick",
-        "X": "betasharp:string"
+        "#": "omniblock:stick",
+        "X": "omniblock:string"
     },
     "result": {
-        "id": "betasharp:bow"
+        "id": "omniblock:bow"
     }
 }

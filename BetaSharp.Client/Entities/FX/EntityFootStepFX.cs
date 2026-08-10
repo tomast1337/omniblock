@@ -1,9 +1,9 @@
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core;
 
-namespace BetaSharp.Client.Entities.FX;
+namespace OmniBlock.Client.Entities.FX;
 
 public class EntityFootStepFX : EntityFX
 {

@@ -1,4 +1,4 @@
-namespace BetaSharp.Network;
+namespace OmniBlock.Network;
 
 /// <summary>
 ///     Distribution of the gap between successive packet arrivals on one connection.

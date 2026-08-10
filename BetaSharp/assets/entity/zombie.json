@@ -39,7 +39,7 @@
       "Type": "loot_table",
       "Pools": [
         {
-          "Entries": [{"Item": "betasharp:feather"}],
+          "Entries": [{"Item": "omniblock:feather"}],
           "MinCount": 0,
           "MaxCount": 2
         }

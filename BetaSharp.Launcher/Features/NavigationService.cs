@@ -1,9 +1,9 @@
 using System;
 using System.ComponentModel;
-using BetaSharp.Launcher.Features.Shell;
+using OmniBlock.Launcher.Features.Shell;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace BetaSharp.Launcher.Features;
+namespace OmniBlock.Launcher.Features;
 
 internal sealed class NavigationService(ShellViewModel shellViewModel, IServiceProvider services)
 {

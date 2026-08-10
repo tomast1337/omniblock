@@ -1,11 +1,11 @@
-using BetaSharp.Client.UI.Controls;
-using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Controls.ListItems;
-using BetaSharp.Client.UI.Layout.Flexbox;
-using BetaSharp.Worlds.Storage;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.UI.Controls;
+using OmniBlock.Client.UI.Controls.Core;
+using OmniBlock.Client.UI.Controls.ListItems;
+using OmniBlock.Client.UI.Layout.Flexbox;
+using OmniBlock.Worlds.Storage;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Screens.Menu.Options;
+namespace OmniBlock.Client.UI.Screens.Menu.Options;
 
 public class LanguageSelectionScreen(UIContext context, UIScreen? parent) : BaseOptionsScreen(context, parent, "options.language")
 {

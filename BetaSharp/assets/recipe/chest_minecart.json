@@ -5,10 +5,10 @@
         "B"
     ],
     "key": {
-        "A": "betasharp:Chest",
-        "B": "betasharp:minecart"
+        "A": "omniblock:Chest",
+        "B": "omniblock:minecart"
     },
     "result": {
-        "id": "betasharp:minecart_chest"
+        "id": "omniblock:minecart_chest"
     }
 }

@@ -1,10 +1,10 @@
-using BetaSharp.Server.Commands;
-using BetaSharp.Server.Internal;
+using OmniBlock.Server.Commands;
+using OmniBlock.Server.Internal;
 using Brigadier.NET;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Exceptions;
 
-namespace BetaSharp.Server.Command;
+namespace OmniBlock.Server.Command;
 
 public interface ICommandHandler
 {

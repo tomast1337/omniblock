@@ -1,7 +1,7 @@
-using BetaSharp.Entities;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Entities;
+using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp;
+namespace OmniBlock;
 
 public record SpawnListEntry(Func<IWorldContext, EntityLiving> Factory);

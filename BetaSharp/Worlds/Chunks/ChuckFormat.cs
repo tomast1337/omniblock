@@ -1,6 +1,6 @@
-﻿using BetaSharp.Util.Maths;
+﻿using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Worlds.Chunks;
+namespace OmniBlock.Worlds.Chunks;
 
 public static class ChuckFormat
 {

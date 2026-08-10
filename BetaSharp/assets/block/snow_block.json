@@ -7,7 +7,7 @@
   "Hardness": 0.2,
   "Resistance": 0.33333334,
   "TickRandomly": true,
-  "TextureId": "betasharp:snow_block",
+  "TextureId": "omniblock:snow_block",
   "TopVariance": "All",
   "BottomVariance": "All",
   "SideVariance": "FlipBoth",

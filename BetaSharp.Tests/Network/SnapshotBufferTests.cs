@@ -1,6 +1,6 @@
-using BetaSharp.Client.Network;
+using OmniBlock.Client.Network;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 public sealed class SnapshotBufferTests
 {

@@ -14,8 +14,8 @@
       "despawn_age": 6000,
       "health": 5,
       "pickup_achievements": [
-        { "Item": "betasharp:log", "Achievement": "mineWood" },
-        { "Item": "betasharp:leather", "Achievement": "killCow" }
+        { "Item": "omniblock:log", "Achievement": "mineWood" },
+        { "Item": "omniblock:leather", "Achievement": "killCow" }
       ]
     }
   ],

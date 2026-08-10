@@ -1,6 +1,6 @@
-using BetaSharp.Blocks;
+using OmniBlock.Blocks;
 
-namespace BetaSharp.Tests.TestSupport;
+namespace OmniBlock.Tests.TestSupport;
 
 public record InstantUpdate(int X, int Y, int Z, int BlockId);
 

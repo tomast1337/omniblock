@@ -1,7 +1,7 @@
-using BetaSharp.NBT;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.NBT;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Worlds.Core;
+namespace OmniBlock.Worlds.Core;
 
 internal class DerivingWorldProperties : WorldProperties
 {

@@ -2,7 +2,7 @@ using System;
 using Avalonia;
 using Serilog;
 
-namespace BetaSharp.Launcher;
+namespace OmniBlock.Launcher;
 
 internal static class Program
 {

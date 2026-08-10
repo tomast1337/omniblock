@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace BetaSharp.Launcher.Features.Mojang.Token;
+namespace OmniBlock.Launcher.Features.Mojang.Token;
 
 internal sealed class TokenRequest
 {

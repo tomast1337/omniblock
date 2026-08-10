@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Rendering.Entities.Models;
+namespace OmniBlock.Client.Rendering.Entities.Models;
 
 /// <summary>
 ///     Maps the <c>"Model"</c> name in an entity definition to the class that builds it, so a

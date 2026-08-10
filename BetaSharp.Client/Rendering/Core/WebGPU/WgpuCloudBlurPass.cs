@@ -1,6 +1,6 @@
 using Silk.NET.WebGPU;
 
-namespace BetaSharp.Client.Rendering.Core.WebGPU;
+namespace OmniBlock.Client.Rendering.Core.WebGPU;
 
 /// <summary>
 ///     WebGPU port of <c>FramebufferManager.BeginCloudPass</c>/<c>EndCloudPass</c>: captures

@@ -1,8 +1,8 @@
-using BetaSharp.Network;
-using BetaSharp.Network.Messages;
-using BetaSharp.Util;
+using OmniBlock.Network;
+using OmniBlock.Network.Messages;
+using OmniBlock.Util;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 public sealed class TickStampTests
 {

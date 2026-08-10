@@ -6,10 +6,10 @@
         "#"
     ],
     "key": {
-        "X": "betasharp:ingot_iron",
-        "#": "betasharp:stick"
+        "X": "omniblock:ingot_iron",
+        "#": "omniblock:stick"
     },
     "result": {
-        "id": "betasharp:shovel_iron"
+        "id": "omniblock:shovel_iron"
     }
 }

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace BetaSharp.Launcher.Features.Home.GitHub;
+namespace OmniBlock.Launcher.Features.Home.GitHub;
 
 internal sealed class ReleasesResponse
 {

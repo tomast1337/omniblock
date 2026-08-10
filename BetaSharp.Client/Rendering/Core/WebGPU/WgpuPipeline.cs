@@ -3,7 +3,7 @@ using Silk.NET.Core.Native;
 using Silk.NET.WebGPU;
 using WgpuBuffer = Silk.NET.WebGPU.Buffer;
 
-namespace BetaSharp.Client.Rendering.Core.WebGPU;
+namespace OmniBlock.Client.Rendering.Core.WebGPU;
 
 /// <summary>
 ///     A compiled shader module plus the pipeline and bind-group layout built from it, including

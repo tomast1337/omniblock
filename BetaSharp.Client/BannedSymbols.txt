@@ -3,7 +3,7 @@
 ; string. Dynamic content containing a literal '%' (log messages, translation
 ; strings, block/biome names, exception text) segfaults. Confirmed as Dear
 ; ImGui's own format-string contract, not a binding bug, by upstream
-; (Hexa.NET.ImGui#130, comment 5050373687). Use BetaSharp.Client.Diagnostics.ImGuiTextSafe instead.
+; (Hexa.NET.ImGui#130, comment 5050373687). Use OmniBlock.Client.Diagnostics.ImGuiTextSafe instead.
 M:Hexa.NET.ImGui.ImGui.Text(System.String);Use ImGuiTextSafe.Text instead of ImGui.Text - see BannedSymbols.txt header.
 M:Hexa.NET.ImGui.ImGui.Text(System.Byte*);Use ImGuiTextSafe.Text instead of ImGui.Text - see BannedSymbols.txt header.
 M:Hexa.NET.ImGui.ImGui.Text(System.Byte@);Use ImGuiTextSafe.Text instead of ImGui.Text - see BannedSymbols.txt header.

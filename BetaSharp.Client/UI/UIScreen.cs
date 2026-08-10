@@ -1,14 +1,14 @@
-using BetaSharp.Client.Input;
-using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Controls.HUD;
-using BetaSharp.Client.UI.Layout;
-using BetaSharp.Client.UI.Layout.Flexbox;
-using BetaSharp.Client.UI.Rendering;
-using BetaSharp.Client.UI.Screens.InGame;
+using OmniBlock.Client.Input;
+using OmniBlock.Client.UI.Controls.Core;
+using OmniBlock.Client.UI.Controls.HUD;
+using OmniBlock.Client.UI.Layout;
+using OmniBlock.Client.UI.Layout.Flexbox;
+using OmniBlock.Client.UI.Rendering;
+using OmniBlock.Client.UI.Screens.InGame;
 using Silk.NET.GLFW;
 using Silk.NET.Maths;
 
-namespace BetaSharp.Client.UI;
+namespace OmniBlock.Client.UI;
 
 /// <summary>
 ///     Base class for all game screens.

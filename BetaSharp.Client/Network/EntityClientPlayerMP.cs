@@ -1,11 +1,11 @@
-using BetaSharp.Client.Entities;
-using BetaSharp.Entities;
-using BetaSharp.Network.Messages;
-using BetaSharp.Stats;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
+using OmniBlock.Client.Entities;
+using OmniBlock.Entities;
+using OmniBlock.Network.Messages;
+using OmniBlock.Stats;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core;
 
-namespace BetaSharp.Client.Network;
+namespace OmniBlock.Client.Network;
 
 public class EntityClientPlayerMP : ClientPlayerEntity
 {
@@ -21,7 +21,7 @@ public class EntityClientPlayerMP : ClientPlayerEntity
     private bool lastOnGround;
     private bool wasSneaking;
 
-    public EntityClientPlayerMP(BetaSharp game, World world, Session session, ClientNetworkHandler clientNetworkHandler) : base(game, world, session, 0)
+    public EntityClientPlayerMP(OmniBlock game, World world, Session session, ClientNetworkHandler clientNetworkHandler) : base(game, world, session, 0)
     {
         sendQueue = clientNetworkHandler;
     }

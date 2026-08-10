@@ -1,14 +1,14 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Entities;
-using BetaSharp.NBT;
-using BetaSharp.Network.Chunks;
-using BetaSharp.Profiling;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Entities;
+using OmniBlock.NBT;
+using OmniBlock.Network.Chunks;
+using OmniBlock.Profiling;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Worlds.Chunks;
+namespace OmniBlock.Worlds.Chunks;
 
 public class Chunk
 {

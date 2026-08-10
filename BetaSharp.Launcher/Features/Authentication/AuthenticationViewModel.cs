@@ -1,14 +1,14 @@
 using System;
 using System.Threading.Tasks;
-using BetaSharp.Launcher.Features.Alert;
-using BetaSharp.Launcher.Features.Home;
-using BetaSharp.Launcher.Features.Sessions;
+using OmniBlock.Launcher.Features.Alert;
+using OmniBlock.Launcher.Features.Home;
+using OmniBlock.Launcher.Features.Sessions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Launcher.Features.Authentication;
+namespace OmniBlock.Launcher.Features.Authentication;
 
 internal sealed partial class AuthenticationViewModel(
     ILogger<AuthenticationViewModel> logger,
@@ -89,7 +89,7 @@ internal sealed partial class AuthenticationViewModel(
                 "Uh-oh!",
                 "Try again shortly. If the problem persists, create an issue on GitHub."
                 + Environment.NewLine
-                + "https://git.gay/betasharp-official/betasharp/issues");
+                + "https://git.gay/omniblock-official/omniblock/issues");
         }
     }
 }

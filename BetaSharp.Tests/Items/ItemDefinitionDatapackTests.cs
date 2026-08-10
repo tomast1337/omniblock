@@ -1,7 +1,7 @@
-using BetaSharp.Items;
-using BetaSharp.Registries;
+using OmniBlock.Items;
+using OmniBlock.Registries;
 
-namespace BetaSharp.Tests.Items;
+namespace OmniBlock.Tests.Items;
 
 /// <summary>
 /// Verifies <see cref="ItemDefinitionJsonLoader"/> (an explicit-ID <see cref="Registries.Data.DataAssetLoader"/>
@@ -64,7 +64,7 @@ public sealed class ItemDefinitionDatapackTests : IDisposable
 
         RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
 
-        ItemDefinition? def = ra.GetOrThrow(s_key).GetValue(ResourceLocation.Parse("betasharp:ruby"));
+        ItemDefinition? def = ra.GetOrThrow(s_key).GetValue(ResourceLocation.Parse("omniblock:ruby"));
         Assert.NotNull(def);
         Assert.Equal(300, def.ProtocolId);
     }
@@ -73,28 +73,28 @@ public sealed class ItemDefinitionDatapackTests : IDisposable
     public void Build_layers_global_datapack_on_top_of_base()
     {
         WriteBaseItem("ruby", 300);
-        WriteDatapackItem("mypack", "betasharp", "sapphire", 301);
+        WriteDatapackItem("mypack", "omniblock", "sapphire", 301);
         RegistryAccess.AddDynamic(RegisterItemsDefinition());
 
         RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir, datapackPath: _tempDir);
         IReadableRegistry<ItemDefinition> registry = ra.GetOrThrow(s_key);
 
-        Assert.NotNull(registry.GetValue(ResourceLocation.Parse("betasharp:ruby")));
-        Assert.NotNull(registry.GetValue(ResourceLocation.Parse("betasharp:sapphire")));
+        Assert.NotNull(registry.GetValue(ResourceLocation.Parse("omniblock:ruby")));
+        Assert.NotNull(registry.GetValue(ResourceLocation.Parse("omniblock:sapphire")));
     }
 
     [Fact]
     public void WithWorldDatapacks_layers_world_pack_without_touching_server_state()
     {
         WriteBaseItem("ruby", 300);
-        WriteWorldItem("worldpack", "betasharp", "topaz", 302);
+        WriteWorldItem("worldpack", "omniblock", "topaz", 302);
         RegistryAccess.AddDynamic(RegisterItemsDefinition());
 
         RegistryAccess server = RegistryAccess.Build(basePath: _tempDir);
         RegistryAccess withWorld = server.WithWorldDatapacks(Path.Combine(_tempDir, "world"));
 
-        Assert.Null(server.GetOrThrow(s_key).GetValue(ResourceLocation.Parse("betasharp:topaz")));
-        Assert.NotNull(withWorld.GetOrThrow(s_key).GetValue(ResourceLocation.Parse("betasharp:topaz")));
+        Assert.Null(server.GetOrThrow(s_key).GetValue(ResourceLocation.Parse("omniblock:topaz")));
+        Assert.NotNull(withWorld.GetOrThrow(s_key).GetValue(ResourceLocation.Parse("omniblock:topaz")));
     }
 
     [Fact]

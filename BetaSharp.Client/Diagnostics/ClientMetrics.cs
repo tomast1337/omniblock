@@ -1,7 +1,7 @@
-using BetaSharp.Diagnostics;
-using BetaSharp.Network;
+using OmniBlock.Diagnostics;
+using OmniBlock.Network;
 
-namespace BetaSharp.Client.Diagnostics;
+namespace OmniBlock.Client.Diagnostics;
 
 internal static class ClientMetrics
 {

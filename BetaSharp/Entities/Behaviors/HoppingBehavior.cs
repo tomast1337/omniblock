@@ -1,7 +1,7 @@
-using BetaSharp.Entities.State;
-using BetaSharp.Util.Maths;
+using OmniBlock.Entities.State;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     A slime's whole way of moving: faces the nearest player, hops at it on a timer that shortens

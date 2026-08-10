@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Client.Resource;
+namespace OmniBlock.Client.Resource;
 
 public class ModernAssetDownloader : IResourceLoader, IDisposable
 {
@@ -12,7 +12,7 @@ public class ModernAssetDownloader : IResourceLoader, IDisposable
     private readonly ILogger<ModernAssetDownloader> _logger = Log.Instance.For<ModernAssetDownloader>();
     private readonly HttpClient _httpClient;
     private readonly string _resourcesDirectory;
-    private readonly BetaSharp _game;
+    private readonly OmniBlock _game;
     private bool _cancelled;
     private readonly IEnumerable<string> _wantedAssets;
     private static readonly Dictionary<string, string> ExtensionToFolder = new()
@@ -20,7 +20,7 @@ public class ModernAssetDownloader : IResourceLoader, IDisposable
         { ".ogg", "music" }
     };
 
-    public ModernAssetDownloader(BetaSharp game, string baseDirectory, IEnumerable<string> wantedAssets)
+    public ModernAssetDownloader(OmniBlock game, string baseDirectory, IEnumerable<string> wantedAssets)
     {
         _wantedAssets = wantedAssets;
         _game = game;

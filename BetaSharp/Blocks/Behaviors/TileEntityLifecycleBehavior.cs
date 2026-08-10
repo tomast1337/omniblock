@@ -1,4 +1,4 @@
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
 ///     Creates the block's tile entity (from its <c>setHasTileEntity</c> factory) on placement and

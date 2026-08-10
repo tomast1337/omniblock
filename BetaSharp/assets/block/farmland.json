@@ -8,7 +8,7 @@
   "Opacity": 255,
   "NonOpaque": true,
   "TickRandomly": true,
-  "TextureId": "betasharp:farmland_dry",
+  "TextureId": "omniblock:farmland_dry",
   "NotFullCube": true,
   "BoundingBox": {
     "MinX": 0,
@@ -28,14 +28,14 @@
         "Visuals"
       ],
       "Type": "farmland",
-      "revert_block": "betasharp:dirt",
-      "crop": "betasharp:wheat",
+      "revert_block": "omniblock:dirt",
+      "crop": "omniblock:wheat",
       "trample_chance_one_in": 4,
       "tick_chance_one_in": 5,
       "water_check_radius": 4,
-      "wet": "betasharp:farmland_wet",
-      "dry": "betasharp:farmland_dry",
-      "side": "betasharp:dirt"
+      "wet": "omniblock:farmland_wet",
+      "dry": "omniblock:farmland_dry",
+      "side": "omniblock:dirt"
     }
   ]
 }

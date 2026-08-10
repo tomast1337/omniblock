@@ -1,6 +1,6 @@
-using BetaSharp.Client.UI.Layout.Flexbox;
+using OmniBlock.Client.UI.Layout.Flexbox;
 
-namespace BetaSharp.Client.UI.Layout;
+namespace OmniBlock.Client.UI.Layout;
 
 public static class FlexLayout
 {

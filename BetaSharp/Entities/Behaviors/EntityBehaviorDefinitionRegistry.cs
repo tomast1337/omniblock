@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     Maps a JSON <c>"Type"</c> key to the <see cref="EntityBehaviorDefinition" /> subclass that

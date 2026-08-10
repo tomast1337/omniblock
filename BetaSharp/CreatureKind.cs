@@ -1,9 +1,9 @@
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Entities;
+using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp;
+namespace OmniBlock;
 
 /// <summary>
 ///     A natural-spawn budget. <paramref name="Category" /> matches

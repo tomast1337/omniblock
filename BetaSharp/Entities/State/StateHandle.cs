@@ -1,4 +1,4 @@
-namespace BetaSharp.Entities.State;
+namespace OmniBlock.Entities.State;
 
 /// <summary>
 ///     A typed slot in an entity's <see cref="EntityState" />, handed out by

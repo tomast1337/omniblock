@@ -1,8 +1,8 @@
-using BetaSharp.Network;
-using BetaSharp.Network.Transport;
-using BetaSharp.Server;
+using OmniBlock.Network;
+using OmniBlock.Network.Transport;
+using OmniBlock.Server;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 /// <summary>
 ///     <see cref="ChunkSendPacer" />: how much chunk data one player is handed per tick.

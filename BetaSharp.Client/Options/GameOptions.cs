@@ -1,12 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
-using BetaSharp.Client.Input;
-using BetaSharp.Client.UI;
+using OmniBlock.Client.Input;
+using OmniBlock.Client.UI;
 using Microsoft.Extensions.Logging;
 using Silk.NET.GLFW;
 using File = System.IO.File;
 using FileNotFoundException = System.IO.FileNotFoundException;
 
-namespace BetaSharp.Client.Options;
+namespace OmniBlock.Client.Options;
 
 public class GameOptions
 {
@@ -158,7 +158,7 @@ public class GameOptions
 
     public KeyBindingGroup[] KeyBindingGroups;
 
-    protected BetaSharp _game;
+    protected OmniBlock _game;
     private readonly string _optionsPath;
     public bool HideGUI = false;
     public CameraMode CameraMode = CameraMode.FirstPerson;
@@ -190,7 +190,7 @@ public class GameOptions
 
     public ShaderOptionsRegistry ShaderOptions { get; } = new();
 
-    public GameOptions(BetaSharp game, string gameDataDir)
+    public GameOptions(OmniBlock game, string gameDataDir)
     {
         _game = game;
         _optionsPath = System.IO.Path.Combine(gameDataDir, "options.txt");

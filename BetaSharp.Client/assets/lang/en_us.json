@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "Play Multiplayer",
-        "betasharpServer": "BetaSharp Server",
+        "betasharpServer": "OmniBlock Server",
         "info1": "Minecraft Multiplayer is currently not finished, but there",
         "info2": "is some buggy early testing going on.",
         "ipinfo": "Enter the IP of a server to connect to it:",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "BetaSharp Version %1$s",
+        "version": "OmniBlock Version %1$s",
         "description": "An enhanced of Minecraft Beta 1.7.3, written in C#.",
         "github": "On GitHub",
         "author": "Made by Fazin85",

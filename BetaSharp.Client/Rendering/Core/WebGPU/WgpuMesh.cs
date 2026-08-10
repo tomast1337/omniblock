@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 using Silk.NET.WebGPU;
 using WgpuBuffer = Silk.NET.WebGPU.Buffer;
 
-namespace BetaSharp.Client.Rendering.Core.WebGPU;
+namespace OmniBlock.Client.Rendering.Core.WebGPU;
 
 /// <summary>
 ///     Sentinel for "the whole buffer" that wgpu-native accepts without panicking.

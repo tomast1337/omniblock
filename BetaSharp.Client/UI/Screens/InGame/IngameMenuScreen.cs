@@ -1,13 +1,13 @@
 using System.Diagnostics;
-using BetaSharp.Client.Resource.Pack;
-using BetaSharp.Client.UI.Controls;
-using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Layout.Flexbox;
-using BetaSharp.Client.UI.Screens.Menu.Options;
-using BetaSharp.Stats;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.Resource.Pack;
+using OmniBlock.Client.UI.Controls;
+using OmniBlock.Client.UI.Controls.Core;
+using OmniBlock.Client.UI.Layout.Flexbox;
+using OmniBlock.Client.UI.Screens.Menu.Options;
+using OmniBlock.Stats;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Screens.InGame;
+namespace OmniBlock.Client.UI.Screens.InGame;
 
 public class IngameMenuScreen(
     UIContext context,
@@ -76,12 +76,12 @@ public class IngameMenuScreen(
         Button btnFeedback = CreateButton();
         btnFeedback.Text = Translations.Get("menu.sendFeedback");
         btnFeedback.Style.Width = 98;
-        btnFeedback.OnClick += e => OpenLink("https://git.gay/betasharp-official/betasharp/issues/new/choose");
+        btnFeedback.OnClick += e => OpenLink("https://git.gay/omniblock-official/omniblock/issues/new/choose");
 
         Button btnReport = CreateButton();
         btnReport.Text = Translations.Get("menu.reportBugs");
         btnReport.Style.Width = 98;
-        btnReport.OnClick += e => OpenLink("https://git.gay/betasharp-official/betasharp/issues/new?template=.github%2fISSUE_TEMPLATE%2fbug_report.yml");
+        btnReport.OnClick += e => OpenLink("https://git.gay/omniblock-official/omniblock/issues/new?template=.github%2fISSUE_TEMPLATE%2fbug_report.yml");
 
         feedbackRow.AddChild(btnFeedback);
         feedbackRow.AddChild(btnReport);

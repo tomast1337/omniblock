@@ -1,12 +1,12 @@
-using BetaSharp.Client.Entities;
-using BetaSharp.Client.Input;
-using BetaSharp.Client.Network;
-using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Layout.Flexbox;
-using BetaSharp.Network.Messages;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.Entities;
+using OmniBlock.Client.Input;
+using OmniBlock.Client.Network;
+using OmniBlock.Client.UI.Controls.Core;
+using OmniBlock.Client.UI.Layout.Flexbox;
+using OmniBlock.Network.Messages;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Screens.InGame;
+namespace OmniBlock.Client.UI.Screens.InGame;
 
 public class SleepScreen(UIContext context, ClientPlayerEntity player) : UIScreen(context)
 {

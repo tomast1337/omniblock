@@ -1,4 +1,4 @@
-namespace BetaSharp.Worlds.Storage;
+namespace OmniBlock.Worlds.Storage;
 
 public class WorldSaveInfo : IComparable<WorldSaveInfo>
 {

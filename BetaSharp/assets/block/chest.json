@@ -6,19 +6,19 @@
   "Hardness": 2.5,
   "Resistance": 4.1666665,
   "IgnoreMetaUpdates": true,
-  "TextureId": "betasharp:chest_side",
+  "TextureId": "omniblock:chest_side",
   "TileEntity": "chest",
   "Behaviors": [
     {
       "Slots": ["Interactable", "Lifecycle", "Physics", "Visuals"],
       "Type": "chest",
-      "top": "betasharp:chest_top",
-      "side": "betasharp:chest_side",
-      "front": "betasharp:chest_front",
-      "double_front_left": "betasharp:chest_double_front_left",
-      "double_front_right": "betasharp:chest_double_front_right",
-      "double_back_left": "betasharp:chest_double_back_left",
-      "double_back_right": "betasharp:chest_double_back_right"
+      "top": "omniblock:chest_top",
+      "side": "omniblock:chest_side",
+      "front": "omniblock:chest_front",
+      "double_front_left": "omniblock:chest_double_front_left",
+      "double_front_right": "omniblock:chest_double_front_right",
+      "double_back_left": "omniblock:chest_double_back_left",
+      "double_back_right": "omniblock:chest_double_back_right"
     }
   ]
 }

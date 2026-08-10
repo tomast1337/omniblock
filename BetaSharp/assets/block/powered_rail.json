@@ -8,7 +8,7 @@
   "Resistance": 1.1666666,
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": "betasharp:powered_rail_on",
+  "TextureId": "omniblock:powered_rail_on",
   "RenderType": "MinecartTrack",
   "NotFullCube": true,
   "NoCollision": true,
@@ -22,8 +22,8 @@
       ],
       "Type": "rail",
       "powered": true,
-      "turn": "betasharp:rail_turn",
-      "unpowered": "betasharp:powered_rail_off"
+      "turn": "omniblock:rail_turn",
+      "unpowered": "omniblock:powered_rail_off"
     }
   ]
 }

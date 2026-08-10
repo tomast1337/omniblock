@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace BetaSharp.Rules;
+namespace OmniBlock.Rules;
 
 public abstract class GameRule<T>(ResourceLocation key, T defaultValue, string category, string description)
     : IGameRule<T> where T : IRuleValue

@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace BetaSharp.Client.UI.Colors;
+namespace OmniBlock.Client.UI.Colors;
 
 public readonly partial struct Color
 {

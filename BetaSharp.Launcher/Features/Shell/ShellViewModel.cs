@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace BetaSharp.Launcher.Features.Shell;
+namespace OmniBlock.Launcher.Features.Shell;
 
 internal sealed partial class ShellViewModel : ObservableObject
 {

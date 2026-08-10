@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.UI.Controls.Core;
+namespace OmniBlock.Client.UI.Controls.Core;
 
 public class TextBuffer
 {

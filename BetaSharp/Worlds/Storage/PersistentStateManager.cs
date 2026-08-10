@@ -1,7 +1,7 @@
-using BetaSharp.NBT;
+using OmniBlock.NBT;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Worlds.Storage;
+namespace OmniBlock.Worlds.Storage;
 
 public class PersistentStateManager
 {

@@ -1,4 +1,4 @@
-namespace BetaSharp.Server.Entities;
+namespace OmniBlock.Server.Entities;
 
 /// <summary>
 ///     Where a tracked entity was, for the last couple of seconds of server time.

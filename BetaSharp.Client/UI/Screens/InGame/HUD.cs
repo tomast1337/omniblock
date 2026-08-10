@@ -1,11 +1,11 @@
-using BetaSharp.Client.Entities;
-using BetaSharp.Client.Input;
-using BetaSharp.Client.UI.Controls.Achievement;
-using BetaSharp.Client.UI.Controls.HUD;
-using BetaSharp.Client.UI.Layout.Flexbox;
-using BetaSharp.Worlds.Core;
+using OmniBlock.Client.Entities;
+using OmniBlock.Client.Input;
+using OmniBlock.Client.UI.Controls.Achievement;
+using OmniBlock.Client.UI.Controls.HUD;
+using OmniBlock.Client.UI.Layout.Flexbox;
+using OmniBlock.Worlds.Core;
 
-namespace BetaSharp.Client.UI.Screens.InGame;
+namespace OmniBlock.Client.UI.Screens.InGame;
 
 public sealed record HUDContext(
     Func<ClientPlayerEntity?> GetPlayer,

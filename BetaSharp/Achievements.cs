@@ -1,8 +1,8 @@
-using BetaSharp.Blocks;
-using BetaSharp.Items;
+using OmniBlock.Blocks;
+using OmniBlock.Items;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp;
+namespace OmniBlock;
 
 public class Achievements
 {

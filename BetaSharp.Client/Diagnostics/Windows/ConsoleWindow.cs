@@ -1,9 +1,9 @@
 using System.Numerics;
-using BetaSharp.Client.Entities;
+using OmniBlock.Client.Entities;
 using Hexa.NET.ImGui;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Client.Diagnostics.Windows;
+namespace OmniBlock.Client.Diagnostics.Windows;
 
 internal sealed class ConsoleWindow(DebugWindowContext ctx) : DebugWindow
 {

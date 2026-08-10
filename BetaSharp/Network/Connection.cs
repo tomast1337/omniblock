@@ -1,11 +1,11 @@
 using System.Collections.Concurrent;
 using System.Net;
-using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets;
-using BetaSharp.Util;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Packets;
+using OmniBlock.Util;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Network;
+namespace OmniBlock.Network;
 
 /// <summary>
 ///     One peer's packet stream: the queue the game drains, the compatibility gate, and the

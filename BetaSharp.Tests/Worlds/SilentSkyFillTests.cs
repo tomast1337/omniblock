@@ -1,10 +1,10 @@
-using BetaSharp.Network.Chunks;
-using BetaSharp.Network.Messages;
-using BetaSharp.Tests.TestSupport;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Network.Chunks;
+using OmniBlock.Network.Messages;
+using OmniBlock.Tests.TestSupport;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Tests.Worlds;
+namespace OmniBlock.Tests.Worlds;
 
 /// <summary>
 ///     Whether the pass that first lights a chunk can be observed by anything downstream of it.

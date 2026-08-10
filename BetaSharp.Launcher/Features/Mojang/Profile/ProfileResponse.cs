@@ -1,4 +1,4 @@
-namespace BetaSharp.Launcher.Features.Mojang.Profile;
+namespace OmniBlock.Launcher.Features.Mojang.Profile;
 
 internal sealed class ProfileResponse
 {

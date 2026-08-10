@@ -1,22 +1,22 @@
 using System;
 using System.IO;
-using BetaSharp.Launcher.Features;
-using BetaSharp.Launcher.Features.Alert;
-using BetaSharp.Launcher.Features.Authentication;
-using BetaSharp.Launcher.Features.Home;
-using BetaSharp.Launcher.Features.Home.GitHub;
-using BetaSharp.Launcher.Features.Hosting;
-using BetaSharp.Launcher.Features.Mojang;
-using BetaSharp.Launcher.Features.Properties;
-using BetaSharp.Launcher.Features.Sessions;
-using BetaSharp.Launcher.Features.Shell;
-using BetaSharp.Launcher.Features.Splash;
-using BetaSharp.Launcher.Features.Xbox;
+using OmniBlock.Launcher.Features;
+using OmniBlock.Launcher.Features.Alert;
+using OmniBlock.Launcher.Features.Authentication;
+using OmniBlock.Launcher.Features.Home;
+using OmniBlock.Launcher.Features.Home.GitHub;
+using OmniBlock.Launcher.Features.Hosting;
+using OmniBlock.Launcher.Features.Mojang;
+using OmniBlock.Launcher.Features.Properties;
+using OmniBlock.Launcher.Features.Sessions;
+using OmniBlock.Launcher.Features.Shell;
+using OmniBlock.Launcher.Features.Splash;
+using OmniBlock.Launcher.Features.Xbox;
 using CommunityToolkit.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
-namespace BetaSharp.Launcher;
+namespace OmniBlock.Launcher;
 
 internal static partial class Bootstrapper
 {

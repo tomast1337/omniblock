@@ -6,7 +6,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
-namespace BetaSharp.Client.Rendering.Core.Textures;
+namespace OmniBlock.Client.Rendering.Core.Textures;
 
 public sealed class SkinManager : IDisposable
 {
@@ -34,7 +34,7 @@ public sealed class SkinManager : IDisposable
             Timeout = TimeSpan.FromSeconds(15)
         };
 
-        _httpClient.DefaultRequestHeaders.Add("User-Agent", nameof(BetaSharp));
+        _httpClient.DefaultRequestHeaders.Add("User-Agent", nameof(OmniBlock));
 
         InvalidateCache();
     }
@@ -60,7 +60,7 @@ public sealed class SkinManager : IDisposable
 
     private void InvalidateCache()
     {
-        string path = Path.Combine(Path.GetTempPath(), "BetaSharp", SkinCacheDirectoryName);
+        string path = Path.Combine(Path.GetTempPath(), "OmniBlock", SkinCacheDirectoryName);
         if (!Directory.Exists(path)) return;
 
         DateTime cacheAgeLimit = DateTime.Now.AddDays(-SkinCacheValidForDays);
@@ -205,7 +205,7 @@ public sealed class SkinManager : IDisposable
 
     private async Task<bool> TryLoadTextureFromCache(string textureKey, string cacheFileName, string dir = SkinCacheDirectoryName)
     {
-        string skinCachePath = Path.Combine(Path.GetTempPath(), "BetaSharp", dir, cacheFileName);
+        string skinCachePath = Path.Combine(Path.GetTempPath(), "OmniBlock", dir, cacheFileName);
         if (!File.Exists(skinCachePath)) return false;
 
         Image<Rgba32> cachedImage = await Image.LoadAsync<Rgba32>(skinCachePath);
@@ -215,7 +215,7 @@ public sealed class SkinManager : IDisposable
 
     private async Task<bool> TryLoadCapeId(string username)
     {
-        string skinCachePath = Path.Combine(Path.GetTempPath(), "BetaSharp", SkinCacheDirectoryName, username + ".txt");
+        string skinCachePath = Path.Combine(Path.GetTempPath(), "OmniBlock", SkinCacheDirectoryName, username + ".txt");
         if (!File.Exists(skinCachePath)) return false;
 
         string id = Encoding.ASCII.GetString(await File.ReadAllBytesAsync(skinCachePath));
@@ -269,7 +269,7 @@ public sealed class SkinManager : IDisposable
 
     private async Task SaveTextureToCache(string cacheFileName, Image image, string directoryName)
     {
-        string path = Path.Combine(Path.GetTempPath(), "BetaSharp", directoryName);
+        string path = Path.Combine(Path.GetTempPath(), "OmniBlock", directoryName);
         if (!Directory.Exists(path))
         {
             Directory.CreateDirectory(path);
@@ -284,7 +284,7 @@ public sealed class SkinManager : IDisposable
 
     private async Task SaveTxtCache(string filename, string text, string directoryName)
     {
-        string path = Path.Combine(Path.GetTempPath(), "BetaSharp", directoryName);
+        string path = Path.Combine(Path.GetTempPath(), "OmniBlock", directoryName);
         if (!Directory.Exists(path))
         {
             Directory.CreateDirectory(path);

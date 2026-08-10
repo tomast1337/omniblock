@@ -1,7 +1,7 @@
-using BetaSharp.NBT;
-using BetaSharp.Util;
+using OmniBlock.NBT;
+using OmniBlock.Util;
 
-namespace BetaSharp.Entities.State;
+namespace OmniBlock.Entities.State;
 
 /// <summary>
 ///     Creates an entity's declared synced properties on its <see cref="DataSynchronizer" />, and

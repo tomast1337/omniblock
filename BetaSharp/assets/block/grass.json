@@ -6,7 +6,7 @@
   "SoundGroup": "grass",
   "NonOpaque": true,
   "TickRandomly": true,
-  "TextureId": "betasharp:tallgrass",
+  "TextureId": "omniblock:tallgrass",
   "BurnChance": 60,
   "SpreadChance": 100,
   "RenderType": "Reed",
@@ -28,9 +28,9 @@
       ],
       "Type": "plant_survival",
       "valid_ground": [
-        "betasharp:grass_block",
-        "betasharp:dirt",
-        "betasharp:farmland"
+        "omniblock:grass_block",
+        "omniblock:dirt",
+        "omniblock:farmland"
       ]
     },
     {
@@ -39,12 +39,12 @@
         "Lifecycle"
       ],
       "Type": "tall_grass",
-      "seeds": "betasharp:seeds",
+      "seeds": "omniblock:seeds",
       "seed_drop_chance_one_in": 8,
       "textures": [
-        "betasharp:dead_bush",
-        "betasharp:tallgrass",
-        "betasharp:fern_tall_grass"
+        "omniblock:dead_bush",
+        "omniblock:tallgrass",
+        "omniblock:fern_tall_grass"
       ]
     }
   ]

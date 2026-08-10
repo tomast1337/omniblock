@@ -1,9 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
-using BetaSharp.Blocks;
-using BetaSharp.Items;
-using BetaSharp.Registries;
+using OmniBlock.Blocks;
+using OmniBlock.Items;
+using OmniBlock.Registries;
 
-namespace BetaSharp;
+namespace OmniBlock;
 
 internal static class ItemLookup
 {

@@ -1,7 +1,7 @@
-using BetaSharp.Blocks;
-using BetaSharp.Util.Maths;
+using OmniBlock.Blocks;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     What it means to be a farm animal: it spawns on well-lit grass and paths towards grass in

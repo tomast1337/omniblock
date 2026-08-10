@@ -1,6 +1,6 @@
-using BetaSharp.Blocks.Materials;
+using OmniBlock.Blocks.Materials;
 
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
 ///     Light-driven melting (ice, snow): when block light exceeds the threshold on a random tick,

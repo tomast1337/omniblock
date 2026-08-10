@@ -1,18 +1,18 @@
-using BetaSharp.Client.Entities;
-using BetaSharp.Client.Rendering;
-using BetaSharp.Client.Rendering.Chunks;
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.Sound;
-using BetaSharp.Client.UI;
-using BetaSharp.Client.UI.Screens.InGame;
-using BetaSharp.Util.Hit;
-using BetaSharp.Worlds.Core;
+using OmniBlock.Client.Entities;
+using OmniBlock.Client.Rendering;
+using OmniBlock.Client.Rendering.Chunks;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Client.Sound;
+using OmniBlock.Client.UI;
+using OmniBlock.Client.UI.Screens.InGame;
+using OmniBlock.Util.Hit;
+using OmniBlock.Worlds.Core;
 
-namespace BetaSharp.Client.Diagnostics;
+namespace OmniBlock.Client.Diagnostics;
 
 /// <summary>
 /// Aggregates the inputs required by the debug window system so that individual windows
-/// are not coupled directly to <see cref="BetaSharp"/>.
+/// are not coupled directly to <see cref="OmniBlock"/>.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -37,7 +37,7 @@ namespace BetaSharp.Client.Diagnostics;
 ///   </item>
 /// </list>
 /// </remarks>
-internal sealed class DebugWindowContext(BetaSharp game)
+internal sealed class DebugWindowContext(OmniBlock game)
 {
     public World? World => game.World;
     public ClientPlayerEntity? Player => game.Player;

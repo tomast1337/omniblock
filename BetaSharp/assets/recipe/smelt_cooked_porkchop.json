@@ -1,7 +1,7 @@
 {
     "type": "smelting",
-    "input": "betasharp:porkchop_raw",
+    "input": "omniblock:porkchop_raw",
     "result": {
-        "id": "betasharp:porkchop_cooked"
+        "id": "omniblock:porkchop_cooked"
     }
 }

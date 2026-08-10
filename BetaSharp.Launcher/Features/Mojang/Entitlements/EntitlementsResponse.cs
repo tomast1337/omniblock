@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace BetaSharp.Launcher.Features.Mojang.Entitlements;
+namespace OmniBlock.Launcher.Features.Mojang.Entitlements;
 
 internal sealed class EntitlementsResponse
 {

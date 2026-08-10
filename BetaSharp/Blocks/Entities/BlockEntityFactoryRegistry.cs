@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace BetaSharp.Blocks.Entities;
+namespace OmniBlock.Blocks.Entities;
 
 internal static class BlockEntityFactoryRegistry
 {

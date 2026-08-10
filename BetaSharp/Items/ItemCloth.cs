@@ -1,8 +1,8 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
-using BetaSharp.Items.Behaviors;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Items.Behaviors;
 
-namespace BetaSharp.Items;
+namespace OmniBlock.Items;
 
 internal class ItemCloth : ItemBlock
 {

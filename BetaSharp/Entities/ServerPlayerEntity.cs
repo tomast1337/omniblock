@@ -1,28 +1,28 @@
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.Inventories;
-using BetaSharp.Items;
-using BetaSharp.NBT;
-using BetaSharp.Network.Chunks;
-using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets;
-using BetaSharp.Network.Snapshots;
-using BetaSharp.Registries;
-using BetaSharp.Screens;
-using BetaSharp.Screens.Slots;
-using BetaSharp.Server;
-using BetaSharp.Server.Entities;
-using BetaSharp.Server.Network;
-using BetaSharp.Stats;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.Inventories;
+using OmniBlock.Items;
+using OmniBlock.NBT;
+using OmniBlock.Network.Chunks;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Packets;
+using OmniBlock.Network.Snapshots;
+using OmniBlock.Registries;
+using OmniBlock.Screens;
+using OmniBlock.Screens.Slots;
+using OmniBlock.Server;
+using OmniBlock.Server.Entities;
+using OmniBlock.Server.Network;
+using OmniBlock.Stats;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Entities;
+namespace OmniBlock.Entities;
 
 public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
 {

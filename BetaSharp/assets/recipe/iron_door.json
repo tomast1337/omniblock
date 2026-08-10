@@ -6,9 +6,9 @@
         "##"
     ],
     "key": {
-        "#": "betasharp:ingot_iron"
+        "#": "omniblock:ingot_iron"
     },
     "result": {
-        "id": "betasharp:door_iron"
+        "id": "omniblock:door_iron"
     }
 }

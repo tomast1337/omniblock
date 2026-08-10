@@ -1,7 +1,7 @@
 {
     "ProtocolId": 268,
     "TranslationKey": "swordWood",
-    "TextureId": "betasharp:wooden_sword",
+    "TextureId": "omniblock:wooden_sword",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "sword",

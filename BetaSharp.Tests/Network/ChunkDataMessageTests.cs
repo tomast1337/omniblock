@@ -1,13 +1,13 @@
-using BetaSharp.Network;
-using BetaSharp.Network.Chunks;
-using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets;
-using BetaSharp.Tests.TestSupport;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Gen.Chunks;
+using OmniBlock.Network;
+using OmniBlock.Network.Chunks;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Packets;
+using OmniBlock.Tests.TestSupport;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Gen.Chunks;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 /// <summary>
 ///     <see cref="ChunkDataMessage" />: the wiring that puts <see cref="ChunkBlobCodec" /> on the

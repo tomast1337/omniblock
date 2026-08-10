@@ -1,1 +1,1 @@
-global using BetaSharp.Tests.TestSupport;
+global using OmniBlock.Tests.TestSupport;

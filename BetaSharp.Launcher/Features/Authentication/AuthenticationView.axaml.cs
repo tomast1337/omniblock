@@ -3,7 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Launcher.Features.Authentication;
+namespace OmniBlock.Launcher.Features.Authentication;
 
 internal sealed partial class AuthenticationView : UserControl
 {

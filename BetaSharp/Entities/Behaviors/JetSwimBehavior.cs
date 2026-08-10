@@ -1,8 +1,8 @@
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities.State;
-using BetaSharp.Util.Maths;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Entities.State;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     A squid's swimming: beats its tentacles on a sine cycle, jets along a heading it re-picks at

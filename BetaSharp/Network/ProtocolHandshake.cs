@@ -1,4 +1,4 @@
-namespace BetaSharp.Network;
+namespace OmniBlock.Network;
 
 /// <summary>
 ///     How a peer declares that it speaks the OmniBlock protocol, and which revision of it.

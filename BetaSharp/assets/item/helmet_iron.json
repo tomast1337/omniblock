@@ -1,7 +1,7 @@
 {
     "ProtocolId": 306,
     "TranslationKey": "helmetIron",
-    "TextureId": "betasharp:iron_helmet",
+    "TextureId": "omniblock:iron_helmet",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",

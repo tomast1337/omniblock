@@ -3,7 +3,7 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
-namespace BetaSharp.Client.Rendering.Core.Textures.Atlas;
+namespace OmniBlock.Client.Rendering.Core.Textures.Atlas;
 
 /// <summary>
 ///     The classic magenta-and-black checkerboard: the absolute fallback for a name that resolves

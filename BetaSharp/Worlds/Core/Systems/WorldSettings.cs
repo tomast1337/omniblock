@@ -1,4 +1,4 @@
-namespace BetaSharp.Worlds.Core.Systems;
+namespace OmniBlock.Worlds.Core.Systems;
 
 public class WorldSettings
 {

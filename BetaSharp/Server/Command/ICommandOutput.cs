@@ -1,4 +1,4 @@
-namespace BetaSharp.Server.Command;
+namespace OmniBlock.Server.Command;
 
 public interface ICommandOutput
 {

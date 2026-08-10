@@ -1,8 +1,8 @@
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
 ///     Detector rail: powers (metadata bit 8) while a minecart sits inside the detection volume,

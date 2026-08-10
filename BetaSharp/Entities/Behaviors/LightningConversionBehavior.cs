@@ -1,4 +1,4 @@
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     Replaces the struck mob with another type — a pig becoming a zombie pigman. Fully handles the

@@ -1,8 +1,8 @@
-using BetaSharp.Entities.State;
-using BetaSharp.Network.Messages;
-using BetaSharp.Util.Maths;
+using OmniBlock.Entities.State;
+using OmniBlock.Network.Messages;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     A soaked mob shakes itself dry as soon as it finds dry ground to stand on: it stops where it

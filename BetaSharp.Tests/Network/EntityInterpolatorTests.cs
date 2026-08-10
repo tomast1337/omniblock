@@ -1,6 +1,6 @@
-using BetaSharp.Client.Network;
+using OmniBlock.Client.Network;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 /// <summary>
 ///     Gating and lifecycle. <see cref="EntityInterpolator.Apply" /> needs a live world and is

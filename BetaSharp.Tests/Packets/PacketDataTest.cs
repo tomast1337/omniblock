@@ -1,6 +1,6 @@
-using BetaSharp.Network.Packets;
+using OmniBlock.Network.Packets;
 
-namespace BetaSharp.Tests.Packets;
+namespace OmniBlock.Tests.Packets;
 
 public class PacketDataTest : PacketTestBase
 {

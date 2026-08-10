@@ -1,8 +1,8 @@
-using BetaSharp.Network.Messages;
-using BetaSharp.Tests.TestSupport;
-using BetaSharp.Worlds.Chunks;
+using OmniBlock.Network.Messages;
+using OmniBlock.Tests.TestSupport;
+using OmniBlock.Worlds.Chunks;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 /// <summary>
 ///     That light survives the wire, from a lit chunk on one side to a dark one on the other.

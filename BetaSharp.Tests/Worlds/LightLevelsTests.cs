@@ -1,7 +1,7 @@
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Worlds.Core.Systems;
 using Xunit;
 
-namespace BetaSharp.Tests.Worlds;
+namespace OmniBlock.Tests.Worlds;
 
 public class LightLevelsTests
 {

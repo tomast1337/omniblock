@@ -1,7 +1,7 @@
 using System.Text.Json;
-using BetaSharp.Entities.State;
+using OmniBlock.Entities.State;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     A creeper's fuse: winds up while a target is in range, winds back down when the target is

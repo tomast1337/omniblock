@@ -1,7 +1,7 @@
-using BetaSharp.Entities;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Entities;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.PathFinding;
+namespace OmniBlock.PathFinding;
 
 /// <summary>
 ///     Per-world owner of AI path requests (EntityCreature, FollowOwnerBehavior), separate from the plain

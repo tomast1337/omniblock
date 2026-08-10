@@ -1,6 +1,6 @@
-using BetaSharp.Worlds.Maps;
+using OmniBlock.Worlds.Maps;
 
-namespace BetaSharp.Blocks.Materials;
+namespace OmniBlock.Blocks.Materials;
 
 /// <summary>
 ///     Immutable physical properties shared by blocks, loaded from <c>assets/material/*.json</c>.

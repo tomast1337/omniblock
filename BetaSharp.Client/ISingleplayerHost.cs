@@ -1,7 +1,7 @@
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Storage;
+using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Storage;
 
-namespace BetaSharp.Client;
+namespace OmniBlock.Client;
 
 public interface ISingleplayerHost
 {

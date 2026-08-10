@@ -1,4 +1,4 @@
-namespace BetaSharp.Entities;
+namespace OmniBlock.Entities;
 
 /// <summary>Composable capability for how a mob attacks its current target.</summary>
 public interface IEntityAttackBehavior

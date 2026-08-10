@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Rendering.Core;
+namespace OmniBlock.Client.Rendering.Core;
 
 /// <summary>Which of the fixed vertex formats a draw's buffer is laid out as.</summary>
 /// <remarks>

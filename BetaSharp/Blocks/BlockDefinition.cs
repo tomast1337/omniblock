@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using BetaSharp.Registries.Data;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Blocks;
+namespace OmniBlock.Blocks;
 
 public sealed record BlockDefinition : IDataAsset
 {
@@ -10,7 +10,7 @@ public sealed record BlockDefinition : IDataAsset
     public string Name { get; set; } = "";
 
     [JsonIgnore]
-    public Namespace Namespace { get; set; } = Namespace.BetaSharp;
+    public Namespace Namespace { get; set; } = Namespace.OmniBlock;
 
     public required int ProtocolId { get; init; }
     public string? TranslationKey { get; init; }

@@ -1,14 +1,14 @@
-using BetaSharp.Entities;
-using BetaSharp.Network;
-using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets;
-using BetaSharp.Server.Internal;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
+using OmniBlock.Entities;
+using OmniBlock.Network;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Packets;
+using OmniBlock.Server.Internal;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core;
 using Microsoft.Extensions.Logging;
 using Exception = System.Exception;
 
-namespace BetaSharp.Server.Network;
+namespace OmniBlock.Server.Network;
 
 public class ServerLoginNetworkHandler : NetHandler
 {

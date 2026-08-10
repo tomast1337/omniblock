@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.Text.Json;
 
-namespace BetaSharp.Textures;
+namespace OmniBlock.Textures;
 
 /// <summary>A single named cell in a legacy grid atlas, in tile (not pixel) coordinates.</summary>
 public sealed record AtlasTile(string Name, int X, int Y);
@@ -48,7 +48,7 @@ public sealed class AtlasTileMap
     /// </summary>
     public static AtlasTileMap Load(string embeddedAssetPath)
     {
-        string resourceName = $"{nameof(BetaSharp)}.{embeddedAssetPath.Replace('/', '.')}";
+        string resourceName = $"{nameof(OmniBlock)}.{embeddedAssetPath.Replace('/', '.')}";
         using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName)
             ?? throw new FileNotFoundException($"Embedded resource not found: {resourceName}");
         using var reader = new StreamReader(stream);
@@ -58,7 +58,7 @@ public sealed class AtlasTileMap
 
     /// <summary>
     ///     The tile named <paramref name="name" />'s legacy grid position, as <c>x + y * GridWidth</c>.
-    ///     The name may carry a namespace (<c>betasharp:stone</c>) or not — tiles are keyed by path
+    ///     The name may carry a namespace (<c>omniblock:stone</c>) or not — tiles are keyed by path
     ///     alone, since an atlas is not itself namespaced.
     /// </summary>
     public int IndexOf(string name)

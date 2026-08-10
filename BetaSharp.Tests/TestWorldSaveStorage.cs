@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.IO;
-using BetaSharp.Entities;
-using BetaSharp.NBT;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Storage;
+using OmniBlock.Entities;
+using OmniBlock.NBT;
+using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Storage;
 using Xunit;
 
-namespace BetaSharp.Tests;
+namespace OmniBlock.Tests;
 
 public class TestWorldSaveStorage
 {

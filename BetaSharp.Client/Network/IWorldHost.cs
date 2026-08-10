@@ -1,6 +1,6 @@
-using BetaSharp.Worlds.Core;
+using OmniBlock.Worlds.Core;
 
-namespace BetaSharp.Client.Network;
+namespace OmniBlock.Client.Network;
 
 public interface IWorldHost
 {

@@ -6,7 +6,7 @@
   "Hardness": 2,
   "Resistance": 3.3333333,
   "IgnoreMetaUpdates": true,
-  "TextureId": "betasharp:oak_log_side",
+  "TextureId": "omniblock:oak_log_side",
   "BurnChance": 5,
   "SpreadChance": 5,
   "PreservesMetaOnDrop": true,
@@ -17,14 +17,14 @@
         "Lifecycle"
       ],
       "Type": "log",
-      "canopy": "betasharp:leaves",
+      "canopy": "omniblock:leaves",
       "search_radius": 4,
-      "top": "betasharp:oak_log_top",
+      "top": "omniblock:oak_log_top",
       "sides": [
-        "betasharp:oak_log_side",
-        "betasharp:spruce_log_side",
-        "betasharp:birch_log_side",
-        "betasharp:oak_log_side"
+        "omniblock:oak_log_side",
+        "omniblock:spruce_log_side",
+        "omniblock:birch_log_side",
+        "omniblock:oak_log_side"
       ]
     }
   ]

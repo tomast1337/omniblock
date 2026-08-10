@@ -1,7 +1,7 @@
 {
     "ProtocolId": 305,
     "TranslationKey": "bootsChain",
-    "TextureId": "betasharp:chainmail_boots",
+    "TextureId": "omniblock:chainmail_boots",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",

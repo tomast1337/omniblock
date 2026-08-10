@@ -1,13 +1,13 @@
-using BetaSharp.Entities;
-using BetaSharp.Items;
-using BetaSharp.PathFinding;
-using BetaSharp.Rules;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Dimensions;
-using BetaSharp.Worlds.Mechanics;
-using BetaSharp.Worlds.Storage;
+using OmniBlock.Entities;
+using OmniBlock.Items;
+using OmniBlock.PathFinding;
+using OmniBlock.Rules;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Dimensions;
+using OmniBlock.Worlds.Mechanics;
+using OmniBlock.Worlds.Storage;
 
-namespace BetaSharp.Worlds.Core.Systems;
+namespace OmniBlock.Worlds.Core.Systems;
 
 public interface IWorldContext
 {

@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Diagnostics.Windows;
+namespace OmniBlock.Client.Diagnostics.Windows;
 
 /// <summary>
 /// A specialized debug window that aggregates multiple diagnostic windows into a single docked panel.

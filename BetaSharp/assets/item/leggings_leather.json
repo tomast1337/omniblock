@@ -1,7 +1,7 @@
 {
     "ProtocolId": 300,
     "TranslationKey": "leggingsLeather",
-    "TextureId": "betasharp:leather_pants",
+    "TextureId": "omniblock:leather_pants",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",

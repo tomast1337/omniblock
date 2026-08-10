@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace BetaSharp.Util;
+namespace OmniBlock.Util;
 
 public class ObjectPool<T> : IDisposable where T : class
 {

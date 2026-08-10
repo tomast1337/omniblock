@@ -1,13 +1,13 @@
-using BetaSharp;
-using BetaSharp.Util;
+using OmniBlock;
+using OmniBlock.Util;
 using Microsoft.Extensions.Logging;
 
-Log.Instance.Initialize(PathHelper.GetAppDir(nameof(BetaSharp)));
+Log.Instance.Initialize(PathHelper.GetAppDir(nameof(OmniBlock)));
 AssetManager.Initialize(AssetManager.AssetProfile.Full);
 
 try
 {
-    BetaSharp.Client.BetaSharp.Startup(args);
+    OmniBlock.Client.OmniBlock.Startup(args);
 }
 catch (Exception exception)
 {

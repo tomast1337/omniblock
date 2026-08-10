@@ -11,7 +11,7 @@
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": "betasharp:water_texture",
+  "TextureId": "omniblock:water_texture",
   "RenderType": "Fluids",
   "RenderLayer": 1,
   "TickRate": 5,
@@ -28,16 +28,16 @@
       ],
       "Type": "flowing_fluid",
       "passable": [
-        "betasharp:door",
-        "betasharp:iron_door",
-        "betasharp:sign",
-        "betasharp:ladder",
-        "betasharp:sugar_cane"
+        "omniblock:door",
+        "omniblock:iron_door",
+        "omniblock:sign",
+        "omniblock:ladder",
+        "omniblock:sugar_cane"
       ],
-      "source_solidified": "betasharp:obsidian",
-      "flow_solidified": "betasharp:cobblestone",
-      "still": "betasharp:water_texture",
-      "flowing": "betasharp:water_texture_1"
+      "source_solidified": "omniblock:obsidian",
+      "flow_solidified": "omniblock:cobblestone",
+      "still": "omniblock:water_texture",
+      "flowing": "omniblock:water_texture_1"
     }
   ]
 }

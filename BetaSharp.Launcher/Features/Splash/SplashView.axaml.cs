@@ -3,7 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Launcher.Features.Splash;
+namespace OmniBlock.Launcher.Features.Splash;
 
 internal sealed partial class SplashView : UserControl
 {

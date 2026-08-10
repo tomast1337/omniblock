@@ -1,12 +1,12 @@
-using BetaSharp.Blocks;
-using BetaSharp.Entities.State;
-using BetaSharp.Items;
-using BetaSharp.NBT;
-using BetaSharp.Util.Hit;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Entities.State;
+using OmniBlock.Items;
+using OmniBlock.NBT;
+using OmniBlock.Util.Hit;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     An arrow in flight and at rest. It arcs like a throwable but survives arrival: a block hit

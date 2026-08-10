@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "Мережева гра",
-        "betasharpServer": "Сервер BetaSharp",
+        "betasharpServer": "Сервер OmniBlock",
         "info1": "Мережева гра в Minecraft ще не завершена, але",
         "info2": "триває раннє тестування з вадами.",
         "ipinfo": "Введіть IP-адресу сервера, до якого потрібно під'єднатися:",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "BetaSharp версія %1$s",
+        "version": "OmniBlock версія %1$s",
         "description": "Вдосконалена версія Minecraft Beta 1.7.3, написана на C#.",
         "github": "На GitHub",
         "author": "Створено Fazin85",

@@ -1,9 +1,9 @@
 using System.Numerics;
-using BetaSharp.Client.Diagnostics.Windows;
-using BetaSharp.Profiling;
+using OmniBlock.Client.Diagnostics.Windows;
+using OmniBlock.Profiling;
 using Hexa.NET.ImGui;
 
-namespace BetaSharp.Client.Diagnostics;
+namespace OmniBlock.Client.Diagnostics;
 
 internal sealed class DebugWindowManager
 {
@@ -24,12 +24,12 @@ internal sealed class DebugWindowManager
 
     /// <summary>
     ///     Id of the rendered frame to display in the viewport — an OpenGL texture name under GL,
-    ///     or a <see cref="BetaSharp.Client.Rendering.Core.WebGPU.ImGuiWgpuBackend" /> id under
+    ///     or a <see cref="OmniBlock.Client.Rendering.Core.WebGPU.ImGuiWgpuBackend" /> id under
     ///     WebGPU. Zero shows nothing.
     /// </summary>
     public ulong ViewportTextureId { get; set; }
 
-    public DebugWindowManager(BetaSharp game, Func<bool> inGameHasFocus)
+    public DebugWindowManager(OmniBlock game, Func<bool> inGameHasFocus)
     {
         _inGameHasFocus = inGameHasFocus;
 

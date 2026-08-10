@@ -1,6 +1,6 @@
 using Microsoft.CodeAnalysis;
 
-namespace BetaSharp.Generators;
+namespace OmniBlock.Generators;
 
 /// <summary>The read expression, write statement and size expression for one field.</summary>
 internal readonly record struct Snippets(string Read, string Write, string Size);
@@ -20,7 +20,7 @@ internal static class WireCodec
     public const int EncodingVarInt = 1;
     public const int EncodingZigZag = 2;
 
-    private const string Extensions = "global::BetaSharp.StreamExtensions";
+    private const string Extensions = "global::OmniBlock.StreamExtensions";
 
     /// <summary>
     ///     Produces the snippets for <paramref name="type" />, or null when the type has no
@@ -54,7 +54,7 @@ internal static class WireCodec
 
         if (type is IArrayTypeSymbol { Rank: 1 } array
             && array.ElementType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
-                is "global::BetaSharp.Items.ItemStack" or "global::BetaSharp.Items.ItemStack?")
+                is "global::OmniBlock.Items.ItemStack" or "global::OmniBlock.Items.ItemStack?")
         {
             return new Snippets(
                 maxLength > 0 ? $"stream.ReadItemStacks({maxLength})" : "stream.ReadItemStacks()",
@@ -68,7 +68,7 @@ internal static class WireCodec
         // left to hand-written readers because it is the most-repeated shape in the legacy packets
         // and the one they most often mis-sized: the two variants differ by three bytes, and a
         // constant Size() cannot be right about both.
-        if (fullName is "global::BetaSharp.Items.ItemStack" or "global::BetaSharp.Items.ItemStack?")
+        if (fullName is "global::OmniBlock.Items.ItemStack" or "global::OmniBlock.Items.ItemStack?")
         {
             return new Snippets(
                 "stream.ReadItemStack()",
@@ -76,7 +76,7 @@ internal static class WireCodec
                 $"{Extensions}.ItemStackSize({access})");
         }
 
-        if (fullName == "global::BetaSharp.ResourceLocation")
+        if (fullName == "global::OmniBlock.ResourceLocation")
         {
             return new Snippets(
                 "stream.ReadResourceLocation()",
@@ -143,7 +143,7 @@ internal static class WireCodec
             SpecialType.System_String => new Snippets(
                 maxLength > 0 ? $"stream.ReadString({maxLength})" : "stream.ReadString()",
                 $"stream.WriteString({access});",
-                $"(2 + global::BetaSharp.Util.ModifiedUtf8.GetByteCount({access}))"),
+                $"(2 + global::OmniBlock.Util.ModifiedUtf8.GetByteCount({access}))"),
 
             _ => null,
         };

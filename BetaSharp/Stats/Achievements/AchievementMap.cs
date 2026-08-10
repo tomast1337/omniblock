@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 using Exception = System.Exception;
 using StringReader = System.IO.StringReader;
 
-namespace BetaSharp.Stats.Achievements;
+namespace OmniBlock.Stats.Achievements;
 
 internal static class AchievementMap
 {

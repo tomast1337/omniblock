@@ -1,10 +1,10 @@
-using BetaSharp.Client.Rendering.Core.Textures.Atlas;
-using BetaSharp.Textures;
+using OmniBlock.Client.Rendering.Core.Textures.Atlas;
+using OmniBlock.Textures;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Xunit;
 
-namespace BetaSharp.Tests.Rendering.Textures;
+namespace OmniBlock.Tests.Rendering.Textures;
 
 public class AtlasSlicerTests
 {

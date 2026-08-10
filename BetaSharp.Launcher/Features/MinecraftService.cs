@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
-namespace BetaSharp.Launcher.Features;
+namespace OmniBlock.Launcher.Features;
 
 internal sealed class MinecraftService(IHttpClientFactory clientFactory)
 {

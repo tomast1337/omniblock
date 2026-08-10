@@ -1,6 +1,6 @@
 {
   "ProtocolId": 331,
-  "TextureId": "betasharp:redstone_dust",
+  "TextureId": "omniblock:redstone_dust",
   "Behavior": {
     "type": "redstone"
   }

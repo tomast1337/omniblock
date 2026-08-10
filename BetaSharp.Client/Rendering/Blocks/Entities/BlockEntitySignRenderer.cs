@@ -1,10 +1,10 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Entities.Models;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Entities.Models;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.Rendering.Blocks.Entities;
+namespace OmniBlock.Client.Rendering.Blocks.Entities;
 
 public class BlockEntitySignRenderer : BlockEntitySpecialRenderer
 {

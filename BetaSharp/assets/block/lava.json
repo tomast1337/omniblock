@@ -11,7 +11,7 @@
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": "betasharp:lava_still",
+  "TextureId": "omniblock:lava_still",
   "RenderType": "Fluids",
   "TickRate": 30,
   "NotFullCube": true,
@@ -26,11 +26,11 @@
         "Ticker"
       ],
       "Type": "stationary_fluid",
-      "ignition_target": "betasharp:fire",
-      "source_solidified": "betasharp:obsidian",
-      "flow_solidified": "betasharp:cobblestone",
-      "still": "betasharp:lava_still",
-      "flowing": "betasharp:lava_texture"
+      "ignition_target": "omniblock:fire",
+      "source_solidified": "omniblock:obsidian",
+      "flow_solidified": "omniblock:cobblestone",
+      "still": "omniblock:lava_still",
+      "flowing": "omniblock:lava_texture"
     }
   ]
 }

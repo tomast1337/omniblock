@@ -1,6 +1,6 @@
-using BetaSharp.Blocks.Entities;
+using OmniBlock.Blocks.Entities;
 
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
 ///     Note block: right-click cycles the note, left-click and redstone rising edges play it, and

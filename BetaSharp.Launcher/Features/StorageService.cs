@@ -4,7 +4,7 @@ using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Launcher.Features;
+namespace OmniBlock.Launcher.Features;
 
 internal sealed class StorageService(ILogger<StorageService> logger)
 {

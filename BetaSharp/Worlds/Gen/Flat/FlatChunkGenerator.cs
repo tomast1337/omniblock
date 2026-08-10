@@ -1,12 +1,12 @@
-using BetaSharp.Blocks;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Generation.Biomes;
-using BetaSharp.Worlds.Generation.Generators.Features;
+using OmniBlock.Blocks;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Generation.Biomes;
+using OmniBlock.Worlds.Generation.Generators.Features;
 
-namespace BetaSharp.Worlds.Gen.Flat;
+namespace OmniBlock.Worlds.Gen.Flat;
 
 internal class FlatChunkGenerator : IChunkSource
 {

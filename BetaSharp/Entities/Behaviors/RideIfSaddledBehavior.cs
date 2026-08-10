@@ -1,7 +1,7 @@
 using System.Text.Json;
-using BetaSharp.Entities.State;
+using OmniBlock.Entities.State;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     Mounts the player when the entity is saddled and not already carrying someone else. The

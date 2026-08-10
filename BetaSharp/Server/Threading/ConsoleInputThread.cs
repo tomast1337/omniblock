@@ -1,4 +1,4 @@
-namespace BetaSharp.Server.Threading;
+namespace OmniBlock.Server.Threading;
 
 public class ConsoleInputThread(BetaSharpServer server)
 {

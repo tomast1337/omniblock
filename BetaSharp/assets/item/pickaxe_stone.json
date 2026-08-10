@@ -1,7 +1,7 @@
 {
     "ProtocolId": 274,
     "TranslationKey": "pickaxeStone",
-    "TextureId": "betasharp:stone_pickaxe",
+    "TextureId": "omniblock:stone_pickaxe",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "tool",

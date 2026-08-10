@@ -5,7 +5,7 @@
   "SoundGroup": "stone",
   "Hardness": 3,
   "Resistance": 5,
-  "TextureId": "betasharp:lapis_lazuli_ore",
+  "TextureId": "omniblock:lapis_lazuli_ore",
   "LootTable": {
     "Entries": [
       {

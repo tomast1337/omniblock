@@ -1,10 +1,10 @@
 using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
-using BetaSharp.Registries;
-using BetaSharp.Registries.Data;
-using BetaSharp.Worlds.Maps;
+using OmniBlock.Registries;
+using OmniBlock.Registries.Data;
+using OmniBlock.Worlds.Maps;
 
-namespace BetaSharp.Blocks.Materials;
+namespace OmniBlock.Blocks.Materials;
 
 public static class MaterialRegistry
 {

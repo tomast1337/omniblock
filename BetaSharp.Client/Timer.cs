@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace BetaSharp.Client;
+namespace OmniBlock.Client;
 
 public class Timer(float tps)
 {

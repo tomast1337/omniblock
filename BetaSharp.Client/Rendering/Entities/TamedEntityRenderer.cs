@@ -1,8 +1,8 @@
-using BetaSharp.Client.Rendering.Entities.Models;
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
+using OmniBlock.Client.Rendering.Entities.Models;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
 
-namespace BetaSharp.Client.Rendering.Entities;
+namespace OmniBlock.Client.Rendering.Entities;
 
 /// <summary>
 ///     Draws a tameable pet, posing its model by mood: the animation value it hands the model is the

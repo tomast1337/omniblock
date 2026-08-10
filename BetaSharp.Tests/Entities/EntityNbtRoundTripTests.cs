@@ -1,7 +1,7 @@
-using BetaSharp.Entities;
-using BetaSharp.NBT;
+using OmniBlock.Entities;
+using OmniBlock.NBT;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Exercises <see cref="Entity.Write"/> / <see cref="Entity.Read"/> for each registry type to lift line coverage on entity-specific NBT and shared serialization.
@@ -12,11 +12,11 @@ public sealed class EntityNbtRoundTripTests
     public static IEnumerable<object[]> RegistryEntityTypesExceptPlayer()
     {
         // Enumerates the registry itself now that EntityRegistry exposes no per-type static fields.
-        foreach (ResourceLocation key in BetaSharp.Registries.DefaultRegistries.EntityTypes.Keys)
+        foreach (ResourceLocation key in OmniBlock.Registries.DefaultRegistries.EntityTypes.Keys)
         {
             if (key.Path == "player") continue;
 
-            yield return [BetaSharp.Registries.DefaultRegistries.EntityTypes.GetOrThrow(key)];
+            yield return [OmniBlock.Registries.DefaultRegistries.EntityTypes.GetOrThrow(key)];
         }
     }
 

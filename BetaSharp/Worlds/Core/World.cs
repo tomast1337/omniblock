@@ -1,23 +1,23 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.Items;
-using BetaSharp.NBT;
-using BetaSharp.PathFinding;
-using BetaSharp.Profiling;
-using BetaSharp.Rules;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Biomes.Source;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Dimensions;
-using BetaSharp.Worlds.Mechanics;
-using BetaSharp.Worlds.Storage;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.Items;
+using OmniBlock.NBT;
+using OmniBlock.PathFinding;
+using OmniBlock.Profiling;
+using OmniBlock.Rules;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Biomes.Source;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Dimensions;
+using OmniBlock.Worlds.Mechanics;
+using OmniBlock.Worlds.Storage;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
 
-namespace BetaSharp.Worlds.Core;
+namespace OmniBlock.Worlds.Core;
 
 public abstract class World : IWorldContext
 {

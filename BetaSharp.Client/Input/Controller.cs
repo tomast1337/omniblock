@@ -1,14 +1,14 @@
 using Microsoft.Extensions.Logging;
 using Silk.NET.GLFW;
 
-namespace BetaSharp.Client.Input;
+namespace OmniBlock.Client.Input;
 
 public static class Controller
 {
     private static bool s_created;
     private static Glfw? s_glfw;
     private static unsafe WindowHandle* s_window;
-    private static readonly ILogger s_logger = Log.Instance.For("BetaSharp.Client.Input.Controller");
+    private static readonly ILogger s_logger = Log.Instance.For("OmniBlock.Client.Input.Controller");
 
     private static int s_gamepadJoystickIndex = -1;
 

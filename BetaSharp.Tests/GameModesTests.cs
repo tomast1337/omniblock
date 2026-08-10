@@ -1,7 +1,7 @@
-using BetaSharp.Registries;
-using BetaSharp.Server;
+using OmniBlock.Registries;
+using OmniBlock.Server;
 
-namespace BetaSharp.Tests;
+namespace OmniBlock.Tests;
 
 /// <summary>
 /// Tests for <see cref="BetaSharpServer.ResolveDefaultGameMode"/> — the logic that
@@ -136,7 +136,7 @@ public class GameModesTests : IDisposable
         Holder<GameMode>? result = DefaultGameModeListener.ResolveDefaultGameMode(Reg(ra), "survival");
 
         Assert.NotNull(result);
-        Assert.Equal(Namespace.BetaSharp, result.Value.Namespace);
+        Assert.Equal(Namespace.OmniBlock, result.Value.Namespace);
     }
 
     // ---- String lookup via AsAssetLoader() ----

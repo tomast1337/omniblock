@@ -1,6 +1,6 @@
 using Silk.NET.WebGPU;
 
-namespace BetaSharp.Client.Rendering.Core.WebGPU;
+namespace OmniBlock.Client.Rendering.Core.WebGPU;
 
 /// <summary>
 ///     A colour texture and an optional depth texture, owned together so a render pass that targets

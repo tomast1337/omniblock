@@ -1,11 +1,11 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
-using BetaSharp.Client.Rendering.Core.Textures;
+using OmniBlock.Client.Rendering.Core.Textures;
 using Silk.NET.Maths;
 using Silk.NET.WebGPU;
 using WgpuBuffer = Silk.NET.WebGPU.Buffer;
 
-namespace BetaSharp.Client.Rendering.Core.WebGPU;
+namespace OmniBlock.Client.Rendering.Core.WebGPU;
 
 /// <summary>
 ///     Draws <see cref="DrawCommand" />s with WebGPU, inside a render pass the renderer opens.

@@ -1,6 +1,6 @@
 {
   "ProtocolId": 263,
-  "TextureId": "betasharp:coal",
+  "TextureId": "omniblock:coal",
   "HasSubtypes": true,
   "Behavior": {
     "type": "coal"

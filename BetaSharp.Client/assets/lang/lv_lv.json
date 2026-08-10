@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "Spēlēt vairākspēlētāju režīmā",
-        "betasharpServer": "BetaSharp serveris",
+        "betasharpServer": "OmniBlock serveris",
         "info1": "Minecraft vairākspēlētāju režīms pašlaik nav pabeigts, bet",
         "info2": "notiek nedaudz bugainas agrīnās testēšanas.",
         "ipinfo": "Ievadiet servera IP, lai tam pievienotos:",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "BetaSharp versija %1$s",
+        "version": "OmniBlock versija %1$s",
         "description": "Minecraft Beta 1.7.3 uzlabojums, rakstīts C#.",
         "github": "GitHub",
         "author": "Izveidoja Fazin85",

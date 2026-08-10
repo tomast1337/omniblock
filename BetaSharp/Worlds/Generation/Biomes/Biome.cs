@@ -1,10 +1,10 @@
-using BetaSharp.Blocks;
-using BetaSharp.Entities;
-using BetaSharp.Registries;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Generation.Generators.Features;
+using OmniBlock.Blocks;
+using OmniBlock.Entities;
+using OmniBlock.Registries;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Generation.Generators.Features;
 
-namespace BetaSharp.Worlds.Generation.Biomes;
+namespace OmniBlock.Worlds.Generation.Biomes;
 
 public class Biome
 {

@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace BetaSharp.Profiling;
+namespace OmniBlock.Profiling;
 
 /// <summary>
 /// Lightweight hierarchical profiler supporting two explicit threads: Main and Server.

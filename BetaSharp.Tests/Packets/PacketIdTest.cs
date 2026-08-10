@@ -1,8 +1,8 @@
 using System.Reflection;
-using BetaSharp.Network.Packets;
+using OmniBlock.Network.Packets;
 using SkipException = Xunit.SkipException;
 
-namespace BetaSharp.Tests.Packets;
+namespace OmniBlock.Tests.Packets;
 
 public class PacketIdTest : PacketTestBase
 {

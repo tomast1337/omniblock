@@ -5,10 +5,10 @@
         " B"
     ],
     "key": {
-        "A": "betasharp:ingot_iron",
-        "B": "betasharp:flint"
+        "A": "omniblock:ingot_iron",
+        "B": "omniblock:flint"
     },
     "result": {
-        "id": "betasharp:flint_and_steel"
+        "id": "omniblock:flint_and_steel"
     }
 }

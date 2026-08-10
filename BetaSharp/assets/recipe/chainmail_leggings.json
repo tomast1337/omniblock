@@ -6,9 +6,9 @@
         "X X"
     ],
     "key": {
-        "X": "betasharp:Fire"
+        "X": "omniblock:Fire"
     },
     "result": {
-        "id": "betasharp:leggings_chain"
+        "id": "omniblock:leggings_chain"
     }
 }

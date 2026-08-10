@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace BetaSharp.Diagnostics;
+namespace OmniBlock.Diagnostics;
 
 /// <summary>
 /// Registry for metrics.

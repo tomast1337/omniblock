@@ -1,11 +1,11 @@
 using System.Reflection;
-using BetaSharp.Blocks;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.Items;
-using BetaSharp.Util.Hit;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.Items;
+using OmniBlock.Util.Hit;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Client.UI;
+namespace OmniBlock.Client.UI;
 
 public enum ControlIcon
 {

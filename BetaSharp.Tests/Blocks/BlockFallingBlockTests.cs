@@ -1,8 +1,8 @@
 using System.Text.Json;
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
 
-namespace BetaSharp.Tests.Blocks;
+namespace OmniBlock.Tests.Blocks;
 
 public sealed class BlockFallingBlockTests
 {
@@ -68,7 +68,7 @@ public sealed class BlockFallingBlockTests
     [Fact]
     public void BehaviorRegistry_Build_MissingRegionLoadCheckRadius_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"falling_block","passable":["betasharp:fire"]}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"falling_block","passable":["omniblock:fire"]}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("falling_block", json.RootElement));
     }
 }

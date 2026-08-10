@@ -1,9 +1,9 @@
-using BetaSharp.Blocks;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Worlds.Generation.Generators.Carvers;
+namespace OmniBlock.Worlds.Generation.Generators.Carvers;
 
 internal class NetherCaveCarver : Carver
 {

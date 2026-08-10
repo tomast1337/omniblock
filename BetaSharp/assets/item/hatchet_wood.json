@@ -1,7 +1,7 @@
 {
     "ProtocolId": 271,
     "TranslationKey": "hatchetWood",
-    "TextureId": "betasharp:wooden_axe",
+    "TextureId": "omniblock:wooden_axe",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "tool",

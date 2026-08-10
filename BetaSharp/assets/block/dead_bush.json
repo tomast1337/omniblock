@@ -6,7 +6,7 @@
   "SoundGroup": "grass",
   "NonOpaque": true,
   "TickRandomly": true,
-  "TextureId": "betasharp:dead_bush",
+  "TextureId": "omniblock:dead_bush",
   "RenderType": "Reed",
   "NotFullCube": true,
   "NoCollision": true,
@@ -23,7 +23,7 @@
     {
       "Slots": ["Ticker", "Physics"],
       "Type": "plant_survival",
-      "valid_ground": ["betasharp:sand"]
+      "valid_ground": ["omniblock:sand"]
     }
   ]
 }

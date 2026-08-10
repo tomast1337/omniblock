@@ -1,7 +1,7 @@
 {
     "type": "smelting",
-    "input": "betasharp:Log",
+    "input": "omniblock:Log",
     "result": {
-        "id": "betasharp:coal:1"
+        "id": "omniblock:coal:1"
     }
 }

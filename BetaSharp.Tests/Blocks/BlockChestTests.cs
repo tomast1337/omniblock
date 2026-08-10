@@ -1,7 +1,7 @@
-using BetaSharp.Blocks;
-using BetaSharp.Textures;
+using OmniBlock.Blocks;
+using OmniBlock.Textures;
 
-namespace BetaSharp.Tests.Blocks;
+namespace OmniBlock.Tests.Blocks;
 
 public sealed class BlockChestTests
 {

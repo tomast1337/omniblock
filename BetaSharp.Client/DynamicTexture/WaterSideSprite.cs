@@ -1,6 +1,6 @@
-using BetaSharp.Textures;
+using OmniBlock.Textures;
 
-namespace BetaSharp.Client.DynamicTexture;
+namespace OmniBlock.Client.DynamicTexture;
 
 internal class WaterSideSprite : Rendering.Core.Textures.DynamicTexture
 {
@@ -12,7 +12,7 @@ internal class WaterSideSprite : Rendering.Core.Textures.DynamicTexture
 
     public WaterSideSprite() : base(Atlases.Terrain.IndexOf("water_texture_1")) => Replicate = 2;
 
-    public override void Setup(BetaSharp game) => TryLoadCustomTexture(game, "custom_water_flowing.png");
+    public override void Setup(OmniBlock game) => TryLoadCustomTexture(game, "custom_water_flowing.png");
 
     public override void tick()
     {

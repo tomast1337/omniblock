@@ -1,7 +1,7 @@
-using BetaSharp.Client.UI.Layout.Flexbox;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.UI.Layout.Flexbox;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI;
+namespace OmniBlock.Client.UI;
 
 public class FlexStyle
 {

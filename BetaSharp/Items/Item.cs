@@ -1,16 +1,16 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
-using BetaSharp.Items.Behaviors;
-using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets;
-using BetaSharp.Registries;
-using BetaSharp.Stats;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Entities;
+using OmniBlock.Items.Behaviors;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Packets;
+using OmniBlock.Registries;
+using OmniBlock.Stats;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Items;
+namespace OmniBlock.Items;
 
 public class Item
 {
@@ -29,7 +29,7 @@ public class Item
 
     /// <summary>
     /// Resolves an item by its registry path (e.g. <c>"apple"</c>, <c>"shovel_iron"</c> —
-    /// see <c>BetaSharp/assets/item/betasharp/*.json</c> for the full list of names).
+    /// see <c>OmniBlock/assets/item/omniblock/*.json</c> for the full list of names).
     /// Requires <see cref="Registries.DefaultRegistries.Initialize"/> to have run.
     ///
     /// TODO: This will become obsolete once Entities and Blocks are fully data-driven
@@ -37,7 +37,7 @@ public class Item
     /// </summary>
     public static Item ByName(string name)
     {
-        ItemDefinition? def = DefaultRegistries.Items.Get(new ResourceLocation(Namespace.BetaSharp, name))?.Value;
+        ItemDefinition? def = DefaultRegistries.Items.Get(new ResourceLocation(Namespace.OmniBlock, name))?.Value;
         if (def is null || Items[def.ProtocolId] is not { } item)
         {
             throw new ArgumentException($"Unknown item: '{name}'", nameof(name));

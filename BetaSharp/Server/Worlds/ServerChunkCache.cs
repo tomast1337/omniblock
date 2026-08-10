@@ -1,10 +1,10 @@
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Storage.RegionFormat;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Storage.RegionFormat;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Server.Worlds;
+namespace OmniBlock.Server.Worlds;
 
 public class ServerChunkCache : IChunkSource
 {

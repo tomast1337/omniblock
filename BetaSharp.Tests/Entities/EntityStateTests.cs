@@ -1,9 +1,9 @@
 using System.IO;
-using BetaSharp.Entities;
-using BetaSharp.Entities.State;
-using BetaSharp.Util;
+using OmniBlock.Entities;
+using OmniBlock.Entities.State;
+using OmniBlock.Util;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Covers the per-entity state foundation that lets behaviors be shared per entity type instead of

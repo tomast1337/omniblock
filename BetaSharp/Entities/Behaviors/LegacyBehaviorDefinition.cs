@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     A behavior with no typed <see cref="EntityBehaviorDefinition" /> yet: it keeps its raw JSON

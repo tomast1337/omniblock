@@ -1,6 +1,6 @@
-using BetaSharp.Worlds.Storage.RegionFormat;
+using OmniBlock.Worlds.Storage.RegionFormat;
 
-namespace BetaSharp.Worlds.Chunks.Storage;
+namespace OmniBlock.Worlds.Chunks.Storage;
 
 internal sealed class RegionFileChunkBuffer(RegionFile region, int chunkX, int chunkZ) : MemoryStream(8096)
 {

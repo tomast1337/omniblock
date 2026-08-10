@@ -1,4 +1,4 @@
-namespace BetaSharp.Server;
+namespace OmniBlock.Server;
 
 public interface IServerConfiguration
 {

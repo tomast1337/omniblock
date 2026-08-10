@@ -1,8 +1,8 @@
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Generation.Generators.Features;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Generation.Generators.Features;
 
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
 ///     Sapling: survival check delegates to <see cref="PlantSurvivalBehavior.BreakIfCannotSurvive" />

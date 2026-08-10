@@ -6,9 +6,9 @@
         "###"
     ],
     "key": {
-        "#": "betasharp:Cobblestone"
+        "#": "omniblock:Cobblestone"
     },
     "result": {
-        "id": "betasharp:Furnace"
+        "id": "omniblock:Furnace"
     }
 }

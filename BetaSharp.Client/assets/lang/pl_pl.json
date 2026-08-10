@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "Zagraj w wieloosobowy",
-        "betasharpServer": "Serwer BetaSharp",
+        "betasharpServer": "Serwer OmniBlock",
         "info1": "Tryb wieloosobowy Minecrafta nie został ukończony,",
         "info2": "mogą występować błędy.",
         "ipinfo": "Wpisz adres IP serwera z którym chcesz się połączyć:",

@@ -1,7 +1,7 @@
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Entities;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Entities;
 
-namespace BetaSharp.Client.Rendering.Entities;
+namespace OmniBlock.Client.Rendering.Entities;
 
 public class ProjectileEntityRenderer : EntityRenderer
 {

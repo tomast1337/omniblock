@@ -1,11 +1,11 @@
 using System.IO.Compression;
-using BetaSharp.Network.Chunks;
-using BetaSharp.Tests.TestSupport;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Gen.Chunks;
+using OmniBlock.Network.Chunks;
+using OmniBlock.Tests.TestSupport;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Gen.Chunks;
 using Xunit.Abstractions;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 /// <summary>
 ///     <see cref="ChunkBlobCodec" />: the chunk wire encoding.

@@ -9,7 +9,7 @@
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": "betasharp:iron_door_bottom",
+  "TextureId": "omniblock:iron_door_bottom",
   "RenderType": "Door",
   "NotFullCube": true,
   "PistonBehavior": "Destroy",

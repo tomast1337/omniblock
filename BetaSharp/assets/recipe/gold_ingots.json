@@ -4,10 +4,10 @@
         "#"
     ],
     "key": {
-        "#": "betasharp:GoldBlock"
+        "#": "omniblock:GoldBlock"
     },
     "result": {
-        "id": "betasharp:ingot_gold",
+        "id": "omniblock:ingot_gold",
         "count": 9
     }
 }

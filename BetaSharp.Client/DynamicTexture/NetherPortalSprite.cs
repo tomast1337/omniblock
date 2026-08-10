@@ -1,14 +1,14 @@
-using BetaSharp.Blocks;
-using BetaSharp.Util.Maths;
+using OmniBlock.Blocks;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Client.DynamicTexture;
+namespace OmniBlock.Client.DynamicTexture;
 
 internal class NetherPortalSprite() : Rendering.Core.Textures.DynamicTexture(BlockRegistry.Get("nether_portal").TextureId)
 {
     private readonly byte[][] _frames = new byte[32][];
     private int _ticks;
 
-    public override void Setup(BetaSharp game)
+    public override void Setup(OmniBlock game)
     {
         TryLoadCustomTexture(game, "custom_portal.png");
         if (CustomFrames != null)

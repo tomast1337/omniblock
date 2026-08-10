@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "Main Multipemain",
-        "betasharpServer": "Server BetaSharp",
+        "betasharpServer": "Server OmniBlock",
         "info1": "Multipemain Minecraft saat ini belum selesai, tetapi ada",
         "info2": "beberapa uji coba awal yang masih bermasalah.",
         "ipinfo": "Masukkan IP server untuk terhubung:",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "BetaSharp Versi %1$s",
+        "version": "OmniBlock Versi %1$s",
         "description": "Versi yang ditingkatkan dari Minecraft Beta 1.7.3, ditulis dalam C#.",
         "github": "Di GitHub",
         "author": "Dibuat oleh Fazin85",

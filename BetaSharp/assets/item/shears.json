@@ -1,6 +1,6 @@
 {
   "ProtocolId": 359,
-  "TextureId": "betasharp:shears",
+  "TextureId": "omniblock:shears",
   "MaxStackSize": 1,
   "MaxDurability": 238,
   "Behavior": {

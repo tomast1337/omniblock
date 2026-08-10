@@ -1,8 +1,8 @@
-using BetaSharp.Client.Options;
-using BetaSharp.Client.UI;
+using OmniBlock.Client.Options;
+using OmniBlock.Client.UI;
 using Silk.NET.GLFW;
 
-namespace BetaSharp.Client.Input;
+namespace OmniBlock.Client.Input;
 
 public sealed class VirtualCursor
 {

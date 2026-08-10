@@ -1,4 +1,4 @@
-namespace BetaSharp.Util.Maths.Noise;
+namespace OmniBlock.Util.Maths.Noise;
 
 internal class PerlinNoiseSampler : NoiseSampler
 {

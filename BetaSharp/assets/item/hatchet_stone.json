@@ -1,7 +1,7 @@
 {
     "ProtocolId": 275,
     "TranslationKey": "hatchetStone",
-    "TextureId": "betasharp:stone_axe",
+    "TextureId": "omniblock:stone_axe",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "tool",

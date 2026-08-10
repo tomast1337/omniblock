@@ -1,9 +1,9 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Registries.Data;
-using BetaSharp.Worlds.Maps;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Registries.Data;
+using OmniBlock.Worlds.Maps;
 
-namespace BetaSharp.Tests;
+namespace OmniBlock.Tests;
 
 /// <summary>
 /// Pins the data-driven <see cref="Material"/> and <see cref="BlockSoundGroup"/> registries

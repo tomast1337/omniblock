@@ -1,6 +1,6 @@
-using BetaSharp.Entities;
+using OmniBlock.Entities;
 
-namespace BetaSharp.Server.Worlds;
+namespace OmniBlock.Server.Worlds;
 
 public interface IPlayerStorage
 {

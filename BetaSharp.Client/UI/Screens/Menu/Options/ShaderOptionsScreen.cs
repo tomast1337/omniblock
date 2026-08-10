@@ -1,7 +1,7 @@
-using BetaSharp.Client.Options;
-using BetaSharp.Client.UI.Controls.Core;
+using OmniBlock.Client.Options;
+using OmniBlock.Client.UI.Controls.Core;
 
-namespace BetaSharp.Client.UI.Screens.Menu.Options;
+namespace OmniBlock.Client.UI.Screens.Menu.Options;
 
 public class ShaderOptionsScreen(UIContext context, UIScreen? parent)
     : BaseOptionsScreen(context, parent, "options.shader.text")

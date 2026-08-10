@@ -1,10 +1,10 @@
 using System.Text.Json;
-using BetaSharp.Blocks.Behaviors;
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Textures;
+using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Textures;
 
-namespace BetaSharp.Blocks;
+namespace OmniBlock.Blocks;
 
 internal static class BlockFactory
 {

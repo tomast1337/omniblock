@@ -1,14 +1,14 @@
-using BetaSharp.Client.Network;
-using BetaSharp.Client.Resource.Pack;
-using BetaSharp.Client.UI.Controls;
-using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Controls.MainMenu;
-using BetaSharp.Client.UI.Layout.Flexbox;
-using BetaSharp.Client.UI.Screens.Menu.Options;
-using BetaSharp.Client.UI.Screens.Menu.World;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.Network;
+using OmniBlock.Client.Resource.Pack;
+using OmniBlock.Client.UI.Controls;
+using OmniBlock.Client.UI.Controls.Core;
+using OmniBlock.Client.UI.Controls.MainMenu;
+using OmniBlock.Client.UI.Layout.Flexbox;
+using OmniBlock.Client.UI.Screens.Menu.Options;
+using OmniBlock.Client.UI.Screens.Menu.World;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Screens.Menu;
+namespace OmniBlock.Client.UI.Screens.Menu;
 
 public class MainMenuScreen(
     UIContext context,
@@ -105,9 +105,9 @@ public class MainMenuScreen(
         // Version info
         Link versionLabel = new()
         {
-            Text = "BetaSharp " + BetaSharp.Version,
+            Text = "OmniBlock " + OmniBlock.Version,
             TextColor = Color.White,
-            URL = "https://git.gay/betasharp-official/betasharp"
+            URL = "https://git.gay/omniblock-official/omniblock"
         };
         versionLabel.Style.Position = PositionType.Absolute;
         versionLabel.Style.Left = 2;

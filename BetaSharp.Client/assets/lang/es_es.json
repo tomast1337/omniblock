@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "Jugar multijugador",
-        "betasharpServer": "Servidor de BetaSharp",
+        "betasharpServer": "Servidor de OmniBlock",
         "info1": "El multijugador de Minecraft no está terminado todavía, pero",
         "info2": "hay algunas pruebas tempranas con errores en curso.",
         "ipinfo": "Introduce la IP de un servidor para conectarte a él:",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "Versión de BetaSharp %1$s",
+        "version": "Versión de OmniBlock %1$s",
         "description": "Una mejora de Minecraft Beta 1.7.3, escrita en C#.",
         "github": "En GitHub",
         "author": "Hecho por Fazin85",

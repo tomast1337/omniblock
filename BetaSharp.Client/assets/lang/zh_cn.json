@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "进行多人游戏",
-        "betasharpServer": "BetaSharp 服务器",
+        "betasharpServer": "OmniBlock 服务器",
         "info1": "Minecraft 多人游戏目前尚未完成，但是",
         "info2": "正在进行一些有问题的早期测试。",
         "ipinfo": "输入要连接的服务器 IP：",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "BetaSharp 版本 %1$s",
+        "version": "OmniBlock 版本 %1$s",
         "description": "使用 C# 编写的 Minecraft Beta 1.7.3 增强版。",
         "github": "在 GitHub 上",
         "author": "由 Fazin85 制作",

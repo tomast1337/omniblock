@@ -1,4 +1,4 @@
-namespace BetaSharp.Blocks.Materials;
+namespace OmniBlock.Blocks.Materials;
 
 /// <summary>How a block reacts to being pushed by a piston.</summary>
 public enum PistonBehavior : byte

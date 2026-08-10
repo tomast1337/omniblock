@@ -1,4 +1,4 @@
-namespace BetaSharp.Registries;
+namespace OmniBlock.Registries;
 
 /// <summary>
 /// A typed key that identifies a registry. The type parameter <typeparamref name="T"/>

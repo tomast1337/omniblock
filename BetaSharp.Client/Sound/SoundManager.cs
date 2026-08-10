@@ -1,10 +1,10 @@
-using BetaSharp.Client.Options;
-using BetaSharp.Entities;
-using BetaSharp.Util.Maths;
+using OmniBlock.Client.Options;
+using OmniBlock.Entities;
+using OmniBlock.Util.Maths;
 using SFML.Audio;
 using SFML.System;
 
-namespace BetaSharp.Client.Sound;
+namespace OmniBlock.Client.Sound;
 
 public class SoundManager : IDisposable
 {

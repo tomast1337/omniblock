@@ -5,10 +5,10 @@
         "###"
     ],
     "key": {
-        "#": "betasharp:Planks"
+        "#": "omniblock:Planks"
     },
     "result": {
-        "id": "betasharp:Trapdoor",
+        "id": "omniblock:Trapdoor",
         "count": 2
     }
 }

@@ -1,6 +1,6 @@
 {
   "ProtocolId": 321,
-  "TextureId": "betasharp:painting",
+  "TextureId": "omniblock:painting",
   "Behavior": {
     "type": "painting"
   }

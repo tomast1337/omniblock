@@ -1,6 +1,6 @@
-using BetaSharp.Network;
+using OmniBlock.Network;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 /// <summary>
 ///     These numbers choose the interpolation delay, so an off-by-one in the percentile walk would
