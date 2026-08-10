@@ -4,22 +4,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**OmniBlock** is a hard fork of OmniBlock, which was itself a C# recreation of Minecraft Beta 1.7.3. It targets .NET 10 and is a multi-project solution with a shared core library, game client, dedicated server, and an Avalonia-based launcher.
+**OmniBlock** is a hard fork of **BetaSharp**, which is a C# recreation of Minecraft Beta 1.7.3. It targets .NET 10 and is a multi-project solution with a shared core library, game client, dedicated server, an Avalonia-based launcher, and a Roslyn source-generator project for the network rewrite.
 
 OmniBlock is no longer trying to be a faithful reimplementation. It keeps Beta 1.7.3's *world* — the terrain you get from a seed, and the saves on disk — and rebuilds everything around it. Two things are the point of this fork:
 
-1. **Scripting-based modding.** Content should be authored, not compiled in. The inherited data-driven layer (455 JSON definitions across blocks, items, entities, recipes, materials, sound groups, biome spawns, gamemodes, backed by `Registries/`) is the substrate; the goal is a scripting layer on top of it so mods are shipped as assets and scripts, not as forks of the engine.
-2. **A better network protocol and system.** The inherited protocol is Beta 1.7.3's: a flat `PacketId : byte` enum, one byte of ID space, hand-rolled per-packet serialization. Replacing it — versioning, extensibility, a protocol that modded content can extend without stealing packet IDs — is in scope and expected to break wire compatibility with upstream.
+1. **Scripting-based modding.** Content should be authored, not compiled in. The inherited data-driven layer (455 JSON definitions across blocks, items, entities, recipes, materials, sound groups, biome spawns, gamemodes, backed by `Registries/`) is the substrate. The scripting layer on top runs TypeScript/JS mods on **Jint** (a pure C# JavaScript engine) — mods ship as assets and scripts, not as forks of the engine. It has not landed yet; the closest shipped piece is the data-driven game-rules system under `Rules/`. The constraints it must obey are enshrined under "Scripting Determinism & Security" in Hard Invariants.
+2. **A rebuilt network protocol.** The inherited protocol is Beta 1.7.3's: a flat `PacketId : byte` enum, one byte of ID space, hand-rolled per-packet serialization. It is being replaced with a UDP-based, versioned, extensible message layer — registry-negotiated IDs, generated serializers, and explicit transport / session / message / domain layering. The rewrite is mid-flight: `UdpConnection`, `ProtocolHandshake`, `SendPriority`, and the `OmniBlock.Generators` source generators (which emit read/write/size code for a message from a single type table) are in place, while the legacy packet enum still coexists. This is expected to break wire compatibility with upstream.
 
 > **Note**: The client and server expect the Minecraft JAR file (`b1.7.3.jar`) to be in their running directory.
 
 ## Hard Invariants
 
-These two are non-negotiable and constrain otherwise-reasonable refactors. Check against them before changing anything under `Worlds/`.
+These invariants are non-negotiable and constrain otherwise-reasonable refactors. Check against them before changing anything.
+
+### Scripting Determinism & Security
+
+These constrain the scripting layer's design (see the Overview). Not implemented yet, but the rules bind whatever lands:
+
+- **Jint over V8:** Mod scripts execute on Jint, not on a V8/ClearScript engine. Wall-clock execution timeouts are non-deterministic across different CPUs, which would break multiplayer sync; Jint's instruction counting gives deterministic budgeting.
+- **Client-side execution only:** A server may declare which mods it requires (by ID and version), but a client must NEVER download and execute a script payload provided by a server. Mods are installed locally on disk; executing server-provided scripts is a Remote Code Execution (RCE) path.
+- **Two-phase mod API:** Scripts cannot touch the world while the engine is rebuilding registries. The TypeScript contract strictly isolates `namespace Registry` (load phase, idempotent) from `namespace Host` (tick phase, world access).
+- **IDs over objects:** The C#/JS boundary stays flat. Scripts manipulate the world via primitive IDs (e.g. `Host.getEntityPosX(uint entityId)`), never via deep C# object references crossing the FFI boundary.
 
 ### Save file compatibility
 
-Worlds written by upstream OmniBlock / Minecraft Beta 1.7.3 must load, and worlds OmniBlock writes must stay readable by them. The surface is:
+Worlds written by upstream BetaSharp / Minecraft Beta 1.7.3 must load, and worlds OmniBlock writes must stay readable by them. The surface is:
 
 - `OmniBlock/NBT/` — Named Binary Tag serialization. The on-disk tag encoding is a wire format; treat it as frozen.
 - `OmniBlock/Worlds/Storage/RegionFormat/` — `RegionFile`, `RegionIo`, `RegionChunkStorage`, `ChunkDataStream`. The region/chunk layout on disk is likewise frozen.
@@ -33,9 +42,9 @@ The same seed must produce byte-identical terrain to upstream. This is what make
 
 - **`OmniBlock/Util/Maths/JavaRandom.cs` must stay a bit-exact port of Java's 48-bit LCG.** It is used by ~65 files. It is the last Java-shaped thing in the codebase and it is deliberate — Beta 1.7.3's terrain is a specific sequence of draws from that exact generator. Swapping it for `System.Random`, changing draw order, or "optimizing" the call sequence in a generator silently changes every world.
 - Generation lives in two places: `OmniBlock/Worlds/Gen/Chunks/` (the `Overworld`/`Nether`/`Sky`/`Common` chunk generators) and `OmniBlock/Worlds/Generation/` (`Biomes/`, `Generators/Features/`, `Generators/Carvers/`).
-- Refactors there are fine as long as the *sequence and count* of `JavaRandom` draws is preserved exactly. If you cannot prove that, don't land it.
+- Refactors there are fine as long as the *sequence and count* of `JavaRandom` draws is preserved exactly. If you cannot prove that, don't land it. **Mod scripts are structurally banned from the worldgen path** so modding can never change the draw sequence.
 
-Note that the IKVM/Java-interop constraint from upstream OmniBlock is **gone** — there are no IKVM package references and no `java.*` types anywhere in the tree. `JavaRandom` is a plain C# class and is the sole intentional exception to "write idiomatic C#, not Java-style code".
+Note that the IKVM/Java-interop constraint from upstream BetaSharp is **gone** — there are no IKVM package references and no `java.*` types anywhere in the tree. `JavaRandom` is a plain C# class and is the sole intentional exception to "write idiomatic C#, not Java-style code".
 
 ## Build & Run Commands
 
@@ -51,7 +60,7 @@ cd OmniBlock.(Client|Server|Launcher) && dotnet build --configuration Release
 # Build everything from root
 dotnet build --configuration Release
 
-# Run all tests (1164 passing, 25 skipped as of the fork)
+# Run all tests (1326 passing, 4 skipped as of the fork)
 dotnet test
 
 # Run a specific test
@@ -76,14 +85,15 @@ The `.editorconfig` enforces: 4-space indentation, LF line endings for `.cs` fil
 
 ## Naming
 
-The fork is called OmniBlock, but **project directories, assembly names, and the root namespace are all still `OmniBlock`**. A rename is a deliberate future task, not something to do opportunistically — it would touch every file and destroy `git blame`. Until it happens, `OmniBlock` in code means "this project".
+The fork is called OmniBlock, but **project directories, assembly names, and the root namespace are all still `OmniBlock`** (a rename from BetaSharp happened in place). A rename is a deliberate future task, not something to do opportunistically — it would touch every file and destroy `git blame`. Until it happens, `OmniBlock` in code means "this project".
 
 ## Solution Structure
 
 | Project | Type | Purpose |
 |---------|------|---------|
 | `OmniBlock/` | Library | Shared core: blocks, entities, items, worlds, network, server logic |
-| `OmniBlock.Client/` | Executable | Game client with OpenGL rendering, UI, input, audio |
+| `OmniBlock.Generators/` | Roslyn source generator | Emits read/write/size serializers for the new network message layer (Wire) from a single type table |
+| `OmniBlock.Client/` | Executable | Game client with WebGPU rendering, UI, input, audio |
 | `OmniBlock.Server/` | Executable | Standalone dedicated server |
 | `OmniBlock.Launcher/` | WinExe (Avalonia) | Launcher with Microsoft account auth (MSAL), AOT compiled |
 | `OmniBlock.Tests/` | Test (xUnit) | Unit tests |
@@ -97,21 +107,23 @@ The fork is called OmniBlock, but **project directories, assembly names, and the
 - **`assets/`** — JSON definitions loaded into those registries: `block/`, `item/`, `entity/`, `recipe/`, `material/`, `item_material/`, `armor_material/`, `sound_group/`, `biome_spawn/`, `gamemode/`. Content changes usually belong here, not in C#.
 - **`Blocks/`, `Items/`, `Entities/`** — Definitions and behavior. All three are composition-based: behavior is assembled from named behavior classes (`Entities/Behaviors/`, `Blocks/Behaviors/`) referenced by the JSON, rather than by subclassing.
 - **`Worlds/`** — `Core/` (server world), `Chunks/`, `Storage/` (NBT persistence), `Gen/` + `Generation/` (terrain), `Lighting/`, `Mechanics/`, `ClientData/`. See Hard Invariants before touching `Storage/`, `Gen/`, or `Generation/`.
+- **`Rules/`** — Data-driven game rules (`GameRule`, `IRulesProvider`, `RuleRegistry`). Closest shipped thing to the scripting goal.
 - **`Server/OmniBlockServer.cs`** — Base server shared by multiplayer and dedicated server. Contains `ChunkMap`, `PlayerManager`, and `Commands/`.
-- **`Network/`** — `Connection`, `NetHandler`, and packets split into `C2SPlay`/`S2CPlay`/`Play` namespaces, dispatched off the `PacketId : byte` enum. `ExtendedProtocolPacket` is the current (thin) extension point. This whole subsystem is the fork's main rewrite target.
+- **`Network/`** — Mid-rewrite. Two generations coexist:
+  - Legacy Beta 1.7.3 path: `Connection`, `NetHandler`, and packets split into `C2SPlay`/`S2CPlay`/`Play` namespaces, dispatched off the `PacketId : byte` enum. `ExtendedProtocolPacket` is the thin extension point.
+  - The rewrite: `Transport/` (`UdpConnection` over LiteNetLib, `SendPriority`), `ProtocolHandshake`, `Messages/` (registry-negotiated message IDs — `MessageRegistrySyncS2CPacket`, `OmniMessagePacket`), serializers generated by `OmniBlock.Generators` from `Wire*` attributes. See `docs/network-rewrite.md` for the design.
 - **`NBT/`** — Named Binary Tag serialization. Frozen; see Hard Invariants.
 - **`PathFinding/`** — Entity AI pathfinding. `PathingCoordinator` batches path requests and applies results a tick later, off the game-tick thread (see `docs/parallel-pathfinding.md`).
 
 ### Client (`OmniBlock.Client/`)
 
 - **`OmniBlock.cs`** — Main game loop and client initialization; has a static `Instance` singleton.
-- **`Display.cs`** — Window/display management via Silk.NET (GLFW). Requests a GL 4.3 core context.
-- **`Rendering/`** — OpenGL rendering pipeline:
-  - `Core/OpenGL/` — Low-level abstractions: `FixedFunctionPipeline` (the OpenGL `IGL` backend and fixed-function state holder), `GLEnum`, `GLErrorHandler`
+- **`Display.cs`** — Window/display management via Silk.NET.GLFW. Requests a WebGPU surface (wgpu native backend); loads its bundled GLFW explicitly so ImGui's GLFW backend and Silk.NET share one library.
+- **`Rendering/`** — WebGPU is the sole rendering backend (Silk.NET.WebGPU + `Silk.NET.WebGPU.Native.WGPU`, WGSL shaders in `OmniBlock/shaders/`). No fixed-function OpenGL path remains — some files still import `Silk.NET.OpenGL` purely for `GLEnum` format constants, and texture APIs are shaped like GL's, but rendering runs through WebGPU.
+  - `Core/WebGPU/` — `WebGpuDevice`, `WgpuPipeline`, `WgpuMesh`, `WgpuDynamicBuffer`, `WgpuStorageBuffer`, `WgpuFramebuffer`, `WgpuTextureArray`, `ImGuiWgpuBackend`
   - `Chunks/` — Chunk mesh building and rendering with frustum culling
-  - `Entities/` — Two paths: `EntityInstanceBatchRenderer` (GPU-instanced, SSBO pose matrices, used for the main world entity loop) and `EntityBatchRenderer` (CPU-baked, used for single-draw sites like the held item and GUI mob previews). See `docs/gpu-instanced-entity-rendering.md`.
-  - `Blocks/`, `Items/` — Model renderers
-  - `PostProcessing/` — Post-process effects
+  - `Entities/` — Two paths: `EntityInstanceBatchRenderer` (GPU-instanced, storage-buffer pose matrices, used for the main world entity loop) and `EntityBatchRenderer` (CPU-baked, used for single-draw sites like the held item and GUI mob previews). See `docs/gpu-instanced-entity-rendering.md`.
+  - `Blocks/`, `Items/`, `Particles/`, `UI/` — Model and UI renderers
   - `GameRenderer.cs` / `WorldRenderer.cs` — Top-level orchestrators
 - **`Guis/`** — Custom GUI layout system using a Flexbox-based engine (see `CREDITS.md`).
 - **`UI/Screens/`** — Individual screens: menus, HUD, pause screen, containers.
@@ -119,19 +131,21 @@ The fork is called OmniBlock, but **project directories, assembly names, and the
 - **`Sound/`** — Audio via SFML.Audio.
 - **`Resource/Pack/`** — Texture pack loading.
 
-Shaders live in `OmniBlock/shaders/` and are embedded resources. **Adding a shader file requires an explicit `defineEmbeddedAsset` entry in `OmniBlock/AssetManager.cs`** — the `EmbeddedResource` glob in the `.csproj` alone is not enough, and the omission only shows up as a runtime crash.
+Shaders live in `OmniBlock/shaders/` (WGSL for the WebGPU path) and are embedded resources. **Adding a shader file requires an explicit `defineEmbeddedAsset` entry in `OmniBlock/AssetManager.cs`** — the `EmbeddedResource` glob in the `.csproj` alone is not enough, and the omission only shows up as a runtime crash.
 
 `OmniBlock.Client` bans raw `ImGui.Text`/`TextColored`/`TextDisabled`/`TextWrapped` via `BannedSymbols.txt`; use the `ImGuiTextSafe` wrappers (raw calls treat their argument as a format string and segfault on `%`).
 
 ### Key Technologies
 
-- **Silk.NET** — OpenGL bindings and windowing (GLFW)
-- **ImGui.NET** (Hexa.NET.ImGui) — Debug/development overlays
+- **Silk.NET** — WebGPU bindings (`Silk.NET.WebGPU`, wgpu native) and windowing/input (GLFW)
+- **ImGui.NET** (Hexa.NET.ImGui) — Debug/development overlays, rendered through the WebGPU backend
 - **SFML.Audio** — Sound
-- **SixLabors.ImageSharp** — Image loading
+- **SixLabors.ImageSharp** (+ `ImageSharp.Drawing`, `SixLabors.Fonts`) — Image loading and text
 - **Avalonia 12** — Launcher UI (with CommunityToolkit.Mvvm, Serilog)
 - **Microsoft.Identity.Client (MSAL)** — Microsoft account authentication
 - **Brigadier.NET** — Command parsing
+- **LiteNetLib** — UDP transport for the network rewrite
+- **Roslyn** (`Microsoft.CodeAnalysis`) — `OmniBlock.Generators` source generators for the Wire message serializers
 
 ## Code Conventions
 
@@ -144,4 +158,4 @@ Shaders live in `OmniBlock/shaders/` and are embedded resources. **Adding a shad
 
 ## Docs
 
-There is no `docs/` in the repository, deliberately. Design notes written during a change describe intentions, and they go stale the moment the change lands; a stale document is worse than none, because it reads as authoritative. Whatever is worth keeping belongs next to the code it constrains, as a comment that a reader can check against what it sits on.
+`docs/` is gitignored — a local scratch area for design and exploration notes (the network rewrite, the WebGPU port, the data-driven migration guides). Nothing there is committed, and none of it is authoritative. A design note describes intentions and goes stale the moment a change lands; because it is not checked in, no one has to trust it. Whatever is worth keeping belongs next to the code it constrains, as a comment that a reader can check against what it sits on. Don't commit `docs/`.
