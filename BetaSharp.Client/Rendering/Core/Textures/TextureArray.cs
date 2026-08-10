@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Silk.NET.OpenGL;
 using AddressMode = Silk.NET.WebGPU.AddressMode;
 using FilterMode = Silk.NET.WebGPU.FilterMode;
-using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 using MipmapFilterMode = Silk.NET.WebGPU.MipmapFilterMode;
 
 namespace BetaSharp.Client.Rendering.Core.Textures;
@@ -13,17 +12,10 @@ namespace BetaSharp.Client.Rendering.Core.Textures;
 ///     textures it holds.
 /// </summary>
 /// <remarks>
-///     <para>
-///         The API is OpenGL's and the WebGPU side reshapes it the same way <see cref="Texture2D" />
-///         does — an array's size and layer count are fixed at creation there, so the real texture
-///         is made at the upload that finally states them, and the filtering is carried as data
-///         until a sampler can be built from it.
-///     </para>
-///     <para>
-///         <see cref="Texture2D" /> isn't reused with a target parameter because it hardcodes
-///         <see cref="GLEnum.Texture2D" /> throughout, matching how little the two share once the
-///         target differs.
-///     </para>
+///     The API is shaped like OpenGL's and reshapes it the same way <see cref="Texture2D" /> does
+///     — an array's size and layer count are fixed at creation, so the real texture is made at the
+///     upload that finally states them, and the filtering is carried as data until a sampler can be
+///     built from it.
 /// </remarks>
 public sealed class TextureArray : IDisposable
 {
@@ -38,7 +30,7 @@ public sealed class TextureArray : IDisposable
     public int LayerCount { get; private set; }
     public static int ActiveTextureCount => s_activeTextures.Count;
 
-    /// <summary>The WebGPU array, once an upload has given it a size. Null under OpenGL.</summary>
+    /// <summary>The WebGPU array, once an upload has given it a size.</summary>
     public WgpuTextureArray? Wgpu { get; private set; }
 
     private WgpuSamplerDescription _sampler = WgpuSamplerDescription.Nearest;
@@ -46,7 +38,7 @@ public sealed class TextureArray : IDisposable
     public TextureArray(string source)
     {
         Source = source;
-        Id = GLManager.GLOrNull is { } gl ? gl.GenTexture() : ++s_nextWebGpuId;
+        Id = ++s_nextWebGpuId;
         s_activeTextures.Add(Id, (source, DateTime.Now));
     }
 
@@ -54,23 +46,13 @@ public sealed class TextureArray : IDisposable
     {
         if (Id == 0) return;
 
+        // Nothing to bind: an array is sampled through the bind group of whichever pipeline reads
+        // it, which the renderer sets from the array itself.
         TextureStats.NotifyBind();
-
-        // Nothing to bind under WebGPU: an array is sampled through the bind group of whichever
-        // pipeline reads it, which the renderer sets from the array itself.
-        GLManager.GLOrNull?.BindTexture(GLEnum.Texture2DArray, Id);
     }
 
     public void SetFilter(TextureMinFilter min, TextureMagFilter mag)
     {
-        if (GLManager.GLOrNull is { } gl)
-        {
-            Bind();
-            gl.TexParameter(GLEnum.Texture2DArray, GLEnum.TextureMinFilter, (int)min);
-            gl.TexParameter(GLEnum.Texture2DArray, GLEnum.TextureMagFilter, (int)mag);
-            return;
-        }
-
         UpdateSampler(_sampler with
         {
             Min = min is TextureMinFilter.Linear or TextureMinFilter.LinearMipmapLinear
@@ -86,26 +68,11 @@ public sealed class TextureArray : IDisposable
 
     public void SetWrap(TextureWrapMode s, TextureWrapMode t)
     {
-        if (GLManager.GLOrNull is { } gl)
-        {
-            Bind();
-            gl.TexParameter(GLEnum.Texture2DArray, GLEnum.TextureWrapS, (int)s);
-            gl.TexParameter(GLEnum.Texture2DArray, GLEnum.TextureWrapT, (int)t);
-            return;
-        }
-
         UpdateSampler(_sampler with { AddressU = ToAddressMode(s), AddressV = ToAddressMode(t) });
     }
 
     public void SetMaxLevel(int level)
     {
-        if (GLManager.GLOrNull is { } gl)
-        {
-            Bind();
-            gl.TexParameter(GLEnum.Texture2DArray, GLEnum.TextureMaxLevel, level);
-            return;
-        }
-
         UpdateSampler(_sampler with { LodMaxClamp = level });
     }
 
@@ -128,13 +95,6 @@ public sealed class TextureArray : IDisposable
             LayerCount = layerCount;
         }
 
-        if (GLManager.GLOrNull is { } gl)
-        {
-            Bind();
-            gl.TexImage3D(GLEnum.Texture2DArray, level, (int)internalFormat, (uint)width, (uint)height, (uint)layerCount, 0, format, GLEnum.UnsignedByte, ptr);
-            return;
-        }
-
         // Only the base level exists on this path — nothing builds mips for an array, and a level
         // arriving here would have nowhere to go in a one-level texture.
         if (level != 0) return;
@@ -152,13 +112,6 @@ public sealed class TextureArray : IDisposable
     /// <summary>Replaces a single layer's pixels — a texture-pack override, or an animated tile tick.</summary>
     public unsafe void UploadLayer(int layer, int width, int height, byte* ptr, int level = 0, GLEnum format = GLEnum.Rgba)
     {
-        if (GLManager.GLOrNull is { } gl)
-        {
-            Bind();
-            gl.TexSubImage3D(GLEnum.Texture2DArray, level, 0, 0, layer, (uint)width, (uint)height, 1, format, GLEnum.UnsignedByte, ptr);
-            return;
-        }
-
         if (level != 0 || Wgpu is null) return;
 
         Wgpu.UploadRegion(0, 0, (uint)layer, (uint)width, (uint)height,
@@ -174,7 +127,6 @@ public sealed class TextureArray : IDisposable
         Wgpu?.Dispose();
         Wgpu = null;
 
-        GLManager.GLOrNull?.DeleteTexture(Id);
         s_activeTextures.Remove(Id, out _);
         Id = 0;
     }

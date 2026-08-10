@@ -1,17 +1,15 @@
 using System.Runtime.InteropServices;
 using BetaSharp.Client.Options;
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Client.Rendering.Core.Textures;
-using Silk.NET.Maths;
-using Shader = BetaSharp.Client.Rendering.Core.Shader;
 
 namespace BetaSharp.Client.Rendering.Entities;
 
 /// <summary>
-/// Batches posed/lit entity model geometry (baked by <see cref="Models.ModelPart"/>) into one streaming VBO, flushing to a dedicated GLSL shader.
+/// Batches posed/lit entity model geometry (baked by <see cref="Models.ModelPart"/>) and draws it
+/// through the draw-command seam.
 /// </summary>
-public sealed unsafe class EntityBatchRenderer : IDisposable
+public sealed class EntityBatchRenderer : IDisposable
 {
     private static EntityBatchRenderer? s_instance;
     public static EntityBatchRenderer Instance =>
@@ -21,15 +19,9 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
 
     private const int MaxVertices = 65536;
 
-    private readonly Shader? _shader;
-    private readonly IGL? _glOrNull;
-    private readonly uint _vaoId;
-    private readonly uint _vboId;
     private readonly EntityVertex[] _vertices = new EntityVertex[MaxVertices];
     private readonly Dictionary<uint, int> _glTexToLogicalId = [];
-
-    /// <summary>Where the queued vertices are rewritten for the seam. Null under OpenGL.</summary>
-    private readonly Vertex[]? _seamVertices;
+    private readonly Vertex[] _seamVertices = new Vertex[MaxVertices];
 
     private int _vertexCount;
     private uint _currentTextureId;
@@ -38,61 +30,13 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
 
     private EntityBatchRenderer(GameOptions options)
     {
-        // The shader is GLSL and the VAO is a GL object, so on a backend that has neither the batch
-        // owns no resources of its own and goes out through the draw-command seam instead.
-        if (GLManager.GLOrNull is not { } gl)
-        {
-            _seamVertices = new Vertex[MaxVertices];
-            GLManager.RasterStateChanging += Flush;
-            return;
-        }
-
-        _shader = new Shader(
-            options.ShaderOptions.GetOrCreate("entity_batch"),
-            "shaders/entity_batch.vert",
-            "shaders/entity_batch.frag");
-        _glOrNull = gl;
-
-        _vaoId = gl.GenVertexArray();
-        _vboId = gl.GenBuffer();
-
-        gl.BindVertexArray(_vaoId);
-        gl.BindBuffer(GLEnum.ArrayBuffer, _vboId);
-        gl.BufferData(GLEnum.ArrayBuffer, (nuint)(MaxVertices * sizeof(EntityVertex)), null, GLEnum.StreamDraw);
-
-        const uint stride = 28;
-
-        gl.EnableVertexAttribArray(0);
-        gl.VertexAttribPointer(0, 3, GLEnum.Float, false, stride, (void*)0);
-
-        gl.EnableVertexAttribArray(1);
-        gl.VertexAttribPointer(1, 2, GLEnum.Float, false, stride, (void*)12);
-
-        gl.EnableVertexAttribArray(2);
-        gl.VertexAttribPointer(2, 4, GLEnum.UnsignedByte, true, stride, (void*)20);
-
-        // Integer attribute: the I-variant keeps the part id an exact uint instead of converting it.
-        gl.EnableVertexAttribArray(3);
-        gl.VertexAttribIPointer(3, 1, GLEnum.UnsignedInt, stride, (void*)24);
-
-        gl.BindVertexArray(0);
-        gl.BindBuffer(GLEnum.ArrayBuffer, 0);
-
         // Queued geometry must be drawn under the blend, depth and alpha state it was posed with,
         // and renderers flip that state freely between parts of the same mob.
         GLManager.RasterStateChanging += Flush;
     }
 
-    private IGL Gl => _glOrNull ?? throw NotOnThisBackend();
-
-    private Shader Shader => _shader ?? throw NotOnThisBackend();
-
-    private static InvalidOperationException NotOnThisBackend() =>
-        new($"{nameof(EntityBatchRenderer)}'s GL batch was reached on a backend that has no GL. "
-            + "The seam path should have taken this draw.");
-
-    /// <summary>What the caller has bound, in whichever name space this backend hands out.</summary>
-    private uint BoundTextureId => _glOrNull?.BoundTexture2D ?? Texture2D.Bound?.Id ?? 0;
+    /// <summary>What the caller has bound.</summary>
+    private static uint BoundTextureId => Texture2D.Bound?.Id ?? 0;
 
     /// <summary>
     /// Opens a batching pass. Only affects how long geometry may sit queued; submissions made
@@ -167,48 +111,11 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
         Flush();
     }
 
-    /// <summary>
-    /// Draws everything queued so far. The batch owns a texture, a VAO and a buffer that the
-    /// surrounding immediate-mode code knows nothing about, so all three are put back on the way
-    /// out: a flush is free to happen between any two draws and must leave no trace.
-    /// <para>
-    /// Uniforms are uploaded here rather than once per pass. Projection, fog and the alpha
-    /// threshold all change while a pass is open — the damage overlay renders with alpha testing
-    /// off — and a flush is the last moment the queued geometry is still the state's contemporary.
-    /// </para>
-    /// </summary>
     public void Flush()
     {
         if (_vertexCount == 0) return;
 
-        if (_seamVertices is not null)
-        {
-            FlushThroughSeam(_seamVertices);
-            return;
-        }
-
-        uint callerTexture = Gl.BoundTexture2D;
-
-        Gl.UseProgram(Shader.ProgramId);
-        UploadState();
-
-        Gl.ActiveTexture(GLEnum.Texture0);
-        Gl.BindTexture(GLEnum.Texture2D, _currentTextureId);
-
-        Gl.BindVertexArray(_vaoId);
-        Gl.BindBuffer(GLEnum.ArrayBuffer, _vboId);
-
-        Gl.BufferSubData(GLEnum.ArrayBuffer, 0, new ReadOnlySpan<EntityVertex>(_vertices, 0, _vertexCount));
-
-        Gl.DrawArrays(GLEnum.Triangles, 0, (uint)_vertexCount);
-
-        Gl.BindVertexArray(0);
-        // Array-buffer binding is not VAO state, so unbinding the VAO does not release it.
-        Gl.BindBuffer(GLEnum.ArrayBuffer, 0);
-        _vertexCount = 0;
-
-        Gl.UseProgram(0);
-        Gl.BindTexture(GLEnum.Texture2D, callerTexture);
+        FlushThroughSeam(_seamVertices);
     }
 
     /// <summary>
@@ -265,32 +172,8 @@ public sealed unsafe class EntityBatchRenderer : IDisposable
         }
     }
 
-    /// <summary>Mirrors the fixed-function state the queued vertices were posed under.</summary>
-    private void UploadState()
-    {
-        Matrix4X4<float> projection = GLManager.Projection.Top;
-
-        FogState fog = GLManager.Fog;
-
-        Shader.SetUniformMatrix4("projectionMatrix", projection);
-        Shader.SetUniform1("textureSampler", 0);
-        Shader.SetUniform1("useTexture", _useTexture ? 1 : 0);
-        Shader.SetUniform1("entityId",
-            _useTexture ? _glTexToLogicalId.GetValueOrDefault(_currentTextureId) : 0);
-        Shader.SetUniform1("alphaThreshold", GLManager.EffectiveAlphaThreshold);
-        Shader.SetUniform1("fogEnabled", GLManager.FogEnabled ? 1 : 0);
-        Shader.SetUniform1("fogMode", (int)fog.Curve);
-        Shader.SetUniform1("fogStart", fog.Start);
-        Shader.SetUniform1("fogEnd", fog.End);
-        Shader.SetUniform1("fogDensity", fog.Density);
-        Shader.SetUniform4("fogColor", fog.Color);
-    }
-
     public void Dispose()
     {
         GLManager.RasterStateChanging -= Flush;
-        _glOrNull?.DeleteBuffer(_vboId);
-        _glOrNull?.DeleteVertexArray(_vaoId);
-        _shader?.Dispose();
     }
 }

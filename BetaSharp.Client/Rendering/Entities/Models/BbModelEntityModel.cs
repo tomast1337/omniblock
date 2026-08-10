@@ -91,10 +91,9 @@ public class BbModelEntityModel : ModelBase
             }
 
             Vector4D<float> tint = GLManager.Color;
-            // What the caller bound, in whichever id space this backend hands out — the GL name
-            // under OpenGL, Texture2D's own logical id under WebGPU (see EntityBatchRenderer's
-            // identical BoundTextureId for why: WebGPU has no binding point to read back from).
-            uint boundTexture = GLManager.GLOrNull?.BoundTexture2D ?? Core.Textures.Texture2D.Bound?.Id ?? 0;
+            // See EntityBatchRenderer's identical BoundTextureId: WebGPU has no binding point to
+            // read back from, so what the caller bound is tracked on Texture2D itself.
+            uint boundTexture = Core.Textures.Texture2D.Bound?.Id ?? 0;
             EntityInstanceBatchRenderer.Instance.SubmitInstance(this, boundTexture, poseMatrices, tint);
         }
         else

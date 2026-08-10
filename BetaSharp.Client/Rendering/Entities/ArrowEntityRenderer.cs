@@ -1,5 +1,4 @@
 using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.OpenGL;
 using BetaSharp.Entities;
 using BetaSharp.Entities.Behaviors;
 using BetaSharp.Util.Maths;

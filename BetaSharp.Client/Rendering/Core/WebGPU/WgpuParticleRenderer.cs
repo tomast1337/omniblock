@@ -9,9 +9,8 @@ namespace BetaSharp.Client.Rendering.Core.WebGPU;
 ///     the camera's right/up axes rather than expanded into four vertices on the CPU.
 /// </summary>
 /// <remarks>
-///     There is no OpenGL counterpart to keep in step — the GL backend still draws particles through
-///     the Tessellator, unchanged, and this class is only ever reached once <see cref="GLManager.GLOrNull" />
-///     is null.
+///     There is no other particle renderer to keep in step with — WebGPU is the only backend, and
+///     this is the sole path particles draw through.
 /// </remarks>
 public sealed unsafe class WgpuParticleRenderer : IDisposable
 {

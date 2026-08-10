@@ -47,53 +47,8 @@ public static class ParticleRenderer
         double interpY = lastTickY + (y - lastTickY) * partialTick;
         double interpZ = lastTickZ + (z - lastTickZ) * partialTick;
 
-        if (GLManager.GLOrNull is null)
-        {
-            RenderWebGpu(layers, cosYaw, sinYaw, cosPitch, upX, upZ,
-                interpX, interpY, interpZ, partialTick, textureManager, world);
-            return;
-        }
-
-        Tessellator t = Tessellator.instance;
-
-        for (int layer = 0; layer < 3; layer++)
-        {
-            ParticleBuffer buf = layers[layer];
-            if (buf.Count == 0)
-            {
-                continue;
-            }
-
-
-            textureManager.BindTexture(textureManager.GetTextureId(s_layerTextures[layer]));
-            t.startDrawingQuads();
-
-            for (int i = 0; i < buf.Count; i++)
-            {
-                ref readonly ParticleTypeConfig config = ref ParticleTypeConfig.Configs[(int)buf.Type[i]];
-
-                // Calculate relative pos to camera
-                float rx = (float)(buf.PrevX[i] + (buf.X[i] - buf.PrevX[i]) * partialTick - interpX);
-                float ry = (float)(buf.PrevY[i] + (buf.Y[i] - buf.PrevY[i]) * partialTick - interpY);
-                float rz = (float)(buf.PrevZ[i] + (buf.Z[i] - buf.PrevZ[i]) * partialTick - interpZ);
-
-                float scale = ComputeScale(config.Scale, buf, i, partialTick);
-                float size = 0.1f * scale;
-
-                float brightness = ComputeBrightness(config.Brightness, buf, i, partialTick, world);
-
-                ComputeUVs(config.UV, buf.TextureIndex[i], buf.TexJitterX[i], buf.TexJitterY[i],
-                    out float minU, out float maxU, out float minV, out float maxV);
-
-                t.setColorOpaque_F(buf.Red[i] * brightness, buf.Green[i] * brightness, buf.Blue[i] * brightness);
-                t.addVertexWithUV(rx - cosYaw * size - upX * size, ry - cosPitch * size, rz - sinYaw * size - upZ * size, maxU, maxV);
-                t.addVertexWithUV(rx - cosYaw * size + upX * size, ry + cosPitch * size, rz - sinYaw * size + upZ * size, maxU, minV);
-                t.addVertexWithUV(rx + cosYaw * size + upX * size, ry + cosPitch * size, rz + sinYaw * size + upZ * size, minU, minV);
-                t.addVertexWithUV(rx + cosYaw * size - upX * size, ry - cosPitch * size, rz + sinYaw * size - upZ * size, minU, maxV);
-            }
-
-            t.draw(ProgramSlot.TexturedLit);
-        }
+        RenderWebGpu(layers, cosYaw, sinYaw, cosPitch, upX, upZ,
+            interpX, interpY, interpZ, partialTick, textureManager, world);
     }
 
     /// <summary>

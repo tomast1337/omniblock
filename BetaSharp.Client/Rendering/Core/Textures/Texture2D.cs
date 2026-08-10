@@ -3,26 +3,24 @@ using Microsoft.Extensions.Logging;
 using Silk.NET.OpenGL;
 using AddressMode = Silk.NET.WebGPU.AddressMode;
 using FilterMode = Silk.NET.WebGPU.FilterMode;
-using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 using MipmapFilterMode = Silk.NET.WebGPU.MipmapFilterMode;
 
 namespace BetaSharp.Client.Rendering.Core.Textures;
 
 /// <summary>
-///     One 2D texture, on whichever backend is running.
+///     One 2D texture.
 /// </summary>
 /// <remarks>
 ///     <para>
-///         The API is OpenGL's, because the callers are: allocate a name, upload a level, set the
-///         filtering afterwards, upload a sub-rectangle later still. WebGPU allows none of that
-///         order — a texture's size and mip count are fixed at creation and its filtering lives in
-///         an immutable sampler — so the WebGPU side records what it is told and materializes the
-///         real texture at the first upload, when the size is finally known.
+///         The API is shaped like OpenGL's, because the callers are: allocate a name, upload a
+///         level, set the filtering afterwards, upload a sub-rectangle later still. WebGPU allows
+///         none of that order — a texture's size and mip count are fixed at creation and its
+///         filtering lives in an immutable sampler — so this records what it is told and
+///         materializes the real texture at the first upload, when the size is finally known.
 ///     </para>
 ///     <para>
-///         <see cref="Id" /> is the GL name under OpenGL and a handed-out number under WebGPU.
-///         Either way it is what the batching renderers key their buckets on, and
-///         <see cref="Find" /> takes it back to the texture at flush.
+///         <see cref="Id" /> is a handed-out number, not a GPU handle — what the batching renderers
+///         key their buckets on, and <see cref="Find" /> takes it back to the texture at flush.
 ///     </para>
 /// </remarks>
 public class Texture2D : IDisposable
@@ -38,7 +36,7 @@ public class Texture2D : IDisposable
     public int Height { get; private set; }
     public static int ActiveTextureCount => s_activeTextures.Count;
 
-    /// <summary>The WebGPU texture, once an upload has given it a size. Null under OpenGL.</summary>
+    /// <summary>The WebGPU texture, once an upload has given it a size.</summary>
     public WgpuTexture? Wgpu { get; private set; }
 
     private WgpuSamplerDescription _sampler = WgpuSamplerDescription.Nearest;
@@ -46,7 +44,7 @@ public class Texture2D : IDisposable
     public Texture2D(string source)
     {
         Source = source;
-        Id = GLManager.GLOrNull is { } gl ? gl.GenTexture() : ++s_nextWebGpuId;
+        Id = ++s_nextWebGpuId;
         s_activeTextures.Add(Id, (source, DateTime.Now));
         s_byId[Id] = this;
     }
@@ -54,11 +52,10 @@ public class Texture2D : IDisposable
     /// <summary>The texture a renderer's bucket id refers to, or null if it has been disposed.</summary>
     public static Texture2D? Find(uint id) => s_byId.GetValueOrDefault(id);
 
-    /// <summary>The last texture <see cref="Bind" /> was called on. Only tracked under WebGPU.</summary>
+    /// <summary>The last texture <see cref="Bind" /> was called on.</summary>
     /// <remarks>
-    ///     GL keeps this itself, in the 2D binding point of the active texture unit, and a draw
-    ///     samples whatever is there. WebGPU has no binding point outside a render pass, so the
-    ///     intent a caller expressed by binding has to be remembered until a draw can act on it.
+    ///     WebGPU has no binding point outside a render pass, so the intent a caller expressed by
+    ///     binding has to be remembered until a draw can act on it.
     /// </remarks>
     public static Texture2D? Bound { get; private set; }
 
@@ -67,26 +64,11 @@ public class Texture2D : IDisposable
         if (Id == 0) return;
 
         TextureStats.NotifyBind();
-
-        if (GLManager.GLOrNull is { } gl)
-        {
-            gl.BindTexture(GLEnum.Texture2D, Id);
-            return;
-        }
-
         Bound = this;
     }
 
     public void SetFilter(TextureMinFilter min, TextureMagFilter mag)
     {
-        if (GLManager.GLOrNull is { } gl)
-        {
-            Bind();
-            gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureMinFilter, (int)min);
-            gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureMagFilter, (int)mag);
-            return;
-        }
-
         UpdateSampler(_sampler with
         {
             Min = min is TextureMinFilter.Linear or TextureMinFilter.LinearMipmapLinear
@@ -102,26 +84,11 @@ public class Texture2D : IDisposable
 
     public void SetWrap(TextureWrapMode s, TextureWrapMode t)
     {
-        if (GLManager.GLOrNull is { } gl)
-        {
-            Bind();
-            gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureWrapS, (int)s);
-            gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureWrapT, (int)t);
-            return;
-        }
-
         UpdateSampler(_sampler with { AddressU = ToAddressMode(s), AddressV = ToAddressMode(t) });
     }
 
     public void SetMaxLevel(int level)
     {
-        if (GLManager.GLOrNull is { } gl)
-        {
-            Bind();
-            gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureMaxLevel, level);
-            return;
-        }
-
         UpdateSampler(_sampler with { LodMaxClamp = level });
     }
 
@@ -133,13 +100,6 @@ public class Texture2D : IDisposable
             Height = height;
         }
 
-        if (GLManager.GLOrNull is { } gl)
-        {
-            Bind();
-            gl.TexImage2D(TextureTarget.Texture2D, level, internalFormat, (uint)width, (uint)height, 0, format, PixelType.UnsignedByte, ptr);
-            return;
-        }
-
         // Level 0 is the one that fixes the size, so it is also what creates the texture. Levels
         // arrive afterwards, smallest last, and write into the chain allocated here.
         if (level == 0) Materialize();
@@ -148,27 +108,11 @@ public class Texture2D : IDisposable
 
     public unsafe void UploadSubImage(int x, int y, int width, int height, byte* ptr, int level = 0, PixelFormat format = PixelFormat.Rgba)
     {
-        if (GLManager.GLOrNull is { } gl)
-        {
-            Bind();
-            gl.TexSubImage2D(GLEnum.Texture2D, level, x, y, (uint)width, (uint)height, (GLEnum)format, (GLEnum)PixelType.UnsignedByte, ptr);
-            return;
-        }
-
         WriteWgpu(level, x, y, width, height, ptr);
     }
 
     public void SetAnisotropicFilter(float level)
     {
-        if (GLManager.GLOrNull is { } gl)
-        {
-            if (!gl.IsExtensionPresent("GL_EXT_texture_filter_anisotropic")) return;
-
-            Bind();
-            gl.TexParameter(GLEnum.Texture2D, (GLEnum)0x84FE, level); // GL_TEXTURE_MAX_ANISOTROPY_EXT
-            return;
-        }
-
         UpdateSampler(_sampler with { MaxAnisotropy = (uint)Math.Max(1.0f, level) });
     }
 
@@ -183,7 +127,6 @@ public class Texture2D : IDisposable
 
         if (ReferenceEquals(Bound, this)) Bound = null;
 
-        GLManager.GLOrNull?.DeleteTexture(Id);
         s_activeTextures.Remove(Id, out _);
         s_byId.Remove(Id);
         Id = 0;

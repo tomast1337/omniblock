@@ -11,10 +11,8 @@ using BetaSharp.Client.Rendering.UI;
 using BetaSharp.Entities;
 using BetaSharp.Items;
 using Silk.NET.Maths;
-using Silk.NET.OpenGL;
 using SixLabors.Fonts;
 using Color = BetaSharp.Client.UI.Colors.Color;
-using GLEnum = BetaSharp.Client.Rendering.Core.OpenGL.GLEnum;
 using TextRenderer = BetaSharp.Client.Rendering.TextRenderer;
 
 namespace BetaSharp.Client.UI.Rendering;
@@ -158,11 +156,10 @@ public class UIRenderer
             DepthWrite = true
         });
 
-        // Skipped under WebGPU, where a depth buffer is cleared by the pass that begins on it and
-        // there is no command to clear one partway through. Doing this properly means ending the
-        // interface pass here and beginning another, which the draw target has no way to ask for
-        // yet; until then the item on the cursor can lose the depth test against a slot preview.
-        GLManager.GLOrNull?.Clear((ClearBufferMask)GLEnum.DepthBufferBit);
+        // No depth clear here: a depth buffer is cleared by the pass that begins on it and there is
+        // no command to clear one partway through. Doing this properly means ending the interface
+        // pass here and beginning another, which the draw target has no way to ask for yet; until
+        // then the item on the cursor can lose the depth test against a slot preview.
         GLManager.State.Apply(RenderState.Interface);
     }
 

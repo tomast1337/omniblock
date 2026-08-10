@@ -34,7 +34,8 @@ public class ScreenShotHelper
                 suffix++;
             } while (System.IO.File.Exists(fullPath));
 
-            // OpenGL returns rows bottom-to-top; flip to top-to-bottom for the image file.
+            // Input rows are bottom-to-top; flip to top-to-bottom for the image file. WebGPU's
+            // caller reverses its rows before calling in, specifically to land here unchanged.
             int rowStride = width * 3;
             byte[] flipped = new byte[rgbPixels.Length];
             for (int y = 0; y < height; y++)

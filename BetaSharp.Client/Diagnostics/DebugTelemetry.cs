@@ -1,8 +1,5 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
-using BetaSharp.Client.Rendering.Core;
-using Silk.NET.OpenGL;
 
 namespace BetaSharp.Client.Diagnostics;
 
@@ -51,21 +48,6 @@ internal sealed class DebugTelemetry
     private DebugSystemSnapshot _systemSnapshot = DebugSystemSnapshot.Empty;
 
     public DebugSystemSnapshot SystemSnapshot => _systemSnapshot;
-
-    public void CaptureSystemInfo(IGL? gl)
-    {
-        string glVersion = gl?.GetString(StringName.Version) ?? UnknownValue;
-        _systemSnapshot = new DebugSystemSnapshot(
-            GpuName: gl?.GetString(StringName.Renderer) ?? UnknownValue,
-            GpuVram: GetGpuVram(gl),
-            OpenGlVersion: glVersion,
-            GlslVersion: gl?.GetString(StringName.ShadingLanguageVersion) ?? UnknownValue,
-            DriverVersion: ParseDriverVersion(glVersion),
-            CpuName: GetCpuName(),
-            CpuCoreCount: Environment.ProcessorCount,
-            OsDescription: SafeValue(RuntimeInformation.OSDescription),
-            DotNetRuntime: SafeValue(RuntimeInformation.FrameworkDescription));
-    }
 
     public void RecordFrameTime(double frameTimeMs)
     {
@@ -130,92 +112,6 @@ internal sealed class DebugTelemetry
         }
 
         return 1000.0D / frameTimeMs;
-    }
-
-    private static string ParseDriverVersion(string glVersion)
-    {
-        if (glVersion == UnknownValue)
-        {
-            return UnknownValue;
-        }
-
-        Match mesaMatch = Regex.Match(glVersion, @"Mesa\s+[\w\.\-]+", RegexOptions.IgnoreCase);
-        if (mesaMatch.Success)
-        {
-            return mesaMatch.Value;
-        }
-
-        MatchCollection numericMatches = Regex.Matches(glVersion, @"\d+(?:\.\d+){1,3}");
-        for (int i = numericMatches.Count - 1; i >= 0; i--)
-        {
-            string candidate = numericMatches[i].Value;
-            if (!glVersion.StartsWith(candidate, StringComparison.Ordinal))
-            {
-                return candidate;
-            }
-        }
-
-        int openParenIndex = glVersion.IndexOf('(');
-        if (openParenIndex >= 0 && openParenIndex + 1 < glVersion.Length)
-        {
-            string inParens = glVersion[(openParenIndex + 1)..].TrimEnd(')').Trim();
-            if (!string.IsNullOrWhiteSpace(inParens))
-            {
-                return inParens;
-            }
-        }
-
-        return glVersion;
-    }
-
-    private static string GetGpuVram(IGL? gl)
-    {
-        if (gl == null)
-        {
-            return UnknownValue;
-        }
-
-        try
-        {
-            // NVIDIA extension that exposes dedicated VRAM size in KB.
-            if (gl.IsExtensionPresent("GL_NVX_gpu_memory_info"))
-            {
-                int dedicatedVidMemKb = gl.GetInteger((Silk.NET.OpenGL.GLEnum)0x9047);
-                if (dedicatedVidMemKb > 0)
-                {
-                    return FormatMemoryKilobytes(dedicatedVidMemKb);
-                }
-
-                // Fallback to total available memory from the same extension.
-                int totalAvailableKb = gl.GetInteger((Silk.NET.OpenGL.GLEnum)0x9048);
-                if (totalAvailableKb > 0)
-                {
-                    return FormatMemoryKilobytes(totalAvailableKb);
-                }
-            }
-        }
-        catch
-        {
-        }
-
-        return UnknownValue;
-    }
-
-    private static string FormatMemoryKilobytes(long kilobytes)
-    {
-        if (kilobytes <= 0)
-        {
-            return UnknownValue;
-        }
-
-        double gib = kilobytes / 1024.0D / 1024.0D;
-        if (gib >= 1.0D)
-        {
-            return $"{gib:0.##} GB";
-        }
-
-        double mib = kilobytes / 1024.0D;
-        return $"{mib:0} MB";
     }
 
     private static string GetCpuName()
