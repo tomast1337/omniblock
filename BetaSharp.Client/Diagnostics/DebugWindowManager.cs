@@ -22,8 +22,12 @@ internal sealed class DebugWindowManager
     /// <summary>Top-left screen position of the "Game Viewport" content area, in window pixel coordinates.</summary>
     public Vector2 ViewportPos { get; private set; }
 
-    /// <summary>OpenGL texture ID of the rendered frame to display in the viewport. Set to 0 to show nothing.</summary>
-    public uint ViewportTextureId { get; set; }
+    /// <summary>
+    ///     Id of the rendered frame to display in the viewport — an OpenGL texture name under GL,
+    ///     or a <see cref="BetaSharp.Client.Rendering.Core.WebGPU.ImGuiWgpuBackend" /> id under
+    ///     WebGPU. Zero shows nothing.
+    /// </summary>
+    public ulong ViewportTextureId { get; set; }
 
     public DebugWindowManager(BetaSharp game, Func<bool> inGameHasFocus)
     {
@@ -133,10 +137,16 @@ internal sealed class DebugWindowManager
                 GameViewportFocused = ImGui.IsMouseHoveringRect(ViewportPos, ViewportPos + contentSize, false);
                 if (ViewportTextureId != 0 && contentSize.X > 0 && contentSize.Y > 0)
                 {
-                    // Y-flipped UVs because OpenGL FBOs have origin at bottom-left.
+                    // Y-flipped UVs only under OpenGL: its FBOs have their origin at bottom-left,
+                    // where WebGPU's offscreen colour view (sampled the same way the swapchain blit
+                    // already does) does not need the flip to come out right-side up.
+                    (Vector2 uv0, Vector2 uv1) = Display.Backend == GraphicsBackend.OpenGL
+                        ? (new Vector2(0, 1), new Vector2(1, 0))
+                        : (new Vector2(0, 0), new Vector2(1, 1));
+
                     unsafe
                     {
-                        ImGui.Image(new ImTextureRef(null, new ImTextureID((ulong)ViewportTextureId)), contentSize, new Vector2(0, 1), new Vector2(1, 0));
+                        ImGui.Image(new ImTextureRef(null, new ImTextureID(ViewportTextureId)), contentSize, uv0, uv1);
                     }
                 }
             }

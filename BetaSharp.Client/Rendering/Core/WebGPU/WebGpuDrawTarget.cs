@@ -701,14 +701,17 @@ public sealed unsafe class WebGpuDrawTarget : IDrawTarget, IDisposable
                 Size = uniformSize,
             };
 
+            byte* label = (byte*)Silk.NET.Core.Native.SilkMarshal.StringToPtr("DrawTarget.RingUniform");
             BindGroupDescriptor groupDesc = new()
             {
+                Label = label,
                 Layout = Pipeline.BindGroupLayout,
                 EntryCount = 1,
                 Entries = &entry,
             };
 
             BindGroup* group = api.DeviceCreateBindGroup(device.Device, in groupDesc);
+            Silk.NET.Core.Native.SilkMarshal.Free((nint)label);
             return ((nint)buffer, (nint)group);
         }
 

@@ -118,17 +118,28 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
 
     /// <summary>
     ///     Recreates the colour and depth textures when the size changes. No-op when sizes match.
+    ///     Returns whether it actually recreated them, so callers can tell a real replacement from
+    ///     a no-op without comparing the old and new <see cref="ColorView" /> pointers — freed
+    ///     texture views can get their address reused by a later allocation, so pointer identity
+    ///     alone cannot distinguish "still the same view" from "a different view, coincidentally at
+    ///     the same address."
     /// </summary>
-    public void ResizeIfNeeded(WebGpuDevice device, uint width, uint height)
+    public bool ResizeIfNeeded(WebGpuDevice device, uint width, uint height)
     {
-        if (width == Width && height == Height) return;
+        if (width == Width && height == Height) return false;
 
-        // Release old textures.
+        // Release, not Destroy: a resize this size-changing frame can still be racing a command
+        // buffer submitted a frame or two ago (Fifo present queues that deep) whose overlay pass
+        // reads this colour view through an external ImGui bind group — see
+        // ImGuiWgpuBackend.UpdateExternalTexture. Destroy() invalidates for every consumer
+        // immediately regardless of outstanding GPU work; Release() only drops this object's own
+        // reference and lets wgpu defer the actual free until nothing still using it, including
+        // that in-flight submission, is left holding one.
         Silk.NET.WebGPU.WebGPU api = device.Api;
         if (ColorView is not null) api.TextureViewRelease(ColorView);
         if (DepthView is not null) api.TextureViewRelease(DepthView);
-        if (ColorTexture is not null) { api.TextureDestroy(ColorTexture); api.TextureRelease(ColorTexture); }
-        if (DepthTexture is not null) { api.TextureDestroy(DepthTexture); api.TextureRelease(DepthTexture); }
+        if (ColorTexture is not null) api.TextureRelease(ColorTexture);
+        if (DepthTexture is not null) api.TextureRelease(DepthTexture);
 
         // The pipelines that target this were built against the format it was created with, so a
         // resize keeps it. Recreating as Rgba8Unorm silently invalidated every one of them.
@@ -146,6 +157,8 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
         ColorView = cView;
         DepthTexture = dTex;
         DepthView = dView;
+
+        return true;
     }
 
     /// <summary>
@@ -184,14 +197,17 @@ public sealed unsafe class WgpuFramebuffer : IDisposable
         entries[0] = new BindGroupEntry { Binding = 0, TextureView = ColorView };
         entries[1] = new BindGroupEntry { Binding = 1, Sampler = _blitSampler };
 
+        byte* label = (byte*)Silk.NET.Core.Native.SilkMarshal.StringToPtr("Framebuffer.Blit");
         BindGroupDescriptor desc = new()
         {
+            Label = label,
             Layout = layout,
             EntryCount = 2,
             Entries = entries,
         };
 
         _blitBindGroup = api.DeviceCreateBindGroup(device.Device, in desc);
+        Silk.NET.Core.Native.SilkMarshal.Free((nint)label);
         return _blitBindGroup;
     }
 

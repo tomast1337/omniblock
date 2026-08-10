@@ -313,8 +313,10 @@ public sealed unsafe class WgpuPipeline : IDisposable
             Size = bufferDescriptor.Size,
         };
 
+        byte* label = (byte*)SilkMarshal.StringToPtr("Pipeline.StaticUniform");
         BindGroupDescriptor descriptor = new()
         {
+            Label = label,
             Layout = layout,
             EntryCount = 1,
             Entries = &entry,
@@ -322,6 +324,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
 
         buffer = b;
         bindGroup = api.DeviceCreateBindGroup(device, in descriptor);
+        SilkMarshal.Free((nint)label);
     }
 
     /// <summary>Writes <paramref name="data"/> to the uniform buffer through the queue.</summary>
