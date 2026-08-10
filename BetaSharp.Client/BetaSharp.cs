@@ -732,9 +732,10 @@ public partial class BetaSharp :
 
                     int savedWidth = DisplayWidth, savedHeight = DisplayHeight;
 
-                    // Rendering the world into the F3 viewport means rendering into an FBO and
-                    // handing ImGui its texture id. That route is GL-only; under WebGPU the frame
-                    // goes to the swapchain and there is no id to hand over.
+                    // GL renders the F3 viewport into an FBO and hands ImGui its texture id directly.
+                    // WebGPU has no such id to read back — it hands the offscreen framebuffer's own
+                    // colour view to ImGuiWgpuBackend.RegisterExternalTexture instead, inside
+                    // WebGpuGameRenderer.RenderFrame, once ViewportSize below tells it to.
                     if (FramebufferManager is not null && imguiThisFrame)
                     {
                         Vector2 vpSize = _debugWindowManager.ViewportSize;
@@ -776,9 +777,69 @@ public partial class BetaSharp :
                             _debugWindowManager.ViewportTextureId = 0;
                         }
                     }
+                    else if (_webGpuRenderer is not null && imguiThisFrame)
+                    {
+                        // Sizing happens below instead, after DebugWindowManager.Render() runs —
+                        // see the imgui-build block. Deciding it here, before Render() has produced
+                        // this frame's panel size, is what caused the resize to permanently lag the
+                        // Image widget's requested size by one step: RenderFrame() would resize the
+                        // offscreen texture to a size one frame older than the one ImGui.Render() had
+                        // already baked into this same frame's draw data. Since this block runs every
+                        // frame, that lag never had a frame where the two sizes lined up to close it.
+                    }
                     else
                     {
+                        if (_webGpuRenderer is { } webGpuClosed)
+                        {
+                            webGpuClosed.ViewportSize = null;
+                        }
+
                         DebugViewportOffset = Vector2.Zero;
+                    }
+
+                    // WebGPU builds and submits its ImGui draw data as one of the passes recorded
+                    // inside RenderFrame() below, so that data has to already exist by the time
+                    // RenderFrame() runs — ImGui.Render() has to come first. GL draws immediately
+                    // into whatever is currently bound, so it is the other way around: its overlay
+                    // has to be issued after the world paints, or the world would draw over it. The
+                    // ViewportTextureId this feeds ImGui.Image is therefore last frame's, same as it
+                    // always was here — RenderFrame() has not run yet to produce a fresher one.
+                    if (imguiThisFrame && _webGpuRenderer is { } webGpuBuild)
+                    {
+                        _debugWindowManager.ViewportTextureId = webGpuBuild.ViewportTextureId;
+
+                        using (Profiler.Begin("ImguiBuild"))
+                        {
+                            _debugWindowManager.Render(Timer.DeltaTime);
+                        }
+
+                        // Read the size Render() just produced, not a value read before it ran —
+                        // RenderFrame() below resizes the offscreen texture from this same reading,
+                        // and the draw data ImGui.Render() is about to bake already has an Image
+                        // widget sized from it. Same reading, same frame, for both: no lag left for
+                        // a drag to fall behind on.
+                        Vector2 vpSize = _debugWindowManager.ViewportSize;
+                        if (vpSize.X > 0 && vpSize.Y > 0)
+                        {
+                            int vpW = (int)vpSize.X, vpH = (int)vpSize.Y;
+                            webGpuBuild.ViewportSize = ((uint)vpW, (uint)vpH);
+                            DisplayWidth = vpW;
+                            DisplayHeight = vpH;
+
+                            DebugViewportOffset = new Vector2(
+                                _debugWindowManager.ViewportPos.X,
+                                Display.getHeight() - vpH - _debugWindowManager.ViewportPos.Y);
+                        }
+                        else
+                        {
+                            webGpuBuild.ViewportSize = null;
+                            DebugViewportOffset = Vector2.Zero;
+                        }
+
+                        using (Profiler.Begin("ImguiSubmit"))
+                        {
+                            ImGui.Render();
+                        }
                     }
 
                     if (!SkipRenderWorld)
@@ -794,6 +855,7 @@ public partial class BetaSharp :
                             // WebGPU has to open a pass, blit and submit either side of the world.
                             if (_webGpuRenderer is { } webGpu)
                             {
+                                webGpu.ImguiOpen = imguiThisFrame;
                                 webGpu.RenderFrame(Timer.RenderPartialTicks,
                                     DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
                             }
@@ -810,7 +872,7 @@ public partial class BetaSharp :
                     DisplayWidth = savedWidth;
                     DisplayHeight = savedHeight;
 
-                    if (imguiThisFrame)
+                    if (imguiThisFrame && Display.Backend == GraphicsBackend.OpenGL)
                     {
                         if (FramebufferManager is { SkipBlit: true } blitSource)
                         {
@@ -825,17 +887,13 @@ public partial class BetaSharp :
                         using (Profiler.Begin("ImguiSubmit"))
                         {
                             ImGui.Render();
-                            if (Display.Backend == GraphicsBackend.OpenGL)
-                            {
-                                ImGuiImplOpenGL3.RenderDrawData(ImGui.GetDrawData());
+                            ImGuiImplOpenGL3.RenderDrawData(ImGui.GetDrawData());
 
-                                // ImGui's backend sets blending, depth and culling itself and puts
-                                // back only what it saved, which is not what the applier last wrote.
-                                // Nothing else in the client changes these behind its back, so this
-                                // is the one place the cache has to be told it no longer knows.
-                                GLManager.State.Invalidate();
-                            }
-                            // WebGPU path: ImGui draw data is submitted inside RenderFrame() above.
+                            // ImGui's backend sets blending, depth and culling itself and puts
+                            // back only what it saved, which is not what the applier last wrote.
+                            // Nothing else in the client changes these behind its back, so this
+                            // is the one place the cache has to be told it no longer knows.
+                            GLManager.State.Invalidate();
                         }
                     }
 

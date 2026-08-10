@@ -299,12 +299,97 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
         request.SetStatus(ImTextureStatus.Destroyed);
     }
 
+    /// <summary>
+    ///     Registers a texture view this backend does not own — e.g. an offscreen framebuffer's
+    ///     colour attachment — under a stable id usable as an <see cref="ImTextureID" />, so
+    ///     something rendered outside ImGui's own texture-request flow (the F3 debug viewport's
+    ///     world preview) can still be drawn with <c>ImGui.Image</c>.
+    /// </summary>
+    /// <remarks>
+    ///     The caller keeps ownership of <paramref name="view" />: only the bind group wrapping it
+    ///     is released, whether by <see cref="UnregisterExternalTexture" /> or by
+    ///     <see cref="Dispose" />. Call <see cref="UpdateExternalTexture" />, not this again, once
+    ///     the caller recreates the view (e.g. on resize) — see that method for why.
+    /// </remarks>
+    public ulong RegisterExternalTexture(TextureView* view)
+    {
+        BindGroup* bindGroup = CreateExternalBindGroup(view);
+        ulong id = _nextTextureId++;
+        // Texture/View left null: that is how Release tells an external entry apart from one it
+        // created itself and must destroy.
+        _textures[id] = new BackendTexture(null, null, bindGroup);
+        return id;
+    }
+
+    /// <summary>
+    ///     Repoints an id from <see cref="RegisterExternalTexture" /> at a newly-recreated view,
+    ///     keeping the same id rather than minting a new one.
+    /// </summary>
+    /// <remarks>
+    ///     This has to keep the id stable rather than have the caller unregister-and-re-register,
+    ///     because <c>ImGui.Render()</c> runs a frame behind the frame that submits its draw data
+    ///     (see <see cref="WebGpuGameRenderer.ImguiOpen" />): the draw commands about to be
+    ///     submitted this frame were built last frame, against whatever id was current then. A
+    ///     resize that swaps in a new id every time the caller's view changes — which, for an
+    ///     ImGui-docked panel, is nearly every frame from sub-pixel layout jitter alone — means
+    ///     those commands permanently reference an id one frame too old to still exist, so the
+    ///     lookup in <see cref="RenderDrawData" /> misses and the draw is silently skipped forever.
+    ///     Updating the same id in place instead means a stale reference from last frame's draw
+    ///     data still resolves, to whatever the id points at now.
+    /// </remarks>
+    public void UpdateExternalTexture(ulong id, TextureView* view)
+    {
+        if (id == 0 || !_textures.TryGetValue(id, out BackendTexture old))
+        {
+            return;
+        }
+
+        BindGroup* bindGroup = CreateExternalBindGroup(view);
+        _api.BindGroupRelease(old.BindGroup);
+        _textures[id] = new BackendTexture(null, null, bindGroup);
+    }
+
+    private BindGroup* CreateExternalBindGroup(TextureView* view)
+    {
+        BindGroupEntry* entries = stackalloc BindGroupEntry[2];
+        entries[0] = new BindGroupEntry { Binding = 0, TextureView = view };
+        entries[1] = new BindGroupEntry { Binding = 1, Sampler = _sampler };
+
+        byte* label = (byte*)SilkMarshal.StringToPtr("ImGui.ExternalTexture");
+        BindGroupDescriptor descriptor = new()
+        {
+            Label = label,
+            Layout = _textureLayout,
+            EntryCount = 2,
+            Entries = entries,
+        };
+
+        BindGroup* group = _api.DeviceCreateBindGroup(_device.Device, in descriptor);
+        SilkMarshal.Free((nint)label);
+        return group;
+    }
+
+    /// <summary>Releases the bind group created by <see cref="RegisterExternalTexture" />. A no-op for id 0.</summary>
+    public void UnregisterExternalTexture(ulong id)
+    {
+        if (id != 0 && _textures.Remove(id, out BackendTexture texture))
+        {
+            Release(texture);
+        }
+    }
+
     private void Release(BackendTexture texture)
     {
         _api.BindGroupRelease(texture.BindGroup);
-        _api.TextureViewRelease(texture.View);
-        _api.TextureDestroy(texture.Texture);
-        _api.TextureRelease(texture.Texture);
+
+        // Null for an externally-owned texture registered through RegisterExternalTexture — the
+        // caller owns that view and, if it exists, the texture behind it.
+        if (texture.View is not null) _api.TextureViewRelease(texture.View);
+        if (texture.Texture is not null)
+        {
+            _api.TextureDestroy(texture.Texture);
+            _api.TextureRelease(texture.Texture);
+        }
     }
 
     /// <summary>Concatenates every command list's vertices and indices into one buffer each.</summary>
@@ -625,14 +710,17 @@ public sealed unsafe class ImGuiWgpuBackend : IDisposable
             Size = UniformSize,
         };
 
+        byte* label = (byte*)SilkMarshal.StringToPtr("ImGui.Uniform");
         BindGroupDescriptor descriptor = new()
         {
+            Label = label,
             Layout = _uniformLayout,
             EntryCount = 1,
             Entries = &entry,
         };
 
         bindGroup = _api.DeviceCreateBindGroup(_device.Device, in descriptor);
+        SilkMarshal.Free((nint)label);
     }
 
     private static ulong Align4(ulong size) => (size + 3UL) & ~3UL;

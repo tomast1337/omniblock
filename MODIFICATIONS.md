@@ -196,3 +196,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-09 — feat(rendering): draw particles under WebGPU as instanced billboards (Nicolas Vyčas Nery; `4cff63a68f267a8f9b7cf82f306fe753afdd469e`)
 - 2026-08-09 — feat(rendering): draw entities under WebGPU through the per-part seam (Nicolas Vyčas Nery; `3a7df320548d8867e1e9577859e1dc20b3c2bcf5`)
 - 2026-08-09 — feat(rendering): give WebGPU entities real GPU instancing (Nicolas Vyčas Nery; `abf57bb13e5c0b5c4da88b74f600a98ab9c15003`)
+- 2026-08-09 — feat(rendering): wire the F3 debug viewport up under WebGPU (Nicolas Vyčas Nery; `0362e031f072aaff17efbfff153935956f059bd1`)
