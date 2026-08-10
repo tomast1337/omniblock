@@ -211,3 +211,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-10 — rename project directories, csproj files, and leftover BetaSharp identifiers to OmniBlock (Nicolas Vyčas Nery; `0fd4a4288275de38fafc18a08de6c21b475e5961`)
 - 2026-08-10 — fix: update title to indicate BetaSharp fork in OmniBlock and SplashViewModel (Nicolas Vyčas Nery; `750000f7c655bc8e49ea2ed59e35d9b6a62b861e`)
 - 2026-08-10 — Fixed, tested, unstaged. Rename work still staged from before, this fix sits on top unstaged. Commit message update: (Nicolas Vyčas Nery; `ba1ab402f440797d9712eeed0ea4927a4cbb9af3`)
+- 2026-08-10 — feat(debug-ui): darken ImGui debug theme to near-black (Nicolas Vyčas Nery; `8dca0df33bb5a510aae0f50bbffa0a59f21f9a0c`)
