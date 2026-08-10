@@ -3,31 +3,19 @@ using OmniBlock.Items;
 
 namespace OmniBlock.Recipes;
 
-internal class ShapedRecipes : IRecipe
+internal class ShapedRecipes(int width, int height, ItemStack?[] items, ItemStack output)
+    : IRecipe
 {
-    private readonly int _width;
-    private readonly int _height;
-    private readonly ItemStack?[] _items;
-    private readonly ItemStack _output;
-
-    public ShapedRecipes(int width, int height, ItemStack?[] items, ItemStack output)
-    {
-        _width = width;
-        _height = height;
-        _items = items;
-        _output = output;
-    }
-
     public ItemStack GetRecipeOutput()
     {
-        return _output;
+        return output;
     }
 
     public bool Matches(InventoryCrafting craftingInventory)
     {
-        for (int offsetX = 0; offsetX <= 3 - _width; ++offsetX)
+        for (int offsetX = 0; offsetX <= 3 - width; ++offsetX)
         {
-            for (int offsetY = 0; offsetY <= 3 - _height; ++offsetY)
+            for (int offsetY = 0; offsetY <= 3 - height; ++offsetY)
             {
                 if (matchesAtOffset(craftingInventory, offsetX, offsetY, true))
                     return true;
@@ -47,32 +35,31 @@ internal class ShapedRecipes : IRecipe
             {
                 int recipeX = gridX - offsetX;
                 int recipeY = gridY - offsetY;
-                ItemStack expected = null;
-                if (recipeX >= 0 && recipeY >= 0 && recipeX < _width && recipeY < _height)
+                ItemStack? expected = null;
+                if (recipeX >= 0 && recipeY >= 0 && recipeX < width && recipeY < height)
                 {
-                    if (mirrored)
-                        expected = _items[_width - recipeX - 1 + recipeY * _width];
-                    else
-                        expected = _items[recipeX + recipeY * _width];
+                    expected = mirrored ? items[width - recipeX - 1 + recipeY * width] : items[recipeX + recipeY * width];
                 }
 
                 ItemStack actual = craftingInventory.GetStackAt(gridX, gridY);
-                if (actual != null || expected != null)
+                if (actual == null && expected == null)
                 {
-                    if (actual == null && expected != null || actual != null && expected == null)
-                    {
-                        return false;
-                    }
+                    continue;
+                }
 
-                    if (expected.ItemId != actual.ItemId)
-                    {
-                        return false;
-                    }
+                if (actual == null && expected != null || actual != null && expected == null)
+                {
+                    return false;
+                }
 
-                    if (expected.GetDamage() != -1 && expected.GetDamage() != actual.GetDamage())
-                    {
-                        return false;
-                    }
+                if (expected.ItemId != actual.ItemId)
+                {
+                    return false;
+                }
+
+                if (expected.GetDamage() != -1 && expected.GetDamage() != actual.GetDamage())
+                {
+                    return false;
                 }
             }
         }
@@ -82,26 +69,26 @@ internal class ShapedRecipes : IRecipe
 
     public ItemStack GetCraftingResult(InventoryCrafting craftingInventory)
     {
-        return new ItemStack(_output.ItemId, _output.Count, _output.GetDamage());
+        return new ItemStack(output.ItemId, output.Count, output.GetDamage());
     }
 
     public int GetRecipeSize()
     {
-        return _width * _height;
+        return width * height;
     }
 
     public override int GetHashCode()
     {
         int hash = 0;
 
-        for (int i = 0; i < _items.Length; i++)
+        for (int i = 0; i < items.Length; i++)
         {
-            if (_items[i] != null)
-                hash += (_items[i].ItemId + (_items[i].GetDamage() << 8)) * (i + 1);
+            if (items[i] != null)
+                hash += (items[i].ItemId + (items[i].GetDamage() << 8)) * (i + 1);
         }
 
-        hash += (_output.ItemId << 12) + (_output.GetDamage() << 20) + _output.Count;
+        hash += (output.ItemId << 12) + (output.GetDamage() << 20) + output.Count;
 
-        return ((_width + _height * 4) << 28) + hash;
+        return ((width + height * 4) << 28) + hash;
     }
 }
