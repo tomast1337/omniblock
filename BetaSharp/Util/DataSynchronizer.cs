@@ -1,7 +1,7 @@
-using BetaSharp.Items;
-using BetaSharp.Util.Maths;
+using OmniBlock.Items;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Util;
+namespace OmniBlock.Util;
 
 public sealed class DataSynchronizer
 {

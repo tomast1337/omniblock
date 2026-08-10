@@ -1,9 +1,9 @@
 {
   "ProtocolId": 356,
   "TranslationKey": "redstoneRepeater",
-  "TextureId": "betasharp:redstone_repeater",
+  "TextureId": "omniblock:redstone_repeater",
   "Behavior": {
     "type": "place_block",
-    "PlacesBlock": "betasharp:diode"
+    "PlacesBlock": "omniblock:diode"
   }
 }

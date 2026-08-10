@@ -1,7 +1,7 @@
-using BetaSharp.Registries;
-using BetaSharp.Registries.Data;
+using OmniBlock.Registries;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Tests.Items;
+namespace OmniBlock.Tests.Items;
 
 /// <summary>
 /// Verifies tool/armor materials load through the stock <see cref="DataAssetLoader{T}"/> with the
@@ -49,7 +49,7 @@ public sealed class MaterialDatapackTests : IDisposable
 
         RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
 
-        ToolMaterialDefinition? def = ra.GetOrThrow(s_toolKey).GetValue(ResourceLocation.Parse("betasharp:copper"));
+        ToolMaterialDefinition? def = ra.GetOrThrow(s_toolKey).GetValue(ResourceLocation.Parse("omniblock:copper"));
         Assert.NotNull(def);
         Assert.Equal(100, def.MaxUses);
         Assert.Equal(3.5f, def.Efficiency);
@@ -60,13 +60,13 @@ public sealed class MaterialDatapackTests : IDisposable
     {
         WriteMaterial(Path.Combine("assets", "item_material"), "copper",
             """{"MaxUses": 100, "Efficiency": 3.5, "DamageBonus": 1, "HarvestLevel": 1}""");
-        WriteMaterial(Path.Combine("datapacks", "mypack", "data", "betasharp", "item_material"), "copper",
+        WriteMaterial(Path.Combine("datapacks", "mypack", "data", "omniblock", "item_material"), "copper",
             """{"MaxUses": 500}""");
         RegistryAccess.AddDynamic(new RegistryDefinition<ToolMaterialDefinition>(s_toolKey, "item_material"));
 
         RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir, datapackPath: _tempDir);
 
-        ToolMaterialDefinition? def = ra.GetOrThrow(s_toolKey).GetValue(ResourceLocation.Parse("betasharp:copper"));
+        ToolMaterialDefinition? def = ra.GetOrThrow(s_toolKey).GetValue(ResourceLocation.Parse("omniblock:copper"));
         Assert.NotNull(def);
         Assert.Equal(500, def.MaxUses);          // overridden by the datapack
         Assert.Equal(3.5f, def.Efficiency);      // merged from the base file
@@ -77,16 +77,16 @@ public sealed class MaterialDatapackTests : IDisposable
     {
         WriteMaterial(Path.Combine("assets", "armor_material"), "leather",
             """{"ArmorLevel": 0, "TexturePrefix": "cloth"}""");
-        WriteMaterial(Path.Combine("world", "datapacks", "worldpack", "data", "betasharp", "armor_material"), "emerald",
+        WriteMaterial(Path.Combine("world", "datapacks", "worldpack", "data", "omniblock", "armor_material"), "emerald",
             """{"ArmorLevel": 4, "TexturePrefix": "emerald"}""");
         RegistryAccess.AddDynamic(new RegistryDefinition<ArmorMaterialDefinition>(s_armorKey, "armor_material"));
 
         RegistryAccess server = RegistryAccess.Build(basePath: _tempDir);
         RegistryAccess withWorld = server.WithWorldDatapacks(Path.Combine(_tempDir, "world"));
 
-        Assert.Null(server.GetOrThrow(s_armorKey).GetValue(ResourceLocation.Parse("betasharp:emerald")));
+        Assert.Null(server.GetOrThrow(s_armorKey).GetValue(ResourceLocation.Parse("omniblock:emerald")));
 
-        ArmorMaterialDefinition? emerald = withWorld.GetOrThrow(s_armorKey).GetValue(ResourceLocation.Parse("betasharp:emerald"));
+        ArmorMaterialDefinition? emerald = withWorld.GetOrThrow(s_armorKey).GetValue(ResourceLocation.Parse("omniblock:emerald"));
         Assert.NotNull(emerald);
         Assert.Equal(4, emerald.ArmorLevel);
     }

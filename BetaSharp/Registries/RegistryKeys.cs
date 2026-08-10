@@ -1,32 +1,32 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
-using BetaSharp.Items;
-using BetaSharp.Recipes;
-using BetaSharp.Rules;
-using BetaSharp.Worlds.Generation.Biomes;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Entities;
+using OmniBlock.Items;
+using OmniBlock.Recipes;
+using OmniBlock.Rules;
+using OmniBlock.Worlds.Generation.Biomes;
 
 
-namespace BetaSharp.Registries;
+namespace OmniBlock.Registries;
 
 /// <summary>
 /// Well-known <see cref="RegistryKey{T}"/> constants for all built-in registry types.
 /// </summary>
 public static class RegistryKeys
 {
-    public static readonly RegistryKey<EntityType> EntityTypes = new("betasharp:entity_type");
-    public static readonly RegistryKey<Biome> Biomes = new("betasharp:biome");
-    public static readonly RegistryKey<BiomeSpawnDefinition> BiomeSpawns = new("betasharp:biome_spawn");
-    public static readonly RegistryKey<BlockEntityType> BlockEntityTypes = new("betasharp:block_entity_type");
-    public static readonly RegistryKey<BlockDefinition> Blocks = new("betasharp:block");
-    public static readonly RegistryKey<IGameRule> GameRules = new("betasharp:game_rule");
-    public static readonly RegistryKey<GameMode> GameModes = new("betasharp:game_mode");
-    public static readonly RegistryKey<RecipeDefinition> Recipes = new("betasharp:recipe");
-    public static readonly RegistryKey<ItemDefinition> Items = new("betasharp:item");
-    public static readonly RegistryKey<EntityDefinition> Entities = new("betasharp:entity");
-    public static readonly RegistryKey<ToolMaterialDefinition> ToolMaterials = new("betasharp:item_material");
-    public static readonly RegistryKey<ArmorMaterialDefinition> ArmorMaterials = new("betasharp:armor_material");
-    public static readonly RegistryKey<MaterialDefinition> Materials = new("betasharp:material");
-    public static readonly RegistryKey<SoundGroupDefinition> SoundGroups = new("betasharp:sound_group");
+    public static readonly RegistryKey<EntityType> EntityTypes = new("omniblock:entity_type");
+    public static readonly RegistryKey<Biome> Biomes = new("omniblock:biome");
+    public static readonly RegistryKey<BiomeSpawnDefinition> BiomeSpawns = new("omniblock:biome_spawn");
+    public static readonly RegistryKey<BlockEntityType> BlockEntityTypes = new("omniblock:block_entity_type");
+    public static readonly RegistryKey<BlockDefinition> Blocks = new("omniblock:block");
+    public static readonly RegistryKey<IGameRule> GameRules = new("omniblock:game_rule");
+    public static readonly RegistryKey<GameMode> GameModes = new("omniblock:game_mode");
+    public static readonly RegistryKey<RecipeDefinition> Recipes = new("omniblock:recipe");
+    public static readonly RegistryKey<ItemDefinition> Items = new("omniblock:item");
+    public static readonly RegistryKey<EntityDefinition> Entities = new("omniblock:entity");
+    public static readonly RegistryKey<ToolMaterialDefinition> ToolMaterials = new("omniblock:item_material");
+    public static readonly RegistryKey<ArmorMaterialDefinition> ArmorMaterials = new("omniblock:armor_material");
+    public static readonly RegistryKey<MaterialDefinition> Materials = new("omniblock:material");
+    public static readonly RegistryKey<SoundGroupDefinition> SoundGroups = new("omniblock:sound_group");
 }

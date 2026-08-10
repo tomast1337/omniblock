@@ -1,4 +1,4 @@
-namespace BetaSharp.Util.Hit;
+namespace OmniBlock.Util.Hit;
 
 public enum HitResultType
 {

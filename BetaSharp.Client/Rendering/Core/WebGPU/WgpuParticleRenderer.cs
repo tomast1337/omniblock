@@ -1,7 +1,7 @@
 using Silk.NET.Maths;
 using Silk.NET.WebGPU;
 
-namespace BetaSharp.Client.Rendering.Core.WebGPU;
+namespace OmniBlock.Client.Rendering.Core.WebGPU;
 
 /// <summary>
 ///     Draws particles under WebGPU as GPU-instanced billboards: one <see cref="ParticleInstance" />

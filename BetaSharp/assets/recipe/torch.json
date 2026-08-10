@@ -5,11 +5,11 @@
         "#"
     ],
     "key": {
-        "X": "betasharp:coal",
-        "#": "betasharp:stick"
+        "X": "omniblock:coal",
+        "#": "omniblock:stick"
     },
     "result": {
-        "id": "betasharp:Torch",
+        "id": "omniblock:Torch",
         "count": 4
     }
 }

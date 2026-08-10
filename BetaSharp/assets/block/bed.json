@@ -8,7 +8,7 @@
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": "betasharp:bed_foot_top",
+  "TextureId": "omniblock:bed_foot_top",
   "RenderType": "Bed",
   "NotFullCube": true,
   "BoundingBox": {
@@ -29,13 +29,13 @@
         "Visuals"
       ],
       "Type": "bed",
-      "bottom": "betasharp:wooden_planks",
-      "foot_top": "betasharp:bed_foot_top",
-      "foot_side": "betasharp:bed_foot_side",
-      "foot_end": "betasharp:bed_foot_end",
-      "head_top": "betasharp:bed_head_top",
-      "head_side": "betasharp:bed_head_side",
-      "head_end": "betasharp:bed_head_end"
+      "bottom": "omniblock:wooden_planks",
+      "foot_top": "omniblock:bed_foot_top",
+      "foot_side": "omniblock:bed_foot_side",
+      "foot_end": "omniblock:bed_foot_end",
+      "head_top": "omniblock:bed_head_top",
+      "head_side": "omniblock:bed_head_side",
+      "head_end": "omniblock:bed_head_end"
     }
   ]
 }

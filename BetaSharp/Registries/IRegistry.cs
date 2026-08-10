@@ -1,4 +1,4 @@
-namespace BetaSharp.Registries;
+namespace OmniBlock.Registries;
 
 public interface IRegistry<T> : IReadableRegistry<T> where T : class
 {

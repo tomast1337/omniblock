@@ -1,7 +1,7 @@
-using BetaSharp.Network.Chunks;
-using BetaSharp.Util.Maths;
+using OmniBlock.Network.Chunks;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 /// <summary>
 ///     <see cref="ChunkBlobCache" />: the client's on-disk store of chunks it already holds.

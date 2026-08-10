@@ -1,7 +1,7 @@
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Biomes.Source;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Biomes.Source;
 
-namespace BetaSharp.Worlds.Generation.Biomes.Source;
+namespace OmniBlock.Worlds.Generation.Biomes.Source;
 
 internal class FixedBiomeSource : BiomeSource
 {

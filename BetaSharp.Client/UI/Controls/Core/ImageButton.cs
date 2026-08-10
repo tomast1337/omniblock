@@ -1,7 +1,7 @@
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.UI.Rendering;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Client.UI.Rendering;
 
-namespace BetaSharp.Client.UI.Controls.Core;
+namespace OmniBlock.Client.UI.Controls.Core;
 
 public class ImageButton : UIElement
 {

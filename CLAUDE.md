@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**OmniBlock** is a hard fork of BetaSharp, which was itself a C# recreation of Minecraft Beta 1.7.3. It targets .NET 10 and is a multi-project solution with a shared core library, game client, dedicated server, and an Avalonia-based launcher.
+**OmniBlock** is a hard fork of OmniBlock, which was itself a C# recreation of Minecraft Beta 1.7.3. It targets .NET 10 and is a multi-project solution with a shared core library, game client, dedicated server, and an Avalonia-based launcher.
 
 OmniBlock is no longer trying to be a faithful reimplementation. It keeps Beta 1.7.3's *world* — the terrain you get from a seed, and the saves on disk — and rebuilds everything around it. Two things are the point of this fork:
 
@@ -19,11 +19,11 @@ These two are non-negotiable and constrain otherwise-reasonable refactors. Check
 
 ### Save file compatibility
 
-Worlds written by upstream BetaSharp / Minecraft Beta 1.7.3 must load, and worlds OmniBlock writes must stay readable by them. The surface is:
+Worlds written by upstream OmniBlock / Minecraft Beta 1.7.3 must load, and worlds OmniBlock writes must stay readable by them. The surface is:
 
-- `BetaSharp/NBT/` — Named Binary Tag serialization. The on-disk tag encoding is a wire format; treat it as frozen.
-- `BetaSharp/Worlds/Storage/RegionFormat/` — `RegionFile`, `RegionIo`, `RegionChunkStorage`, `ChunkDataStream`. The region/chunk layout on disk is likewise frozen.
-- `BetaSharp/Worlds/Storage/` — level metadata, player data, `PersistentState`.
+- `OmniBlock/NBT/` — Named Binary Tag serialization. The on-disk tag encoding is a wire format; treat it as frozen.
+- `OmniBlock/Worlds/Storage/RegionFormat/` — `RegionFile`, `RegionIo`, `RegionChunkStorage`, `ChunkDataStream`. The region/chunk layout on disk is likewise frozen.
+- `OmniBlock/Worlds/Storage/` — level metadata, player data, `PersistentState`.
 
 New data may be added, but only as additive NBT tags that older readers can ignore. Never repurpose or reorder existing ones.
 
@@ -31,22 +31,22 @@ New data may be added, but only as additive NBT tags that older readers can igno
 
 The same seed must produce byte-identical terrain to upstream. This is what makes `JavaRandom` load-bearing:
 
-- **`BetaSharp/Util/Maths/JavaRandom.cs` must stay a bit-exact port of Java's 48-bit LCG.** It is used by ~65 files. It is the last Java-shaped thing in the codebase and it is deliberate — Beta 1.7.3's terrain is a specific sequence of draws from that exact generator. Swapping it for `System.Random`, changing draw order, or "optimizing" the call sequence in a generator silently changes every world.
-- Generation lives in two places: `BetaSharp/Worlds/Gen/Chunks/` (the `Overworld`/`Nether`/`Sky`/`Common` chunk generators) and `BetaSharp/Worlds/Generation/` (`Biomes/`, `Generators/Features/`, `Generators/Carvers/`).
+- **`OmniBlock/Util/Maths/JavaRandom.cs` must stay a bit-exact port of Java's 48-bit LCG.** It is used by ~65 files. It is the last Java-shaped thing in the codebase and it is deliberate — Beta 1.7.3's terrain is a specific sequence of draws from that exact generator. Swapping it for `System.Random`, changing draw order, or "optimizing" the call sequence in a generator silently changes every world.
+- Generation lives in two places: `OmniBlock/Worlds/Gen/Chunks/` (the `Overworld`/`Nether`/`Sky`/`Common` chunk generators) and `OmniBlock/Worlds/Generation/` (`Biomes/`, `Generators/Features/`, `Generators/Carvers/`).
 - Refactors there are fine as long as the *sequence and count* of `JavaRandom` draws is preserved exactly. If you cannot prove that, don't land it.
 
-Note that the IKVM/Java-interop constraint from upstream BetaSharp is **gone** — there are no IKVM package references and no `java.*` types anywhere in the tree. `JavaRandom` is a plain C# class and is the sole intentional exception to "write idiomatic C#, not Java-style code".
+Note that the IKVM/Java-interop constraint from upstream OmniBlock is **gone** — there are no IKVM package references and no `java.*` types anywhere in the tree. `JavaRandom` is a plain C# class and is the sole intentional exception to "write idiomatic C#, not Java-style code".
 
 ## Build & Run Commands
 
-The solution file is `BetaSharp.slnx` (the newer XML solution format — there is no `.sln`).
+The solution file is `OmniBlock.slnx` (the newer XML solution format — there is no `.sln`).
 
 ```bash
 # Run the launcher (recommended entry point — handles auth and starts client)
-cd BetaSharp.Launcher && dotnet run --configuration Release
+cd OmniBlock.Launcher && dotnet run --configuration Release
 
 # Build a specific project
-cd BetaSharp.(Client|Server|Launcher) && dotnet build --configuration Release
+cd OmniBlock.(Client|Server|Launcher) && dotnet build --configuration Release
 
 # Build everything from root
 dotnet build --configuration Release
@@ -55,7 +55,7 @@ dotnet build --configuration Release
 dotnet test
 
 # Run a specific test
-dotnet test --filter "FullyQualifiedName=BetaSharp.Tests.UnitTest1.Test1"
+dotnet test --filter "FullyQualifiedName=OmniBlock.Tests.UnitTest1.Test1"
 ```
 
 ## Formatting & Analysis
@@ -76,21 +76,21 @@ The `.editorconfig` enforces: 4-space indentation, LF line endings for `.cs` fil
 
 ## Naming
 
-The fork is called OmniBlock, but **project directories, assembly names, and the root namespace are all still `BetaSharp`**. A rename is a deliberate future task, not something to do opportunistically — it would touch every file and destroy `git blame`. Until it happens, `BetaSharp` in code means "this project".
+The fork is called OmniBlock, but **project directories, assembly names, and the root namespace are all still `OmniBlock`**. A rename is a deliberate future task, not something to do opportunistically — it would touch every file and destroy `git blame`. Until it happens, `OmniBlock` in code means "this project".
 
 ## Solution Structure
 
 | Project | Type | Purpose |
 |---------|------|---------|
-| `BetaSharp/` | Library | Shared core: blocks, entities, items, worlds, network, server logic |
-| `BetaSharp.Client/` | Executable | Game client with OpenGL rendering, UI, input, audio |
-| `BetaSharp.Server/` | Executable | Standalone dedicated server |
-| `BetaSharp.Launcher/` | WinExe (Avalonia) | Launcher with Microsoft account auth (MSAL), AOT compiled |
-| `BetaSharp.Tests/` | Test (xUnit) | Unit tests |
+| `OmniBlock/` | Library | Shared core: blocks, entities, items, worlds, network, server logic |
+| `OmniBlock.Client/` | Executable | Game client with OpenGL rendering, UI, input, audio |
+| `OmniBlock.Server/` | Executable | Standalone dedicated server |
+| `OmniBlock.Launcher/` | WinExe (Avalonia) | Launcher with Microsoft account auth (MSAL), AOT compiled |
+| `OmniBlock.Tests/` | Test (xUnit) | Unit tests |
 
 ## Architecture
 
-### Core Library (`BetaSharp/`)
+### Core Library (`OmniBlock/`)
 
 - **`Bootstrap.cs` / `Registries/DefaultRegistries.cs`** — Initialization entry point; registers all blocks, items, and entities via the registry pattern.
 - **`Registries/`** — The data-driven backbone: `IRegistry`/`IndexedRegistry`, `RegistryKey`, `Holder`, and a reload pipeline (`RegistryReloadPipeline`, `IRegistryReloadListener`). This is where scripting-based modding will hook in.
@@ -102,9 +102,9 @@ The fork is called OmniBlock, but **project directories, assembly names, and the
 - **`NBT/`** — Named Binary Tag serialization. Frozen; see Hard Invariants.
 - **`PathFinding/`** — Entity AI pathfinding. `PathingCoordinator` batches path requests and applies results a tick later, off the game-tick thread (see `docs/parallel-pathfinding.md`).
 
-### Client (`BetaSharp.Client/`)
+### Client (`OmniBlock.Client/`)
 
-- **`BetaSharp.cs`** — Main game loop and client initialization; has a static `Instance` singleton.
+- **`OmniBlock.cs`** — Main game loop and client initialization; has a static `Instance` singleton.
 - **`Display.cs`** — Window/display management via Silk.NET (GLFW). Requests a GL 4.3 core context.
 - **`Rendering/`** — OpenGL rendering pipeline:
   - `Core/OpenGL/` — Low-level abstractions: `FixedFunctionPipeline` (the OpenGL `IGL` backend and fixed-function state holder), `GLEnum`, `GLErrorHandler`
@@ -119,9 +119,9 @@ The fork is called OmniBlock, but **project directories, assembly names, and the
 - **`Sound/`** — Audio via SFML.Audio.
 - **`Resource/Pack/`** — Texture pack loading.
 
-Shaders live in `BetaSharp/shaders/` and are embedded resources. **Adding a shader file requires an explicit `defineEmbeddedAsset` entry in `BetaSharp/AssetManager.cs`** — the `EmbeddedResource` glob in the `.csproj` alone is not enough, and the omission only shows up as a runtime crash.
+Shaders live in `OmniBlock/shaders/` and are embedded resources. **Adding a shader file requires an explicit `defineEmbeddedAsset` entry in `OmniBlock/AssetManager.cs`** — the `EmbeddedResource` glob in the `.csproj` alone is not enough, and the omission only shows up as a runtime crash.
 
-`BetaSharp.Client` bans raw `ImGui.Text`/`TextColored`/`TextDisabled`/`TextWrapped` via `BannedSymbols.txt`; use the `ImGuiTextSafe` wrappers (raw calls treat their argument as a format string and segfault on `%`).
+`OmniBlock.Client` bans raw `ImGui.Text`/`TextColored`/`TextDisabled`/`TextWrapped` via `BannedSymbols.txt`; use the `ImGuiTextSafe` wrappers (raw calls treat their argument as a format string and segfault on `%`).
 
 ### Key Technologies
 
@@ -136,7 +136,7 @@ Shaders live in `BetaSharp/shaders/` and are embedded resources. **Adding a shad
 ## Code Conventions
 
 - Write idiomatic **C#**. See [Microsoft C# conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions).
-- Prefer data over code. If something can be a JSON definition in `BetaSharp/assets/` plus an existing behavior, it should be, rather than a new class.
+- Prefer data over code. If something can be a JSON definition in `OmniBlock/assets/` plus an existing behavior, it should be, rather than a new class.
 - Behavior composition over inheritance — match the existing `Behaviors/` pattern rather than adding subclasses.
 - `JavaRandom` is the one sanctioned Java-ism. Everything else Java-shaped that you find is fair game to modernize, subject to the parity rule above.
 - Include tests with new features; when fixing a bug, start with a test that reproduces it.

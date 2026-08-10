@@ -1,9 +1,9 @@
-using BetaSharp.Entities;
-using BetaSharp.Inventories;
-using BetaSharp.Items;
-using BetaSharp.NBT;
+using OmniBlock.Entities;
+using OmniBlock.Inventories;
+using OmniBlock.Items;
+using OmniBlock.NBT;
 
-namespace BetaSharp.Blocks.Entities;
+namespace OmniBlock.Blocks.Entities;
 
 internal class BlockEntityChest : BlockEntity, IInventory
 {

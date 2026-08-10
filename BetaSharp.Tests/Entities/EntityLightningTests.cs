@@ -1,10 +1,10 @@
-using BetaSharp.Blocks;
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.Tests.TestSupport;
-using BetaSharp.Util.Maths;
+using OmniBlock.Blocks;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.Tests.TestSupport;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Covers the lightning bolt, the third non-living entity to lose its class — and with it the

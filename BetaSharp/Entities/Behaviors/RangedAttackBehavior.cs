@@ -1,6 +1,6 @@
-using BetaSharp.Util.Maths;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     Fires an arrow at the target while it is within <paramref name="range" />, then faces it.

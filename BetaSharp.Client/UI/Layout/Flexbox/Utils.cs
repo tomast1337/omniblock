@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.UI.Layout.Flexbox;
+namespace OmniBlock.Client.UI.Layout.Flexbox;
 
 // MeasureFunc describes function for measuring
 public delegate Size MeasureFunc(Node node, float width, MeasureMode widthMode, float height, MeasureMode heightMode);

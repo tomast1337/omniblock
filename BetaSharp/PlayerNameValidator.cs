@@ -1,4 +1,4 @@
-namespace BetaSharp;
+namespace OmniBlock;
 
 /// <summary>
 /// Validates player display names for CLI session and multiplayer login (16-char limit matches login / spawn packets).

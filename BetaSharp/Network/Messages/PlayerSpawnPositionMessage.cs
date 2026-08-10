@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 [WireMessage("beta:player_spawn_position")]
 public partial class PlayerSpawnPositionMessage : Message

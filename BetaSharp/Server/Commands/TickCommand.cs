@@ -1,8 +1,8 @@
-using BetaSharp.Server.Command;
+using OmniBlock.Server.Command;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 
-namespace BetaSharp.Server.Commands;
+namespace OmniBlock.Server.Commands;
 
 public class TickCommand : Command.Command
 {

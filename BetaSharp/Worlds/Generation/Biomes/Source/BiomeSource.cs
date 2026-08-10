@@ -1,9 +1,9 @@
-using BetaSharp.Util.Maths;
-using BetaSharp.Util.Maths.Noise;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Generation.Biomes;
+using OmniBlock.Util.Maths;
+using OmniBlock.Util.Maths.Noise;
+using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Generation.Biomes;
 
-namespace BetaSharp.Worlds.Biomes.Source;
+namespace OmniBlock.Worlds.Biomes.Source;
 
 public class BiomeSource
 {

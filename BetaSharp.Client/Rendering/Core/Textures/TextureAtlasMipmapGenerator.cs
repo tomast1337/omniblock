@@ -2,7 +2,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
-namespace BetaSharp.Client.Rendering.Core.Textures;
+namespace OmniBlock.Client.Rendering.Core.Textures;
 
 public static class TextureAtlasMipmapGenerator
 {

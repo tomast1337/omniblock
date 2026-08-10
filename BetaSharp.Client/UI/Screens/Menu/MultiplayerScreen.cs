@@ -1,13 +1,13 @@
-using BetaSharp.Client.Network;
-using BetaSharp.Client.UI.Controls;
-using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Controls.ListItems;
-using BetaSharp.Client.UI.Layout.Flexbox;
-using BetaSharp.Client.UI.Screens.Menu.Net;
-using BetaSharp.NBT;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.Network;
+using OmniBlock.Client.UI.Controls;
+using OmniBlock.Client.UI.Controls.Core;
+using OmniBlock.Client.UI.Controls.ListItems;
+using OmniBlock.Client.UI.Layout.Flexbox;
+using OmniBlock.Client.UI.Screens.Menu.Net;
+using OmniBlock.NBT;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Screens.Menu;
+namespace OmniBlock.Client.UI.Screens.Menu;
 
 public class MultiplayerScreen(UIContext context, ClientNetworkContext networkContext) : UIScreen(context)
 {
@@ -126,7 +126,7 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
     {
         try
         {
-            string path = Path.Combine(BetaSharp.BetaSharpDir, "servers.dat");
+            string path = Path.Combine(OmniBlock.BetaSharpDir, "servers.dat");
             if (!File.Exists(path))
             {
                 return;
@@ -160,7 +160,7 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
             NBTTagCompound tag = new();
             tag.SetTag("servers", list);
 
-            string path = Path.Combine(BetaSharp.BetaSharpDir, "servers.dat");
+            string path = Path.Combine(OmniBlock.BetaSharpDir, "servers.dat");
             using FileStream stream = File.Create(path);
             NbtIo.WriteCompressed(tag, stream);
         }

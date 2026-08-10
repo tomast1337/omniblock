@@ -1,8 +1,8 @@
 using System.Text.Json;
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
 
-namespace BetaSharp.Tests.Blocks;
+namespace OmniBlock.Tests.Blocks;
 
 public sealed class BlockCactusTests
 {
@@ -60,21 +60,21 @@ public sealed class BlockCactusTests
     [Fact]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"cactus","soil":"betasharp:sand"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"cactus","soil":"omniblock:sand"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("cactus", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"cactus","stem":"betasharp:cactus","soil":"not_a_real_block"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"cactus","stem":"omniblock:cactus","soil":"not_a_real_block"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("cactus", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_MissingMaxHeight_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"cactus","stem":"betasharp:cactus","soil":"betasharp:sand"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"cactus","stem":"omniblock:cactus","soil":"omniblock:sand"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("cactus", json.RootElement));
     }
 }

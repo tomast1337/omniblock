@@ -1,9 +1,9 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
-using BetaSharp.Entities;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Entities;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Items.Behaviors;
+namespace OmniBlock.Items.Behaviors;
 
 public sealed class RecordBehavior : IItemBehavior
 {

@@ -1,9 +1,9 @@
 using System.Text.Json;
-using BetaSharp.Items;
-using BetaSharp.Registries;
-using BetaSharp.Registries.Data;
+using OmniBlock.Items;
+using OmniBlock.Registries;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Tests.Items;
+namespace OmniBlock.Tests.Items;
 
 public sealed class ItemJsonDumperTests
 {
@@ -20,7 +20,7 @@ public sealed class ItemJsonDumperTests
 
         _ = Item.ByName("stick").Id;
 
-        string outDir = Path.Combine(FindRepoRoot(), "BetaSharp", "assets", "item");
+        string outDir = Path.Combine(FindRepoRoot(), "OmniBlock", "assets", "item");
         Directory.CreateDirectory(outDir);
 
         JsonElement fullDefaults = JsonSerializer.SerializeToElement(new ItemDefinition { ProtocolId = 0 }, s_options);

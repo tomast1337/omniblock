@@ -1,7 +1,7 @@
 using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 
-namespace BetaSharp.Registries.Data;
+namespace OmniBlock.Registries.Data;
 
 /// <summary>
 /// A load-once, process-global map of canonical runtime instances built from data assets.

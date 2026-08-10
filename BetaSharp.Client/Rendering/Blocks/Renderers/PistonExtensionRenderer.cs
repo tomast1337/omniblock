@@ -1,9 +1,9 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
-using BetaSharp.Textures;
-using BetaSharp.Util.Maths;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Textures;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Client.Rendering.Blocks.Renderers;
+namespace OmniBlock.Client.Rendering.Blocks.Renderers;
 
 public class PistonExtensionRenderer : IBlockRenderer
 {
@@ -145,7 +145,7 @@ public class PistonExtensionRenderer : IBlockRenderer
 
 
     /// <summary>The arm's own texture, which is the piston body's side however the head is textured.</summary>
-    private static readonly int s_armSideLayer = Atlases.Terrain.LayerOf("betasharp:piston_body_side");
+    private static readonly int s_armSideLayer = Atlases.Terrain.LayerOf("omniblock:piston_body_side");
 
     /// <summary>The arm is 4 of the tile's 16 pixels thick, so it uses the top quarter of it.</summary>
     private const float ArmThickness = 4.0f / 16.0f;

@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.UI.Screens;
+namespace OmniBlock.Client.UI.Screens;
 
 public interface IScreenNavigator
 {

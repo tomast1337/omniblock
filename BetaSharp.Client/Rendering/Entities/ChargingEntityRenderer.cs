@@ -1,9 +1,9 @@
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Entities.Models;
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Entities.Models;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
 
-namespace BetaSharp.Client.Rendering.Entities;
+namespace OmniBlock.Client.Rendering.Entities;
 
 /// <summary>
 ///     Squashes the model as a charge winds up and lets it swell back out afterwards — the ghast

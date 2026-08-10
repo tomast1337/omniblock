@@ -1,10 +1,10 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     A state change the client is asking for: respawn, open inventory, leave a bed.
 ///     Replaces <c>ClientCommandC2SPacket</c>.
 /// </summary>
-[WireMessage("betasharp:client_command")]
+[WireMessage("omniblock:client_command")]
 public sealed partial class ClientCommandMessage : Message
 {
     [WireField]

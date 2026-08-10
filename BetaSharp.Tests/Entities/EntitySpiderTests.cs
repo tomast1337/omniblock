@@ -1,7 +1,7 @@
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Covers the spider, whose remaining overrides were split three ways: wall climbing and its ride
@@ -44,7 +44,7 @@ public sealed class EntitySpiderTests
         // Walk it into a wall clear of its 1.4-wide box; the collision flag is what it reads.
         for (int y = 65; y < 68; y++)
         {
-            world.ReaderWriter.SetBlock(11, y, 8, BetaSharp.Blocks.BlockRegistry.Get("stone").Id, 0);
+            world.ReaderWriter.SetBlock(11, y, 8, OmniBlock.Blocks.BlockRegistry.Get("stone").Id, 0);
         }
 
         spider.Move(4.0D, 0.0D, 0.0D);

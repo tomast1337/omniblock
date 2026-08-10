@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "Hrať multiplayer",
-        "betasharpServer": "BetaSharp Server",
+        "betasharpServer": "OmniBlock Server",
         "info1": "Multiplayer v Minecrafte zatiaľ nie je dokončený, ale prebieha",
         "info2": "nejaké predbežné testovanie s chybami.",
         "ipinfo": "Zadajte IP adresu servera, ku ktorému sa chcete pripojiť:",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "BetaSharp Verzia %1$s",
+        "version": "OmniBlock Verzia %1$s",
         "description": "Vylepšená verzia Minecraft Beta 1.7.3, napísaná v C#.",
         "github": "Na GitHube",
         "author": "Vytvoril Fazin85",

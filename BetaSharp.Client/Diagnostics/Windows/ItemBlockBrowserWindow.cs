@@ -1,12 +1,12 @@
 using System.Numerics;
-using BetaSharp.Blocks;
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Items;
-using BetaSharp.Registries;
-using BetaSharp.Util.Maths;
+using OmniBlock.Blocks;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Items;
+using OmniBlock.Registries;
+using OmniBlock.Util.Maths;
 using Hexa.NET.ImGui;
 
-namespace BetaSharp.Client.Diagnostics.Windows;
+namespace OmniBlock.Client.Diagnostics.Windows;
 
 /// <summary>
 /// A quick NEI-style browser over every registered item and block: search, inspect the basics,

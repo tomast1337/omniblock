@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 [WireMessage("beta:player_connection_update")]
 public partial class PlayerConnectionUpdateMessage : Message

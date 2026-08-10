@@ -8,7 +8,7 @@
   "Opacity": 3,
   "NonOpaque": true,
   "TickRandomly": true,
-  "TextureId": "betasharp:ice",
+  "TextureId": "omniblock:ice",
   "TopVariance": "Rotate180",
   "BottomVariance": "Rotate180",
   "SideVariance": "Rotate180",
@@ -24,9 +24,9 @@
     {
       "Slots": ["Ticker", "Lifecycle"],
       "Type": "melt",
-      "melt_replacement": "betasharp:water",
+      "melt_replacement": "omniblock:water",
       "subtract_opacity": true,
-      "broken_replacement": "betasharp:flowing_water"
+      "broken_replacement": "omniblock:flowing_water"
     }
   ]
 }

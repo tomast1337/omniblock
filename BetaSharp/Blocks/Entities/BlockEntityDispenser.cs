@@ -1,10 +1,10 @@
-using BetaSharp.Entities;
-using BetaSharp.Inventories;
-using BetaSharp.Items;
-using BetaSharp.NBT;
-using BetaSharp.Util.Maths;
+using OmniBlock.Entities;
+using OmniBlock.Inventories;
+using OmniBlock.Items;
+using OmniBlock.NBT;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Blocks.Entities;
+namespace OmniBlock.Blocks.Entities;
 
 public class BlockEntityDispenser : BlockEntity, IInventory
 {

@@ -1,9 +1,9 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     A one-shot animation on an entity. Replaces <c>EntityAnimationPacket</c>.
 /// </summary>
-[WireMessage("betasharp:entity_animation")]
+[WireMessage("omniblock:entity_animation")]
 public sealed partial class EntityAnimationMessage : Message
 {
     public override SendPriority Priority => SendPriority.High;

@@ -1,12 +1,12 @@
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Client.Input;
-using BetaSharp.Client.UI.Controls;
-using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Layout.Flexbox;
-using BetaSharp.Util;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Client.Input;
+using OmniBlock.Client.UI.Controls;
+using OmniBlock.Client.UI.Controls.Core;
+using OmniBlock.Client.UI.Layout.Flexbox;
+using OmniBlock.Util;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Screens.InGame;
+namespace OmniBlock.Client.UI.Screens.InGame;
 
 public class SignEditScreen(UIContext context, BlockEntitySign sign, Action? editCompleted) : UIScreen(context)
 {

@@ -1,11 +1,11 @@
-using BetaSharp.Client.Rendering.Core.Textures.Atlas;
+using OmniBlock.Client.Rendering.Core.Textures.Atlas;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using Xunit;
 
-namespace BetaSharp.Tests.Rendering.Textures;
+namespace OmniBlock.Tests.Rendering.Textures;
 
 public class NamedTextureArrayFallbackTests
 {

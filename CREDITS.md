@@ -1,6 +1,6 @@
-# BetaSharp Credits & Open Source Licenses
+# OmniBlock Credits & Open Source Licenses
 
-BetaSharp's GUI system uses https://github.com/ru-ace/Flexbox for its flexbox layout engine.
+OmniBlock's GUI system uses https://github.com/ru-ace/Flexbox for its flexbox layout engine.
 
 ## Flexbox CSS Layout Engine
 

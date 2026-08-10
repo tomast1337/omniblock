@@ -1,10 +1,10 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:BetaSharp.Launcher.Features.Shell"
+        xmlns:local="clr-namespace:OmniBlock.Launcher.Features.Shell"
 
-        x:Class="BetaSharp.Launcher.Features.Shell.ShellView" x:DataType="local:ShellViewModel"
+        x:Class="OmniBlock.Launcher.Features.Shell.ShellView" x:DataType="local:ShellViewModel"
 
-        Icon="../../logo.ico" Title="BetaSharp Launcher" Width="400" Height="605" MinWidth="300" MinHeight="500"
+        Icon="../../logo.ico" Title="OmniBlock Launcher" Width="400" Height="605" MinWidth="300" MinHeight="500"
         Padding="25" WindowStartupLocation="CenterScreen">
 
     <TransitioningContentControl Content="{CompiledBinding Current}">

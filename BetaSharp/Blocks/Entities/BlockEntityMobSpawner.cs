@@ -1,11 +1,11 @@
 using System;
-using BetaSharp.Entities;
-using BetaSharp.NBT;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Entities;
+using OmniBlock.NBT;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Blocks.Entities;
+namespace OmniBlock.Blocks.Entities;
 
 public class BlockEntityMobSpawner : BlockEntity
 {

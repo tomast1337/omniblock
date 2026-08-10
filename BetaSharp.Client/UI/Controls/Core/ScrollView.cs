@@ -1,9 +1,9 @@
-using BetaSharp.Client.UI.Layout;
-using BetaSharp.Client.UI.Layout.Flexbox;
-using BetaSharp.Client.UI.Rendering;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.UI.Layout;
+using OmniBlock.Client.UI.Layout.Flexbox;
+using OmniBlock.Client.UI.Rendering;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Controls.Core;
+namespace OmniBlock.Client.UI.Controls.Core;
 
 public class ScrollView : UIElement
 {

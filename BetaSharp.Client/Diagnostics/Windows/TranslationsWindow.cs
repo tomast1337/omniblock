@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace BetaSharp.Client.Diagnostics.Windows;
+namespace OmniBlock.Client.Diagnostics.Windows;
 
 internal sealed class TranslationsWindow : DebugWindow
 {

@@ -1,4 +1,4 @@
-namespace BetaSharp.Entities;
+namespace OmniBlock.Entities;
 
 /// <summary>
 ///     Composable per-tick behavior. Declared on <see cref="Entity" />, not

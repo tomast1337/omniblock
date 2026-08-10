@@ -1,8 +1,8 @@
-using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Packets;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Network;
+namespace OmniBlock.Network;
 
 public abstract class NetHandler
 {

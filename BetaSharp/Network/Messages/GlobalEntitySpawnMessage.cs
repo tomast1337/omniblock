@@ -1,10 +1,10 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Spawns an entity every player in the dimension sees, wherever they are — lightning.
 ///     Replaces <c>GlobalEntitySpawnS2CPacket</c>.
 /// </summary>
-[WireMessage("betasharp:global_entity_spawn")]
+[WireMessage("omniblock:global_entity_spawn")]
 public sealed partial class GlobalEntitySpawnMessage : Message
 {
     public override SendPriority Priority => SendPriority.High;

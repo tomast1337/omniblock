@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     What another entity is visibly wearing or holding. Replaces
@@ -9,7 +9,7 @@ namespace BetaSharp.Network.Messages;
 ///         wire that means nothing and invite the receiver to believe it.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:entity_equipment")]
+[WireMessage("omniblock:entity_equipment")]
 public sealed partial class EntityEquipmentMessage : Message
 {
     public override SendPriority Priority => SendPriority.High;

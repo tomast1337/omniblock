@@ -1,6 +1,6 @@
-using BetaSharp.Client.Network;
+using OmniBlock.Client.Network;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 /// <summary>
 ///     What happens when an entity runs out of buffered future, and what happens when its data

@@ -1,8 +1,8 @@
-using BetaSharp.Client.Entities;
-using BetaSharp.Client.UI.Rendering;
-using BetaSharp.Items;
+using OmniBlock.Client.Entities;
+using OmniBlock.Client.UI.Rendering;
+using OmniBlock.Items;
 
-namespace BetaSharp.Client.UI.Controls.HUD;
+namespace OmniBlock.Client.UI.Controls.HUD;
 
 public class PumpkinBlur(Func<ClientPlayerEntity?> getPlayer) : UIElement
 {

@@ -1,6 +1,6 @@
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
 ///     Physics, lifecycle, and visuals for slab blocks. A single instance handles both

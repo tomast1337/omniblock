@@ -1,10 +1,10 @@
-using BetaSharp.Client.Options;
-using BetaSharp.Client.Rendering;
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.UI.Rendering;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.Options;
+using OmniBlock.Client.Rendering;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Client.UI.Rendering;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Controls.HUD;
+namespace OmniBlock.Client.UI.Controls.HUD;
 
 public class ControlTooltipBar : UIElement
 {

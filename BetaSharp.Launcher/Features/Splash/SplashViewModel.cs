@@ -1,15 +1,15 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using BetaSharp.Launcher.Features.Authentication;
-using BetaSharp.Launcher.Features.Home;
-using BetaSharp.Launcher.Features.Sessions;
+using OmniBlock.Launcher.Features.Authentication;
+using OmniBlock.Launcher.Features.Home;
+using OmniBlock.Launcher.Features.Sessions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Launcher.Features.Splash;
+namespace OmniBlock.Launcher.Features.Splash;
 
 internal sealed partial class SplashViewModel(ILogger<SplashViewModel> logger, TitleService titleService, StorageService storageService, NavigationService navigationService) : ObservableObject
 {
@@ -24,13 +24,13 @@ internal sealed partial class SplashViewModel(ILogger<SplashViewModel> logger, T
 
             string? version = await reader.ReadLineAsync();
 
-            titleService.Set($"BetaSharp Launcher {version}");
+            titleService.Set($"OmniBlock Launcher {version}");
         }
         catch (Exception exception)
         {
             logger.LogWarning(exception, "Failed to update the title");
 
-            titleService.Set("BetaSharp Launcher development build");
+            titleService.Set("OmniBlock Launcher development build");
         }
 
         var session = await storageService.GetAsync(SessionSerializerContext.Default.Session);

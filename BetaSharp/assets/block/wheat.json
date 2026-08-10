@@ -8,7 +8,7 @@
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": "betasharp:wheat_stage_0",
+  "TextureId": "omniblock:wheat_stage_0",
   "RenderType": "Crops",
   "NotFullCube": true,
   "NoCollision": true,
@@ -29,21 +29,21 @@
         "Visuals"
       ],
       "Type": "crop",
-      "required_soil": "betasharp:farmland",
-      "mature_crop_item": "betasharp:wheat",
-      "seeds": "betasharp:seeds",
+      "required_soil": "omniblock:farmland",
+      "mature_crop_item": "omniblock:wheat",
+      "seeds": "omniblock:seeds",
       "drop_spread": 0.7,
       "seed_scatter_chance_bound": 15,
       "growth_chance_denominator": 100,
       "stages": [
-        "betasharp:wheat_stage_0",
-        "betasharp:wheat_stage_1",
-        "betasharp:wheat_stage_2",
-        "betasharp:wheat_stage_3",
-        "betasharp:wheat_stage_4",
-        "betasharp:wheat_stage_5",
-        "betasharp:wheat_stage_6",
-        "betasharp:wheat_stage_7"
+        "omniblock:wheat_stage_0",
+        "omniblock:wheat_stage_1",
+        "omniblock:wheat_stage_2",
+        "omniblock:wheat_stage_3",
+        "omniblock:wheat_stage_4",
+        "omniblock:wheat_stage_5",
+        "omniblock:wheat_stage_6",
+        "omniblock:wheat_stage_7"
       ]
     }
   ]

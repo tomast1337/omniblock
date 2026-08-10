@@ -1,6 +1,6 @@
-using BetaSharp.Entities.State;
+using OmniBlock.Entities.State;
 
-namespace BetaSharp.Entities;
+namespace OmniBlock.Entities;
 
 /// <summary>
 ///     Every capability slot for one <see cref="EntityType" />, built once at load and shared by all

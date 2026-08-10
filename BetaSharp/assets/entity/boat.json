@@ -20,8 +20,8 @@
       "Type": "boat",
       "break_damage": 40,
       "wreckage": [
-        { "Item": "betasharp:planks", "Count": 3 },
-        { "Item": "betasharp:stick", "Count": 2 }
+        { "Item": "omniblock:planks", "Count": 3 },
+        { "Item": "omniblock:stick", "Count": 2 }
       ]
     }
   ],

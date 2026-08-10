@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace BetaSharp.Client.Diagnostics;
+namespace OmniBlock.Client.Diagnostics;
 
 internal readonly record struct DebugSystemSnapshot(
     string GpuName,

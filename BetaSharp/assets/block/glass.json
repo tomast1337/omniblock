@@ -6,7 +6,7 @@
   "Hardness": 0.3,
   "Resistance": 0.5,
   "NonOpaque": true,
-  "TextureId": "betasharp:glass",
+  "TextureId": "omniblock:glass",
   "TopVariance": "Rotate180",
   "BottomVariance": "Rotate180",
   "SideVariance": "Rotate180",

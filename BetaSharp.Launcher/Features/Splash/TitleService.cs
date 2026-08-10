@@ -2,7 +2,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 
-namespace BetaSharp.Launcher.Features.Splash;
+namespace OmniBlock.Launcher.Features.Splash;
 
 internal sealed class TitleService
 {

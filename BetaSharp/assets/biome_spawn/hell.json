@@ -1,11 +1,11 @@
 {
   "Monsters": [
     {
-      "Entity": "betasharp:ghast",
+      "Entity": "omniblock:ghast",
       "Weight": 10
     },
     {
-      "Entity": "betasharp:pigzombie",
+      "Entity": "omniblock:pigzombie",
       "Weight": 10
     }
   ],

@@ -1,8 +1,8 @@
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Storage;
+using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Storage;
 
-namespace BetaSharp.Server.Worlds;
+namespace OmniBlock.Server.Worlds;
 
 internal class ReadOnlyServerWorld : ServerWorld
 {

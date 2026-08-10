@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace BetaSharp.Launcher.Features;
+namespace OmniBlock.Launcher.Features;
 
 internal sealed class ProcessService(MinecraftService minecraftService)
 {
@@ -20,7 +20,7 @@ internal sealed class ProcessService(MinecraftService minecraftService)
         {
             Arguments = string.Join(" ", args),
             CreateNoWindow = true,
-            FileName = Path.Combine(directory, $"{nameof(BetaSharp)}.{suffix}"),
+            FileName = Path.Combine(directory, $"{nameof(OmniBlock)}.{suffix}"),
             RedirectStandardInput = redirect,
             RedirectStandardOutput = redirect,
             WorkingDirectory = directory

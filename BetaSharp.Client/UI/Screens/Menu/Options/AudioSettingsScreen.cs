@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.UI.Screens.Menu.Options;
+namespace OmniBlock.Client.UI.Screens.Menu.Options;
 
 public class AudioSettingsScreen : BaseOptionsScreen
 {

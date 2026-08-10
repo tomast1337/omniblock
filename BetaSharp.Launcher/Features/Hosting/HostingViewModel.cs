@@ -2,13 +2,13 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using BetaSharp.Launcher.Features.Home;
-using BetaSharp.Launcher.Features.Properties;
+using OmniBlock.Launcher.Features.Home;
+using OmniBlock.Launcher.Features.Properties;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Launcher.Features.Hosting;
+namespace OmniBlock.Launcher.Features.Hosting;
 
 internal sealed partial class HostingViewModel(ILogger<HostingViewModel> logger, ProcessService processService, NavigationService navigationService) : ObservableObject
 {

@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Packets;
+namespace OmniBlock.Network.Packets;
 
 /// <summary>
 ///     What is left of Beta 1.7.3's flat byte-ID framing.

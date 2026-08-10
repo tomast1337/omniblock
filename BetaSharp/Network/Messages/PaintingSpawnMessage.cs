@@ -1,10 +1,10 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Spawns a painting, which is placed by anchor and facing rather than by position.
 ///     Replaces <c>PaintingEntitySpawnS2CPacket</c>.
 /// </summary>
-[WireMessage("betasharp:painting_spawn")]
+[WireMessage("omniblock:painting_spawn")]
 public sealed partial class PaintingSpawnMessage : Message
 {
     /// <summary>

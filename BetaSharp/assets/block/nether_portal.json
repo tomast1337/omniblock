@@ -7,7 +7,7 @@
   "Hardness": -1,
   "Luminance": 0.73333335,
   "NonOpaque": true,
-  "TextureId": "betasharp:nether_portal",
+  "TextureId": "omniblock:nether_portal",
   "RenderLayer": 1,
   "NotFullCube": true,
   "DropCount": 0,
@@ -15,7 +15,7 @@
     {
       "Slots": ["Physics", "Visuals", "Interactable", "Ticker"],
       "Type": "portal",
-      "portal_base": "betasharp:obsidian"
+      "portal_base": "omniblock:obsidian"
     }
   ]
 }

@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Carries a run of block changes within one chunk. The generator has no encoding for
@@ -9,7 +9,7 @@ namespace BetaSharp.Network.Messages;
 /// </remarks>
 public sealed class ChunkDeltaUpdateMessage : Message
 {
-    public static readonly ResourceLocation Id = new(Namespace.BetaSharp, "chunk_delta_update");
+    public static readonly ResourceLocation Id = new(Namespace.OmniBlock, "chunk_delta_update");
 
     public override ResourceLocation Key => Id;
 

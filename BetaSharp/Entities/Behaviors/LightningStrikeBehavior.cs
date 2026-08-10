@@ -1,9 +1,9 @@
-using BetaSharp.Blocks;
-using BetaSharp.Entities.State;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Entities.State;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     A lightning bolt: sets fire to the ground, thunders, flashes a few times and is gone. One

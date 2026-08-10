@@ -1,14 +1,14 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Diagnostics;
-using BetaSharp.Entities;
-using BetaSharp.Items;
-using BetaSharp.Registries.Data;
-using BetaSharp.Rules;
-using BetaSharp.Worlds.Generation.Biomes;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Diagnostics;
+using OmniBlock.Entities;
+using OmniBlock.Items;
+using OmniBlock.Registries.Data;
+using OmniBlock.Rules;
+using OmniBlock.Worlds.Generation.Biomes;
 
-namespace BetaSharp.Registries;
+namespace OmniBlock.Registries;
 
 public static class DefaultRegistries
 {

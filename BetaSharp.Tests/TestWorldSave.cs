@@ -1,8 +1,8 @@
-using BetaSharp.Blocks.Entities;
-using BetaSharp.NBT;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.NBT;
 using Xunit;
 
-namespace BetaSharp.Tests;
+namespace OmniBlock.Tests;
 
 public class TestWorldSave
 {

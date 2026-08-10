@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Routes a decoded message to the handler registered for its type.

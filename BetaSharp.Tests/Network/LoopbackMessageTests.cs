@@ -1,8 +1,8 @@
-using BetaSharp.Network;
-using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets;
+using OmniBlock.Network;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Packets;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 /// <summary>
 ///     Loopback must not serialise.

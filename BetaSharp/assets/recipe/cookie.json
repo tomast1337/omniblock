@@ -4,11 +4,11 @@
         "#X#"
     ],
     "key": {
-        "X": "betasharp:dye_powder:3",
-        "#": "betasharp:wheat"
+        "X": "omniblock:dye_powder:3",
+        "#": "omniblock:wheat"
     },
     "result": {
-        "id": "betasharp:cookie",
+        "id": "omniblock:cookie",
         "count": 8
     }
 }

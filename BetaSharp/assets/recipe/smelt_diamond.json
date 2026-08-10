@@ -1,7 +1,7 @@
 {
     "type": "smelting",
-    "input": "betasharp:DiamondOre",
+    "input": "omniblock:DiamondOre",
     "result": {
-        "id": "betasharp:diamond"
+        "id": "omniblock:diamond"
     }
 }

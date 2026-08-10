@@ -5,10 +5,10 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
-namespace BetaSharp.Tests.Determinism;
+namespace OmniBlock.Tests.Determinism;
 
 /// <summary>
-///     Compiles the <c>BetaSharp</c> sources and builds a whole-project call graph, so reachability
+///     Compiles the <c>OmniBlock</c> sources and builds a whole-project call graph, so reachability
 ///     from the movement frontier can be decided statically.
 ///     <para>
 ///         Deliberately over-approximates. Virtual and interface calls fan out to every override and
@@ -23,7 +23,7 @@ namespace BetaSharp.Tests.Determinism;
 /// </summary>
 internal sealed class CallGraph
 {
-    /// <summary>Fully qualified, no parameters: <c>BetaSharp.Entities.Entity.Move</c>.</summary>
+    /// <summary>Fully qualified, no parameters: <c>OmniBlock.Entities.Entity.Move</c>.</summary>
     private static readonly SymbolDisplayFormat s_nameFormat = new(
         globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
@@ -280,7 +280,7 @@ internal sealed class CallGraph
 
     private static CSharpCompilation CompileBetaSharp(out ImmutableArray<string> errors)
     {
-        string sourceRoot = Path.Combine(RepoRoot(), "BetaSharp");
+        string sourceRoot = Path.Combine(RepoRoot(), "OmniBlock");
 
         CSharpParseOptions parseOptions = new(LanguageVersion.Preview);
 
@@ -297,7 +297,7 @@ internal sealed class CallGraph
             trees.Add(CSharpSyntaxTree.ParseText(SourceText.From(stream), parseOptions, file));
         }
 
-        // BetaSharp.csproj sets ImplicitUsings=enable, and the SDK-generated global usings file
+        // OmniBlock.csproj sets ImplicitUsings=enable, and the SDK-generated global usings file
         // lives under obj/. Synthesised here instead so the analysis does not depend on build state.
         trees.Add(CSharpSyntaxTree.ParseText(
             """
@@ -312,8 +312,8 @@ internal sealed class CallGraph
             parseOptions,
             "ImplicitGlobalUsings.g.cs"));
 
-        // The test host already has every BetaSharp package dependency loaded, so its trusted
-        // platform assemblies are the reference set. BetaSharp's own output is excluded: its types
+        // The test host already has every OmniBlock package dependency loaded, so its trusted
+        // platform assemblies are the reference set. OmniBlock's own output is excluded: its types
         // come from the sources above, and referencing both would make every one ambiguous.
         string trusted = (string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") ?? string.Empty;
         List<MetadataReference> references =
@@ -321,12 +321,12 @@ internal sealed class CallGraph
             .. trusted
                 .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
                 .Where(p => p.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
-                .Where(p => !Path.GetFileName(p).StartsWith("BetaSharp", StringComparison.OrdinalIgnoreCase))
+                .Where(p => !Path.GetFileName(p).StartsWith("OmniBlock", StringComparison.OrdinalIgnoreCase))
                 .Select(p => (MetadataReference)MetadataReference.CreateFromFile(p))
         ];
 
         CSharpCompilation compilation = CSharpCompilation.Create(
-            "BetaSharp.DeterminismAnalysis",
+            "OmniBlock.DeterminismAnalysis",
             trees,
             references,
             new CSharpCompilationOptions(
@@ -343,7 +343,7 @@ internal sealed class CallGraph
         // rejects outright rather than tolerating.
         CSharpGeneratorDriver
             .Create(
-                [new global::BetaSharp.Generators.MessageGenerator().AsSourceGenerator()],
+                [new global::OmniBlock.Generators.MessageGenerator().AsSourceGenerator()],
                 parseOptions: parseOptions)
             .RunGeneratorsAndUpdateCompilation(compilation, out Compilation generated, out _);
 

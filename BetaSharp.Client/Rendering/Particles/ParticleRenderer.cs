@@ -1,10 +1,10 @@
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.Rendering.Core.WebGPU;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Client.Rendering.Core.WebGPU;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Client.Rendering.Particles;
+namespace OmniBlock.Client.Rendering.Particles;
 
 public static class ParticleRenderer
 {

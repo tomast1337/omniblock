@@ -65,7 +65,7 @@
       "Type": "loot_table",
       "Pools": [
         {
-          "Entries": [{"Item": "betasharp:gunpowder"}],
+          "Entries": [{"Item": "omniblock:gunpowder"}],
           "MinCount": 0,
           "MaxCount": 2
         }

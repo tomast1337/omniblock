@@ -1,10 +1,10 @@
-using BetaSharp.Blocks;
-using BetaSharp.Entities;
-using BetaSharp.Items;
-using BetaSharp.Items.Behaviors;
-using BetaSharp.NBT;
+using OmniBlock.Blocks;
+using OmniBlock.Entities;
+using OmniBlock.Items;
+using OmniBlock.Items.Behaviors;
+using OmniBlock.NBT;
 
-namespace BetaSharp.Inventories;
+namespace OmniBlock.Inventories;
 
 public class InventoryPlayer(EntityPlayer player) : IInventory
 {

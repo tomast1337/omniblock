@@ -1,11 +1,11 @@
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Items;
-using BetaSharp.Util.Maths;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Items;
+using OmniBlock.Util.Maths;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace BetaSharp.Client.DynamicTexture;
+namespace OmniBlock.Client.DynamicTexture;
 
 internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
 {
@@ -13,16 +13,16 @@ internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
     private double _angle;
     private double _angleDelta;
     private int[] _compass = new int[256];
-    private BetaSharp _game;
+    private OmniBlock _game;
     private int _resolution = 16;
 
-    public CompassSprite(BetaSharp game) : base(Item.ByName("compass").GetTextureId(0))
+    public CompassSprite(OmniBlock game) : base(Item.ByName("compass").GetTextureId(0))
     {
         _game = game;
         Atlas = FxImage.Items;
     }
 
-    public override void Setup(BetaSharp game)
+    public override void Setup(OmniBlock game)
     {
         _game = game;
         TextureManager tm = game.TextureManager;

@@ -1,6 +1,6 @@
-using BetaSharp.Blocks;
+using OmniBlock.Blocks;
 
-namespace BetaSharp.Items;
+namespace OmniBlock.Items;
 
 internal class ItemLog : ItemBlock
 {

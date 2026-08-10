@@ -1,13 +1,13 @@
-using BetaSharp.Textures;
+using OmniBlock.Textures;
 
-namespace BetaSharp.Client.DynamicTexture;
+namespace OmniBlock.Client.DynamicTexture;
 
 internal class FireSprite(string tile, string customTexture) : Rendering.Core.Textures.DynamicTexture(Atlases.Terrain.IndexOf(tile))
 {
     private float[] _current = new float[320];
     private float[] _next = new float[320];
 
-    public override void Setup(BetaSharp game)
+    public override void Setup(OmniBlock game)
     {
         Array.Clear(_current);
         Array.Clear(_next);

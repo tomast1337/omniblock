@@ -1,13 +1,13 @@
-using BetaSharp.Blocks.Behaviors;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
-using BetaSharp.Inventories;
-using BetaSharp.Items;
-using BetaSharp.NBT;
-using BetaSharp.Recipes;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Entities;
+using OmniBlock.Inventories;
+using OmniBlock.Items;
+using OmniBlock.NBT;
+using OmniBlock.Recipes;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Blocks.Entities;
+namespace OmniBlock.Blocks.Entities;
 
 public class BlockEntityFurnace : BlockEntity, IInventory
 {

@@ -1,6 +1,6 @@
 {
   "ProtocolId": 335,
-  "TextureId": "betasharp:milk_bucket",
+  "TextureId": "omniblock:milk_bucket",
   "CraftingReturnItemProtocolId": 325,
   "MaxStackSize": 1,
   "Behavior": {

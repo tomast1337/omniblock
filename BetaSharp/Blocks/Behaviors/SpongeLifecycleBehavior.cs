@@ -1,4 +1,4 @@
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
 ///     Sponge removal notifies every block in a radius so absorbed water can flow back.

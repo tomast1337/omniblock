@@ -1,7 +1,7 @@
 using System.IO.Compression;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     A rectangular box of raw block, metadata and light data, compressed.
@@ -25,7 +25,7 @@ namespace BetaSharp.Network.Messages;
 ///         reported size.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:region_data")]
+[WireMessage("omniblock:region_data")]
 public sealed partial class RegionDataMessage : Message
 {
     /// <summary>

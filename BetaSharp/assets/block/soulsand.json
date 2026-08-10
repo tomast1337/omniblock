@@ -6,7 +6,7 @@
   "SoundGroup": "sand",
   "Hardness": 0.5,
   "Resistance": 0.8333333,
-  "TextureId": "betasharp:soul_sand",
+  "TextureId": "omniblock:soul_sand",
   "Behaviors": [
     {
       "Slots": [

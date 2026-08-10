@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Snapshots;
+namespace OmniBlock.Network.Snapshots;
 
 /// <summary>
 ///     The state a delta-compressed snapshot is measured against, and the bookkeeping that keeps

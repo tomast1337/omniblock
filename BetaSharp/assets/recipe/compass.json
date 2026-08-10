@@ -6,10 +6,10 @@
         " # "
     ],
     "key": {
-        "#": "betasharp:ingot_iron",
-        "X": "betasharp:redstone"
+        "#": "omniblock:ingot_iron",
+        "X": "omniblock:redstone"
     },
     "result": {
-        "id": "betasharp:compass"
+        "id": "omniblock:compass"
     }
 }

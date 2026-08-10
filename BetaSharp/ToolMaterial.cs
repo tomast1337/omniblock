@@ -1,4 +1,4 @@
-namespace BetaSharp;
+namespace OmniBlock;
 
 public sealed record ToolMaterial(string Name, int MaxUses, float Efficiency, int DamageBonus, int HarvestLevel);
 

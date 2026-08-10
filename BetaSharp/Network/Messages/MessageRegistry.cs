@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Maps message keys to the compact integers they travel as, for one session.

@@ -1,23 +1,23 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
-using BetaSharp.Items;
-using BetaSharp.PathFinding;
-using BetaSharp.Rules;
-using BetaSharp.Server.Worlds;
-using BetaSharp.Util.Hit;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
-using BetaSharp.Worlds.Biomes.Source;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Dimensions;
-using BetaSharp.Worlds.Mechanics;
-using BetaSharp.Worlds.Storage;
-using BetaSharp.Worlds.Storage.RegionFormat;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Entities;
+using OmniBlock.Items;
+using OmniBlock.PathFinding;
+using OmniBlock.Rules;
+using OmniBlock.Server.Worlds;
+using OmniBlock.Util.Hit;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds;
+using OmniBlock.Worlds.Biomes.Source;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Dimensions;
+using OmniBlock.Worlds.Mechanics;
+using OmniBlock.Worlds.Storage;
+using OmniBlock.Worlds.Storage.RegionFormat;
 
-namespace BetaSharp.Tests.TestSupport;
+namespace OmniBlock.Tests.TestSupport;
 
 public sealed class FakeWorldContext : IWorldContext
 {

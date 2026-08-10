@@ -11,7 +11,7 @@
       "Slots": ["Ticker", "Lifecycle", "Persistence", "Physics"],
       "Type": "hanging_art",
       "check_interval": 100,
-      "drops": "betasharp:painting"
+      "drops": "omniblock:painting"
     }
   ],
   "Renderer": {

@@ -1,7 +1,7 @@
 using System.Net;
-using BetaSharp.Network.Transport;
+using OmniBlock.Network.Transport;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 /// <summary>
 ///     The <see cref="ITransport" /> seam, exercised over a real loopback UDP socket.

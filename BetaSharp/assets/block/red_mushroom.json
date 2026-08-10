@@ -6,7 +6,7 @@
   "SoundGroup": "grass",
   "NonOpaque": true,
   "TickRandomly": true,
-  "TextureId": "betasharp:red_mushroom",
+  "TextureId": "omniblock:red_mushroom",
   "RenderType": "Reed",
   "NotFullCube": true,
   "NoCollision": true,
@@ -22,7 +22,7 @@
     {
       "Slots": ["Ticker", "Physics"],
       "Type": "mushroom",
-      "valid_ground": ["betasharp:grass_block", "betasharp:dirt", "betasharp:stone", "betasharp:gravel", "betasharp:cobblestone"],
+      "valid_ground": ["omniblock:grass_block", "omniblock:dirt", "omniblock:stone", "omniblock:gravel", "omniblock:cobblestone"],
       "spread_chance_one_in": 100,
       "max_brightness": 13
     }

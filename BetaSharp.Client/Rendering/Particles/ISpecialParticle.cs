@@ -1,6 +1,6 @@
-using BetaSharp.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Core;
 
-namespace BetaSharp.Client.Rendering.Particles;
+namespace OmniBlock.Client.Rendering.Particles;
 
 public interface ISpecialParticle
 {

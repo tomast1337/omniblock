@@ -1,8 +1,8 @@
-using BetaSharp.Blocks;
-using BetaSharp.Textures;
-using BetaSharp.Items;
+using OmniBlock.Blocks;
+using OmniBlock.Textures;
+using OmniBlock.Items;
 
-namespace BetaSharp.Tests.Blocks;
+namespace OmniBlock.Tests.Blocks;
 
 public sealed class BlockDropsAndTexturesTests
 {

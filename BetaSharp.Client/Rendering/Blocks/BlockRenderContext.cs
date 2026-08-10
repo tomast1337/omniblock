@@ -1,11 +1,11 @@
 using System.Runtime.CompilerServices;
-using BetaSharp.Blocks;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Textures;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Textures;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Client.Rendering.Blocks;
+namespace OmniBlock.Client.Rendering.Blocks;
 
 public ref struct BlockRenderContext
 {
@@ -85,8 +85,8 @@ public ref struct BlockRenderContext
     ///     it. Matched by texture rather than by block, so anything drawing that side gets the
     ///     overlay -- which is how snowy and unsnowy grass share one renderer.
     /// </summary>
-    private static readonly int s_grassSideTexture = Atlases.Terrain.IndexOf("betasharp:grass_block_side");
-    private static readonly int s_grassSideOverlayTexture = Atlases.Terrain.IndexOf("betasharp:grass_block_side_overlay");
+    private static readonly int s_grassSideTexture = Atlases.Terrain.IndexOf("omniblock:grass_block_side");
+    private static readonly int s_grassSideOverlayTexture = Atlases.Terrain.IndexOf("omniblock:grass_block_side_overlay");
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static int ApplyVariance(int hash, TextureVariance variance, out int flipMask)

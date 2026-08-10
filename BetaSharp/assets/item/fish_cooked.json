@@ -1,7 +1,7 @@
 {
   "ProtocolId": 350,
   "TranslationKey": "fishCooked",
-  "TextureId": "betasharp:cooked_fish",
+  "TextureId": "omniblock:cooked_fish",
   "Behavior": {
     "type": "food",
     "HealAmount": 5,

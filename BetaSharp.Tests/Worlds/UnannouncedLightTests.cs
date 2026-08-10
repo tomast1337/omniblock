@@ -1,13 +1,13 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Entities;
-using BetaSharp.Network.Messages;
-using BetaSharp.Tests.TestSupport;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Entities;
+using OmniBlock.Network.Messages;
+using OmniBlock.Tests.TestSupport;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Tests.Worlds;
+namespace OmniBlock.Tests.Worlds;
 
 /// <summary>
 ///     Whether a client ends a block placement holding the light the server holds, for the cells

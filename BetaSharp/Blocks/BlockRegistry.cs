@@ -1,8 +1,8 @@
-using BetaSharp.Items;
-using BetaSharp.Registries;
-using BetaSharp.Registries.Data;
+using OmniBlock.Items;
+using OmniBlock.Registries;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Blocks;
+namespace OmniBlock.Blocks;
 
 public static class BlockRegistry
 {

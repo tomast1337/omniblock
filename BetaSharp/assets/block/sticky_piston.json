@@ -8,7 +8,7 @@
   "Resistance": 0.8333333,
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": "betasharp:piston_top_sticky",
+  "TextureId": "omniblock:piston_top_sticky",
   "RenderType": "PistonBase",
   "NotFullCube": true,
   "Behaviors": [
@@ -21,10 +21,10 @@
       ],
       "Type": "piston_base",
       "sticky": true,
-      "top": "betasharp:piston_top_sticky",
-      "side": "betasharp:piston_body_side",
-      "bottom": "betasharp:piston_bottom",
-      "extension_side": "betasharp:piston_extension_side"
+      "top": "omniblock:piston_top_sticky",
+      "side": "omniblock:piston_body_side",
+      "bottom": "omniblock:piston_bottom",
+      "extension_side": "omniblock:piston_extension_side"
     }
   ]
 }

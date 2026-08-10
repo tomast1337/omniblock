@@ -1,9 +1,9 @@
-using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Rendering;
-using BetaSharp.Worlds.Storage;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.UI.Controls.Core;
+using OmniBlock.Client.UI.Rendering;
+using OmniBlock.Worlds.Storage;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Controls.ListItems;
+namespace OmniBlock.Client.UI.Controls.ListItems;
 
 public class WorldListItem(WorldSaveInfo value) : ListItem<WorldSaveInfo>(value)
 {

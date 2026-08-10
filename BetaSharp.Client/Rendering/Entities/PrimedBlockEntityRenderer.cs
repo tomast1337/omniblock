@@ -1,10 +1,10 @@
-using BetaSharp.Blocks;
-using BetaSharp.Client.Rendering.Blocks;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
+using OmniBlock.Blocks;
+using OmniBlock.Client.Rendering.Blocks;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
 
-namespace BetaSharp.Client.Rendering.Entities;
+namespace OmniBlock.Client.Rendering.Entities;
 
 /// <summary>
 ///     Draws a primed explosive as its block, swelling and flashing white as the fuse runs out. The

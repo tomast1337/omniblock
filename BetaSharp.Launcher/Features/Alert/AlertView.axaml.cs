@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 
-namespace BetaSharp.Launcher.Features.Alert;
+namespace OmniBlock.Launcher.Features.Alert;
 
 internal sealed partial class AlertView : Window
 {

@@ -1,8 +1,8 @@
-using BetaSharp.Client.Rendering;
-using BetaSharp.Client.UI.Screens;
-using BetaSharp.Stats;
+using OmniBlock.Client.Rendering;
+using OmniBlock.Client.UI.Screens;
+using OmniBlock.Stats;
 
-namespace BetaSharp.Client.Network;
+namespace OmniBlock.Client.Network;
 
 public sealed class ClientNetworkContext(
     IClientPlayerHost playerHost,

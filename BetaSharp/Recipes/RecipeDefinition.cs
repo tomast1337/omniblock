@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using BetaSharp.Registries.Data;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Recipes;
+namespace OmniBlock.Recipes;
 
 public class RecipeDefinition : DataAsset
 {

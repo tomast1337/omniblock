@@ -1,10 +1,10 @@
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Items;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Items;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace BetaSharp.Client.DynamicTexture;
+namespace OmniBlock.Client.DynamicTexture;
 
 internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
 {
@@ -15,16 +15,16 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
     private int[] _clock = new int[256];
     private int[] _dial = new int[256];
     private int _dialResolution = 16;
-    private BetaSharp _game;
+    private OmniBlock _game;
     private int _resolution = 16;
 
-    public ClockSprite(BetaSharp game) : base(Item.ByName("clock").GetTextureId(0))
+    public ClockSprite(OmniBlock game) : base(Item.ByName("clock").GetTextureId(0))
     {
         _game = game;
         Atlas = FxImage.Items;
     }
 
-    public override void Setup(BetaSharp game)
+    public override void Setup(OmniBlock game)
     {
         _game = game;
         TextureManager tm = game.TextureManager;

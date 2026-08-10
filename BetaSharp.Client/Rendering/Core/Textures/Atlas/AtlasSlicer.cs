@@ -1,9 +1,9 @@
-using BetaSharp.Textures;
+using OmniBlock.Textures;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
-namespace BetaSharp.Client.Rendering.Core.Textures.Atlas;
+namespace OmniBlock.Client.Rendering.Core.Textures.Atlas;
 
 /// <summary>
 ///     Crops the named tiles out of a legacy grid atlas image, per <see cref="AtlasTileMap" />.

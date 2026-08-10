@@ -6,10 +6,10 @@
         "###"
     ],
     "key": {
-        "#": "betasharp:paper",
-        "X": "betasharp:compass"
+        "#": "omniblock:paper",
+        "X": "omniblock:compass"
     },
     "result": {
-        "id": "betasharp:map"
+        "id": "omniblock:map"
     }
 }

@@ -1,11 +1,11 @@
-using BetaSharp.Client.Network;
-using BetaSharp.Client.UI.Controls;
-using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Layout.Flexbox;
-using BetaSharp.Network.Messages;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.Network;
+using OmniBlock.Client.UI.Controls;
+using OmniBlock.Client.UI.Controls.Core;
+using OmniBlock.Client.UI.Layout.Flexbox;
+using OmniBlock.Network.Messages;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Screens.Menu.Net;
+namespace OmniBlock.Client.UI.Screens.Menu.Net;
 
 public class DownloadingTerrainScreen(UIContext context, ClientNetworkHandler networkHandler) : UIScreen(context)
 {

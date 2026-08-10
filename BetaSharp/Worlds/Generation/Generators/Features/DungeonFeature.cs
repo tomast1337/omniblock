@@ -1,11 +1,11 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Items;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Items;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Worlds.Generation.Generators.Features;
+namespace OmniBlock.Worlds.Generation.Generators.Features;
 
 internal class DungeonFeature : Feature
 {

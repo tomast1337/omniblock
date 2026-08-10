@@ -1,15 +1,15 @@
-using BetaSharp.Blocks;
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.Items;
-using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets;
-using BetaSharp.Network.Snapshots;
-using BetaSharp.Util;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
+using OmniBlock.Blocks;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.Items;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Packets;
+using OmniBlock.Network.Snapshots;
+using OmniBlock.Util;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core;
 
-namespace BetaSharp.Server.Entities;
+namespace OmniBlock.Server.Entities;
 
 internal class EntityTrackerEntry
 {

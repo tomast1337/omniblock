@@ -6,10 +6,10 @@
         "#"
     ],
     "key": {
-        "X": "betasharp:Planks",
-        "#": "betasharp:stick"
+        "X": "omniblock:Planks",
+        "#": "omniblock:stick"
     },
     "result": {
-        "id": "betasharp:sword_wood"
+        "id": "omniblock:sword_wood"
     }
 }

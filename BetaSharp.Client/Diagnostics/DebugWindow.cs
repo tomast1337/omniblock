@@ -1,6 +1,6 @@
 using Hexa.NET.ImGui;
 
-namespace BetaSharp.Client.Diagnostics;
+namespace OmniBlock.Client.Diagnostics;
 
 internal enum DebugDock
 {

@@ -1,9 +1,9 @@
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.NBT;
-using BetaSharp.Tests.TestSupport;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.NBT;
+using OmniBlock.Tests.TestSupport;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Covers the thrown projectiles, the fifth and sixth non-living entities to lose their classes —

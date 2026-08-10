@@ -1,4 +1,4 @@
-namespace BetaSharp.Launcher.Features.Sessions;
+namespace OmniBlock.Launcher.Features.Sessions;
 
 internal sealed class SessionMessage(Session session)
 {

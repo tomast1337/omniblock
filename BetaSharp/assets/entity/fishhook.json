@@ -13,8 +13,8 @@
     {
       "Slots": ["Ticker", "Persistence", "Physics"],
       "Type": "fishing_bobber",
-      "held_item": "betasharp:fishing_rod",
-      "catches": "betasharp:fish_raw",
+      "held_item": "omniblock:fishing_rod",
+      "catches": "omniblock:fish_raw",
       "bite_delay": 500,
       "bite_delay_raining": 300,
       "max_angler_distance": 32.0

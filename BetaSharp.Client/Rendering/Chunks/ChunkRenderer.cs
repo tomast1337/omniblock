@@ -1,18 +1,18 @@
 using System.Runtime.InteropServices;
-using BetaSharp.Client.Options;
-using BetaSharp.Client.Rendering.Chunks.Occlusion;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.WebGPU;
-using BetaSharp.Profiling;
-using BetaSharp.Textures;
-using BetaSharp.Util;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core;
+using OmniBlock.Client.Options;
+using OmniBlock.Client.Rendering.Chunks.Occlusion;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Core.WebGPU;
+using OmniBlock.Profiling;
+using OmniBlock.Textures;
+using OmniBlock.Util;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core;
 using Silk.NET.Maths;
 using Silk.NET.WebGPU;
 
-namespace BetaSharp.Client.Rendering.Chunks;
+namespace OmniBlock.Client.Rendering.Chunks;
 
 public class ChunkRenderer : IChunkVisibilityVisitor
 {

@@ -5,7 +5,7 @@
   "SoundGroup": "sand",
   "Hardness": 0.5,
   "Resistance": 0.8333333,
-  "TextureId": "betasharp:sand",
+  "TextureId": "omniblock:sand",
   "TopVariance": "Rotate270",
   "BottomVariance": "Rotate270",
   "SideVariance": "Rotate270",
@@ -14,7 +14,7 @@
     {
       "Slots": ["Ticker", "Lifecycle", "Physics"],
       "Type": "falling_block",
-      "passable": ["betasharp:fire"],
+      "passable": ["omniblock:fire"],
       "region_load_check_radius": 32
     }
   ]

@@ -6,12 +6,12 @@
         "#R#"
     ],
     "key": {
-        "#": "betasharp:Cobblestone",
-        "X": "betasharp:ingot_iron",
-        "R": "betasharp:redstone",
-        "T": "betasharp:Planks"
+        "#": "omniblock:Cobblestone",
+        "X": "omniblock:ingot_iron",
+        "R": "omniblock:redstone",
+        "T": "omniblock:Planks"
     },
     "result": {
-        "id": "betasharp:Piston"
+        "id": "omniblock:Piston"
     }
 }

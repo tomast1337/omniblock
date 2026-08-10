@@ -1,12 +1,12 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Entities;
-using BetaSharp.Items;
-using BetaSharp.Tests.Entities;
-using BetaSharp.Textures;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Entities;
+using OmniBlock.Items;
+using OmniBlock.Tests.Entities;
+using OmniBlock.Textures;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Tests.Blocks;
+namespace OmniBlock.Tests.Blocks;
 
 public sealed class BlockDispenserTests
 {

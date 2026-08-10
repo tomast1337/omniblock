@@ -1,7 +1,7 @@
 using System.Text;
-using BetaSharp.Blocks;
+using OmniBlock.Blocks;
 
-namespace BetaSharp.Worlds.Gen.Flat;
+namespace OmniBlock.Worlds.Gen.Flat;
 
 public class FlatGeneratorInfo
 {

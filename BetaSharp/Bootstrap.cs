@@ -1,6 +1,6 @@
-using BetaSharp.Registries;
+using OmniBlock.Registries;
 
-namespace BetaSharp;
+namespace OmniBlock;
 
 public class Bootstrap
 {

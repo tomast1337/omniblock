@@ -4,7 +4,7 @@
   "SoundGroup": "stone",
   "Hardness": 1.5,
   "Resistance": 10,
-  "TextureId": "betasharp:stone",
+  "TextureId": "omniblock:stone",
   "LootTable": {
     "Entries": [
       {

@@ -1,8 +1,8 @@
-using BetaSharp.NBT;
-using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets;
+using OmniBlock.NBT;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Packets;
 
-namespace BetaSharp.Blocks.Entities;
+namespace OmniBlock.Blocks.Entities;
 
 public class BlockEntitySign : BlockEntity
 {

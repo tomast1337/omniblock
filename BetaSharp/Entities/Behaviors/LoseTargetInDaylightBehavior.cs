@@ -1,4 +1,4 @@
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     Wraps another attack behavior with a chance to lose interest in bright light, which makes a

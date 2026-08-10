@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace BetaSharp.Launcher.Features.Shell;
+namespace OmniBlock.Launcher.Features.Shell;
 
 internal sealed partial class ShellView : Window
 {

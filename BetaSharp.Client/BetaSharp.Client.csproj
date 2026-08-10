@@ -11,11 +11,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BetaSharp\BetaSharp.csproj" />
+    <ProjectReference Include="..\OmniBlock\OmniBlock.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="BetaSharp.Tests" />
+    <InternalsVisibleTo Include="OmniBlock.Tests" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,7 +33,7 @@
 
   <ItemGroup>
     <None Include="assets\**\*" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\BetaSharp\assets\**\*">
+    <None Include="..\OmniBlock\assets\**\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <Link>assets\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </None>

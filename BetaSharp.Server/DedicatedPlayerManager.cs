@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Server;
+namespace OmniBlock.Server;
 
 internal class DedicatedPlayerManager : PlayerManager
 {

@@ -1,7 +1,7 @@
 {
     "ProtocolId": 284,
     "TranslationKey": "shovelGold",
-    "TextureId": "betasharp:golden_shovel",
+    "TextureId": "omniblock:golden_shovel",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "tool",

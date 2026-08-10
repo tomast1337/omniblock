@@ -1,9 +1,9 @@
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.Items;
-using BetaSharp.NBT;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.Items;
+using OmniBlock.NBT;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Covers the Physics capability slot and the three animals that lost their classes to it. Pig,

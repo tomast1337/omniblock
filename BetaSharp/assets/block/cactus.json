@@ -7,7 +7,7 @@
   "Resistance": 0.6666667,
   "NonOpaque": true,
   "TickRandomly": true,
-  "TextureId": "betasharp:cactus_side",
+  "TextureId": "omniblock:cactus_side",
   "TopVariance": "All",
   "BottomVariance": "All",
   "SideVariance": "Rotate180",
@@ -30,12 +30,12 @@
         "Visuals"
       ],
       "Type": "cactus",
-      "stem": "betasharp:cactus",
-      "soil": "betasharp:sand",
+      "stem": "omniblock:cactus",
+      "soil": "omniblock:sand",
       "max_height": 3,
-      "top": "betasharp:cactus_top",
-      "side": "betasharp:cactus_side",
-      "bottom": "betasharp:cactus_bottom"
+      "top": "omniblock:cactus_top",
+      "side": "omniblock:cactus_side",
+      "bottom": "omniblock:cactus_bottom"
     }
   ]
 }

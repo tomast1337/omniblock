@@ -1,6 +1,6 @@
 {
   "ProtocolId": 329,
-  "TextureId": "betasharp:saddle",
+  "TextureId": "omniblock:saddle",
   "MaxStackSize": 1,
   "Behavior": {
     "type": "saddle"

@@ -1,7 +1,7 @@
-using BetaSharp.Entities;
-using BetaSharp.Util.Maths;
+using OmniBlock.Entities;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Server;
+namespace OmniBlock.Server;
 
 internal class ChunkLoadingQueue(ChunkMap chunkMap)
 {

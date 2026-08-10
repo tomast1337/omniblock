@@ -1,9 +1,9 @@
 using System.Runtime.InteropServices;
-using BetaSharp.Client.Options;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.Textures;
+using OmniBlock.Client.Options;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Core.Textures;
 
-namespace BetaSharp.Client.Rendering.Entities;
+namespace OmniBlock.Client.Rendering.Entities;
 
 /// <summary>
 /// Batches posed/lit entity model geometry (baked by <see cref="Models.ModelPart"/>) and draws it

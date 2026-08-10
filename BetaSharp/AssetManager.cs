@@ -2,7 +2,7 @@ using System.IO.Compression;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp;
+namespace OmniBlock;
 
 public class AssetManager
 {
@@ -424,7 +424,7 @@ public class AssetManager
         try
         {
             var assembly = Assembly.GetExecutingAssembly();
-            string resourceName = $"{nameof(BetaSharp)}." + embeddedAssetPathForPath;
+            string resourceName = $"{nameof(OmniBlock)}." + embeddedAssetPathForPath;
 
             using Stream? stream = assembly.GetManifestResourceStream(resourceName) ?? throw new Exception("Embedded resource not found: " + resourceName);
             switch (type)

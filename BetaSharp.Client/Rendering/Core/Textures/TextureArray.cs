@@ -1,11 +1,11 @@
-using BetaSharp.Client.Rendering.Core.WebGPU;
+using OmniBlock.Client.Rendering.Core.WebGPU;
 using Microsoft.Extensions.Logging;
 using Silk.NET.OpenGL;
 using AddressMode = Silk.NET.WebGPU.AddressMode;
 using FilterMode = Silk.NET.WebGPU.FilterMode;
 using MipmapFilterMode = Silk.NET.WebGPU.MipmapFilterMode;
 
-namespace BetaSharp.Client.Rendering.Core.Textures;
+namespace OmniBlock.Client.Rendering.Core.Textures;
 
 /// <summary>
 ///     A GPU texture array: every layer the same pixel size, one bind covering however many named

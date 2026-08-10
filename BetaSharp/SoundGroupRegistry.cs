@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
-using BetaSharp.Registries;
-using BetaSharp.Registries.Data;
+using OmniBlock.Registries;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp;
+namespace OmniBlock;
 
 /// <summary>
 /// Process-global registry of canonical <see cref="BlockSoundGroup"/> instances, loaded once

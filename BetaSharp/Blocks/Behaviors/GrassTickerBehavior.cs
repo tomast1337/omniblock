@@ -1,4 +1,4 @@
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
 ///     Grass spread and death: dies in low light when covered, spreads to adjacent dirt in high light.

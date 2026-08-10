@@ -3,53 +3,53 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime;
 using System.Runtime.InteropServices;
-using BetaSharp.Blocks;
-using BetaSharp.Client.Diagnostics;
-using BetaSharp.Client.DynamicTexture;
-using BetaSharp.Client.Entities;
-using BetaSharp.Client.Input;
-using BetaSharp.Client.Network;
-using BetaSharp.Client.Options;
-using BetaSharp.Client.Rendering;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.Rendering.Core.WebGPU;
-using BetaSharp.Client.Rendering.Entities;
-using BetaSharp.Client.Rendering.Items;
-using BetaSharp.Client.Rendering.UI;
-using BetaSharp.Client.Resource;
-using BetaSharp.Client.Resource.Pack;
-using BetaSharp.Client.Sound;
-using BetaSharp.Client.UI;
-using BetaSharp.Client.UI.Screens;
-using BetaSharp.Client.UI.Screens.InGame;
-using BetaSharp.Client.UI.Screens.InGame.Containers;
-using BetaSharp.Client.UI.Screens.Menu;
-using BetaSharp.Client.UI.Screens.Menu.Net;
-using BetaSharp.Client.Worlds;
-using BetaSharp.Diagnostics;
-using BetaSharp.Entities;
-using BetaSharp.Items;
-using BetaSharp.Profiling;
-using BetaSharp.Registries;
-using BetaSharp.Server.Internal;
-using BetaSharp.Stats;
-using BetaSharp.Util;
-using BetaSharp.Util.Hit;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.ClientData.Colors;
-using BetaSharp.Worlds.Colors;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Storage;
+using OmniBlock.Blocks;
+using OmniBlock.Client.Diagnostics;
+using OmniBlock.Client.DynamicTexture;
+using OmniBlock.Client.Entities;
+using OmniBlock.Client.Input;
+using OmniBlock.Client.Network;
+using OmniBlock.Client.Options;
+using OmniBlock.Client.Rendering;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Client.Rendering.Core.WebGPU;
+using OmniBlock.Client.Rendering.Entities;
+using OmniBlock.Client.Rendering.Items;
+using OmniBlock.Client.Rendering.UI;
+using OmniBlock.Client.Resource;
+using OmniBlock.Client.Resource.Pack;
+using OmniBlock.Client.Sound;
+using OmniBlock.Client.UI;
+using OmniBlock.Client.UI.Screens;
+using OmniBlock.Client.UI.Screens.InGame;
+using OmniBlock.Client.UI.Screens.InGame.Containers;
+using OmniBlock.Client.UI.Screens.Menu;
+using OmniBlock.Client.UI.Screens.Menu.Net;
+using OmniBlock.Client.Worlds;
+using OmniBlock.Diagnostics;
+using OmniBlock.Entities;
+using OmniBlock.Items;
+using OmniBlock.Profiling;
+using OmniBlock.Registries;
+using OmniBlock.Server.Internal;
+using OmniBlock.Stats;
+using OmniBlock.Util;
+using OmniBlock.Util.Hit;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.ClientData.Colors;
+using OmniBlock.Worlds.Colors;
+using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Storage;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGui.Backends.GLFW;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
 
-namespace BetaSharp.Client;
+namespace OmniBlock.Client;
 
-public partial class BetaSharp :
+public partial class OmniBlock :
     IScreenNavigator,
     IControllerState,
     IClientPlayerHost,
@@ -60,7 +60,7 @@ public partial class BetaSharp :
     #region Constants & Static Members
 
     public static string Version { get; private set; } = UnknownVersion;
-    public static string BetaSharpDir => PathHelper.GetAppDir(nameof(BetaSharp));
+    public static string BetaSharpDir => PathHelper.GetAppDir(nameof(OmniBlock));
     public static long HasPaidCheckTime { get; private set; }
 
     private const string UnknownVersion = "unknown version";
@@ -159,7 +159,7 @@ public partial class BetaSharp :
 
     #region Private Fields
 
-    private readonly ILogger<BetaSharp> _logger = Log.Instance.For<BetaSharp>();
+    private readonly ILogger<OmniBlock> _logger = Log.Instance.For<OmniBlock>();
     private readonly LoadingScreenRenderer _loadingScreen;
     private readonly WaterSprite _textureWaterFX = new();
     private readonly LavaSprite _textureLavaFX = new();
@@ -193,7 +193,7 @@ public partial class BetaSharp :
 
     #region Initialization & Lifecycle
 
-    public BetaSharp(int width, int height, bool isFullscreen)
+    public OmniBlock(int width, int height, bool isFullscreen)
     {
         _loadingScreen = new LoadingScreenRenderer(this);
         _tempDisplayHeight = height;
@@ -247,7 +247,7 @@ public partial class BetaSharp :
             Display.setLocation((maximumWidth - DisplayWidth) / 2, (maximumHeight - DisplayHeight) / 2);
         }
 
-        Display.setTitle("BetaSharp " + Version);
+        Display.setTitle("OmniBlock " + Version);
 
         _gameDataDir = BetaSharpDir;
         SaveLoader = new RegionWorldStorageSource(Path.Combine(_gameDataDir, "saves"));
@@ -338,9 +338,9 @@ public partial class BetaSharp :
         EntityRenderDispatcher.Instance.SkinManager = SkinManager;
         EntityRenderDispatcher.Instance.HeldItemRenderer = new HeldItemRenderer(this);
         StatFileWriter = new StatFileWriter(Session, _gameDataDir);
-        /*global::BetaSharp.Achievements.OpenInventory.GetTranslatedDescription = () =>
+        /*global::OmniBlock.Achievements.OpenInventory.GetTranslatedDescription = () =>
         {
-            return format.formatString(global::BetaSharp.Achievements.OpenInventory.TranslationKey);
+            return format.formatString(global::OmniBlock.Achievements.OpenInventory.TranslationKey);
         };*/
     }
 
@@ -553,7 +553,7 @@ public partial class BetaSharp :
     public void OnGameCrash(Exception crashInfo)
     {
         _hasCrashed = true;
-        _logger.LogError(crashInfo, "BetaSharp has crashed!");
+        _logger.LogError(crashInfo, "OmniBlock has crashed!");
     }
 
     #endregion
@@ -1928,9 +1928,9 @@ public partial class BetaSharp :
 
     private static void StartMainThread(string? playerName, string? sessionToken)
     {
-        Thread.CurrentThread.Name = "BetaSharp Main Thread";
+        Thread.CurrentThread.Name = "OmniBlock Main Thread";
 
-        BetaSharp game = new(850, 480, false);
+        OmniBlock game = new(850, 480, false);
 
         if (playerName != null && sessionToken != null)
         {

@@ -1,8 +1,8 @@
-using BetaSharp.Entities.State;
-using BetaSharp.Items;
-using BetaSharp.Items.Behaviors;
+using OmniBlock.Entities.State;
+using OmniBlock.Items;
+using OmniBlock.Items.Behaviors;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     Cocks the mob's head at a player holding something it wants (the taming item while wild, any

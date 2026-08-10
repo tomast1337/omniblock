@@ -6,10 +6,10 @@
         "###"
     ],
     "key": {
-        "#": "betasharp:GoldBlock",
-        "X": "betasharp:apple"
+        "#": "omniblock:GoldBlock",
+        "X": "omniblock:apple"
     },
     "result": {
-        "id": "betasharp:apple_gold"
+        "id": "omniblock:apple_gold"
     }
 }

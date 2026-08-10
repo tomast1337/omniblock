@@ -1,4 +1,4 @@
-namespace BetaSharp.NBT;
+namespace OmniBlock.NBT;
 
 internal sealed class NBTTagByteArray : NBTBase
 {

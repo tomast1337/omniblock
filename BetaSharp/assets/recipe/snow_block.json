@@ -5,9 +5,9 @@
         "##"
     ],
     "key": {
-        "#": "betasharp:snowball"
+        "#": "omniblock:snowball"
     },
     "result": {
-        "id": "betasharp:SnowBlock"
+        "id": "omniblock:SnowBlock"
     }
 }

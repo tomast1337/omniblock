@@ -1,13 +1,13 @@
-using BetaSharp.Client.Options;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Entities;
-using BetaSharp.Worlds.Maps;
+using OmniBlock.Client.Options;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Entities;
+using OmniBlock.Worlds.Maps;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.Rendering;
+namespace OmniBlock.Client.Rendering;
 
 public class MapItemRenderer
 {

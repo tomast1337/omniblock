@@ -1,6 +1,6 @@
-using BetaSharp.Blocks;
+using OmniBlock.Blocks;
 
-namespace BetaSharp.Tests.Blocks;
+namespace OmniBlock.Tests.Blocks;
 
 public sealed class BlockRailTests
 {

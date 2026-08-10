@@ -1,6 +1,6 @@
 {
   "ProtocolId": 297,
-  "TextureId": "betasharp:bread",
+  "TextureId": "omniblock:bread",
   "Behavior": {
     "type": "food",
     "HealAmount": 5,

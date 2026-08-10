@@ -1,4 +1,4 @@
-namespace BetaSharp.Items;
+namespace OmniBlock.Items;
 
 internal class ItemPiston(int id) : ItemBlock(id)
 {

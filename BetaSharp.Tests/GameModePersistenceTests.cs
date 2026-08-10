@@ -1,7 +1,7 @@
-using BetaSharp.Registries;
-using BetaSharp.Registries.Data;
+using OmniBlock.Registries;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Tests;
+namespace OmniBlock.Tests;
 
 /// <summary>
 ///     The contract <c>ServerPlayerEntity</c>'s NBT round trip depends on: it writes
@@ -79,6 +79,6 @@ public class GameModePersistenceTests : IDisposable
 
         Assert.True(loader.TryGetHolder("creative", out Holder<GameMode>? creative));
 
-        Assert.Equal("betasharp:creative", creative.Value.ToString());
+        Assert.Equal("omniblock:creative", creative.Value.ToString());
     }
 }

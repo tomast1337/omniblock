@@ -1,9 +1,9 @@
 {
   "ProtocolId": 338,
   "TranslationKey": "sugarCanes",
-  "TextureId": "betasharp:sugar_cane",
+  "TextureId": "omniblock:sugar_cane",
   "Behavior": {
     "type": "place_block",
-    "PlacesBlock": "betasharp:reeds"
+    "PlacesBlock": "omniblock:reeds"
   }
 }

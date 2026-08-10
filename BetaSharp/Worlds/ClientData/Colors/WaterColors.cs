@@ -1,4 +1,4 @@
-namespace BetaSharp.Worlds.ClientData.Colors;
+namespace OmniBlock.Worlds.ClientData.Colors;
 
 public class WaterColors
 {

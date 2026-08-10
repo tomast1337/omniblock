@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "Pelaa moninpeliä",
-        "betasharpServer": "BetaSharp-palvelin",
+        "betasharpServer": "OmniBlock-palvelin",
         "info1": "Minecraftin moninpeli ei ole vielä valmis, mutta",
         "info2": "sitä testataan jo varhaisessa vaiheessa bugisesti.",
         "ipinfo": "Syötä palvelimen IP-osoite yhdistääksesi siihen:",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "BetaSharp versio %1$s",
+        "version": "OmniBlock versio %1$s",
         "description": "Minecraft Beta 1.7.3:n paranneltu versio, kirjoitettu C#:lla.",
         "github": "GitHubissa",
         "author": "Tehnyt Fazin85",

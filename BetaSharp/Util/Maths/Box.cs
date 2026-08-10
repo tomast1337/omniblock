@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
-using BetaSharp.Util.Hit;
+using OmniBlock.Util.Hit;
 
-namespace BetaSharp.Util.Maths;
+namespace OmniBlock.Util.Maths;
 
 public struct Box(double minX, double minY, double minZ, double maxX, double maxY, double maxZ)
 {

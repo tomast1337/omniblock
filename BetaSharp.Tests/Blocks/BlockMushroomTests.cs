@@ -1,8 +1,8 @@
 using System.Text.Json;
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
 
-namespace BetaSharp.Tests.Blocks;
+namespace OmniBlock.Tests.Blocks;
 
 public sealed class BlockMushroomTests
 {
@@ -44,14 +44,14 @@ public sealed class BlockMushroomTests
     [Fact]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"mushroom","valid_ground":["betasharp:dirt","not_a_real_block"]}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"mushroom","valid_ground":["omniblock:dirt","not_a_real_block"]}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("mushroom", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_MissingSpreadChanceOneIn_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"mushroom","valid_ground":["betasharp:dirt"]}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"mushroom","valid_ground":["omniblock:dirt"]}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("mushroom", json.RootElement));
     }
 }

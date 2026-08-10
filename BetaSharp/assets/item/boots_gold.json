@@ -1,7 +1,7 @@
 {
     "ProtocolId": 317,
     "TranslationKey": "bootsGold",
-    "TextureId": "betasharp:golden_boots",
+    "TextureId": "omniblock:golden_boots",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",

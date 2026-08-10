@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
-    <!-- Determinism/StepPurityTests.cs compiles the BetaSharp sources and walks the call graph. -->
+    <!-- Determinism/StepPurityTests.cs compiles the OmniBlock sources and walks the call graph. -->
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
@@ -22,15 +22,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BetaSharp\BetaSharp.csproj" />
+    <ProjectReference Include="..\OmniBlock\OmniBlock.csproj" />
     <!--
       Referenced as an ordinary library, not as an analyzer: the determinism analysis synthesises a
-      compilation of the BetaSharp sources and has to run the same generators over it that the real
+      compilation of the OmniBlock sources and has to run the same generators over it that the real
       build does, or every [WireMessage] partial is missing its serialization and binds as an error.
     -->
-    <ProjectReference Include="..\BetaSharp.Generators\BetaSharp.Generators.csproj" />
-    <ProjectReference Include="..\BetaSharp.Client\BetaSharp.Client.csproj" />
-    <ProjectReference Include="..\BetaSharp.Server\BetaSharp.Server.csproj" />
+    <ProjectReference Include="..\OmniBlock.Generators\OmniBlock.Generators.csproj" />
+    <ProjectReference Include="..\OmniBlock.Client\OmniBlock.Client.csproj" />
+    <ProjectReference Include="..\OmniBlock.Server\OmniBlock.Server.csproj" />
   </ItemGroup>
 
 </Project>

@@ -10,7 +10,7 @@
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": "betasharp:lava_still",
+  "TextureId": "omniblock:lava_still",
   "RenderType": "Fluids",
   "TickRate": 30,
   "NotFullCube": true,
@@ -26,16 +26,16 @@
       ],
       "Type": "flowing_fluid",
       "passable": [
-        "betasharp:door",
-        "betasharp:iron_door",
-        "betasharp:sign",
-        "betasharp:ladder",
-        "betasharp:sugar_cane"
+        "omniblock:door",
+        "omniblock:iron_door",
+        "omniblock:sign",
+        "omniblock:ladder",
+        "omniblock:sugar_cane"
       ],
-      "source_solidified": "betasharp:obsidian",
-      "flow_solidified": "betasharp:cobblestone",
-      "still": "betasharp:lava_still",
-      "flowing": "betasharp:lava_texture"
+      "source_solidified": "omniblock:obsidian",
+      "flow_solidified": "omniblock:cobblestone",
+      "still": "omniblock:lava_still",
+      "flowing": "omniblock:lava_texture"
     }
   ]
 }

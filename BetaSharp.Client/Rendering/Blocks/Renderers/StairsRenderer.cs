@@ -1,8 +1,8 @@
-using BetaSharp.Blocks;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
+using OmniBlock.Blocks;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core;
 
-namespace BetaSharp.Client.Rendering.Blocks.Renderers;
+namespace OmniBlock.Client.Rendering.Blocks.Renderers;
 
 public class StairsRenderer : IBlockRenderer
 {

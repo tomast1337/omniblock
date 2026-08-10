@@ -1,6 +1,6 @@
-using BetaSharp.Registries.Data;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Registries;
+namespace OmniBlock.Registries;
 
 /// <summary>
 /// Describes a data-driven registry: how to create its loader and where its assets live.

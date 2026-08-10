@@ -1,8 +1,8 @@
 using System.Linq;
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Covers the Ticker capability slot: per-tick logic declared in JSON instead of overridden on a
@@ -73,7 +73,7 @@ public sealed class EntityTickerTests
         Assert.True(world.Entities.SpawnEntity(chicken));
 
         LayEggsBehavior ticker = Assert.IsType<LayEggsBehavior>(EntityRegistry.ByName("chicken").Behaviors.Ticker);
-        int eggId = BetaSharp.Items.Item.ByName("egg").Id;
+        int eggId = OmniBlock.Items.Item.ByName("egg").Id;
 
         // Drive the countdown to zero rather than ticking ~6000 times.
         for (int tick = 0; tick < 12100; tick++)

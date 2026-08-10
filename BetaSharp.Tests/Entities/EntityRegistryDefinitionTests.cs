@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.Registries;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.Registries;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Covers how a mob's configuration is reached: through <see cref="EntityType.Definition"/> rather

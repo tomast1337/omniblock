@@ -1,10 +1,10 @@
-using BetaSharp.Blocks;
-using BetaSharp.Entities;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Entities;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Items;
+namespace OmniBlock.Items;
 
 internal class ItemBlock : Item
 {

@@ -1,13 +1,13 @@
-using BetaSharp.Entities;
-using BetaSharp.NBT;
-using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets;
-using BetaSharp.Registries;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Entities;
+using OmniBlock.NBT;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Packets;
+using OmniBlock.Registries;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Blocks.Entities;
+namespace OmniBlock.Blocks.Entities;
 
 public abstract class BlockEntity : IEntity
 {

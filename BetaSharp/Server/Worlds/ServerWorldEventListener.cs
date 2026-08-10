@@ -1,9 +1,9 @@
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Entities;
-using BetaSharp.Network.Messages;
-using BetaSharp.Worlds.Core;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Entities;
+using OmniBlock.Network.Messages;
+using OmniBlock.Worlds.Core;
 
-namespace BetaSharp.Server.Worlds;
+namespace OmniBlock.Server.Worlds;
 
 internal class ServerWorldEventListener : IWorldEventListener
 {

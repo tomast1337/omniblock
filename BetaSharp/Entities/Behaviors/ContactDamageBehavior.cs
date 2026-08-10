@@ -1,4 +1,4 @@
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     Hurts a player who walks into the entity. Damage and reach both scale with the mob's synced

@@ -6,11 +6,11 @@
         "X X"
     ],
     "key": {
-        "X": "betasharp:ingot_iron",
-        "#": "betasharp:stick"
+        "X": "omniblock:ingot_iron",
+        "#": "omniblock:stick"
     },
     "result": {
-        "id": "betasharp:Rail",
+        "id": "omniblock:Rail",
         "count": 16
     }
 }

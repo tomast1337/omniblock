@@ -1,13 +1,13 @@
-using BetaSharp.Textures;
+using OmniBlock.Textures;
 
-namespace BetaSharp.Tests.Textures;
+namespace OmniBlock.Tests.Textures;
 
 public sealed class AtlasTileMapTests
 {
     public static TheoryData<string, AtlasTileMap> Atlases => new()
     {
-        { "terrain", BetaSharp.Textures.Atlases.Terrain },
-        { "items", BetaSharp.Textures.Atlases.Items },
+        { "terrain", OmniBlock.Textures.Atlases.Terrain },
+        { "items", OmniBlock.Textures.Atlases.Items },
     };
 
     /// <summary>
@@ -72,13 +72,13 @@ public sealed class AtlasTileMapTests
     [InlineData(256)]
     public void An_index_outside_the_grid_resolves_to_the_reserved_layer(int gridIndex)
     {
-        Assert.Equal(AtlasTileMap.MissingLayer, BetaSharp.Textures.Atlases.Terrain.LayerOfGridIndex(gridIndex));
+        Assert.Equal(AtlasTileMap.MissingLayer, OmniBlock.Textures.Atlases.Terrain.LayerOfGridIndex(gridIndex));
     }
 
     [Fact]
     public void An_unclaimed_cell_inside_the_grid_resolves_to_the_reserved_layer()
     {
-        AtlasTileMap atlas = BetaSharp.Textures.Atlases.Terrain;
+        AtlasTileMap atlas = OmniBlock.Textures.Atlases.Terrain;
         var claimed = atlas.Tiles.Select(t => t.X + t.Y * atlas.GridWidth).ToHashSet();
 
         int unclaimed = Enumerable.Range(0, atlas.GridWidth * atlas.GridHeight).First(i => !claimed.Contains(i));

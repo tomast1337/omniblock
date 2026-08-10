@@ -1,7 +1,7 @@
 using System.IO.Compression;
-using BetaSharp.Network.Chunks;
+using OmniBlock.Network.Chunks;
 
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     One whole chunk, encoded by <see cref="ChunkBlobCodec" /> and then compressed.
@@ -18,7 +18,7 @@ namespace BetaSharp.Network.Messages;
 ///         rests on, to save bytes on a path that is already rare.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:chunk_data")]
+[WireMessage("omniblock:chunk_data")]
 public sealed partial class ChunkDataMessage : Message
 {
     /// <summary>

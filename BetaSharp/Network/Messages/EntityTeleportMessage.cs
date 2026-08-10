@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     A tracked entity's absolute position, for when a relative delta cannot express the move.
@@ -8,7 +8,7 @@ namespace BetaSharp.Network.Messages;
 ///         length; the generated size is measured.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:entity_teleport")]
+[WireMessage("omniblock:entity_teleport")]
 public sealed partial class EntityTeleportMessage : Message
 {
     public override SendPriority Priority => SendPriority.High;

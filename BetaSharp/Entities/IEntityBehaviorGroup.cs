@@ -1,4 +1,4 @@
-namespace BetaSharp.Entities;
+namespace OmniBlock.Entities;
 
 /// <summary>
 ///     Implemented by a behavior that holds other behaviors: a composite running several in one

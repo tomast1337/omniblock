@@ -1,12 +1,12 @@
-using BetaSharp.Blocks;
-using BetaSharp.Client.Rendering.Blocks.Renderers;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Client.Rendering.Blocks.Renderers;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds;
+using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Client.Rendering.Blocks;
+namespace OmniBlock.Client.Rendering.Blocks;
 
 public class BlockRenderer
 {

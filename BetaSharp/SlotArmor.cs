@@ -1,11 +1,11 @@
-using BetaSharp.Blocks;
-using BetaSharp.Inventories;
-using BetaSharp.Items;
-using BetaSharp.Items.Behaviors;
-using BetaSharp.Screens;
-using BetaSharp.Screens.Slots;
+using OmniBlock.Blocks;
+using OmniBlock.Inventories;
+using OmniBlock.Items;
+using OmniBlock.Items.Behaviors;
+using OmniBlock.Screens;
+using OmniBlock.Screens.Slots;
 
-namespace BetaSharp;
+namespace OmniBlock;
 
 class SlotArmor : Slot
 {

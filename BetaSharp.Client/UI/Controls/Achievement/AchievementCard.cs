@@ -1,16 +1,16 @@
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.UI.Rendering;
-using BetaSharp.Stats;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Client.UI.Rendering;
+using OmniBlock.Stats;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Controls.Achievement;
+namespace OmniBlock.Client.UI.Controls.Achievement;
 
 public class AchievementCard : UIElement
 {
-    private readonly global::BetaSharp.Achievement _achievement;
+    private readonly global::OmniBlock.Achievement _achievement;
     private readonly StatFileWriter _stats;
 
-    public AchievementCard(global::BetaSharp.Achievement ach, StatFileWriter stats)
+    public AchievementCard(global::OmniBlock.Achievement ach, StatFileWriter stats)
     {
         _achievement = ach;
         _stats = stats;

@@ -1,8 +1,8 @@
 using System.Text.Json;
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
 
-namespace BetaSharp.Tests.Blocks;
+namespace OmniBlock.Tests.Blocks;
 
 public sealed class BlockGrassTests
 {
@@ -23,7 +23,7 @@ public sealed class BlockGrassTests
     [Fact]
     public void BehaviorRegistry_Build_ValidDirt_ConstructsBehavior()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"grass_ticker","soil":"betasharp:dirt","die_light_threshold":4,"die_chance_one_in":4,"spread_light_threshold":9}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"grass_ticker","soil":"omniblock:dirt","die_light_threshold":4,"die_chance_one_in":4,"spread_light_threshold":9}""");
         object behavior = BehaviorRegistry.Build("grass_ticker", json.RootElement);
         Assert.IsType<GrassTickerBehavior>(behavior);
     }
@@ -34,7 +34,7 @@ public sealed class BlockGrassTests
     [Fact]
     public void BehaviorRegistry_Build_MissingDieLightThreshold_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"grass_ticker","soil":"betasharp:dirt"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"grass_ticker","soil":"omniblock:dirt"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("grass_ticker", json.RootElement));
     }
 }

@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Rendering.Core;
+namespace OmniBlock.Client.Rendering.Core;
 
 /// <summary>What a shader needs to turn a vertex's light levels into a brightness.</summary>
 /// <remarks>

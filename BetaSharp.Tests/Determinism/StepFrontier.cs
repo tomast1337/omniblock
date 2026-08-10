@@ -1,4 +1,4 @@
-namespace BetaSharp.Tests.Determinism;
+namespace OmniBlock.Tests.Determinism;
 
 /// <summary>
 ///     The machine-readable definition of "in the <c>Step()</c> path", and of what may not appear
@@ -17,20 +17,20 @@ internal static class StepFrontier
     /// </summary>
     public static readonly string[] CoreRoots =
     [
-        "BetaSharp.Entities.EntityLiving.Travel",
-        "BetaSharp.Entities.EntityPlayer.Travel",
-        "BetaSharp.Entities.EntityLiving.Jump",
-        "BetaSharp.Entities.Entity.Move",
-        "BetaSharp.Entities.Entity.MoveNonSolid",
-        "BetaSharp.Entities.Entity.ResolveCollisions",
-        "BetaSharp.Entities.Entity.TryStepUp",
-        "BetaSharp.Entities.Entity.ShortenStepOverLedge",
-        "BetaSharp.Entities.Entity.PushOutOfBlocks",
-        "BetaSharp.Entities.Entity.IsInFluid",
-        "BetaSharp.Entities.Entity.GetEntitiesInside",
-        "BetaSharp.Entities.Entity.SyncPositionToBoundingBox",
-        "BetaSharp.Entities.Entity.UpdateBoundingBox",
-        "BetaSharp.Entities.Entity.IsInsideWall",
+        "OmniBlock.Entities.EntityLiving.Travel",
+        "OmniBlock.Entities.EntityPlayer.Travel",
+        "OmniBlock.Entities.EntityLiving.Jump",
+        "OmniBlock.Entities.Entity.Move",
+        "OmniBlock.Entities.Entity.MoveNonSolid",
+        "OmniBlock.Entities.Entity.ResolveCollisions",
+        "OmniBlock.Entities.Entity.TryStepUp",
+        "OmniBlock.Entities.Entity.ShortenStepOverLedge",
+        "OmniBlock.Entities.Entity.PushOutOfBlocks",
+        "OmniBlock.Entities.Entity.IsInFluid",
+        "OmniBlock.Entities.Entity.GetEntitiesInside",
+        "OmniBlock.Entities.Entity.SyncPositionToBoundingBox",
+        "OmniBlock.Entities.Entity.UpdateBoundingBox",
+        "OmniBlock.Entities.Entity.IsInsideWall",
     ];
 
     /// <summary>
@@ -45,12 +45,12 @@ internal static class StepFrontier
     /// </summary>
     public static readonly string[] TailRoots =
     [
-        "BetaSharp.Entities.EntityPlayer.TickMovement",
-        "BetaSharp.Entities.EntityLiving.TickMovement",
-        "BetaSharp.Entities.Entity.AccumulateWalkDistance",
-        "BetaSharp.Entities.Entity.NotifyBlocksOfCollision",
-        "BetaSharp.Entities.Entity.ApplyFireAndWater",
-        "BetaSharp.Entities.Entity.Fall",
+        "OmniBlock.Entities.EntityPlayer.TickMovement",
+        "OmniBlock.Entities.EntityLiving.TickMovement",
+        "OmniBlock.Entities.Entity.AccumulateWalkDistance",
+        "OmniBlock.Entities.Entity.NotifyBlocksOfCollision",
+        "OmniBlock.Entities.Entity.ApplyFireAndWater",
+        "OmniBlock.Entities.Entity.Fall",
     ];
 
     /// <summary>
@@ -61,7 +61,7 @@ internal static class StepFrontier
     ///         Without these the graph is useless rather than merely large: one edge,
     ///         <c>Entity.NotifyBlocksOfCollision → Block.onEntityCollision</c>, reaches
     ///         <c>IBlockInteractable</c>, thence every block behavior, thence <c>Block.OnTick</c> and
-    ///         the entire world-tick and redstone system — 2,515 of BetaSharp's 7,673 methods, a
+    ///         the entire world-tick and redstone system — 2,515 of OmniBlock's 7,673 methods, a
     ///         third of the engine, from one call at <c>Entity.Movement.cs:413</c>.
     ///     </para>
     ///     <para>
@@ -71,19 +71,19 @@ internal static class StepFrontier
     /// </summary>
     public static readonly CutPoint[] CutPoints =
     [
-        new("BetaSharp.Blocks.Block.onEntityCollision",
+        new("OmniBlock.Blocks.Block.onEntityCollision",
             "block callbacks; need to become StepEffects entries"),
-        new("BetaSharp.Worlds.Core.Systems.WorldEventBroadcaster.",
+        new("OmniBlock.Worlds.Core.Systems.WorldEventBroadcaster.",
             "already banned at the call site; its internals are not movement's concern"),
-        new("BetaSharp.Entities.EntityLiving.TickLiving",
+        new("OmniBlock.Entities.EntityLiving.TickLiving",
             "the AI, invoked mid-tick; belongs outside the movement step entirely"),
-        new("BetaSharp.Entities.EntityPlayer.PickupAndInventorySubtick",
+        new("OmniBlock.Entities.EntityPlayer.PickupAndInventorySubtick",
             "mutates the inventory; belongs outside the movement step entirely"),
-        new("BetaSharp.Entities.EntityPlayer.CollideWithPickupEntities",
+        new("OmniBlock.Entities.EntityPlayer.CollideWithPickupEntities",
             "mutates the inventory; belongs outside the movement step entirely"),
-        new("BetaSharp.Entities.EntityPlayer.IncreaseStat",
+        new("OmniBlock.Entities.EntityPlayer.IncreaseStat",
             "mutates stat counters; needs to become a StepEffects entry"),
-        new("BetaSharp.Entities.ServerPlayerEntity.IncreaseStat",
+        new("OmniBlock.Entities.ServerPlayerEntity.IncreaseStat",
             "mutates stat counters; needs to become a StepEffects entry"),
     ];
 
@@ -117,12 +117,12 @@ internal static class StepFrontier
 
         // Randomness: the hazard is generator *state* advancing, not the value returned.
         // Re-simulation draws extra times and desyncs client from server permanently.
-        new("BetaSharp.Util.Maths.JavaRandom.", "advances per-entity generator state; inject a stateless RNG keyed on (tick, entityId)"),
+        new("OmniBlock.Util.Maths.JavaRandom.", "advances per-entity generator state; inject a stateless RNG keyed on (tick, entityId)"),
         new("System.Random.", "nondeterministic; and Random.Shared is process-global"),
 
         // Side effects: must be recorded into StepEffects, not executed inline, or reconciliation
         // replays them once per re-simulated tick.
-        new("BetaSharp.Worlds.Core.Systems.WorldEventBroadcaster.", "side effect — route through StepEffects"),
+        new("OmniBlock.Worlds.Core.Systems.WorldEventBroadcaster.", "side effect — route through StepEffects"),
 
         // Ambient nondeterminism.
         new("System.DateTime.Now", "wall clock"),
@@ -150,13 +150,13 @@ internal static class StepFrontier
     /// </summary>
     public static readonly Waiver[] Waivers =
     [
-        new("BetaSharp.Entities.Entity.PushOutOfBlocks", "BetaSharp.Util.Maths.JavaRandom.",
+        new("OmniBlock.Entities.Entity.PushOutOfBlocks", "OmniBlock.Util.Maths.JavaRandom.",
             "draws from ambient RNG and the draw affects returned velocity; needs an injected generator"),
-        new("BetaSharp.Entities.Entity.ApplyFireAndWater", "BetaSharp.Util.Maths.JavaRandom.",
+        new("OmniBlock.Entities.Entity.ApplyFireAndWater", "OmniBlock.Util.Maths.JavaRandom.",
             "draws from ambient RNG for the fizz sound's pitch; needs the sound routed through StepEffects"),
-        new("BetaSharp.Entities.Entity.ApplyFireAndWater", "BetaSharp.Worlds.Core.Systems.WorldEventBroadcaster.",
+        new("OmniBlock.Entities.Entity.ApplyFireAndWater", "OmniBlock.Worlds.Core.Systems.WorldEventBroadcaster.",
             "emits the fizz sound directly; needs it routed through StepEffects"),
-        new("BetaSharp.Entities.Entity.AccumulateWalkDistance", "BetaSharp.Worlds.Core.Systems.WorldEventBroadcaster.",
+        new("OmniBlock.Entities.Entity.AccumulateWalkDistance", "OmniBlock.Worlds.Core.Systems.WorldEventBroadcaster.",
             "emits footstep sounds directly; needs them routed through StepEffects"),
     ];
 

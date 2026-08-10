@@ -1,12 +1,12 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Entities;
-using BetaSharp.Profiling;
-using BetaSharp.Rules;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Chunks;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Entities;
+using OmniBlock.Profiling;
+using OmniBlock.Rules;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Chunks;
 
-namespace BetaSharp.Worlds.Core.Systems;
+namespace OmniBlock.Worlds.Core.Systems;
 
 public class EntityManager
 {

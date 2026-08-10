@@ -1,9 +1,9 @@
 using System.Net;
-using BetaSharp.Network;
-using BetaSharp.Network.Transport;
+using OmniBlock.Network;
+using OmniBlock.Network.Transport;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Server.Network;
+namespace OmniBlock.Server.Network;
 
 public class ConnectionListener
 {

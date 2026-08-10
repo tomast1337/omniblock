@@ -1,7 +1,7 @@
-using BetaSharp.Entities;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Entities;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Items.Behaviors;
+namespace OmniBlock.Items.Behaviors;
 
 internal sealed class FoodBehavior : IItemBehavior
 {

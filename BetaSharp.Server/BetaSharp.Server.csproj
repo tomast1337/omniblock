@@ -9,18 +9,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BetaSharp\BetaSharp.csproj"/>
+    <ProjectReference Include="..\OmniBlock\OmniBlock.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\BetaSharp\assets\**\*">
+    <None Include="..\OmniBlock\assets\**\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <Link>assets\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </None>
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\BetaSharp.Client\assets\lang\en_us.json">
+    <None Include="..\OmniBlock.Client\assets\lang\en_us.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <Link>assets\lang\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </None>

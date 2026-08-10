@@ -6,11 +6,11 @@
         "#"
     ],
     "key": {
-        "X": "betasharp:RedMushroom",
-        "Y": "betasharp:BrownMushroom",
-        "#": "betasharp:bowl"
+        "X": "omniblock:RedMushroom",
+        "Y": "omniblock:BrownMushroom",
+        "#": "omniblock:bowl"
     },
     "result": {
-        "id": "betasharp:mushroom_stew"
+        "id": "omniblock:mushroom_stew"
     }
 }

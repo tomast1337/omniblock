@@ -1,7 +1,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace BetaSharp.Launcher.Features.Home.GitHub;
+namespace OmniBlock.Launcher.Features.Home.GitHub;
 
 internal sealed class GitHubClient(IHttpClientFactory clientFactory)
 {
@@ -10,7 +10,7 @@ internal sealed class GitHubClient(IHttpClientFactory clientFactory)
         var client = clientFactory.CreateClient(nameof(GitHubClient));
 
         // Use named client instead of this?
-        client.DefaultRequestHeaders.Add("User-Agent", nameof(BetaSharp));
+        client.DefaultRequestHeaders.Add("User-Agent", nameof(OmniBlock));
 
         return await client.GetAsync($"https://api.github.com/repos/{owner}/{repository}/releases", GitHubSerializerContext.Default.ReleasesResponseArray);
     }

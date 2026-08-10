@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Text.Json;
-using BetaSharp.Entities;
-using BetaSharp.Registries.Data;
+using OmniBlock.Entities;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
-/// One-shot generator for <c>BetaSharp/assets/entity/*.json</c>, mirroring
+/// One-shot generator for <c>OmniBlock/assets/entity/*.json</c>, mirroring
 /// <c>ItemJsonDumperTests</c>. Env-var gated and a no-op in normal runs; exists so the files are
 /// generated from live data rather than transcribed by hand.
 /// Run with <c>DUMP_ENTITY_JSON=1 dotnet test --filter FullyQualifiedName~EntityJsonDumperTests</c>.
@@ -25,7 +25,7 @@ public sealed class EntityJsonDumperTests
             return;
         }
 
-        string outDir = Path.Combine(FindRepoRoot(), "BetaSharp", "assets", "entity");
+        string outDir = Path.Combine(FindRepoRoot(), "OmniBlock", "assets", "entity");
         Directory.CreateDirectory(outDir);
 
         JsonElement fullDefaults = JsonSerializer.SerializeToElement(EntityDefinition.Default, s_options);

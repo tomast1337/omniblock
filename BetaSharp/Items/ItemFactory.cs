@@ -1,6 +1,6 @@
-using BetaSharp.Textures;
+using OmniBlock.Textures;
 
-namespace BetaSharp.Items;
+namespace OmniBlock.Items;
 
 public static class ItemFactory
 {

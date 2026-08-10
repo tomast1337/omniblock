@@ -1,7 +1,7 @@
-using BetaSharp.Blocks;
-using BetaSharp.Entities;
+using OmniBlock.Blocks;
+using OmniBlock.Entities;
 
-namespace BetaSharp.Items.Behaviors;
+namespace OmniBlock.Items.Behaviors;
 
 internal sealed class ToolBehavior : IItemBehavior
 {

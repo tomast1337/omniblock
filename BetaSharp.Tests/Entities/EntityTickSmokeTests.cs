@@ -1,6 +1,6 @@
-using BetaSharp.Entities;
+using OmniBlock.Entities;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>Runs a short simulated tick loop for each registry-spawnable entity to catch immediate exceptions.</summary>
 [Collection("EntityTests")]
@@ -9,11 +9,11 @@ public sealed class EntityTickSmokeTests
     public static IEnumerable<object[]> RegistryEntityTypesExceptPlayer()
     {
         // Enumerates the registry itself now that EntityRegistry exposes no per-type static fields.
-        foreach (ResourceLocation key in BetaSharp.Registries.DefaultRegistries.EntityTypes.Keys)
+        foreach (ResourceLocation key in OmniBlock.Registries.DefaultRegistries.EntityTypes.Keys)
         {
             if (key.Path == "player") continue;
 
-            yield return [key.Path, BetaSharp.Registries.DefaultRegistries.EntityTypes.GetOrThrow(key)];
+            yield return [key.Path, OmniBlock.Registries.DefaultRegistries.EntityTypes.GetOrThrow(key)];
         }
     }
 

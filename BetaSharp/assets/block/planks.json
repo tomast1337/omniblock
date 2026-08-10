@@ -7,7 +7,7 @@
   "Hardness": 2,
   "Resistance": 5,
   "IgnoreMetaUpdates": true,
-  "TextureId": "betasharp:wooden_planks",
+  "TextureId": "omniblock:wooden_planks",
   "BurnChance": 5,
   "SpreadChance": 20
 }

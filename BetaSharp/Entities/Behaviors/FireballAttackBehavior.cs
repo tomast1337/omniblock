@@ -1,7 +1,7 @@
-using BetaSharp.Entities.State;
-using BetaSharp.Util.Maths;
+using OmniBlock.Entities.State;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     The ghast's attack: picks the nearest player, turns to face them, and winds up a fireball

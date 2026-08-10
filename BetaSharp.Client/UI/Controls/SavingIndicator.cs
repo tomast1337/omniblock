@@ -1,8 +1,8 @@
-using BetaSharp.Client.UI.Rendering;
-using BetaSharp.Util.Maths;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.UI.Rendering;
+using OmniBlock.Util.Maths;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Controls;
+namespace OmniBlock.Client.UI.Controls;
 
 public class SavingIndicator(Func<bool> isSavingComplete) : UIElement
 {

@@ -6,12 +6,12 @@
         "XRX"
     ],
     "key": {
-        "X": "betasharp:ingot_gold",
-        "#": "betasharp:stick",
-        "R": "betasharp:redstone"
+        "X": "omniblock:ingot_gold",
+        "#": "omniblock:stick",
+        "R": "omniblock:redstone"
     },
     "result": {
-        "id": "betasharp:PoweredRail",
+        "id": "omniblock:PoweredRail",
         "count": 6
     }
 }

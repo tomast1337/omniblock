@@ -1,12 +1,12 @@
 using System.Text.Json;
-using BetaSharp.Entities.State;
-using BetaSharp.Items;
-using BetaSharp.Items.Behaviors;
-using BetaSharp.NBT;
-using BetaSharp.Network.Messages;
-using BetaSharp.Util;
+using OmniBlock.Entities.State;
+using OmniBlock.Items;
+using OmniBlock.Items.Behaviors;
+using OmniBlock.NBT;
+using OmniBlock.Network.Messages;
+using OmniBlock.Util;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     A mob that can be tamed with an item, healed by feeding, told to sit, and angered by being

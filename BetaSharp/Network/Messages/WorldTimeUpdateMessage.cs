@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 [WireMessage("beta:world_time_update")]
 public partial class WorldTimeUpdateMessage : Message

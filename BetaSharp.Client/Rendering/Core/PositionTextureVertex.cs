@@ -1,6 +1,6 @@
 using Silk.NET.Maths;
 
-namespace BetaSharp.Client.Rendering.Core;
+namespace OmniBlock.Client.Rendering.Core;
 
 internal struct PositionTextureVertex
 {

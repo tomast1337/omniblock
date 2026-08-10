@@ -1,7 +1,7 @@
-using BetaSharp.Registries;
+using OmniBlock.Registries;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Recipes;
+namespace OmniBlock.Recipes;
 
 public class RecipeManager : IRegistryReloadListener
 {

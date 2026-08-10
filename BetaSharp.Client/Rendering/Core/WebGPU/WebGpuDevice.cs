@@ -1,10 +1,10 @@
 using System.Runtime.InteropServices;
-using BetaSharp.Util;
+using OmniBlock.Util;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Core.Contexts;
 using Silk.NET.WebGPU;
 
-namespace BetaSharp.Client.Rendering.Core.WebGPU;
+namespace OmniBlock.Client.Rendering.Core.WebGPU;
 
 /// <summary>
 ///     The WebGPU instance, surface, adapter, device and queue, and the surface's configuration.

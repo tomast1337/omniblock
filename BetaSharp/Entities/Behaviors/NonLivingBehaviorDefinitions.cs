@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
-using BetaSharp.Blocks;
-using BetaSharp.Items;
+using OmniBlock.Blocks;
+using OmniBlock.Items;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     Typed definitions for the non-living entity behaviors. Each holds its configuration as

@@ -1,13 +1,13 @@
 using System.Runtime.InteropServices;
-using BetaSharp.Client.Options;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.Rendering.Core.WebGPU;
-using BetaSharp.Client.Rendering.Entities.Models;
+using OmniBlock.Client.Options;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Client.Rendering.Core.WebGPU;
+using OmniBlock.Client.Rendering.Entities.Models;
 using Silk.NET.Maths;
 using Silk.NET.WebGPU;
 
-namespace BetaSharp.Client.Rendering.Entities;
+namespace OmniBlock.Client.Rendering.Entities;
 
 /// <summary>
 /// Each unique <see cref="ModelPart"/>'s local geometry is uploaded once into a shared static

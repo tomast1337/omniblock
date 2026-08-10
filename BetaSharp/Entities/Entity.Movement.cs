@@ -1,9 +1,9 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Util.Maths;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Entities;
+namespace OmniBlock.Entities;
 
 /// <summary>
 ///     Where an entity is and how it gets there: the bounding box it occupies, the collision passes

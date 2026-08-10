@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Rendering.Core;
+namespace OmniBlock.Client.Rendering.Core;
 
 /// <summary>The fallback chain every <see cref="ProgramSlot" /> resolves through, and its names on disk.</summary>
 /// <remarks>

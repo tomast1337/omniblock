@@ -1,21 +1,21 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Client.Options;
-using BetaSharp.Client.Rendering.Blocks;
-using BetaSharp.Client.Rendering.Blocks.Entities;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.Rendering.Entities;
-using BetaSharp.Client.Rendering.Items;
-using BetaSharp.Client.Rendering.UI;
-using BetaSharp.Entities;
-using BetaSharp.Items;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Client.Options;
+using OmniBlock.Client.Rendering.Blocks;
+using OmniBlock.Client.Rendering.Blocks.Entities;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Client.Rendering.Entities;
+using OmniBlock.Client.Rendering.Items;
+using OmniBlock.Client.Rendering.UI;
+using OmniBlock.Entities;
+using OmniBlock.Items;
 using Silk.NET.Maths;
 using SixLabors.Fonts;
-using Color = BetaSharp.Client.UI.Colors.Color;
-using TextRenderer = BetaSharp.Client.Rendering.TextRenderer;
+using Color = OmniBlock.Client.UI.Colors.Color;
+using TextRenderer = OmniBlock.Client.Rendering.TextRenderer;
 
-namespace BetaSharp.Client.UI.Rendering;
+namespace OmniBlock.Client.UI.Rendering;
 
 public class UIRenderer
 {

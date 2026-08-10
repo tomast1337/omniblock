@@ -1,4 +1,4 @@
-namespace BetaSharp.Registries;
+namespace OmniBlock.Registries;
 
 /// <summary>
 /// An indirection wrapper for registry entries.

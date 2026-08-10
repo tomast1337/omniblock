@@ -9,7 +9,7 @@
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": "betasharp:water_texture",
+  "TextureId": "omniblock:water_texture",
   "RenderType": "Fluids",
   "RenderLayer": 1,
   "TickRate": 5,
@@ -25,11 +25,11 @@
         "Ticker"
       ],
       "Type": "stationary_fluid",
-      "ignition_target": "betasharp:fire",
-      "source_solidified": "betasharp:obsidian",
-      "flow_solidified": "betasharp:cobblestone",
-      "still": "betasharp:water_texture",
-      "flowing": "betasharp:water_texture_1"
+      "ignition_target": "omniblock:fire",
+      "source_solidified": "omniblock:obsidian",
+      "flow_solidified": "omniblock:cobblestone",
+      "still": "omniblock:water_texture",
+      "flowing": "omniblock:water_texture_1"
     }
   ]
 }

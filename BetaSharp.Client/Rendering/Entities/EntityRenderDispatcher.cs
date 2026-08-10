@@ -1,17 +1,17 @@
-using BetaSharp.Blocks;
-using BetaSharp.Client.Options;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.Rendering.Entities.Models;
-using BetaSharp.Client.Rendering.Items;
-using BetaSharp.Entities;
-using BetaSharp.Items;
-using BetaSharp.Registries;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
+using OmniBlock.Blocks;
+using OmniBlock.Client.Options;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Client.Rendering.Entities.Models;
+using OmniBlock.Client.Rendering.Items;
+using OmniBlock.Entities;
+using OmniBlock.Items;
+using OmniBlock.Registries;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Client.Rendering.Entities;
+namespace OmniBlock.Client.Rendering.Entities;
 
 public class EntityRenderDispatcher
 {

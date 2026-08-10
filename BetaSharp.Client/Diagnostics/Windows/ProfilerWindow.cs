@@ -1,6 +1,6 @@
-using BetaSharp.Profiling;
+using OmniBlock.Profiling;
 
-namespace BetaSharp.Client.Diagnostics.Windows;
+namespace OmniBlock.Client.Diagnostics.Windows;
 
 internal sealed class ProfilerWindow : DebugWindow
 {

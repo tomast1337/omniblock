@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Registries.Data;
+namespace OmniBlock.Registries.Data;
 
 public abstract class DataAssetLoader
 {

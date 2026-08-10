@@ -1,7 +1,7 @@
-using BetaSharp.Registries;
-using BetaSharp.Registries.Data;
+using OmniBlock.Registries;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Tests;
+namespace OmniBlock.Tests;
 
 public class RegistryKeyTests
 {
@@ -10,7 +10,7 @@ public class RegistryKeyTests
     [Fact]
     public void RegistryKey_exposes_location()
     {
-        var loc = ResourceLocation.Parse("betasharp:game_mode");
+        var loc = ResourceLocation.Parse("omniblock:game_mode");
         var key = new RegistryKey<GameMode>(loc);
 
         Assert.Equal(loc, key.Location);
@@ -19,16 +19,16 @@ public class RegistryKeyTests
     [Fact]
     public void RegistryKey_ToString_returns_location_string()
     {
-        var key = new RegistryKey<GameMode>(ResourceLocation.Parse("betasharp:game_mode"));
+        var key = new RegistryKey<GameMode>(ResourceLocation.Parse("omniblock:game_mode"));
 
-        Assert.Equal("betasharp:game_mode", key.ToString());
+        Assert.Equal("omniblock:game_mode", key.ToString());
     }
 
     [Fact]
     public void RegistryKey_equals_another_with_same_location_and_type()
     {
-        var k1 = new RegistryKey<GameMode>(ResourceLocation.Parse("betasharp:game_mode"));
-        var k2 = new RegistryKey<GameMode>(ResourceLocation.Parse("betasharp:game_mode"));
+        var k1 = new RegistryKey<GameMode>(ResourceLocation.Parse("omniblock:game_mode"));
+        var k2 = new RegistryKey<GameMode>(ResourceLocation.Parse("omniblock:game_mode"));
 
         Assert.Equal(k1, k2);
         Assert.Equal(k1.GetHashCode(), k2.GetHashCode());
@@ -37,8 +37,8 @@ public class RegistryKeyTests
     [Fact]
     public void RegistryKey_not_equal_for_different_location()
     {
-        var k1 = new RegistryKey<GameMode>(ResourceLocation.Parse("betasharp:game_mode"));
-        var k2 = new RegistryKey<GameMode>(ResourceLocation.Parse("betasharp:enchantment"));
+        var k1 = new RegistryKey<GameMode>(ResourceLocation.Parse("omniblock:game_mode"));
+        var k2 = new RegistryKey<GameMode>(ResourceLocation.Parse("omniblock:enchantment"));
 
         Assert.NotEqual(k1, k2);
     }
@@ -48,7 +48,7 @@ public class RegistryKeyTests
     [Fact]
     public void RegistryDefinition_exposes_key_and_asset_path()
     {
-        var key = new RegistryKey<GameMode>(ResourceLocation.Parse("betasharp:game_mode"));
+        var key = new RegistryKey<GameMode>(ResourceLocation.Parse("omniblock:game_mode"));
         var def = new RegistryDefinition<GameMode>(key, "gamemode");
 
         Assert.Equal(key, def.Key);
@@ -58,7 +58,7 @@ public class RegistryKeyTests
     [Fact]
     public void RegistryDefinition_creates_loader_with_alldata_locations_by_default()
     {
-        var key = new RegistryKey<GameMode>(ResourceLocation.Parse("betasharp:game_mode"));
+        var key = new RegistryKey<GameMode>(ResourceLocation.Parse("omniblock:game_mode"));
         var def = new RegistryDefinition<GameMode>(key, "gamemode");
 
         DataAssetLoader<GameMode> loader = (DataAssetLoader<GameMode>)def.CreateLoader();
@@ -70,7 +70,7 @@ public class RegistryKeyTests
     [Fact]
     public void RegistryDefinition_respects_explicit_locations()
     {
-        var key = new RegistryKey<GameMode>(ResourceLocation.Parse("betasharp:game_mode"));
+        var key = new RegistryKey<GameMode>(ResourceLocation.Parse("omniblock:game_mode"));
         var def = new RegistryDefinition<GameMode>(key, "gamemode", LoadLocations.Assets);
 
         DataAssetLoader<GameMode> loader = (DataAssetLoader<GameMode>)def.CreateLoader();
@@ -83,7 +83,7 @@ public class RegistryKeyTests
     [Fact]
     public void RegistryKeys_GameModes_has_expected_location()
     {
-        Assert.Equal("betasharp:game_mode", RegistryKeys.GameModes.ToString());
+        Assert.Equal("omniblock:game_mode", RegistryKeys.GameModes.ToString());
     }
 
     [Fact]

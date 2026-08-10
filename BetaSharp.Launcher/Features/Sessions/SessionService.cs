@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using BetaSharp.Launcher.Features.Mojang;
-using BetaSharp.Launcher.Features.Xbox;
+using OmniBlock.Launcher.Features.Mojang;
+using OmniBlock.Launcher.Features.Xbox;
 
-namespace BetaSharp.Launcher.Features.Sessions;
+namespace OmniBlock.Launcher.Features.Sessions;
 
 internal sealed class SessionService(XboxClient xboxClient, MojangClient mojangClient)
 {

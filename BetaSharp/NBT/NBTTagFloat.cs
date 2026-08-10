@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace BetaSharp.NBT;
+namespace OmniBlock.NBT;
 
 internal sealed class NBTTagFloat : NBTBase
 {

@@ -1,4 +1,4 @@
-namespace BetaSharp.Registries.Data;
+namespace OmniBlock.Registries.Data;
 
 [Flags]
 public enum LoadLocations : byte

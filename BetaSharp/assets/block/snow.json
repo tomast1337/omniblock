@@ -7,7 +7,7 @@
   "Resistance": 0.16666667,
   "NonOpaque": true,
   "TickRandomly": true,
-  "TextureId": "betasharp:snow_block",
+  "TextureId": "omniblock:snow_block",
   "TopVariance": "All",
   "BottomVariance": "All",
   "SideVariance": "FlipBoth",
@@ -24,7 +24,7 @@
     {
       "Slots": ["Physics", "Ticker", "Lifecycle", "Visuals"],
       "Type": "snow",
-      "drop_item": "betasharp:snowball",
+      "drop_item": "omniblock:snowball",
       "drop_spread": 0.7
     }
   ]

@@ -1,12 +1,12 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
-using BetaSharp.Profiling;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Entities;
+using OmniBlock.Profiling;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.PathFinding;
+namespace OmniBlock.PathFinding;
 
 internal class PathFinder
 {

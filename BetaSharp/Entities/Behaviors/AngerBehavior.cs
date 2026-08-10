@@ -1,8 +1,8 @@
 using System.Text.Json;
-using BetaSharp.Entities.State;
-using BetaSharp.NBT;
+using OmniBlock.Entities.State;
+using OmniBlock.NBT;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     Neutral-until-provoked aggression: the mob ignores players until one hits it, then every one

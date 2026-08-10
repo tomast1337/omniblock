@@ -6,9 +6,9 @@
         "#"
     ],
     "key": {
-        "#": "betasharp:paper"
+        "#": "omniblock:paper"
     },
     "result": {
-        "id": "betasharp:book"
+        "id": "omniblock:book"
     }
 }

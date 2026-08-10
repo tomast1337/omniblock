@@ -1,11 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using BetaSharp.Network.Messages;
-using BetaSharp.Registries;
-using BetaSharp.Registries.Data;
+using OmniBlock.Network.Messages;
+using OmniBlock.Registries;
+using OmniBlock.Registries.Data;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Client.Network;
+namespace OmniBlock.Client.Network;
 
 /// <summary>
 /// Accumulates <see cref="RegistryDataMessage"/>s received during the login configuration

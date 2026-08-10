@@ -1,6 +1,6 @@
-using BetaSharp.Entities;
+using OmniBlock.Entities;
 
-namespace BetaSharp.Loot.Conditions;
+namespace OmniBlock.Loot.Conditions;
 
 /// <summary>
 ///     Passes only for an entity whose declared <c>size</c> is exactly <paramref name="size" /> — a

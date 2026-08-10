@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using BetaSharp.Entities;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Entities;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Characterization test pinning every mob's resolved configuration to the values Beta 1.7.3 gives

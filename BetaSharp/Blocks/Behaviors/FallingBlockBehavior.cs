@@ -1,8 +1,8 @@
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
 
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
 ///     Gravity-affected blocks (sand, gravel): schedules a fall check when placed or when a

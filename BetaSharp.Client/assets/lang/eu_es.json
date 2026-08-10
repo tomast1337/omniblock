@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "Jokalari anitzean jokatu",
-        "betasharpServer": "BetaSharp zerbitzaria",
+        "betasharpServer": "OmniBlock zerbitzaria",
         "info1": "Minecraft jokalari anitza ez dago amaituta oraindik, baina",
         "info2": "akats batzuk dituen proba goiztiar bat dago abian.",
         "ipinfo": "Idatzi zerbitzari baten IP-a konektatzeko:",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "BetaSharp %1$s Bertsioa",
+        "version": "OmniBlock %1$s Bertsioa",
         "description": "Minecraft Beta 1.7.3-ren bertsio hobetua, C# bidez idatzita.",
         "github": "GitHub-en",
         "author": "Fazin85-k egina",

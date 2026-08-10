@@ -1,6 +1,6 @@
-using BetaSharp.Registries;
+using OmniBlock.Registries;
 
-namespace BetaSharp.Tests;
+namespace OmniBlock.Tests;
 
 /// <summary>
 /// Negative tests: verify that state is correctly ABSENT when it should be.
@@ -77,7 +77,7 @@ public class RegistryNegativeTests : IDisposable
         RegistryAccess.AddDynamic(new RegistryDefinition<TestEnchantment>(s_enchKey, "enchantment"));
         RegistryAccess ra = Build();
 
-        TestEnchantment? result = ra.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("betasharp:nonexistent"));
+        TestEnchantment? result = ra.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("omniblock:nonexistent"));
 
         Assert.Null(result);
     }
@@ -90,7 +90,7 @@ public class RegistryNegativeTests : IDisposable
         RegistryAccess ra = Build();
 
         Holder<TestEnchantment>? holder = ra.GetOrThrow(s_enchKey)
-            .Get(ResourceLocation.Parse("betasharp:nonexistent"));
+            .Get(ResourceLocation.Parse("omniblock:nonexistent"));
 
         Assert.Null(holder);
     }
@@ -102,11 +102,11 @@ public class RegistryNegativeTests : IDisposable
         RegistryAccess.AddDynamic(new RegistryDefinition<TestEnchantment>(s_enchKey, "enchantment"));
         RegistryAccess ra = Build();
 
-        Assert.False(ra.GetOrThrow(s_enchKey).ContainsKey(ResourceLocation.Parse("betasharp:looting")));
+        Assert.False(ra.GetOrThrow(s_enchKey).ContainsKey(ResourceLocation.Parse("omniblock:looting")));
     }
 
     // =========================================================================
-    // Namespace isolation — betasharp:x and minecraft:x are different keys
+    // Namespace isolation — omniblock:x and minecraft:x are different keys
     // =========================================================================
 
     [Fact]
@@ -116,7 +116,7 @@ public class RegistryNegativeTests : IDisposable
         RegistryAccess.AddDynamic(new RegistryDefinition<TestEnchantment>(s_enchKey, "enchantment"));
         RegistryAccess ra = Build();
 
-        // "betasharp:sharpness" exists; "minecraft:sharpness" must not.
+        // "omniblock:sharpness" exists; "minecraft:sharpness" must not.
         TestEnchantment? result = ra.GetOrThrow(s_enchKey)
             .GetValue(ResourceLocation.Parse("minecraft:sharpness"));
 
@@ -141,36 +141,36 @@ public class RegistryNegativeTests : IDisposable
     public void World_only_entry_is_absent_from_server_level_registry()
     {
         WriteEnch("sharpness", maxLevel: 5);
-        WriteDatapackEnch(Path.Combine(_tempDir, "world"), "betasharp", "mending", maxLevel: 1);
+        WriteDatapackEnch(Path.Combine(_tempDir, "world"), "omniblock", "mending", maxLevel: 1);
 
         RegistryAccess.AddDynamic(new RegistryDefinition<TestEnchantment>(s_enchKey, "enchantment"));
         RegistryAccess serverRa = Build();
         _ = serverRa.WithWorldDatapacks(Path.Combine(_tempDir, "world"));
 
-        Assert.Null(serverRa.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("betasharp:mending")));
+        Assert.Null(serverRa.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("omniblock:mending")));
     }
 
     [Fact]
     public void WithoutWorldDatapacks_removes_world_only_entries()
     {
         WriteEnch("sharpness", maxLevel: 5);
-        WriteDatapackEnch(Path.Combine(_tempDir, "world"), "betasharp", "mending", maxLevel: 1);
+        WriteDatapackEnch(Path.Combine(_tempDir, "world"), "omniblock", "mending", maxLevel: 1);
 
         RegistryAccess.AddDynamic(new RegistryDefinition<TestEnchantment>(s_enchKey, "enchantment"));
         RegistryAccess serverRa = Build();
         RegistryAccess worldRa = serverRa.WithWorldDatapacks(Path.Combine(_tempDir, "world"));
 
-        Assert.NotNull(worldRa.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("betasharp:mending")));
+        Assert.NotNull(worldRa.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("omniblock:mending")));
 
         RegistryAccess stripped = worldRa.WithoutWorldDatapacks();
-        Assert.Null(stripped.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("betasharp:mending")));
+        Assert.Null(stripped.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("omniblock:mending")));
     }
 
     [Fact]
     public void Rebuild_without_world_does_not_surface_previous_world_only_entry()
     {
         WriteEnch("sharpness", maxLevel: 5);
-        WriteDatapackEnch(Path.Combine(_tempDir, "world"), "betasharp", "mending", maxLevel: 1);
+        WriteDatapackEnch(Path.Combine(_tempDir, "world"), "omniblock", "mending", maxLevel: 1);
 
         RegistryAccess.AddDynamic(new RegistryDefinition<TestEnchantment>(s_enchKey, "enchantment"));
         RegistryAccess v1 = Build();
@@ -178,7 +178,7 @@ public class RegistryNegativeTests : IDisposable
 
         // Reload without applying world layer — world entry must stay out.
         RegistryAccess v2 = Build();
-        Assert.Null(v2.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("betasharp:mending")));
+        Assert.Null(v2.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("omniblock:mending")));
     }
 
     // =========================================================================
@@ -195,23 +195,23 @@ public class RegistryNegativeTests : IDisposable
         WriteEnch("fortune", maxLevel: 3);
         _ = Build();
 
-        Assert.Null(stale.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("betasharp:fortune")));
+        Assert.Null(stale.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("omniblock:fortune")));
     }
 
     [Fact]
     public void Stale_world_instance_does_not_see_entry_added_in_later_world_build()
     {
         WriteEnch("sharpness", maxLevel: 5);
-        WriteDatapackEnch(Path.Combine(_tempDir, "world"), "betasharp", "mending", maxLevel: 1);
+        WriteDatapackEnch(Path.Combine(_tempDir, "world"), "omniblock", "mending", maxLevel: 1);
         string worldDir = Path.Combine(_tempDir, "world");
 
         RegistryAccess.AddDynamic(new RegistryDefinition<TestEnchantment>(s_enchKey, "enchantment"));
         RegistryAccess staleWorld = Build().WithWorldDatapacks(worldDir);
 
-        WriteDatapackEnch(worldDir, "betasharp", "looting", maxLevel: 3);
+        WriteDatapackEnch(worldDir, "omniblock", "looting", maxLevel: 3);
         _ = Build().WithWorldDatapacks(worldDir);
 
-        Assert.Null(staleWorld.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("betasharp:looting")));
+        Assert.Null(staleWorld.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("omniblock:looting")));
     }
 
     // =========================================================================
@@ -224,14 +224,14 @@ public class RegistryNegativeTests : IDisposable
         WriteEnch("sharpness", maxLevel: 5);
 
         // Create a pack directory but mark it disabled.
-        string disabledPack = Path.Combine(_tempDir, "datapacks", "myaddon.disabled", "data", "betasharp", "enchantment");
+        string disabledPack = Path.Combine(_tempDir, "datapacks", "myaddon.disabled", "data", "omniblock", "enchantment");
         Directory.CreateDirectory(disabledPack);
         File.WriteAllText(Path.Combine(disabledPack, "looting.json"), "{\"MaxLevel\":3}");
 
         RegistryAccess.AddDynamic(new RegistryDefinition<TestEnchantment>(s_enchKey, "enchantment"));
         RegistryAccess ra = Build(datapackPath: _tempDir);
 
-        Assert.Null(ra.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("betasharp:looting")));
+        Assert.Null(ra.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("omniblock:looting")));
     }
 
     [Fact]
@@ -240,14 +240,14 @@ public class RegistryNegativeTests : IDisposable
         WriteEnch("sharpness", maxLevel: 5);
 
         string worldDir = Path.Combine(_tempDir, "world");
-        string disabledPack = Path.Combine(worldDir, "datapacks", "worldpack.disabled", "data", "betasharp", "enchantment");
+        string disabledPack = Path.Combine(worldDir, "datapacks", "worldpack.disabled", "data", "omniblock", "enchantment");
         Directory.CreateDirectory(disabledPack);
         File.WriteAllText(Path.Combine(disabledPack, "mending.json"), "{\"MaxLevel\":1}");
 
         RegistryAccess.AddDynamic(new RegistryDefinition<TestEnchantment>(s_enchKey, "enchantment"));
         RegistryAccess ra = Build().WithWorldDatapacks(worldDir);
 
-        Assert.Null(ra.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("betasharp:mending")));
+        Assert.Null(ra.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("omniblock:mending")));
     }
 
     // =========================================================================
@@ -304,7 +304,7 @@ public class RegistryNegativeTests : IDisposable
         RegistryAccess ra = Build();
 
         IReadableRegistry<TestEnchantment> reg = ra.GetOrThrow(s_enchKey);
-        TestEnchantment sharpness = reg.GetOrThrow(ResourceLocation.Parse("betasharp:sharpness"));
+        TestEnchantment sharpness = reg.GetOrThrow(ResourceLocation.Parse("omniblock:sharpness"));
 
         Assert.Equal(-1, reg.GetId(sharpness));
     }
@@ -323,7 +323,7 @@ public class RegistryNegativeTests : IDisposable
             "{\"MaxLevel\":5,\"AllowedOnBooks\":false}");
 
         // Datapack fully replaces the entry — only MaxLevel=1 specified, Replace=true.
-        string packDir = Path.Combine(_tempDir, "datapacks", "pack", "data", "betasharp", "enchantment");
+        string packDir = Path.Combine(_tempDir, "datapacks", "pack", "data", "omniblock", "enchantment");
         Directory.CreateDirectory(packDir);
         File.WriteAllText(Path.Combine(packDir, "sharpness.json"),
             "{\"Replace\":true,\"MaxLevel\":1}");
@@ -332,7 +332,7 @@ public class RegistryNegativeTests : IDisposable
         RegistryAccess ra = Build(datapackPath: _tempDir);
 
         TestEnchantment sharpness = ra.GetOrThrow(s_enchKey)
-            .GetOrThrow(ResourceLocation.Parse("betasharp:sharpness"));
+            .GetOrThrow(ResourceLocation.Parse("omniblock:sharpness"));
 
         Assert.Equal(1, sharpness.MaxLevel);
         // AllowedOnBooks reverts to the C# default (true) because Replace discards

@@ -1,6 +1,6 @@
-using BetaSharp.NBT;
+using OmniBlock.NBT;
 
-namespace BetaSharp.Client.Network;
+namespace OmniBlock.Client.Network;
 
 public class ServerData(string name, string ip)
 {

@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.UI.Screens.Menu.Options;
+namespace OmniBlock.Client.UI.Screens.Menu.Options;
 
 public class UISettingsScreen(UIContext context, UIScreen? parent) : BaseOptionsScreen(context, parent, "options.uiSettings")
 {

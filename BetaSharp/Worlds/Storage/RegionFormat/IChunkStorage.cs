@@ -1,7 +1,7 @@
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Worlds.Storage.RegionFormat;
+namespace OmniBlock.Worlds.Storage.RegionFormat;
 
 public interface IChunkStorage
 {

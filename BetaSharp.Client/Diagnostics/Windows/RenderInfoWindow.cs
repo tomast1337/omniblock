@@ -1,12 +1,12 @@
-using BetaSharp.Blocks;
-using BetaSharp.Diagnostics;
-using BetaSharp.Util.Hit;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Diagnostics;
+using OmniBlock.Util.Hit;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Core.Systems;
 using Hexa.NET.ImGui;
 
-namespace BetaSharp.Client.Diagnostics.Windows;
+namespace OmniBlock.Client.Diagnostics.Windows;
 
 internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
 {

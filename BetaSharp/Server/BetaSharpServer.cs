@@ -1,27 +1,27 @@
 using System.Diagnostics;
-using BetaSharp.Diagnostics;
-using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets;
-using BetaSharp.Profiling;
-using BetaSharp.Recipes;
-using BetaSharp.Registries;
-using BetaSharp.Registries.Data;
-using BetaSharp.Server.Command;
-using BetaSharp.Server.Entities;
-using BetaSharp.Server.Internal;
-using BetaSharp.Server.Network;
-using BetaSharp.Server.Worlds;
-using BetaSharp.Util;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Storage;
+using OmniBlock.Diagnostics;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Packets;
+using OmniBlock.Profiling;
+using OmniBlock.Recipes;
+using OmniBlock.Registries;
+using OmniBlock.Registries.Data;
+using OmniBlock.Server.Command;
+using OmniBlock.Server.Entities;
+using OmniBlock.Server.Internal;
+using OmniBlock.Server.Network;
+using OmniBlock.Server.Worlds;
+using OmniBlock.Util;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Storage;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
-using ServerWorld = BetaSharp.Worlds.Core.ServerWorld;
+using ServerWorld = OmniBlock.Worlds.Core.ServerWorld;
 
-namespace BetaSharp.Server;
+namespace OmniBlock.Server;
 
 public abstract class BetaSharpServer : ICommandOutput
 {

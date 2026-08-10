@@ -6,9 +6,9 @@
         "###"
     ],
     "key": {
-        "#": "betasharp:diamond"
+        "#": "omniblock:diamond"
     },
     "result": {
-        "id": "betasharp:DiamondBlock"
+        "id": "omniblock:DiamondBlock"
     }
 }

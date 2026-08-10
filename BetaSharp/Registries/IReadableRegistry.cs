@@ -1,13 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace BetaSharp.Registries;
+namespace OmniBlock.Registries;
 
 /// <summary>
 /// Shared read-only query surface for both code-registered and data-driven registries.
 /// </summary>
 public interface IReadableRegistry<T> : IEnumerable<T> where T : class
 {
-    /// <summary>The registry's own identifier (e.g. <c>betasharp:entity_type</c>).</summary>
+    /// <summary>The registry's own identifier (e.g. <c>omniblock:entity_type</c>).</summary>
     ResourceLocation RegistryKey { get; }
 
     /// <summary>

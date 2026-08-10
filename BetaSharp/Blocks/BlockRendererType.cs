@@ -1,4 +1,4 @@
-namespace BetaSharp.Blocks;
+namespace OmniBlock.Blocks;
 
 public enum BlockRendererType
 {

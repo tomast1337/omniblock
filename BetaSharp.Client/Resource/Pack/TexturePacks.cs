@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Client.Resource.Pack;
+namespace OmniBlock.Client.Resource.Pack;
 
 public class TexturePacks
 {
@@ -9,12 +9,12 @@ public class TexturePacks
     private readonly TexturePack _defaultTexturePack = new BuiltInTexturePack();
     public TexturePack SelectedTexturePack;
     private readonly Dictionary<string, TexturePack> _texturePacks = [];
-    private readonly BetaSharp _game;
+    private readonly OmniBlock _game;
     private readonly DirectoryInfo _texturePackDir;
     private string? _currentTexturePack;
     public List<TexturePack> AvailableTexturePacks => _availTexturePacks;
 
-    public TexturePacks(BetaSharp game, DirectoryInfo texturePackDir)
+    public TexturePacks(OmniBlock game, DirectoryInfo texturePackDir)
     {
         _game = game;
         _texturePackDir = new DirectoryInfo(System.IO.Path.Combine(texturePackDir.FullName, "texturepacks"));

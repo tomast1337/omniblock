@@ -1,9 +1,9 @@
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.Util.Maths;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Client.Rendering.Entities.Models;
+namespace OmniBlock.Client.Rendering.Entities.Models;
 
 public sealed class ModelWolf : BbModelEntityModel
 {

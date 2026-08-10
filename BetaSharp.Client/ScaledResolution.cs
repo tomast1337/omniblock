@@ -1,6 +1,6 @@
-using BetaSharp.Client.Options;
+using OmniBlock.Client.Options;
 
-namespace BetaSharp.Client;
+namespace OmniBlock.Client;
 
 public class ScaledResolution
 {

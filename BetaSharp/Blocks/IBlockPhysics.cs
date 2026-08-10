@@ -1,7 +1,7 @@
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Blocks;
+namespace OmniBlock.Blocks;
 
 /// <summary>Composable capability for neighbor updates, collision shapes, and placement/growth rules.</summary>
 public interface IBlockPhysics

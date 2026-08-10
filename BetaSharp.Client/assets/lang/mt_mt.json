@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "Ilgħab Multiplayer",
-        "betasharpServer": "Server BetaSharp",
+        "betasharpServer": "Server OmniBlock",
         "info1": "Il-Multiplayer ta' Minecraft għadu mhux lest, imma hemm",
         "info2": "għaddejjin xi testijiet bikrin bi ftit żbalji.",
         "ipinfo": "Daħħal l-IP ta' server biex tikkonnettja miegħu:",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "BetaSharp Verżjoni %1$s",
+        "version": "OmniBlock Verżjoni %1$s",
         "description": "Verżjoni mtejba ta' Minecraft Beta 1.7.3, miktuba bil-C#.",
         "github": "Fuq GitHub",
         "author": "Magħmul minn Fazin85",

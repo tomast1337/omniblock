@@ -1,7 +1,7 @@
-using BetaSharp.Util;
+using OmniBlock.Util;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Network.Packets;
+namespace OmniBlock.Network.Packets;
 
 public abstract class Packet
 {

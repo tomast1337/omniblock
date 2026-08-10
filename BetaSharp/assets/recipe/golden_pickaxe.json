@@ -6,10 +6,10 @@
         " # "
     ],
     "key": {
-        "X": "betasharp:ingot_gold",
-        "#": "betasharp:stick"
+        "X": "omniblock:ingot_gold",
+        "#": "omniblock:stick"
     },
     "result": {
-        "id": "betasharp:pickaxe_gold"
+        "id": "omniblock:pickaxe_gold"
     }
 }

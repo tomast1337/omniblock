@@ -6,7 +6,7 @@
   "SoundGroup": "grass",
   "NonOpaque": true,
   "TickRandomly": true,
-  "TextureId": "betasharp:dandelion",
+  "TextureId": "omniblock:dandelion",
   "RenderType": "Reed",
   "NotFullCube": true,
   "NoCollision": true,
@@ -22,7 +22,7 @@
     {
       "Slots": ["Ticker", "Physics"],
       "Type": "plant_survival",
-      "valid_ground": ["betasharp:grass_block", "betasharp:dirt", "betasharp:farmland"]
+      "valid_ground": ["omniblock:grass_block", "omniblock:dirt", "omniblock:farmland"]
     }
   ]
 }

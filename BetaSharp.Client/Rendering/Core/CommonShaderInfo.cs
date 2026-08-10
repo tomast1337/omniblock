@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Rendering.Core;
+namespace OmniBlock.Client.Rendering.Core;
 
 /// <summary>
 ///     Where the frame is in time, for the shaders that animate from it.

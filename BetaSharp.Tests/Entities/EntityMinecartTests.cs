@@ -1,10 +1,10 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.Items;
-using BetaSharp.NBT;
-namespace BetaSharp.Tests.Entities;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.Items;
+using OmniBlock.NBT;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Covers the minecart, the last non-living entity to lose its class: rails, the three cart kinds,

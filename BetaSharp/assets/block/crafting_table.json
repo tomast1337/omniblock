@@ -6,12 +6,12 @@
   "SoundGroup": "wood",
   "Hardness": 2.5,
   "Resistance": 4.1666665,
-  "TextureId": "betasharp:crafting_table_side",
+  "TextureId": "omniblock:crafting_table_side",
   "FaceTextures": {
-    "down": "betasharp:wooden_planks",
-    "up": "betasharp:crafting_table_top",
-    "north": "betasharp:crafting_table_front",
-    "west": "betasharp:crafting_table_front"
+    "down": "omniblock:wooden_planks",
+    "up": "omniblock:crafting_table_top",
+    "north": "omniblock:crafting_table_front",
+    "west": "omniblock:crafting_table_front"
   },
   "Behaviors": [
     {

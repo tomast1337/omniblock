@@ -1,9 +1,9 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
-using BetaSharp.Util.Maths;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Client.Rendering;
+namespace OmniBlock.Client.Rendering;
 
 public class FrustumData
 {

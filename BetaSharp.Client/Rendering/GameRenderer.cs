@@ -1,27 +1,27 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Client.Input;
-using BetaSharp.Client.Options;
-using BetaSharp.Client.Rendering.Chunks;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.Rendering.Items;
-using BetaSharp.Entities;
-using BetaSharp.Profiling;
-using BetaSharp.Util.Hit;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Generation.Biomes;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Client.Input;
+using OmniBlock.Client.Options;
+using OmniBlock.Client.Rendering.Chunks;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Client.Rendering.Items;
+using OmniBlock.Entities;
+using OmniBlock.Profiling;
+using OmniBlock.Util.Hit;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Generation.Biomes;
 using Silk.NET.Maths;
 
-namespace BetaSharp.Client.Rendering;
+namespace OmniBlock.Client.Rendering;
 
 public class GameRenderer
 {
     public static readonly CommonShaderInfo ShaderInfo = new CommonShaderInfo();
 
     private readonly bool _cloudFog = false;
-    private readonly BetaSharp _client;
+    private readonly OmniBlock _client;
     private float _viewDistance;
     public readonly HeldItemRenderer ItemRenderer;
     public readonly CameraController CameraController;
@@ -37,7 +37,7 @@ public class GameRenderer
     private float _fogColorGreen;
     private float _fogColorBlue;
 
-    public GameRenderer(BetaSharp game)
+    public GameRenderer(OmniBlock game)
     {
         _client = game;
         ItemRenderer = new HeldItemRenderer(game);

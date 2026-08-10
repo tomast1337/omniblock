@@ -1,10 +1,10 @@
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.Items;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.Items;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
 ///     Snow layer: metadata 0-7 is height (2/16 per layer), requires an opaque/movement-blocking

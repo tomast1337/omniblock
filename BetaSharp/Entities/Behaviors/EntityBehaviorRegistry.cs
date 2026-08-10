@@ -1,8 +1,8 @@
 using System.Text.Json;
-using BetaSharp.Items;
-using BetaSharp.Loot;
+using OmniBlock.Items;
+using OmniBlock.Loot;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     Maps a JSON <c>"Type"</c> key to a behavior instance, mirroring

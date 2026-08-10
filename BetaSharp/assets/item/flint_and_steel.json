@@ -1,7 +1,7 @@
 {
     "ProtocolId": 259,
     "TranslationKey": "flintAndSteel",
-    "TextureId": "betasharp:flint_and_steel",
+    "TextureId": "omniblock:flint_and_steel",
     "MaxStackSize": 1,
     "MaxDurability": 64,
     "Behavior": {

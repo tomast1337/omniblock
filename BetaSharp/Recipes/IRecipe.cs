@@ -1,7 +1,7 @@
-using BetaSharp.Inventories;
-using BetaSharp.Items;
+using OmniBlock.Inventories;
+using OmniBlock.Items;
 
-namespace BetaSharp.Recipes;
+namespace OmniBlock.Recipes;
 
 public interface IRecipe
 {

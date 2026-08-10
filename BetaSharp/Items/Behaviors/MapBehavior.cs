@@ -1,13 +1,13 @@
-using BetaSharp.Blocks;
-using BetaSharp.Entities;
-using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Maps;
+using OmniBlock.Blocks;
+using OmniBlock.Entities;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Packets;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Maps;
 
-namespace BetaSharp.Items.Behaviors;
+namespace OmniBlock.Items.Behaviors;
 
 public sealed class MapBehavior : IItemBehavior
 {

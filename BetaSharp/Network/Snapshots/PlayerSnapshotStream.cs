@@ -1,6 +1,6 @@
-using BetaSharp.Network.Messages;
+using OmniBlock.Network.Messages;
 
-namespace BetaSharp.Network.Snapshots;
+namespace OmniBlock.Network.Snapshots;
 
 /// <summary>
 ///     The sending half of delta-compressed entity replication: one per recipient, holding what that

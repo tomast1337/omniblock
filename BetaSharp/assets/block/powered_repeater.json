@@ -8,7 +8,7 @@
   "NonOpaque": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": "betasharp:stone_slab_top",
+  "TextureId": "omniblock:stone_slab_top",
   "RenderType": "Repeater",
   "NotFullCube": true,
   "BoundingBox": {
@@ -41,11 +41,11 @@
         "Visuals"
       ],
       "Type": "repeater",
-      "top_off": "betasharp:redstone_repeater_top_off",
-      "top_on": "betasharp:redstone_repeater_top_on",
-      "torch_off": "betasharp:redstone_torch_off",
-      "torch_on": "betasharp:redstone_torch_on",
-      "side": "betasharp:stone_slab_side"
+      "top_off": "omniblock:redstone_repeater_top_off",
+      "top_on": "omniblock:redstone_repeater_top_on",
+      "torch_off": "omniblock:redstone_torch_off",
+      "torch_on": "omniblock:redstone_torch_on",
+      "side": "omniblock:stone_slab_side"
     }
   ]
 }

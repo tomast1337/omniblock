@@ -2,7 +2,7 @@ using System.Net;
 using System.Xml;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Client.Resource;
+namespace OmniBlock.Client.Resource;
 
 public class BetaResourceDownloader : IResourceLoader, IDisposable
 {
@@ -13,10 +13,10 @@ public class BetaResourceDownloader : IResourceLoader, IDisposable
     private readonly ILogger<BetaResourceDownloader> _logger = Log.Instance.For<BetaResourceDownloader>();
     private readonly HttpClient _httpClient;
     private readonly string _resourcesDirectory;
-    private readonly BetaSharp _game;
+    private readonly OmniBlock _game;
     private bool _cancelled;
 
-    public BetaResourceDownloader(BetaSharp game, string baseDirectory)
+    public BetaResourceDownloader(OmniBlock game, string baseDirectory)
     {
         _game = game;
         _resourcesDirectory = System.IO.Path.Combine(baseDirectory, "resources");

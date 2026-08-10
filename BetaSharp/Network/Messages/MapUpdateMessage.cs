@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 [WireMessage("beta:map_update")]
 public partial class MapUpdateMessage : Message

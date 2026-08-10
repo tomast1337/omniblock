@@ -1,4 +1,4 @@
-namespace BetaSharp.Textures;
+namespace OmniBlock.Textures;
 
 /// <summary>
 ///     The two legacy grid atlases a definition can name a texture in.

@@ -1,9 +1,9 @@
-using BetaSharp.Blocks;
-using BetaSharp.Entities;
-using BetaSharp.NBT;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Entities;
+using OmniBlock.NBT;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Items;
+namespace OmniBlock.Items;
 
 public class ItemStack
 {

@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.UI;
+namespace OmniBlock.Client.UI;
 
 public class UIEvent
 {

@@ -1,7 +1,7 @@
-using BetaSharp.Server.Internal;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Server.Internal;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Client;
+namespace OmniBlock.Client;
 
 public interface IInternalServerHost
 {

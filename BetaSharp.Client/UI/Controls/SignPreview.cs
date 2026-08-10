@@ -1,7 +1,7 @@
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Client.UI.Rendering;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Client.UI.Rendering;
 
-namespace BetaSharp.Client.UI.Controls;
+namespace OmniBlock.Client.UI.Controls;
 
 public class SignPreview : UIElement
 {

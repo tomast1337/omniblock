@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     A message in the extensible protocol layer, identified by a <see cref="ResourceLocation" />

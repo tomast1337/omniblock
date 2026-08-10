@@ -1,10 +1,10 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     An item entity flying into whoever picked it up. Replaces
 ///     <c>ItemPickupAnimationS2CPacket</c>.
 /// </summary>
-[WireMessage("betasharp:item_pickup")]
+[WireMessage("omniblock:item_pickup")]
 public sealed partial class ItemPickupMessage : Message
 {
     public override SendPriority Priority => SendPriority.High;

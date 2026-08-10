@@ -1,7 +1,7 @@
-using BetaSharp.Client.Input;
-using BetaSharp.Client.UI;
+using OmniBlock.Client.Input;
+using OmniBlock.Client.UI;
 
-namespace BetaSharp.Client.Network;
+namespace OmniBlock.Client.Network;
 
 public interface IClientNetworkFactory
 {

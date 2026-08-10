@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Spawns a non-living entity — a minecart, an arrow, a fireball, a falling block.
@@ -12,7 +12,7 @@ namespace BetaSharp.Network.Messages;
 ///         unable to write one wrongly is.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:entity_spawn")]
+[WireMessage("omniblock:entity_spawn")]
 public sealed partial class EntitySpawnMessage : Message
 {
     /// <summary>Spawns travel with the updates that follow them, or a move can overtake its own spawn.</summary>

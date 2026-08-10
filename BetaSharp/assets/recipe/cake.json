@@ -6,12 +6,12 @@
         "CCC"
     ],
     "key": {
-        "A": "betasharp:milk",
-        "B": "betasharp:sugar",
+        "A": "omniblock:milk",
+        "B": "omniblock:sugar",
         "C": "Wheat",
         "E": "Egg"
     },
     "result": {
-        "id": "betasharp:cake"
+        "id": "omniblock:cake"
     }
 }

@@ -1,10 +1,10 @@
-using BetaSharp.Client.UI.Layout.Flexbox;
-using BetaSharp.Client.UI.Rendering;
-using BetaSharp.Util.Maths;
+using OmniBlock.Client.UI.Layout.Flexbox;
+using OmniBlock.Client.UI.Rendering;
+using OmniBlock.Util.Maths;
 using Microsoft.Extensions.Logging;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Controls.MainMenu;
+namespace OmniBlock.Client.UI.Controls.MainMenu;
 
 public class MainMenuSplash : UIElement
 {

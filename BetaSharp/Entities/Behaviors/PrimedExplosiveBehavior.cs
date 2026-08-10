@@ -1,9 +1,9 @@
-using BetaSharp.Entities.State;
-using BetaSharp.NBT;
-using BetaSharp.Rules;
-using BetaSharp.Util.Maths;
+using OmniBlock.Entities.State;
+using OmniBlock.NBT;
+using OmniBlock.Rules;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     A lit block of explosive: created armed with a kick of velocity, it tumbles under gravity,

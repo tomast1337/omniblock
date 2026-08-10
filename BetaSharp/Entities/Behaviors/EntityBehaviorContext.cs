@@ -1,7 +1,7 @@
 using System.Text.Json;
-using BetaSharp.Entities.State;
+using OmniBlock.Entities.State;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     What a behavior gets while being constructed, once per <see cref="EntityType" /> at load.

@@ -1,15 +1,15 @@
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Entities;
-using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets;
-using BetaSharp.Server.Network;
-using BetaSharp.Server.Worlds;
-using BetaSharp.Util;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Dimensions;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Entities;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Packets;
+using OmniBlock.Server.Network;
+using OmniBlock.Server.Worlds;
+using OmniBlock.Util;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Dimensions;
 
-namespace BetaSharp.Server;
+namespace OmniBlock.Server;
 
 public class PlayerManager
 {

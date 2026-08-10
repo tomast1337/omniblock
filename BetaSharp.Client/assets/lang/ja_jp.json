@@ -81,7 +81,7 @@
     },
     "multiplayer": {
         "title": "マルチプレイで遊ぶ",
-        "betasharpServer": "BetaSharp サーバー",
+        "betasharpServer": "OmniBlock サーバー",
         "info1": "Minecraftのマルチプレイヤーは未完成の状態ですが、",
         "info2": "初期段階のテストが実施されています。",
         "ipinfo": "接続先のサーバーIPアドレスを入力してください：",

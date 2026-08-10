@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Echoes a completed time-sync probe. The client adds T3 — its own arrival instant — and
@@ -17,7 +17,7 @@ namespace BetaSharp.Network.Messages;
 ///         round trip. Taking both at the transport edge is what makes that subtraction honest.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:time_sync_response")]
+[WireMessage("omniblock:time_sync_response")]
 public sealed partial class TimeSyncResponseMessage : Message
 {
     /// <summary>Latency measurement: a probe queued behind a chunk measures the queue, not the network.</summary>

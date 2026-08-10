@@ -1,8 +1,8 @@
 using System.Runtime.CompilerServices;
-using BetaSharp.Blocks;
-using BetaSharp.Worlds.Core;
+using OmniBlock.Blocks;
+using OmniBlock.Worlds.Core;
 
-namespace BetaSharp.Client.Rendering.Chunks.Occlusion;
+namespace OmniBlock.Client.Rendering.Chunks.Occlusion;
 
 public static class ChunkVisibilityComputer
 {

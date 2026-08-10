@@ -6,10 +6,10 @@
         " # "
     ],
     "key": {
-        "#": "betasharp:ingot_gold",
-        "X": "betasharp:redstone"
+        "#": "omniblock:ingot_gold",
+        "X": "omniblock:redstone"
     },
     "result": {
-        "id": "betasharp:clock"
+        "id": "omniblock:clock"
     }
 }

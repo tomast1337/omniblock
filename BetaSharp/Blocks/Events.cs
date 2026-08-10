@@ -1,7 +1,7 @@
-using BetaSharp.Entities;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Entities;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Blocks;
+namespace OmniBlock.Blocks;
 
 public readonly record struct OnTickEvent(IWorldContext World, int X, int Y, int Z, int Meta, int BlockId);
 

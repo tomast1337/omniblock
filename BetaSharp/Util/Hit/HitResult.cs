@@ -1,7 +1,7 @@
-using BetaSharp.Entities;
-using BetaSharp.Util.Maths;
+using OmniBlock.Entities;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Util.Hit;
+namespace OmniBlock.Util.Hit;
 
 public struct HitResult(int blockX, int blockY, int blockZ, int side, Vec3D pos, HitResultType type)
 {

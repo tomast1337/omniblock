@@ -1,6 +1,6 @@
 ﻿using Brigadier.NET.Context;
 
-namespace BetaSharp.Server.Command;
+namespace OmniBlock.Server.Command;
 
 public static class CommandContextExtension
 {

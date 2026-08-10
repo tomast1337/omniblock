@@ -1,4 +1,4 @@
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
 ///     Log rendering and leaf decay: bark texture varies by species metadata, and breaking a log

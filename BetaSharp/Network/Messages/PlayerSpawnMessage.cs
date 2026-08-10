@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Spawns another player. Replaces <c>PlayerSpawnS2CPacket</c>.
@@ -7,7 +7,7 @@ namespace BetaSharp.Network.Messages;
 ///         at the sixteen-character limit, so it was wrong on every spawn it ever sent.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:player_spawn")]
+[WireMessage("omniblock:player_spawn")]
 public sealed partial class PlayerSpawnMessage : Message
 {
     /// <summary>The account name's limit, and the bound the reader applies before allocating.</summary>

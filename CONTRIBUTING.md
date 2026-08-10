@@ -1,6 +1,6 @@
-# Contributing to BetaSharp
+# Contributing to OmniBlock
 
-You can contribute to BetaSharp with issues and PRs. Simply filing issues for problems you encounter is a great way to contribute. \
+You can contribute to OmniBlock with issues and PRs. Simply filing issues for problems you encounter is a great way to contribute. \
 Contributing implementations is greatly appreciated.
 
 ## Getting Started

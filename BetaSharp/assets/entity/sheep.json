@@ -31,7 +31,7 @@
       "Slots": ["Interactable", "Persistence", "Lifecycle"],
       "Type": "wool",
       "property": "wool",
-      "tool": "betasharp:shears",
+      "tool": "omniblock:shears",
       "min_drop": 2,
       "drop_range": 3
     },
@@ -42,7 +42,7 @@
         {
           "Entries": [
             {
-              "Item": "betasharp:wool",
+              "Item": "omniblock:wool",
               "MetaFrom": "FleeceColor"
             }
           ],

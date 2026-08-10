@@ -1,8 +1,8 @@
 using System.Text.Json;
-using BetaSharp.Items;
-using BetaSharp.Loot.Conditions;
+using OmniBlock.Items;
+using OmniBlock.Loot.Conditions;
 
-namespace BetaSharp.Loot;
+namespace OmniBlock.Loot;
 
 /// <summary>
 ///     Builds <see cref="LootTable" />s and <see cref="ILootCondition" />s from JSON, mirroring the

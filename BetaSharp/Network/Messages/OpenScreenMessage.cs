@@ -1,11 +1,11 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Opens a screen on the client. Replaces <c>OpenScreenS2CPacket</c>, which declared
 ///     <c>3 + Name.Length</c> for a payload of five plus the name's encoded bytes — wrong by two,
 ///     and wrong again for any name that is not pure ASCII.
 /// </summary>
-[WireMessage("betasharp:open_screen")]
+[WireMessage("omniblock:open_screen")]
 public sealed partial class OpenScreenMessage : Message
 {
     /// <summary>

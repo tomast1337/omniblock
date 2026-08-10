@@ -1,12 +1,12 @@
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Client.Entities;
-using BetaSharp.Client.Input;
-using BetaSharp.Client.UI.Rendering;
-using BetaSharp.Inventories;
-using BetaSharp.Items;
-using BetaSharp.Util.Maths;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Client.Entities;
+using OmniBlock.Client.Input;
+using OmniBlock.Client.UI.Rendering;
+using OmniBlock.Inventories;
+using OmniBlock.Items;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Client.UI.Controls.HUD;
+namespace OmniBlock.Client.UI.Controls.HUD;
 
 public class Hotbar : UIElement
 {

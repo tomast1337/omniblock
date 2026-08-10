@@ -2,7 +2,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
-namespace BetaSharp.Client.Rendering.Core.Textures;
+namespace OmniBlock.Client.Rendering.Core.Textures;
 
 public class DynamicTexture(int iconIdx)
 {
@@ -21,7 +21,7 @@ public class DynamicTexture(int iconIdx)
         Items
     }
 
-    public virtual void Setup(BetaSharp game)
+    public virtual void Setup(OmniBlock game)
     {
     }
 
@@ -29,7 +29,7 @@ public class DynamicTexture(int iconIdx)
     {
     }
 
-    protected virtual void TryLoadCustomTexture(BetaSharp game, string resourceName)
+    protected virtual void TryLoadCustomTexture(OmniBlock game, string resourceName)
     {
         CustomFrames = null;
         CustomFrameIndex = 0;

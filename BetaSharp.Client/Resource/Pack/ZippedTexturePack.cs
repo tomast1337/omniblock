@@ -1,10 +1,10 @@
 using System.IO.Compression;
-using BetaSharp.Client.Rendering.Core.Textures;
+using OmniBlock.Client.Rendering.Core.Textures;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace BetaSharp.Client.Resource.Pack;
+namespace OmniBlock.Client.Resource.Pack;
 
 public class ZippedTexturePack : TexturePack
 {
@@ -30,7 +30,7 @@ public class ZippedTexturePack : TexturePack
         return str ?? string.Empty;
     }
 
-    public override void func_6485_a(BetaSharp game)
+    public override void func_6485_a(OmniBlock game)
     {
         try
         {

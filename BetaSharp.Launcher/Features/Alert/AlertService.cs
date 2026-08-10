@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 
-namespace BetaSharp.Launcher.Features.Alert;
+namespace OmniBlock.Launcher.Features.Alert;
 
 internal sealed class AlertService
 {

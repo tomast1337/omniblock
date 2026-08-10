@@ -1,4 +1,4 @@
-namespace BetaSharp.Entities;
+namespace OmniBlock.Entities;
 
 /// <summary>
 ///     Composable capability for target acquisition. A <c>null</c> <see cref="EntityCreature.Targeting" />

@@ -1,6 +1,6 @@
-using BetaSharp.Network.Snapshots;
+using OmniBlock.Network.Snapshots;
 
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Every entity update one tracking pass produced for one player, as differences from an earlier
@@ -29,7 +29,7 @@ namespace BetaSharp.Network.Messages;
 /// </summary>
 public sealed class EntitySnapshotMessage : Message
 {
-    public static readonly ResourceLocation Id = new(Namespace.BetaSharp, "entity_snapshot");
+    public static readonly ResourceLocation Id = new(Namespace.OmniBlock, "entity_snapshot");
 
     public override ResourceLocation Key => Id;
 

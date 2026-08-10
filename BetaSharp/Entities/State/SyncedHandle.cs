@@ -1,4 +1,4 @@
-namespace BetaSharp.Entities.State;
+namespace OmniBlock.Entities.State;
 
 /// <summary>
 ///     A behavior's typed reference to a declared synced property. Holds the wire id resolved from

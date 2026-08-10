@@ -1,7 +1,7 @@
 {
     "ProtocolId": 342,
     "TranslationKey": "minecartChest",
-    "TextureId": "betasharp:minecart_with_chest",
+    "TextureId": "omniblock:minecart_with_chest",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "minecart",

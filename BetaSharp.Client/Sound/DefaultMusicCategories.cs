@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Sound;
+namespace OmniBlock.Client.Sound;
 
 public static class DefaultMusicCategories
 {

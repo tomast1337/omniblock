@@ -1,10 +1,10 @@
 using System.Runtime.InteropServices;
-using BetaSharp.Blocks;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Lighting;
+using OmniBlock.Blocks;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Lighting;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Worlds.Core.Systems;
+namespace OmniBlock.Worlds.Core.Systems;
 
 public class LightingEngine : ILightProvider
 {

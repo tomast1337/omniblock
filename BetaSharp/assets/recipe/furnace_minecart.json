@@ -5,10 +5,10 @@
         "B"
     ],
     "key": {
-        "A": "betasharp:Furnace",
-        "B": "betasharp:minecart"
+        "A": "omniblock:Furnace",
+        "B": "omniblock:minecart"
     },
     "result": {
-        "id": "betasharp:minecart_furnace"
+        "id": "omniblock:minecart_furnace"
     }
 }

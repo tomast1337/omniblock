@@ -1,6 +1,6 @@
 using Silk.NET.GLFW;
 
-namespace BetaSharp.Client.Input;
+namespace OmniBlock.Client.Input;
 
 public class Keyboard
 {

@@ -4,10 +4,10 @@
         "###"
     ],
     "key": {
-        "#": "betasharp:Cobblestone"
+        "#": "omniblock:Cobblestone"
     },
     "result": {
-        "id": "betasharp:Slab:3",
+        "id": "omniblock:Slab:3",
         "count": 3
     }
 }

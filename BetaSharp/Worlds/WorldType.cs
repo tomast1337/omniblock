@@ -1,4 +1,4 @@
-namespace BetaSharp.Worlds;
+namespace OmniBlock.Worlds;
 
 public class WorldType
 {

@@ -1,4 +1,4 @@
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     Hunts the closest targetable player within <paramref name="radius" />, but only while the mob

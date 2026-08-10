@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Network;
+namespace OmniBlock.Client.Network;
 
 /// <summary>
 ///     One remote entity's position as of one server tick.

@@ -1,4 +1,4 @@
-namespace BetaSharp.Entities;
+namespace OmniBlock.Entities;
 
 /// <summary>
 ///     Composable capability for a mob's death drops. No default implementation: a mob either

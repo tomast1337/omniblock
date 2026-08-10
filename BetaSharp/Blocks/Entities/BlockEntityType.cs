@@ -1,6 +1,6 @@
 using System;
 
-namespace BetaSharp.Blocks.Entities;
+namespace OmniBlock.Blocks.Entities;
 
 public class BlockEntityType(Func<BlockEntity> factory, string id)
 {

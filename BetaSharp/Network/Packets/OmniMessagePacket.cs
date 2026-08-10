@@ -1,6 +1,6 @@
-using BetaSharp.Network.Messages;
+using OmniBlock.Network.Messages;
 
-namespace BetaSharp.Network.Packets;
+namespace OmniBlock.Network.Packets;
 
 /// <summary>
 ///     Carries one extensible-layer message inside the legacy byte-ID framing.

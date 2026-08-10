@@ -1,12 +1,12 @@
 using System.Collections;
 using System.Net;
 using System.Net.Sockets;
-using BetaSharp.Client.Network;
-using BetaSharp.Network.Messages;
-using BetaSharp.Registries;
-using BetaSharp.Registries.Data;
+using OmniBlock.Client.Network;
+using OmniBlock.Network.Messages;
+using OmniBlock.Registries;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Tests;
+namespace OmniBlock.Tests;
 
 // ---------------------------------------------------------------------------
 // Helpers shared across all three test classes in this file
@@ -14,13 +14,13 @@ namespace BetaSharp.Tests;
 
 /// <summary>
 /// Minimal in-memory implementation of <see cref="IReadableRegistry{T}"/> for testing.
-/// Keys are built from the entry's <see cref="IDataAsset.Name"/> in the BetaSharp namespace.
+/// Keys are built from the entry's <see cref="IDataAsset.Name"/> in the OmniBlock namespace.
 /// </summary>
 file sealed class StubRegistry<T>(RegistryKey<T> key, IEnumerable<T> items) : IReadableRegistry<T>
     where T : class, IDataAsset
 {
     private readonly Dictionary<ResourceLocation, T> _entries =
-        items.ToDictionary(item => new ResourceLocation(Namespace.BetaSharp, item.Name));
+        items.ToDictionary(item => new ResourceLocation(Namespace.OmniBlock, item.Name));
 
     public ResourceLocation RegistryKey => key.Location;
 
@@ -298,7 +298,7 @@ public sealed class PacketSerializationTests
     {
         var sent = new PlayerGameModeUpdateMessage
         {
-            GameModeNamespace = Namespace.BetaSharp.ToString(),
+            GameModeNamespace = Namespace.OmniBlock.ToString(),
             GameModeName = "survival"
         };
 

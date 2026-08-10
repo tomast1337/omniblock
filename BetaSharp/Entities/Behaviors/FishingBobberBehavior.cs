@@ -1,12 +1,12 @@
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities.State;
-using BetaSharp.Items;
-using BetaSharp.NBT;
-using BetaSharp.Util.Hit;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Entities.State;
+using OmniBlock.Items;
+using OmniBlock.NBT;
+using OmniBlock.Util.Hit;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     A fishing bobber: cast from a rod, it flies, floats, bobs under when something bites, and

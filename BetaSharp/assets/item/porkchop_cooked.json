@@ -1,7 +1,7 @@
 {
   "ProtocolId": 320,
   "TranslationKey": "porkchopCooked",
-  "TextureId": "betasharp:cooked_porkchop",
+  "TextureId": "omniblock:cooked_porkchop",
   "Behavior": {
     "type": "food",
     "HealAmount": 8,

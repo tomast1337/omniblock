@@ -38,7 +38,7 @@ jobs:
               run: dotnet test --configuration Release --no-build --verbosity normal
             - name: Publish
               run: >
-                  dotnet publish BetaSharp.Launcher/BetaSharp.Launcher.csproj
+                  dotnet publish OmniBlock.Launcher/OmniBlock.Launcher.csproj
                   --configuration Release
                   --runtime ${{ matrix.rid }}
                   --self-contained true

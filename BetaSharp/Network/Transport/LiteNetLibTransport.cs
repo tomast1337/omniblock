@@ -5,7 +5,7 @@ using System.Threading.Channels;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Network.Transport;
+namespace OmniBlock.Network.Transport;
 
 /// <summary>
 ///     <see cref="ITransport" /> over LiteNetLib.

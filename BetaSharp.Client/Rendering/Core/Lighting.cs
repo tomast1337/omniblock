@@ -1,7 +1,7 @@
-using BetaSharp.Util.Maths;
+using OmniBlock.Util.Maths;
 using Silk.NET.Maths;
 
-namespace BetaSharp.Client.Rendering.Core;
+namespace OmniBlock.Client.Rendering.Core;
 
 public class Lighting
 {

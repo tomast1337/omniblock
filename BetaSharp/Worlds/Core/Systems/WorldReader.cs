@@ -1,14 +1,14 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
-using BetaSharp.Util.Hit;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Biomes.Source;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Dimensions;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Entities;
+using OmniBlock.Util.Hit;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Biomes.Source;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Dimensions;
 
-namespace BetaSharp.Worlds.Core.Systems;
+namespace OmniBlock.Worlds.Core.Systems;
 
 public class WorldReader : IBlockReader
 {

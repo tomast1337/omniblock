@@ -1,6 +1,6 @@
 {
   "ProtocolId": 333,
-  "TextureId": "betasharp:boat",
+  "TextureId": "omniblock:boat",
   "MaxStackSize": 1,
   "Behavior": {
     "type": "boat"

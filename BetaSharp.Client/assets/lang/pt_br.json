@@ -81,7 +81,7 @@
     },
     "multiplayer": {
         "title": "Jogar Multijogador",
-        "betasharpServer": "Servidor BetaSharp",
+        "betasharpServer": "Servidor OmniBlock",
         "info1": "O Multijogador do Minecraft atualmente não está finalizado, mas",
         "info2": "há alguns testes iniciais com bugs acontecendo.",
         "ipinfo": "Digite o IP de um servidor para se conectar a ele:",

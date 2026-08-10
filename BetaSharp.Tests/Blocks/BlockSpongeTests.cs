@@ -1,8 +1,8 @@
 using System.Text.Json;
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
 
-namespace BetaSharp.Tests.Blocks;
+namespace OmniBlock.Tests.Blocks;
 
 public sealed class BlockSpongeTests
 {

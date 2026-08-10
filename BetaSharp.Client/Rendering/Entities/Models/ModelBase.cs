@@ -1,6 +1,6 @@
-using BetaSharp.Entities;
+using OmniBlock.Entities;
 
-namespace BetaSharp.Client.Rendering.Entities.Models;
+namespace OmniBlock.Client.Rendering.Entities.Models;
 
 public abstract class ModelBase
 {

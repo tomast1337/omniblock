@@ -1,13 +1,13 @@
 using System.Runtime.InteropServices;
-using BetaSharp.Client.Rendering.Chunks;
-using BetaSharp.Client.Rendering.Entities;
-using BetaSharp.Entities;
+using OmniBlock.Client.Rendering.Chunks;
+using OmniBlock.Client.Rendering.Entities;
+using OmniBlock.Entities;
 using Hexa.NET.ImGui;
 using Silk.NET.Maths;
 using Silk.NET.WebGPU;
 using WgpuBuffer = Silk.NET.WebGPU.Buffer;
 
-namespace BetaSharp.Client.Rendering.Core.WebGPU;
+namespace OmniBlock.Client.Rendering.Core.WebGPU;
 
 /// <summary>
 ///     Orchestrates one WebGPU frame: offscreen terrain pass, blit to swapchain, ImGui overlay.
@@ -15,7 +15,7 @@ namespace BetaSharp.Client.Rendering.Core.WebGPU;
 /// </summary>
 public sealed unsafe class WebGpuGameRenderer : IDisposable
 {
-    private readonly BetaSharp _game;
+    private readonly OmniBlock _game;
     private WgpuFramebuffer? _offscreenFb;
     private WgpuFramebuffer? _presentFb;
     private WgpuPipeline? _blitPipeline;
@@ -51,7 +51,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     public bool ImguiOpen { get; set; }
 
     /// <summary>
-    ///     Set by the caller (<c>BetaSharp.ScreenshotListener</c>) to have the next
+    ///     Set by the caller (<c>OmniBlock.ScreenshotListener</c>) to have the next
     ///     <see cref="RenderFrame" /> copy out and save the composited, gamma-corrected frame. One
     ///     frame behind the key press rather than the same frame — the key is polled after
     ///     RenderFrame has already run for the frame that press lands on — which nothing can
@@ -77,7 +77,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     /// </summary>
     public (uint Width, uint Height) FramebufferSize => (_offscreenFb?.Width ?? 0, _offscreenFb?.Height ?? 0);
 
-    public WebGpuGameRenderer(BetaSharp game)
+    public WebGpuGameRenderer(OmniBlock game)
     {
         _game = game;
 
@@ -351,7 +351,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     ///     small, harmless behaviour change from the old GL splash, which drew straight to the
     ///     backbuffer with no gamma correction at all — this one now reads the gamma slider like
     ///     everything else does. Runs through the same <see cref="EnsureResources" /> as
-    ///     <see cref="RenderFrame" /> — safe because <see cref="BetaSharp.StartGame" /> now calls
+    ///     <see cref="RenderFrame" /> — safe because <see cref="OmniBlock.StartGame" /> now calls
     ///     <c>SetupOpenGLAndInput</c> (where <c>ImGui.CreateContext()</c> runs) before
     ///     <c>LoadScreen</c>, so the ImGui backend this pulls in already has a context to attach to.
     ///     Also replays the last ImGui draw data the same way <see cref="RenderFrame" /> does, so an

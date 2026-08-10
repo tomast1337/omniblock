@@ -1,6 +1,6 @@
 using Silk.NET.Maths;
 
-namespace BetaSharp.Client.Input;
+namespace OmniBlock.Client.Input;
 
 public class MouseHelper
 {

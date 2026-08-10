@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace BetaSharp.Client.Options;
+namespace OmniBlock.Client.Options;
 
 public class ShaderOptionSet
 {

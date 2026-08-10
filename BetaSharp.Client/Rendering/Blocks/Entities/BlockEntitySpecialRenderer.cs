@@ -1,10 +1,10 @@
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.Rendering.Entities;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Client.Rendering.Entities;
+using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Client.Rendering.Blocks.Entities;
+namespace OmniBlock.Client.Rendering.Blocks.Entities;
 
 public abstract class BlockEntitySpecialRenderer
 {

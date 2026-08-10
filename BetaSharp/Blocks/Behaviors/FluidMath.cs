@@ -1,9 +1,9 @@
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 using Silk.NET.Maths;
 
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
 ///     Fluid geometry shared by both the flowing and stationary variants of water/lava. Every

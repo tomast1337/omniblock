@@ -4,10 +4,10 @@
         "###"
     ],
     "key": {
-        "#": "betasharp:sugar_canes"
+        "#": "omniblock:sugar_canes"
     },
     "result": {
-        "id": "betasharp:paper",
+        "id": "omniblock:paper",
         "count": 3
     }
 }

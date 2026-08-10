@@ -1,11 +1,11 @@
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.WebGPU;
-using BetaSharp.Util;
-using BetaSharp.Util.Maths;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Core.WebGPU;
+using OmniBlock.Util;
+using OmniBlock.Util.Maths;
 using Silk.NET.Maths;
 using Silk.NET.WebGPU;
 
-namespace BetaSharp.Client.Rendering.Chunks;
+namespace OmniBlock.Client.Rendering.Chunks;
 
 public class SubChunkRenderer : IDisposable
 {

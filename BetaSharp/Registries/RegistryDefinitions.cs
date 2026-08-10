@@ -1,12 +1,12 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
-using BetaSharp.Items;
-using BetaSharp.Recipes;
-using BetaSharp.Registries.Data;
-using BetaSharp.Worlds.Generation.Biomes;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Entities;
+using OmniBlock.Items;
+using OmniBlock.Recipes;
+using OmniBlock.Registries.Data;
+using OmniBlock.Worlds.Generation.Biomes;
 
-namespace BetaSharp.Registries;
+namespace OmniBlock.Registries;
 
 internal static class RegistryDefinitions
 {

@@ -5,11 +5,11 @@
         "III"
     ],
     "key": {
-        "#": "betasharp:LitRedstoneTorch",
-        "X": "betasharp:redstone",
-        "I": "betasharp:Stone"
+        "#": "omniblock:LitRedstoneTorch",
+        "X": "omniblock:redstone",
+        "I": "omniblock:Stone"
     },
     "result": {
-        "id": "betasharp:redstone_repeater"
+        "id": "omniblock:redstone_repeater"
     }
 }

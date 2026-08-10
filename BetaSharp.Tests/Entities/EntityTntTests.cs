@@ -1,11 +1,11 @@
-using BetaSharp.Blocks;
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.NBT;
-using BetaSharp.Rules;
-using BetaSharp.Tests.TestSupport;
+using OmniBlock.Blocks;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.NBT;
+using OmniBlock.Rules;
+using OmniBlock.Tests.TestSupport;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Covers primed TNT, the first non-living entity to lose its class. Everything it was — a lit

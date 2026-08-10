@@ -1,4 +1,4 @@
-namespace BetaSharp;
+namespace OmniBlock;
 
 internal record struct BlockUpdate(int X, int Y, int Z, int BlockId, long ScheduledTime)
 {

@@ -1,7 +1,7 @@
 {
     "ProtocolId": 316,
     "TranslationKey": "leggingsGold",
-    "TextureId": "betasharp:golden_leggings",
+    "TextureId": "omniblock:golden_leggings",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",

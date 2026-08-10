@@ -1,10 +1,10 @@
 using System.Net.Sockets;
-using BetaSharp.Client.Network;
-using BetaSharp.Client.UI.Screens.Menu.Net;
-using BetaSharp.Network.Packets;
+using OmniBlock.Client.Network;
+using OmniBlock.Client.UI.Screens.Menu.Net;
+using OmniBlock.Network.Packets;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Client.Threading;
+namespace OmniBlock.Client.Threading;
 
 public class ThreadConnectToServer(
     ConnectingScreen connectingScreen,

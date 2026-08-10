@@ -8,7 +8,7 @@
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": "betasharp:fire_layer_0",
+  "TextureId": "omniblock:fire_layer_0",
   "RenderType": "Fire",
   "TickRate": 40,
   "NotFullCube": true,
@@ -22,10 +22,10 @@
         "Lifecycle"
       ],
       "Type": "fire",
-      "portal_base": "betasharp:obsidian",
-      "portal_fill": "betasharp:nether_portal",
-      "eternal_fuel": "betasharp:netherrack",
-      "explosive": "betasharp:tnt",
+      "portal_base": "omniblock:obsidian",
+      "portal_fill": "omniblock:nether_portal",
+      "eternal_fuel": "omniblock:netherrack",
+      "explosive": "omniblock:tnt",
       "max_age": 15,
       "crackle_sound_chance_one_in": 24
     }

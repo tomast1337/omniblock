@@ -1,7 +1,7 @@
-using BetaSharp.Blocks;
-using BetaSharp.Util.Maths;
+using OmniBlock.Blocks;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     Movement for a mob that flies: no gravity, drag on all three axes, and nothing to climb. Also

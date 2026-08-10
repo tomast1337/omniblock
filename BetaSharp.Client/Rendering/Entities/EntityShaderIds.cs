@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Rendering.Entities;
+namespace OmniBlock.Client.Rendering.Entities;
 
 /// <summary>
 /// Symbolic ids the entity shader branches on: which mob is being drawn, and which part of it.

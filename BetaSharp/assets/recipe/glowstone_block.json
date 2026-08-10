@@ -5,9 +5,9 @@
         "##"
     ],
     "key": {
-        "#": "betasharp:yellow_dust"
+        "#": "omniblock:yellow_dust"
     },
     "result": {
-        "id": "betasharp:Glowstone"
+        "id": "omniblock:Glowstone"
     }
 }

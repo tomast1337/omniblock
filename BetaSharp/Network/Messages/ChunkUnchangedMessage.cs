@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Tells the client the chunk it offered a hash for is still current, so it should load its own
@@ -14,7 +14,7 @@ namespace BetaSharp.Network.Messages;
 ///         and the send — it asks for the chunk again rather than guessing.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:chunk_unchanged")]
+[WireMessage("omniblock:chunk_unchanged")]
 public sealed partial class ChunkUnchangedMessage : Message
 {
     /// <summary>

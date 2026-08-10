@@ -1,9 +1,9 @@
-using BetaSharp.Client.Entities;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.UI.Rendering;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.Entities;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.UI.Rendering;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Controls.HUD;
+namespace OmniBlock.Client.UI.Controls.HUD;
 
 public class Vignette(Func<ClientPlayerEntity?> getPlayer) : FullscreenElement
 {

@@ -1,9 +1,9 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Which hotbar slot the player has selected. Replaces <c>UpdateSelectedSlotC2SPacket</c>.
 /// </summary>
-[WireMessage("betasharp:selected_slot")]
+[WireMessage("omniblock:selected_slot")]
 public sealed partial class SelectedSlotMessage : Message
 {
     [WireField]

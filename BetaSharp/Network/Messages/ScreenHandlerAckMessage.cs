@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Whether the server agreed with what a click produced. Replaces
@@ -9,7 +9,7 @@ namespace BetaSharp.Network.Messages;
 ///         screen as a whole.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:screen_ack")]
+[WireMessage("omniblock:screen_ack")]
 public sealed partial class ScreenHandlerAckMessage : Message
 {
     [WireField]

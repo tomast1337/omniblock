@@ -1,10 +1,10 @@
 using System.Text.Json;
-using BetaSharp.Client.Rendering.Entities.Models;
-using BetaSharp.Entities;
-using BlockRegistry = BetaSharp.Blocks.BlockRegistry;
-using Item = BetaSharp.Items.Item;
+using OmniBlock.Client.Rendering.Entities.Models;
+using OmniBlock.Entities;
+using BlockRegistry = OmniBlock.Blocks.BlockRegistry;
+using Item = OmniBlock.Items.Item;
 
-namespace BetaSharp.Client.Rendering.Entities;
+namespace OmniBlock.Client.Rendering.Entities;
 
 /// <summary>
 ///     Builds an <see cref="EntityRenderer" /> from the <c>"Renderer"</c> block of an entity

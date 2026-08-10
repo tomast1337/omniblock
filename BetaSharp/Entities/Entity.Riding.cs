@@ -1,4 +1,4 @@
-namespace BetaSharp.Entities;
+namespace OmniBlock.Entities;
 
 /// <summary>
 ///     Riding: mounting, dismounting, and carrying a passenger along. A vehicle drives its

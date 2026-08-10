@@ -1,10 +1,10 @@
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Entities;
-using BetaSharp.Worlds.Core;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Entities;
+using OmniBlock.Worlds.Core;
 
-namespace BetaSharp.Client.Rendering.Blocks.Entities;
+namespace OmniBlock.Client.Rendering.Blocks.Entities;
 
 public class BlockEntityRenderer
 {

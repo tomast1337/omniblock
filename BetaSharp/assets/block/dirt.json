@@ -5,7 +5,7 @@
   "SoundGroup": "gravel",
   "Hardness": 0.5,
   "Resistance": 0.8333333,
-  "TextureId": "betasharp:dirt",
+  "TextureId": "omniblock:dirt",
   "TopVariance": "Rotations",
   "BottomVariance": "Rotations"
 }

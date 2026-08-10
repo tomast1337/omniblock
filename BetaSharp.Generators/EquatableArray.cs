@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Immutable;
 
-namespace BetaSharp.Generators;
+namespace OmniBlock.Generators;
 
 /// <summary>
 ///     An <see cref="ImmutableArray{T}" /> that compares by contents.

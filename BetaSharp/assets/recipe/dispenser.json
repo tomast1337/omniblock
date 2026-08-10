@@ -6,11 +6,11 @@
         "#R#"
     ],
     "key": {
-        "#": "betasharp:Cobblestone",
-        "X": "betasharp:bow",
-        "R": "betasharp:redstone"
+        "#": "omniblock:Cobblestone",
+        "X": "omniblock:bow",
+        "R": "omniblock:redstone"
     },
     "result": {
-        "id": "betasharp:Dispenser"
+        "id": "omniblock:Dispenser"
     }
 }

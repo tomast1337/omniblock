@@ -1,9 +1,9 @@
 using System.Buffers.Binary;
 using System.Text;
-using BetaSharp.Items;
-using BetaSharp.Util;
+using OmniBlock.Items;
+using OmniBlock.Util;
 
-namespace BetaSharp;
+namespace OmniBlock;
 
 internal static class StreamExtensions
 {
@@ -299,7 +299,7 @@ internal static class StreamExtensions
         public Namespace ReadNamespace()
         {
             int length = stream.ReadByte();
-            if (length == 128) return Namespace.BetaSharp;
+            if (length == 128) return Namespace.OmniBlock;
             byte[] buffer = new byte[length];
             stream.ReadExactly(buffer);
             return Namespace.Get(Encoding.ASCII.GetString(buffer));

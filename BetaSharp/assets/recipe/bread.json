@@ -4,9 +4,9 @@
         "###"
     ],
     "key": {
-        "#": "betasharp:wheat"
+        "#": "omniblock:wheat"
     },
     "result": {
-        "id": "betasharp:bread"
+        "id": "omniblock:bread"
     }
 }

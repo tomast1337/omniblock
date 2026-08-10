@@ -1,6 +1,6 @@
-using BetaSharp.Entities;
+using OmniBlock.Entities;
 
-namespace BetaSharp.Client.Input;
+namespace OmniBlock.Client.Input;
 
 public class MovementInput
 {

@@ -1,8 +1,8 @@
-using BetaSharp.Blocks;
-using BetaSharp.Tests.TestSupport;
-using BetaSharp.Worlds.Chunks;
+using OmniBlock.Blocks;
+using OmniBlock.Tests.TestSupport;
+using OmniBlock.Worlds.Chunks;
 
-namespace BetaSharp.Tests.Worlds;
+namespace OmniBlock.Tests.Worlds;
 
 /// <summary>
 ///     Sky light crossing a chunk border.

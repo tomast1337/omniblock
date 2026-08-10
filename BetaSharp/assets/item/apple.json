@@ -1,6 +1,6 @@
 {
   "ProtocolId": 260,
-  "TextureId": "betasharp:apple",
+  "TextureId": "omniblock:apple",
   "Behavior": {
     "type": "food",
     "HealAmount": 4,

@@ -1,13 +1,13 @@
-using BetaSharp.Entities;
-using BetaSharp.NBT;
-using BetaSharp.Server.Worlds;
-using BetaSharp.Worlds.Chunks.Storage;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Dimensions;
-using BetaSharp.Worlds.Storage.RegionFormat;
+using OmniBlock.Entities;
+using OmniBlock.NBT;
+using OmniBlock.Server.Worlds;
+using OmniBlock.Worlds.Chunks.Storage;
+using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Dimensions;
+using OmniBlock.Worlds.Storage.RegionFormat;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Worlds.Storage;
+namespace OmniBlock.Worlds.Storage;
 
 internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
 {

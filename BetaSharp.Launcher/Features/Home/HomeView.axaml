@@ -1,9 +1,9 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:BetaSharp.Launcher.Features.Home"
+             xmlns:local="clr-namespace:OmniBlock.Launcher.Features.Home"
              xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
 
-             x:Class="BetaSharp.Launcher.Features.Home.HomeView" x:DataType="local:HomeViewModel">
+             x:Class="OmniBlock.Launcher.Features.Home.HomeView" x:DataType="local:HomeViewModel">
 
     <Grid RowDefinitions="Auto * Auto" RowSpacing="50" IsVisible="{CompiledBinding Session, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
         <Grid ColumnDefinitions="* 0.35*" Grid.Row="0">

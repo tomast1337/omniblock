@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace BetaSharp.Rules;
+namespace OmniBlock.Rules;
 
 public sealed class RuleRegistry
 {

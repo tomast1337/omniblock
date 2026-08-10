@@ -1,11 +1,11 @@
-using BetaSharp.Blocks;
-using BetaSharp.Entities;
-using BetaSharp.Items;
-using BetaSharp.Network.Messages;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Entities;
+using OmniBlock.Items;
+using OmniBlock.Network.Messages;
+using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Server.Network;
+namespace OmniBlock.Server.Network;
 
 /*
  * mining and miningX,Y,Z don't mean the block you are mining.

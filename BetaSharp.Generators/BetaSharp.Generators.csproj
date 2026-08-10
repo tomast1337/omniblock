@@ -12,7 +12,7 @@
     <IsRoslynComponent>true</IsRoslynComponent>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <RootNamespace>BetaSharp.Generators</RootNamespace>
+    <RootNamespace>OmniBlock.Generators</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

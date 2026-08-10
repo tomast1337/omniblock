@@ -48,7 +48,7 @@
       "Type": "loot_table",
       "Pools": [
         {
-          "Entries": [{"Item": "betasharp:string"}],
+          "Entries": [{"Item": "omniblock:string"}],
           "MinCount": 0,
           "MaxCount": 2
         }

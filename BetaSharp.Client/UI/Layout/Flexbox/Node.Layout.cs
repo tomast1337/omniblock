@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.UI.Layout.Flexbox;
+namespace OmniBlock.Client.UI.Layout.Flexbox;
 
 public partial class Node
 {

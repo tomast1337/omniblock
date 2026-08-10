@@ -1,9 +1,9 @@
 using System.Linq;
-using BetaSharp;
-using BetaSharp.Entities;
-using BetaSharp.Worlds.Generation.Biomes;
+using OmniBlock;
+using OmniBlock.Entities;
+using OmniBlock.Worlds.Generation.Biomes;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Equivalence proof for moving biome spawn lists out of C# constructors and into
@@ -85,9 +85,9 @@ public sealed class BiomeSpawnListTests
     {
         FakeWorldContext world = new();
 
-        foreach (ResourceLocation key in BetaSharp.Registries.DefaultRegistries.Biomes.Keys)
+        foreach (ResourceLocation key in OmniBlock.Registries.DefaultRegistries.Biomes.Keys)
         {
-            Biome biome = BetaSharp.Registries.DefaultRegistries.Biomes.GetOrThrow(key);
+            Biome biome = OmniBlock.Registries.DefaultRegistries.Biomes.GetOrThrow(key);
 
             foreach (CreatureKind kind in CreatureKind.Values)
             {
@@ -101,5 +101,5 @@ public sealed class BiomeSpawnListTests
     }
 
     private static Biome Get(string name) =>
-        BetaSharp.Registries.DefaultRegistries.Biomes.GetOrThrow(ResourceLocation.Parse(name));
+        OmniBlock.Registries.DefaultRegistries.Biomes.GetOrThrow(ResourceLocation.Parse(name));
 }

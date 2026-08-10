@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "لعب متعدد اللاعبين",
-        "betasharpServer": "خادم BetaSharp",
+        "betasharpServer": "خادم OmniBlock",
         "info1": "اللعب متعدد اللاعبين في ماين كرافت غير مكتمل حاليًا، ولكن هناك",
         "info2": "بعض الاختبارات المبكرة التي تحتوي على أخطاء.",
         "ipinfo": "أدخل عنوان IP للخادم للاتصال به:",
@@ -1326,7 +1326,7 @@
         }
     },
     "credits": {
-        "version": "إصدار BetaSharp %1$s",
+        "version": "إصدار OmniBlock %1$s",
         "description": "نسخة محسنة من ماين كرافت Beta 1.7.3، مكتوبة بلغة C#.",
         "github": "على GitHub",
         "author": "تم الصنع بواسطة Fazin85",

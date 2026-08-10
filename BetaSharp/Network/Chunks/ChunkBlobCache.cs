@@ -1,7 +1,7 @@
-using BetaSharp.Util.Maths;
+using OmniBlock.Util.Maths;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Network.Chunks;
+namespace OmniBlock.Network.Chunks;
 
 /// <summary>
 ///     A client's on-disk store of chunk blobs it has already received, so a server can skip sending

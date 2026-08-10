@@ -1,7 +1,7 @@
 using System.Globalization;
-using BetaSharp.Stats.Achievements;
+using OmniBlock.Stats.Achievements;
 
-namespace BetaSharp.Stats;
+namespace OmniBlock.Stats;
 
 public class StatBase
 {

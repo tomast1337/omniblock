@@ -1,7 +1,7 @@
 {
     "ProtocolId": 286,
     "TranslationKey": "hatchetGold",
-    "TextureId": "betasharp:golden_axe",
+    "TextureId": "omniblock:golden_axe",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "tool",

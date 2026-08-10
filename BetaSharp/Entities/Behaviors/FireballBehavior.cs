@@ -1,10 +1,10 @@
-using BetaSharp.Entities.State;
-using BetaSharp.NBT;
-using BetaSharp.Util.Hit;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Entities.State;
+using OmniBlock.NBT;
+using OmniBlock.Util.Hit;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     A ghast's fireball. No gravity: it rides a constant acceleration vector ("power") picked when

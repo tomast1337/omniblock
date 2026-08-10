@@ -1,9 +1,9 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:BetaSharp.Launcher.Features.Authentication"
+             xmlns:local="clr-namespace:OmniBlock.Launcher.Features.Authentication"
              xmlns:qr="clr-namespace:Avalonia.Labs.Qr;assembly=Avalonia.Labs.Qr"
 
-             x:Class="BetaSharp.Launcher.Features.Authentication.AuthenticationView" x:DataType="local:AuthenticationViewModel">
+             x:Class="OmniBlock.Launcher.Features.Authentication.AuthenticationView" x:DataType="local:AuthenticationViewModel">
 
     <UserControl.Styles>
         <Style Selector="TextBlock">

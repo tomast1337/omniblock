@@ -1,10 +1,10 @@
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Entities;
-using BetaSharp.Inventories;
-using BetaSharp.Items;
-using BetaSharp.Screens.Slots;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Entities;
+using OmniBlock.Inventories;
+using OmniBlock.Items;
+using OmniBlock.Screens.Slots;
 
-namespace BetaSharp.Screens;
+namespace OmniBlock.Screens;
 
 public class FurnaceScreenHandler : ScreenHandler
 {

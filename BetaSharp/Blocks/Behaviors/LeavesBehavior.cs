@@ -1,8 +1,8 @@
-using BetaSharp.Items;
-using BetaSharp.Worlds.Colors;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Items;
+using OmniBlock.Worlds.Colors;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
 ///     Leaves: distance-to-trunk decay (breadth-first flood fill capped at radius 4, re-derived from

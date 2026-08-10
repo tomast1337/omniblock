@@ -1,7 +1,7 @@
 ﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 
-        x:Class="BetaSharp.Launcher.Features.Alert.AlertView"
+        x:Class="OmniBlock.Launcher.Features.Alert.AlertView"
 
         Icon="../../logo.ico" Width="500" Height="120" MinWidth="500" MinHeight="120"
         Padding="25" CanResize="False" WindowStartupLocation="CenterScreen">

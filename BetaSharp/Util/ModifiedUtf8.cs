@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 
-namespace BetaSharp.Util;
+namespace OmniBlock.Util;
 
 /// <summary>
 /// Provides methods for encoding and decoding strings using the Modified UTF-8 encoding format.

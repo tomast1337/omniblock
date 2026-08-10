@@ -1,6 +1,6 @@
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Blocks;
+namespace OmniBlock.Blocks;
 
 /// <summary>
 ///     Composable capability for stateless visual overrides: metadata-driven textures,

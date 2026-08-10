@@ -1,6 +1,6 @@
-using BetaSharp.Worlds.Chunks;
+using OmniBlock.Worlds.Chunks;
 
-namespace BetaSharp.Worlds.Core.Systems;
+namespace OmniBlock.Worlds.Core.Systems;
 
 public sealed class ChunkHost(IChunkSource chunkSource)
 {

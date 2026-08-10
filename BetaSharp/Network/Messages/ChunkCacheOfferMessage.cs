@@ -1,6 +1,6 @@
-using BetaSharp.Util.Maths;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     What chunks the client already holds, and the content hash of each.
@@ -25,7 +25,7 @@ namespace BetaSharp.Network.Messages;
 /// </summary>
 public sealed class ChunkCacheOfferMessage : Message
 {
-    public static readonly ResourceLocation Id = new(Namespace.BetaSharp, "chunk_cache_offer");
+    public static readonly ResourceLocation Id = new(Namespace.OmniBlock, "chunk_cache_offer");
 
     public override ResourceLocation Key => Id;
 

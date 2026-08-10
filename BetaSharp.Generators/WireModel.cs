@@ -1,4 +1,4 @@
-namespace BetaSharp.Generators;
+namespace OmniBlock.Generators;
 
 /// <summary>The three snippets a field contributes, already specialised to its property.</summary>
 internal readonly record struct FieldModel(string Name, string Read, string Write, string Size);

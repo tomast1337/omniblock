@@ -7,7 +7,7 @@
   "NonOpaque": true,
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": "betasharp:redstone_torch_off",
+  "TextureId": "omniblock:redstone_torch_off",
   "RenderType": "Torch",
   "TickRate": 2,
   "NotFullCube": true,

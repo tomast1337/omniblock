@@ -1,6 +1,6 @@
 using Hexa.NET.ImGui;
 
-namespace BetaSharp.Profiling;
+namespace OmniBlock.Profiling;
 
 public static class ProfilerRenderer
 {

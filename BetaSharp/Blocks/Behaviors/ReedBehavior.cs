@@ -1,7 +1,7 @@
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
 ///     Sugar cane: vertical growth up to 3 tall (metadata 0-15 counts ticks toward the next

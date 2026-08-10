@@ -1,6 +1,6 @@
-using BetaSharp.Client.UI.Controls.Core;
+using OmniBlock.Client.UI.Controls.Core;
 
-namespace BetaSharp.Tests;
+namespace OmniBlock.Tests;
 
 public class TextBufferTests
 {

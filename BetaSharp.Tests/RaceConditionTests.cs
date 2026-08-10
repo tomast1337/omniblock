@@ -1,10 +1,10 @@
-using BetaSharp.Client.Network;
-using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets;
-using BetaSharp.Registries;
-using BetaSharp.Registries.Data;
+using OmniBlock.Client.Network;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Packets;
+using OmniBlock.Registries;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Tests;
+namespace OmniBlock.Tests;
 
 public class RaceConditionTests
 {
@@ -47,7 +47,7 @@ public class RaceConditionTests
 
         var migrationMessage = new PlayerGameModeUpdateMessage
         {
-            GameModeNamespace = Namespace.BetaSharp.ToString(),
+            GameModeNamespace = Namespace.OmniBlock.ToString(),
             GameModeName = "survival"
         };
 
@@ -65,7 +65,7 @@ public class RaceConditionTests
         var loader = new DataAssetLoader<GameMode>("gamemode", LoadLocations.None, allowUnhandled: false);
         foreach (string name in names)
         {
-            var rl = new ResourceLocation(Namespace.BetaSharp, name);
+            var rl = new ResourceLocation(Namespace.OmniBlock, name);
             loader.Assets.Add(rl, new Holder<GameMode>(new GameMode { Name = name }));
         }
         return loader;

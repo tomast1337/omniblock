@@ -1,7 +1,7 @@
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
 
-namespace BetaSharp.Loot;
+namespace OmniBlock.Loot;
 
 /// <summary>
 ///     Where a dropped stack's metadata comes from. A small closed set rather than an open

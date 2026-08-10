@@ -1,11 +1,11 @@
-using BetaSharp.Client.Resource.Pack;
-using BetaSharp.Textures;
+using OmniBlock.Client.Resource.Pack;
+using OmniBlock.Textures;
 using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
-namespace BetaSharp.Client.Rendering.Core.Textures.Atlas;
+namespace OmniBlock.Client.Rendering.Core.Textures.Atlas;
 
 /// <summary>
 ///     A GPU texture array addressed by name instead of grid position, with the fallback chain

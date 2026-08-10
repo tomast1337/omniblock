@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Stats;
+namespace OmniBlock.Stats;
 
 internal class StatsSynchronizer
 {

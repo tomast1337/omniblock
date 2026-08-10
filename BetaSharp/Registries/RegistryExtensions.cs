@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
-using BetaSharp.Registries.Data;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Registries;
+namespace OmniBlock.Registries;
 
 public static class RegistryExtensions
 {

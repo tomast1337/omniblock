@@ -5,10 +5,10 @@
         "B"
     ],
     "key": {
-        "A": "betasharp:Pumpkin",
-        "B": "betasharp:Torch"
+        "A": "omniblock:Pumpkin",
+        "B": "omniblock:Torch"
     },
     "result": {
-        "id": "betasharp:JackLantern"
+        "id": "omniblock:JackLantern"
     }
 }

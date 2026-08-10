@@ -1,7 +1,7 @@
 {
   "ProtocolId": 322,
   "TranslationKey": "appleGold",
-  "TextureId": "betasharp:golden_apple",
+  "TextureId": "omniblock:golden_apple",
   "Behavior": {
     "type": "food",
     "HealAmount": 42,

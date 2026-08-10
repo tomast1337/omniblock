@@ -1,9 +1,9 @@
-using BetaSharp.Blocks;
-using BetaSharp.Entities;
-using BetaSharp.Network.Messages;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Entities;
+using OmniBlock.Network.Messages;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Items.Behaviors;
+namespace OmniBlock.Items.Behaviors;
 
 public interface IItemBehavior
 {

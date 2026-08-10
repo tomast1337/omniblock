@@ -13,20 +13,20 @@
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
     <ApplicationIcon>logo.ico</ApplicationIcon>
-    <Company>BetaSharp</Company>
-    <Product>BetaSharp Launcher</Product>
+    <Company>OmniBlock</Company>
+    <Product>OmniBlock Launcher</Product>
     <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BetaSharp.Client\BetaSharp.Client.csproj" ReferenceOutputAssembly="false" Private="false"/>
-    <ProjectReference Include="..\BetaSharp.Server\BetaSharp.Server.csproj" ReferenceOutputAssembly="false" Private="false"/>
+    <ProjectReference Include="..\OmniBlock.Client\OmniBlock.Client.csproj" ReferenceOutputAssembly="false" Private="false"/>
+    <ProjectReference Include="..\OmniBlock.Server\OmniBlock.Server.csproj" ReferenceOutputAssembly="false" Private="false"/>
   </ItemGroup>
 
   <Target Name="_CopyClientOutput">
     <PropertyGroup>
       <ClientRuntimeDir Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)\</ClientRuntimeDir>
-      <ClientOutputDir>..\BetaSharp.Client\bin\$(Configuration)\$(TargetFramework)\$(ClientRuntimeDir)</ClientOutputDir>
+      <ClientOutputDir>..\OmniBlock.Client\bin\$(Configuration)\$(TargetFramework)\$(ClientRuntimeDir)</ClientOutputDir>
     </PropertyGroup>
 
     <ItemGroup>
@@ -39,7 +39,7 @@
   <Target Name="_CopyServerOutput">
     <PropertyGroup>
       <ServerRuntimeDir Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)\</ServerRuntimeDir>
-      <ServerOutputDir>..\BetaSharp.Server\bin\$(Configuration)\$(TargetFramework)\$(ServerRuntimeDir)</ServerOutputDir>
+      <ServerOutputDir>..\OmniBlock.Server\bin\$(Configuration)\$(TargetFramework)\$(ServerRuntimeDir)</ServerOutputDir>
     </PropertyGroup>
 
     <ItemGroup>

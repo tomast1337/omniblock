@@ -1,13 +1,13 @@
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
-using BetaSharp.Items;
-using BetaSharp.Rules;
-using BetaSharp.Util.Hit;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Entities;
+using OmniBlock.Items;
+using OmniBlock.Rules;
+using OmniBlock.Util.Hit;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Blocks;
+namespace OmniBlock.Blocks;
 
 public class Block
 {

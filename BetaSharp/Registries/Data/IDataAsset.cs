@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace BetaSharp.Registries.Data;
+namespace OmniBlock.Registries.Data;
 
 public interface IDataAsset
 {
@@ -20,7 +20,7 @@ public class DataAsset : IDataAsset
     public string Name { get; set; } = "";
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public Namespace Namespace { get; set; } = Namespace.BetaSharp;
+    public Namespace Namespace { get; set; } = Namespace.OmniBlock;
 
     public override int GetHashCode() => HashCode.Combine(Name.GetHashCode(), Namespace.GetHashCode());
     public override string ToString() => Namespace + ':' + Name;

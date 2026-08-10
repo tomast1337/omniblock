@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "Chơi mạng",
-        "betasharpServer": "Máy chủ BetaSharp",
+        "betasharpServer": "Máy chủ OmniBlock",
         "info1": "Chế độ chơi mạng Minecraft hiện chưa hoàn thiện, nhưng",
         "info2": "đang có một số đợt thử nghiệm sớm kèm theo lỗi.",
         "ipinfo": "Nhập IP của máy chủ để kết nối:",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "Phiên bản BetaSharp %1$s",
+        "version": "Phiên bản OmniBlock %1$s",
         "description": "Một phiên bản nâng cao của Minecraft Beta 1.7.3, viết bằng C#.",
         "github": "Trên GitHub",
         "author": "Được tạo bởi Fazin85",

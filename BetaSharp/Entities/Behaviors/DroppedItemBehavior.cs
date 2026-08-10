@@ -1,12 +1,12 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities.State;
-using BetaSharp.Items;
-using BetaSharp.NBT;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Entities.State;
+using OmniBlock.Items;
+using OmniBlock.NBT;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     An item lying in the world. Tumbles with block friction, floats up out of lava, waits out its

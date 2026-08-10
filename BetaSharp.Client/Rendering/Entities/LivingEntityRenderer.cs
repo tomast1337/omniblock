@@ -1,12 +1,12 @@
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Entities.Models;
-using BetaSharp.Entities;
-using BetaSharp.Util.Maths;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Entities.Models;
+using OmniBlock.Entities;
+using OmniBlock.Util.Maths;
 using Microsoft.Extensions.Logging;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using Color = OmniBlock.Client.UI.Colors.Color;
 using Exception = System.Exception;
 
-namespace BetaSharp.Client.Rendering.Entities;
+namespace OmniBlock.Client.Rendering.Entities;
 
 public class LivingEntityRenderer : EntityRenderer
 {

@@ -1,4 +1,4 @@
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>Hunts the closest targetable player within <paramref name="radius" /> that the mob can see.</summary>
 public sealed class AlwaysHuntTargetBehavior(double radius = 16.0D) : IEntityTargetBehavior

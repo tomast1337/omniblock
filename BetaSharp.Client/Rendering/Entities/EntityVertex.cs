@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace BetaSharp.Client.Rendering.Entities;
+namespace OmniBlock.Client.Rendering.Entities;
 
 [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 28)]
 public struct EntityVertex

@@ -1,16 +1,16 @@
-using BetaSharp.Client.Chunks;
-using BetaSharp.Client.Network;
-using BetaSharp.Entities;
-using BetaSharp.Network.Messages;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Dimensions;
-using BetaSharp.Worlds.Storage;
+using OmniBlock.Client.Chunks;
+using OmniBlock.Client.Network;
+using OmniBlock.Entities;
+using OmniBlock.Network.Messages;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Dimensions;
+using OmniBlock.Worlds.Storage;
 
-namespace BetaSharp.Client.Worlds;
+namespace OmniBlock.Client.Worlds;
 
 public class ClientWorld : World
 {

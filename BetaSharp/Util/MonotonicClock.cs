@@ -1,13 +1,13 @@
 using System.Diagnostics;
 
-namespace BetaSharp.Util;
+namespace OmniBlock.Util;
 
 /// <summary>
 ///     The single monotonic time source for everything on the wire.
 ///     <para>
 ///         Every timestamp that crosses the network — the four time-sync stamps, the per-tick
 ///         snapshot stamp — must come from here. The clock-offset arithmetic in
-///         <c>BetaSharp.Client.Network.ServerClock</c> maps one machine's reading of this clock onto
+///         <c>OmniBlock.Client.Network.ServerClock</c> maps one machine's reading of this clock onto
 ///         another's, and that mapping is only valid if both ends measure with the same units and
 ///         the same conversion. Two call sites computing "milliseconds" slightly differently would
 ///         produce an offset that silently absorbs the discrepancy.

@@ -1,8 +1,8 @@
-using BetaSharp.Entities;
-using BetaSharp.NBT;
-using BetaSharp.Util.Maths;
+using OmniBlock.Entities;
+using OmniBlock.NBT;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Worlds.Core.Systems;
+namespace OmniBlock.Worlds.Core.Systems;
 
 public class WorldProperties
 {

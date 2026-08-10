@@ -1,6 +1,6 @@
 using Silk.NET.Maths;
 
-namespace BetaSharp.Client.Rendering.Core;
+namespace OmniBlock.Client.Rendering.Core;
 
 /// <summary>Whether a shaded colour is taken per vertex or per face.</summary>
 /// <remarks>

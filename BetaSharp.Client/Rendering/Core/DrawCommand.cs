@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Rendering.Core;
+namespace OmniBlock.Client.Rendering.Core;
 
 /// <summary>The primitive a run of vertices is assembled into.</summary>
 /// <remarks>

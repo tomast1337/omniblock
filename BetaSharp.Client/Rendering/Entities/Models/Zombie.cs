@@ -1,6 +1,6 @@
-using BetaSharp.Util.Maths;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Client.Rendering.Entities.Models;
+namespace OmniBlock.Client.Rendering.Entities.Models;
 
 public class Zombie : ModelBiped
 {

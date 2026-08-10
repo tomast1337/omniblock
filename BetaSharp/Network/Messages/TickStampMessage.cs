@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Announces the server-clock instant that the entity updates following it describe.
@@ -23,7 +23,7 @@ namespace BetaSharp.Network.Messages;
 ///         send instant, which is the wrong quantity.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:tick_stamp")]
+[WireMessage("omniblock:tick_stamp")]
 public sealed partial class TickStampMessage : Message
 {
     /// <summary>A stamp that arrives late drags the whole interpolation timeline with it.</summary>

@@ -8,7 +8,7 @@
   "Resistance": 6.6666665,
   "Opacity": 1,
   "NonOpaque": true,
-  "TextureId": "betasharp:cobweb",
+  "TextureId": "omniblock:cobweb",
   "RenderType": "Reed",
   "NotFullCube": true,
   "NoCollision": true,

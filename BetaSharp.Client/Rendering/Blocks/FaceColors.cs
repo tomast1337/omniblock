@@ -1,6 +1,6 @@
-using BetaSharp.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Core;
 
-namespace BetaSharp.Client.Rendering.Blocks;
+namespace OmniBlock.Client.Rendering.Blocks;
 
 /// <summary>The two light levels at one corner of a face, each 0..15 and usually fractional.</summary>
 /// <remarks>

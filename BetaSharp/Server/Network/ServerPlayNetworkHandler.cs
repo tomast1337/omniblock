@@ -1,21 +1,21 @@
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
-using BetaSharp.Inventories;
-using BetaSharp.Items;
-using BetaSharp.Network;
-using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets;
-using BetaSharp.Screens.Slots;
-using BetaSharp.Server.Command;
-using BetaSharp.Server.Entities;
-using BetaSharp.Server.Internal;
-using BetaSharp.Util;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Entities;
+using OmniBlock.Inventories;
+using OmniBlock.Items;
+using OmniBlock.Network;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Packets;
+using OmniBlock.Screens.Slots;
+using OmniBlock.Server.Command;
+using OmniBlock.Server.Entities;
+using OmniBlock.Server.Internal;
+using OmniBlock.Util;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Server.Network;
+namespace OmniBlock.Server.Network;
 
 public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
 {

@@ -1,9 +1,9 @@
 using System.Net;
-using BetaSharp.Network.Packets;
-using BetaSharp.Network.Transport;
-using BetaSharp.Util;
+using OmniBlock.Network.Packets;
+using OmniBlock.Network.Transport;
+using OmniBlock.Util;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 /// <summary>
 ///     An <see cref="ITransportConnection" /> that records what was sent and replays what it is

@@ -1,8 +1,8 @@
-using BetaSharp.Blocks;
-using BetaSharp.Textures;
-using BetaSharp.Util.Maths;
+using OmniBlock.Blocks;
+using OmniBlock.Textures;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Client.Rendering.Blocks.Renderers;
+namespace OmniBlock.Client.Rendering.Blocks.Renderers;
 
 public class ReedRenderer : IBlockRenderer
 {

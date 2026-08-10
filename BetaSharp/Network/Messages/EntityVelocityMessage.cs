@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     A velocity the client should adopt outright — knockback, an explosion, a boat's shove.
@@ -9,7 +9,7 @@ namespace BetaSharp.Network.Messages;
 ///         turn a fast knockback into a slow one in the opposite direction.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:entity_velocity")]
+[WireMessage("omniblock:entity_velocity")]
 public sealed partial class EntityVelocityMessage : Message
 {
     public override SendPriority Priority => SendPriority.High;

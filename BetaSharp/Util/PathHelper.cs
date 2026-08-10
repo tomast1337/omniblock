@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace BetaSharp.Util;
+namespace OmniBlock.Util;
 
 public static class PathHelper
 {

@@ -1,10 +1,10 @@
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.Resource.Pack;
-using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Rendering;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Client.Resource.Pack;
+using OmniBlock.Client.UI.Controls.Core;
+using OmniBlock.Client.UI.Rendering;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Controls.ListItems;
+namespace OmniBlock.Client.UI.Controls.ListItems;
 
 public class TexturePackListItem(TexturePack value) : ListItem<TexturePack>(value)
 {

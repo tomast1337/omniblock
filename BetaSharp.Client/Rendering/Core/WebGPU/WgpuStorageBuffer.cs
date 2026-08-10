@@ -1,7 +1,7 @@
 using Silk.NET.WebGPU;
 using WgpuBuffer = Silk.NET.WebGPU.Buffer;
 
-namespace BetaSharp.Client.Rendering.Core.WebGPU;
+namespace OmniBlock.Client.Rendering.Core.WebGPU;
 
 /// <summary>
 ///     A shader storage buffer — the WebGPU equivalent of a GL Shader Storage Buffer Object.

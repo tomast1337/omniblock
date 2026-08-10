@@ -1,10 +1,10 @@
 using System.Text.Json;
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.Items;
-using BetaSharp.NBT;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.Items;
+using OmniBlock.NBT;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Covers entity identity moving off the C# class and onto the registered type, which is what lets a

@@ -1,4 +1,4 @@
-namespace BetaSharp.Entities.State;
+namespace OmniBlock.Entities.State;
 
 /// <summary>
 ///     The set of state slots a single <see cref="EntityType" />'s behaviors need. Built once at

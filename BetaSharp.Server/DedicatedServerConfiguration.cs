@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Exception = System.Exception;
 
-namespace BetaSharp.Server;
+namespace OmniBlock.Server;
 
 internal class DedicatedServerConfiguration : IServerConfiguration
 {
@@ -46,7 +46,7 @@ internal class DedicatedServerConfiguration : IServerConfiguration
     {
         try
         {
-            _properties.Save(_propertiesFile.FullName, "BetaSharp server properties");
+            _properties.Save(_propertiesFile.FullName, "OmniBlock server properties");
         }
         catch (Exception ex)
         {

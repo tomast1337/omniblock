@@ -1,7 +1,7 @@
-using BetaSharp.Client.UI.Rendering;
-using BetaSharp.Entities;
+using OmniBlock.Client.UI.Rendering;
+using OmniBlock.Entities;
 
-namespace BetaSharp.Client.UI.Controls;
+namespace OmniBlock.Client.UI.Controls;
 
 public class EntityPreview(Func<UIScreen?> getScreen) : UIElement
 {

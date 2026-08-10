@@ -1,6 +1,6 @@
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
 ///     Sign support physics: the standing variant needs solid ground below and keeps its fixed

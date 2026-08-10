@@ -1,10 +1,10 @@
-using BetaSharp.Blocks;
-using BetaSharp.Items;
+using OmniBlock.Blocks;
+using OmniBlock.Items;
 using Brigadier.NET;
 using Brigadier.NET.ArgumentTypes;
 using Brigadier.NET.Exceptions;
 
-namespace BetaSharp.Server.Command;
+namespace OmniBlock.Server.Command;
 
 public abstract partial class Command
 {

@@ -1,4 +1,4 @@
-namespace BetaSharp;
+namespace OmniBlock;
 
 /// <summary>
 /// Thrown when a player display name violates <see cref="PlayerNameValidator"/> rules.

@@ -1,10 +1,10 @@
-using BetaSharp.Entities;
-using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets;
-using BetaSharp.Network.Snapshots;
-using BetaSharp.Util.Maths;
+using OmniBlock.Entities;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Packets;
+using OmniBlock.Network.Snapshots;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Server.Entities;
+namespace OmniBlock.Server.Entities;
 
 public class EntityTracker
 {

@@ -1,9 +1,9 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
-using BetaSharp.Textures;
-using BetaSharp.Util.Maths;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Textures;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Client.Rendering.Blocks.Renderers;
+namespace OmniBlock.Client.Rendering.Blocks.Renderers;
 
 public class MinecartTrackRenderer : IBlockRenderer
 {

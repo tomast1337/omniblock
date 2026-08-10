@@ -1,9 +1,9 @@
-using BetaSharp.Entities;
-using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets;
-using BetaSharp.Server;
+using OmniBlock.Entities;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Packets;
+using OmniBlock.Server;
 
-namespace BetaSharp.Registries;
+namespace OmniBlock.Registries;
 
 /// <summary>
 /// Orchestrates the full reload-sync pipeline.

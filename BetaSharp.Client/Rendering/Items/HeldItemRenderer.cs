@@ -1,24 +1,24 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Client.Entities;
-using BetaSharp.Client.Rendering.Blocks;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Entities;
-using BetaSharp.Entities;
-using BetaSharp.Items;
-using BetaSharp.Items.Behaviors;
-using BetaSharp.Textures;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Maps;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Client.Entities;
+using OmniBlock.Client.Rendering.Blocks;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Entities;
+using OmniBlock.Entities;
+using OmniBlock.Items;
+using OmniBlock.Items.Behaviors;
+using OmniBlock.Textures;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Maps;
 
-namespace BetaSharp.Client.Rendering.Items;
+namespace OmniBlock.Client.Rendering.Items;
 
 public class HeldItemRenderer
 {
     // The two cells the fire animation writes into, drawn as a crossed pair.
     private static readonly string[] s_fireLayers = ["fire_layer_0", "fire_layer_1"];
 
-    private readonly BetaSharp _game;
+    private readonly OmniBlock _game;
     private ItemStack itemToRender;
     private float equippedProgress;
     private float prevEquippedProgress;
@@ -27,7 +27,7 @@ public class HeldItemRenderer
 
     private int field_20099_f = -1;
 
-    public HeldItemRenderer(BetaSharp game)
+    public HeldItemRenderer(OmniBlock game)
     {
         _game = game;
         mapRenderer = new MapItemRenderer(game.TextRenderer, game.Options, game.TextureManager);

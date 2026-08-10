@@ -1,7 +1,7 @@
 {
     "ProtocolId": 303,
     "TranslationKey": "chestplateChain",
-    "TextureId": "betasharp:chainmail_chestplate",
+    "TextureId": "omniblock:chainmail_chestplate",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",

@@ -1,7 +1,7 @@
 using System.Numerics;
 using Hexa.NET.ImGui;
 
-namespace BetaSharp.Client.Diagnostics;
+namespace OmniBlock.Client.Diagnostics;
 
 /// <summary>
 /// ImGui.Text/TextColored/TextDisabled treat their string argument as a printf format string
@@ -9,7 +9,7 @@ namespace BetaSharp.Client.Diagnostics;
 /// translation strings, exception text, player-typed search text, etc.) segfaults. Use these
 /// instead whenever the text isn't a compile-time constant.
 ///
-/// Issue: https://git.gay/betasharp-official/betasharp/issues/37
+/// Issue: https://git.gay/omniblock-official/omniblock/issues/37
 ///
 /// Confirmed as Dear ImGui's own format-string contract, not a Hexa.NET.ImGui binding bug:
 /// https://github.com/HexaEngine/Hexa.NET.ImGui/issues/130#issuecomment-5050373687 (see also

@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     The player neither moved nor turned, but its footing changed. See <see cref="IPlayerMove" />
@@ -10,7 +10,7 @@ namespace BetaSharp.Network.Messages;
 ///         same ordering domain as world data.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:player_move")]
+[WireMessage("omniblock:player_move")]
 public sealed partial class PlayerMoveMessage : Message, IPlayerMove
 {
     [WireField]

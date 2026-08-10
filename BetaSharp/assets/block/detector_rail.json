@@ -9,7 +9,7 @@
   "NonOpaque": true,
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": "betasharp:detector_rail",
+  "TextureId": "omniblock:detector_rail",
   "RenderType": "MinecartTrack",
   "TickRate": 20,
   "NotFullCube": true,
@@ -24,8 +24,8 @@
       ],
       "Type": "rail",
       "powered": true,
-      "turn": "betasharp:rail_turn",
-      "unpowered": "betasharp:powered_rail_off"
+      "turn": "omniblock:rail_turn",
+      "unpowered": "omniblock:powered_rail_off"
     },
     {
       "Slots": [

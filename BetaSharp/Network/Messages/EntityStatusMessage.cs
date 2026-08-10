@@ -1,10 +1,10 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     A one-off visual or audible event on an entity — hurt, death, a wolf shaking off water.
 ///     Replaces <c>EntityStatusS2CPacket</c>.
 /// </summary>
-[WireMessage("betasharp:entity_status")]
+[WireMessage("omniblock:entity_status")]
 public sealed partial class EntityStatusMessage : Message
 {
     [WireField]

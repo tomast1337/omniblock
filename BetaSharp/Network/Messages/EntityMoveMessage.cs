@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     A tracked entity's step, as a relative delta.
@@ -18,7 +18,7 @@ namespace BetaSharp.Network.Messages;
 ///         at all.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:entity_move")]
+[WireMessage("omniblock:entity_move")]
 public sealed partial class EntityMoveMessage : Message
 {
     /// <summary>

@@ -1,6 +1,6 @@
-using BetaSharp.Entities;
+using OmniBlock.Entities;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>Smoke checks that concrete entity types sit under the expected abstract bases (regression guard for refactors).</summary>
 [Collection("EntityTests")]

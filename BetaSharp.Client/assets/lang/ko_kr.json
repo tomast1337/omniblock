@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "멀티플레이",
-        "betasharpServer": "BetaSharp 서버",
+        "betasharpServer": "OmniBlock 서버",
         "info1": "마인크래프트 멀티플레이는 아직 완성되지 않았지만,",
         "info2": "현재 버그가 있는 초기 테스트가 진행 중입니다.",
         "ipinfo": "연결할 서버의 IP를 입력하세요:",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "BetaSharp 버전 %1$s",
+        "version": "OmniBlock 버전 %1$s",
         "description": "C#으로 작성된 향상된 마인크래프트 Beta 1.7.3입니다.",
         "github": "GitHub 정보",
         "author": "Fazin85 제작",

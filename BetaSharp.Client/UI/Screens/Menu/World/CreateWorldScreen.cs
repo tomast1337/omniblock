@@ -1,14 +1,14 @@
-using BetaSharp.Client.UI.Controls;
-using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Layout.Flexbox;
-using BetaSharp.Util;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Storage;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.UI.Controls;
+using OmniBlock.Client.UI.Controls.Core;
+using OmniBlock.Client.UI.Layout.Flexbox;
+using OmniBlock.Util;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds;
+using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Storage;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Screens.Menu.World;
+namespace OmniBlock.Client.UI.Screens.Menu.World;
 
 public class CreateWorldScreen(
     UIContext context,

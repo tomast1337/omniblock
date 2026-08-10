@@ -4,10 +4,10 @@
         "###"
     ],
     "key": {
-        "#": "betasharp:Sandstone"
+        "#": "omniblock:Sandstone"
     },
     "result": {
-        "id": "betasharp:Slab:1",
+        "id": "omniblock:Slab:1",
         "count": 3
     }
 }

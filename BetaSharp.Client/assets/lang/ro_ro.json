@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "Joacă multiplayer",
-        "betasharpServer": "Server BetaSharp",
+        "betasharpServer": "Server OmniBlock",
         "info1": "Multiplayer-ul Minecraft nu este momentan terminat, dar există",
         "info2": "în curs niște teste timpurii pline de bug-uri.",
         "ipinfo": "Introdu IP-ul serverului pentru a te conecta la el:",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "BetaSharp Versiune %1$s",
+        "version": "OmniBlock Versiune %1$s",
         "description": "O versiune îmbunătățită a Minecraft Beta 1.7.3, scrisă în C#.",
         "github": "Pe GitHub",
         "author": "Creat de Fazin85",

@@ -1,8 +1,8 @@
 using System.Text.Json;
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
 
-namespace BetaSharp.Tests.Blocks;
+namespace OmniBlock.Tests.Blocks;
 
 public sealed class BlockFarmlandTests
 {
@@ -34,21 +34,21 @@ public sealed class BlockFarmlandTests
     [Fact]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"farmland","revert_block":"betasharp:dirt"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"farmland","revert_block":"omniblock:dirt"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("farmland", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"farmland","revert_block":"not_a_real_block","crop":"betasharp:wheat"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"farmland","revert_block":"not_a_real_block","crop":"omniblock:wheat"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("farmland", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_MissingTrampleChanceOneIn_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"farmland","revert_block":"betasharp:dirt","crop":"betasharp:wheat"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"farmland","revert_block":"omniblock:dirt","crop":"omniblock:wheat"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("farmland", json.RootElement));
     }
 }

@@ -1,4 +1,4 @@
-namespace BetaSharp.Diagnostics;
+namespace OmniBlock.Diagnostics;
 
 /// <summary>
 /// Descriptor for a metric.

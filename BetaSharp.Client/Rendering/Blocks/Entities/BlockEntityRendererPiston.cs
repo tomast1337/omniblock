@@ -1,11 +1,11 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Client.Rendering.Blocks.Renderers;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Util.Maths;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Client.Rendering.Blocks.Renderers;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Client.Rendering.Blocks.Entities;
+namespace OmniBlock.Client.Rendering.Blocks.Entities;
 
 public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
 {

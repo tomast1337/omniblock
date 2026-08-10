@@ -1,6 +1,6 @@
-using BetaSharp.NBT;
+using OmniBlock.NBT;
 
-namespace BetaSharp.Worlds.Storage;
+namespace OmniBlock.Worlds.Storage;
 
 public abstract class PersistentState
 {

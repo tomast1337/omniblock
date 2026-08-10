@@ -1,21 +1,21 @@
 <p align="center">
-<img height="128" src="BetaSharp.Launcher/logo.png" alt="BetaSharp">
-<h1 align="center">BetaSharp</h1>
+<img height="128" src="OmniBlock.Launcher/logo.png" alt="OmniBlock">
+<h1 align="center">OmniBlock</h1>
 <p align="center">An enhanced version of Minecraft Beta 1.7.3, written in C#.</p>
 </p>
 <p align="center">
 <a href="https://discord.gg/x9AGsjnWv4"><img src="https://img.shields.io/badge/chat%20on-discord-7289DA" alt="Discord"></a>
 <img src="https://img.shields.io/badge/language-C%23-512BD4" alt="C#">
 <img src="https://img.shields.io/badge/framework-.NET-512BD4" alt=".NET">
-<img src="https://img.shields.io/github/issues/Fazin85/betasharp" alt="Issues">
-<img src="https://img.shields.io/github/issues-pr/Fazin85/betasharp" alt="Pull requests">
+<img src="https://img.shields.io/github/issues/Fazin85/omniblock" alt="Issues">
+<img src="https://img.shields.io/github/issues-pr/Fazin85/omniblock" alt="Pull requests">
 </p>
 
 
 # Notice
 
 > [!IMPORTANT]
-> BetaSharp requires a legally purchased copy of Minecraft. We do not support or condone piracy. Please purchase Minecraft at [minecraft.net](https://www.minecraft.net).
+> OmniBlock requires a legally purchased copy of Minecraft. We do not support or condone piracy. Please purchase Minecraft at [minecraft.net](https://www.minecraft.net).
 
 ## Running
 
@@ -23,7 +23,7 @@ The launcher is the recommended way to play, it authenticates with your Microsof
 Clone the repository and run the following commands.
 
 ```
-cd BetaSharp.Launcher
+cd OmniBlock.Launcher
 dotnet run --configuration Release
 ```
 
@@ -36,7 +36,7 @@ It is recommended to build with `--configuration Release` for better performance
 The server and client expect the JAR file to be in their running directory.
 
 ```
-cd BetaSharp.(Launcher/Client/Server)
+cd OmniBlock.(Launcher/Client/Server)
 dotnet build
 ```
 
@@ -47,10 +47,10 @@ This is a personal project, so review and merge timelines aren't guaranteed, but
 
 ## Star History
 
-<a href="https://www.star-history.com/?repos=betasharp-official%2Fbetasharp&type=date&legend=top-left">
+<a href="https://www.star-history.com/?repos=omniblock-official%2Fbetasharp&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=betasharp-official/betasharp&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=betasharp-official/betasharp&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=betasharp-official/betasharp&type=date&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=omniblock-official/omniblock&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=omniblock-official/omniblock&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=omniblock-official/omniblock&type=date&legend=top-left" />
  </picture>
 </a>

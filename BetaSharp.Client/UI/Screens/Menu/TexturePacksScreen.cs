@@ -1,13 +1,13 @@
 using System.Diagnostics;
-using BetaSharp.Client.Resource.Pack;
-using BetaSharp.Client.UI.Controls;
-using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Controls.ListItems;
-using BetaSharp.Client.UI.Layout.Flexbox;
+using OmniBlock.Client.Resource.Pack;
+using OmniBlock.Client.UI.Controls;
+using OmniBlock.Client.UI.Controls.Core;
+using OmniBlock.Client.UI.Controls.ListItems;
+using OmniBlock.Client.UI.Layout.Flexbox;
 using Microsoft.Extensions.Logging;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Screens.Menu;
+namespace OmniBlock.Client.UI.Screens.Menu;
 
 public class TexturePacksScreen(
     UIContext context,
@@ -23,7 +23,7 @@ public class TexturePacksScreen(
 
     protected override void Init()
     {
-        _texturePackFolder = Path.GetFullPath(Path.Combine(BetaSharp.BetaSharpDir, "texturepacks"));
+        _texturePackFolder = Path.GetFullPath(Path.Combine(OmniBlock.BetaSharpDir, "texturepacks"));
 
         Root.AddChild(new Background());
         Root.Style.AlignItems = Align.Center;

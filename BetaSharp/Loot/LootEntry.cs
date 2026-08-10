@@ -1,6 +1,6 @@
-using BetaSharp.Items;
+using OmniBlock.Items;
 
-namespace BetaSharp.Loot;
+namespace OmniBlock.Loot;
 
 /// <summary>
 ///     One weighted possibility in a <see cref="LootPool" />. The stack is resolved lazily from the

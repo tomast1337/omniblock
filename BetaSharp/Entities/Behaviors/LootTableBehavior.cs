@@ -1,7 +1,7 @@
-using BetaSharp.Items;
-using BetaSharp.Loot;
+using OmniBlock.Items;
+using OmniBlock.Loot;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     Drives a mob's death drops from a declarative <see cref="LootTable" />.

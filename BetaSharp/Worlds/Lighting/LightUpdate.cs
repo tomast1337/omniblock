@@ -1,9 +1,9 @@
-using BetaSharp.Blocks;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Worlds.Lighting;
+namespace OmniBlock.Worlds.Lighting;
 
 internal struct LightUpdate
 {

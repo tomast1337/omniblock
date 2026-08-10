@@ -7,10 +7,10 @@
   "Hardness": 0.6,
   "Resistance": 1,
   "TickRandomly": true,
-  "TextureId": "betasharp:grass_block_side",
+  "TextureId": "omniblock:grass_block_side",
   "FaceTextures": {
-    "down": "betasharp:dirt",
-    "up": "betasharp:grass_block_top"
+    "down": "omniblock:dirt",
+    "up": "omniblock:grass_block_top"
   },
   "TopVariance": "Rotate270",
   "BottomVariance": "Rotations",
@@ -31,15 +31,15 @@
         "Visuals"
       ],
       "Type": "grass_visual",
-      "side": "betasharp:grass_block_side",
-      "snowy_side": "betasharp:grass_block_side_snowy"
+      "side": "omniblock:grass_block_side",
+      "snowy_side": "omniblock:grass_block_side_snowy"
     },
     {
       "Slots": [
         "Ticker"
       ],
       "Type": "grass_ticker",
-      "soil": "betasharp:dirt",
+      "soil": "omniblock:dirt",
       "die_light_threshold": 4,
       "die_chance_one_in": 4,
       "spread_light_threshold": 9

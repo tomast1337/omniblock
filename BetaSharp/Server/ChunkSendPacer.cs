@@ -1,4 +1,4 @@
-namespace BetaSharp.Server;
+namespace OmniBlock.Server;
 
 /// <summary>
 ///     Decides how much chunk data one player may be sent this tick.

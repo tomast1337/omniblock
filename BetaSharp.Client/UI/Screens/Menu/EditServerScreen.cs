@@ -1,10 +1,10 @@
-using BetaSharp.Client.Network;
-using BetaSharp.Client.UI.Controls;
-using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Layout.Flexbox;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.Network;
+using OmniBlock.Client.UI.Controls;
+using OmniBlock.Client.UI.Controls.Core;
+using OmniBlock.Client.UI.Layout.Flexbox;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Screens.Menu;
+namespace OmniBlock.Client.UI.Screens.Menu;
 
 public class EditServerScreen(
     UIContext context,

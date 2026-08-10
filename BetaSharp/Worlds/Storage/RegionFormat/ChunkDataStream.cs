@@ -1,4 +1,4 @@
-namespace BetaSharp.Worlds.Storage.RegionFormat;
+namespace OmniBlock.Worlds.Storage.RegionFormat;
 
 internal class ChunkDataStream(Stream stream, RegionFile.CompressionType compressionType) : IDisposable
 {

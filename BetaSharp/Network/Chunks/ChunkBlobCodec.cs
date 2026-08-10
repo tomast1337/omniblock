@@ -1,6 +1,6 @@
-using BetaSharp.Worlds.Chunks;
+using OmniBlock.Worlds.Chunks;
 
-namespace BetaSharp.Network.Chunks;
+namespace OmniBlock.Network.Chunks;
 
 /// <summary>
 ///     Encodes a chunk's block and light arrays into a compact wire blob, and back.

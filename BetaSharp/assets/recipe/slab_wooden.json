@@ -4,10 +4,10 @@
         "###"
     ],
     "key": {
-        "#": "betasharp:Planks"
+        "#": "omniblock:Planks"
     },
     "result": {
-        "id": "betasharp:Slab:2",
+        "id": "omniblock:Slab:2",
         "count": 3
     }
 }

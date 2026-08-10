@@ -1,9 +1,9 @@
 using System.Text.Json;
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Items;
-using BetaSharp.Textures;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Items;
+using OmniBlock.Textures;
 
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 internal static class BehaviorRegistry
 {

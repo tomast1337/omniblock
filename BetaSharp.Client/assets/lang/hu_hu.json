@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "Többjátékos játék",
-        "betasharpServer": "BetaSharp szerver",
+        "betasharpServer": "OmniBlock szerver",
         "info1": "A Minecraft többjátékos módja még nem kész, de",
         "info2": "már folyik némi korai, bugos tesztelés.",
         "ipinfo": "Add meg egy szerver IP-címét a csatlakozáshoz:",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "BetaSharp %1$s verzió",
+        "version": "OmniBlock %1$s verzió",
         "description": "A Minecraft Beta 1.7.3 továbbfejlesztett változata, C#-ban írva.",
         "github": "A GitHubon",
         "author": "Készítette: Fazin85",

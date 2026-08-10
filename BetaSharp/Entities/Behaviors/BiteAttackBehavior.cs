@@ -1,4 +1,4 @@
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     Bites whatever it is on top of, hitting harder once tamed.

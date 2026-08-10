@@ -1,12 +1,12 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Entities;
-using BetaSharp.Network.Messages;
-using BetaSharp.Rules;
-using BetaSharp.Util;
-using BetaSharp.Util.Maths;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Entities;
+using OmniBlock.Network.Messages;
+using OmniBlock.Rules;
+using OmniBlock.Util;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Worlds.Core.Systems;
+namespace OmniBlock.Worlds.Core.Systems;
 
 public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBlockReader reader, World worldContext)
 {

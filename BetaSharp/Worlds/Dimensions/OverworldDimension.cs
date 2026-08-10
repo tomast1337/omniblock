@@ -1,11 +1,11 @@
-using BetaSharp.Blocks;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Gen.Chunks;
-using BetaSharp.Worlds.Gen.Flat;
-using BetaSharp.Worlds.Generation.Biomes;
-using BetaSharp.Worlds.Generation.Biomes.Source;
+using OmniBlock.Blocks;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Gen.Chunks;
+using OmniBlock.Worlds.Gen.Flat;
+using OmniBlock.Worlds.Generation.Biomes;
+using OmniBlock.Worlds.Generation.Biomes.Source;
 
-namespace BetaSharp.Worlds.Dimensions;
+namespace OmniBlock.Worlds.Dimensions;
 
 internal class OverworldDimension : Dimension
 {

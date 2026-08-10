@@ -1,11 +1,11 @@
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.Inventories;
-using BetaSharp.Items;
-using BetaSharp.Util.Maths;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.Inventories;
+using OmniBlock.Items;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
 ///     Shared static helpers for blocks whose tile entity implements <see cref="IInventory" />:

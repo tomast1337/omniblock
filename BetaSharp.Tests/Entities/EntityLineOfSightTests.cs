@@ -1,10 +1,10 @@
-using BetaSharp.Blocks;
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.Util.Hit;
-using BetaSharp.Util.Maths;
+using OmniBlock.Blocks;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.Util.Hit;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Covers the line-of-sight branches that were unreachable while <see cref="FakeWorldContext"/>

@@ -1,4 +1,4 @@
-﻿namespace BetaSharp.Recipes;
+﻿namespace OmniBlock.Recipes;
 
 public class DuplicateRecipeException(ResourceLocation recipeKey, string type) : Exception
 {

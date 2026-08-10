@@ -1,13 +1,13 @@
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities.State;
-using BetaSharp.Items;
-using BetaSharp.Util;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core.Systems;
-using DroppedItemBehavior = BetaSharp.Entities.Behaviors.DroppedItemBehavior;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Entities.State;
+using OmniBlock.Items;
+using OmniBlock.Util;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core.Systems;
+using DroppedItemBehavior = OmniBlock.Entities.Behaviors.DroppedItemBehavior;
 
-namespace BetaSharp.Entities;
+namespace OmniBlock.Entities;
 
 public abstract partial class Entity : IEntity
 {

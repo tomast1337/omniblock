@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace BetaSharp.Network.Transport;
+namespace OmniBlock.Network.Transport;
 
 /// <summary>
 ///     How a payload is delivered. The transport's entire vocabulary for reliability and ordering.

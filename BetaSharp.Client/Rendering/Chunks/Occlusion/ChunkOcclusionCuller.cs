@@ -1,6 +1,6 @@
 using Silk.NET.Maths;
 
-namespace BetaSharp.Client.Rendering.Chunks.Occlusion;
+namespace OmniBlock.Client.Rendering.Chunks.Occlusion;
 
 public interface IChunkVisibilityVisitor
 {

@@ -1,8 +1,8 @@
-using BetaSharp;
-using BetaSharp.Network.Messages;
-using BetaSharp.Network.Packets;
+using OmniBlock;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Packets;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 /// <summary>
 ///     The message layer's foundation: length-prefixed envelopes and registry-negotiated IDs.

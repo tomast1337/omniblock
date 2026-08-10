@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "मल्टीप्लेयर खेलें",
-        "betasharpServer": "BetaSharp सर्वर",
+        "betasharpServer": "OmniBlock सर्वर",
         "info1": "माइनक्राफ्ट मल्टीप्लेयर अभी पूरा नहीं हुआ है, लेकिन",
         "info2": "कुछ शुरुआती बग वाली टेस्टिंग चल रही है।",
         "ipinfo": "सर्वर से जुड़ने के लिए उसका IP दर्ज करें:",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "BetaSharp संस्करण %1$s",
+        "version": "OmniBlock संस्करण %1$s",
         "description": "C# में लिखा गया माइनक्राफ्ट Beta 1.7.3 का एक उन्नत संस्करण।",
         "github": "GitHub पर",
         "author": "Fazin85 द्वारा निर्मित",

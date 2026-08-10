@@ -1,10 +1,10 @@
 using System.Runtime.InteropServices;
-using BetaSharp.Client.Options;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Core.Textures;
+using OmniBlock.Client.Options;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Core.Textures;
 using Silk.NET.Maths;
 
-namespace BetaSharp.Client.Rendering.UI;
+namespace OmniBlock.Client.Rendering.UI;
 
 /// <summary>
 ///     Batches the interface's quads and draws them through the draw-command seam.

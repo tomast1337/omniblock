@@ -1,9 +1,9 @@
 using System.Linq;
-using BetaSharp.Blocks;
-using BetaSharp.Entities;
-using BetaSharp.Entities.Behaviors;
+using OmniBlock.Blocks;
+using OmniBlock.Entities;
+using OmniBlock.Entities.Behaviors;
 
-namespace BetaSharp.Tests.Entities;
+namespace OmniBlock.Tests.Entities;
 
 /// <summary>
 /// Covers the ghast, the first mob to lose both its class and its abstract base. Flight moved into

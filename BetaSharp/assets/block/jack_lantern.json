@@ -9,7 +9,7 @@
   "Luminance": 1,
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": "betasharp:pumpkin_top",
+  "TextureId": "omniblock:pumpkin_top",
   "TopVariance": "All",
   "BottomVariance": "All",
   "Behaviors": [
@@ -20,10 +20,10 @@
         "Visuals"
       ],
       "Type": "pumpkin",
-      "top": "betasharp:pumpkin_top",
-      "side": "betasharp:pumpkin_side",
-      "face": "betasharp:jack_olantern_face",
-      "item_face": "betasharp:pumpkin_face"
+      "top": "omniblock:pumpkin_top",
+      "side": "omniblock:pumpkin_side",
+      "face": "omniblock:jack_olantern_face",
+      "item_face": "omniblock:pumpkin_face"
     }
   ]
 }

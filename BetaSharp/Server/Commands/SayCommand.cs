@@ -1,9 +1,9 @@
-using BetaSharp.Network.Messages;
+using OmniBlock.Network.Messages;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Server.Commands;
+namespace OmniBlock.Server.Commands;
 
 public class SayCommand : Command.Command
 {

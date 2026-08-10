@@ -1,6 +1,6 @@
-using BetaSharp.Entities;
+using OmniBlock.Entities;
 
-namespace BetaSharp.Loot;
+namespace OmniBlock.Loot;
 
 /// <summary>
 ///     Everything a loot pool's condition or entry may consult while rolling.

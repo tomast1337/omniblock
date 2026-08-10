@@ -6,9 +6,9 @@
         "###"
     ],
     "key": {
-        "#": "betasharp:dye_powder:4"
+        "#": "omniblock:dye_powder:4"
     },
     "result": {
-        "id": "betasharp:LapisBlock"
+        "id": "omniblock:LapisBlock"
     }
 }

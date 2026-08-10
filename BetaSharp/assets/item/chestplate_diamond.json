@@ -1,7 +1,7 @@
 {
     "ProtocolId": 311,
     "TranslationKey": "chestplateDiamond",
-    "TextureId": "betasharp:diamond_chestplate",
+    "TextureId": "omniblock:diamond_chestplate",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",

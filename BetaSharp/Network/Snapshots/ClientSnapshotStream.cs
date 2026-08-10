@@ -1,6 +1,6 @@
-using BetaSharp.Network.Messages;
+using OmniBlock.Network.Messages;
 
-namespace BetaSharp.Network.Snapshots;
+namespace OmniBlock.Network.Snapshots;
 
 /// <summary>
 ///     The receiving half of delta-compressed entity replication: reconstructs absolute positions

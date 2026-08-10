@@ -1,11 +1,11 @@
 using System.Numerics;
-using BetaSharp.Client.UI;
-using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Screens.InGame;
+using OmniBlock.Client.UI;
+using OmniBlock.Client.UI.Controls.Core;
+using OmniBlock.Client.UI.Screens.InGame;
 using Hexa.NET.ImGui;
 using Silk.NET.Maths;
 
-namespace BetaSharp.Client.Diagnostics.Windows;
+namespace OmniBlock.Client.Diagnostics.Windows;
 
 internal sealed class UIInspectorWindow(DebugWindowContext ctx) : DebugWindow
 {

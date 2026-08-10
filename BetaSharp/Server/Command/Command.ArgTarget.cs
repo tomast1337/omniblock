@@ -1,11 +1,11 @@
-using BetaSharp.Entities;
+using OmniBlock.Entities;
 using Brigadier.NET;
 using Brigadier.NET.ArgumentTypes;
 using Brigadier.NET.Context;
 using Brigadier.NET.Suggestion;
 using StringReader = Brigadier.NET.StringReader;
 
-namespace BetaSharp.Server.Command;
+namespace OmniBlock.Server.Command;
 
 public abstract partial class Command
 {

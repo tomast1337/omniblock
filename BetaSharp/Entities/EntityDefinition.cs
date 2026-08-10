@@ -1,10 +1,10 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.Entities.State;
-using BetaSharp.Registries.Data;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.Entities.State;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Entities;
+namespace OmniBlock.Entities;
 
 /// <summary>
 ///     The data half of an entity: fixed values loaded from <c>assets/entity/*.json</c>. Anything
@@ -63,7 +63,7 @@ public sealed record EntityDefinition : IDataAsset
     public string Texture { get; init; } = "/mob/char.png";
 
     /// <summary>
-    ///     Item this mob is drawn holding (<c>"betasharp:bow"</c>), or <c>null</c> for empty-handed.
+    ///     Item this mob is drawn holding (<c>"omniblock:bow"</c>), or <c>null</c> for empty-handed.
     ///     Fixed per type: no vanilla mob changes what it carries.
     /// </summary>
     public string? HeldItem { get; init; }
@@ -200,5 +200,5 @@ public sealed record EntityDefinition : IDataAsset
     [JsonIgnore]
     public string Name { get; set; } = "";
 
-    [JsonIgnore] public Namespace Namespace { get; set; } = Namespace.BetaSharp;
+    [JsonIgnore] public Namespace Namespace { get; set; } = Namespace.OmniBlock;
 }

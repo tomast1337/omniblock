@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Probes the network for clock offset and round-trip time. The client sends these in a burst
@@ -10,7 +10,7 @@ namespace BetaSharp.Network.Messages;
 ///         would measure the tick phase rather than the network.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:time_sync_request")]
+[WireMessage("omniblock:time_sync_request")]
 public sealed partial class TimeSyncRequestMessage : Message
 {
     /// <summary>Latency measurement: a probe queued behind a chunk measures the queue, not the network.</summary>

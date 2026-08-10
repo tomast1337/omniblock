@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace BetaSharp.Client.UI.Colors;
+namespace OmniBlock.Client.UI.Colors;
 
 public readonly partial struct Color : IEquatable<Color>
 {

@@ -1,6 +1,6 @@
-using BetaSharp.Registries;
+using OmniBlock.Registries;
 
-namespace BetaSharp.Tests;
+namespace OmniBlock.Tests;
 
 public class IndexedRegistryTests
 {

@@ -1,7 +1,7 @@
-using BetaSharp.Client.Rendering.Entities.Models;
-using BetaSharp.Entities;
+using OmniBlock.Client.Rendering.Entities.Models;
+using OmniBlock.Entities;
 
-namespace BetaSharp.Client.Rendering.Entities;
+namespace OmniBlock.Client.Rendering.Entities;
 
 /// <summary>
 ///     Draws a second pass over the main model when a declared synced property is set — a pig's

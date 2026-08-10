@@ -8,7 +8,7 @@
   "Opacity": 1,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": "betasharp:oak_leaves_fancy",
+  "TextureId": "omniblock:oak_leaves_fancy",
   "BurnChance": 30,
   "SpreadChance": 60,
   "TopVariance": "All",
@@ -22,20 +22,20 @@
         "Visuals"
       ],
       "Type": "leaves",
-      "trunk": "betasharp:log",
-      "sapling": "betasharp:sapling",
-      "harvest_tool": "betasharp:shears",
+      "trunk": "omniblock:log",
+      "sapling": "omniblock:sapling",
+      "harvest_tool": "omniblock:shears",
       "fancy": [
-        "betasharp:oak_leaves_fancy",
-        "betasharp:spruce_leaves_fancy",
-        "betasharp:oak_leaves_fancy",
-        "betasharp:oak_leaves_fancy"
+        "omniblock:oak_leaves_fancy",
+        "omniblock:spruce_leaves_fancy",
+        "omniblock:oak_leaves_fancy",
+        "omniblock:oak_leaves_fancy"
       ],
       "fast": [
-        "betasharp:oak_leaves_fast",
-        "betasharp:spruce_leaves_fast",
-        "betasharp:oak_leaves_fast",
-        "betasharp:oak_leaves_fast"
+        "omniblock:oak_leaves_fast",
+        "omniblock:spruce_leaves_fast",
+        "omniblock:oak_leaves_fast",
+        "omniblock:oak_leaves_fast"
       ]
     }
   ]

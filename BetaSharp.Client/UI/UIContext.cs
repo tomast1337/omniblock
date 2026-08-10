@@ -1,12 +1,12 @@
-using BetaSharp.Client.Input;
-using BetaSharp.Client.Options;
-using BetaSharp.Client.Rendering;
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.Rendering.UI;
-using BetaSharp.Client.UI.Screens;
+using OmniBlock.Client.Input;
+using OmniBlock.Client.Options;
+using OmniBlock.Client.Rendering;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Client.Rendering.UI;
+using OmniBlock.Client.UI.Screens;
 using Silk.NET.Maths;
 
-namespace BetaSharp.Client.UI;
+namespace OmniBlock.Client.UI;
 
 public sealed class UIContext(
     GameOptions options,

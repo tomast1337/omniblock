@@ -1,10 +1,10 @@
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.UI.Rendering;
-using BetaSharp.Items;
-using BetaSharp.Screens.Slots;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Client.UI.Rendering;
+using OmniBlock.Items;
+using OmniBlock.Screens.Slots;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Controls;
+namespace OmniBlock.Client.UI.Controls;
 
 public class UISlot : UIElement
 {

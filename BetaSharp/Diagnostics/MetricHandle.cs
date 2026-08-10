@@ -1,4 +1,4 @@
-namespace BetaSharp.Diagnostics;
+namespace OmniBlock.Diagnostics;
 
 /// <summary>
 /// Handle to a metric stored in <see cref="MetricRegistry"/>.

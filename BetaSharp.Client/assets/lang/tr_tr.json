@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "Çok Oyunculu Oyna",
-        "betasharpServer": "BetaSharp Sunucusu",
+        "betasharpServer": "OmniBlock Sunucusu",
         "info1": "Minecraft Çok Oyunculu şu an tamamlanmadı, ancak",
         "info2": "bazı hatalı erken testler yapılıyor.",
         "ipinfo": "Bağlanmak için sunucunun IP'sini girin:",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "BetaSharp Sürüm %1$s",
+        "version": "OmniBlock Sürüm %1$s",
         "description": "Minecraft Beta 1.7.3'ün C# ile yazılmış geliştirilmiş sürümü.",
         "github": "GitHub'da",
         "author": "Fazin85 tarafından yapıldı",

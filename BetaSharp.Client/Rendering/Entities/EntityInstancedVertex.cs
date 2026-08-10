@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace BetaSharp.Client.Rendering.Entities;
+namespace OmniBlock.Client.Rendering.Entities;
 
 /// <summary>One vertex of a <see cref="Models.ModelPart"/>'s static local-space geometry.</summary>
 [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 40)]

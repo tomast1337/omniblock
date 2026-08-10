@@ -1,12 +1,12 @@
-using BetaSharp.Blocks;
-using BetaSharp.Client.Rendering.Items;
-using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Rendering;
-using BetaSharp.Client.UI.Screens.Menu.World;
-using BetaSharp.Items;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Blocks;
+using OmniBlock.Client.Rendering.Items;
+using OmniBlock.Client.UI.Controls.Core;
+using OmniBlock.Client.UI.Rendering;
+using OmniBlock.Client.UI.Screens.Menu.World;
+using OmniBlock.Items;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Controls.ListItems;
+namespace OmniBlock.Client.UI.Controls.ListItems;
 
 public class FlatPresetListItem(FlatPresetsScreen.PresetItem preset) : ListItem<FlatPresetsScreen.PresetItem>(preset)
 {

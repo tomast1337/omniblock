@@ -1,9 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using BetaSharp.Registries;
-using BetaSharp.Registries.Data;
+using OmniBlock.Registries;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Carries the contents of one data-driven registry from server to client during
@@ -12,7 +12,7 @@ namespace BetaSharp.Network.Messages;
 /// </summary>
 public sealed class RegistryDataMessage : Message
 {
-    public static readonly ResourceLocation Id = new(Namespace.BetaSharp, "registry_data");
+    public static readonly ResourceLocation Id = new(Namespace.OmniBlock, "registry_data");
 
     public override ResourceLocation Key => Id;
 
@@ -34,7 +34,7 @@ public sealed class RegistryDataMessage : Message
     ///         was left unset.
     ///     </para>
     /// </summary>
-    private static readonly ResourceLocation s_unset = new(Namespace.BetaSharp, "unset");
+    private static readonly ResourceLocation s_unset = new(Namespace.OmniBlock, "unset");
 
     public ResourceLocation RegistryId { get; set; } = s_unset;
 
@@ -113,7 +113,7 @@ public sealed class RegistryDataMessage : Message
             size += StreamExtensions.ResourceLocationSize(entry.Key)
                     + 1
                     + (entry.JsonData is not null
-                        ? 2 + global::BetaSharp.Util.ModifiedUtf8.GetByteCount(entry.JsonData)
+                        ? 2 + global::OmniBlock.Util.ModifiedUtf8.GetByteCount(entry.JsonData)
                         : 0);
         }
 

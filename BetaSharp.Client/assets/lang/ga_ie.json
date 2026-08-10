@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "Seinn Il-imreoir",
-        "betasharpServer": "Freastalaí BetaSharp",
+        "betasharpServer": "Freastalaí OmniBlock",
         "info1": "Níl Il-imreoir Minecraft críochnaithe fós, ach",
         "info2": "tá roinnt tástála luatha lochtach ar siúl.",
         "ipinfo": "Cuir isteach IP an fhreastalaí le ceangal leis:",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "BetaSharp Leagan %1$s",
+        "version": "OmniBlock Leagan %1$s",
         "description": "Leagan feabhsaithe de Minecraft Beta 1.7.3, scríofa in C#.",
         "github": "Ar GitHub",
         "author": "Arna dhéanamh ag Fazin85",

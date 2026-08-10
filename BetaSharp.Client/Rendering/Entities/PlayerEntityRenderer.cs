@@ -1,15 +1,15 @@
-using BetaSharp.Blocks;
-using BetaSharp.Client.Entities;
-using BetaSharp.Client.Rendering.Blocks;
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.Rendering.Entities.Models;
-using BetaSharp.Entities;
-using BetaSharp.Items;
-using BetaSharp.Items.Behaviors;
-using BetaSharp.Util.Maths;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Blocks;
+using OmniBlock.Client.Entities;
+using OmniBlock.Client.Rendering.Blocks;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.Rendering.Entities.Models;
+using OmniBlock.Entities;
+using OmniBlock.Items;
+using OmniBlock.Items.Behaviors;
+using OmniBlock.Util.Maths;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.Rendering.Entities;
+namespace OmniBlock.Client.Rendering.Entities;
 
 public class PlayerEntityRenderer : LivingEntityRenderer
 {

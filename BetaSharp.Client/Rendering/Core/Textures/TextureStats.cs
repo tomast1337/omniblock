@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace BetaSharp.Client.Rendering.Core.Textures;
+namespace OmniBlock.Client.Rendering.Core.Textures;
 
 public static class TextureStats
 {

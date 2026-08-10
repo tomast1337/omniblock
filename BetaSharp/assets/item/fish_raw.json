@@ -1,7 +1,7 @@
 {
   "ProtocolId": 349,
   "TranslationKey": "fishRaw",
-  "TextureId": "betasharp:raw_fish",
+  "TextureId": "omniblock:raw_fish",
   "Behavior": {
     "type": "food",
     "HealAmount": 2,

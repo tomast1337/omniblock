@@ -1,12 +1,12 @@
-using BetaSharp.Registries;
-using BetaSharp.Registries.Data;
+using OmniBlock.Registries;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Tests;
+namespace OmniBlock.Tests;
 
 /// <summary>
 /// A custom data-driven type modelling a Minecraft enchantment — used to verify that
 /// the registry infrastructure works for any <see cref="IDataAsset"/> type, not just
-/// the built-in <see cref="BetaSharp.GameMode.GameMode"/>.
+/// the built-in <see cref="OmniBlock.GameMode.GameMode"/>.
 /// </summary>
 public class TestEnchantment : DataAsset
 {
@@ -121,8 +121,8 @@ public class RegistryAccessTests : IDisposable
 
         IReadableRegistry<TestEnchantment> reg = ra.GetOrThrow(s_enchKey);
 
-        TestEnchantment? sharpness = reg.GetValue(ResourceLocation.Parse("betasharp:sharpness"));
-        TestEnchantment? silkTouch = reg.GetValue(ResourceLocation.Parse("betasharp:silk_touch"));
+        TestEnchantment? sharpness = reg.GetValue(ResourceLocation.Parse("omniblock:sharpness"));
+        TestEnchantment? silkTouch = reg.GetValue(ResourceLocation.Parse("omniblock:silk_touch"));
 
         Assert.NotNull(sharpness);
         Assert.Equal(5, sharpness.MaxLevel);
@@ -166,8 +166,8 @@ public class RegistryAccessTests : IDisposable
         RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
         IReadableRegistry<TestEnchantment> reg = ra.GetOrThrow(s_enchKey);
 
-        Assert.Contains(ResourceLocation.Parse("betasharp:sharpness"), reg.Keys);
-        Assert.Contains(ResourceLocation.Parse("betasharp:fortune"), reg.Keys);
+        Assert.Contains(ResourceLocation.Parse("omniblock:sharpness"), reg.Keys);
+        Assert.Contains(ResourceLocation.Parse("omniblock:fortune"), reg.Keys);
     }
 
     [Fact]
@@ -179,7 +179,7 @@ public class RegistryAccessTests : IDisposable
         RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
         IReadableRegistry<TestEnchantment> reg = ra.GetOrThrow(s_enchKey);
 
-        Assert.True(reg.ContainsKey(ResourceLocation.Parse("betasharp:sharpness")));
+        Assert.True(reg.ContainsKey(ResourceLocation.Parse("omniblock:sharpness")));
     }
 
     [Fact]
@@ -191,7 +191,7 @@ public class RegistryAccessTests : IDisposable
         RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir);
         IReadableRegistry<TestEnchantment> reg = ra.GetOrThrow(s_enchKey);
 
-        Holder<TestEnchantment>? holder = reg.Get(ResourceLocation.Parse("betasharp:sharpness"));
+        Holder<TestEnchantment>? holder = reg.Get(ResourceLocation.Parse("omniblock:sharpness"));
 
         Assert.NotNull(holder);
         Assert.Equal(5, holder.Value.MaxLevel);
@@ -218,13 +218,13 @@ public class RegistryAccessTests : IDisposable
     [Fact]
     public void Build_with_datapack_path_loads_datapack_entries()
     {
-        WriteDatapackEnchantment("mypack", "betasharp", "looting", maxLevel: 3);
+        WriteDatapackEnchantment("mypack", "omniblock", "looting", maxLevel: 3);
 
         RegisterEnchantmentDefinition();
         RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir, datapackPath: _tempDir);
 
         IReadableRegistry<TestEnchantment> reg = ra.GetOrThrow(s_enchKey);
-        TestEnchantment? looting = reg.GetValue(ResourceLocation.Parse("betasharp:looting"));
+        TestEnchantment? looting = reg.GetValue(ResourceLocation.Parse("omniblock:looting"));
 
         Assert.NotNull(looting);
         Assert.Equal(3, looting.MaxLevel);
@@ -235,13 +235,13 @@ public class RegistryAccessTests : IDisposable
     {
         WriteBaseEnchantment("sharpness", maxLevel: 5, rarity: "common");
         // Datapack bumps max level but leaves rarity alone (merge semantics).
-        WriteDatapackEnchantment("mypack", "betasharp", "sharpness", maxLevel: 10);
+        WriteDatapackEnchantment("mypack", "omniblock", "sharpness", maxLevel: 10);
 
         RegisterEnchantmentDefinition();
         RegistryAccess ra = RegistryAccess.Build(basePath: _tempDir, datapackPath: _tempDir);
 
         IReadableRegistry<TestEnchantment> reg = ra.GetOrThrow(s_enchKey);
-        TestEnchantment? sharpness = reg.GetValue(ResourceLocation.Parse("betasharp:sharpness"));
+        TestEnchantment? sharpness = reg.GetValue(ResourceLocation.Parse("omniblock:sharpness"));
 
         Assert.NotNull(sharpness);
         Assert.Equal(10, sharpness.MaxLevel);
@@ -257,21 +257,21 @@ public class RegistryAccessTests : IDisposable
     public void WithWorldDatapacks_adds_world_only_entries_to_active_registry()
     {
         WriteBaseEnchantment("sharpness", maxLevel: 5);
-        WriteWorldEnchantment("worldpack", "betasharp", "mending", maxLevel: 1);
+        WriteWorldEnchantment("worldpack", "omniblock", "mending", maxLevel: 1);
 
         RegisterEnchantmentDefinition();
         RegistryAccess serverRa = RegistryAccess.Build(basePath: _tempDir);
         RegistryAccess worldRa = serverRa.WithWorldDatapacks(Path.Combine(_tempDir, "world"));
 
         IReadableRegistry<TestEnchantment> worldReg = worldRa.GetOrThrow(s_enchKey);
-        Assert.NotNull(worldReg.Get(ResourceLocation.Parse("betasharp:mending")));
+        Assert.NotNull(worldReg.Get(ResourceLocation.Parse("omniblock:mending")));
     }
 
     [Fact]
     public void WithWorldDatapacks_does_not_pollute_server_level_registry()
     {
         WriteBaseEnchantment("sharpness", maxLevel: 5);
-        WriteWorldEnchantment("worldpack", "betasharp", "mending", maxLevel: 1);
+        WriteWorldEnchantment("worldpack", "omniblock", "mending", maxLevel: 1);
 
         RegisterEnchantmentDefinition();
         RegistryAccess serverRa = RegistryAccess.Build(basePath: _tempDir);
@@ -279,32 +279,32 @@ public class RegistryAccessTests : IDisposable
 
         // The original serverRa must not contain the world-only enchantment.
         IReadableRegistry<TestEnchantment> serverReg = serverRa.GetOrThrow(s_enchKey);
-        Assert.Null(serverReg.Get(ResourceLocation.Parse("betasharp:mending")));
+        Assert.Null(serverReg.Get(ResourceLocation.Parse("omniblock:mending")));
     }
 
     [Fact]
     public void WithWorldDatapacks_overrides_base_entry_in_active_registry()
     {
         WriteBaseEnchantment("sharpness", maxLevel: 5);
-        WriteWorldEnchantment("worldpack", "betasharp", "sharpness", maxLevel: 8);
+        WriteWorldEnchantment("worldpack", "omniblock", "sharpness", maxLevel: 8);
 
         RegisterEnchantmentDefinition();
         RegistryAccess serverRa = RegistryAccess.Build(basePath: _tempDir);
         RegistryAccess worldRa = serverRa.WithWorldDatapacks(Path.Combine(_tempDir, "world"));
 
         IReadableRegistry<TestEnchantment> worldReg = worldRa.GetOrThrow(s_enchKey);
-        Assert.Equal(8, worldReg.GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
+        Assert.Equal(8, worldReg.GetValue(ResourceLocation.Parse("omniblock:sharpness"))!.MaxLevel);
 
         // Server-level is unchanged.
         IReadableRegistry<TestEnchantment> serverReg = serverRa.GetOrThrow(s_enchKey);
-        Assert.Equal(5, serverReg.GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
+        Assert.Equal(5, serverReg.GetValue(ResourceLocation.Parse("omniblock:sharpness"))!.MaxLevel);
     }
 
     [Fact]
     public void WithoutWorldDatapacks_returns_server_level_state_without_disk_io()
     {
         WriteBaseEnchantment("sharpness", maxLevel: 5);
-        WriteWorldEnchantment("worldpack", "betasharp", "mending", maxLevel: 1);
+        WriteWorldEnchantment("worldpack", "omniblock", "mending", maxLevel: 1);
 
         RegisterEnchantmentDefinition();
         RegistryAccess serverRa = RegistryAccess.Build(basePath: _tempDir);
@@ -316,8 +316,8 @@ public class RegistryAccessTests : IDisposable
         RegistryAccess strippedRa = worldRa.WithoutWorldDatapacks();
 
         IReadableRegistry<TestEnchantment> reg = strippedRa.GetOrThrow(s_enchKey);
-        Assert.NotNull(reg.Get(ResourceLocation.Parse("betasharp:sharpness")));
-        Assert.Null(reg.Get(ResourceLocation.Parse("betasharp:mending")));
+        Assert.NotNull(reg.Get(ResourceLocation.Parse("omniblock:sharpness")));
+        Assert.Null(reg.Get(ResourceLocation.Parse("omniblock:mending")));
     }
 
     [Fact]
@@ -327,8 +327,8 @@ public class RegistryAccessTests : IDisposable
 
         string worldADir = Path.Combine(_tempDir, "worldA");
         string worldBDir = Path.Combine(_tempDir, "worldB");
-        string packDataA = Path.Combine(worldADir, "datapacks", "pack", "data", "betasharp", "enchantment");
-        string packDataB = Path.Combine(worldBDir, "datapacks", "pack", "data", "betasharp", "enchantment");
+        string packDataA = Path.Combine(worldADir, "datapacks", "pack", "data", "omniblock", "enchantment");
+        string packDataB = Path.Combine(worldBDir, "datapacks", "pack", "data", "omniblock", "enchantment");
         Directory.CreateDirectory(packDataA);
         Directory.CreateDirectory(packDataB);
         File.WriteAllText(Path.Combine(packDataA, "mending.json"), "{\"MaxLevel\":1}");
@@ -342,11 +342,11 @@ public class RegistryAccessTests : IDisposable
         IReadableRegistry<TestEnchantment> regA = raA.GetOrThrow(s_enchKey);
         IReadableRegistry<TestEnchantment> regB = raB.GetOrThrow(s_enchKey);
 
-        Assert.NotNull(regA.Get(ResourceLocation.Parse("betasharp:mending")));
-        Assert.Null(regA.Get(ResourceLocation.Parse("betasharp:looting")));
+        Assert.NotNull(regA.Get(ResourceLocation.Parse("omniblock:mending")));
+        Assert.Null(regA.Get(ResourceLocation.Parse("omniblock:looting")));
 
-        Assert.NotNull(regB.Get(ResourceLocation.Parse("betasharp:looting")));
-        Assert.Null(regB.Get(ResourceLocation.Parse("betasharp:mending")));
+        Assert.NotNull(regB.Get(ResourceLocation.Parse("omniblock:looting")));
+        Assert.Null(regB.Get(ResourceLocation.Parse("omniblock:mending")));
     }
 
     // -------------------------------------------------------------------------
@@ -360,13 +360,13 @@ public class RegistryAccessTests : IDisposable
 
         RegisterEnchantmentDefinition();
         RegistryAccess first = RegistryAccess.Build(basePath: _tempDir);
-        Assert.Null(first.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("betasharp:fortune")));
+        Assert.Null(first.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("omniblock:fortune")));
 
         // Simulate a datapack author dropping a new file while the server is running.
         WriteBaseEnchantment("fortune", maxLevel: 3);
 
         RegistryAccess reloaded = RegistryAccess.Build(basePath: _tempDir);
-        Assert.NotNull(reloaded.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("betasharp:fortune")));
+        Assert.NotNull(reloaded.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("omniblock:fortune")));
     }
 
     [Fact]
@@ -376,13 +376,13 @@ public class RegistryAccessTests : IDisposable
 
         RegisterEnchantmentDefinition();
         RegistryAccess first = RegistryAccess.Build(basePath: _tempDir);
-        Assert.Equal(5, first.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
+        Assert.Equal(5, first.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("omniblock:sharpness"))!.MaxLevel);
 
         // Author edits the file to bump max level.
         WriteBaseEnchantment("sharpness", maxLevel: 10);
 
         RegistryAccess reloaded = RegistryAccess.Build(basePath: _tempDir);
-        Assert.Equal(10, reloaded.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
+        Assert.Equal(10, reloaded.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("omniblock:sharpness"))!.MaxLevel);
     }
 
     [Fact]
@@ -397,15 +397,15 @@ public class RegistryAccessTests : IDisposable
         RegistryAccess reloaded = RegistryAccess.Build(basePath: _tempDir);
 
         // Callers holding a reference to the old instance must not see the new value.
-        Assert.Equal(5, first.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
-        Assert.Equal(10, reloaded.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
+        Assert.Equal(5, first.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("omniblock:sharpness"))!.MaxLevel);
+        Assert.Equal(10, reloaded.GetOrThrow(s_enchKey).GetValue(ResourceLocation.Parse("omniblock:sharpness"))!.MaxLevel);
     }
 
     [Fact]
     public void Rebuild_then_reapply_world_datapacks_reflects_changes_in_both_tiers()
     {
         WriteBaseEnchantment("sharpness", maxLevel: 5);
-        WriteWorldEnchantment("worldpack", "betasharp", "mending", maxLevel: 1);
+        WriteWorldEnchantment("worldpack", "omniblock", "mending", maxLevel: 1);
         string worldDir = Path.Combine(_tempDir, "world");
 
         RegisterEnchantmentDefinition();
@@ -414,26 +414,26 @@ public class RegistryAccessTests : IDisposable
 
         // Both tiers change between reloads.
         WriteBaseEnchantment("sharpness", maxLevel: 10);
-        WriteWorldEnchantment("worldpack", "betasharp", "mending", maxLevel: 4);
+        WriteWorldEnchantment("worldpack", "omniblock", "mending", maxLevel: 4);
 
         RegistryAccess serverV2 = RegistryAccess.Build(basePath: _tempDir);
         RegistryAccess worldV2 = serverV2.WithWorldDatapacks(worldDir);
 
         IReadableRegistry<TestEnchantment> reg = worldV2.GetOrThrow(s_enchKey);
-        Assert.Equal(10, reg.GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
-        Assert.Equal(4, reg.GetValue(ResourceLocation.Parse("betasharp:mending"))!.MaxLevel);
+        Assert.Equal(10, reg.GetValue(ResourceLocation.Parse("omniblock:sharpness"))!.MaxLevel);
+        Assert.Equal(4, reg.GetValue(ResourceLocation.Parse("omniblock:mending"))!.MaxLevel);
 
         // Old world instance is unaffected.
         IReadableRegistry<TestEnchantment> oldReg = worldV1.GetOrThrow(s_enchKey);
-        Assert.Equal(5, oldReg.GetValue(ResourceLocation.Parse("betasharp:sharpness"))!.MaxLevel);
-        Assert.Equal(1, oldReg.GetValue(ResourceLocation.Parse("betasharp:mending"))!.MaxLevel);
+        Assert.Equal(5, oldReg.GetValue(ResourceLocation.Parse("omniblock:sharpness"))!.MaxLevel);
+        Assert.Equal(1, oldReg.GetValue(ResourceLocation.Parse("omniblock:mending"))!.MaxLevel);
     }
 
     [Fact]
     public void Rebuild_without_world_does_not_contain_previous_world_entries()
     {
         WriteBaseEnchantment("sharpness", maxLevel: 5);
-        WriteWorldEnchantment("worldpack", "betasharp", "mending", maxLevel: 1);
+        WriteWorldEnchantment("worldpack", "omniblock", "mending", maxLevel: 1);
         string worldDir = Path.Combine(_tempDir, "world");
 
         RegisterEnchantmentDefinition();
@@ -444,24 +444,24 @@ public class RegistryAccessTests : IDisposable
         // that happens to run before the world is re-attached.
         RegistryAccess reloaded = RegistryAccess.Build(basePath: _tempDir);
 
-        Assert.Null(reloaded.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("betasharp:mending")));
+        Assert.Null(reloaded.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("omniblock:mending")));
     }
 
     [Fact]
     public void Datapack_removed_between_reloads_is_absent_after_rebuild()
     {
         WriteBaseEnchantment("sharpness", maxLevel: 5);
-        WriteDatapackEnchantment("myaddon", "betasharp", "looting", maxLevel: 3);
+        WriteDatapackEnchantment("myaddon", "omniblock", "looting", maxLevel: 3);
 
         RegisterEnchantmentDefinition();
         RegistryAccess first = RegistryAccess.Build(basePath: _tempDir, datapackPath: _tempDir);
-        Assert.NotNull(first.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("betasharp:looting")));
+        Assert.NotNull(first.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("omniblock:looting")));
 
         // Operator removes the datapack between reloads.
         Directory.Delete(Path.Combine(_tempDir, "datapacks", "myaddon"), recursive: true);
 
         RegistryAccess reloaded = RegistryAccess.Build(basePath: _tempDir, datapackPath: _tempDir);
-        Assert.Null(reloaded.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("betasharp:looting")));
+        Assert.Null(reloaded.GetOrThrow(s_enchKey).Get(ResourceLocation.Parse("omniblock:looting")));
     }
 
     // -------------------------------------------------------------------------

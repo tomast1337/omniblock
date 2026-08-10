@@ -1,10 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
-using BetaSharp.NBT;
-using BetaSharp.Registries;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.NBT;
+using OmniBlock.Registries;
+using OmniBlock.Worlds.Core.Systems;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Entities;
+namespace OmniBlock.Entities;
 
 public static class EntityRegistry
 {

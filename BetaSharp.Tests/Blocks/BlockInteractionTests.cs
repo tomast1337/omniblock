@@ -1,7 +1,7 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Entities;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Entities;
 
-namespace BetaSharp.Tests.Blocks;
+namespace OmniBlock.Tests.Blocks;
 
 public sealed class BlockInteractionTests
 {

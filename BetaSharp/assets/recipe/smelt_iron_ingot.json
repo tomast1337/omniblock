@@ -1,7 +1,7 @@
 {
     "type": "smelting",
-    "input": "betasharp:IronOre",
+    "input": "omniblock:IronOre",
     "result": {
-        "id": "betasharp:ingot_iron"
+        "id": "omniblock:ingot_iron"
     }
 }

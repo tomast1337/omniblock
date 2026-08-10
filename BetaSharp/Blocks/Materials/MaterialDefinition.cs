@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using BetaSharp.Registries.Data;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Blocks.Materials;
+namespace OmniBlock.Blocks.Materials;
 
 /// <summary>
 ///     JSON shape of <c>assets/material/*.json</c>. Converted once by

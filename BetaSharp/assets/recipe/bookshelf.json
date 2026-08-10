@@ -6,10 +6,10 @@
         "###"
     ],
     "key": {
-        "#": "betasharp:Planks",
-        "X": "betasharp:book"
+        "#": "omniblock:Planks",
+        "X": "omniblock:book"
     },
     "result": {
-        "id": "betasharp:Bookshelf"
+        "id": "omniblock:Bookshelf"
     }
 }

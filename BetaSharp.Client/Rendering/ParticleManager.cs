@@ -1,12 +1,12 @@
-using BetaSharp.Blocks;
-using BetaSharp.Client.Rendering.Core.Textures;
-using BetaSharp.Client.Rendering.Particles;
-using BetaSharp.Entities;
-using BetaSharp.Items;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
+using OmniBlock.Blocks;
+using OmniBlock.Client.Rendering.Core.Textures;
+using OmniBlock.Client.Rendering.Particles;
+using OmniBlock.Entities;
+using OmniBlock.Items;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core;
 
-namespace BetaSharp.Client.Rendering;
+namespace OmniBlock.Client.Rendering;
 
 public class ParticleManager
 {

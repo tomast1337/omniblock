@@ -1,4 +1,4 @@
-namespace BetaSharp;
+namespace OmniBlock;
 
 public class Session(string username, string sessionId)
 {

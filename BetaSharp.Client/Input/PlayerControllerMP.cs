@@ -1,15 +1,15 @@
-using BetaSharp.Blocks;
-using BetaSharp.Client.Entities;
-using BetaSharp.Client.Network;
-using BetaSharp.Client.Sound;
-using BetaSharp.Entities;
-using BetaSharp.Items;
-using BetaSharp.Network.Messages;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks;
+using OmniBlock.Client.Entities;
+using OmniBlock.Client.Network;
+using OmniBlock.Client.Sound;
+using OmniBlock.Entities;
+using OmniBlock.Items;
+using OmniBlock.Network.Messages;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Client.Input;
+namespace OmniBlock.Client.Input;
 
 public class PlayerControllerMP : PlayerController
 {
@@ -22,7 +22,7 @@ public class PlayerControllerMP : PlayerController
     private readonly ClientNetworkHandler _netClientHandler;
     private int _currentPlayerItem;
 
-    public PlayerControllerMP(BetaSharp game, ClientNetworkHandler networkHandler) : base(game)
+    public PlayerControllerMP(OmniBlock game, ClientNetworkHandler networkHandler) : base(game)
     {
         _netClientHandler = networkHandler;
     }

@@ -1,7 +1,7 @@
-using BetaSharp.Network;
-using BetaSharp.Network.Messages;
+using OmniBlock.Network;
+using OmniBlock.Network.Messages;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 /// <summary>
 ///     The server-health heartbeat behind the debug overlay's Server Info panel, which read N/A on

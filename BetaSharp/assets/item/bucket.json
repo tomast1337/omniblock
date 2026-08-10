@@ -1,6 +1,6 @@
 {
   "ProtocolId": 325,
-  "TextureId": "betasharp:bucket",
+  "TextureId": "omniblock:bucket",
   "MaxStackSize": 1,
   "Behavior": {
     "type": "bucket",

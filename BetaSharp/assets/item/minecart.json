@@ -1,6 +1,6 @@
 {
   "ProtocolId": 328,
-  "TextureId": "betasharp:minecart",
+  "TextureId": "omniblock:minecart",
   "MaxStackSize": 1,
   "Behavior": {
     "type": "minecart",

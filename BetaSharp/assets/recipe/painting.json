@@ -6,10 +6,10 @@
         "###"
     ],
     "key": {
-        "#": "betasharp:stick",
-        "X": "betasharp:Wool"
+        "#": "omniblock:stick",
+        "X": "omniblock:Wool"
     },
     "result": {
-        "id": "betasharp:painting"
+        "id": "omniblock:painting"
     }
 }

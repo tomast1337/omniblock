@@ -1,6 +1,6 @@
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Entities;
+namespace OmniBlock.Entities;
 
 public class EntityType(Func<IWorldContext, EntityType, Entity> factory, Type baseType, string id, EntityDefinition? definition = null)
 {

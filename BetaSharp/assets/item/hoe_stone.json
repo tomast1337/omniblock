@@ -1,7 +1,7 @@
 {
     "ProtocolId": 291,
     "TranslationKey": "hoeStone",
-    "TextureId": "betasharp:stone_hoe",
+    "TextureId": "omniblock:stone_hoe",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "hoe",

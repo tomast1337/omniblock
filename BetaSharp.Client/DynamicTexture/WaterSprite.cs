@@ -1,6 +1,6 @@
-using BetaSharp.Blocks;
+using OmniBlock.Blocks;
 
-namespace BetaSharp.Client.DynamicTexture;
+namespace OmniBlock.Client.DynamicTexture;
 
 internal class WaterSprite() : Rendering.Core.Textures.DynamicTexture(BlockRegistry.Get("flowing_water").TextureId)
 {
@@ -9,7 +9,7 @@ internal class WaterSprite() : Rendering.Core.Textures.DynamicTexture(BlockRegis
     private float[] _current = new float[256];
     private float[] _next = new float[256];
 
-    public override void Setup(BetaSharp game) => TryLoadCustomTexture(game, "custom_water_still.png");
+    public override void Setup(OmniBlock game) => TryLoadCustomTexture(game, "custom_water_still.png");
 
     public override void tick()
     {

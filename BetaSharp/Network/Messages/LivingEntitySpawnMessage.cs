@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     Spawns a mob, with its whole synchronised data set. Replaces
@@ -10,7 +10,7 @@ namespace BetaSharp.Network.Messages;
 ///         payload not happening to contain it.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:living_entity_spawn")]
+[WireMessage("omniblock:living_entity_spawn")]
 public sealed partial class LivingEntitySpawnMessage : Message
 {
     public override SendPriority Priority => SendPriority.High;

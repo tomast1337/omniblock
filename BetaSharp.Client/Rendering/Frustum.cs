@@ -1,8 +1,8 @@
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Util.Maths;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Util.Maths;
 using Silk.NET.Maths;
 
-namespace BetaSharp.Client.Rendering;
+namespace OmniBlock.Client.Rendering;
 
 public class Frustum : FrustumData
 {

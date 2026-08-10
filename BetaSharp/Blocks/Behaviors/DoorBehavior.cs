@@ -1,8 +1,8 @@
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Entities;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Entities;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
 ///     Physics, interaction, lifecycle, and visuals for door blocks. Wood doors respond to

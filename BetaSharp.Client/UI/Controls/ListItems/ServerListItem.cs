@@ -1,9 +1,9 @@
-using BetaSharp.Client.Network;
-using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Rendering;
-using Color = BetaSharp.Client.UI.Colors.Color;
+using OmniBlock.Client.Network;
+using OmniBlock.Client.UI.Controls.Core;
+using OmniBlock.Client.UI.Rendering;
+using Color = OmniBlock.Client.UI.Colors.Color;
 
-namespace BetaSharp.Client.UI.Controls.ListItems;
+namespace OmniBlock.Client.UI.Controls.ListItems;
 
 public class ServerListItem(ServerData data) : ListItem<ServerData>(data)
 {

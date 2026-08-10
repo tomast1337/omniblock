@@ -3,7 +3,7 @@
   "Name": "tnt",
   "Material": "tnt",
   "SoundGroup": "grass",
-  "TextureId": "betasharp:tnt_side",
+  "TextureId": "omniblock:tnt_side",
   "DropCount": 0,
   "BurnChance": 15,
   "SpreadChance": 100,
@@ -16,10 +16,10 @@
         "Visuals"
       ],
       "Type": "tnt",
-      "igniter": "betasharp:flint_and_steel",
-      "top": "betasharp:tnt_top",
-      "side": "betasharp:tnt_side",
-      "bottom": "betasharp:tnt_bottom"
+      "igniter": "omniblock:flint_and_steel",
+      "top": "omniblock:tnt_top",
+      "side": "omniblock:tnt_side",
+      "bottom": "omniblock:tnt_bottom"
     }
   ]
 }

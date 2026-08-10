@@ -1,8 +1,8 @@
-using BetaSharp.Blocks.Materials;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
 ///     Source water/lava: reverts to its flowing counterpart (<c>block.id - 1</c>) whenever a

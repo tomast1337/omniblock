@@ -5,10 +5,10 @@
         "#"
     ],
     "key": {
-        "#": "betasharp:stick",
-        "X": "betasharp:redstone"
+        "#": "omniblock:stick",
+        "X": "omniblock:redstone"
     },
     "result": {
-        "id": "betasharp:LitRedstoneTorch"
+        "id": "omniblock:LitRedstoneTorch"
     }
 }

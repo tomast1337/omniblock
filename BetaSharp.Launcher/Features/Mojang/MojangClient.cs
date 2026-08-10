@@ -1,10 +1,10 @@
 using System.Net.Http;
 using System.Threading.Tasks;
-using BetaSharp.Launcher.Features.Mojang.Entitlements;
-using BetaSharp.Launcher.Features.Mojang.Profile;
-using BetaSharp.Launcher.Features.Mojang.Token;
+using OmniBlock.Launcher.Features.Mojang.Entitlements;
+using OmniBlock.Launcher.Features.Mojang.Profile;
+using OmniBlock.Launcher.Features.Mojang.Token;
 
-namespace BetaSharp.Launcher.Features.Mojang;
+namespace OmniBlock.Launcher.Features.Mojang;
 
 internal sealed class MojangClient(IHttpClientFactory clientFactory)
 {

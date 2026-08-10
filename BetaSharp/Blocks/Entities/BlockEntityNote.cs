@@ -1,8 +1,8 @@
-using BetaSharp.Blocks.Materials;
-using BetaSharp.NBT;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks.Materials;
+using OmniBlock.NBT;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Blocks.Entities;
+namespace OmniBlock.Blocks.Entities;
 
 internal class BlockEntityNote : BlockEntity
 {

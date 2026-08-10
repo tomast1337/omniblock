@@ -1,4 +1,4 @@
-namespace BetaSharp.Client.Rendering.Core.Textures;
+namespace OmniBlock.Client.Rendering.Core.Textures;
 
 public class TextureHandle
 {

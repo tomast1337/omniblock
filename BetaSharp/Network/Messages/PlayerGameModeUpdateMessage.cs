@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 [WireMessage("beta:player_game_mode_update")]
 public partial class PlayerGameModeUpdateMessage : Message

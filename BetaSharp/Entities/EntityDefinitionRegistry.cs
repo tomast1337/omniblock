@@ -1,7 +1,7 @@
-using BetaSharp.Registries;
-using BetaSharp.Registries.Data;
+using OmniBlock.Registries;
+using OmniBlock.Registries.Data;
 
-namespace BetaSharp.Entities;
+namespace OmniBlock.Entities;
 
 /// <summary>
 ///     Holds the JSON-loaded <see cref="EntityDefinition" />s that <see cref="EntityRegistry" />
@@ -39,7 +39,7 @@ public static class EntityDefinitionRegistry
                 "Entity definitions must load before EntityRegistry's static fields run.");
         }
 
-        return s_loader.Get(new ResourceLocation(Namespace.BetaSharp, name))?.Value
+        return s_loader.Get(new ResourceLocation(Namespace.OmniBlock, name))?.Value
                ?? throw new ArgumentException($"No entity definition found for '{name}'.", nameof(name));
     }
 }

@@ -6,7 +6,7 @@
   "NonOpaque": true,
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": "betasharp:oak_sapling",
+  "TextureId": "omniblock:oak_sapling",
   "RenderType": "Reed",
   "NotFullCube": true,
   "NoCollision": true,
@@ -27,10 +27,10 @@
       ],
       "Type": "sapling",
       "textures": [
-        "betasharp:oak_sapling",
-        "betasharp:spruce_sapling",
-        "betasharp:birch_sapling",
-        "betasharp:oak_sapling"
+        "omniblock:oak_sapling",
+        "omniblock:spruce_sapling",
+        "omniblock:birch_sapling",
+        "omniblock:oak_sapling"
       ]
     },
     {
@@ -39,9 +39,9 @@
       ],
       "Type": "plant_survival",
       "valid_ground": [
-        "betasharp:grass_block",
-        "betasharp:dirt",
-        "betasharp:farmland"
+        "omniblock:grass_block",
+        "omniblock:dirt",
+        "omniblock:farmland"
       ]
     }
   ]

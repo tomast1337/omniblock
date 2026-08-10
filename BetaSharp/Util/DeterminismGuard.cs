@@ -1,11 +1,11 @@
 using System.Diagnostics;
 
-namespace BetaSharp.Util;
+namespace OmniBlock.Util;
 
 /// <summary>
 ///     Runtime tripwire for the deterministic movement path.
 ///     <para>
-///         Static call-graph analysis (see <c>BetaSharp.Tests/Determinism/StepPurityTests.cs</c>)
+///         Static call-graph analysis (see <c>OmniBlock.Tests/Determinism/StepPurityTests.cs</c>)
 ///         proves what is <em>written</em>, but it cannot see through the virtual dispatch this
 ///         codebase is built on: <c>IEntityPhysics.Travel</c>, the <c>Ticker</c> hooks,
 ///         <c>Block.Blocks[id].slipperiness</c>, and JSON-selected behavior composition. This guard

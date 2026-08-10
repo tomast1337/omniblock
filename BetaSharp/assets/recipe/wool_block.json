@@ -5,9 +5,9 @@
         "##"
     ],
     "key": {
-        "#": "betasharp:string"
+        "#": "omniblock:string"
     },
     "result": {
-        "id": "betasharp:Wool"
+        "id": "omniblock:Wool"
     }
 }

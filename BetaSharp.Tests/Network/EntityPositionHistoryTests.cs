@@ -1,7 +1,7 @@
-using BetaSharp.Network.Messages;
-using BetaSharp.Server.Entities;
+using OmniBlock.Network.Messages;
+using OmniBlock.Server.Entities;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 /// <summary>
 ///     <see cref="EntityPositionHistory" />: the server's record of where a tracked entity has been,

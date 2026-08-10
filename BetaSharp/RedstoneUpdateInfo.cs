@@ -1,4 +1,4 @@
-namespace BetaSharp;
+namespace OmniBlock;
 
 internal class RedstoneUpdateInfo(int x, int y, int z, long updateTime)
 {

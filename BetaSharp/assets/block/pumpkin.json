@@ -7,7 +7,7 @@
   "Resistance": 1.6666666,
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
-  "TextureId": "betasharp:pumpkin_top",
+  "TextureId": "omniblock:pumpkin_top",
   "Behaviors": [
     {
       "Slots": [
@@ -16,10 +16,10 @@
         "Visuals"
       ],
       "Type": "pumpkin",
-      "top": "betasharp:pumpkin_top",
-      "side": "betasharp:pumpkin_side",
-      "face": "betasharp:pumpkin_face",
-      "item_face": "betasharp:pumpkin_face"
+      "top": "omniblock:pumpkin_top",
+      "side": "omniblock:pumpkin_side",
+      "face": "omniblock:pumpkin_face",
+      "item_face": "omniblock:pumpkin_face"
     }
   ]
 }

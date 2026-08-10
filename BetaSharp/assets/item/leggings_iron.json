@@ -1,7 +1,7 @@
 {
     "ProtocolId": 308,
     "TranslationKey": "leggingsIron",
-    "TextureId": "betasharp:iron_leggings",
+    "TextureId": "omniblock:iron_leggings",
     "MaxStackSize": 1,
     "Behavior": {
         "type": "armor",

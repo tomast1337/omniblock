@@ -1,7 +1,7 @@
-using BetaSharp.Entities;
-using BetaSharp.Items;
+using OmniBlock.Entities;
+using OmniBlock.Items;
 
-namespace BetaSharp.Inventories;
+namespace OmniBlock.Inventories;
 
 public class InventoryBasic(string inventoryTitle, int slotsCount) : IInventory
 {

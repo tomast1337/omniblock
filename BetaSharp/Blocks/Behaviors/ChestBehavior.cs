@@ -1,8 +1,8 @@
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Inventories;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Inventories;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Blocks.Behaviors;
+namespace OmniBlock.Blocks.Behaviors;
 
 internal sealed class ChestBehavior(int top, int side, int front, int doubleFrontLeft, int doubleFrontRight, int doubleBackLeft, int doubleBackRight)
     : IBlockInteractable, IBlockLifecycle, IBlockPhysics, IBlockVisuals

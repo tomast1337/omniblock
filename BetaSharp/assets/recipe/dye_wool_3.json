@@ -1,10 +1,10 @@
 {
     "type": "shapeless",
     "ingredients": [
-        "betasharp:dye_powder:3",
-        "betasharp:Wool:0"
+        "omniblock:dye_powder:3",
+        "omniblock:Wool:0"
     ],
     "result": {
-        "id": "betasharp:Wool:12"
+        "id": "omniblock:Wool:12"
     }
 }

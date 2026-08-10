@@ -1,6 +1,6 @@
-using BetaSharp.Blocks;
+using OmniBlock.Blocks;
 
-namespace BetaSharp.Tests.Blocks;
+namespace OmniBlock.Tests.Blocks;
 
 // Regression for BlockFactory.AttachBehaviors' array-based schema: BlockDefinition.Behaviors is
 // a list of {"Slots": [...], "Type": ..., ...params} entries, not a dict keyed by slot. Exactly

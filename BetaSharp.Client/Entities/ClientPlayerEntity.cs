@@ -1,28 +1,28 @@
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Client.Entities.FX;
-using BetaSharp.Client.Input;
-using BetaSharp.Client.Network;
-using BetaSharp.Client.Rendering.Particles;
-using BetaSharp.Client.UI.Screens.InGame;
-using BetaSharp.Client.UI.Screens.InGame.Containers;
-using BetaSharp.Entities;
-using BetaSharp.Inventories;
-using BetaSharp.NBT;
-using BetaSharp.Network.Messages;
-using BetaSharp.Stats;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Core.Systems;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Client.Entities.FX;
+using OmniBlock.Client.Input;
+using OmniBlock.Client.Network;
+using OmniBlock.Client.Rendering.Particles;
+using OmniBlock.Client.UI.Screens.InGame;
+using OmniBlock.Client.UI.Screens.InGame.Containers;
+using OmniBlock.Entities;
+using OmniBlock.Inventories;
+using OmniBlock.NBT;
+using OmniBlock.Network.Messages;
+using OmniBlock.Stats;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Core.Systems;
 
-namespace BetaSharp.Client.Entities;
+namespace OmniBlock.Client.Entities;
 
 public class ClientPlayerEntity : EntityPlayer
 {
     private bool _isFlying;
     private byte _lastJump;
-    protected BetaSharp Game;
+    protected OmniBlock Game;
     public MovementInput movementInput;
 
-    public ClientPlayerEntity(BetaSharp game, IWorldContext world, Session session, int dimensionId) : base(world)
+    public ClientPlayerEntity(OmniBlock game, IWorldContext world, Session session, int dimensionId) : base(world)
     {
         Game = game;
         DimensionId = dimensionId;
@@ -72,9 +72,9 @@ public class ClientPlayerEntity : EntityPlayer
 
     protected override void TickMovement()
     {
-        if (!Game.StatFileWriter.HasAchievementUnlocked(global::BetaSharp.Achievements.OpenInventory))
+        if (!Game.StatFileWriter.HasAchievementUnlocked(global::OmniBlock.Achievements.OpenInventory))
         {
-            Game.HUD.AchievementToast.QueueInfo(global::BetaSharp.Achievements.OpenInventory);
+            Game.HUD.AchievementToast.QueueInfo(global::OmniBlock.Achievements.OpenInventory);
         }
 
         LastScreenDistortion = ChangeDimensionCooldown;

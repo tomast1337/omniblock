@@ -1,9 +1,9 @@
 using System.Text.Json;
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
-using BetaSharp.Items;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Items;
 
-namespace BetaSharp.Tests.Blocks;
+namespace OmniBlock.Tests.Blocks;
 
 public sealed class BlockLeavesTests
 {
@@ -66,14 +66,14 @@ public sealed class BlockLeavesTests
     [Fact]
     public void BehaviorRegistry_Build_MissingRequiredProperty_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"leaves","sapling":"betasharp:sapling","harvest_tool":"betasharp:shears"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"leaves","sapling":"omniblock:sapling","harvest_tool":"omniblock:shears"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("leaves", json.RootElement));
     }
 
     [Fact]
     public void BehaviorRegistry_Build_UnknownBlockName_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"leaves","trunk":"not_a_real_block","sapling":"betasharp:sapling","harvest_tool":"betasharp:shears"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"leaves","trunk":"not_a_real_block","sapling":"omniblock:sapling","harvest_tool":"omniblock:shears"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("leaves", json.RootElement));
     }
 }

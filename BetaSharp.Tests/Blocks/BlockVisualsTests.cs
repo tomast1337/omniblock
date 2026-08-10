@@ -1,8 +1,8 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
-using BetaSharp.Textures;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Textures;
 
-namespace BetaSharp.Tests.Blocks;
+namespace OmniBlock.Tests.Blocks;
 
 /// <summary>
 /// Pins the <see cref="IBlockVisuals"/> extraction (wool/grass/glass/ice) against the behavior

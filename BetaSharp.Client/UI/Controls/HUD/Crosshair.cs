@@ -1,7 +1,7 @@
-using BetaSharp.Client.Rendering.Core;
-using BetaSharp.Client.UI.Rendering;
+using OmniBlock.Client.Rendering.Core;
+using OmniBlock.Client.UI.Rendering;
 
-namespace BetaSharp.Client.UI.Controls.HUD;
+namespace OmniBlock.Client.UI.Controls.HUD;
 
 public class Crosshair : UIElement
 {

@@ -1,12 +1,12 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Entities;
-using BetaSharp.Entities;
-using BetaSharp.NBT;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Storage.RegionFormat;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Entities;
+using OmniBlock.Entities;
+using OmniBlock.NBT;
+using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Storage.RegionFormat;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Worlds.Chunks.Storage;
+namespace OmniBlock.Worlds.Chunks.Storage;
 
 internal class RegionChunkStorage : IChunkStorage
 {

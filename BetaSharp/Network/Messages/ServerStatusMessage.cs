@@ -1,4 +1,4 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>
 ///     What the server knows about its own health, for the client's debug overlay.
@@ -15,7 +15,7 @@ namespace BetaSharp.Network.Messages;
 ///         bytes it is cheaper to send unconditionally than to negotiate who wants it.
 ///     </para>
 /// </summary>
-[WireMessage("betasharp:server_status")]
+[WireMessage("omniblock:server_status")]
 public sealed partial class ServerStatusMessage : Message
 {
     /// <summary>

@@ -9,7 +9,7 @@
   "TickRandomly": true,
   "IgnoreMetaUpdates": true,
   "TrackStatistics": false,
-  "TextureId": "betasharp:cake_top",
+  "TextureId": "omniblock:cake_top",
   "NotFullCube": true,
   "DropCount": 0,
   "Behaviors": [
@@ -20,10 +20,10 @@
         "Interactable"
       ],
       "Type": "cake",
-      "top": "betasharp:cake_top",
-      "side": "betasharp:cake_side",
-      "inner": "betasharp:cake_inner",
-      "bottom": "betasharp:cake_bottom"
+      "top": "omniblock:cake_top",
+      "side": "omniblock:cake_side",
+      "inner": "omniblock:cake_inner",
+      "bottom": "omniblock:cake_bottom"
     }
   ]
 }

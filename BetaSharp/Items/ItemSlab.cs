@@ -1,7 +1,7 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
 
-namespace BetaSharp.Items;
+namespace OmniBlock.Items;
 
 internal class ItemSlab : ItemBlock
 {

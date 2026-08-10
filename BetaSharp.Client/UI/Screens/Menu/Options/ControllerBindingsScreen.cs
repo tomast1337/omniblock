@@ -1,9 +1,9 @@
-using BetaSharp.Client.Input;
-using BetaSharp.Client.UI.Controls.Core;
-using BetaSharp.Client.UI.Layout.Flexbox;
+using OmniBlock.Client.Input;
+using OmniBlock.Client.UI.Controls.Core;
+using OmniBlock.Client.UI.Layout.Flexbox;
 using Silk.NET.GLFW;
 
-namespace BetaSharp.Client.UI.Screens.Menu.Options;
+namespace OmniBlock.Client.UI.Screens.Menu.Options;
 
 public class ControllerBindingsScreen(UIContext context, UIScreen? parent)
     : BaseOptionsScreen(context, parent, "options.controllerBindings")

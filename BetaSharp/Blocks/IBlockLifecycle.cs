@@ -1,4 +1,4 @@
-namespace BetaSharp.Blocks;
+namespace OmniBlock.Blocks;
 
 /// <summary>Composable capability for block placement and destruction events.</summary>
 public interface IBlockLifecycle

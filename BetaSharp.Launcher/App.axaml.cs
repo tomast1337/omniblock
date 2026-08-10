@@ -4,13 +4,13 @@ using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using BetaSharp.Launcher.Features;
-using BetaSharp.Launcher.Features.Hosting;
-using BetaSharp.Launcher.Features.Shell;
-using BetaSharp.Launcher.Features.Splash;
+using OmniBlock.Launcher.Features;
+using OmniBlock.Launcher.Features.Hosting;
+using OmniBlock.Launcher.Features.Shell;
+using OmniBlock.Launcher.Features.Splash;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace BetaSharp.Launcher;
+namespace OmniBlock.Launcher;
 
 internal sealed class App : Application
 {
@@ -20,7 +20,7 @@ internal sealed class App : Application
 
     static App()
     {
-        Folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $".{nameof(BetaSharp)}", "launcher");
+        Folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $".{nameof(OmniBlock)}", "launcher");
         Directory.CreateDirectory(Folder);
     }
 

@@ -5,7 +5,7 @@
   "SoundGroup": "stone",
   "Hardness": 2,
   "Resistance": 10,
-  "TextureId": "betasharp:stone_slab_top",
+  "TextureId": "omniblock:stone_slab_top",
   "PreservesMetaOnDrop": true,
   "LootTable": {
     "Entries": [
@@ -29,24 +29,24 @@
       "is_double": true,
       "variants": [
         {
-          "top": "betasharp:stone_slab_top",
-          "side": "betasharp:stone_slab_side",
-          "bottom": "betasharp:stone_slab_top"
+          "top": "omniblock:stone_slab_top",
+          "side": "omniblock:stone_slab_side",
+          "bottom": "omniblock:stone_slab_top"
         },
         {
-          "top": "betasharp:sandstone_top",
-          "side": "betasharp:sandstone_side",
-          "bottom": "betasharp:sandstone_bottom"
+          "top": "omniblock:sandstone_top",
+          "side": "omniblock:sandstone_side",
+          "bottom": "omniblock:sandstone_bottom"
         },
         {
-          "top": "betasharp:wooden_planks",
-          "side": "betasharp:wooden_planks",
-          "bottom": "betasharp:wooden_planks"
+          "top": "omniblock:wooden_planks",
+          "side": "omniblock:wooden_planks",
+          "bottom": "omniblock:wooden_planks"
         },
         {
-          "top": "betasharp:cobblestone",
-          "side": "betasharp:cobblestone",
-          "bottom": "betasharp:cobblestone"
+          "top": "omniblock:cobblestone",
+          "side": "omniblock:cobblestone",
+          "bottom": "omniblock:cobblestone"
         }
       ]
     }

@@ -39,10 +39,10 @@
       "behaviors": [
         {
           "Type": "tameable",
-          "taming_item": "betasharp:bone",
+          "taming_item": "omniblock:bone",
           "taming_chance_one_in": 3,
           "tamed_health": 20,
-          "feed_heal_like": "betasharp:porkchop_raw",
+          "feed_heal_like": "omniblock:porkchop_raw",
           "tamed_texture": "/mob/wolf_tame.png",
           "angry_texture": "/mob/wolf_angry.png",
           "angry_sound": "mob.wolf.growl",
@@ -63,7 +63,7 @@
         },
         {
           "Type": "head_tilt",
-          "wanted_while_wild": "betasharp:bone",
+          "wanted_while_wild": "omniblock:bone",
           "tilt_speed": 0.4,
           "hold_gaze_ticks": 10
         },

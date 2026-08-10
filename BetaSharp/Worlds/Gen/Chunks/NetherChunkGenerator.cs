@@ -1,13 +1,13 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
-using BetaSharp.Util.Maths;
-using BetaSharp.Util.Maths.Noise;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Generation.Generators.Carvers;
-using BetaSharp.Worlds.Generation.Generators.Features;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Util.Maths;
+using OmniBlock.Util.Maths.Noise;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Generation.Generators.Carvers;
+using OmniBlock.Worlds.Generation.Generators.Features;
 
-namespace BetaSharp.Worlds.Gen.Chunks;
+namespace OmniBlock.Worlds.Gen.Chunks;
 
 internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
 {

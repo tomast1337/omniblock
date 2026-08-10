@@ -4,10 +4,10 @@
         "#"
     ],
     "key": {
-        "#": "betasharp:DiamondBlock"
+        "#": "omniblock:DiamondBlock"
     },
     "result": {
-        "id": "betasharp:diamond",
+        "id": "omniblock:diamond",
         "count": 9
     }
 }

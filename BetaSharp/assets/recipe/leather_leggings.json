@@ -6,9 +6,9 @@
         "X X"
     ],
     "key": {
-        "X": "betasharp:leather"
+        "X": "omniblock:leather"
     },
     "result": {
-        "id": "betasharp:leggings_leather"
+        "id": "omniblock:leggings_leather"
     }
 }

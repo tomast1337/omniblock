@@ -5,10 +5,10 @@
         "#"
     ],
     "key": {
-        "#": "betasharp:Planks"
+        "#": "omniblock:Planks"
     },
     "result": {
-        "id": "betasharp:stick",
+        "id": "omniblock:stick",
         "count": 4
     }
 }

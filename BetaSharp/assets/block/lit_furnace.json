@@ -7,7 +7,7 @@
   "Resistance": 5.8333335,
   "Luminance": 0.8666667,
   "IgnoreMetaUpdates": true,
-  "TextureId": "betasharp:furnace_side",
+  "TextureId": "omniblock:furnace_side",
   "LootTable": {
     "Entries": [
       {
@@ -31,9 +31,9 @@
       ],
       "Type": "furnace",
       "lit": true,
-      "top": "betasharp:furnace_top",
-      "front_off": "betasharp:furnace_front_off",
-      "front_on": "betasharp:furnace_front_on"
+      "top": "omniblock:furnace_top",
+      "front_off": "omniblock:furnace_front_off",
+      "front_on": "omniblock:furnace_front_on"
     }
   ]
 }

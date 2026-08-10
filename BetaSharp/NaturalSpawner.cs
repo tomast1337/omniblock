@@ -1,13 +1,13 @@
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
-using BetaSharp.Entities;
-using BetaSharp.PathFinding;
-using BetaSharp.Util.Maths;
-using BetaSharp.Worlds.Chunks;
-using BetaSharp.Worlds.Core.Systems;
-using BetaSharp.Worlds.Generation.Biomes;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Entities;
+using OmniBlock.PathFinding;
+using OmniBlock.Util.Maths;
+using OmniBlock.Worlds.Chunks;
+using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Worlds.Generation.Biomes;
 
-namespace BetaSharp;
+namespace OmniBlock;
 
 internal static class NaturalSpawner
 {

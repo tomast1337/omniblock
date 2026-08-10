@@ -1,7 +1,7 @@
-using BetaSharp.Network.Messages;
-using BetaSharp.Network.Snapshots;
+using OmniBlock.Network.Messages;
+using OmniBlock.Network.Snapshots;
 
-namespace BetaSharp.Tests.Network;
+namespace OmniBlock.Tests.Network;
 
 /// <summary>
 ///     Delta-compressed entity replication: <see cref="EntitySnapshotMessage" />,

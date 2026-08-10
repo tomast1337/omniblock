@@ -1,6 +1,6 @@
-using BetaSharp.Util.Maths;
+using OmniBlock.Util.Maths;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     What a tameable mob does with the tick its pathfinding did not use: a tamed one keeps up with

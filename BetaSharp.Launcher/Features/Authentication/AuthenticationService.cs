@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Extensions.Msal;
 
-namespace BetaSharp.Launcher.Features.Authentication;
+namespace OmniBlock.Launcher.Features.Authentication;
 
 internal sealed class AuthenticationService(ILogger<AuthenticationService> logger)
 {
@@ -19,7 +19,7 @@ internal sealed class AuthenticationService(ILogger<AuthenticationService> logge
 
     private readonly SystemWebViewOptions _webViewOptions = new()
     {
-        BrowserRedirectSuccess = new Uri("https://betasharp.net/successful-login")
+        BrowserRedirectSuccess = new Uri("https://omniblock.net/successful-login")
     };
 
     private readonly string[] _scopes = ["XboxLive.signin offline_access"];
@@ -28,16 +28,16 @@ internal sealed class AuthenticationService(ILogger<AuthenticationService> logge
     {
         logger.LogInformation("Initializing authentication service");
 
-        string path = Path.Combine(App.Folder, "betasharp.launcher.cache");
+        string path = Path.Combine(App.Folder, "omniblock.launcher.cache");
 
         var properties = new StorageCreationPropertiesBuilder(Path.GetFileName(path), Path.GetDirectoryName(path))
             .WithLinuxKeyring(
-                "betasharp.launcher",
+                "omniblock.launcher",
                 MsalCacheHelper.LinuxKeyRingDefaultCollection,
-                "MSAL cache for BetaSharp's launcher",
+                "MSAL cache for OmniBlock's launcher",
                 new KeyValuePair<string, string>("Version", "1"),
-                new KeyValuePair<string, string>("Application", "BetaSharp.Launcher"))
-            .WithMacKeyChain("betasharp.launcher", "betasharp")
+                new KeyValuePair<string, string>("Application", "OmniBlock.Launcher"))
+            .WithMacKeyChain("omniblock.launcher", "omniblock")
             .Build();
 
         var helper = await MsalCacheHelper.CreateAsync(properties);

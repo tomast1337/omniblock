@@ -98,7 +98,7 @@
     },
     "multiplayer": {
         "title": "Spil flerspiller",
-        "betasharpServer": "BetaSharp-server",
+        "betasharpServer": "OmniBlock-server",
         "info1": "Minecraft Flerspiller er ikke færdig endnu, men der",
         "info2": "foregår noget fejlbehæftet tidlig test.",
         "ipinfo": "Indtast IP-adressen på en server for at oprette forbindelse:",
@@ -1358,7 +1358,7 @@
         }
     },
     "credits": {
-        "version": "BetaSharp-version %1$s",
+        "version": "OmniBlock-version %1$s",
         "description": "En forbedret udgave af Minecraft Beta 1.7.3, skrevet i C#.",
         "github": "På GitHub",
         "author": "Lavet af Fazin85",

@@ -1,8 +1,8 @@
 using System.Text.Json;
-using BetaSharp.Blocks;
-using BetaSharp.Blocks.Behaviors;
+using OmniBlock.Blocks;
+using OmniBlock.Blocks.Behaviors;
 
-namespace BetaSharp.Tests.Blocks;
+namespace OmniBlock.Tests.Blocks;
 
 public sealed class BlockLogTests
 {
@@ -43,7 +43,7 @@ public sealed class BlockLogTests
     [Fact]
     public void BehaviorRegistry_Build_MissingSearchRadius_Throws()
     {
-        using JsonDocument json = JsonDocument.Parse("""{"Type":"log","canopy":"betasharp:leaves"}""");
+        using JsonDocument json = JsonDocument.Parse("""{"Type":"log","canopy":"omniblock:leaves"}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("log", json.RootElement));
     }
 }

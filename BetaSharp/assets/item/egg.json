@@ -1,6 +1,6 @@
 {
   "ProtocolId": 344,
-  "TextureId": "betasharp:egg",
+  "TextureId": "omniblock:egg",
   "MaxStackSize": 16,
   "Behavior": {
     "type": "throwable",

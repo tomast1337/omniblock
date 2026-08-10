@@ -4,14 +4,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using BetaSharp.Launcher.Features.Authentication;
-using BetaSharp.Launcher.Features.Home;
-using BetaSharp.Launcher.Features.Hosting;
-using BetaSharp.Launcher.Features.Properties;
-using BetaSharp.Launcher.Features.Splash;
+using OmniBlock.Launcher.Features.Authentication;
+using OmniBlock.Launcher.Features.Home;
+using OmniBlock.Launcher.Features.Hosting;
+using OmniBlock.Launcher.Features.Properties;
+using OmniBlock.Launcher.Features.Splash;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace BetaSharp.Launcher;
+namespace OmniBlock.Launcher;
 
 internal sealed class ViewLocator(IServiceProvider services) : IDataTemplate
 {

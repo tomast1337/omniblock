@@ -1,7 +1,7 @@
-namespace BetaSharp.Network.Messages;
+namespace OmniBlock.Network.Messages;
 
 /// <summary>The player moved without turning. See <see cref="PlayerMoveMessage" /> for the priority.</summary>
-[WireMessage("betasharp:player_move_position")]
+[WireMessage("omniblock:player_move_position")]
 public sealed partial class PlayerMovePositionMessage : Message, IPlayerMovePosition
 {
     [WireField]

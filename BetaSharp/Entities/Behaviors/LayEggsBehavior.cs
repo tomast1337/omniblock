@@ -1,7 +1,7 @@
-using BetaSharp.Entities.State;
-using BetaSharp.Items;
+using OmniBlock.Entities.State;
+using OmniBlock.Items;
 
-namespace BetaSharp.Entities.Behaviors;
+namespace OmniBlock.Entities.Behaviors;
 
 /// <summary>
 ///     Drops an egg on a randomised timer. The countdown is per-chicken, so it lives in

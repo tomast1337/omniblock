@@ -1,4 +1,4 @@
-namespace BetaSharp;
+namespace OmniBlock;
 
 public sealed record ArmorMaterial(string Name, int ArmorLevel, string TexturePrefix);
 

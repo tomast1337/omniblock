@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace BetaSharp.Util;
+namespace OmniBlock.Util;
 
 public sealed class GCMonitor : IDisposable
 {

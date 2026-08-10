@@ -2,7 +2,7 @@ using System.IO;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace BetaSharp;
+namespace OmniBlock;
 
 public class ScreenShotHelper
 {

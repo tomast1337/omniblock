@@ -1,6 +1,6 @@
-using BetaSharp.Entities;
+using OmniBlock.Entities;
 
-namespace BetaSharp.Loot.Conditions;
+namespace OmniBlock.Loot.Conditions;
 
 /// <summary>
 ///     Passes only when the killing blow came from the named entity type — the rule behind a creeper

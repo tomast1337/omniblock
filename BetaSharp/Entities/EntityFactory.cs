@@ -1,7 +1,7 @@
-using BetaSharp.Entities.Behaviors;
-using BetaSharp.Entities.State;
+using OmniBlock.Entities.Behaviors;
+using OmniBlock.Entities.State;
 
-namespace BetaSharp.Entities;
+namespace OmniBlock.Entities;
 
 /// <summary>
 ///     Builds an <see cref="EntityType" />'s capability slots from its JSON, matching

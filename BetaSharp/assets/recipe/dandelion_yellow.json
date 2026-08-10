@@ -1,10 +1,10 @@
 {
     "type": "shapeless",
     "ingredients": [
-        "betasharp:Dandelion"
+        "omniblock:Dandelion"
     ],
     "result": {
-        "id": "betasharp:dye_powder:11",
+        "id": "omniblock:dye_powder:11",
         "count": 2
     }
 }

@@ -1,7 +1,7 @@
-using BetaSharp.Blocks;
+using OmniBlock.Blocks;
 using Microsoft.Extensions.Logging;
 
-namespace BetaSharp.Worlds.Chunks;
+namespace OmniBlock.Worlds.Chunks;
 
 internal class BlockSource
 {

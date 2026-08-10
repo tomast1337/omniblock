@@ -1,8 +1,8 @@
-using BetaSharp.Blocks;
-using BetaSharp.Items;
-using BetaSharp.Recipes;
+using OmniBlock.Blocks;
+using OmniBlock.Items;
+using OmniBlock.Recipes;
 
-namespace BetaSharp.Stats;
+namespace OmniBlock.Stats;
 
 public static class Stats
 {
@@ -185,6 +185,6 @@ public static class Stats
 
     static Stats()
     {
-        BetaSharp.Achievements.initialize();
+        OmniBlock.Achievements.initialize();
     }
 }
