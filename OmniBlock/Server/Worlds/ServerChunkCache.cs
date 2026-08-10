@@ -268,7 +268,40 @@ public class ServerChunkCache : IChunkSource
     }
 
     /// Creates a parallel-safe generator instance for off-thread terrain generation.
-    public IChunkSource CreateParallelGenerator() => _generator.CreateParallelInstance();
+    /// Null if this cache's world has no generator (e.g. storage-only dimensions).
+    public IChunkSource? CreateParallelGenerator() => _generator?.CreateParallelInstance();
+
+    /// <summary>
+    ///     Loads from storage or generates a chunk without touching any cache state, so it is
+    ///     safe to call from a worker thread given a per-thread generator from
+    ///     <see cref="CreateParallelGenerator"/>. Pair with <see cref="InsertLoadedChunk"/> on
+    ///     the tick thread to apply the result — mirrors <see cref="LoadChunk"/>'s split into a
+    ///     produce step and an apply step, the same split the spawn-region pregen path already
+    ///     relies on via <see cref="InsertPreGeneratedChunk"/>.
+    /// </summary>
+    public Chunk LoadOrGenerateChunkOffThread(int chunkX, int chunkZ, IChunkSource? generator) =>
+        LoadChunkFromStorage(chunkX, chunkZ) ?? generator?.GetChunk(chunkX, chunkZ) ?? _empty;
+
+    /// <summary>
+    ///     Inserts a chunk produced by <see cref="LoadOrGenerateChunkOffThread"/>, running the
+    ///     same post-load bookkeeping <see cref="LoadChunk"/> does inline for an already-produced
+    ///     chunk: cache insert, light populate, and the 4-neighbour decoration cascade.
+    /// </summary>
+    public void InsertLoadedChunk(int chunkX, int chunkZ, Chunk chunk)
+    {
+        int hash = ChunkPos.GetHashCode(chunkX, chunkZ);
+        if (_chunksByPos.ContainsKey(hash))
+        {
+            return;
+        }
+
+        _chunksToUnload.Remove(hash);
+        _chunksByPos.Add(hash, chunk);
+        _chunks.Add(chunk);
+        chunk.PopulateBlockLight();
+        chunk.Load();
+        DecorateIfReady(chunkX, chunkZ);
+    }
 
     // Inserts a pre-generated chunk without triggering terrain re-generation.
     // Checks storage first so that saved data is used correctly on server restart.
