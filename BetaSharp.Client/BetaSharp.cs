@@ -637,14 +637,6 @@ public partial class BetaSharp :
             return;
         }
 
-        // Everything the scenes touch is up by now, and nothing they touch needs the main loop.
-        if (s_frameHashPath != null)
-        {
-            FrameHashHarness.Run(s_frameHashPath);
-            Shutdown();
-            return;
-        }
-
         try
         {
             long lastFpsCheckTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -2129,12 +2121,6 @@ public partial class BetaSharp :
 
     #region Application Entry Point
 
-    /// <summary>
-    ///     Set when <c>--frame-hashes &lt;path&gt;</c> is given: render the hash scenes once, write
-    ///     them there, and quit without opening a menu.
-    /// </summary>
-    private static string? s_frameHashPath;
-
     public static void Startup(string[] args)
     {
         if (args.Contains("--webgpu"))
@@ -2142,8 +2128,6 @@ public partial class BetaSharp :
             Display.Backend = GraphicsBackend.WebGpu;
             args = args.Where(a => a != "--webgpu").ToArray();
         }
-
-        args = TakeFrameHashPath(args);
 
         (string Name, string Session) result = args.Length switch
         {
@@ -2156,27 +2140,6 @@ public partial class BetaSharp :
 
         Bootstrap.Initialize();
         StartMainThread(result.Name, result.Session);
-    }
-
-    /// <summary>
-    ///     Pulls <c>--frame-hashes &lt;path&gt;</c> out of the arguments, leaving the rest to be
-    ///     read positionally as before.
-    /// </summary>
-    private static string[] TakeFrameHashPath(string[] args)
-    {
-        int flag = Array.IndexOf(args, "--frame-hashes");
-        if (flag < 0)
-        {
-            return args;
-        }
-
-        if (flag + 1 >= args.Length)
-        {
-            throw new ArgumentException("--frame-hashes needs a path to write to.");
-        }
-
-        s_frameHashPath = args[flag + 1];
-        return [.. args[..flag], .. args[(flag + 2)..]];
     }
 
     private static void StartMainThread(string? playerName, string? sessionToken)
