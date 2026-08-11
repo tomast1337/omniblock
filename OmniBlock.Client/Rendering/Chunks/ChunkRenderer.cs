@@ -82,6 +82,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     private Matrix4X4<float> _projection;
     private readonly ChunkOcclusionCuller _occlusionCuller = new();
     private readonly List<SubChunkRenderer> _visibleRenderers = [];
+
+    /// <summary>
+    ///     Reused across frames so the solid pass's per-chunk uniform batch (see
+    ///     <see cref="RenderSolidWebGpu" />) doesn't allocate one every frame — grown, never shrunk.
+    /// </summary>
+    private ChunkUniforms[] _solidUniformScratch = [];
     private readonly List<SubChunkRenderer> _occludedRenderersBuffer = [];
     private readonly TranslucentDistanceComparer _translucentDistanceComparer = new();
     private int _frameIndex = 0;
@@ -291,13 +297,16 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         if (TryGetWebGpuFrame(out RenderPassEncoder* pass, out WgpuTextureArray array))
         {
-            if (WireframeEnabled)
+            using (Profiler.Begin("DrawChunks"))
             {
-                RenderWireframeWebGpu(pass, WgpuWireframePipelineFor(GLManager.State.Current), array);
-            }
-            else
-            {
-                RenderSolidWebGpu(pass, WgpuPipelineFor(GLManager.State.Current), array);
+                if (WireframeEnabled)
+                {
+                    RenderWireframeWebGpu(pass, WgpuWireframePipelineFor(GLManager.State.Current), array);
+                }
+                else
+                {
+                    RenderSolidWebGpu(pass, WgpuPipelineFor(GLManager.State.Current), array);
+                }
             }
         }
 
@@ -309,8 +318,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     {
         if (TryGetWebGpuFrame(out RenderPassEncoder* pass, out WgpuTextureArray array))
         {
-            RenderTranslucentWebGpu(pass, WgpuPipelineFor(GLManager.State.Current), array,
-                renderParams.ViewPos);
+            using (Profiler.Begin("DrawChunksTranslucent"))
+            {
+                RenderTranslucentWebGpu(pass, WgpuPipelineFor(GLManager.State.Current), array,
+                    renderParams.ViewPos);
+            }
         }
         else
         {
@@ -854,6 +866,12 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 {
                     Type = BufferBindingType.Uniform,
                     MinBindingSize = ChunkUniformSize,
+                    // Lets RenderSolidWebGpu batch every visible chunk's uniforms into one buffer,
+                    // written with a single QueueWriteBuffer call instead of one per chunk — see
+                    // WgpuPipeline.WriteDynamicUniforms. The translucent and wireframe passes still
+                    // draw through the per-draw-buffer BindNextUniforms; that call site handles a
+                    // dynamic-offset layout regardless of which of the two a pipeline was built with.
+                    HasDynamicOffset = true,
                 },
             },
         ];
@@ -909,8 +927,22 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         // The same set the GL pass draws, chosen by PrepareFrame — which the caller is responsible
         // for having run, since the view matrices this reads come off the stacks there too.
-        foreach (SubChunkRenderer renderer in _visibleRenderers)
+        //
+        // Two passes instead of BindNextUniforms' one-buffer-per-draw: profiling (see git history on
+        // this method) found the per-chunk QueueWriteBuffer call, not the draw call, was ~10ms of the
+        // frame — CPU-side cost scaling with visible chunk count, which greedy meshing (a
+        // triangle-count optimization) can't touch. Building every chunk's ChunkUniforms into one
+        // scratch array and writing it with a single WriteDynamicUniforms call amortizes that away;
+        // the second loop only binds a dynamic offset and issues the draw, both cheap.
+        int count = _visibleRenderers.Count;
+        if (_solidUniformScratch.Length < count)
         {
+            _solidUniformScratch = new ChunkUniforms[count];
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            SubChunkRenderer renderer = _visibleRenderers[i];
             float fadeProgress = Math.Clamp(renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
 
             var camRel = new Vector3D<double>(
@@ -923,10 +955,21 @@ public class ChunkRenderer : IChunkVisibilityVisitor
                 new Vector3D<float>((float)camRel.X, (float)camRel.Y, (float)camRel.Z));
             Matrix4X4<float> modelView = translation * _modelView;
 
-            pipeline.BindNextUniforms(pass, BuildChunkUniforms(modelView, renderer.Position, fadeProgress));
-
-            renderer.RenderWebGpu(pass, 0);
+            _solidUniformScratch[i] = BuildChunkUniforms(modelView, renderer.Position, fadeProgress);
         }
+
+        long t0 = Stopwatch.GetTimestamp();
+        pipeline.WriteDynamicUniforms<ChunkUniforms>(_solidUniformScratch.AsSpan(0, count));
+        long t1 = Stopwatch.GetTimestamp();
+        Profiler.Record("UniformUpload", (t1 - t0) * 1000.0 / Stopwatch.Frequency);
+
+        for (int i = 0; i < count; i++)
+        {
+            pipeline.BindDynamicUniforms(pass, i);
+            _visibleRenderers[i].RenderWebGpu(pass, 0);
+        }
+        long t2 = Stopwatch.GetTimestamp();
+        Profiler.Record("DrawCall", (t2 - t1) * 1000.0 / Stopwatch.Frequency);
     }
 
     /// <summary>

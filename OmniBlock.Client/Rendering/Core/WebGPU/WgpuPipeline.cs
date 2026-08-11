@@ -58,6 +58,34 @@ public sealed unsafe class WgpuPipeline : IDisposable
     private bool _disposed;
 
     /// <summary>
+    ///     Whether the group-0 layout declared its uniform binding with a dynamic offset — set from
+    ///     the entries passed to the public constructor, not a separate flag, so it can never drift
+    ///     out of sync with what the layout actually says.
+    /// </summary>
+    private readonly bool _dynamicUniformLayout;
+
+    /// <summary>
+    ///     One GPU buffer holding every draw's uniforms for the frame, written with a single
+    ///     <c>QueueWriteBuffer</c> call and read back per draw via a dynamic offset — the batched
+    ///     alternative to <see cref="_uniformPool" />'s one-buffer-per-draw approach, for call sites
+    ///     with too many draws per frame for a write-per-draw to be free.
+    /// </summary>
+    private WgpuBuffer* _dynamicUniformBuffer;
+    private BindGroup* _dynamicUniformBindGroup;
+    private int _dynamicUniformCapacity;
+    private byte[] _dynamicUniformStaging = [];
+
+    /// <summary>
+    ///     WebGPU's guaranteed baseline for <c>minUniformBufferOffsetAlignment</c> — every conformant
+    ///     adapter supports at least this without querying device limits.
+    /// </summary>
+    private const uint DynamicUniformAlignment = 256;
+
+    private uint DynamicUniformStride => AlignUp(_uniformSize, DynamicUniformAlignment);
+
+    private static uint AlignUp(uint value, uint align) => (value + align - 1) / align * align;
+
+    /// <summary>
     ///     Wraps an already-built pipeline.
     /// </summary>
     internal WgpuPipeline(
@@ -127,6 +155,8 @@ public sealed unsafe class WgpuPipeline : IDisposable
         CreateUniforms(api, device.Device, BindGroupLayout, uniformSize, out WgpuBuffer* ub, out BindGroup* ug);
         UniformBuffer = ub;
         UniformBindGroup = ug;
+
+        _dynamicUniformLayout = uniformEntries.Length > 0 && uniformEntries[0].Buffer.HasDynamicOffset;
     }
 
     private static ShaderModule* CreateShaderModule(Silk.NET.WebGPU.WebGPU api, Device* device, string source)
@@ -375,7 +405,19 @@ public sealed unsafe class WgpuPipeline : IDisposable
 
         _device.Api.QueueWriteBuffer(
             _device.Queue, (WgpuBuffer*)bufferHandle, 0, in data, (nuint)sizeof(T));
-        _device.Api.RenderPassEncoderSetBindGroup(pass, 0, (BindGroup*)groupHandle, 0, null);
+
+        // A layout built with a dynamic offset on binding 0 requires SetBindGroup to supply exactly
+        // one dynamic offset regardless of whether this call site is using the dynamic behaviour for
+        // anything — each pooled buffer starts its own buffer, so that offset is always 0 here.
+        if (_dynamicUniformLayout)
+        {
+            uint offset = 0;
+            _device.Api.RenderPassEncoderSetBindGroup(pass, 0, (BindGroup*)groupHandle, 1, &offset);
+        }
+        else
+        {
+            _device.Api.RenderPassEncoderSetBindGroup(pass, 0, (BindGroup*)groupHandle, 0, null);
+        }
     }
 
     /// <summary>
@@ -383,6 +425,96 @@ public sealed unsafe class WgpuPipeline : IDisposable
     ///     it — a buffer handed out again before then would be rewritten under a recorded draw.
     /// </summary>
     public void ResetUniformPool() => _uniformPoolNext = 0;
+
+    /// <summary>
+    ///     Writes every element of <paramref name="data" /> into one GPU buffer with a single
+    ///     <c>QueueWriteBuffer</c> call, each at its own <see cref="DynamicUniformStride" />-aligned
+    ///     offset, and (re)builds the batch bind group if <paramref name="data" /> no longer fits the
+    ///     one from a previous call.
+    /// </summary>
+    /// <remarks>
+    ///     Requires this pipeline's uniform binding to have been built with
+    ///     <c>BufferBindingLayout.HasDynamicOffset</c> set — see <see cref="BindDynamicUniforms" />
+    ///     for reading a slot back. Distinct offsets per element written once and read once each, so
+    ///     this carries none of <see cref="BindNextUniforms{T}" />'s "buffers shared between draws
+    ///     all read the last write" hazard.
+    /// </remarks>
+    public void WriteDynamicUniforms<T>(ReadOnlySpan<T> data) where T : unmanaged
+    {
+        int count = data.Length;
+        if (count == 0) return;
+
+        uint stride = DynamicUniformStride;
+        EnsureDynamicUniformCapacity(count, stride);
+
+        int neededBytes = count * (int)stride;
+        if (_dynamicUniformStaging.Length < neededBytes)
+        {
+            _dynamicUniformStaging = new byte[neededBytes];
+        }
+
+        fixed (byte* dstBase = _dynamicUniformStaging)
+        fixed (T* src = data)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                System.Buffer.MemoryCopy(src + i, dstBase + (nint)(i * stride), stride, (uint)sizeof(T));
+            }
+
+            _device.Api.QueueWriteBuffer(_device.Queue, _dynamicUniformBuffer, 0, dstBase, (nuint)neededBytes);
+        }
+    }
+
+    /// <summary>
+    ///     Binds slot <paramref name="index" /> of the batch written by the last
+    ///     <see cref="WriteDynamicUniforms{T}" /> call at group 0.
+    /// </summary>
+    public void BindDynamicUniforms(RenderPassEncoder* pass, int index)
+    {
+        uint offset = (uint)index * DynamicUniformStride;
+        _device.Api.RenderPassEncoderSetBindGroup(pass, 0, _dynamicUniformBindGroup, 1, &offset);
+    }
+
+    private void EnsureDynamicUniformCapacity(int count, uint stride)
+    {
+        if (count <= _dynamicUniformCapacity && _dynamicUniformBindGroup is not null) return;
+
+        if (_dynamicUniformBindGroup is not null) _device.Api.BindGroupRelease(_dynamicUniformBindGroup);
+        if (_dynamicUniformBuffer is not null)
+        {
+            _device.Api.BufferDestroy(_dynamicUniformBuffer);
+            _device.Api.BufferRelease(_dynamicUniformBuffer);
+        }
+
+        int newCapacity = Math.Max(count, Math.Max(_dynamicUniformCapacity * 2, 256));
+        ulong bufferSize = (ulong)newCapacity * stride;
+
+        BufferDescriptor bufferDescriptor = new()
+        {
+            Usage = BufferUsage.Uniform | BufferUsage.CopyDst,
+            Size = bufferSize,
+        };
+
+        _dynamicUniformBuffer = _device.Api.DeviceCreateBuffer(_device.Device, in bufferDescriptor);
+
+        BindGroupEntry entry = new()
+        {
+            Binding = 0,
+            Buffer = _dynamicUniformBuffer,
+            Offset = 0,
+            Size = _uniformSize,
+        };
+
+        BindGroupDescriptor descriptor = new()
+        {
+            Layout = BindGroupLayout,
+            EntryCount = 1,
+            Entries = &entry,
+        };
+
+        _dynamicUniformBindGroup = _device.Api.DeviceCreateBindGroup(_device.Device, in descriptor);
+        _dynamicUniformCapacity = newCapacity;
+    }
 
     private (nint Buffer, nint Group) AllocateUniforms()
     {
@@ -488,6 +620,13 @@ public sealed unsafe class WgpuPipeline : IDisposable
         }
 
         _uniformPool.Clear();
+
+        if (_dynamicUniformBindGroup is not null) api.BindGroupRelease(_dynamicUniformBindGroup);
+        if (_dynamicUniformBuffer is not null)
+        {
+            api.BufferDestroy(_dynamicUniformBuffer);
+            api.BufferRelease(_dynamicUniformBuffer);
+        }
 
         if (UniformBindGroup is not null) api.BindGroupRelease(UniformBindGroup);
         if (UniformBuffer is not null) api.BufferDestroy(UniformBuffer);
