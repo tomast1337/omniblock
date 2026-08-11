@@ -1,3 +1,4 @@
+using OmniBlock;
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Entities;
@@ -314,9 +315,17 @@ public class Block
 
     public void NeighborUpdate(OnTickEvent e) => Physics?.NeighborUpdate(this, e);
 
-    public void OnPlaced(OnPlacedEvent e) => Lifecycle?.OnPlaced(this, e);
+    public void OnPlaced(OnPlacedEvent e)
+    {
+        Lifecycle?.OnPlaced(this, e);
+        GameEvents.PublishBlockPlaced(new BlockPlacedEvent(e.X, e.Y, e.Z, Id, e.World.Reader.GetBlockMeta(e.X, e.Y, e.Z)));
+    }
 
-    public void OnBreak(OnBreakEvent e) => Lifecycle?.OnBreak(this, e);
+    public void OnBreak(OnBreakEvent e)
+    {
+        Lifecycle?.OnBreak(this, e);
+        GameEvents.PublishBlockBreak(new BlockBreakEvent(e.X, e.Y, e.Z, Id));
+    }
 
     public int GetDroppedItemCount()
     {
