@@ -224,3 +224,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-10 — refactor(ChunkMeshGenerator, ChunkRenderer, ChunkMap, WorldRegionSnapshot): optimize chunk processing and memory management (Nicolas Vyčas Nery; `32a5f0338c842d23e76acb4592e3e3ed30abc697`)
 - 2026-08-10 — refactor(ShapedRecipes, ShapelessRecipes): simplify constructors and improve code readability (Nicolas Vyčas Nery; `3e0dc52f808a9b31bdce8898a468cf2d9e4367d9`)
 - 2026-08-10 — refactor(Log, MemoryLoggerProvider, FileLoggerProvider): streamline code structure and improve readability (Nicolas Vyčas Nery; `03056cf7f27bc156caa3c3cf623c67817a148087`)
+- 2026-08-10 — feat: Implement wireframe rendering for chunk meshes (Nicolas Vyčas Nery; `817183897c1523d382033590c2d7ea3ec005c1a7`)

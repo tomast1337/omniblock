@@ -106,7 +106,8 @@ public sealed unsafe class WgpuPipeline : IDisposable
         TextureFormat depthFormat = TextureFormat.Undefined,
         PrimitiveTopology topology = PrimitiveTopology.TriangleList,
         ReadOnlySpan<BindGroupLayoutEntry> textureArrayEntries = default,
-        string? label = null)
+        string? label = null,
+        string fragmentEntryPoint = "fs_main")
     {
         _device = device;
         _uniformSize = Math.Max(uniformSize, 64u);
@@ -122,7 +123,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
             : null;
         Layout = CreatePipelineLayout(api, device.Device,
             BindGroupLayout, TextureBindGroupLayout, TextureArrayBindGroupLayout);
-        Pipeline = CreateRenderPipeline(api, device.Device, Module, entryPoint, Layout, buffers, bufferCount, state, colorFormat, depthFormat, topology, label);
+        Pipeline = CreateRenderPipeline(api, device.Device, Module, entryPoint, fragmentEntryPoint, Layout, buffers, bufferCount, state, colorFormat, depthFormat, topology, label);
         CreateUniforms(api, device.Device, BindGroupLayout, uniformSize, out WgpuBuffer* ub, out BindGroup* ug);
         UniformBuffer = ub;
         UniformBindGroup = ug;
@@ -193,6 +194,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
         Device* device,
         ShaderModule* module,
         string entryPoint,
+        string fragmentEntryPoint,
         PipelineLayout* layout,
         VertexBufferLayout* buffers,
         nuint bufferCount,
@@ -203,7 +205,7 @@ public sealed unsafe class WgpuPipeline : IDisposable
         string? label = null)
     {
         byte* vertexEntry = (byte*)SilkMarshal.StringToPtr(entryPoint);
-        byte* fragmentEntry = (byte*)SilkMarshal.StringToPtr("fs_main");
+        byte* fragmentEntry = (byte*)SilkMarshal.StringToPtr(fragmentEntryPoint);
         byte* labelPtr = label is null ? null : (byte*)SilkMarshal.StringToPtr(label);
 
         try

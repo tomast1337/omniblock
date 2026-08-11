@@ -124,8 +124,9 @@ struct VertexOutput {
 fn vs_main(in: VertexInput) -> VertexOutput {
     var pos = unpackPosition(in.position);
 
-    // UV: ushort range, the full 0–65535 maps to 0.0–2.0 for flowing-water wrap.
-    let uv = vec2<f32>(f32(in.uv.x), f32(in.uv.y)) / 32767.0;
+    // UV: ushort range, the full 0–65535 maps to 0.0–16.0 — a sub-chunk's width, the widest a
+    // greedy-merged quad can tile across. Must match Tessellator.UV_SCALE exactly (encode/decode).
+    let uv = vec2<f32>(f32(in.uv.x), f32(in.uv.y)) / 4095.0;
     let layer = in.arrayLayer.x;
     let wavy = u.wavyLeavesStrength + u.wavyPlantStrength;
 
@@ -151,6 +152,14 @@ fn vs_main(in: VertexInput) -> VertexOutput {
     out.arrayLayer = i32(layer);
     out.fogDistance = length(viewPos.xyz);
     return out;
+}
+
+// Debug wireframe overlay: same vertex stage as fs_main, but flat-shaded and untextured so the
+// mesh's actual triangle edges — including the diagonal each quad was split along — are legible
+// regardless of what's under them.
+@fragment
+fn fs_wireframe(in: VertexOutput) -> @location(0) vec4<f32> {
+    return vec4<f32>(0.0, 1.0, 0.0, 1.0);
 }
 
 @fragment

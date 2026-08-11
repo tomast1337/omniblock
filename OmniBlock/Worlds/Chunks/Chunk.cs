@@ -725,6 +725,8 @@ public class Chunk
 
     public virtual void Load()
     {
+        if (Loaded) return;
+
         Loaded = true;
         World.Entities.ProcessBlockUpdates(BlockEntities.Values);
 

@@ -49,9 +49,10 @@ public struct ChunkVertex
     // Colour: RGBA as 4 unsigned bytes, sent normalized.
     [FieldOffset(8)] public int Color;
 
-    // Within the vertex's own array layer, 1.0 stored as 32767. Unsigned rather than signed so the
-    // spare top half reaches 2.0: flowing water turns its quad about the tile's corner and needs to
-    // run past the edge, which the layer's wrap folds back onto itself.
+    // Within the vertex's own array layer, 1.0 stored as UV_SCALE (4095). Unsigned rather than
+    // signed so the range reaches past 1.0: flowing water turns its quad about the tile's corner
+    // and needs to run past the edge, which the layer's wrap folds back onto itself, and a greedy-
+    // merged quad tiles the texture across up to a sub-chunk's width (16) instead of stretching it.
     [FieldOffset(12)] public ushort U;
     [FieldOffset(14)] public ushort V;
 
@@ -73,7 +74,11 @@ public static class ChunkVertexHelper
 {
     private const float POSITION_SCALE = 32767f / 64f;
 
-    private const float UV_SCALE = 32767f;
+    // 65535 / 16 rounded down: the worst case is a greedy-merged quad spanning a whole sub-chunk
+    // edge (SubChunkRenderer.Size = 16), which needs UV up to 16.0 to tile rather than stretch. A
+    // ushort can't hold both that range and the old 1/32767-of-a-tile precision no texture this
+    // small (terrain tiles are at most a few dozen px) could ever resolve, so precision loses.
+    private const float UV_SCALE = 4095f;
 
     public static ChunkVertex Create(
         int color,
@@ -113,7 +118,8 @@ public static class ChunkVertexHelper
 
     /// <summary>
     ///     A texture coordinate within its own array layer as the fixed point a vertex holds, where
-    ///     1.0 is a whole tile and the representable range runs to 2.0.
+    ///     1.0 is a whole tile and the representable range runs to 16.0 — a sub-chunk's width, the
+    ///     widest a greedy-merged quad can tile across.
     /// </summary>
     /// <remarks>
     ///     Straight quantization, with none of the inward bias an atlas needed: a layer's edge is the
