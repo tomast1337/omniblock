@@ -24,6 +24,7 @@ public abstract class BlockEntity : IEntity
     public static readonly BlockEntityType MobSpawner = Register(() => new BlockEntityMobSpawner(), "MobSpawner");
     public static readonly BlockEntityType Note = Register(() => new BlockEntityNote(), "Music");
     public static readonly BlockEntityType Piston = Register(() => new BlockEntityPiston(), "Piston");
+    public static readonly BlockEntityType Generic = Register(() => new GenericBlockEntity(), "Generic");
 
     private bool _removed;
 
