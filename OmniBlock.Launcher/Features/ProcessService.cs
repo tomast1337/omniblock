@@ -18,13 +18,19 @@ internal sealed class ProcessService(MinecraftService minecraftService)
 
         var info = new ProcessStartInfo
         {
-            Arguments = string.Join(" ", args),
             CreateNoWindow = true,
             FileName = Path.Combine(directory, $"{nameof(OmniBlock)}.{suffix}"),
             RedirectStandardInput = redirect,
             RedirectStandardOutput = redirect,
             WorkingDirectory = directory
         };
+
+        // ArgumentList quotes each element itself; a session token or player name could contain a
+        // space, which a naive string.Join(" ", args) would split into two arguments.
+        foreach (string arg in args)
+        {
+            info.ArgumentList.Add(arg);
+        }
 
         var process = Process.Start(info);
 

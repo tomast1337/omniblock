@@ -68,7 +68,7 @@ internal sealed partial class HomeViewModel : ObservableObject
             return;
         }
 
-        using var process = await _processService.StartAsync(Kind.Client, Session.Name, Session.Token);
+        using var process = await _processService.StartAsync(Kind.Client, "--username", Session.Name, "--token", Session.Token);
         await process.WaitForExitAsync();
     }
 
