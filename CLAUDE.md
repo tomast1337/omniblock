@@ -153,6 +153,7 @@ Shaders live in `OmniBlock/shaders/` (WGSL for the WebGPU path) and are embedded
 - Behavior composition over inheritance — match the existing `Behaviors/` pattern rather than adding subclasses.
 - `JavaRandom` is the one sanctioned Java-ism. Everything else Java-shaped that you find is fair game to modernize, subject to the parity rule above.
 - Include tests with new features; when fixing a bug, start with a test that reproduces it.
+- After adding or changing code, run `dotnet build --configuration Release` and `dotnet test` before calling the task done.
 - Comments say why, not what. A comment that points at a plan (`Phase 3 of docs/foo.md §5.4`) is a comment that will be wrong within a month and cannot be checked by anyone reading the file — say what the constraint is instead, so the reason survives the plan.
 
 ## Docs
