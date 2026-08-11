@@ -94,6 +94,7 @@ internal static class BehaviorRegistry
         ["repeater"] = json => new RepeaterBehavior(Texture(json, "top_off"), Texture(json, "top_on"),
             Texture(json, "torch_off"), Texture(json, "torch_on"), Texture(json, "side")),
         ["sapling"] = json => new SaplingBehavior(ResolveTextures(json.GetProperty("textures"))),
+        ["scripted_ticker"] = json => new ScriptedTickerBehavior(json.GetProperty("script_hook").GetString()!),
         ["snow"] = json => new SnowBehavior(ResolveItem(json.GetProperty("drop_item").GetString()!), json.GetProperty("drop_spread").GetSingle()),
         ["soul_sand"] = json => new SoulSandBehavior(json.GetProperty("speed_factor").GetDouble()),
         ["sponge_lifecycle"] = json => new SpongeLifecycleBehavior(json.GetProperty("absorb_radius").GetInt32()),
