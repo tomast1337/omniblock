@@ -231,3 +231,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-11 — feat: add debug mode toggle and adjust client startup arguments (Nicolas Vyčas Nery; `4b205e5c6e8ebf13fa126762d89ca7cb615b2e8f`)
 - 2026-08-11 — docs: add instructions to run build and tests after code changes (Nicolas Vyčas Nery; `d469616ce895d3d39b6108ee573457ee4a53e8bf`)
 - 2026-08-11 — feat: add GenericBlockEntity and update factory registry for new entity type (Nicolas Vyčas Nery; `eb595825ef5789c142b348c5f0fadab25fa37b3b`)
+- 2026-08-11 — refactor: simplify Array reference in inventory resizing method (Nicolas Vyčas Nery; `b6ec538847b7e4612c877e9db129e0abc82e9ccb`)

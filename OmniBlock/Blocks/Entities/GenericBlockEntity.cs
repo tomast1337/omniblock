@@ -35,7 +35,7 @@ public class GenericBlockEntity : BlockEntity
         if (size == _inventory.Length) return;
 
         ItemStack?[] resized = new ItemStack?[size];
-        System.Array.Copy(_inventory, resized, System.Math.Min(size, _inventory.Length));
+        Array.Copy(_inventory, resized, System.Math.Min(size, _inventory.Length));
         _inventory = resized;
     }
 
