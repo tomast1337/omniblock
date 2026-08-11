@@ -233,3 +233,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-11 — feat: add GenericBlockEntity and update factory registry for new entity type (Nicolas Vyčas Nery; `eb595825ef5789c142b348c5f0fadab25fa37b3b`)
 - 2026-08-11 — refactor: simplify Array reference in inventory resizing method (Nicolas Vyčas Nery; `b6ec538847b7e4612c877e9db129e0abc82e9ccb`)
 - 2026-08-11 — feat: implement ScriptedTickerBehavior and associated registry for script hooks (Nicolas Vyčas Nery; `118751a71a6090f3d0b96438e137e4eeb8f5787b`)
+- 2026-08-11 — refactor: remove unnecessary using directive and simplify inventory initialization (Nicolas Vyčas Nery; `2ed68702f58ff53c1658c6d09904f5a4d6dbe249`)

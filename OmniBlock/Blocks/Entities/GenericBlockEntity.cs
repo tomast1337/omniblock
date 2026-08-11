@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using OmniBlock.Items;
 using OmniBlock.NBT;
 
@@ -15,7 +14,7 @@ public class GenericBlockEntity : BlockEntity
     private readonly Dictionary<string, float> _floats = new();
     private readonly Dictionary<string, string> _strings = new();
 
-    private ItemStack?[] _inventory = System.Array.Empty<ItemStack?>();
+    private ItemStack?[] _inventory = [];
 
     protected override BlockEntityType Type => Generic;
 
@@ -35,7 +34,7 @@ public class GenericBlockEntity : BlockEntity
         if (size == _inventory.Length) return;
 
         ItemStack?[] resized = new ItemStack?[size];
-        Array.Copy(_inventory, resized, System.Math.Min(size, _inventory.Length));
+        Array.Copy(_inventory, resized, Math.Min(size, _inventory.Length));
         _inventory = resized;
     }
 
