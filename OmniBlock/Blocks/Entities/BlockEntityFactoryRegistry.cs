@@ -15,6 +15,7 @@ internal static class BlockEntityFactoryRegistry
         ["mob_spawner"] = BlockEntity.MobSpawner.Create,
         ["note"] = BlockEntity.Note.Create,
         ["piston"] = BlockEntity.Piston.Create,
+        ["generic"] = BlockEntity.Generic.Create,
     };
 
     public static Func<BlockEntity> Get(string key) =>
