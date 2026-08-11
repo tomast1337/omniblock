@@ -226,3 +226,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-10 — refactor(Log, MemoryLoggerProvider, FileLoggerProvider): streamline code structure and improve readability (Nicolas Vyčas Nery; `03056cf7f27bc156caa3c3cf623c67817a148087`)
 - 2026-08-10 — feat: Implement wireframe rendering for chunk meshes (Nicolas Vyčas Nery; `817183897c1523d382033590c2d7ea3ec005c1a7`)
 - 2026-08-10 — refactor(ChunkRenderer, WgpuPipeline): optimize uniform handling and improve rendering performance (Nicolas Vyčas Nery; `85e524ce52fb440d7fbaa090f36d8d3dc295172a`)
+- 2026-08-11 — docs: update modding description to reflect transition from Jint to Luau (Nicolas Vyčas Nery; `e9fb2a6907ca42d1c6b6e35c4225ce85cea72fc0`)

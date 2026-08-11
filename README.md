@@ -23,7 +23,7 @@ OmniBlock is a **heavily modified fork** of [BetaSharp](https://git.gay/betashar
 
 It keeps Beta 1.7.3's *world* - the terrain a seed produces, and the saves on disk - and rebuilds everything around it. Where this fork departs from upstream:
 
-- **Scripting-based modding** - content is authored, not compiled in: JSON assets plus TypeScript/JS mods running on Jint (a pure C# JavaScript engine). Mods ship as assets and scripts, not as forks of the engine.
+- **Scripting-based modding** - content is authored, not compiled in: JSON assets plus mods running on Luau (Roblox's Lua dialect). Mods ship as assets and scripts, not as forks of the engine.
 - **A rebuilt network protocol** - UDP-based, versioned, extensible; replaces Beta 1.7.3's flat `PacketId : byte` wire protocol. Expected to be wire-incompatible with upstream.
 - **WebGPU rendering** - the sole rendering backend (wgpu native, WGSL shaders).
 
