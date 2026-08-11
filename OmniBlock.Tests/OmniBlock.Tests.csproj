@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,6 +26,7 @@
     <ProjectReference Include="..\OmniBlock\OmniBlock.csproj" />
     <ProjectReference Include="..\OmniBlock.Client\OmniBlock.Client.csproj" />
     <ProjectReference Include="..\OmniBlock.Server\OmniBlock.Server.csproj" />
+    <ProjectReference Include="..\OmniBlock.Luau\OmniBlock.Luau.csproj" />
   </ItemGroup>
 
 </Project>
