@@ -20,6 +20,9 @@ internal sealed partial class HomeViewModel : ObservableObject
     [ObservableProperty]
     public partial Session? Session { get; set; }
 
+    [ObservableProperty]
+    public partial bool DebugMode { get; set; }
+
     private readonly ILogger<HomeViewModel> _logger;
     private readonly GitHubClient _gitHubClient;
     private readonly NavigationService _navigationService;
@@ -68,7 +71,11 @@ internal sealed partial class HomeViewModel : ObservableObject
             return;
         }
 
-        using var process = await _processService.StartAsync(Kind.Client, "--username", Session.Name, "--token", Session.Token);
+        string[] args = DebugMode
+            ? ["--username", Session.Name, "--token", Session.Token, "--debug"]
+            : ["--username", Session.Name, "--token", Session.Token];
+
+        using var process = await _processService.StartAsync(Kind.Client, args);
         await process.WaitForExitAsync();
     }
 
