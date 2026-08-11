@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 OmniBlock is no longer trying to be a faithful reimplementation. It keeps Beta 1.7.3's *world* — the terrain you get from a seed, and the saves on disk — and rebuilds everything around it. Two things are the point of this fork:
 
-1. **Scripting-based modding.** Content should be authored, not compiled in. The inherited data-driven layer (455 JSON definitions across blocks, items, entities, recipes, materials, sound groups, biome spawns, gamemodes, backed by `Registries/`) is the substrate. The scripting layer on top runs TypeScript/JS mods on **Jint** (a pure C# JavaScript engine) — mods ship as assets and scripts, not as forks of the engine. It has not landed yet; the closest shipped piece is the data-driven game-rules system under `Rules/`. The constraints it must obey are enshrined under "Scripting Determinism & Security" in Hard Invariants.
+1. **Scripting-based modding.** Content should be authored, not compiled in. The inherited data-driven layer (455 JSON definitions across blocks, items, entities, recipes, materials, sound groups, biome spawns, gamemodes, backed by `Registries/`) is the substrate. The scripting layer on top runs mods in **Luau** (Roblox's Lua dialect) — mods ship as assets and scripts, not as forks of the engine. It has not landed yet; the closest shipped piece is the data-driven game-rules system under `Rules/`. The constraints it must obey are enshrined under "Scripting Determinism & Security" in Hard Invariants.
 2. **A rebuilt network protocol.** The inherited protocol is Beta 1.7.3's: a flat `PacketId : byte` enum, one byte of ID space, hand-rolled per-packet serialization. It is being replaced with a UDP-based, versioned, extensible message layer — registry-negotiated IDs, hand-written serializers, and explicit transport / session / message / domain layering. The rewrite is mid-flight: `UdpConnection`, `ProtocolHandshake`, `SendPriority`, and per-message `*.Wire.cs` files (each hand-written from the same field-list shape a source generator used to emit) are in place, while the legacy packet enum still coexists. This is expected to break wire compatibility with upstream.
 
 > **Note**: The client and server expect the Minecraft JAR file (`b1.7.3.jar`) to be in their running directory.
@@ -21,10 +21,10 @@ These invariants are non-negotiable and constrain otherwise-reasonable refactors
 
 These constrain the scripting layer's design (see the Overview). Not implemented yet, but the rules bind whatever lands:
 
-- **Jint over V8:** Mod scripts execute on Jint, not on a V8/ClearScript engine. Wall-clock execution timeouts are non-deterministic across different CPUs, which would break multiplayer sync; Jint's instruction counting gives deterministic budgeting.
+- **Luau, not a JS engine:** Mod scripts execute on Luau, not on Jint or a V8/ClearScript-style JavaScript engine. Wall-clock execution timeouts are non-deterministic across different CPUs, which would break multiplayer sync; Luau's interrupt/instruction-budget hooks give deterministic scripting instead.
 - **Client-side execution only:** A server may declare which mods it requires (by ID and version), but a client must NEVER download and execute a script payload provided by a server. Mods are installed locally on disk; executing server-provided scripts is a Remote Code Execution (RCE) path.
-- **Two-phase mod API:** Scripts cannot touch the world while the engine is rebuilding registries. The TypeScript contract strictly isolates `namespace Registry` (load phase, idempotent) from `namespace Host` (tick phase, world access).
-- **IDs over objects:** The C#/JS boundary stays flat. Scripts manipulate the world via primitive IDs (e.g. `Host.getEntityPosX(uint entityId)`), never via deep C# object references crossing the FFI boundary.
+- **Two-phase mod API:** Scripts cannot touch the world while the engine is rebuilding registries. The Luau contract strictly isolates a `Registry` module (load phase, idempotent) from a `Host` module (tick phase, world access).
+- **IDs over objects:** The C#/Luau boundary stays flat. Scripts manipulate the world via primitive IDs (e.g. `Host.getEntityPosX(entityId)`), never via deep C# object references crossing the FFI boundary.
 
 ### Save file compatibility
 
