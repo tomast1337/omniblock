@@ -34,6 +34,13 @@ internal static unsafe partial class LuauNative
     [LibraryImport(LibraryName)]
     internal static partial IntPtr lua_newstate(IntPtr allocFn, IntPtr userData);
 
+    // Registers every standard library (base, string, math, table, ...) into a freshly created
+    // state — a bare lua_newstate has none of them, not even `error`/`tostring`/`pairs`.
+    // LuauQuickRun calls this once per ephemeral VM so debug-console scripts see ordinary Luau
+    // semantics rather than a crippled arithmetic-only subset.
+    [LibraryImport(LibraryName)]
+    internal static partial void luaL_openlibs(IntPtr L);
+
     [LibraryImport(LibraryName)]
     internal static partial void lua_close(IntPtr L);
 
@@ -104,6 +111,52 @@ internal static unsafe partial class LuauNative
     // know the stack slot holds a number from having pushed/computed it themselves.
     [LibraryImport(LibraryName)]
     internal static partial int lua_tointegerx(IntPtr L, int idx, IntPtr isnum);
+
+    // Value-inspection surface for LuauQuickRun's console output formatter. All five are real
+    // exported symbols, not macros — verified against VM/src/lapi.cpp, not assumed. None of
+    // them can error/longjmp or invoke a __tostring metamethod (unlike luaL_tolstring, which
+    // was deliberately NOT bound here for that reason), so they're safe to call on
+    // caller-controlled values with no protected-call wrapper.
+
+    // LUA_TNIL == 0 and LUA_TBOOLEAN == 1 are guaranteed stable by lua.h's own comments
+    // ("must be 0/1 due to ..."); every other lua_Type enum value shifts depending on the
+    // LUA_VECTOR_DOUBLE build config, so this binding's caller must never compare lua_type's
+    // result against a hardcoded value other than those two — use lua_isstring/lua_typename
+    // instead, both below.
+    [LibraryImport(LibraryName)]
+    internal static partial int lua_type(IntPtr L, int idx);
+
+    // True for LUA_TSTRING and LUA_TNUMBER only (see lapi.cpp) — the two types lua_tolstring
+    // below can actually convert. Deliberately used instead of comparing against a hardcoded
+    // LUA_TNUMBER/LUA_TSTRING enum value, which (unlike TNIL/TBOOLEAN) is not ABI-stable.
+    [LibraryImport(LibraryName)]
+    internal static partial int lua_isstring(IntPtr L, int idx);
+
+    [LibraryImport(LibraryName)]
+    internal static partial int lua_toboolean(IntPtr L, int idx);
+
+    // Real symbol (the macro is lua_tostring, which wraps this with len: NULL — see
+    // lua.h:525). Converts numbers in place too (VM/src/lapi.cpp: falls through to
+    // luaV_tostring for non-string values), so this alone covers both LUA_TSTRING and
+    // LUA_TNUMBER; returns NULL for every other type without erroring. `len` is read
+    // explicitly rather than relying on the returned buffer being NUL-terminated at the
+    // right point — a Luau string can contain embedded NUL bytes, and trusting strlen()
+    // instead of the real length would silently truncate those.
+    [LibraryImport(LibraryName)]
+    internal static partial IntPtr lua_tolstring(IntPtr L, int idx, out nuint len);
+
+    // Returns a pointer into Luau's static, compiled-in luaT_typenames table — NOT a
+    // caller-owned buffer. Deliberately bound as a raw IntPtr, not
+    // [return: MarshalUsing(typeof(Utf8StringMarshaller))]: LibraryImport's generated stub for
+    // a marshalled string return calls Utf8StringMarshaller.Free() on the native pointer after
+    // copying it, on the assumption the callee allocated it for the caller to release. Applying
+    // that to a pointer into static/const data crashes the process (glibc "free(): invalid
+    // pointer") the first time it runs — caught empirically via a step-traced repro, not
+    // predicted, since it doesn't fail until you actually call it. Callers must decode with
+    // Marshal.PtrToStringUTF8, never free the result — mirrors lua_tolstring above, which was
+    // bound this way from the start for the same reason (Luau owns the returned buffer).
+    [LibraryImport(LibraryName)]
+    internal static partial IntPtr lua_typename(IntPtr L, int t);
 
     // --- Hot path: cached delegate* unmanaged[Cdecl] pointers -----------------------------
 

@@ -55,6 +55,7 @@ internal sealed class DebugWindowManager
             new ProfilerWindow(),
             new TranslationsWindow(),
             _consoleWindow,
+            new LuauConsoleWindow(),
             new UIInspectorWindow(ctx),
             new ItemBlockBrowserWindow(ctx)
         ];
