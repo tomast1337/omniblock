@@ -235,3 +235,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-11 — feat: implement ScriptedTickerBehavior and associated registry for script hooks (Nicolas Vyčas Nery; `118751a71a6090f3d0b96438e137e4eeb8f5787b`)
 - 2026-08-11 — refactor: remove unnecessary using directive and simplify inventory initialization (Nicolas Vyčas Nery; `2ed68702f58ff53c1658c6d09904f5a4d6dbe249`)
 - 2026-08-11 — feat: implement game event system for block placement, breaking, and entity damage (Nicolas Vyčas Nery; `b60cd27dcda70dea8733e4805a9b9c0517979366`)
+- 2026-08-11 — feat: add PathMoverBuffer, PathMoverRenderer, and PathMoverUpdater for straight-line visual movement (Nicolas Vyčas Nery; `e4826f451a938c334cce45b66d6ae552ffa53aab`)
