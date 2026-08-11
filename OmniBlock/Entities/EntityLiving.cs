@@ -1,3 +1,4 @@
+using OmniBlock;
 using OmniBlock.Blocks;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Items;
@@ -530,6 +531,7 @@ public class EntityLiving : Entity
         }
 
         Behaviors.Lifecycle?.OnDamageApplied(this, entity, amount);
+        GameEvents.PublishEntityHurt(new EntityHurtEvent(ID, entity?.ID, amount));
         return true;
     }
 
