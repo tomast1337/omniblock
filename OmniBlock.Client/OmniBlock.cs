@@ -76,6 +76,14 @@ public partial class OmniBlock :
     public int TicksRan { get; private set; }
     public Session Session { get; private set; }
     public GameOptions Options { get; private set; }
+
+    /// <summary>
+    ///     Set from the <c>--debug</c> launch flag, before <see cref="Run" />. Applied to
+    ///     <see cref="Options" />' <see cref="GameOptions.ShowDebugInfo" /> as soon as it's
+    ///     constructed, in <see cref="SetupDisplay" />, so the debug window is open from the first
+    ///     frame instead of waiting for an F3 press.
+    /// </summary>
+    public bool ForceDebugOnStart { get; set; }
     public IWorldStorageSource SaveLoader { get; private set; }
     public InternalServer? InternalServer { get; private set; }
     public RegistryAccess RegistryAccess { get; private set; } = RegistryAccess.Empty;
@@ -251,6 +259,7 @@ public partial class OmniBlock :
         _gameDataDir = OmniBlockDir;
         SaveLoader = new RegionWorldStorageSource(Path.Combine(_gameDataDir, "saves"));
         Options = new GameOptions(this, _gameDataDir);
+        if (ForceDebugOnStart) Options.ShowDebugInfo = true;
         Options.ReloadTextures += () => { TextureManager.Reload(); };
         Options.ReloadChunks += () => { WorldRenderer.ChunkRenderer.MarkAllVisibleChunksDirty(); };
 
@@ -1915,24 +1924,40 @@ public partial class OmniBlock :
 
     public static void Startup(string[] args)
     {
-        (string Name, string Session) result = args.Length switch
-        {
-            0 => ($"Player{Random.Shared.Next()}", "-"),
-            1 => (args[0], "-"),
-            _ => (args[0], args[1]),
-        };
+        string? username = null;
+        string? token = null;
+        bool debug = false;
 
-        PlayerNameValidator.Validate(result.Name);
+        for (int i = 0; i < args.Length; i++)
+        {
+            switch (args[i])
+            {
+                case "--username" when i + 1 < args.Length:
+                    username = args[++i];
+                    break;
+                case "--token" when i + 1 < args.Length:
+                    token = args[++i];
+                    break;
+                case "--debug":
+                    debug = true;
+                    break;
+            }
+        }
+
+        username ??= $"Player{Random.Shared.Next()}";
+        token ??= "-";
+
+        PlayerNameValidator.Validate(username);
 
         Bootstrap.Initialize();
-        StartMainThread(result.Name, result.Session);
+        StartMainThread(username, token, debug);
     }
 
-    private static void StartMainThread(string? playerName, string? sessionToken)
+    private static void StartMainThread(string? playerName, string? sessionToken, bool debug)
     {
         Thread.CurrentThread.Name = "OmniBlock Main Thread";
 
-        OmniBlock game = new(850, 480, false);
+        OmniBlock game = new(850, 480, false) { ForceDebugOnStart = debug };
 
         if (playerName != null && sessionToken != null)
         {
