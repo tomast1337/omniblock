@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OmniBlock\OmniBlock.csproj" />
+    <ProjectReference Include="..\OmniBlock.Luau\OmniBlock.Luau.csproj" />
   </ItemGroup>
 
   <ItemGroup>
