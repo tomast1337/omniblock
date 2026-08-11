@@ -97,6 +97,22 @@ public class ChunkRenderer : IChunkVisibilityVisitor
     /// </remarks>
     private readonly Dictionary<RenderState, WgpuPipeline> _wgpuPipelines = [];
 
+    /// <summary>
+    ///     Same raster state as <see cref="_wgpuPipelines" />, keyed separately because a wireframe
+    ///     pipeline differs from the solid one in topology and fragment entry point — two things
+    ///     <see cref="RenderState" /> does not carry, so the same key would collide with the solid
+    ///     pipeline built for that state.
+    /// </summary>
+    private readonly Dictionary<RenderState, WgpuPipeline> _wgpuWireframePipelines = [];
+
+    /// <summary>
+    ///     Debug toggle: draws the solid pass as flat-green triangle edges instead of textured
+    ///     terrain. Set from <c>Diagnostics/Windows/RenderInfoWindow.cs</c>. Translucent geometry
+    ///     (water, glass) still draws normally — wireframe is a solid-terrain debug view, not a
+    ///     replacement for the whole frame.
+    /// </summary>
+    public bool WireframeEnabled { get; set; }
+
     public bool UseOcclusionCulling { get; set; } = true;
 
     public int TotalChunks => _renderers.Count;
@@ -139,6 +155,11 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         // The frame that took buffers out of these pools has been submitted by now, so they are
         // free to hand out again. Both terrain passes of this frame draw from them.
         foreach (WgpuPipeline pipeline in _wgpuPipelines.Values)
+        {
+            pipeline.ResetUniformPool();
+        }
+
+        foreach (WgpuPipeline pipeline in _wgpuWireframePipelines.Values)
         {
             pipeline.ResetUniformPool();
         }
@@ -270,7 +291,14 @@ public class ChunkRenderer : IChunkVisibilityVisitor
 
         if (TryGetWebGpuFrame(out RenderPassEncoder* pass, out WgpuTextureArray array))
         {
-            RenderSolidWebGpu(pass, WgpuPipelineFor(GLManager.State.Current), array);
+            if (WireframeEnabled)
+            {
+                RenderWireframeWebGpu(pass, WgpuWireframePipelineFor(GLManager.State.Current), array);
+            }
+            else
+            {
+                RenderSolidWebGpu(pass, WgpuPipelineFor(GLManager.State.Current), array);
+            }
         }
 
         // No EndFrame here: it destroys mesh buffers, and the draws recorded above have not been
@@ -785,8 +813,19 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         return pipeline;
     }
 
+    private unsafe WgpuPipeline WgpuWireframePipelineFor(RenderState state)
+    {
+        if (_wgpuWireframePipelines.TryGetValue(state, out WgpuPipeline? cached)) return cached;
+
+        WgpuPipeline pipeline = CreateWgpuPipeline(WebGpuDevice.Current!, state,
+            PrimitiveTopology.LineList, "fs_wireframe");
+        _wgpuWireframePipelines[state] = pipeline;
+        return pipeline;
+    }
+
     /// <summary>The chunk.wgsl pipeline for one raster state, matching the chunk vertex layout.</summary>
-    private static unsafe WgpuPipeline CreateWgpuPipeline(WebGpuDevice device, RenderState state)
+    private static unsafe WgpuPipeline CreateWgpuPipeline(WebGpuDevice device, RenderState state,
+        PrimitiveTopology topology = PrimitiveTopology.TriangleList, string fragmentEntryPoint = "fs_main")
     {
         string source = AssetManager.Instance.GetAsset("shaders/chunk.wgsl").GetTextContent();
 
@@ -847,7 +886,9 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             &bufferLayout, 1,
             state,
             device.SurfaceFormat,
-            TextureFormat.Depth32float);
+            TextureFormat.Depth32float,
+            topology,
+            fragmentEntryPoint: fragmentEntryPoint);
     }
 
     /// <summary>Bytes of <see cref="ChunkUniforms" />, as chunk.wgsl declares the block.</summary>
@@ -885,6 +926,38 @@ public class ChunkRenderer : IChunkVisibilityVisitor
             pipeline.BindNextUniforms(pass, BuildChunkUniforms(modelView, renderer.Position, fadeProgress));
 
             renderer.RenderWebGpu(pass, 0);
+        }
+    }
+
+    /// <summary>
+    ///     Draws the solid pass as flat-green triangle edges instead of textured terrain, under
+    ///     <see cref="WireframeEnabled" />. Same chunk set, transforms and uniforms as
+    ///     <see cref="RenderSolidWebGpu" /> — only the pipeline and the mesh slot it draws differ.
+    /// </summary>
+    private unsafe void RenderWireframeWebGpu(
+        RenderPassEncoder* pass, WgpuPipeline pipeline, WgpuTextureArray textureArray)
+    {
+        pipeline.Bind(pass);
+        WgpuPipeline.BindGroup(pass, 1,
+            textureArray.BindGroupFor(pipeline.TextureBindGroupLayout), WebGpuDevice.Current!.Api);
+
+        foreach (SubChunkRenderer renderer in _visibleRenderers)
+        {
+            float fadeProgress = Math.Clamp(renderer.Age / SubChunkRenderer.FadeDuration, 0.0f, 1.0f);
+
+            var camRel = new Vector3D<double>(
+                renderer.PositionMinus.X - _lastViewPos.X,
+                renderer.PositionMinus.Y - _lastViewPos.Y,
+                renderer.PositionMinus.Z - _lastViewPos.Z);
+            camRel += new Vector3D<double>(renderer.ClipPosition.X, renderer.ClipPosition.Y, renderer.ClipPosition.Z);
+
+            Matrix4X4<float> translation = Matrix4X4.CreateTranslation(
+                new Vector3D<float>((float)camRel.X, (float)camRel.Y, (float)camRel.Z));
+            Matrix4X4<float> modelView = translation * _modelView;
+
+            pipeline.BindNextUniforms(pass, BuildChunkUniforms(modelView, renderer.Position, fadeProgress));
+
+            renderer.RenderWireframeWebGpu(pass);
         }
     }
 
@@ -972,6 +1045,13 @@ public class ChunkRenderer : IChunkVisibilityVisitor
         }
 
         _wgpuPipelines.Clear();
+
+        foreach (WgpuPipeline pipeline in _wgpuWireframePipelines.Values)
+        {
+            pipeline.Dispose();
+        }
+
+        _wgpuWireframePipelines.Clear();
 
         _renderers.Clear();
 

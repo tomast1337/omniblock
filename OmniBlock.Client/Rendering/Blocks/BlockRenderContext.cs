@@ -791,6 +791,58 @@ public ref struct BlockRenderContext
         return hasRendered;
     }
 
+    /// <summary>
+    ///     The four corner light values and diagonal-flip decision for one face of a full 1x1x1
+    ///     cube, computed exactly as <see cref="DrawBlock" />'s own AO branch does for that face —
+    ///     duplicated rather than extracted so the battle-tested per-block path stays untouched.
+    /// </summary>
+    /// <remarks>
+    ///     Used by the chunk mesher's greedy-meshing fast path, which needs this data before it
+    ///     knows whether a face will end up merged with its neighbours and therefore cannot go
+    ///     through <see cref="DrawBlock" />'s immediate-emit flow.
+    /// </remarks>
+    internal readonly (CornerLight V0, CornerLight V1, CornerLight V2, CornerLight V3, bool Flipped) ComputeTopFaceLight(in Block block, in BlockPos pos)
+    {
+        FaceQuadrants q = SampleFace(block, pos, 0, 1, 0, 1, 0, 0, 0, 0, 1);
+        CornerLight v0 = q.PlusPlus, v1 = q.PlusMinus, v2 = q.MinusMinus, v3 = q.MinusPlus;
+        return (v0, v1, v2, v3, v0.FlipWeight + v2.FlipWeight > v1.FlipWeight + v3.FlipWeight);
+    }
+
+    internal readonly (CornerLight V0, CornerLight V1, CornerLight V2, CornerLight V3, bool Flipped) ComputeBottomFaceLight(in Block block, in BlockPos pos)
+    {
+        FaceQuadrants q = SampleFace(block, pos, 0, -1, 0, 1, 0, 0, 0, 0, 1);
+        CornerLight v0 = q.MinusPlus, v1 = q.MinusMinus, v2 = q.PlusMinus, v3 = q.PlusPlus;
+        return (v0, v1, v2, v3, v0.FlipWeight + v2.FlipWeight > v1.FlipWeight + v3.FlipWeight);
+    }
+
+    internal readonly (CornerLight V0, CornerLight V1, CornerLight V2, CornerLight V3, bool Flipped) ComputeEastFaceLight(in Block block, in BlockPos pos)
+    {
+        FaceQuadrants q = SampleFace(block, pos, 0, 0, -1, 1, 0, 0, 0, 1, 0);
+        CornerLight v0 = q.MinusPlus, v1 = q.PlusPlus, v2 = q.PlusMinus, v3 = q.MinusMinus;
+        return (v0, v1, v2, v3, v1.FlipWeight + v3.FlipWeight > v2.FlipWeight + v0.FlipWeight);
+    }
+
+    internal readonly (CornerLight V0, CornerLight V1, CornerLight V2, CornerLight V3, bool Flipped) ComputeWestFaceLight(in Block block, in BlockPos pos)
+    {
+        FaceQuadrants q = SampleFace(block, pos, 0, 0, 1, 1, 0, 0, 0, 1, 0);
+        CornerLight v0 = q.MinusPlus, v1 = q.MinusMinus, v2 = q.PlusMinus, v3 = q.PlusPlus;
+        return (v0, v1, v2, v3, v0.FlipWeight + v2.FlipWeight > v1.FlipWeight + v3.FlipWeight);
+    }
+
+    internal readonly (CornerLight V0, CornerLight V1, CornerLight V2, CornerLight V3, bool Flipped) ComputeNorthFaceLight(in Block block, in BlockPos pos)
+    {
+        FaceQuadrants q = SampleFace(block, pos, -1, 0, 0, 0, 0, 1, 0, 1, 0);
+        CornerLight v0 = q.PlusPlus, v1 = q.MinusPlus, v2 = q.MinusMinus, v3 = q.PlusMinus;
+        return (v0, v1, v2, v3, v1.FlipWeight + v3.FlipWeight > v2.FlipWeight + v0.FlipWeight);
+    }
+
+    internal readonly (CornerLight V0, CornerLight V1, CornerLight V2, CornerLight V3, bool Flipped) ComputeSouthFaceLight(in Block block, in BlockPos pos)
+    {
+        FaceQuadrants q = SampleFace(block, pos, 1, 0, 0, 0, 0, 1, 0, 1, 0);
+        CornerLight v0 = q.PlusMinus, v1 = q.MinusMinus, v2 = q.MinusPlus, v3 = q.PlusPlus;
+        return (v0, v1, v2, v3, v3.FlipWeight + v1.FlipWeight > v0.FlipWeight + v2.FlipWeight);
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal readonly void DrawTorch(in Block block, in Vec3D pos, float tiltX, float tiltZ)
     {

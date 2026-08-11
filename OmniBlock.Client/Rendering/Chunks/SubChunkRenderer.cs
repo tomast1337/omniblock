@@ -37,6 +37,15 @@ public class SubChunkRenderer : IDisposable
 
     private readonly WgpuMesh?[] _meshes = new WgpuMesh?[2];
 
+    /// <summary>
+    ///     Debug wireframe companion to the solid mesh (index 0 only — translucent geometry has no
+    ///     wireframe view). Built alongside the normal upload, from the same triangle vertices, so
+    ///     the debug toggle is instant with no remesh: each triangle's 3 edges become 6 line-list
+    ///     vertices, reusing <see cref="ChunkVertex" /> as-is since <c>fs_wireframe</c> ignores every
+    ///     field but position.
+    /// </summary>
+    private WgpuMesh? _wireframeMesh;
+
     private readonly int[] vertexCounts = new int[2];
     private bool disposed;
 
@@ -109,6 +118,36 @@ public class SubChunkRenderer : IDisposable
 
         _meshes[bufferIdx]?.Dispose();
         _meshes[bufferIdx] = WgpuMesh.FromChunkVertices(WebGpuDevice.Current!, meshData);
+
+        if (bufferIdx == 0)
+        {
+            _wireframeMesh?.Dispose();
+            _wireframeMesh = BuildWireframeMesh(meshData);
+        }
+    }
+
+    /// <summary>
+    ///     Expands a flat triangle-list span (v0 v1 v2, v0 v2 v3, ... — see
+    ///     <see cref="Tessellator.addVertex" />'s quad-to-triangle split) into a line-list span of the
+    ///     same triangles' edges, 6 vertices per input triangle. Includes the diagonal each quad was
+    ///     split along, same as any wireframe drawn at the triangle level rather than the original
+    ///     quad's.
+    /// </summary>
+    private static WgpuMesh? BuildWireframeMesh(Span<ChunkVertex> triangles)
+    {
+        if (triangles.Length == 0) return null;
+
+        var lines = new ChunkVertex[triangles.Length * 2];
+        int outIdx = 0;
+        for (int i = 0; i + 2 < triangles.Length; i += 3)
+        {
+            ChunkVertex a = triangles[i], b = triangles[i + 1], c = triangles[i + 2];
+            lines[outIdx++] = a; lines[outIdx++] = b;
+            lines[outIdx++] = b; lines[outIdx++] = c;
+            lines[outIdx++] = c; lines[outIdx++] = a;
+        }
+
+        return WgpuMesh.FromChunkVertices(WebGpuDevice.Current!, lines, PrimitiveTopology.LineList);
     }
 
     public void Update(float deltaTime)
@@ -133,6 +172,15 @@ public class SubChunkRenderer : IDisposable
         _meshes[pass]?.Draw(passEncoder);
     }
 
+    /// <summary>Draws the solid pass's wireframe companion — see <see cref="_wireframeMesh" />.</summary>
+    public unsafe void RenderWireframeWebGpu(RenderPassEncoder* passEncoder)
+    {
+        if (disposed) return;
+        if (vertexCounts[0] == 0) return;
+
+        _wireframeMesh?.Draw(passEncoder);
+    }
+
     public void Dispose()
     {
         if (disposed)
@@ -142,6 +190,7 @@ public class SubChunkRenderer : IDisposable
 
         _meshes[0]?.Dispose();
         _meshes[1]?.Dispose();
+        _wireframeMesh?.Dispose();
 
         vertexCounts[0] = 0;
         vertexCounts[1] = 0;

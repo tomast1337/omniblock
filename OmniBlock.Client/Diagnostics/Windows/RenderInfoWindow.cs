@@ -136,7 +136,7 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
         return LightLevels.Of((packed >> 4) & 0xF, packed & 0xF);
     }
 
-    private static void DrawChunkSection()
+    private void DrawChunkSection()
     {
         ImGuiTextSafe.Text($"Total:    {MetricRegistry.Get(RenderMetrics.ChunksTotal)}");
         ImGuiTextSafe.Text($"Frustum:  {MetricRegistry.Get(RenderMetrics.ChunksFrustum)}");
@@ -146,6 +146,16 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
         ImGui.Spacing();
         ImGuiTextSafe.Text($"Mesh Version Alloc: {MetricRegistry.Get(RenderMetrics.MeshVersionAllocated)}");
         ImGuiTextSafe.Text($"Mesh Version Free:  {MetricRegistry.Get(RenderMetrics.MeshVersionReleased)}");
+
+        ImGui.Spacing();
+        if (ctx.ChunkRenderer is { } chunkRenderer)
+        {
+            bool wireframe = chunkRenderer.WireframeEnabled;
+            if (ImGui.Checkbox("Wireframe", ref wireframe))
+            {
+                chunkRenderer.WireframeEnabled = wireframe;
+            }
+        }
     }
 
     private static void DrawEntitiesSection()
