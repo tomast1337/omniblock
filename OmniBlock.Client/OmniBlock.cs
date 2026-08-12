@@ -1558,16 +1558,23 @@ public partial class OmniBlock :
         World.Entities.UpdateEntityLists();
 
         int previousPlayerId = 0;
+        Holder<GameMode>? previousGameModeHolder = null;
 
         if (Player is not null)
         {
             previousPlayerId = Player.ID;
+            previousGameModeHolder = Player.GameModeHolder;
             World.Entities.Remove(Player);
         }
 
         Player = (ClientPlayerEntity)PlayerController.CreatePlayer(World);
         Player.DimensionId = newDimensionId;
         Player.TeleportToTop();
+
+        if (previousGameModeHolder is not null)
+        {
+            Player.GameModeHolder = previousGameModeHolder;
+        }
 
         if (useBedSpawn)
         {
