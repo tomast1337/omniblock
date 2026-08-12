@@ -240,6 +240,11 @@ public class PlayerManager
 
         player.DimensionId = targetDim;
         player.NetworkHandler.SendMessage(new PlayerRespawnMessage { DimensionId = (sbyte)player.DimensionId });
+        player.NetworkHandler.SendMessage(new PlayerGameModeUpdateMessage
+        {
+            GameModeNamespace = player.GameMode.Namespace.ToString(),
+            GameModeName = player.GameMode.Name
+        });
         currentWorld.Entities.ServerRemove(player);
         player.Dead = false;
         double x = player.X;
