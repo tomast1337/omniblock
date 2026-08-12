@@ -29,6 +29,8 @@ using OmniBlock.Client.Worlds;
 using OmniBlock.Diagnostics;
 using OmniBlock.Entities;
 using OmniBlock.Items;
+using OmniBlock.Luau;
+using OmniBlock.Luau.Host;
 using OmniBlock.Profiling;
 using OmniBlock.Registries;
 using OmniBlock.Server.Internal;
@@ -64,6 +66,13 @@ public partial class OmniBlock :
 
     private const string UnknownVersion = "unknown version";
     private static readonly bool s_isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
+    // Placeholders, not tuned values — docs/luau-persistent-lifecycle-plan.md Open Questions
+    // #1/#2 leave both constants for whoever drives real Host-phase call patterns to tune
+    // against. Round numbers chosen only so the reset/step calls below are wired to something
+    // rather than nothing.
+    private const long LuauInstructionBudgetPerTick = 10_000;
+    private const int LuauGcStepKb = 16;
 
     #endregion
 
@@ -161,6 +170,27 @@ public partial class OmniBlock :
 
     public SoundManager SoundManager { get; private set; } = new();
     public StatFileWriter StatFileWriter { get; private set; }
+
+    /// <summary>
+    ///     Persistent Luau VM for the UI Host API (docs/luau-ui-host-api-plan.md,
+    ///     docs/luau-persistent-lifecycle-plan.md) — null until <c>omniblock_luau</c> is
+    ///     resolvable (see <see cref="LuauQuickRun.IsAvailable" />), since the RID-packaged
+    ///     NuGet (docs/luau-ffi-embedding-plan.md Part 1.4) hasn't shipped yet and most builds
+    ///     of this client won't have the native library. When non-null, its global <c>Host</c>
+    ///     and <c>Registry</c> tables have been installed (<see cref="LuauUiHost.Install" />,
+    ///     <see cref="LuauRegistryHost.Install" />) and both route to
+    ///     <see cref="UiCommandRegistry" />; see <see cref="SetupCoreSystems" />.
+    /// </summary>
+    public LuauState? LuauState { get; private set; }
+
+    /// <summary>
+    ///     This client's UI command table (docs/luau-ui-host-api-plan.md §1). Always constructed,
+    ///     even when <see cref="LuauState" /> is null — a mod's Registry-phase module can still
+    ///     call <see cref="UI.UiCommandRegistry.Register" /> unconditionally without checking
+    ///     whether the native Luau library resolved on this build; it simply won't be reachable
+    ///     from any script if it didn't.
+    /// </summary>
+    public UiCommandRegistry UiCommandRegistry { get; } = new();
 
     #endregion
 
@@ -292,6 +322,51 @@ public partial class OmniBlock :
         // Must run before EntityRenderDispatcher.Instance below constructs every entity model:
         // each one registers its baked geometry here as it is built, on either backend.
         EntityInstanceBatchRenderer.Initialize(Options);
+
+        // Guarded the same way LuauConsoleWindow guards its own construction: touching any
+        // static member of LuauNative before confirming the native library resolves throws and
+        // takes the whole client down with it, since most builds don't have it yet (no
+        // RID-packaged NuGet — docs/luau-ffi-embedding-plan.md Part 1.4 — until then it's only
+        // present when LUAU_NATIVE_LOCAL was used for this build).
+        if (LuauQuickRun.IsAvailable())
+        {
+            LuauState = new LuauState();
+
+            LuauUiHost.Dispatch = UiCommandRegistry.Invoke;
+            LuauUiHost.Install(LuauState.Handle);
+
+            LuauRegistryHost.RegisterUi = (string name, out int id) =>
+            {
+                // Every exception this could throw — an invalid ResourceLocation from a
+                // malformed name, or UiCommandRegistry's own frozen check — must not propagate
+                // into RegisterUiClosure's [UnmanagedCallersOnly] body
+                // (docs/luau-registry-phase-plan.md §4). This lambda is the one place that
+                // actually calls into UiCommandRegistry, so it's the only place that can catch
+                // what that call might throw; a bare catch is deliberate here, not laziness —
+                // the boundary this guards doesn't care which exception type crossed it, only
+                // that none does.
+                try
+                {
+                    id = UiCommandRegistry.ResolveOrCreate(name);
+                    return true;
+                }
+                catch (Exception)
+                {
+                    id = -1;
+                    return false;
+                }
+            };
+            LuauRegistryHost.Install(LuauState.Handle);
+        }
+
+        // Every mod's Registry-phase module must run — and every Registry.registerUi call it
+        // makes must land — strictly before this line; nothing calls Register/ResolveOrCreate
+        // anywhere yet (no mod loader exists to call it from — CLAUDE.md's scripting layer "has
+        // not landed yet"), so this ordering is currently unobserved rather than exercised. Once
+        // mod content registration is a real phase of boot, whether it runs before or after this
+        // point is docs/luau-ui-host-api-plan.md Open Question #2, still open; revisit this
+        // freeze's position then rather than assuming today's placement is final.
+        UiCommandRegistry.Freeze();
 
         TexturePackList = new TexturePacks(this, new DirectoryInfo(_gameDataDir));
         TextureManager = new TextureManager(this, TexturePackList, Options);
@@ -521,6 +596,9 @@ public partial class OmniBlock :
             SkinManager.Dispose();
             TextureManager.Dispose();
             SoundManager.Dispose();
+            LuauUiHost.Dispatch = null;
+            LuauRegistryHost.RegisterUi = null;
+            LuauState?.Dispose();
             Mouse.destroy();
             Keyboard.destroy();
 
@@ -851,6 +929,20 @@ public partial class OmniBlock :
     public void RunTick(float partialTicks)
     {
         using Profiler.ProfilerScope _tick = Profiler.Begin("Tick");
+
+        // Per docs/luau-persistent-lifecycle-plan.md §3/§4: reset the instruction budget and
+        // pace GC once per tick, before any Host-phase call this tick would be allowed to run —
+        // a per-tick ceiling shared across every script invocation that tick, not per-call. No
+        // Host facade calls into this VM yet (docs/luau-ui-host-api-plan.md §3 isn't built), so
+        // this is currently inert plumbing, not something a script can observe yet.
+        if (LuauState is { } luauState)
+        {
+            using (Profiler.Begin("LuauTick"))
+            {
+                luauState.ResetInstructionBudget(LuauInstructionBudgetPerTick);
+                luauState.StepGarbageCollector(LuauGcStepKb);
+            }
+        }
 
         using (Profiler.Begin("SyncStats"))
         {

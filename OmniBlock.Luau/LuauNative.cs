@@ -47,6 +47,34 @@ internal static unsafe partial class LuauNative
     [LibraryImport(LibraryName)]
     internal static partial void lua_pushinteger(IntPtr L, int n);
 
+    [LibraryImport(LibraryName)]
+    internal static partial void lua_pushnil(IntPtr L);
+
+    // Real symbol behind two macros this project needs (lua_setglobal/lua_getglobal — see
+    // lua.h:522-523: `#define lua_setglobal(L, s) lua_setfield(L, LUA_GLOBALSINDEX, (s))`).
+    // Binding "lua_setglobal" directly would build clean and fail at runtime with
+    // EntryPointNotFoundException, the same trap already hit for lua_pushcclosure/luaL_error/
+    // lua_typename elsewhere in this file.
+    [LibraryImport(LibraryName)]
+    internal static partial void lua_setfield(IntPtr L, int idx, [MarshalUsing(typeof(Utf8StringMarshaller))] string k);
+
+    // LUA_GLOBALSINDEX is a compile-time pseudo-index, not an exported symbol:
+    // `#define LUA_GLOBALSINDEX (-LUAI_MAXCSTACK - 2002)` (lua.h:21), and LUAI_MAXCSTACK
+    // defaults to 8000 (luaconf.h:81) unless overridden at build time. native/luau/CMakeLists.txt
+    // does not override it, so -10002 is correct for the omniblock_luau artifact this project
+    // builds — but this is an ABI constant baked into that specific build, not something Luau
+    // exposes for C# to query. If LUAI_MAXCSTACK is ever overridden in the native build (or the
+    // vendored Luau submodule changes its default), this must be updated to match.
+    internal const int GlobalsIndex = -10002;
+
+    // lua_GCOp (lua.h:275-323) — no conditional-compilation branches inside this enum, unlike
+    // lua_Type, so unlike LUA_TNUMBER/LUA_TSTRING these ordinals are safe to hardcode.
+    internal const int LUA_GCSTEP = 6;
+    internal const int LUA_GCCOUNT = 3;
+
+    [LibraryImport(LibraryName)]
+    internal static partial int lua_gc(IntPtr L, int what, int data);
+
     // Luau's lua_pushstring returns void, not const char* like stock Lua 5.1 —
     // it does not hand back an interned-string pointer to the caller.
     [LibraryImport(LibraryName)]
@@ -157,6 +185,25 @@ internal static unsafe partial class LuauNative
     // bound this way from the start for the same reason (Luau owns the returned buffer).
     [LibraryImport(LibraryName)]
     internal static partial IntPtr lua_typename(IntPtr L, int t);
+
+    // lua_newtable(L) is `#define lua_newtable(L) lua_createtable(L, 0, 0)` (lua.h:495) — the
+    // exported symbol is lua_createtable. narr/nrec are just a sizing hint (array-part/hash-part
+    // pre-allocation); passing accurate small counts for a fixed-shape table like a Host facade
+    // avoids a rehash on the first few lua_setfield calls that build it, but 0/0 is also correct,
+    // just less efficient.
+    [LibraryImport(LibraryName)]
+    internal static partial void lua_createtable(IntPtr L, int narr, int nrec);
+
+    // luaL_checkinteger(L, numArg) errors (longjmp, same as luaL_errorL above — safe under the
+    // native build's LUA_USE_LONGJMP config, see LuauCallbacks.Interrupt's doc comment) with a
+    // descriptive "bad argument #n" message when the stack slot isn't a number, INCLUDING when
+    // it's simply absent (missing arguments read as nil, and nil fails the number check the same
+    // way a wrong-typed value would) — so callers get correct "too few arguments" behavior for
+    // free, with no separate lua_gettop guard needed. This is the validating counterpart to
+    // lua_tointegerx above, which is silent/permissive by design; a Host-phase C function
+    // reading script-controlled arguments should use this one, not lua_tointegerx.
+    [LibraryImport(LibraryName)]
+    internal static partial int luaL_checkinteger(IntPtr L, int numArg);
 
     // --- Hot path: cached delegate* unmanaged[Cdecl] pointers -----------------------------
 
