@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.IO;
 using OmniBlock.Entities;
+using OmniBlock.Items;
 using OmniBlock.NBT;
+using OmniBlock.Tests.TestSupport;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Storage;
 using Xunit;
@@ -10,6 +12,36 @@ namespace OmniBlock.Tests;
 
 public class TestWorldSaveStorage
 {
+    [Fact]
+    public void DifferentPlayerNamesDoNotShareSavedData()
+    {
+        string baseDir = Path.Combine(Path.GetTempPath(), "OmniBlockTestWorldPerPlayer");
+        if (Directory.Exists(baseDir)) Directory.Delete(baseDir, true);
+
+        var storage = new RegionWorldStorage(baseDir, "world", true);
+        FakeWorldContext world = new();
+
+        var alice = new TestEntityPlayer(world) { Name = "Alice" };
+        alice.Inventory.Main[0] = new ItemStack(Item.ByName("diamond"), 5);
+        storage.SavePlayerData(alice);
+
+        var bob = new TestEntityPlayer(world) { Name = "Bob" };
+        bob.Inventory.Main[0] = new ItemStack(Item.ByName("arrow"), 1);
+        storage.SavePlayerData(bob);
+
+        var aliceReload = new TestEntityPlayer(world) { Name = "Alice" };
+        storage.LoadPlayerData(aliceReload);
+        Assert.Equal(Item.ByName("diamond"), aliceReload.Inventory.Main[0]?.GetItem());
+        Assert.Equal(5, aliceReload.Inventory.Main[0]?.Count);
+
+        var bobReload = new TestEntityPlayer(world) { Name = "Bob" };
+        storage.LoadPlayerData(bobReload);
+        Assert.Equal(Item.ByName("arrow"), bobReload.Inventory.Main[0]?.GetItem());
+        Assert.Equal(1, bobReload.Inventory.Main[0]?.Count);
+
+        Directory.Delete(baseDir, true);
+    }
+
     [Fact]
     public void TestSavePlayerDataFallback()
     {

@@ -1,11 +1,10 @@
+using Microsoft.Extensions.Logging;
 using OmniBlock.Entities;
 using OmniBlock.Network;
 using OmniBlock.Network.Messages;
 using OmniBlock.Network.Packets;
-using OmniBlock.Server.Internal;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core;
-using Microsoft.Extensions.Logging;
 using Exception = System.Exception;
 
 namespace OmniBlock.Server.Network;
@@ -77,10 +76,6 @@ public class ServerLoginNetworkHandler : NetHandler
 
     public override void onHello(LoginHelloPacket packet)
     {
-        if (server is InternalServer)
-        {
-            packet.Username = "player";
-        }
         // A vanilla client declares nothing here and stays connectable; extended packets are simply
         // never sent to it.
         if (ProtocolHandshake.TryDecode(packet.WorldSeed, out int clientProtocol))
