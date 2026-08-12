@@ -238,3 +238,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-11 — feat: add PathMoverBuffer, PathMoverRenderer, and PathMoverUpdater for straight-line visual movement (Nicolas Vyčas Nery; `e4826f451a938c334cce45b66d6ae552ffa53aab`)
 - 2026-08-11 — feat: integrate Luau scripting engine with native bindings and testing framework (Nicolas Vyčas Nery; `195240c5a3bd92f5b1d1e24ad693a46b0d351a5c`)
 - 2026-08-11 — feat: add Luau scripting support with console and execution functionality (Nicolas Vyčas Nery; `282b683ba36b130731515fe62689e2454d1c1a27`)
+- 2026-08-12 — Implement Luau UI Host and State Management (Nicolas Vyčas Nery; `bfb96dd79c21d18731de7b900b378bae5fee60c4`)
