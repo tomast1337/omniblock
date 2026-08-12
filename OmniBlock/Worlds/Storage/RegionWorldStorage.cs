@@ -1,3 +1,6 @@
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.Extensions.Logging;
 using OmniBlock.Entities;
 using OmniBlock.NBT;
 using OmniBlock.Server.Worlds;
@@ -5,7 +8,6 @@ using OmniBlock.Worlds.Chunks.Storage;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Dimensions;
 using OmniBlock.Worlds.Storage.RegionFormat;
-using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Worlds.Storage;
 
@@ -228,6 +230,15 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
         return new FileInfo(Path.Combine(_dataDir.FullName, $"{name}.dat"));
     }
 
+    // Usernames may contain characters that aren't safe as filenames (or aren't safe across every
+    // OS's filesystem); hash them so the file layout doesn't depend on what a player is allowed to
+    // name themselves.
+    private static string HashPlayerFileName(string playerName)
+    {
+        byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(playerName));
+        return Convert.ToHexStringLower(hash);
+    }
+
     public void SavePlayerData(EntityPlayer player)
     {
         try
@@ -236,7 +247,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
             player.Write(tag);
 
             string tempFile = Path.Combine(_playersDirectory.FullName, "_tmp_.dat");
-            string finalFile = Path.Combine(_playersDirectory.FullName, $"{player.Name}.dat");
+            string finalFile = Path.Combine(_playersDirectory.FullName, $"{HashPlayerFileName(player.Name)}.dat");
 
             using (var stream = File.Create(tempFile))
             {
@@ -264,11 +275,26 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
     {
         try
         {
-            string playerFile = Path.Combine(_playersDirectory.FullName, $"{playerName}.dat");
+            string playerFile = Path.Combine(_playersDirectory.FullName, $"{HashPlayerFileName(playerName)}.dat");
             if (File.Exists(playerFile))
             {
                 using var stream = File.OpenRead(playerFile);
                 return NbtIo.ReadCompressed(stream);
+            }
+
+            // Back-compat: saves written before player files were hash-named stored them by the
+            // literal (untrusted) username. Read that once and migrate it to the hashed name.
+            string legacyNamedFile = Path.Combine(_playersDirectory.FullName, $"{playerName}.dat");
+            if (File.Exists(legacyNamedFile))
+            {
+                using var stream = File.OpenRead(legacyNamedFile);
+                NBTTagCompound legacyTag = NbtIo.ReadCompressed(stream);
+
+                using var writeStream = File.Create(playerFile);
+                NbtIo.WriteCompressed(legacyTag, writeStream);
+
+                _logger.LogInformation($"Migrated player data for {playerName} to hashed filename");
+                return legacyTag;
             }
 
             string levelFile = Path.Combine(_saveDirectory.FullName, "level.dat");
@@ -287,7 +313,7 @@ internal class RegionWorldStorage : IWorldStorage, IPlayerStorage
                         using var writeStream = File.Create(playerFile);
                         NbtIo.WriteCompressed(playerTag, writeStream);
 
-                        _logger.LogInformation($"Migrated singleplayer player data from level.dat to {playerName}.dat");
+                        _logger.LogInformation($"Migrated singleplayer player data from level.dat for {playerName}");
                         return playerTag;
                     }
                 }

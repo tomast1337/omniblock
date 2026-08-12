@@ -240,3 +240,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-11 — feat: add Luau scripting support with console and execution functionality (Nicolas Vyčas Nery; `282b683ba36b130731515fe62689e2454d1c1a27`)
 - 2026-08-12 — Implement Luau UI Host and State Management (Nicolas Vyčas Nery; `bfb96dd79c21d18731de7b900b378bae5fee60c4`)
 - 2026-08-12 — Fix gamemode reset to Survival on dimension change (Nicolas Vyčas Nery; `9439cfb6e1ccd39d1f56aa5a82d66db23029726f`)
+- 2026-08-12 — Fix singleplayer sharing one inventory regardless of nickname (Nicolas Vyčas Nery; `d4c3a7062f69de87053ce6fe1c0884788a0cf18d`)
