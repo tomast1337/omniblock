@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Entities;
@@ -13,7 +14,6 @@ using OmniBlock.Server.Internal;
 using OmniBlock.Util;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core;
-using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Server.Network;
 
@@ -27,6 +27,19 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
     private int lastKeepAliveTime;
     private int floatingTime;
     private bool moved;
+
+    /// <summary>See <see cref="MoveSpeedBudget" /> — squared-distance token bucket for the "moved too quickly" check in <see cref="onPlayerMove" />.</summary>
+    private double _moveBudgetSq = MoveSpeedBudget.MaxDistanceSqPerTick;
+
+    private long _lastMoveBudgetRefillMs = Environment.TickCount64;
+
+    /// <summary>
+    ///     Ticks a hovering/near-stationary vertical delta is tolerated before <see cref="onPlayerMove" />
+    ///     kicks for flying, cut down from vanilla's 80 (~4 s). 80 ticks of unrestricted flight before
+    ///     any action is taken is a wide-open window; 20 (~1 s) still tolerates a legitimate lag spike
+    ///     or elevator/piston ride without being long enough to be useful as a fly hack.
+    /// </summary>
+    private const int MaxFloatingTicks = 20;
     private double teleportTargetX;
     private double teleportTargetY;
     private double teleportTargetZ;
@@ -307,7 +320,14 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             double deltaY = targetY - player.Y;
             double deltaZ = targetZ - player.Z;
             double movedDistanceSq = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
-            if (movedDistanceSq > 100.0)
+
+            long nowMs = Environment.TickCount64;
+            double elapsedMs = nowMs - _lastMoveBudgetRefillMs;
+            _lastMoveBudgetRefillMs = nowMs;
+
+            MoveBudgetResult budgetResult = MoveSpeedBudget.Evaluate(_moveBudgetSq, elapsedMs, movedDistanceSq);
+            _moveBudgetSq = budgetResult.RemainingBudgetSq;
+            if (budgetResult.ExceededBudget)
             {
                 _logger.LogWarning($"{player.Name} moved too quickly!");
                 disconnect("You moved too quickly :( (Hacking?)");
@@ -351,7 +371,7 @@ public class ServerPlayNetworkHandler : NetHandler, ICommandOutput
             else if (deltaY >= -0.03125)
             {
                 floatingTime++;
-                if (floatingTime > 80 && player.GameMode.DisallowFlying)
+                if (floatingTime > MaxFloatingTicks && player.GameMode.DisallowFlying)
                 {
                     _logger.LogWarning($"{player.Name} was kicked for floating too long!");
                     disconnect("Flying is not enabled on this server");
