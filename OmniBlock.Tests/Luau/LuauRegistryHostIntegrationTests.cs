@@ -14,6 +14,7 @@ namespace OmniBlock.Tests.Luau;
 ///     Skipped, not failed, when <c>omniblock_luau</c> isn't resolvable (native/luau/build-local.sh
 ///     hasn't been run for this checkout), same as every other test in this directory.
 /// </summary>
+[Collection(LuauHostCollection.Name)]
 public sealed unsafe class LuauRegistryHostIntegrationTests
 {
     [SkippableFact]

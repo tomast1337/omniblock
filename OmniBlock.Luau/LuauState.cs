@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace OmniBlock.Luau;
 
@@ -117,6 +118,123 @@ public sealed unsafe class LuauState : IDisposable
             ObjectDisposedException.ThrowIf(_disposed, this);
             return LuauNative.lua_gc(_state, LuauNative.LUA_GCCOUNT, 0);
         }
+    }
+
+    /// <summary>
+    ///     Evaluates one console submission in this persistent VM. Global variables and functions
+    ///     survive subsequent calls; temporary return values and errors are removed from the stack.
+    ///     A bare expression is accepted as REPL shorthand for <c>return expression</c>.
+    /// </summary>
+    public bool TryExecute(string source, out string output)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        try
+        {
+            LuauNative.lua_settop(_state, 0);
+            if (TryExecuteSource("return " + source, out output, out bool expressionLoaded))
+            {
+                return true;
+            }
+
+            if (expressionLoaded)
+            {
+                return false;
+            }
+
+            // A failed expression parse leaves an error object on the stack. Statements such as
+            // assignments and function declarations get a second compile attempt without the REPL
+            // expression wrapper.
+            LuauNative.lua_settop(_state, 0);
+            return TryExecuteSource(source, out output, out _);
+        }
+        catch (Exception ex)
+        {
+            output = $"internal error: {ex.Message}";
+            return false;
+        }
+        finally
+        {
+            LuauNative.lua_settop(_state, 0);
+        }
+    }
+
+    private bool TryExecuteSource(string source, out string output, out bool loaded)
+    {
+        loaded = false;
+        byte[] sourceBytes = Encoding.UTF8.GetBytes(source);
+        byte* bytecode;
+        nuint bytecodeSize;
+        fixed (byte* sourcePtr = sourceBytes)
+        {
+            bytecode = LuauNative.luau_compile(sourcePtr, (nuint)sourceBytes.Length, IntPtr.Zero, &bytecodeSize);
+        }
+
+        if (bytecode == null)
+        {
+            output = "compile failed: no bytecode produced";
+            return false;
+        }
+
+        try
+        {
+            if (LuauNative.luau_load(_state, "=console", bytecode, bytecodeSize, 0) != 0)
+            {
+                output = DescribeValue(-1);
+                return false;
+            }
+        }
+        finally
+        {
+            LuauNative.omniblock_luau_free(bytecode);
+        }
+
+        loaded = true;
+        if (LuauNative.lua_pcall(_state, 0, -1, 0) != 0)
+        {
+            output = DescribeValue(-1);
+            return false;
+        }
+
+        int top = LuauNative.lua_gettop(_state);
+        if (top == 0)
+        {
+            output = "(no return value)";
+            return true;
+        }
+
+        string[] values = new string[top];
+        for (int i = 0; i < top; i++)
+        {
+            values[i] = DescribeValue(i + 1);
+        }
+
+        output = string.Join(", ", values);
+        return true;
+    }
+
+    private string DescribeValue(int index)
+    {
+        int type = LuauNative.lua_type(_state, index);
+        if (type == 0)
+        {
+            return "nil";
+        }
+
+        if (type == 1)
+        {
+            return LuauNative.lua_toboolean(_state, index) != 0 ? "true" : "false";
+        }
+
+        if (LuauNative.lua_isstring(_state, index) != 0)
+        {
+            IntPtr pointer = LuauNative.lua_tolstring(_state, index, out nuint length);
+            return pointer == IntPtr.Zero ? string.Empty : Encoding.UTF8.GetString((byte*)pointer, (int)length);
+        }
+
+        IntPtr namePointer = LuauNative.lua_typename(_state, type);
+        string typeName = namePointer == IntPtr.Zero ? "unknown" : Marshal.PtrToStringUTF8(namePointer) ?? "unknown";
+        return $"<{typeName}>";
     }
 
     public void Dispose()

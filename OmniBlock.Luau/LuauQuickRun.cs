@@ -8,12 +8,9 @@ namespace OmniBlock.Luau;
 ///     Public entry point for one-shot, ephemeral Luau script execution: boot a fresh
 ///     <c>lua_State</c>, compile+load+run the given source, describe whatever it left on the
 ///     stack as text, and close the state — no VM lifetime survives past a single
-///     <see cref="TryExecute" /> call. Built for the debug-menu console
-///     (<c>OmniBlock.Client/Diagnostics/Windows/LuauConsoleWindow.cs</c>): a debug user types
-///     an expression, gets a result or an error back, nothing persists between sends. This is
-///     deliberately not a REPL (no shared globals across calls) and not the Step 6 Host API —
-///     see docs/luau-e2e-execution-plan.md for why the ephemeral shape was chosen over a
-///     persistent VM.
+///     <see cref="TryExecute" /> call. Retained as a standalone one-shot execution utility and
+///     native-library availability probe; the unified client console uses persistent
+///     <see cref="LuauState" /> execution instead.
 ///     <see cref="LuauNative" />/<see cref="LuauCallbacks" /> stay internal; this is the one
 ///     public surface callers outside this assembly should use.
 ///     Each VM has Luau's standard library loaded (<see cref="LuauNative.luaL_openlibs" />) —

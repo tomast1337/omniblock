@@ -32,6 +32,23 @@
     <AdditionalFiles Include="BannedSymbols.txt" />
   </ItemGroup>
 
+  <!--
+    Source-checkout bridge until OmniBlock.Luau.Native ships as a RID package. The executable,
+    not the referenced class library, is the native loader's probing directory, so content copied
+    only into OmniBlock.Luau/bin is not discoverable by the client. Once build-local.sh has created
+    the platform artifact, copy it directly beside OmniBlock.Client.dll on every build.
+  -->
+  <PropertyGroup>
+    <_LuauNativeBuildDir>$(MSBuildThisFileDirectory)../native/luau/build</_LuauNativeBuildDir>
+    <_LuauNativeLocalArtifact Condition="$([MSBuild]::IsOSPlatform('Linux'))">$(_LuauNativeBuildDir)/libomniblock_luau.so</_LuauNativeLocalArtifact>
+    <_LuauNativeLocalArtifact Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(_LuauNativeBuildDir)/libomniblock_luau.dylib</_LuauNativeLocalArtifact>
+    <_LuauNativeLocalArtifact Condition="$([MSBuild]::IsOSPlatform('Windows'))">$(_LuauNativeBuildDir)/omniblock_luau.dll</_LuauNativeLocalArtifact>
+  </PropertyGroup>
+
+  <Target Name="CopyLocalLuauNative" AfterTargets="Build" Condition="Exists('$(_LuauNativeLocalArtifact)')">
+    <Copy SourceFiles="$(_LuauNativeLocalArtifact)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+  </Target>
+
   <ItemGroup>
     <None Include="assets\**\*" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\OmniBlock\assets\**\*">

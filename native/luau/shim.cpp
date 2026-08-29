@@ -12,6 +12,7 @@
 #include <lua.h>
 #include <lualib.h>
 #include <luacode.h>
+#include <cstdlib>
 
 #if defined(_WIN32)
 #define OMNIBLOCK_LUAU_API extern "C" __declspec(dllexport)
@@ -26,4 +27,11 @@
 OMNIBLOCK_LUAU_API int omniblock_luau_abi_version(void)
 {
     return 1;
+}
+
+// luau_compile returns a malloc-owned buffer. Export its matching release operation so managed
+// callers never guess which platform CRT owns that allocation.
+OMNIBLOCK_LUAU_API void omniblock_luau_free(void* pointer)
+{
+    std::free(pointer);
 }

@@ -142,6 +142,34 @@ public sealed unsafe class LuauStateTests
         Assert.True(state.HeapSizeKb >= 0);
     }
 
+    [SkippableFact]
+    public void TryExecute_preservesGlobalsAcrossSubmissions()
+    {
+        Skip.IfNot(IsNativeLibraryAvailable(), "native library not resolvable for this checkout.");
+        using LuauState state = new();
+        state.ResetInstructionBudget(10_000);
+
+        Assert.True(state.TryExecute("answer = 40", out _));
+        Assert.True(state.TryExecute("answer + 2", out string output));
+
+        Assert.Equal("42", output);
+    }
+
+    [SkippableFact]
+    public void TryExecute_clearsResultsWithoutClearingGlobals()
+    {
+        Skip.IfNot(IsNativeLibraryAvailable(), "native library not resolvable for this checkout.");
+        using LuauState state = new();
+        state.ResetInstructionBudget(10_000);
+
+        Assert.True(state.TryExecute("value = 'persistent'", out _));
+        Assert.True(state.TryExecute("1, 2", out string first));
+        Assert.True(state.TryExecute("value", out string second));
+
+        Assert.Equal("1, 2", first);
+        Assert.Equal("persistent", second);
+    }
+
     private static int RunAndGetTopType(IntPtr L, string source)
     {
         byte[] sourceBytes = System.Text.Encoding.UTF8.GetBytes(source);

@@ -48,6 +48,9 @@ internal static unsafe partial class LuauNative
     internal static partial void lua_pushinteger(IntPtr L, int n);
 
     [LibraryImport(LibraryName)]
+    internal static partial void lua_pushboolean(IntPtr L, int value);
+
+    [LibraryImport(LibraryName)]
     internal static partial void lua_pushnil(IntPtr L);
 
     // Real symbol behind two macros this project needs (lua_setglobal/lua_getglobal — see
@@ -126,6 +129,9 @@ internal static unsafe partial class LuauNative
     internal static partial byte* luau_compile(byte* source, nuint size, IntPtr options, nuint* outsize);
 
     [LibraryImport(LibraryName)]
+    internal static partial void omniblock_luau_free(void* pointer);
+
+    [LibraryImport(LibraryName)]
     internal static partial int luau_load(
         IntPtr L,
         [MarshalUsing(typeof(Utf8StringMarshaller))] string chunkname,
@@ -172,6 +178,11 @@ internal static unsafe partial class LuauNative
     // instead of the real length would silently truncate those.
     [LibraryImport(LibraryName)]
     internal static partial IntPtr lua_tolstring(IntPtr L, int idx, out nuint len);
+
+    // Unlike lua_tolstring, this follows print semantics by invoking __tostring and pushes the
+    // resulting string onto the stack. Callers must pop that temporary result.
+    [LibraryImport(LibraryName)]
+    internal static partial IntPtr luaL_tolstring(IntPtr L, int idx, out nuint len);
 
     // Returns a pointer into Luau's static, compiled-in luaT_typenames table — NOT a
     // caller-owned buffer. Deliberately bound as a raw IntPtr, not
@@ -245,6 +256,9 @@ internal static unsafe partial class LuauNative
 
     internal static readonly delegate* unmanaged[Cdecl]<IntPtr, int> lua_gettop =
         (delegate* unmanaged[Cdecl]<IntPtr, int>)NativeLibrary.GetExport(s_libraryHandle, "lua_gettop");
+
+    internal static readonly delegate* unmanaged[Cdecl]<IntPtr, int, void> lua_settop =
+        (delegate* unmanaged[Cdecl]<IntPtr, int, void>)NativeLibrary.GetExport(s_libraryHandle, "lua_settop");
 
     // Read from inside LuauCallbacks.Interrupt — the highest-frequency call in the whole
     // system (every loop back-edge/call/ret/gc safepoint) — to fetch the instruction-budget

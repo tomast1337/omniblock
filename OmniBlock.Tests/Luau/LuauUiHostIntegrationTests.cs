@@ -21,6 +21,7 @@ namespace OmniBlock.Tests.Luau;
 ///         API work, which is exactly what this test is exercising.
 ///     </para>
 /// </summary>
+[Collection(LuauHostCollection.Name)]
 public sealed unsafe class LuauUiHostIntegrationTests
 {
     [SkippableFact]

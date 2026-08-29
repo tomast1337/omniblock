@@ -1,5 +1,4 @@
 using System.Numerics;
-using OmniBlock.Client.Entities;
 using Hexa.NET.ImGui;
 using Microsoft.Extensions.Logging;
 
@@ -7,6 +6,7 @@ namespace OmniBlock.Client.Diagnostics.Windows;
 
 internal sealed class ConsoleWindow(DebugWindowContext ctx) : DebugWindow
 {
+    private static readonly ILogger s_luauLogger = Log.Instance.For("Luau");
     private string _input = string.Empty;
     private bool _autoScroll = true;
     private bool _scrollToBottom;
@@ -77,8 +77,8 @@ internal sealed class ConsoleWindow(DebugWindowContext ctx) : DebugWindow
 
         ImGui.Separator();
 
-        ClientPlayerEntity? player = ctx.Player;
-        if (player is null)
+        bool inputAvailable = ctx.LuauState != null;
+        if (!inputAvailable)
             ImGui.BeginDisabled();
 
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize("Send").X - ImGui.GetStyle().ItemSpacing.X * 2 - ImGui.GetStyle().FramePadding.X * 4);
@@ -88,16 +88,26 @@ internal sealed class ConsoleWindow(DebugWindowContext ctx) : DebugWindow
             _refocusInput = false;
         }
 
-        bool submitted = ImGui.InputText("##console_input", ref _input, 256, ImGuiInputTextFlags.EnterReturnsTrue);
+        bool submitted = ImGui.InputText("##console_input", ref _input, 4096, ImGuiInputTextFlags.EnterReturnsTrue);
         ImGui.SameLine();
         bool sendClicked = ImGui.Button("Send");
 
-        if (player is null)
+        if (!inputAvailable)
             ImGui.EndDisabled();
 
-        if ((submitted || sendClicked) && player is not null && !string.IsNullOrWhiteSpace(_input))
+        if ((submitted || sendClicked) && inputAvailable && !string.IsNullOrWhiteSpace(_input))
         {
-            player.SendChatMessage(_input.Trim());
+            string input = _input.Trim();
+            s_luauLogger.LogInformation("> {Source}", input);
+            if (ctx.LuauState!.TryExecute(input, out string output))
+            {
+                s_luauLogger.LogInformation("{Output}", output);
+            }
+            else
+            {
+                s_luauLogger.LogError("{Output}", output);
+            }
+
             _input = string.Empty;
             _scrollToBottom = true;
             _refocusInput = true;

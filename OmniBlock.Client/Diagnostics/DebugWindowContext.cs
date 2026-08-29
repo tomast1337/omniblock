@@ -7,6 +7,7 @@ using OmniBlock.Client.UI;
 using OmniBlock.Client.UI.Screens.InGame;
 using OmniBlock.Util.Hit;
 using OmniBlock.Worlds.Core;
+using OmniBlock.Luau;
 
 namespace OmniBlock.Client.Diagnostics;
 
@@ -50,6 +51,7 @@ internal sealed class DebugWindowContext(OmniBlock game)
     public UIContext UIContext => game.UIContext;
     public SoundManager SoundManager => game.SoundManager;
     public TextureManager TextureManager => game.TextureManager;
+    public LuauState? LuauState => game.LuauState;
 
     /// <summary>
     /// The top-left screen position (in ImGui/window pixels) of the game viewport when the

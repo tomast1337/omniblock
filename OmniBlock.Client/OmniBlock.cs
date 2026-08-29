@@ -191,6 +191,7 @@ public partial class OmniBlock :
     ///     from any script if it didn't.
     /// </summary>
     public UiCommandRegistry UiCommandRegistry { get; } = new();
+    public UiDomDocument UiDomDocument { get; private set; } = null!;
 
     #endregion
 
@@ -323,14 +324,36 @@ public partial class OmniBlock :
         // each one registers its baked geometry here as it is built, on either backend.
         EntityInstanceBatchRenderer.Initialize(Options);
 
-        // Guarded the same way LuauConsoleWindow guards its own construction: touching any
-        // static member of LuauNative before confirming the native library resolves throws and
-        // takes the whole client down with it, since most builds don't have it yet (no
-        // RID-packaged NuGet — docs/luau-ffi-embedding-plan.md Part 1.4 — until then it's only
-        // present when LUAU_NATIVE_LOCAL was used for this build).
-        if (LuauQuickRun.IsAvailable())
+        // Program.cs makes Luau a required client dependency before startup reaches this point.
+        // Keep this assertion close to VM construction so alternate hosts that bypass Program's
+        // entry point also fail with an actionable message instead of silently disabling scripts.
+        if (!LuauQuickRun.IsAvailable())
+        {
+            _logger.LogCritical(
+                "Required Luau runtime is unavailable. Run native/luau/build-local.sh and rebuild the client, or include the RID native package.");
+            throw new DllNotFoundException("Required Luau runtime 'omniblock_luau' is unavailable.");
+        }
+
         {
             LuauState = new LuauState();
+
+            UiDomDocument = new UiDomDocument(() => CurrentScreen?.Root, () => HUD?.Root);
+            LuauDomHost.Query = UiDomDocument.Query;
+            LuauDomHost.Parent = UiDomDocument.GetParent;
+            LuauDomHost.ChildCount = UiDomDocument.GetChildCount;
+            LuauDomHost.Child = UiDomDocument.GetChild;
+            LuauDomHost.GetString = UiDomDocument.GetString;
+            LuauDomHost.SetString = UiDomDocument.SetString;
+            LuauDomHost.GetBool = UiDomDocument.GetBool;
+            LuauDomHost.SetBool = UiDomDocument.SetBool;
+            LuauDomHost.Install(LuauState.Handle);
+            LuauLogHost.WriteLine = message => Log.Instance.For("Luau").LogInformation("{Message}", message);
+            LuauLogHost.Install(LuauState.Handle);
+            LuauState.ResetInstructionBudget(LuauInstructionBudgetPerTick);
+            if (!LuauState.TryExecute(LuauDomHost.Bootstrap, out string domBootstrapError))
+            {
+                _logger.LogError("Failed to install the Luau DOM bootstrap: {Error}", domBootstrapError);
+            }
 
             LuauUiHost.Dispatch = UiCommandRegistry.Invoke;
             LuauUiHost.Install(LuauState.Handle);
@@ -598,6 +621,15 @@ public partial class OmniBlock :
             SoundManager.Dispose();
             LuauUiHost.Dispatch = null;
             LuauRegistryHost.RegisterUi = null;
+            LuauDomHost.Query = null;
+            LuauDomHost.Parent = null;
+            LuauDomHost.ChildCount = null;
+            LuauDomHost.Child = null;
+            LuauDomHost.GetString = null;
+            LuauDomHost.SetString = null;
+            LuauDomHost.GetBool = null;
+            LuauDomHost.SetBool = null;
+            LuauLogHost.WriteLine = null;
             LuauState?.Dispose();
             Mouse.destroy();
             Keyboard.destroy();

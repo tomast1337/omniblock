@@ -242,3 +242,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-12 — Fix gamemode reset to Survival on dimension change (Nicolas Vyčas Nery; `9439cfb6e1ccd39d1f56aa5a82d66db23029726f`)
 - 2026-08-12 — Fix singleplayer sharing one inventory regardless of nickname (Nicolas Vyčas Nery; `d4c3a7062f69de87053ce6fe1c0884788a0cf18d`)
 - 2026-08-15 — feat: implement MoveSpeedBudget for anti-speed-hack checks and add corresponding tests (Nicolas Vyčas Nery; `8ec15c5b110569345dbf91d0d5c500e3fb6b307f`)
+- 2026-08-29 — feat: add persistent Luau console and DOM-style UI control (Nicolas Vyčas Nery; `c9c64e1ac90b903816b9ddd909f888784d8a2d1d`)

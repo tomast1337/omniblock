@@ -3,8 +3,8 @@ using OmniBlock.Luau;
 namespace OmniBlock.Tests.Luau;
 
 /// <summary>
-///     Covers <see cref="LuauQuickRun" />, the public ephemeral-execution surface the debug-menu
-///     Luau console (<c>OmniBlock.Client/Diagnostics/Windows/LuauConsoleWindow.cs</c>) calls.
+///     Covers <see cref="LuauQuickRun" />, the public ephemeral-execution utility retained
+///     alongside the persistent unified console.
 ///     Same native-library requirement as <see cref="LuauExecutionTests" /> and
 ///     <see cref="LuauInterruptIntegrationTests" />: requires native/luau/build-local.sh to have
 ///     been run for this checkout. Unlike those two, this exercises the public wrapper end to
