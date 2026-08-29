@@ -7,7 +7,7 @@ namespace OmniBlock.Tests.Luau;
 
 /// <summary>
 ///     Full scripting-boundary check: a real UIElement menu tree is exposed through the same
-///     handle document and unmanaged Host facade as the client, then discovered and asserted by
+///     handle table and unmanaged Host facade as the client, then discovered and asserted by
 ///     Luau code without the test handing individual controls to the script.
 /// </summary>
 [Collection(LuauHostCollection.Name)]
@@ -37,7 +37,7 @@ local function walk(node)
     for index = 1, node.childCount do walk(node:child(index)) end
 end
 
-walk(document.root)
+walk(OMNI.root)
 assert(found["Singleplayer"] == "Button", "Singleplayer button missing")
 assert(found["Multiplayer"] == "Button", "Multiplayer button missing")
 assert(found["Options..."] == "Button", "Options button missing")

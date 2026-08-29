@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Client.Diagnostics.Windows;
 
-internal sealed class ConsoleWindow(DebugWindowContext ctx) : DebugWindow
+internal sealed unsafe class ConsoleWindow : DebugWindow
 {
     private static readonly ILogger s_luauLogger = Log.Instance.For("Luau");
     private string _input = string.Empty;
@@ -12,6 +12,16 @@ internal sealed class ConsoleWindow(DebugWindowContext ctx) : DebugWindow
     private bool _scrollToBottom;
     private int _prevEntryCount;
     private bool _refocusInput;
+    private readonly DebugWindowContext _ctx;
+    private readonly LuauCompletion _completion = new();
+    private readonly ImGuiInputTextCallback _completionCallback;
+    private string _completionHint = "Tab completes Luau names";
+
+    public ConsoleWindow(DebugWindowContext ctx)
+    {
+        _ctx = ctx;
+        _completionCallback = OnComplete;
+    }
 
     private static readonly Dictionary<LogLevel, Vector4> s_levelColors = new()
     {
@@ -45,7 +55,7 @@ internal sealed class ConsoleWindow(DebugWindowContext ctx) : DebugWindow
 
         ImGui.Separator();
 
-        float inputHeight = ImGui.GetFrameHeightWithSpacing() + ImGui.GetStyle().ItemSpacing.Y;
+        float inputHeight = ImGui.GetFrameHeightWithSpacing() + ImGui.GetTextLineHeightWithSpacing() + ImGui.GetStyle().ItemSpacing.Y;
         ImGui.BeginChild("##log_scroll", new Vector2(0f, -inputHeight), ImGuiChildFlags.None, ImGuiWindowFlags.HorizontalScrollbar);
 
         LogEntry[] entries = Log.Instance.GetRecentEntries();
@@ -77,7 +87,7 @@ internal sealed class ConsoleWindow(DebugWindowContext ctx) : DebugWindow
 
         ImGui.Separator();
 
-        bool inputAvailable = ctx.LuauState != null;
+        bool inputAvailable = _ctx.LuauState != null;
         if (!inputAvailable)
             ImGui.BeginDisabled();
 
@@ -88,9 +98,13 @@ internal sealed class ConsoleWindow(DebugWindowContext ctx) : DebugWindow
             _refocusInput = false;
         }
 
-        bool submitted = ImGui.InputText("##console_input", ref _input, 4096, ImGuiInputTextFlags.EnterReturnsTrue);
+        bool submitted = ImGui.InputText("##console_input", ref _input, 4096,
+            ImGuiInputTextFlags.EnterReturnsTrue | ImGuiInputTextFlags.CallbackCompletion,
+            _completionCallback);
         ImGui.SameLine();
         bool sendClicked = ImGui.Button("Send");
+
+        ImGuiTextSafe.TextColored(new Vector4(0.6f, 0.6f, 0.6f, 1f), _completionHint);
 
         if (!inputAvailable)
             ImGui.EndDisabled();
@@ -99,9 +113,10 @@ internal sealed class ConsoleWindow(DebugWindowContext ctx) : DebugWindow
         {
             string input = _input.Trim();
             s_luauLogger.LogInformation("> {Source}", input);
-            if (ctx.LuauState!.TryExecute(input, out string output))
+            if (_ctx.LuauState!.TryExecute(input, out string output))
             {
                 s_luauLogger.LogInformation("{Output}", output);
+                _completion.ObserveSuccessfulSubmission(input);
             }
             else
             {
@@ -112,5 +127,31 @@ internal sealed class ConsoleWindow(DebugWindowContext ctx) : DebugWindow
             _scrollToBottom = true;
             _refocusInput = true;
         }
+    }
+
+    private int OnComplete(ImGuiInputTextCallbackData* rawData)
+    {
+        ImGuiInputTextCallbackDataPtr data = new(rawData);
+        int cursor = data.CursorPos;
+        string source = System.Text.Encoding.UTF8.GetString(data.Buf, cursor);
+        CompletionEdit edit = _completion.Complete(source, source.Length);
+
+        if (edit.Replacement != source[edit.Start..])
+        {
+            // ImGui cursor/edit positions are UTF-8 byte offsets, while the completion engine
+            // deliberately works in ordinary C# character offsets.
+            int editStartBytes = System.Text.Encoding.UTF8.GetByteCount(source.AsSpan(0, edit.Start));
+            int editLengthBytes = System.Text.Encoding.UTF8.GetByteCount(source.AsSpan(edit.Start, edit.Length));
+            data.DeleteChars(editStartBytes, editLengthBytes);
+            data.InsertChars(editStartBytes, edit.Replacement);
+        }
+
+        _completionHint = edit.Matches.Count switch
+        {
+            0 => "No completion",
+            1 => edit.Matches[0],
+            _ => string.Join("  ", edit.Matches.Take(8)) + (edit.Matches.Count > 8 ? "  …" : string.Empty)
+        };
+        return 0;
     }
 }
