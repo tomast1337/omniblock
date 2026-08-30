@@ -77,6 +77,63 @@ public sealed class LuauSchedulerIntegrationTests
         AssertValue(state, "recovered", "true");
     }
 
+    [SkippableFact]
+    public void WaitUntilResumesWhenPredicateBecomesTrue()
+    {
+        Skip.IfNot(LuauQuickRun.IsAvailable(), "native library not resolvable for this checkout.");
+        using LuauState state = CreateState();
+
+        Assert.True(state.TryExecute(
+            "ready = false; finished = false; " +
+            "OMNI.run(function() OMNI.waitUntil(function() return ready end, 1); finished = true end)",
+            out string scheduleError), scheduleError);
+
+        Tick(state, 0.05);
+        AssertValue(state, "finished", "false");
+        Assert.True(state.TryExecute("ready = true", out string readyError), readyError);
+        Tick(state, 0.05);
+        AssertValue(state, "finished", "true");
+    }
+
+    [SkippableFact]
+    public void WaitUntilTimeoutFailsOnlyItsTask()
+    {
+        Skip.IfNot(LuauQuickRun.IsAvailable(), "native library not resolvable for this checkout.");
+        using LuauState state = CreateState();
+        List<string> lines = [];
+        LuauLogHost.WriteLine = lines.Add;
+        LuauLogHost.Install(state.Handle);
+
+        try
+        {
+            Assert.True(state.TryExecute(
+                "OMNI.run(function() OMNI.waitUntil(function() return false end, 0.1) end)",
+                out string scheduleError), scheduleError);
+
+            Tick(state, 0.05);
+            Tick(state, 0.05);
+            Tick(state, 0.05);
+
+            Assert.Contains(lines, line => line.Contains("waitUntil timed out", StringComparison.Ordinal));
+        }
+        finally
+        {
+            LuauLogHost.WriteLine = null;
+        }
+    }
+
+    [SkippableFact]
+    public void WaitUntilValidatesItsArguments()
+    {
+        Skip.IfNot(LuauQuickRun.IsAvailable(), "native library not resolvable for this checkout.");
+        using LuauState state = CreateState();
+
+        Assert.False(state.TryExecute("OMNI.waitUntil(true)", out string predicateError));
+        Assert.Contains("predicate function", predicateError);
+        Assert.False(state.TryExecute("OMNI.waitUntil(function() return false end, -1)", out string timeoutError));
+        Assert.Contains("finite non-negative", timeoutError);
+    }
+
     private static LuauState CreateState()
     {
         LuauState state = new();

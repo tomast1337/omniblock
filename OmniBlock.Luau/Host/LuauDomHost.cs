@@ -16,10 +16,11 @@ public static unsafe class LuauDomHost
     public static Func<int, string, bool?>? GetBool;
     public static Func<int, string, bool, bool>? SetBool;
     public static Func<int, bool>? Click;
+    public static Func<string?>? Screen;
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 9);
+        LuauNative.lua_createtable(l, 0, 10);
         Add(l, "query", &QueryClosure);
         Add(l, "parent", &ParentClosure);
         Add(l, "childCount", &ChildCountClosure);
@@ -29,6 +30,7 @@ public static unsafe class LuauDomHost
         Add(l, "getBool", &GetBoolClosure);
         Add(l, "setBool", &SetBoolClosure);
         Add(l, "click", &ClickClosure);
+        Add(l, "screen", &ScreenClosure);
         LuauNative.lua_setfield(l, LuauNative.GlobalsIndex, "__Dom");
     }
 
@@ -120,6 +122,24 @@ public static unsafe class LuauDomHost
         return 1;
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int ScreenClosure(IntPtr l)
+    {
+        string? screen;
+        try
+        {
+            screen = Screen?.Invoke();
+        }
+        catch
+        {
+            // Managed exceptions must never cross an unmanaged Luau callback boundary.
+            screen = null;
+        }
+
+        if (screen == null) LuauNative.lua_pushnil(l); else LuauNative.lua_pushstring(l, screen);
+        return 1;
+    }
+
     public const string Bootstrap = """
 local Node = {}
 local function wrap(handle)
@@ -144,6 +164,7 @@ local ui = setmetatable({ querySelector = function(selector) return wrap(__Dom.q
     __index = function(_, key)
         if key == "root" then return wrap(__Dom.query("#root")) end
         if key == "hud" then return wrap(__Dom.query("#hud")) end
+        if key == "screen" then return __Dom.screen() end
     end
 })
 OMNI = {

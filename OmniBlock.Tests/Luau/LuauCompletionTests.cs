@@ -8,7 +8,10 @@ public sealed class LuauCompletionTests
     [InlineData("OM", "OMNI")]
     [InlineData("OMNI.u", "ui")]
     [InlineData("OMNI.ui.que", "querySelector")]
+    [InlineData("OMNI.ui.scr", "screen")]
     [InlineData("OMNI.ui.root.chi", "child")]
+    [InlineData("OMNI.ui.root.cli", "click")]
+    [InlineData("OMNI.ui.root.i", "id")]
     [InlineData("OMNI.config.mu", "music")]
     [InlineData("OMNI.config.opt", "options")]
     [InlineData("OMNI.cli", "client")]
@@ -16,6 +19,7 @@ public sealed class LuauCompletionTests
     [InlineData("OMNI.client.worlds.lo", "load")]
     [InlineData("OMNI.ru", "run")]
     [InlineData("OMNI.wa", "wait")]
+    [InlineData("OMNI.waitU", "waitUntil")]
     public void CompletesGlobalsAndDomMembers(string source, string expected)
     {
         LuauCompletion completion = new();

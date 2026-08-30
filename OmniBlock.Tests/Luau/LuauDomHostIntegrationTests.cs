@@ -34,6 +34,7 @@ public sealed class LuauDomHostIntegrationTests
             clicks++;
             return true;
         };
+        LuauDomHost.Screen = () => "MainMenuScreen";
 
         try
         {
@@ -45,6 +46,7 @@ public sealed class LuauDomHostIntegrationTests
             Assert.True(state.TryExecute("OMNI.environment", out string environment));
             Assert.True(state.TryExecute("OMNI.has(\"ui\")", out string hasUi));
             Assert.True(state.TryExecute("OMNI.ui.root:click()", out string clicked));
+            Assert.True(state.TryExecute("OMNI.ui.screen", out string screen));
 
             Assert.Equal("Panel", type);
             Assert.False(visible);
@@ -53,6 +55,7 @@ public sealed class LuauDomHostIntegrationTests
             Assert.Equal("true", hasUi);
             Assert.Equal("true", clicked);
             Assert.Equal(1, clicks);
+            Assert.Equal("MainMenuScreen", screen);
         }
         finally
         {
@@ -65,6 +68,7 @@ public sealed class LuauDomHostIntegrationTests
             LuauDomHost.GetBool = null;
             LuauDomHost.SetBool = null;
             LuauDomHost.Click = null;
+            LuauDomHost.Screen = null;
         }
     }
 }

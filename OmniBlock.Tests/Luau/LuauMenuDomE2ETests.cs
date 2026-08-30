@@ -79,6 +79,7 @@ return "menu DOM OK"
         LuauDomHost.GetBool = document.GetBool;
         LuauDomHost.SetBool = document.SetBool;
         LuauDomHost.Click = document.Click;
+        LuauDomHost.Screen = () => "MainMenuScreen";
     }
 
     private static void Unbind()
@@ -92,5 +93,6 @@ return "menu DOM OK"
         LuauDomHost.GetBool = null;
         LuauDomHost.SetBool = null;
         LuauDomHost.Click = null;
+        LuauDomHost.Screen = null;
     }
 }

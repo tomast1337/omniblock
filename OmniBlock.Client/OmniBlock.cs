@@ -402,6 +402,7 @@ public partial class OmniBlock :
             LuauDomHost.GetBool = UiDomDocument.GetBool;
             LuauDomHost.SetBool = UiDomDocument.SetBool;
             LuauDomHost.Click = UiDomDocument.Click;
+            LuauDomHost.Screen = () => CurrentScreen?.GetType().Name;
             LuauDomHost.Install(LuauState.Handle);
             LuauLogHost.WriteLine = message => Log.Instance.For("Luau").LogInformation("{Message}", message);
             LuauLogHost.Install(LuauState.Handle);
@@ -712,6 +713,7 @@ public partial class OmniBlock :
             LuauDomHost.GetBool = null;
             LuauDomHost.SetBool = null;
             LuauDomHost.Click = null;
+            LuauDomHost.Screen = null;
             LuauConfigHost.Get = null;
             LuauConfigHost.Set = null;
             LuauConfigHost.Options = null;

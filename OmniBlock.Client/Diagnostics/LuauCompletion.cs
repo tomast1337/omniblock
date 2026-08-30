@@ -15,10 +15,10 @@ internal sealed partial class LuauCompletion
         "string", "table", "tonumber", "tostring", "typeof", "utf8", "xpcall"
     ];
 
-    private static readonly string[] s_omniMembers = ["client", "config", "environment", "has", "run", "ui", "wait"];
+    private static readonly string[] s_omniMembers = ["client", "config", "environment", "has", "run", "ui", "wait", "waitUntil"];
     private static readonly string[] s_clientMembers = ["worlds"];
     private static readonly string[] s_worldMembers = ["list", "load"];
-    private static readonly string[] s_uiMembers = ["hud", "querySelector", "root"];
+    private static readonly string[] s_uiMembers = ["hud", "querySelector", "root", "screen"];
     private static readonly string[] s_configMembers =
     [
         "advancedItemTooltips", "alternateBlocks", "anisotropicLevel", "bobView", "cameraMode",
@@ -28,7 +28,7 @@ internal sealed partial class LuauCompletion
         "skin", "softClouds", "sound", "uiCursors", "useMipmaps", "viewDistance", "vsync"
     ];
     private static readonly string[] s_nodeMembers =
-        ["child", "childCount", "enabled", "hitTestVisible", "parent", "text", "type", "visible"];
+        ["child", "childCount", "click", "enabled", "hitTestVisible", "id", "parent", "text", "type", "visible"];
 
     private readonly HashSet<string> _sessionGlobals = new(StringComparer.Ordinal);
 

@@ -41,6 +41,31 @@ function OMNI.wait(seconds)
     return coroutine.yield(seconds)
 end
 
+function OMNI.waitUntil(predicate, timeoutSeconds, intervalSeconds)
+    if type(predicate) ~= "function" then
+        error("OMNI.waitUntil requires a predicate function", 2)
+    end
+
+    if timeoutSeconds == nil then timeoutSeconds = 5 end
+    if intervalSeconds == nil then intervalSeconds = 0 end
+
+    if type(timeoutSeconds) ~= "number" or timeoutSeconds ~= timeoutSeconds or timeoutSeconds < 0 or timeoutSeconds == math.huge then
+        error("OMNI.waitUntil timeout requires a finite non-negative number", 2)
+    end
+    if type(intervalSeconds) ~= "number" or intervalSeconds ~= intervalSeconds or intervalSeconds < 0 or intervalSeconds == math.huge then
+        error("OMNI.waitUntil interval requires a finite non-negative number", 2)
+    end
+
+    local deadline = schedulerClock + timeoutSeconds
+    while true do
+        if predicate() then return true end
+        if schedulerClock >= deadline then
+            error("OMNI.waitUntil timed out after " .. tostring(timeoutSeconds) .. " seconds", 2)
+        end
+        OMNI.wait(math.min(intervalSeconds, deadline - schedulerClock))
+    end
+end
+
 function OMNI.run(callback)
     if type(callback) ~= "function" then error("OMNI.run requires a function", 2) end
     local thread = coroutine.create(callback)
