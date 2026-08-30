@@ -22,6 +22,7 @@ public class MainMenuScreen(
 
     protected override void Init()
     {
+        Root.AutomationId = "main";
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.FlexStart;
         Root.Style.PaddingTop = LogoTopPadding;
@@ -50,12 +51,14 @@ public class MainMenuScreen(
 
         // --- Buttons ---
         Button btnSingleplayer = CreateButton();
+        btnSingleplayer.AutomationId = "main.singleplayer";
         btnSingleplayer.Text = Translations.Get("menu.singleplayer");
         btnSingleplayer.OnClick += e => Context.Navigator.Navigate(new WorldScreen(Context, singleplayerHost));
         btnSingleplayer.Style.MarginBottom = 4;
         Root.AddChild(btnSingleplayer);
 
         Button btnMultiplayer = CreateButton();
+        btnMultiplayer.AutomationId = "main.multiplayer";
         btnMultiplayer.Text = Translations.Get("menu.multiplayer");
         btnMultiplayer.OnClick += e => Context.Navigator.Navigate(new MultiplayerScreen(Context, networkContext));
         btnMultiplayer.Style.MarginBottom = 4;
@@ -75,6 +78,7 @@ public class MainMenuScreen(
         footerButtons.Style.MarginLeft = -26;
 
         ImageButton btnLang = CreateImageButton();
+        btnLang.AutomationId = "main.language";
         btnLang.OnClick += e => Context.Navigator.Navigate(new LanguageSelectionScreen(Context, this));
         btnLang.Texture = Renderer.TextureManager.GetTextureId("/gui/Globe.png");
         btnLang.U = 0;
@@ -83,11 +87,13 @@ public class MainMenuScreen(
         btnLang.VHeight = 24;
 
         Button btnOptions = CreateButton();
+        btnOptions.AutomationId = "main.options";
         btnOptions.Text = Translations.Get("menu.options");
         btnOptions.Style.Width = 98;
         btnOptions.OnClick += e => Context.Navigator.Navigate(new OptionsScreen(Context, this, texturePackList));
 
         Button btnQuit = CreateButton();
+        btnQuit.AutomationId = "main.quit";
         btnQuit.Text = Translations.Get("menu.quit");
         btnQuit.Style.Width = 98;
         btnQuit.OnClick += e => shutdown();

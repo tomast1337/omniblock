@@ -199,6 +199,8 @@ public partial class OmniBlock :
     #region Private Fields
 
     private readonly ILogger<OmniBlock> _logger = Log.Instance.For<OmniBlock>();
+    private readonly ClientLaunchOptions _launchOptions;
+    private readonly ClientReadySignal _clientReady = new();
     private readonly LoadingScreenRenderer _loadingScreen;
     private readonly WaterSprite _textureWaterFX = new();
     private readonly LavaSprite _textureLavaFX = new();
@@ -234,8 +236,10 @@ public partial class OmniBlock :
 
     #region Initialization & Lifecycle
 
-    private OmniBlock(int width, int height, bool isFullscreen)
+    private OmniBlock(int width, int height, bool isFullscreen, ClientLaunchOptions launchOptions)
     {
+        _launchOptions = launchOptions;
+        ClientReady += RunStartupScript;
         _loadingScreen = new LoadingScreenRenderer(this);
         _tempDisplayHeight = height;
         _fullscreen = isFullscreen;
@@ -266,6 +270,54 @@ public partial class OmniBlock :
 
         StatFileWriter.ReadStat(Stats.Stats.StartGameStat, 1);
         Navigate(CreateMainMenuScreen());
+        SignalClientReady();
+    }
+
+    /// <summary>
+    /// True after resources are loaded and the initial main menu has been initialized.
+    /// </summary>
+    public bool IsClientReady => _clientReady.IsReady;
+
+    /// <summary>
+    /// Fires at the post-main-menu client-ready boundary. A handler registered after the
+    /// boundary has already been reached runs immediately.
+    /// </summary>
+    public event Action ClientReady
+    {
+        add => _clientReady.WhenReady(value);
+        remove => _clientReady.Remove(value);
+    }
+
+    private void SignalClientReady()
+    {
+        _logger.LogInformation("Client ready");
+        _clientReady.Signal();
+    }
+
+    private void RunStartupScript()
+    {
+        if (_launchOptions.StartupScript is not { } script)
+        {
+            return;
+        }
+
+        if (LuauState == null)
+        {
+            _logger.LogError("Cannot run startup script {Path}: the Luau VM is unavailable", script.Path);
+            return;
+        }
+
+        // Startup automation is a scheduler task so the script may use OMNI.wait at its top
+        // level without blocking rendering or the fixed-tick game loop.
+        string scheduledSource = $"OMNI.run(function()\n{script.Source}\nend)";
+        LuauState.ResetInstructionBudget(LuauInstructionBudgetPerTick);
+        if (!LuauState.TryExecute(scheduledSource, out string error))
+        {
+            _logger.LogError("Failed to schedule startup script {Path}: {Error}", script.Path, error);
+            return;
+        }
+
+        _logger.LogInformation("Scheduled startup script {Path}", script.Path);
     }
 
     private unsafe void SetupDisplay()
@@ -349,6 +401,7 @@ public partial class OmniBlock :
             LuauDomHost.SetString = UiDomDocument.SetString;
             LuauDomHost.GetBool = UiDomDocument.GetBool;
             LuauDomHost.SetBool = UiDomDocument.SetBool;
+            LuauDomHost.Click = UiDomDocument.Click;
             LuauDomHost.Install(LuauState.Handle);
             LuauLogHost.WriteLine = message => Log.Instance.For("Luau").LogInformation("{Message}", message);
             LuauLogHost.Install(LuauState.Handle);
@@ -658,6 +711,7 @@ public partial class OmniBlock :
             LuauDomHost.SetString = null;
             LuauDomHost.GetBool = null;
             LuauDomHost.SetBool = null;
+            LuauDomHost.Click = null;
             LuauConfigHost.Get = null;
             LuauConfigHost.Set = null;
             LuauConfigHost.Options = null;
@@ -2114,53 +2168,22 @@ public partial class OmniBlock :
 
     public static void Startup(string[] args)
     {
-        string? username = null;
-        string? token = null;
-        bool debug = false;
-
-        for (int i = 0; i < args.Length; i++)
-        {
-            switch (args[i])
-            {
-                case "--username" when i + 1 < args.Length:
-                    username = args[++i];
-                    break;
-                case "--token" when i + 1 < args.Length:
-                    token = args[++i];
-                    break;
-                case "--debug":
-                    debug = true;
-                    break;
-            }
-        }
-
-        username ??= $"Player{Random.Shared.Next()}";
-        token ??= "-";
-
-        PlayerNameValidator.Validate(username);
+        ClientLaunchOptions options = ClientLaunchOptions.Parse(args);
 
         Bootstrap.Initialize();
-        StartMainThread(username, token, debug);
+        StartMainThread(options);
     }
 
-    private static void StartMainThread(string? playerName, string? sessionToken, bool debug)
+    private static void StartMainThread(ClientLaunchOptions options)
     {
         Thread.CurrentThread.Name = "OmniBlock Main Thread";
 
-        OmniBlock game = new(850, 480, false) { ForceDebugOnStart = debug };
+        OmniBlock game = new(850, 480, false, options) { ForceDebugOnStart = options.Debug };
+        game.Session = new Session(options.Username, options.SessionToken);
 
-        if (playerName != null && sessionToken != null)
+        if (options.SessionToken == "-")
         {
-            game.Session = new Session(playerName, sessionToken);
-
-            if (sessionToken == "-")
-            {
-                HasPaidCheckTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            }
-        }
-        else
-        {
-            throw new Exception("Player name and session token were not provided!");
+            HasPaidCheckTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         }
 
         game.Run();

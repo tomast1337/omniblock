@@ -24,6 +24,7 @@ public class WorldScreen(
 
     protected override void Init()
     {
+        Root.AutomationId = "world";
         Root.AddChild(new Background());
         LoadSaves();
 
@@ -39,7 +40,7 @@ public class WorldScreen(
         Root.AddChild(title);
         AddTitleSpacer();
 
-        _scrollView = new ScrollView();
+        _scrollView = new ScrollView { AutomationId = "world.list" };
         _scrollView.Style.Width = 300;
         _scrollView.Style.FlexGrow = 1;
         _scrollView.Style.MaxHeight = 200;
@@ -60,6 +61,7 @@ public class WorldScreen(
         row1.Style.MarginBottom = 2;
 
         _btnSelect = CreateButton();
+        _btnSelect.AutomationId = "world.select";
         _btnSelect.Text = Translations.Get("selectWorld.select");
         _btnSelect.Style.Width = 150;
         _btnSelect.Style.SetMargin(2);
@@ -67,6 +69,7 @@ public class WorldScreen(
         row1.AddChild(_btnSelect);
 
         Button btnCreate = CreateButton();
+        btnCreate.AutomationId = "world.create";
         btnCreate.Text = Translations.Get("selectWorld.create");
         btnCreate.Style.Width = 150;
         btnCreate.Style.SetMargin(2);
@@ -80,6 +83,7 @@ public class WorldScreen(
         row2.Style.JustifyContent = Justify.Center;
 
         _btnRename = CreateButton();
+        _btnRename.AutomationId = "world.rename";
         _btnRename.Text = Translations.Get("gui.rename");
         _btnRename.Style.Width = 72;
         _btnRename.Style.SetMargin(2);
@@ -87,6 +91,7 @@ public class WorldScreen(
         row2.AddChild(_btnRename);
 
         _btnDelete = CreateButton();
+        _btnDelete.AutomationId = "world.delete";
         _btnDelete.Text = Translations.Get("gui.delete");
         _btnDelete.Style.Width = 72;
         _btnDelete.Style.SetMargin(2);
@@ -94,6 +99,7 @@ public class WorldScreen(
         row2.AddChild(_btnDelete);
 
         Button btnCancel = CreateButton();
+        btnCancel.AutomationId = "world.cancel";
         btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
@@ -131,6 +137,7 @@ public class WorldScreen(
         {
             int index = i;
             WorldListItem item = new(_saveList[i]);
+            item.AutomationId = $"world.item.{_saveList[i].FileName}";
             item.OnClick += e => SelectListItem(index);
             _scrollView.AddContent(item);
             _listItems.Add(item);

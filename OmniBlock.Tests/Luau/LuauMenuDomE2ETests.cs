@@ -59,7 +59,7 @@ return "menu DOM OK"
     {
         UIElement root = new();
         root.AddChild(new Label { Text = "OmniBlock" });
-        root.AddChild(new Button(() => { }) { Text = "Singleplayer" });
+        root.AddChild(new Button(() => { }) { Text = "Singleplayer", AutomationId = "main.singleplayer" });
         root.AddChild(new Button(() => { }) { Text = "Multiplayer" });
         UIElement footer = new Panel();
         footer.AddChild(new Button(() => { }) { Text = "Options..." });
@@ -78,6 +78,7 @@ return "menu DOM OK"
         LuauDomHost.SetString = document.SetString;
         LuauDomHost.GetBool = document.GetBool;
         LuauDomHost.SetBool = document.SetBool;
+        LuauDomHost.Click = document.Click;
     }
 
     private static void Unbind()
@@ -90,5 +91,6 @@ return "menu DOM OK"
         LuauDomHost.SetString = null;
         LuauDomHost.GetBool = null;
         LuauDomHost.SetBool = null;
+        LuauDomHost.Click = null;
     }
 }

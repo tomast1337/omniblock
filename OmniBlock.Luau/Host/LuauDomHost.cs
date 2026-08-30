@@ -15,10 +15,11 @@ public static unsafe class LuauDomHost
     public static Func<int, string, string, bool>? SetString;
     public static Func<int, string, bool?>? GetBool;
     public static Func<int, string, bool, bool>? SetBool;
+    public static Func<int, bool>? Click;
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 8);
+        LuauNative.lua_createtable(l, 0, 9);
         Add(l, "query", &QueryClosure);
         Add(l, "parent", &ParentClosure);
         Add(l, "childCount", &ChildCountClosure);
@@ -27,6 +28,7 @@ public static unsafe class LuauDomHost
         Add(l, "setString", &SetStringClosure);
         Add(l, "getBool", &GetBoolClosure);
         Add(l, "setBool", &SetBoolClosure);
+        Add(l, "click", &ClickClosure);
         LuauNative.lua_setfield(l, LuauNative.GlobalsIndex, "__Dom");
     }
 
@@ -100,6 +102,24 @@ public static unsafe class LuauDomHost
         return 1;
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int ClickClosure(IntPtr l)
+    {
+        bool success;
+        try
+        {
+            success = Click?.Invoke(LuauNative.luaL_checkinteger(l, 1)) == true;
+        }
+        catch
+        {
+            // Managed exceptions must never cross an unmanaged Luau callback boundary.
+            success = false;
+        }
+
+        LuauNative.lua_pushboolean(l, success ? 1 : 0);
+        return 1;
+    }
+
     public const string Bootstrap = """
 local Node = {}
 local function wrap(handle)
@@ -109,7 +129,7 @@ end
 Node.__index = function(self, key)
     if key == "parent" then return wrap(__Dom.parent(self.__handle)) end
     if key == "childCount" then return __Dom.childCount(self.__handle) end
-    if key == "type" or key == "text" then return __Dom.getString(self.__handle, key) end
+    if key == "type" or key == "id" or key == "text" then return __Dom.getString(self.__handle, key) end
     if key == "visible" or key == "enabled" or key == "hitTestVisible" then return __Dom.getBool(self.__handle, key) end
     return Node[key]
 end
@@ -119,6 +139,7 @@ Node.__newindex = function(self, key, value)
     rawset(self, key, value)
 end
 function Node:child(index) return wrap(__Dom.child(self.__handle, index - 1)) end
+function Node:click() return __Dom.click(self.__handle) end
 local ui = setmetatable({ querySelector = function(selector) return wrap(__Dom.query(selector)) end }, {
     __index = function(_, key)
         if key == "root" then return wrap(__Dom.query("#root")) end

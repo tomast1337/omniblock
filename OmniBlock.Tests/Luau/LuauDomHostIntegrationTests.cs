@@ -27,6 +27,13 @@ public sealed class LuauDomHostIntegrationTests
             visible = value;
             return true;
         };
+        int clicks = 0;
+        LuauDomHost.Click = handle =>
+        {
+            if (handle != 7) return false;
+            clicks++;
+            return true;
+        };
 
         try
         {
@@ -37,12 +44,15 @@ public sealed class LuauDomHostIntegrationTests
             Assert.True(state.TryExecute("OMNI.ui.root.visible", out string currentVisibility));
             Assert.True(state.TryExecute("OMNI.environment", out string environment));
             Assert.True(state.TryExecute("OMNI.has(\"ui\")", out string hasUi));
+            Assert.True(state.TryExecute("OMNI.ui.root:click()", out string clicked));
 
             Assert.Equal("Panel", type);
             Assert.False(visible);
             Assert.Equal("false", currentVisibility);
             Assert.Equal("client", environment);
             Assert.Equal("true", hasUi);
+            Assert.Equal("true", clicked);
+            Assert.Equal(1, clicks);
         }
         finally
         {
@@ -54,6 +64,7 @@ public sealed class LuauDomHostIntegrationTests
             LuauDomHost.SetString = null;
             LuauDomHost.GetBool = null;
             LuauDomHost.SetBool = null;
+            LuauDomHost.Click = null;
         }
     }
 }

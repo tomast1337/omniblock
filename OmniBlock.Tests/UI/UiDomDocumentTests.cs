@@ -53,4 +53,70 @@ public sealed class UiDomDocumentTests
         Assert.Null(document.GetBool(oldHandle, "visible"));
         Assert.NotEqual(oldHandle, document.Query("#root"));
     }
+
+    [Fact]
+    public void AutomationId_queryAndClick_activateTheLiveControl()
+    {
+        UIElement root = new();
+        int clicks = 0;
+        Button button = new(() => { }) { AutomationId = "main.singleplayer" };
+        button.OnClick += _ => clicks++;
+        root.AddChild(button);
+        UiDomDocument document = new(() => root, () => null);
+
+        int handle = document.Query("#main.singleplayer");
+
+        Assert.NotEqual(0, handle);
+        Assert.Equal("main.singleplayer", document.GetString(handle, "id"));
+        Assert.True(document.Click(handle));
+        Assert.Equal(1, clicks);
+    }
+
+    [Theory]
+    [InlineData("visible")]
+    [InlineData("enabled")]
+    [InlineData("hitTestVisible")]
+    public void Click_rejectsNonInteractableControlsAndAncestors(string blockedProperty)
+    {
+        UIElement root = new();
+        UIElement parent = new();
+        Button button = new(() => { }) { AutomationId = "button" };
+        parent.AddChild(button);
+        root.AddChild(parent);
+        UiDomDocument document = new(() => root, () => null);
+        int handle = document.Query("#button");
+
+        Assert.True(document.SetBool(document.GetParent(handle), blockedProperty, false));
+
+        Assert.False(document.Click(handle));
+    }
+
+    [Fact]
+    public void RemovingAControlInvalidatesItsHandle()
+    {
+        UIElement root = new();
+        Button button = new(() => { }) { AutomationId = "button" };
+        root.AddChild(button);
+        UiDomDocument document = new(() => root, () => null);
+        int handle = document.Query("#button");
+
+        root.RemoveChild(button);
+
+        Assert.False(document.Click(handle));
+        Assert.Null(document.GetString(handle, "id"));
+    }
+
+    [Fact]
+    public void ClearingChildrenInvalidatesHandlesEvenWhenLegacyParentPointersRemain()
+    {
+        UIElement root = new();
+        Button button = new(() => { }) { AutomationId = "button" };
+        root.AddChild(button);
+        UiDomDocument document = new(() => root, () => null);
+        int handle = document.Query("#button");
+
+        root.Children.Clear();
+
+        Assert.False(document.Click(handle));
+    }
 }

@@ -4,6 +4,12 @@ namespace OmniBlock.Client.UI;
 
 public class UIElement
 {
+    /// <summary>
+    /// Stable, untranslated identifier used by UI automation. The stored value excludes the
+    /// selector's leading '#', for example <c>main.singleplayer</c>.
+    /// </summary>
+    public string? AutomationId { get; set; }
+
     public Action<UIMouseEvent>? OnClick;
     public Action<UIKeyEvent>? OnKeyDown;
 
@@ -134,6 +140,7 @@ public class UIElement
     public virtual List<string> GetInspectorProperties() =>
     [
         $"Type:     {GetType().FullName}",
+        $"ID:       {AutomationId ?? "-"}",
         $"Screen:   ({ScreenX:F1}, {ScreenY:F1})",
         $"Size:     {ComputedWidth:F1} × {ComputedHeight:F1}",
         $"Local:    ({ComputedX:F1}, {ComputedY:F1})",

@@ -21,6 +21,9 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
         {
             "#root" or "#screen" => _lastScreenRoot ?? _lastHudRoot,
             "#hud" => _lastHudRoot,
+            _ when selector.StartsWith('#') =>
+                FindByAutomationId(_lastScreenRoot, selector[1..]) ??
+                FindByAutomationId(_lastHudRoot, selector[1..]),
             _ => FindByType(_lastScreenRoot, selector) ?? FindByType(_lastHudRoot, selector),
         };
         return GetHandle(element);
@@ -41,6 +44,7 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
         ? property.ToLowerInvariant() switch
         {
             "type" => element.GetType().Name,
+            "id" => element.AutomationId,
             "text" when element is Label label => label.Text,
             "text" when element is Button button => button.Text,
             _ => null,
@@ -93,10 +97,33 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
         }
     }
 
+    public bool Click(int handle)
+    {
+        if (Resolve(handle) is not { OnClick: not null } element || !IsInteractable(element))
+        {
+            return false;
+        }
+
+        element.OnClick(new UIMouseEvent
+        {
+            Target = element,
+            MouseX = (int)(element.ScreenX + element.ComputedWidth / 2),
+            MouseY = (int)(element.ScreenY + element.ComputedHeight / 2),
+            Button = MouseButton.Left,
+        });
+        return true;
+    }
+
     private UIElement? Resolve(int handle)
     {
         RefreshRoots();
-        return _elements.GetValueOrDefault(handle);
+        UIElement? element = _elements.GetValueOrDefault(handle);
+        if (element == null || !IsInLiveTree(element))
+        {
+            return null;
+        }
+
+        return element;
     }
 
     private int GetHandle(UIElement? element)
@@ -153,5 +180,60 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
         }
 
         return null;
+    }
+
+    private static UIElement? FindByAutomationId(UIElement? root, string id)
+    {
+        if (root == null)
+        {
+            return null;
+        }
+
+        if (string.Equals(root.AutomationId, id, StringComparison.Ordinal))
+        {
+            return root;
+        }
+
+        foreach (UIElement child in root.Children)
+        {
+            if (FindByAutomationId(child, id) is { } match)
+            {
+                return match;
+            }
+        }
+
+        return null;
+    }
+
+    private bool IsInLiveTree(UIElement element)
+    {
+        UIElement root = element;
+        while (root.Parent is { } parent)
+        {
+            // Some existing screens rebuild lists with Children.Clear(), which does not reset
+            // each former child's Parent pointer. Verify both sides of the relationship so a
+            // retained handle cannot activate one of those detached controls.
+            if (!parent.Children.Contains(root))
+            {
+                return false;
+            }
+
+            root = parent;
+        }
+
+        return ReferenceEquals(root, _lastScreenRoot) || ReferenceEquals(root, _lastHudRoot);
+    }
+
+    private static bool IsInteractable(UIElement element)
+    {
+        for (UIElement? current = element; current != null; current = current.Parent)
+        {
+            if (!current.Visible || !current.Enabled || !current.IsHitTestVisible)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
