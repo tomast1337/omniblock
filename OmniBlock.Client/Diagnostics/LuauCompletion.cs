@@ -15,7 +15,9 @@ internal sealed partial class LuauCompletion
         "string", "table", "tonumber", "tostring", "typeof", "utf8", "xpcall"
     ];
 
-    private static readonly string[] s_omniMembers = ["config", "environment", "has", "ui"];
+    private static readonly string[] s_omniMembers = ["client", "config", "environment", "has", "ui"];
+    private static readonly string[] s_clientMembers = ["worlds"];
+    private static readonly string[] s_worldMembers = ["list", "load"];
     private static readonly string[] s_uiMembers = ["hud", "querySelector", "root"];
     private static readonly string[] s_configMembers =
     [
@@ -75,6 +77,8 @@ internal sealed partial class LuauCompletion
             start--;
         string receiver = source[start..end];
         if (receiver == "OMNI") return s_omniMembers;
+        if (receiver.EndsWith("OMNI.client", StringComparison.Ordinal)) return s_clientMembers;
+        if (receiver.EndsWith("OMNI.client.worlds", StringComparison.Ordinal)) return s_worldMembers;
         if (receiver.EndsWith("OMNI.ui", StringComparison.Ordinal)) return s_uiMembers;
         if (receiver.EndsWith("OMNI.config", StringComparison.Ordinal)) return s_configMembers;
         return s_nodeMembers;

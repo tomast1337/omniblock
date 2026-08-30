@@ -127,7 +127,9 @@ local ui = setmetatable({ querySelector = function(selector) return wrap(__Dom.q
 })
 OMNI = {
     environment = "client",
-    has = function(capability) return capability == "ui" or capability == "config" end,
+    has = function(capability)
+        return capability == "ui" or capability == "config" or capability == "worlds"
+    end,
     ui = ui,
 }
 """;

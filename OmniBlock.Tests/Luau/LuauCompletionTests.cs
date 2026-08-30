@@ -11,6 +11,9 @@ public sealed class LuauCompletionTests
     [InlineData("OMNI.ui.root.chi", "child")]
     [InlineData("OMNI.config.mu", "music")]
     [InlineData("OMNI.config.opt", "options")]
+    [InlineData("OMNI.cli", "client")]
+    [InlineData("OMNI.client.wor", "worlds")]
+    [InlineData("OMNI.client.worlds.lo", "load")]
     public void CompletesGlobalsAndDomMembers(string source, string expected)
     {
         LuauCompletion completion = new();

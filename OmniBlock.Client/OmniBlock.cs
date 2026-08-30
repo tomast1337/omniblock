@@ -19,6 +19,7 @@ using OmniBlock.Client.Rendering.UI;
 using OmniBlock.Client.Resource;
 using OmniBlock.Client.Resource.Pack;
 using OmniBlock.Client.Sound;
+using OmniBlock.Client.Scripting;
 using OmniBlock.Client.UI;
 using OmniBlock.Client.UI.Screens;
 using OmniBlock.Client.UI.Screens.InGame;
@@ -204,6 +205,7 @@ public partial class OmniBlock :
     private readonly DebugTelemetry _debugTelemetry = new();
 
     private DebugWindowManager _debugWindowManager;
+    private LuauWorldService? _luauWorldService;
     private string _gameDataDir;
 
     /// <summary>The directory saves, options and screenshots live under.</summary>
@@ -362,6 +364,17 @@ public partial class OmniBlock :
             if (!LuauState.TryExecute(LuauConfigHost.Bootstrap, out string configBootstrapError))
             {
                 _logger.LogError("Failed to install the Luau configuration bootstrap: {Error}", configBootstrapError);
+            }
+
+            _luauWorldService = new LuauWorldService(
+                SaveLoader,
+                () => World == null && InternalServer == null);
+            LuauWorldsHost.List = _luauWorldService.List;
+            LuauWorldsHost.Load = _luauWorldService.RequestLoad;
+            LuauWorldsHost.Install(LuauState.Handle);
+            if (!LuauState.TryExecute(LuauWorldsHost.Bootstrap, out string worldsBootstrapError))
+            {
+                _logger.LogError("Failed to install the Luau worlds bootstrap: {Error}", worldsBootstrapError);
             }
 
             LuauUiHost.Dispatch = UiCommandRegistry.Invoke;
@@ -641,6 +654,9 @@ public partial class OmniBlock :
             LuauConfigHost.Get = null;
             LuauConfigHost.Set = null;
             LuauConfigHost.Options = null;
+            LuauWorldsHost.List = null;
+            LuauWorldsHost.Load = null;
+            _luauWorldService = null;
             LuauLogHost.WriteLine = null;
             LuauState?.Dispose();
             Mouse.destroy();
@@ -988,6 +1004,8 @@ public partial class OmniBlock :
             }
         }
 
+        ProcessPendingLuauWorldLoad();
+
         using (Profiler.Begin("SyncStats"))
         {
             StatFileWriter.SyncStatsIfReady();
@@ -1173,6 +1191,21 @@ public partial class OmniBlock :
         }
 
         _systemTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    }
+
+    private void ProcessPendingLuauWorldLoad()
+    {
+        if (_luauWorldService?.TryTakePending(out LuauWorldLoadRequest? request) != true || request == null)
+            return;
+
+        if (World != null || InternalServer != null)
+        {
+            _logger.LogWarning("Discarded scripted world load for {WorldId}: client is no longer at the main menu", request.Id);
+            return;
+        }
+
+        _logger.LogInformation("Luau requested single-player world load: {WorldId}", request.Id);
+        LoadWorld(request.Id, request.DisplayName, request.Settings);
     }
 
     #endregion
