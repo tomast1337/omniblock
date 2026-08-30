@@ -355,6 +355,14 @@ public partial class OmniBlock :
                 _logger.LogError("Failed to install the Luau DOM bootstrap: {Error}", domBootstrapError);
             }
 
+            LuauConfigHost.Get = Options.GetScriptConfig;
+            LuauConfigHost.Set = Options.SetScriptConfig;
+            LuauConfigHost.Install(LuauState.Handle);
+            if (!LuauState.TryExecute(LuauConfigHost.Bootstrap, out string configBootstrapError))
+            {
+                _logger.LogError("Failed to install the Luau configuration bootstrap: {Error}", configBootstrapError);
+            }
+
             LuauUiHost.Dispatch = UiCommandRegistry.Invoke;
             LuauUiHost.Install(LuauState.Handle);
 
@@ -629,6 +637,8 @@ public partial class OmniBlock :
             LuauDomHost.SetString = null;
             LuauDomHost.GetBool = null;
             LuauDomHost.SetBool = null;
+            LuauConfigHost.Get = null;
+            LuauConfigHost.Set = null;
             LuauLogHost.WriteLine = null;
             LuauState?.Dispose();
             Mouse.destroy();

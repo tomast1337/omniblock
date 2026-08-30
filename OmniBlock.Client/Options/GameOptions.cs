@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using OmniBlock.Client.Input;
 using OmniBlock.Client.UI;
 using Microsoft.Extensions.Logging;
+using OmniBlock.Luau.Host;
 using Silk.NET.GLFW;
 using File = System.IO.File;
 using FileNotFoundException = System.IO.FileNotFoundException;
@@ -494,6 +495,101 @@ public class GameOptions
     {
         binding.ScanCode = keyCode;
         SaveOptions();
+    }
+
+    internal LuauConfigValue GetScriptConfig(string key)
+    {
+        if (_allOptions.TryGetValue(key, out GameOption? option))
+        {
+            return option switch
+            {
+                BoolOption value => LuauConfigValue.From(value.Value),
+                FloatOption value => LuauConfigValue.From(value.Value),
+                CycleOption value => LuauConfigValue.From(value.Value),
+                StringOption value => LuauConfigValue.From(value.Value),
+                _ => default
+            };
+        }
+
+        return key switch
+        {
+            "skin" => LuauConfigValue.From(Skin),
+            "advancedItemTooltips" => LuauConfigValue.From(AdvancedItemTooltips),
+            "lastServer" => LuauConfigValue.From(LastServer),
+            "cameraMode" => LuauConfigValue.From((int)CameraMode),
+            _ => GetBindingConfig(key)
+        };
+    }
+
+    internal bool SetScriptConfig(string key, LuauConfigValue value)
+    {
+        bool changed = _allOptions.TryGetValue(key, out GameOption? option)
+            ? SetOptionValue(option, value)
+            : SetNonOptionValue(key, value);
+
+        if (changed) SaveOptions();
+        return changed;
+    }
+
+    private static bool SetOptionValue(GameOption option, LuauConfigValue value)
+    {
+        switch (option, value.Kind)
+        {
+            case (BoolOption target, LuauConfigValueKind.Boolean):
+                target.Value = value.Boolean;
+                target.OnChanged?.Invoke(target.Value);
+                return true;
+            case (FloatOption target, LuauConfigValueKind.Number) when double.IsFinite(value.Number):
+                target.Set((float)value.Number);
+                return true;
+            case (CycleOption target, LuauConfigValueKind.Number)
+                when double.IsInteger(value.Number) && value.Number >= 0 && value.Number < target.Length:
+                target.Value = (int)value.Number;
+                target.OnChanged?.Invoke(target.Value);
+                return true;
+            case (StringOption target, LuauConfigValueKind.String):
+                target.Value = value.String!;
+                target.OnChanged?.Invoke(target.Value);
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private LuauConfigValue GetBindingConfig(string key)
+    {
+        KeyBinding? keyboard = _keyBindings.FirstOrDefault(binding => binding.KeyDescription == key);
+        if (keyboard != null) return LuauConfigValue.From(keyboard.ScanCode);
+
+        ControllerBinding? controller = ControllerBindings.FirstOrDefault(binding => binding.ActionKey == key);
+        return controller == null ? default : LuauConfigValue.From((int)controller.Button);
+    }
+
+    private bool SetNonOptionValue(string key, LuauConfigValue value)
+    {
+        switch (key, value.Kind)
+        {
+            case ("skin", LuauConfigValueKind.String): Skin = value.String!; return true;
+            case ("advancedItemTooltips", LuauConfigValueKind.Boolean): AdvancedItemTooltips = value.Boolean; return true;
+            case ("lastServer", LuauConfigValueKind.String): LastServer = value.String!; return true;
+            case ("cameraMode", LuauConfigValueKind.Number)
+                when double.IsInteger(value.Number) && Enum.IsDefined((CameraMode)(int)value.Number):
+                CameraMode = (CameraMode)(int)value.Number;
+                return true;
+        }
+
+        if (value.Kind != LuauConfigValueKind.Number || !double.IsInteger(value.Number)) return false;
+        KeyBinding? keyboard = _keyBindings.FirstOrDefault(binding => binding.KeyDescription == key);
+        if (keyboard != null)
+        {
+            keyboard.ScanCode = (int)value.Number;
+            return true;
+        }
+
+        ControllerBinding? controller = ControllerBindings.FirstOrDefault(binding => binding.ActionKey == key);
+        if (controller == null) return false;
+        controller.Button = (GamepadButton)(int)value.Number;
+        return true;
     }
 
 

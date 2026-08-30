@@ -119,11 +119,16 @@ Node.__newindex = function(self, key, value)
     rawset(self, key, value)
 end
 function Node:child(index) return wrap(__Dom.child(self.__handle, index - 1)) end
-OMNI = setmetatable({ querySelector = function(selector) return wrap(__Dom.query(selector)) end }, {
+local ui = setmetatable({ querySelector = function(selector) return wrap(__Dom.query(selector)) end }, {
     __index = function(_, key)
         if key == "root" then return wrap(__Dom.query("#root")) end
         if key == "hud" then return wrap(__Dom.query("#hud")) end
     end
 })
+OMNI = {
+    environment = "client",
+    has = function(capability) return capability == "ui" or capability == "config" end,
+    ui = ui,
+}
 """;
 }

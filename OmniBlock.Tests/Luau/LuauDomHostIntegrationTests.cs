@@ -32,13 +32,17 @@ public sealed class LuauDomHostIntegrationTests
         {
             LuauDomHost.Install(state.Handle);
             Assert.True(state.TryExecute(LuauDomHost.Bootstrap, out string bootstrapError), bootstrapError);
-            Assert.True(state.TryExecute("OMNI.root.type", out string type));
-            Assert.True(state.TryExecute("OMNI.root.visible = false", out _));
-            Assert.True(state.TryExecute("OMNI.root.visible", out string currentVisibility));
+            Assert.True(state.TryExecute("OMNI.ui.root.type", out string type));
+            Assert.True(state.TryExecute("OMNI.ui.root.visible = false", out _));
+            Assert.True(state.TryExecute("OMNI.ui.root.visible", out string currentVisibility));
+            Assert.True(state.TryExecute("OMNI.environment", out string environment));
+            Assert.True(state.TryExecute("OMNI.has(\"ui\")", out string hasUi));
 
             Assert.Equal("Panel", type);
             Assert.False(visible);
             Assert.Equal("false", currentVisibility);
+            Assert.Equal("client", environment);
+            Assert.Equal("true", hasUi);
         }
         finally
         {

@@ -51,6 +51,9 @@ internal static unsafe partial class LuauNative
     internal static partial void lua_pushboolean(IntPtr L, int value);
 
     [LibraryImport(LibraryName)]
+    internal static partial void lua_pushnumber(IntPtr L, double value);
+
+    [LibraryImport(LibraryName)]
     internal static partial void lua_pushnil(IntPtr L);
 
     // Real symbol behind two macros this project needs (lua_setglobal/lua_getglobal — see
@@ -168,6 +171,9 @@ internal static unsafe partial class LuauNative
 
     [LibraryImport(LibraryName)]
     internal static partial int lua_toboolean(IntPtr L, int idx);
+
+    [LibraryImport(LibraryName)]
+    internal static partial double lua_tonumberx(IntPtr L, int idx, IntPtr isnum);
 
     // Real symbol (the macro is lua_tostring, which wraps this with len: NULL — see
     // lua.h:525). Converts numbers in place too (VM/src/lapi.cpp: falls through to

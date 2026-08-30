@@ -244,3 +244,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-15 — feat: implement MoveSpeedBudget for anti-speed-hack checks and add corresponding tests (Nicolas Vyčas Nery; `8ec15c5b110569345dbf91d0d5c500e3fb6b307f`)
 - 2026-08-29 — feat: add persistent Luau console and DOM-style UI control (Nicolas Vyčas Nery; `c9c64e1ac90b903816b9ddd909f888784d8a2d1d`)
 - 2026-08-29 — feat: implement Luau completion system with global and DOM member support (Nicolas Vyčas Nery; `a4e298a8e9c5abad4d62b6d8b1b04ebb183bd897`)
+- 2026-08-29 — feat: enhance Luau configuration and DOM integration with new members and persistent settings (Nicolas Vyčas Nery; `8f82fb58313010ef1a2d3febfdec71de88dcf2f5`)

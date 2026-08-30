@@ -37,7 +37,7 @@ local function walk(node)
     for index = 1, node.childCount do walk(node:child(index)) end
 end
 
-walk(OMNI.root)
+walk(OMNI.ui.root)
 assert(found["Singleplayer"] == "Button", "Singleplayer button missing")
 assert(found["Multiplayer"] == "Button", "Multiplayer button missing")
 assert(found["Options..."] == "Button", "Options button missing")

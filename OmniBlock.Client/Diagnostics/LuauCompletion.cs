@@ -15,7 +15,16 @@ internal sealed partial class LuauCompletion
         "string", "table", "tonumber", "tostring", "typeof", "utf8", "xpcall"
     ];
 
-    private static readonly string[] s_documentMembers = ["hud", "querySelector", "root"];
+    private static readonly string[] s_omniMembers = ["config", "environment", "has", "ui"];
+    private static readonly string[] s_uiMembers = ["hud", "querySelector", "root"];
+    private static readonly string[] s_configMembers =
+    [
+        "advancedItemTooltips", "alternateBlocks", "anisotropicLevel", "bobView", "cameraMode",
+        "chatScale", "chatWidth", "chunkFade", "cloudsQuality", "controllerSensitivity",
+        "controllerType", "difficulty", "fov", "fpsLimit", "gamma", "guiScale", "invertYMouse",
+        "language", "lastServer", "menuMusic", "mouseSensitivity", "msaaLevel", "music", "showCoordinates",
+        "skin", "softClouds", "sound", "uiCursors", "useMipmaps", "viewDistance", "vsync"
+    ];
     private static readonly string[] s_nodeMembers =
         ["child", "childCount", "enabled", "hitTestVisible", "parent", "text", "type", "visible"];
 
@@ -31,7 +40,7 @@ internal sealed partial class LuauCompletion
         string prefix = source[start..cursor];
         bool memberAccess = start > 0 && source[start - 1] == '.';
         IEnumerable<string> pool = memberAccess
-            ? IsDocumentReceiver(source, start - 1) ? s_documentMembers : s_nodeMembers
+            ? MembersForReceiver(source, start - 1)
             : s_globals.Concat(_sessionGlobals);
 
         string[] matches = pool
@@ -58,13 +67,17 @@ internal sealed partial class LuauCompletion
 
     private static bool IsIdentifierCharacter(char value) => char.IsAsciiLetterOrDigit(value) || value == '_';
 
-    private static bool IsDocumentReceiver(string source, int dot)
+    private static IEnumerable<string> MembersForReceiver(string source, int dot)
     {
         int end = dot;
         int start = end;
-        while (start > 0 && IsIdentifierCharacter(source[start - 1]))
+        while (start > 0 && (IsIdentifierCharacter(source[start - 1]) || source[start - 1] == '.'))
             start--;
-        return source[start..end] == "OMNI";
+        string receiver = source[start..end];
+        if (receiver == "OMNI") return s_omniMembers;
+        if (receiver.EndsWith("OMNI.ui", StringComparison.Ordinal)) return s_uiMembers;
+        if (receiver.EndsWith("OMNI.config", StringComparison.Ordinal)) return s_configMembers;
+        return s_nodeMembers;
     }
 
     private static string LongestCommonPrefix(string[] values)
