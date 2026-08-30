@@ -245,3 +245,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-29 — feat: add persistent Luau console and DOM-style UI control (Nicolas Vyčas Nery; `c9c64e1ac90b903816b9ddd909f888784d8a2d1d`)
 - 2026-08-29 — feat: implement Luau completion system with global and DOM member support (Nicolas Vyčas Nery; `a4e298a8e9c5abad4d62b6d8b1b04ebb183bd897`)
 - 2026-08-29 — feat: enhance Luau configuration and DOM integration with new members and persistent settings (Nicolas Vyčas Nery; `8f82fb58313010ef1a2d3febfdec71de88dcf2f5`)
+- 2026-08-29 — feat: change SetOptionValue method to internal and add corresponding tests for option setters (Nicolas Vyčas Nery; `ccf4332037c4991a371372eb2d08f5a82d24e43f`)

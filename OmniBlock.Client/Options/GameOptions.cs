@@ -531,7 +531,7 @@ public class GameOptions
         return changed;
     }
 
-    private static bool SetOptionValue(GameOption option, LuauConfigValue value)
+    internal static bool SetOptionValue(GameOption option, LuauConfigValue value)
     {
         switch (option, value.Kind)
         {
