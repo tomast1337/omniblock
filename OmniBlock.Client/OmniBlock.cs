@@ -357,6 +357,7 @@ public partial class OmniBlock :
 
             LuauConfigHost.Get = Options.GetScriptConfig;
             LuauConfigHost.Set = Options.SetScriptConfig;
+            LuauConfigHost.Options = Options.GetScriptConfigOptions;
             LuauConfigHost.Install(LuauState.Handle);
             if (!LuauState.TryExecute(LuauConfigHost.Bootstrap, out string configBootstrapError))
             {
@@ -639,6 +640,7 @@ public partial class OmniBlock :
             LuauDomHost.SetBool = null;
             LuauConfigHost.Get = null;
             LuauConfigHost.Set = null;
+            LuauConfigHost.Options = null;
             LuauLogHost.WriteLine = null;
             LuauState?.Dispose();
             Mouse.destroy();

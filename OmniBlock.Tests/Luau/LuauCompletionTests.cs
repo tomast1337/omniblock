@@ -10,6 +10,7 @@ public sealed class LuauCompletionTests
     [InlineData("OMNI.ui.que", "querySelector")]
     [InlineData("OMNI.ui.root.chi", "child")]
     [InlineData("OMNI.config.mu", "music")]
+    [InlineData("OMNI.config.opt", "options")]
     public void CompletesGlobalsAndDomMembers(string source, string expected)
     {
         LuauCompletion completion = new();

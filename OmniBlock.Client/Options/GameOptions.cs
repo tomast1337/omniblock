@@ -531,6 +531,17 @@ public class GameOptions
         return changed;
     }
 
+    internal IReadOnlyList<LuauConfigValue>? GetScriptConfigOptions(string key)
+    {
+        if (key == "language")
+            return [.. Translations.Instance.Languages.Keys.Select(LuauConfigValue.From)];
+
+        if (_allOptions.TryGetValue(key, out GameOption? option) && option is CycleOption cycle)
+            return [.. Enumerable.Range(0, cycle.Length).Select(index => LuauConfigValue.From(index))];
+
+        return null;
+    }
+
     internal static bool SetOptionValue(GameOption option, LuauConfigValue value)
     {
         switch (option, value.Kind)

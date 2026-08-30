@@ -211,6 +211,9 @@ internal static unsafe partial class LuauNative
     [LibraryImport(LibraryName)]
     internal static partial void lua_createtable(IntPtr L, int narr, int nrec);
 
+    [LibraryImport(LibraryName)]
+    internal static partial void lua_rawseti(IntPtr L, int idx, int n);
+
     // luaL_checkinteger(L, numArg) errors (longjmp, same as luaL_errorL above — safe under the
     // native build's LUA_USE_LONGJMP config, see LuauCallbacks.Interrupt's doc comment) with a
     // descriptive "bad argument #n" message when the stack slot isn't a number, INCLUDING when

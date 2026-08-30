@@ -24,12 +24,14 @@ public static unsafe class LuauConfigHost
 {
     public static Func<string, LuauConfigValue>? Get;
     public static Func<string, LuauConfigValue, bool>? Set;
+    public static Func<string, IReadOnlyList<LuauConfigValue>?>? Options;
 
     public static void Install(IntPtr l)
     {
-        LuauNative.lua_createtable(l, 0, 2);
+        LuauNative.lua_createtable(l, 0, 3);
         Add(l, "get", &GetClosure);
         Add(l, "set", &SetClosure);
+        Add(l, "options", &OptionsClosure);
         LuauNative.lua_setfield(l, LuauNative.GlobalsIndex, "__Config");
     }
 
@@ -74,6 +76,35 @@ public static unsafe class LuauConfigHost
         return 1;
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static int OptionsClosure(IntPtr l)
+    {
+        IReadOnlyList<LuauConfigValue>? values = null;
+        try
+        {
+            string? key = ReadString(l, 1);
+            if (key != null) values = Options?.Invoke(key);
+        }
+        catch
+        {
+            // No managed exception may unwind through an UnmanagedCallersOnly frame.
+        }
+
+        if (values == null)
+        {
+            LuauNative.lua_pushnil(l);
+            return 1;
+        }
+
+        LuauNative.lua_createtable(l, values.Count, 0);
+        for (int i = 0; i < values.Count; i++)
+        {
+            Push(l, values[i]);
+            LuauNative.lua_rawseti(l, -2, i + 1);
+        }
+        return 1;
+    }
+
     private static LuauConfigValue ReadValue(IntPtr l, int index, string? kind)
     {
         if (kind == "boolean") return LuauConfigValue.From(LuauNative.lua_toboolean(l, index) != 0);
@@ -105,7 +136,8 @@ public static unsafe class LuauConfigHost
     }
 
     public const string Bootstrap = """
-OMNI.config = setmetatable({}, {
+local config = { options = function(key) return __Config.options(key) end }
+OMNI.config = setmetatable(config, {
     __index = function(_, key) return __Config.get(key) end,
     __newindex = function(_, key, value)
         if not __Config.set(key, value, typeof(value)) then error("invalid configuration key or value: " .. key, 2) end
