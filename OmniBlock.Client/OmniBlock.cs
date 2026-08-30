@@ -201,6 +201,7 @@ public partial class OmniBlock :
     private readonly ILogger<OmniBlock> _logger = Log.Instance.For<OmniBlock>();
     private readonly ClientLaunchOptions _launchOptions;
     private readonly ClientReadySignal _clientReady = new();
+    private readonly E2ETestController? _e2eTestController;
     private readonly LoadingScreenRenderer _loadingScreen;
     private readonly WaterSprite _textureWaterFX = new();
     private readonly LavaSprite _textureLavaFX = new();
@@ -240,6 +241,10 @@ public partial class OmniBlock :
     private OmniBlock(int width, int height, bool isFullscreen, ClientLaunchOptions launchOptions)
     {
         _launchOptions = launchOptions;
+        if (launchOptions.E2ETest is { } e2eTest)
+        {
+            _e2eTestController = new E2ETestController(e2eTest, () => Running = false);
+        }
         ClientReady += RunStartupScript;
         _loadingScreen = new LoadingScreenRenderer(this);
         _tempDisplayHeight = height;
@@ -297,7 +302,8 @@ public partial class OmniBlock :
 
     private void RunStartupScript()
     {
-        if (_launchOptions.StartupScript is not { } script)
+        StartupScript? script = _launchOptions.E2ETest?.Script ?? _launchOptions.StartupScript;
+        if (script == null)
         {
             return;
         }
@@ -315,6 +321,7 @@ public partial class OmniBlock :
         if (!LuauState.TryExecute(scheduledSource, out string error))
         {
             _logger.LogError("Failed to schedule startup script {Path}: {Error}", script.Path, error);
+            _e2eTestController?.Fail($"Failed to schedule E2E script: {error}");
             return;
         }
 
@@ -437,6 +444,18 @@ public partial class OmniBlock :
             if (!LuauState.TryExecute(LuauClientStateHost.Bootstrap, out string clientStateBootstrapError))
             {
                 _logger.LogError("Failed to install the Luau client-state bootstrap: {Error}", clientStateBootstrapError);
+            }
+
+            if (_e2eTestController != null)
+            {
+                LuauTestHost.Pass = _e2eTestController.Pass;
+                LuauTestHost.Fail = reason => _e2eTestController.Fail(reason);
+                LuauTestHost.Install(LuauState.Handle);
+                if (!LuauState.TryExecute(LuauTestHost.Bootstrap, out string testBootstrapError))
+                {
+                    _logger.LogError("Failed to install the Luau E2E-test bootstrap: {Error}", testBootstrapError);
+                    _e2eTestController.Fail($"Failed to install the E2E-test API: {testBootstrapError}");
+                }
             }
 
             _luauWorldService = new LuauWorldService(
@@ -734,6 +753,8 @@ public partial class OmniBlock :
             LuauClientStateHost.WorldLoaded = null;
             LuauClientStateHost.PlayerReady = null;
             LuauClientStateHost.WorldId = null;
+            LuauTestHost.Pass = null;
+            LuauTestHost.Fail = null;
             _luauWorldService = null;
             LuauLogHost.WriteLine = null;
             LuauState?.Dispose();
@@ -747,7 +768,13 @@ public partial class OmniBlock :
             Display.destroy();
             CleanupTimer();
 
-            if (!_hasCrashed)
+            if (_e2eTestController != null)
+            {
+                _e2eTestController.EnsureCompleted();
+                Environment.ExitCode = _e2eTestController.ExitCode;
+                _e2eTestController.Dispose();
+            }
+            else if (!_hasCrashed)
             {
                 Environment.Exit(0);
             }
@@ -770,6 +797,7 @@ public partial class OmniBlock :
     {
         _hasCrashed = true;
         _logger.LogError(crashInfo, "OmniBlock has crashed!");
+        _e2eTestController?.Fail($"Client crashed: {crashInfo.Message}");
     }
 
     #endregion

@@ -7,7 +7,8 @@ internal sealed record ClientLaunchOptions(
     string Username,
     string SessionToken,
     bool Debug,
-    StartupScript? StartupScript)
+    StartupScript? StartupScript,
+    E2ETestLaunchOptions? E2ETest)
 {
     public static ClientLaunchOptions Parse(string[] args)
     {
@@ -17,6 +18,10 @@ internal sealed record ClientLaunchOptions(
         string? token = null;
         bool debug = false;
         string? startupScriptPath = null;
+        string? e2eScriptPath = null;
+        double e2eTimeoutSeconds = 60;
+        bool e2eTimeoutSpecified = false;
+        string? e2eArtifactsPath = null;
 
         for (int i = 0; i < args.Length; i++)
         {
@@ -31,6 +36,22 @@ internal sealed record ClientLaunchOptions(
                 case "--startup-script":
                     startupScriptPath = ReadValue(args, ref i, "--startup-script");
                     break;
+                case "--e2e-script":
+                    e2eScriptPath = ReadValue(args, ref i, "--e2e-script");
+                    break;
+                case "--e2e-timeout":
+                    e2eTimeoutSpecified = true;
+                    string timeout = ReadValue(args, ref i, "--e2e-timeout");
+                    if (!double.TryParse(timeout, System.Globalization.NumberStyles.Float,
+                            System.Globalization.CultureInfo.InvariantCulture, out e2eTimeoutSeconds) ||
+                        !double.IsFinite(e2eTimeoutSeconds) || e2eTimeoutSeconds <= 0 || e2eTimeoutSeconds > 86_400)
+                    {
+                        throw new ArgumentException("--e2e-timeout requires a finite number greater than zero and no more than 86400.", nameof(args));
+                    }
+                    break;
+                case "--e2e-artifacts":
+                    e2eArtifactsPath = ReadValue(args, ref i, "--e2e-artifacts");
+                    break;
                 case "--debug":
                     debug = true;
                     break;
@@ -41,11 +62,28 @@ internal sealed record ClientLaunchOptions(
         token ??= "-";
         PlayerNameValidator.Validate(username);
 
+        if (startupScriptPath != null && e2eScriptPath != null)
+        {
+            throw new ArgumentException("--startup-script and --e2e-script cannot be used together.", nameof(args));
+        }
+
+        if (e2eScriptPath == null && (e2eArtifactsPath != null || e2eTimeoutSpecified))
+        {
+            throw new ArgumentException("--e2e-timeout and --e2e-artifacts require --e2e-script.", nameof(args));
+        }
+
         StartupScript? startupScript = startupScriptPath == null
             ? null
             : LoadStartupScript(startupScriptPath);
 
-        return new ClientLaunchOptions(username, token, debug, startupScript);
+        E2ETestLaunchOptions? e2eTest = e2eScriptPath == null
+            ? null
+            : new E2ETestLaunchOptions(
+                LoadStartupScript(e2eScriptPath),
+                TimeSpan.FromSeconds(e2eTimeoutSeconds),
+                Path.GetFullPath(e2eArtifactsPath ?? "e2e-artifacts"));
+
+        return new ClientLaunchOptions(username, token, debug, startupScript, e2eTest);
     }
 
     private static string ReadValue(string[] args, ref int index, string option)
@@ -74,3 +112,5 @@ internal sealed record ClientLaunchOptions(
 }
 
 internal sealed record StartupScript(string Path, string Source);
+
+internal sealed record E2ETestLaunchOptions(StartupScript Script, TimeSpan Timeout, string ArtifactsPath);

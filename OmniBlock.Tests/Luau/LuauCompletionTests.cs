@@ -23,6 +23,7 @@ public sealed class LuauCompletionTests
     [InlineData("OMNI.ru", "run")]
     [InlineData("OMNI.wa", "wait")]
     [InlineData("OMNI.waitU", "waitUntil")]
+    [InlineData("OMNI.test.pa", "pass")]
     public void CompletesGlobalsAndDomMembers(string source, string expected)
     {
         LuauCompletion completion = new();

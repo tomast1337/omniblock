@@ -21,6 +21,7 @@ local function schedulerTick(deltaSeconds)
             local ok, delay = coroutine.resume(task.thread)
             if not ok then
                 print("scheduled Luau task failed: " .. tostring(delay))
+                if OMNI.test ~= nil then OMNI.test.fail("scheduled Luau task failed: " .. tostring(delay)) end
                 table.remove(scheduledTasks, index)
             elseif coroutine.status(task.thread) == "dead" then
                 table.remove(scheduledTasks, index)
