@@ -14,6 +14,8 @@ public sealed class LuauCompletionTests
     [InlineData("OMNI.cli", "client")]
     [InlineData("OMNI.client.wor", "worlds")]
     [InlineData("OMNI.client.worlds.lo", "load")]
+    [InlineData("OMNI.ru", "run")]
+    [InlineData("OMNI.wa", "wait")]
     public void CompletesGlobalsAndDomMembers(string source, string expected)
     {
         LuauCompletion completion = new();

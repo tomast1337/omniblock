@@ -60,6 +60,11 @@ public sealed unsafe class LuauState : IDisposable
             IntPtr callbacks = LuauNative.lua_callbacks(_state);
             IntPtr interruptFn = (IntPtr)(delegate* unmanaged[Cdecl]<IntPtr, int, void>)&LuauCallbacks.Interrupt;
             Marshal.WriteIntPtr(callbacks, IntPtr.Size, interruptFn);
+
+            // lua_Callbacks.userthread is the fourth pointer (after userdata, interrupt and
+            // panic). Propagate this VM's shared budget into coroutines created by OMNI.run.
+            IntPtr userThreadFn = (IntPtr)(delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void>)&LuauCallbacks.UserThread;
+            Marshal.WriteIntPtr(callbacks, IntPtr.Size * 3, userThreadFn);
         }
         catch
         {
@@ -151,6 +156,40 @@ public sealed unsafe class LuauState : IDisposable
         catch (Exception ex)
         {
             output = $"internal error: {ex.Message}";
+            return false;
+        }
+        finally
+        {
+            LuauNative.lua_settop(_state, 0);
+        }
+    }
+
+    /// <summary>
+    ///     Calls a previously installed global function with one numeric argument. Unlike
+    ///     <see cref="TryExecute" />, this performs no compilation and is suitable for the
+    ///     scheduler's once-per-client-tick dispatch.
+    /// </summary>
+    public bool TryCallGlobal(string functionName, double argument, out string error)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        try
+        {
+            LuauNative.lua_settop(_state, 0);
+            LuauNative.lua_getfield(_state, LuauNative.GlobalsIndex, functionName);
+            LuauNative.lua_pushnumber(_state, argument);
+            if (LuauNative.lua_pcall(_state, 1, 0, 0) != 0)
+            {
+                error = DescribeValue(-1);
+                return false;
+            }
+
+            error = string.Empty;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            error = $"internal error: {ex.Message}";
             return false;
         }
         finally

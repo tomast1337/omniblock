@@ -15,7 +15,7 @@ internal sealed partial class LuauCompletion
         "string", "table", "tonumber", "tostring", "typeof", "utf8", "xpcall"
     ];
 
-    private static readonly string[] s_omniMembers = ["client", "config", "environment", "has", "ui"];
+    private static readonly string[] s_omniMembers = ["client", "config", "environment", "has", "run", "ui", "wait"];
     private static readonly string[] s_clientMembers = ["worlds"];
     private static readonly string[] s_worldMembers = ["list", "load"];
     private static readonly string[] s_uiMembers = ["hud", "querySelector", "root"];

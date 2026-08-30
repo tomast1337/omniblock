@@ -206,6 +206,7 @@ public partial class OmniBlock :
 
     private DebugWindowManager _debugWindowManager;
     private LuauWorldService? _luauWorldService;
+    private bool _luauSchedulerFailed;
     private string _gameDataDir;
 
     /// <summary>The directory saves, options and screenshots live under.</summary>
@@ -355,6 +356,12 @@ public partial class OmniBlock :
             if (!LuauState.TryExecute(LuauDomHost.Bootstrap, out string domBootstrapError))
             {
                 _logger.LogError("Failed to install the Luau DOM bootstrap: {Error}", domBootstrapError);
+            }
+
+            if (!LuauState.TryExecute(LuauScheduler.Bootstrap, out string schedulerBootstrapError))
+            {
+                _luauSchedulerFailed = true;
+                _logger.LogError("Failed to install the Luau scheduler bootstrap: {Error}", schedulerBootstrapError);
             }
 
             LuauConfigHost.Get = Options.GetScriptConfig;
@@ -1001,6 +1008,13 @@ public partial class OmniBlock :
             {
                 luauState.ResetInstructionBudget(LuauInstructionBudgetPerTick);
                 luauState.StepGarbageCollector(LuauGcStepKb);
+                if (!_luauSchedulerFailed &&
+                    !LuauScheduler.Tick(luauState, 1.0 / Timer.TicksPerSecond, out string schedulerError))
+                {
+                    // A task can consume the shared budget and abort this tick's scheduler call.
+                    // The budget is reset above on the next tick, so keep the scheduler alive.
+                    _logger.LogWarning("Luau scheduler tick aborted: {Error}", schedulerError);
+                }
             }
         }
 

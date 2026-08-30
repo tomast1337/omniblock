@@ -73,4 +73,17 @@ internal static unsafe class LuauCallbacks
             LuauNative.luaL_errorL(L, "OmniBlock.Luau: instruction budget exceeded");
         }
     }
+
+    /// <summary>
+    ///     Copies the parent state's shared instruction counter into every coroutine. Luau
+    ///     otherwise initializes a coroutine's thread-data slot to null, which would make its
+    ///     interrupt callbacks silently unbudgeted.
+    /// </summary>
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    internal static void UserThread(IntPtr parent, IntPtr thread)
+    {
+        // On destruction Luau calls userthread(NULL, thread); never touch the dying state.
+        if (parent == IntPtr.Zero || thread == IntPtr.Zero) return;
+        LuauNative.lua_setthreaddata(thread, LuauNative.lua_getthreaddata(parent));
+    }
 }

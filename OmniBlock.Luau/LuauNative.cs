@@ -64,6 +64,9 @@ internal static unsafe partial class LuauNative
     [LibraryImport(LibraryName)]
     internal static partial void lua_setfield(IntPtr L, int idx, [MarshalUsing(typeof(Utf8StringMarshaller))] string k);
 
+    [LibraryImport(LibraryName)]
+    internal static partial int lua_getfield(IntPtr L, int idx, [MarshalUsing(typeof(Utf8StringMarshaller))] string k);
+
     // LUA_GLOBALSINDEX is a compile-time pseudo-index, not an exported symbol:
     // `#define LUA_GLOBALSINDEX (-LUAI_MAXCSTACK - 2002)` (lua.h:21), and LUAI_MAXCSTACK
     // defaults to 8000 (luaconf.h:81) unless overridden at build time. native/luau/CMakeLists.txt
