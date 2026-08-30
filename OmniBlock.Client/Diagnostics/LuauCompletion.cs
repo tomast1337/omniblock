@@ -16,7 +16,8 @@ internal sealed partial class LuauCompletion
     ];
 
     private static readonly string[] s_omniMembers = ["client", "config", "environment", "has", "run", "ui", "wait", "waitUntil"];
-    private static readonly string[] s_clientMembers = ["worlds"];
+    private static readonly string[] s_clientMembers = ["state", "worlds"];
+    private static readonly string[] s_clientStateMembers = ["playerReady", "worldId", "worldLoaded"];
     private static readonly string[] s_worldMembers = ["list", "load"];
     private static readonly string[] s_uiMembers = ["hud", "querySelector", "root", "screen"];
     private static readonly string[] s_configMembers =
@@ -78,6 +79,7 @@ internal sealed partial class LuauCompletion
         string receiver = source[start..end];
         if (receiver == "OMNI") return s_omniMembers;
         if (receiver.EndsWith("OMNI.client", StringComparison.Ordinal)) return s_clientMembers;
+        if (receiver.EndsWith("OMNI.client.state", StringComparison.Ordinal)) return s_clientStateMembers;
         if (receiver.EndsWith("OMNI.client.worlds", StringComparison.Ordinal)) return s_worldMembers;
         if (receiver.EndsWith("OMNI.ui", StringComparison.Ordinal)) return s_uiMembers;
         if (receiver.EndsWith("OMNI.config", StringComparison.Ordinal)) return s_configMembers;

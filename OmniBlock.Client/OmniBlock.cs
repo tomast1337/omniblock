@@ -208,6 +208,7 @@ public partial class OmniBlock :
 
     private DebugWindowManager _debugWindowManager;
     private LuauWorldService? _luauWorldService;
+    private string? _singleplayerWorldId;
     private bool _luauSchedulerFailed;
     private string _gameDataDir;
 
@@ -425,6 +426,17 @@ public partial class OmniBlock :
             if (!LuauState.TryExecute(LuauConfigHost.Bootstrap, out string configBootstrapError))
             {
                 _logger.LogError("Failed to install the Luau configuration bootstrap: {Error}", configBootstrapError);
+            }
+
+            LuauClientStateHost.WorldLoaded = () => World != null;
+            LuauClientStateHost.PlayerReady = () =>
+                World != null && Player != null &&
+                CurrentScreen is not (LevelLoadingScreen or ConnectingScreen or DownloadingTerrainScreen);
+            LuauClientStateHost.WorldId = () => World != null && InternalServer != null ? _singleplayerWorldId : null;
+            LuauClientStateHost.Install(LuauState.Handle);
+            if (!LuauState.TryExecute(LuauClientStateHost.Bootstrap, out string clientStateBootstrapError))
+            {
+                _logger.LogError("Failed to install the Luau client-state bootstrap: {Error}", clientStateBootstrapError);
             }
 
             _luauWorldService = new LuauWorldService(
@@ -719,6 +731,9 @@ public partial class OmniBlock :
             LuauConfigHost.Options = null;
             LuauWorldsHost.List = null;
             LuauWorldsHost.Load = null;
+            LuauClientStateHost.WorldLoaded = null;
+            LuauClientStateHost.PlayerReady = null;
+            LuauClientStateHost.WorldId = null;
             _luauWorldService = null;
             LuauLogHost.WriteLine = null;
             LuauState?.Dispose();
@@ -1617,6 +1632,7 @@ public partial class OmniBlock :
     public void StartWorld(string worldName, string mainMenuText, WorldSettings settings)
     {
         ChangeWorld(null);
+        _singleplayerWorldId = worldName;
         Navigate(new LevelLoadingScreen(UIContext, CreateNetworkContext(), worldName, settings, this));
     }
 
@@ -1760,6 +1776,7 @@ public partial class OmniBlock :
     {
         if (InternalServer == null)
         {
+            _singleplayerWorldId = null;
             return;
         }
 
@@ -1770,6 +1787,7 @@ public partial class OmniBlock :
         }
 
         InternalServer = null;
+        _singleplayerWorldId = null;
     }
 
     private bool IsMultiplayerWorld()
