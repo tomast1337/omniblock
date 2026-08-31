@@ -1,0 +1,73 @@
+name: Client E2E
+
+on:
+    push:
+        branches: [ "dev" ]
+    pull_request:
+        branches: [ "dev" ]
+    workflow_dispatch:
+
+jobs:
+    client-e2e:
+        runs-on: docker
+        timeout-minutes: 10
+        env:
+            DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: 1
+            CONFIGURATION: Release
+            E2E_ARTIFACTS_DIR: ${{ github.workspace }}/artifacts/e2e-ci
+            E2E_DISPLAY_BACKEND: xvfb
+            E2E_DISPLAY_SIZE: 1280x720x24
+            E2E_TIMEOUT_SECONDS: 120
+            LIBGL_ALWAYS_SOFTWARE: 1
+            MESA_LOADER_DRIVER_OVERRIDE: llvmpipe
+            WGPU_BACKEND: vulkan
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Install virtual display and software rendering
+              run: |
+                  apt-get update
+                  apt-get install --yes --no-install-recommends \
+                      cmake \
+                      g++ \
+                      libxcursor1 \
+                      libxi6 \
+                      libxinerama1 \
+                      libxrandr2 \
+                      libvulkan1 \
+                      mesa-vulkan-drivers \
+                      ninja-build \
+                      xauth \
+                      xvfb
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: 10.0.x
+
+            - name: Restore dependencies
+              run: dotnet restore
+
+            - name: Build Luau runtime
+              run: native/luau/build-local.sh
+
+            - name: Run real-client smoke test
+              run: |
+                  lavapipe_icd="$(find /usr/share/vulkan/icd.d -name 'lvp_icd*.json' -print -quit)"
+                  if [ -z "$lavapipe_icd" ]; then
+                      echo "Mesa Lavapipe Vulkan ICD was not installed" >&2
+                      exit 1
+                  fi
+
+                  env VK_ICD_FILENAMES="$lavapipe_icd" \
+                      timeout --signal=INT --kill-after=15s 180s \
+                      tests/e2e/run-with-display.sh
+
+            - name: Upload E2E artifacts
+              if: always()
+              uses: actions/upload-artifact@v3
+              with:
+                  name: client-e2e-${{ github.run_id }}
+                  path: artifacts/e2e-ci
+                  if-no-files-found: warn

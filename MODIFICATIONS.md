@@ -253,3 +253,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-30 — feat: enhance Luau completion and DOM host with new members and waitUntil functionality (Nicolas Vyčas Nery; `7967323f503a8309aa82245114233742c9cb22c3`)
 - 2026-08-30 — feat: add client state management with world readiness and ID functionality (Nicolas Vyčas Nery; `95ed7eb1a7f882f540486c163ce5a29fdde1d8bd`)
 - 2026-08-30 — feat: add E2E testing support with new command-line options and controller (Nicolas Vyčas Nery; `8ce8b8d4834feaa6f29747ceb7928e0760c6d57a`)
+- 2026-08-30 — test(e2e): add isolated client smoke runner and CI display backend (Nicolas Vyčas Nery; `134893b82829dc8876d1d68beece5fb9de123cd9`)
