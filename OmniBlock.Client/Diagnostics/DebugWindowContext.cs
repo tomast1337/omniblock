@@ -52,6 +52,7 @@ internal sealed class DebugWindowContext(OmniBlock game)
     public SoundManager SoundManager => game.SoundManager;
     public TextureManager TextureManager => game.TextureManager;
     public LuauState? LuauState => game.LuauState;
+    public string GameDataDir => game.GameDataDir;
 
     /// <summary>
     /// The top-left screen position (in ImGui/window pixels) of the game viewport when the
