@@ -19,6 +19,7 @@ public class LanguageSelectionScreen(UIContext context, UIScreen? parent) : Base
 
     protected override void Init()
     {
+        Root.AutomationId = "language";
         Root.AddChild(new Background());
 
         Root.Style.AlignItems = Align.Center;
@@ -33,7 +34,7 @@ public class LanguageSelectionScreen(UIContext context, UIScreen? parent) : Base
         Root.AddChild(title);
         AddTitleSpacer();
 
-        _scrollView = new ScrollView();
+        _scrollView = new ScrollView { AutomationId = "language.list" };
         _scrollView.Style.Width = 300;
         _scrollView.Style.FlexGrow = 1;
         _scrollView.Style.MaxHeight = 200;
@@ -60,6 +61,7 @@ public class LanguageSelectionScreen(UIContext context, UIScreen? parent) : Base
         row2.Style.JustifyContent = Justify.Center;
 
         Button btnCancel = CreateButton();
+        btnCancel.AutomationId = "language.done";
         btnCancel.Text = Translations.Get("gui.done");
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);
@@ -80,6 +82,7 @@ public class LanguageSelectionScreen(UIContext context, UIScreen? parent) : Base
         foreach (KeyValuePair<string, Language> lang in Translations.Instance.Languages)
         {
             LanguageListItem item = new(lang.Value);
+            item.AutomationId = $"language.item.{lang.Key}";
             item.OnClick += e => SelectListItem(item, lang.Key);
             _scrollView.AddContent(item);
             _listItems.Add(item);

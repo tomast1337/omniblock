@@ -9,7 +9,7 @@ case "$backend" in
         exec xvfb-run \
             --auto-servernum \
             --server-args="-screen 0 ${E2E_DISPLAY_SIZE:-1280x720x24}" \
-            "$script_dir/run-local.sh"
+            "$script_dir/run-local.sh" "$@"
         ;;
     headless)
         echo "The OmniBlock headless display backend has not been implemented yet." >&2

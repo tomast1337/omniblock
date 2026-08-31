@@ -23,6 +23,7 @@ public sealed class E2ETestControllerTests
             controller.Fail("too late");
 
             Assert.Equal(0, controller.ExitCode);
+            Assert.True(controller.IsCompleted);
             Assert.Equal(1, shutdownRequests);
             Assert.True(File.Exists(Path.Combine(directory, "client.log")));
             using JsonDocument result = JsonDocument.Parse(File.ReadAllText(Path.Combine(directory, "result.json")));

@@ -38,9 +38,10 @@ public class OptionsScreen(
         list.AddChild(separator);
 
         // Sub-menu buttons
-        void AddSubButton(string key, Action onClick)
+        void AddSubButton(string id, string key, Action onClick)
         {
             Button btn = CreateButton();
+            btn.AutomationId = $"options.{id}";
             btn.Text = Translations.Get(key);
             btn.Style.MarginTop = 2;
             btn.Style.MarginBottom = 2;
@@ -55,12 +56,12 @@ public class OptionsScreen(
             list.AddChild(btn);
         }
 
-        AddSubButton("options.video.text", () => Context.Navigator.Navigate(new VideoSettingsScreen(Context, this)));
-        AddSubButton("options.uiSettings", () => Context.Navigator.Navigate(new UISettingsScreen(Context, this)));
-        AddSubButton("options.audioSettings", () => Context.Navigator.Navigate(new AudioSettingsScreen(Context, this)));
-        AddSubButton("options.controls", () => Context.Navigator.Navigate(new AllControlsScreen(Context, this)));
-        AddSubButton("menu.texturePacks", () => Context.Navigator.Navigate(new TexturePacksScreen(Context, this, texturePacks)));
-        AddSubButton("menu.credits", () => Context.Navigator.Navigate(new CreditsScreen(Context, this)));
+        AddSubButton("video", "options.video.text", () => Context.Navigator.Navigate(new VideoSettingsScreen(Context, this)));
+        AddSubButton("ui", "options.uiSettings", () => Context.Navigator.Navigate(new UISettingsScreen(Context, this)));
+        AddSubButton("audio", "options.audioSettings", () => Context.Navigator.Navigate(new AudioSettingsScreen(Context, this)));
+        AddSubButton("controls", "options.controls", () => Context.Navigator.Navigate(new AllControlsScreen(Context, this)));
+        AddSubButton("texturePacks", "menu.texturePacks", () => Context.Navigator.Navigate(new TexturePacksScreen(Context, this, texturePacks)));
+        AddSubButton("credits", "menu.credits", () => Context.Navigator.Navigate(new CreditsScreen(Context, this)));
 
         return list;
     }

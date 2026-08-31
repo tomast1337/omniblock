@@ -716,6 +716,15 @@ public partial class OmniBlock :
 
     private void ShutdownGame()
     {
+        // E2E completion has already persisted its authoritative result and captured log.
+        // Avoid production teardown work that may wait on background network/resource tasks;
+        // each scenario runs in its own process and disposable data directory.
+        if (_e2eTestController is { IsCompleted: true } completedTest)
+        {
+            _logger.LogInformation("Stopping completed E2E client");
+            Environment.Exit(completedTest.ExitCode);
+        }
+
         try
         {
             StopInternalServer();

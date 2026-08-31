@@ -18,6 +18,7 @@ public class RenameWorldScreen(
 
     protected override void Init()
     {
+        Root.AutomationId = "world.rename.screen";
         Root.AddChild(new Background());
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.Center;
@@ -45,6 +46,7 @@ public class RenameWorldScreen(
 
         _txfName = new TextField
         {
+            AutomationId = "world.rename.name",
             Text = currentWorldName
         };
         _txfName.Style.MarginBottom = 20;
@@ -54,6 +56,7 @@ public class RenameWorldScreen(
         buttonPanel.Style.FlexDirection = FlexDirection.Row;
 
         Button btnRename = CreateButton();
+        btnRename.AutomationId = "world.rename.submit";
         btnRename.Text = Translations.Get("gui.rename");
         btnRename.Style.Width = 100;
         btnRename.Style.SetMargin(2);
@@ -68,6 +71,7 @@ public class RenameWorldScreen(
         buttonPanel.AddChild(btnRename);
 
         Button btnCancel = CreateButton();
+        btnCancel.AutomationId = "world.rename.cancel";
         btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 100;
         btnCancel.Style.SetMargin(2);

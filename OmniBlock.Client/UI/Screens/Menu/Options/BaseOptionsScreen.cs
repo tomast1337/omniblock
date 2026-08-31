@@ -25,6 +25,7 @@ public abstract class BaseOptionsScreen(
 
     protected override void Init()
     {
+        Root.AutomationId = "options";
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.FlexStart;
 
@@ -52,6 +53,7 @@ public abstract class BaseOptionsScreen(
         Root.AddChild(scroll);
 
         Button btnDone = CreateButton();
+        btnDone.AutomationId = "options.done";
         btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.MarginBottom = 20;
         btnDone.OnClick += e => OnDone();
@@ -162,6 +164,7 @@ public abstract class BaseOptionsScreen(
         if (option is FloatOption floatOpt)
         {
             Slider slider = CreateSlider();
+            slider.AutomationId = $"option.{option.SaveKey}";
             slider.Value = floatOpt.Value;
             slider.Text = option.GetDisplayString();
             slider.OnValueChanged += v =>
@@ -184,6 +187,7 @@ public abstract class BaseOptionsScreen(
         if (option is ShaderRangeOption rangeOpt)
         {
             Slider slider = CreateSlider();
+            slider.AutomationId = $"option.{option.SaveKey}";
             slider.Value = rangeOpt.NormalizedValue;
             slider.Text = option.GetDisplayString();
             slider.OnValueChanged += v =>
@@ -204,6 +208,7 @@ public abstract class BaseOptionsScreen(
         }
 
         Button btn = CreateButton();
+        btn.AutomationId = $"option.{option.SaveKey}";
         btn.Text = option.GetDisplayString();
         btn.OnMouseDown += e =>
         {

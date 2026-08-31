@@ -1,4 +1,4 @@
-# Local client E2E smoke test
+# Client Luau E2E suite
 
 `run-local.sh` launches the real client against a disposable platform-data
 directory. It does not read or write the normal OmniBlock saves, options, logs,
@@ -10,16 +10,19 @@ Before the first run, build the local Luau runtime:
 native/luau/build-local.sh
 ```
 
-Then run:
+Run the full suite or one scenario:
 
 ```sh
 tests/e2e/run-local.sh
+tests/e2e/run-local.sh multiplayer
 ```
 
-The runner materializes the tiny checked-in `e2e-smoke` fixture, navigates from
-the main menu into its world, waits for the world and player to become ready,
-and exits through `OMNI.test.pass()`. Results and the captured client log are
-written under `artifacts/e2e-local/` by default.
+Every scenario gets a fresh disposable game-data directory and its own artifact
+subdirectory. The suite covers main-menu structure and navigation, world
+rename/delete/create forms, multiplayer server add/edit/delete, language
+selection, options, new-world loading, and loading the checked-in fixture.
+Each script exits through `OMNI.test.pass()`; results and captured client logs
+are written under `artifacts/e2e-local/` by default.
 
 The following environment variables are optional:
 

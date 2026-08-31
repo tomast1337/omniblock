@@ -25,6 +25,24 @@ public sealed class UiDomDocumentTests
     }
 
     [Fact]
+    public void TextField_text_assignment_notifiesTheLiveControl()
+    {
+        UIElement root = new();
+        string? changed = null;
+        TextField field = new() { AutomationId = "field", Text = "before" };
+        field.OnTextChanged += value => changed = value;
+        root.AddChild(field);
+        UiDomDocument document = new(() => root, () => null);
+
+        int handle = document.Query("#field");
+
+        Assert.Equal("before", document.GetString(handle, "text"));
+        Assert.True(document.SetString(handle, "text", "after"));
+        Assert.Equal("after", field.Text);
+        Assert.Equal("after", changed);
+    }
+
+    [Fact]
     public void Parent_and_child_useStableHandlesWithinOneTree()
     {
         UIElement root = new();
@@ -37,6 +55,25 @@ public sealed class UiDomDocumentTests
 
         Assert.Equal(1, document.GetChildCount(rootHandle));
         Assert.Equal(rootHandle, document.GetParent(childHandle));
+    }
+
+    [Fact]
+    public void Query_and_children_includeScrollViewContent()
+    {
+        UIElement root = new();
+        ScrollView scroll = new() { AutomationId = "list" };
+        Button item = new(() => { }) { AutomationId = "list.item" };
+        scroll.AddContent(item);
+        root.AddChild(scroll);
+        UiDomDocument document = new(() => root, () => null);
+
+        int scrollHandle = document.Query("#list");
+        int itemHandle = document.Query("#list.item");
+
+        Assert.NotEqual(0, itemHandle);
+        Assert.Equal(1, document.GetChildCount(scrollHandle));
+        Assert.Equal(scrollHandle, document.GetParent(document.GetChild(scrollHandle, 0)));
+        Assert.True(document.Click(itemHandle));
     }
 
     [Fact]
@@ -70,6 +107,20 @@ public sealed class UiDomDocumentTests
         Assert.Equal("main.singleplayer", document.GetString(handle, "id"));
         Assert.True(document.Click(handle));
         Assert.Equal(1, clicks);
+    }
+
+    [Fact]
+    public void Click_dispatchesTheMouseGestureUsedByOptionControls()
+    {
+        UIElement root = new();
+        int mouseDowns = 0;
+        Button button = new(() => { }) { AutomationId = "option" };
+        button.OnMouseDown += _ => mouseDowns++;
+        root.AddChild(button);
+        UiDomDocument document = new(() => root, () => null);
+
+        Assert.True(document.Click(document.Query("#option")));
+        Assert.Equal(1, mouseDowns);
     }
 
     [Theory]

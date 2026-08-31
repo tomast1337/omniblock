@@ -22,6 +22,7 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
 
     protected override void Init()
     {
+        Root.AutomationId = "multiplayer";
         Root.AddChild(new Background());
         LoadServerList();
 
@@ -37,7 +38,7 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
         Root.AddChild(title);
         AddTitleSpacer();
 
-        _scrollView = new ScrollView();
+        _scrollView = new ScrollView { AutomationId = "multiplayer.list" };
         _scrollView.Style.Width = 300;
         _scrollView.Style.FlexGrow = 1;
         _scrollView.Style.MaxHeight = 200;
@@ -58,6 +59,7 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
         row1.Style.MarginBottom = 2;
 
         _btnJoin = CreateButton();
+        _btnJoin.AutomationId = "multiplayer.join";
         _btnJoin.Text = Translations.Get("gui.connect");
         _btnJoin.Style.Width = 100;
         _btnJoin.Style.SetMargin(2);
@@ -65,6 +67,7 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
         row1.AddChild(_btnJoin);
 
         Button btnDirect = CreateButton();
+        btnDirect.AutomationId = "multiplayer.direct";
         btnDirect.Text = Translations.Get("gui.directConnect");
         btnDirect.Style.Width = 100;
         btnDirect.Style.SetMargin(2);
@@ -72,6 +75,7 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
         row1.AddChild(btnDirect);
 
         Button btnAdd = CreateButton();
+        btnAdd.AutomationId = "multiplayer.add";
         btnAdd.Text = Translations.Get("gui.addServer");
         btnAdd.Style.Width = 100;
         btnAdd.Style.SetMargin(2);
@@ -85,6 +89,7 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
         row2.Style.JustifyContent = Justify.Center;
 
         _btnEdit = CreateButton();
+        _btnEdit.AutomationId = "multiplayer.edit";
         _btnEdit.Text = Translations.Get("gui.edit");
         _btnEdit.Style.Width = 75;
         _btnEdit.Style.SetMargin(2);
@@ -92,6 +97,7 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
         row2.AddChild(_btnEdit);
 
         _btnDelete = CreateButton();
+        _btnDelete.AutomationId = "multiplayer.delete";
         _btnDelete.Text = Translations.Get("gui.delete");
         _btnDelete.Style.Width = 75;
         _btnDelete.Style.SetMargin(2);
@@ -99,6 +105,7 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
         row2.AddChild(_btnDelete);
 
         Button btnRefresh = CreateButton();
+        btnRefresh.AutomationId = "multiplayer.refresh";
         btnRefresh.Text = Translations.Get("gui.refresh");
         btnRefresh.Style.Width = 75;
         btnRefresh.Style.SetMargin(2);
@@ -110,6 +117,7 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
         row2.AddChild(btnRefresh);
 
         Button btnCancel = CreateButton();
+        btnCancel.AutomationId = "multiplayer.cancel";
         btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 75;
         btnCancel.Style.SetMargin(2);
@@ -179,6 +187,7 @@ public class MultiplayerScreen(UIContext context, ClientNetworkContext networkCo
         {
             int index = i;
             ServerListItem item = new(_serverList[i]);
+            item.AutomationId = $"multiplayer.item.{i}";
             item.OnClick += e => SelectServer(index);
             _scrollView.AddContent(item);
             _listItems.Add(item);

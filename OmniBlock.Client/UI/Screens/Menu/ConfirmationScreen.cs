@@ -16,6 +16,7 @@ public class ConfirmationScreen(
 {
     protected override void Init()
     {
+        Root.AutomationId = "confirmation";
         Root.AddChild(new Background());
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.Center;
@@ -41,6 +42,7 @@ public class ConfirmationScreen(
         buttonPanel.Style.FlexDirection = FlexDirection.Row;
 
         Button btnConfirm = CreateButton();
+        btnConfirm.AutomationId = "confirmation.confirm";
         btnConfirm.Text = confirmText;
         btnConfirm.Style.Width = 100;
         btnConfirm.Style.SetMargin(0, 4, 0, 0);
@@ -52,6 +54,7 @@ public class ConfirmationScreen(
         buttonPanel.AddChild(btnConfirm);
 
         Button btnCancel = CreateButton();
+        btnCancel.AutomationId = "confirmation.cancel";
         btnCancel.Text = cancelText;
         btnCancel.Style.Width = 100;
         btnCancel.OnClick += e =>

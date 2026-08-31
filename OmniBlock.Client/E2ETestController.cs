@@ -39,6 +39,17 @@ internal sealed class E2ETestController : IDisposable
         }
     }
 
+    public bool IsCompleted
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _result != null;
+            }
+        }
+    }
+
     public void Pass() => Complete("passed", null, 0);
 
     public void Fail(string reason, int exitCode = FailedExitCode) =>

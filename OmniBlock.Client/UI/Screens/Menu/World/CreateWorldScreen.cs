@@ -30,6 +30,7 @@ public class CreateWorldScreen(
     private void BuildUI()
     {
         Root.Children.Clear();
+        Root.AutomationId = "world.create.screen";
         Root.AddChild(new Background());
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.Center;
@@ -56,6 +57,7 @@ public class CreateWorldScreen(
 
             _txfWorldName = new TextField
             {
+                AutomationId = "world.create.name",
                 Text = _worldName
             };
             _txfWorldName.Style.MarginBottom = 10;
@@ -75,6 +77,7 @@ public class CreateWorldScreen(
 
             _txfSeed = new TextField
             {
+                AutomationId = "world.create.seed",
                 Text = _seed
             };
             _txfSeed.Style.MarginBottom = 10;
@@ -82,12 +85,14 @@ public class CreateWorldScreen(
             Root.AddChild(_txfSeed);
 
             _btnWorldType = CreateButton();
+            _btnWorldType.AutomationId = "world.create.type";
             _btnWorldType.Text = Translations.Get("selectWorld.worldType") + ": " + Translations.Get($"selectWorld.type.{_selectedWorldType.Name.ToLowerInvariant()}.title");
             _btnWorldType.Style.MarginBottom = 4;
             _btnWorldType.OnClick += e => Context.Navigator.Navigate(new SelectWorldTypeScreen(Context, this, _selectedWorldType));
             Root.AddChild(_btnWorldType);
 
             _btnCustomize = CreateButton();
+            _btnCustomize.AutomationId = "world.create.customize";
             _btnCustomize.Text = Translations.Get("gui.customize");
             _btnCustomize.Style.MarginBottom = 10;
             _btnCustomize.Enabled = _selectedWorldType == WorldType.Flat;
@@ -103,6 +108,7 @@ public class CreateWorldScreen(
         buttonPanel.Style.MarginTop = 10;
 
         Button btnCreate = CreateButton();
+        btnCreate.AutomationId = "world.create.submit";
         btnCreate.Text = Translations.Get("gui.create");
         btnCreate.Style.Width = 150;
         btnCreate.Style.SetMargin(2);
@@ -111,6 +117,7 @@ public class CreateWorldScreen(
 
         string moreOptionsText = _moreOptions ? Translations.Get("gui.done") : Translations.Get("selectWorld.moreWorldOptions");
         Button btnToggleMore = CreateButton();
+        btnToggleMore.AutomationId = "world.create.more";
         btnToggleMore.Text = moreOptionsText;
         btnToggleMore.Style.Width = 150;
         btnToggleMore.Style.SetMargin(2);
@@ -122,6 +129,7 @@ public class CreateWorldScreen(
         buttonPanel.AddChild(btnToggleMore);
 
         Button btnCancel = CreateButton();
+        btnCancel.AutomationId = "world.create.cancel";
         btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 150;
         btnCancel.Style.SetMargin(2);

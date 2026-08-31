@@ -30,13 +30,14 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
     }
 
     public int GetParent(int handle) => Resolve(handle) is { Parent: { } parent } ? GetHandle(parent) : 0;
-    public int GetChildCount(int handle) => Resolve(handle)?.Children.Count ?? 0;
+    public int GetChildCount(int handle) => Resolve(handle) is { } element ? LogicalChildren(element).Count : 0;
 
     public int GetChild(int handle, int index)
     {
         UIElement? element = Resolve(handle);
-        return element != null && (uint)index < (uint)element.Children.Count
-            ? GetHandle(element.Children[index])
+        IReadOnlyList<UIElement>? children = element == null ? null : LogicalChildren(element);
+        return children != null && (uint)index < (uint)children.Count
+            ? GetHandle(children[index])
             : 0;
     }
 
@@ -47,6 +48,7 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
             "id" => element.AutomationId,
             "text" when element is Label label => label.Text,
             "text" when element is Button button => button.Text,
+            "text" when element is TextField textField => textField.Text,
             _ => null,
         }
         : null;
@@ -65,6 +67,10 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
                 return true;
             case Button button:
                 button.Text = value;
+                return true;
+            case TextField textField:
+                textField.Text = value;
+                textField.OnTextChanged?.Invoke(value);
                 return true;
             default:
                 return false;
@@ -99,18 +105,23 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
 
     public bool Click(int handle)
     {
-        if (Resolve(handle) is not { OnClick: not null } element || !IsInteractable(element))
+        if (Resolve(handle) is not { } element ||
+            (element.OnClick == null && element.OnMouseDown == null && element.OnMouseUp == null) ||
+            !IsInteractable(element))
         {
             return false;
         }
 
-        element.OnClick(new UIMouseEvent
+        UIMouseEvent mouseEvent = new()
         {
             Target = element,
             MouseX = (int)(element.ScreenX + element.ComputedWidth / 2),
             MouseY = (int)(element.ScreenY + element.ComputedHeight / 2),
             Button = MouseButton.Left,
-        });
+        };
+        element.OnMouseDown?.Invoke(mouseEvent);
+        element.OnMouseUp?.Invoke(mouseEvent);
+        element.OnClick?.Invoke(mouseEvent);
         return true;
     }
 
@@ -171,7 +182,7 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
             return root;
         }
 
-        foreach (UIElement child in root.Children)
+        foreach (UIElement child in LogicalChildren(root))
         {
             if (FindByType(child, selector) is { } match)
             {
@@ -194,7 +205,7 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
             return root;
         }
 
-        foreach (UIElement child in root.Children)
+        foreach (UIElement child in LogicalChildren(root))
         {
             if (FindByAutomationId(child, id) is { } match)
             {
@@ -213,7 +224,7 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
             // Some existing screens rebuild lists with Children.Clear(), which does not reset
             // each former child's Parent pointer. Verify both sides of the relationship so a
             // retained handle cannot activate one of those detached controls.
-            if (!parent.Children.Contains(root))
+            if (!LogicalChildren(parent).Contains(root))
             {
                 return false;
             }
@@ -235,5 +246,20 @@ public sealed class UiDomDocument(Func<UIElement?> screenRoot, Func<UIElement?> 
         }
 
         return true;
+    }
+
+    private static IReadOnlyList<UIElement> LogicalChildren(UIElement element)
+    {
+        if (element is not ScrollView scrollView)
+        {
+            return element.Children;
+        }
+
+        if (element.Children.Count == 0)
+        {
+            return [scrollView.ContentContainer];
+        }
+
+        return [scrollView.ContentContainer, .. element.Children];
     }
 }

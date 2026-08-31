@@ -17,6 +17,7 @@ public class EditServerScreen(
 
     protected override void Init()
     {
+        Root.AutomationId = "server.edit";
         Root.AddChild(new Background());
         Root.Style.AlignItems = Align.Center;
         Root.Style.JustifyContent = Justify.Center;
@@ -39,6 +40,7 @@ public class EditServerScreen(
         Root.AddChild(lName);
 
         _txfName = new TextField();
+        _txfName.AutomationId = "server.edit.name";
         _txfName.Style.Width = 200;
         _txfName.Style.MarginBottom = 10;
         _txfName.Text = serverData.Name;
@@ -53,6 +55,7 @@ public class EditServerScreen(
         Root.AddChild(lAddr);
 
         _txfAddress = new TextField();
+        _txfAddress.AutomationId = "server.edit.address";
         _txfAddress.Style.Width = 200;
         _txfAddress.Style.MarginBottom = 20;
         _txfAddress.Text = serverData.Ip;
@@ -62,6 +65,7 @@ public class EditServerScreen(
         buttonPanel.Style.FlexDirection = FlexDirection.Row;
 
         Button btnDone = CreateButton();
+        btnDone.AutomationId = "server.edit.done";
         btnDone.Text = Translations.Get("gui.done");
         btnDone.Style.Width = 100;
         btnDone.Style.SetMargin(0, 4, 0, 0);
@@ -75,6 +79,7 @@ public class EditServerScreen(
         buttonPanel.AddChild(btnDone);
 
         Button btnCancel = CreateButton();
+        btnCancel.AutomationId = "server.edit.cancel";
         btnCancel.Text = Translations.Get("gui.cancel");
         btnCancel.Style.Width = 100;
         btnCancel.OnClick += e => Context.Navigator.Navigate(parent);
