@@ -384,7 +384,7 @@ public class Chunk
 
         if (notifyBlockPlaced && oldId != 0 && !World.IsRemote)
         {
-            Block.Blocks[oldId].OnBreak(new OnBreakEvent(World, null, worldX, y, worldZ));
+            BlockRegistry.GetByProtocolId(oldId).OnBreak(new OnBreakEvent(World, null, worldX, y, worldZ));
         }
 
         Meta.SetNibble(localX, y, localZ, meta);
@@ -410,12 +410,12 @@ public class Chunk
         {
             if (rawId != 0 && !World.IsRemote)
             {
-                Block.Blocks[rawId].OnPlaced(new OnPlacedEvent(World, null, 0, 0, worldX, y, worldZ));
+                BlockRegistry.GetByProtocolId(rawId).OnPlaced(new OnPlacedEvent(World, null, 0, 0, worldX, y, worldZ));
             }
 
             if (sameId)
             {
-                Block.Blocks[rawId].OnMetadataChange(new OnMetadataChangeEvent(World, worldX, y, worldZ, meta));
+                BlockRegistry.GetByProtocolId(rawId).OnMetadataChange(new OnMetadataChangeEvent(World, worldX, y, worldZ, meta));
             }
         }
 
@@ -438,7 +438,7 @@ public class Chunk
 
         if (oldId != 0)
         {
-            Block.Blocks[oldId].OnBreak(new OnBreakEvent(World, null, worldX, y, worldZ));
+            BlockRegistry.GetByProtocolId(oldId).OnBreak(new OnBreakEvent(World, null, worldX, y, worldZ));
         }
 
         Meta.SetNibble(localX, y, localZ, 0);
@@ -458,7 +458,7 @@ public class Chunk
 
         if (notifyBlockPlaced && rawId != 0 && !World.IsRemote)
         {
-            Block.Blocks[rawId].OnPlaced(new OnPlacedEvent(World, null, 0, 0, worldX, y, worldZ));
+            BlockRegistry.GetByProtocolId(rawId).OnPlaced(new OnPlacedEvent(World, null, 0, 0, worldX, y, worldZ));
         }
 
         Dirty = true;

@@ -44,9 +44,9 @@ internal sealed class ItemBlockBrowserWindow : DebugWindow
             _entries.Add(MakeEntry(location.Path, item.GetStatName(), def.ProtocolId, false, itemsTexture, item.GetTextureId(0)));
         }
 
-        for (int id = 0; id < Block.Blocks.Length; id++)
+        for (int id = 0; id < BlockRegistry.ProtocolIdCapacity; id++)
         {
-            if (Block.Blocks[id] is not { } block) continue;
+            if (!BlockRegistry.TryGetByProtocolId(id, out Block? block)) continue;
             if (BlockRegistry.TryGetName(id) is not { } name) continue;
 
             _entries.Add(MakeEntry(name, block.TranslateBlockName(), id, true, terrainTexture, block.GetTexture(2.ToSide())));

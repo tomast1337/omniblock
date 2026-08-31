@@ -927,7 +927,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
         _textureManager.BindTexture(_textureManager.GetTextureId("/terrain.png"));
 
         int targetBlockId = _world.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
-        Block targetBlock = targetBlockId > 0 ? Block.Blocks[targetBlockId] : BlockRegistry.Get("stone");
+        Block targetBlock = targetBlockId > 0 ? BlockRegistry.GetByProtocolId(targetBlockId) : BlockRegistry.Get("stone");
 
         double renderX = entityPlayer.LastTickX + (entityPlayer.X - entityPlayer.LastTickX) * tickDelta;
         double renderY = entityPlayer.LastTickY + (entityPlayer.Y - entityPlayer.LastTickY) * tickDelta;
@@ -964,11 +964,11 @@ public class WorldRenderer : IWorldEventListener, IDisposable
             int blockId = _world.Reader.GetBlockId(hit.BlockX, hit.BlockY, hit.BlockZ);
             if (blockId > 0)
             {
-                Block.Blocks[blockId].UpdateBoundingBox(_world.Reader, hit.BlockX, hit.BlockY, hit.BlockZ);
+                BlockRegistry.GetByProtocolId(blockId).UpdateBoundingBox(_world.Reader, hit.BlockX, hit.BlockY, hit.BlockZ);
                 double renderX = player.LastTickX + (player.X - player.LastTickX) * tickDelta;
                 double renderY = player.LastTickY + (player.Y - player.LastTickY) * tickDelta;
                 double renderZ = player.LastTickZ + (player.Z - player.LastTickZ) * tickDelta;
-                DrawOutlinedBoundingBox(Block.Blocks[blockId].GetBoundingBox(_world.Reader, _world.Entities, hit.BlockX, hit.BlockY, hit.BlockZ).Expand(outlinePadding, outlinePadding, outlinePadding).Offset(-renderX, -renderY, -renderZ));
+                DrawOutlinedBoundingBox(BlockRegistry.GetByProtocolId(blockId).GetBoundingBox(_world.Reader, _world.Entities, hit.BlockX, hit.BlockY, hit.BlockZ).Expand(outlinePadding, outlinePadding, outlinePadding).Offset(-renderX, -renderY, -renderZ));
             }
 
             GLManager.TextureEnabled = true;
@@ -1179,7 +1179,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
     public void WorldEventBreak(int blockId, int meta, int x, int y, int z)
     {
         if (blockId == 0) return;
-        Block block = Block.Blocks[blockId];
+        Block block = BlockRegistry.GetByProtocolId(blockId);
         WorldEventBreak(block, meta, x, y, z);
     }
 

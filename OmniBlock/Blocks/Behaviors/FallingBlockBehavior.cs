@@ -12,7 +12,7 @@ namespace OmniBlock.Blocks.Behaviors;
 ///         (see <c>BehaviorRegistry</c>'s <c>"falling_block"</c> entry).
 ///         <see cref="CanFallThrough" /> is called externally by <c>SettleAsBlockBehavior</c> (the
 ///         falling entity only knows its carried block id at that point, not a behavior instance),
-///         so it resolves back to this instance via <c>Block.Blocks[id].Physics</c> rather than
+///         so it resolves back to this instance via <c>BlockRegistry.GetByProtocolId(id).Physics</c> rather than
 ///         taking a static, hardcoded set.
 ///     </para>
 ///     <para>
@@ -73,7 +73,7 @@ public class FallingBlockBehavior(Block[] passable, int regionLoadCheckRadius) :
             if (blockId == obstacle.Id) return true;
         }
 
-        Material material = Block.Blocks[blockId].Material;
+        Material material = BlockRegistry.GetByProtocolId(blockId).Material;
         return material == Material.Water || material == Material.Lava;
     }
 }

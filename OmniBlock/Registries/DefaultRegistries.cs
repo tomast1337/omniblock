@@ -28,8 +28,9 @@ public static class DefaultRegistries
     public static readonly IndexedRegistry<ItemDefinition> Items =
         new IndexedRegistry<ItemDefinition>(ResourceLocation.Parse("items"));
 
-    public static void Initialize()
+    public static void Initialize(ContentRuntimeBuilder content)
     {
+        ArgumentNullException.ThrowIfNull(content);
         // Must load before BlockRegistry.Initialize() — blocks resolve their Material and
         // SoundGroup by name during construction.
         MaterialRegistry.Initialize();
@@ -68,7 +69,7 @@ public static class DefaultRegistries
         // Now safe: items are fully loaded, so loot-table/behavior lookups by item name inside
         // BlockRegistry.Initialize() will succeed. BlockRegistry, in turn, must run before Stats
         // below — Achievements references specific blocks by name.
-        BlockRegistry.Initialize();
+        BlockRegistry.Initialize(content);
 
         Stats.Stats.InitializeItemStats();
         Stats.Stats.InitializeExtendedItemStats();

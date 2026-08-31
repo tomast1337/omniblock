@@ -277,7 +277,9 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
         return blockBurnChance > currentChance ? blockBurnChance : currentChance;
     }
 
-    private static int BurnChanceAt(IBlockReader world, int x, int y, int z) => Block.Blocks[world.GetBlockId(x, y, z)]?.BurnChance ?? 0;
+    private static int BurnChanceAt(IBlockReader world, int x, int y, int z) =>
+        BlockRegistry.TryGetByProtocolId(world.GetBlockId(x, y, z), out Block? block) ? block.BurnChance : 0;
 
-    private static int SpreadChanceAt(IBlockReader world, int x, int y, int z) => Block.Blocks[world.GetBlockId(x, y, z)]?.SpreadChance ?? 0;
+    private static int SpreadChanceAt(IBlockReader world, int x, int y, int z) =>
+        BlockRegistry.TryGetByProtocolId(world.GetBlockId(x, y, z), out Block? block) ? block.SpreadChance : 0;
 }

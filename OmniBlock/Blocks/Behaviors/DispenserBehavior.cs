@@ -52,10 +52,10 @@ internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball, int
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        bool emits = @event.BlockId > 0 && Block.Blocks[@event.BlockId].CanEmitRedstonePower();
+        bool emits = @event.BlockId > 0 && BlockRegistry.GetByProtocolId(@event.BlockId).CanEmitRedstonePower();
         bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) ||
                          @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
-        if (@event.BlockId <= 0 || !Block.Blocks[@event.BlockId].CanEmitRedstonePower()) return;
+        if (@event.BlockId <= 0 || !BlockRegistry.GetByProtocolId(@event.BlockId).CanEmitRedstonePower()) return;
         if (isPowered) @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
     }
 

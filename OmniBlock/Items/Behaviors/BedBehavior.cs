@@ -59,6 +59,6 @@ internal sealed class BedBehavior : IItemBehavior
     private static bool IsReplaceable(IWorldContext world, int x, int y, int z)
     {
         int blockId = world.Reader.GetBlockId(x, y, z);
-        return blockId == 0 || Block.Blocks[blockId].Material.IsReplaceable;
+        return blockId == 0 || BlockRegistry.GetByProtocolId(blockId).Material.IsReplaceable;
     }
 }

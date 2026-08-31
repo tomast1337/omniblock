@@ -21,7 +21,7 @@ public class FlatPresetListItem(FlatPresetsScreen.PresetItem preset) : ListItem<
 
         if (Value.IconId < 256)
         {
-            Block block = Block.Blocks[Value.IconId];
+            Block block = BlockRegistry.GetByProtocolId(Value.IconId);
             if (block != null)
             {
                 int textureId = block.GetTexture(Side.Up);

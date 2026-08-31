@@ -59,7 +59,7 @@ internal sealed class TntBehavior(Item igniter, int top, int side, int bottom) :
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        if (@event.BlockId <= 0 || !Block.Blocks[@event.BlockId].CanEmitRedstonePower() || !@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z))
+        if (@event.BlockId <= 0 || !BlockRegistry.GetByProtocolId(@event.BlockId).CanEmitRedstonePower() || !@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z))
             return;
 
         Ignite(block, @event.World, @event.X, @event.Y, @event.Z);

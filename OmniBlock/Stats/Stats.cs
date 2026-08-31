@@ -46,16 +46,16 @@ public static class Stats
 
     public static void InitializeItemStats()
     {
-        Used = InitItemUsedStats(Used, "stat.useItem", 16908288, 0, Block.Blocks.Length);
-        Broken = InitializeBrokenItemStats(Broken, "stat.breakItem", 16973824, 0, Block.Blocks.Length);
+        Used = InitItemUsedStats(Used, "stat.useItem", 16908288, 0, BlockRegistry.ProtocolIdCapacity);
+        Broken = InitializeBrokenItemStats(Broken, "stat.breakItem", 16973824, 0, BlockRegistry.ProtocolIdCapacity);
         _hasBasicItemStatsInitialized = true;
         InitializeCraftedItemStats();
     }
 
     public static void InitializeExtendedItemStats()
     {
-        Used = InitItemUsedStats(Used, "stat.useItem", 16908288, Block.Blocks.Length, 32000);
-        Broken = InitializeBrokenItemStats(Broken, "stat.breakItem", 16973824, Block.Blocks.Length, 32000);
+        Used = InitItemUsedStats(Used, "stat.useItem", 16908288, BlockRegistry.ProtocolIdCapacity, 32000);
+        Broken = InitializeBrokenItemStats(Broken, "stat.breakItem", 16973824, BlockRegistry.ProtocolIdCapacity, 32000);
         _hasExtendedItemStatsInitialized = true;
         InitializeCraftedItemStats();
     }
@@ -97,9 +97,9 @@ public static class Stats
 
         for (int i = 0; i < 256; ++i)
         {
-            if (Block.Blocks[i] != null && Block.Blocks[i].EnableStats)
+            if (BlockRegistry.TryGetByProtocolId(i, out Block? block) && block.EnableStats)
             {
-                string translatedName = StatCollector.TranslateToLocalFormatted(baseName, Block.Blocks[i].TranslateBlockName());
+                string translatedName = StatCollector.TranslateToLocalFormatted(baseName, block.TranslateBlockName());
                 statsArray[i] = new StatCrafting(baseId + i, translatedName, i).RegisterStat();
                 BlocksMinedStats.Add(statsArray[i]);
             }
@@ -120,7 +120,7 @@ public static class Stats
                 string translatedName = StatCollector.TranslateToLocalFormatted(baseName, Item.Items[i]!.GetStatName());
                 statsArray[i] = new StatCrafting(baseId + i, translatedName, i).RegisterStat();
 
-                if (i >= Block.Blocks.Length)
+                if (i >= BlockRegistry.ProtocolIdCapacity)
                 {
                     ItemStats.Add(statsArray[i]);
                 }

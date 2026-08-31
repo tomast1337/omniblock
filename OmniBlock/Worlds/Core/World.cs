@@ -602,7 +602,7 @@ public abstract class World : IWorldContext
 
                     if (Environment.IsRaining && currentBlockId == 0 && BlockRegistry.Get("snow").CanPlaceAt(new CanPlaceAtContext(this, 1.ToSide(), worldX, worldY, worldZ)) &&
                         blockBelowId != 0 && blockBelowId != BlockRegistry.Get("ice").Id &&
-                        Block.Blocks[blockBelowId].Material.BlocksMovement)
+                        BlockRegistry.GetByProtocolId(blockBelowId).Material.BlocksMovement)
                     {
                         Writer.SetBlock(worldX, worldY, worldZ, BlockRegistry.Get("snow").Id);
                     }
@@ -625,7 +625,7 @@ public abstract class World : IWorldContext
                 int blockId = currentChunk.GetBlockId(localX, localY, localZ);
                 if (Block.BlocksRandomTick[blockId])
                 {
-                    Block.Blocks[blockId].OnTick(new OnTickEvent(this, localX + worldXBase, localY, localZ + worldZBase, currentChunk.GetBlockMeta(localX, localY, localZ), blockId));
+                    BlockRegistry.GetByProtocolId(blockId).OnTick(new OnTickEvent(this, localX + worldXBase, localY, localZ + worldZBase, currentChunk.GetBlockMeta(localX, localY, localZ), blockId));
                 }
             }
         }
@@ -644,7 +644,7 @@ public abstract class World : IWorldContext
             int blockId = Reader.GetBlockId(targetX, targetY, targetZ);
             if (blockId > 0)
             {
-                Block.Blocks[blockId].RandomDisplayTick(new OnTickEvent(this, targetX, targetY, targetZ, Reader.GetBlockMeta(targetX, targetY, targetZ), blockId));
+                BlockRegistry.GetByProtocolId(blockId).RandomDisplayTick(new OnTickEvent(this, targetX, targetY, targetZ, Reader.GetBlockMeta(targetX, targetY, targetZ), blockId));
             }
         }
     }

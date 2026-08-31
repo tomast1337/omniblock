@@ -77,7 +77,7 @@ public sealed class BlockBatch7Tests
         RedstoneWireBehavior behavior = new(wire, [customConductor], repeater, poweredRepeater);
 
         // Lever isn't in the custom conductor list, but it still falls through to
-        // Block.Blocks[id].canEmitRedstonePower(), which is independently true for levers.
+        // BlockRegistry.GetByProtocolId(id).canEmitRedstonePower(), which is independently true for levers.
         Assert.True(behavior.IsPowerProviderOrWire(world.Reader, 0, 64, 0, -1));
     }
 

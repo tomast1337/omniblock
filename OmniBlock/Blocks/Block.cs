@@ -12,7 +12,7 @@ namespace OmniBlock.Blocks;
 
 public class Block
 {
-    public static readonly Block[] Blocks = new Block[256];
+    private static readonly Block?[] s_bootstrapBlocks = new Block?[256];
     public static readonly bool[] BlocksRandomTick = new bool[256];
     public static readonly bool[] BlocksOpaque = new bool[256];
     public static readonly bool[] BlocksWithEntity = new bool[256];
@@ -20,6 +20,9 @@ public class Block
     public static readonly bool[] BlocksAllowVision = new bool[256];
     public static readonly int[] BlocksLightLuminance = new int[256];
     public static readonly bool[] BlocksIgnoreMetaUpdate = new bool[256];
+
+    internal static Block? GetDuringBootstrap(int protocolId) =>
+        protocolId is >= 0 and < 256 ? s_bootstrapBlocks[protocolId] : null;
 
     public readonly int Id;
     public readonly Material Material;
@@ -47,13 +50,14 @@ public class Block
         SoundGroup = SoundPowderFootstep;
         ParticleFallSpeedModifier = 1.0F;
         Slipperiness = 0.6F;
-        if (Blocks[id] != null)
+        if (s_bootstrapBlocks[id] != null)
         {
-            throw new ArgumentException($"Slot {id} is already occupied by {Blocks[id]} when adding {this}", nameof(id));
+            throw new ArgumentException(
+                $"Slot {id} is already occupied by {s_bootstrapBlocks[id]} when adding {this}", nameof(id));
         }
 
         this.Material = material;
-        Blocks[id] = this;
+        s_bootstrapBlocks[id] = this;
         this.Id = id;
         SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         BlocksOpaque[id] = IsOpaque;
@@ -405,7 +409,7 @@ public class Block
     public bool CanPlaceAt(CanPlaceAtContext evt)
     {
         int blockId = evt.World.Reader.GetBlockId(evt.X, evt.Y, evt.Z);
-        bool baseResult = blockId == 0 || Blocks[blockId].Material.IsReplaceable;
+        bool baseResult = blockId == 0 || BlockRegistry.GetByProtocolId(blockId).Material.IsReplaceable;
         return Physics == null ? baseResult : baseResult && Physics.CanPlaceAt(this, evt);
     }
 

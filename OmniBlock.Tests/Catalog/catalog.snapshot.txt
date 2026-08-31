@@ -1,0 +1,233 @@
+[blocks]
+1 omniblock:stone material=stone sound=stone render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+2 omniblock:grass_block material=solid_organic sound=grass render=Standard randomTick=true tileEntity=- behaviors=grass_visual[Visuals],grass_ticker[Ticker] runtimeSlots=Ticker:GrassTickerBehavior,Visuals:GrassVisualBehavior
+3 omniblock:dirt material=soil sound=gravel render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+4 omniblock:cobblestone material=stone sound=stone render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+5 omniblock:planks material=wood sound=wood render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+6 omniblock:sapling material=plant sound=grass render=Reed randomTick=true tileEntity=- behaviors=sapling[Ticker,Visuals,Lifecycle],plant_survival[Physics] runtimeSlots=Ticker:SaplingBehavior,Physics:PlantSurvivalBehavior,Lifecycle:SaplingBehavior,Visuals:SaplingBehavior
+7 omniblock:bedrock material=stone sound=stone render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+8 omniblock:flowing_water material=water sound=powder render=Fluids randomTick=true tileEntity=- behaviors=flowing_fluid[Physics,Visuals,Lifecycle,Ticker] runtimeSlots=Ticker:FlowingFluidBehavior,Physics:FlowingFluidBehavior,Lifecycle:FlowingFluidBehavior,Visuals:FlowingFluidBehavior
+9 omniblock:water material=water sound=powder render=Fluids randomTick=false tileEntity=- behaviors=stationary_fluid[Physics,Visuals,Lifecycle,Ticker] runtimeSlots=Ticker:StationaryFluidBehavior,Physics:StationaryFluidBehavior,Lifecycle:StationaryFluidBehavior,Visuals:StationaryFluidBehavior
+10 omniblock:flowing_lava material=lava sound=powder render=Fluids randomTick=true tileEntity=- behaviors=flowing_fluid[Physics,Visuals,Lifecycle,Ticker] runtimeSlots=Ticker:FlowingFluidBehavior,Physics:FlowingFluidBehavior,Lifecycle:FlowingFluidBehavior,Visuals:FlowingFluidBehavior
+11 omniblock:lava material=lava sound=powder render=Fluids randomTick=true tileEntity=- behaviors=stationary_fluid[Physics,Visuals,Lifecycle,Ticker] runtimeSlots=Ticker:StationaryFluidBehavior,Physics:StationaryFluidBehavior,Lifecycle:StationaryFluidBehavior,Visuals:StationaryFluidBehavior
+12 omniblock:sand material=sand sound=sand render=Standard randomTick=false tileEntity=- behaviors=falling_block[Ticker,Lifecycle,Physics] runtimeSlots=Ticker:FallingBlockBehavior,Physics:FallingBlockBehavior,Lifecycle:FallingBlockBehavior
+13 omniblock:gravel material=sand sound=gravel render=Standard randomTick=false tileEntity=- behaviors=falling_block[Ticker,Lifecycle,Physics] runtimeSlots=Ticker:FallingBlockBehavior,Physics:FallingBlockBehavior,Lifecycle:FallingBlockBehavior
+14 omniblock:gold_ore material=stone sound=stone render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+15 omniblock:iron_ore material=stone sound=stone render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+16 omniblock:coal_ore material=stone sound=stone render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+17 omniblock:log material=wood sound=wood render=Standard randomTick=false tileEntity=- behaviors=log[Visuals,Lifecycle] runtimeSlots=Lifecycle:LogBehavior,Visuals:LogBehavior
+18 omniblock:leaves material=leaves sound=grass render=Standard randomTick=false tileEntity=- behaviors=leaves[Ticker,Lifecycle,Visuals] runtimeSlots=Ticker:LeavesBehavior,Lifecycle:LeavesBehavior,Visuals:LeavesBehavior
+19 omniblock:sponge material=sponge sound=grass render=Standard randomTick=false tileEntity=- behaviors=sponge_lifecycle[Lifecycle] runtimeSlots=Lifecycle:SpongeLifecycleBehavior
+20 omniblock:glass material=glass sound=glass render=Standard randomTick=false tileEntity=- behaviors=glass_visual[Visuals] runtimeSlots=Visuals:GlassVisualBehavior
+21 omniblock:lapis_ore material=stone sound=stone render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+22 omniblock:lapis_block material=stone sound=stone render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+23 omniblock:dispenser material=stone sound=stone render=Standard randomTick=false tileEntity=dispenser behaviors=dispenser[Interactable,Lifecycle,Physics,Ticker,Visuals] runtimeSlots=Ticker:DispenserBehavior,Physics:DispenserBehavior,Lifecycle:DispenserBehavior,Visuals:DispenserBehavior,Interactable:DispenserBehavior
+24 omniblock:sandstone material=stone sound=stone render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+25 omniblock:noteblock material=wood sound=powder render=Standard randomTick=false tileEntity=note behaviors=noteblock[Interactable,Lifecycle,Physics] runtimeSlots=Physics:NoteBlockBehavior,Lifecycle:NoteBlockBehavior,Interactable:NoteBlockBehavior
+26 omniblock:bed material=wool sound=powder render=Bed randomTick=false tileEntity=- behaviors=bed[Interactable,Physics,Lifecycle,Visuals] runtimeSlots=Physics:BedBehavior,Lifecycle:BedBehavior,Visuals:BedBehavior,Interactable:BedBehavior
+27 omniblock:powered_rail material=piston_breakable sound=metal render=MinecartTrack randomTick=false tileEntity=- behaviors=rail[Physics,Lifecycle,Visuals] runtimeSlots=Physics:RailBehavior,Lifecycle:RailBehavior,Visuals:RailBehavior
+28 omniblock:detector_rail material=piston_breakable sound=metal render=MinecartTrack randomTick=true tileEntity=- behaviors=rail[Physics,Lifecycle,Visuals],detector_rail[Redstone,Ticker,Interactable] runtimeSlots=Ticker:DetectorRailBehavior,Physics:RailBehavior,Lifecycle:RailBehavior,Visuals:RailBehavior,Interactable:DetectorRailBehavior,Redstone:DetectorRailBehavior
+29 omniblock:sticky_piston material=piston sound=stone render=PistonBase randomTick=false tileEntity=- behaviors=piston_base[Physics,Lifecycle,Ticker,Visuals] runtimeSlots=Ticker:PistonBaseBehavior,Physics:PistonBaseBehavior,Lifecycle:PistonBaseBehavior,Visuals:PistonBaseBehavior
+30 omniblock:cobweb material=cobweb sound=powder render=Reed randomTick=false tileEntity=- behaviors=web[Interactable] runtimeSlots=Interactable:WebBehavior
+31 omniblock:grass material=plant sound=grass render=Reed randomTick=true tileEntity=- behaviors=plant_survival[Ticker,Physics],tall_grass[Visuals,Lifecycle] runtimeSlots=Ticker:PlantSurvivalBehavior,Physics:PlantSurvivalBehavior,Lifecycle:TallGrassBehavior,Visuals:TallGrassBehavior
+32 omniblock:dead_bush material=plant sound=grass render=Reed randomTick=true tileEntity=- behaviors=plant_survival[Ticker,Physics] runtimeSlots=Ticker:PlantSurvivalBehavior,Physics:PlantSurvivalBehavior
+33 omniblock:piston material=piston sound=stone render=PistonBase randomTick=false tileEntity=- behaviors=piston_base[Physics,Lifecycle,Ticker,Visuals] runtimeSlots=Ticker:PistonBaseBehavior,Physics:PistonBaseBehavior,Lifecycle:PistonBaseBehavior,Visuals:PistonBaseBehavior
+34 omniblock:piston_head material=piston sound=stone render=PistonExtension randomTick=false tileEntity=- behaviors=piston_extension[Physics,Lifecycle,Visuals] runtimeSlots=Physics:PistonExtensionBehavior,Lifecycle:PistonExtensionBehavior,Visuals:PistonExtensionBehavior
+35 omniblock:wool material=wool sound=cloth render=Standard randomTick=false tileEntity=- behaviors=cloth_visual[Visuals] runtimeSlots=Visuals:ClothVisualBehavior
+36 omniblock:moving_piston material=piston sound=powder render=Entity randomTick=false tileEntity=piston behaviors=piston_moving[Physics,Lifecycle,Interactable] runtimeSlots=Physics:PistonMovingBehavior,Lifecycle:PistonMovingBehavior,Interactable:PistonMovingBehavior
+37 omniblock:dandelion material=plant sound=grass render=Reed randomTick=true tileEntity=- behaviors=plant_survival[Ticker,Physics] runtimeSlots=Ticker:PlantSurvivalBehavior,Physics:PlantSurvivalBehavior
+38 omniblock:rose material=plant sound=grass render=Reed randomTick=true tileEntity=- behaviors=plant_survival[Ticker,Physics] runtimeSlots=Ticker:PlantSurvivalBehavior,Physics:PlantSurvivalBehavior
+39 omniblock:brown_mushroom material=plant sound=grass render=Reed randomTick=true tileEntity=- behaviors=mushroom[Ticker,Physics] runtimeSlots=Ticker:MushroomBehavior,Physics:MushroomBehavior
+40 omniblock:red_mushroom material=plant sound=grass render=Reed randomTick=true tileEntity=- behaviors=mushroom[Ticker,Physics] runtimeSlots=Ticker:MushroomBehavior,Physics:MushroomBehavior
+41 omniblock:gold_block material=metal sound=metal render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+42 omniblock:iron_block material=metal sound=metal render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+43 omniblock:double_slab material=stone sound=stone render=Standard randomTick=false tileEntity=- behaviors=slab[Physics,Lifecycle,Visuals] runtimeSlots=Physics:SlabBehavior,Lifecycle:SlabBehavior,Visuals:SlabBehavior
+44 omniblock:slab material=stone sound=stone render=Standard randomTick=false tileEntity=- behaviors=slab[Physics,Lifecycle,Visuals] runtimeSlots=Physics:SlabBehavior,Lifecycle:SlabBehavior,Visuals:SlabBehavior
+45 omniblock:bricks material=stone sound=stone render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+46 omniblock:tnt material=tnt sound=grass render=Standard randomTick=false tileEntity=- behaviors=tnt[Physics,Lifecycle,Interactable,Visuals] runtimeSlots=Physics:TntBehavior,Lifecycle:TntBehavior,Visuals:TntBehavior,Interactable:TntBehavior
+47 omniblock:bookshelf material=wood sound=wood render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+48 omniblock:mossy_cobblestone material=stone sound=stone render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+49 omniblock:obsidian material=stone sound=stone render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+50 omniblock:torch material=piston_breakable sound=wood render=Torch randomTick=true tileEntity=- behaviors=wall_mount[Physics,Lifecycle,Ticker] runtimeSlots=Ticker:WallMountBehavior,Physics:WallMountBehavior,Lifecycle:WallMountBehavior
+51 omniblock:fire material=fire sound=wood render=Fire randomTick=true tileEntity=- behaviors=fire[Ticker,Physics,Lifecycle] runtimeSlots=Ticker:FireBehavior,Physics:FireBehavior,Lifecycle:FireBehavior
+52 omniblock:spawner material=stone sound=metal render=Standard randomTick=false tileEntity=mob_spawner behaviors=tile_entity_lifecycle[Lifecycle] runtimeSlots=Lifecycle:TileEntityLifecycleBehavior
+53 omniblock:wooden_stairs material=wood sound=wood render=Stairs randomTick=false tileEntity=- behaviors=stairs[Physics,Lifecycle,Visuals] runtimeSlots=Physics:StairsBehavior,Lifecycle:StairsBehavior,Visuals:StairsBehavior
+54 omniblock:chest material=wood sound=wood render=Standard randomTick=false tileEntity=chest behaviors=chest[Interactable,Lifecycle,Physics,Visuals] runtimeSlots=Physics:ChestBehavior,Lifecycle:ChestBehavior,Visuals:ChestBehavior,Interactable:ChestBehavior
+55 omniblock:redstone_wire material=piston_breakable sound=powder render=RedstoneWire randomTick=false tileEntity=- behaviors=redstone_wire[Redstone,Physics,Ticker,Lifecycle,Visuals] runtimeSlots=Ticker:RedstoneWireBehavior,Physics:RedstoneWireBehavior,Lifecycle:RedstoneWireBehavior,Visuals:RedstoneWireBehavior,Redstone:RedstoneWireBehavior
+56 omniblock:diamond_ore material=stone sound=stone render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+57 omniblock:diamond_block material=metal sound=metal render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+58 omniblock:crafting_table material=wood sound=wood render=Standard randomTick=false tileEntity=- behaviors=workbench_interact[Interactable] runtimeSlots=Interactable:WorkbenchInteractBehavior
+59 omniblock:wheat material=plant sound=grass render=Crops randomTick=true tileEntity=- behaviors=crop[Ticker,Physics,Lifecycle,Visuals] runtimeSlots=Ticker:CropBehavior,Physics:CropBehavior,Lifecycle:CropBehavior,Visuals:CropBehavior
+60 omniblock:farmland material=soil sound=gravel render=Standard randomTick=true tileEntity=- behaviors=farmland[Ticker,Physics,Interactable,Lifecycle,Visuals] runtimeSlots=Ticker:FarmlandBehavior,Physics:FarmlandBehavior,Lifecycle:FarmlandBehavior,Visuals:FarmlandBehavior,Interactable:FarmlandBehavior
+61 omniblock:furnace material=stone sound=stone render=Standard randomTick=false tileEntity=furnace behaviors=furnace[Interactable,Lifecycle,Physics,Ticker,Visuals] runtimeSlots=Ticker:FurnaceBehavior,Physics:FurnaceBehavior,Lifecycle:FurnaceBehavior,Visuals:FurnaceBehavior,Interactable:FurnaceBehavior
+62 omniblock:lit_furnace material=stone sound=stone render=Standard randomTick=false tileEntity=furnace behaviors=furnace[Interactable,Lifecycle,Physics,Ticker,Visuals] runtimeSlots=Ticker:FurnaceBehavior,Physics:FurnaceBehavior,Lifecycle:FurnaceBehavior,Visuals:FurnaceBehavior,Interactable:FurnaceBehavior
+63 omniblock:sign material=wood sound=wood render=Entity randomTick=false tileEntity=sign behaviors=sign[Physics],tile_entity_lifecycle[Lifecycle] runtimeSlots=Physics:SignBehavior,Lifecycle:TileEntityLifecycleBehavior
+64 omniblock:door material=wood sound=wood render=Door randomTick=false tileEntity=- behaviors=door[Physics,Interactable,Lifecycle,Visuals] runtimeSlots=Physics:DoorBehavior,Lifecycle:DoorBehavior,Visuals:DoorBehavior,Interactable:DoorBehavior
+65 omniblock:ladder material=piston_breakable sound=wood render=Ladder randomTick=false tileEntity=- behaviors=wall_mount[Physics,Lifecycle] runtimeSlots=Physics:WallMountBehavior,Lifecycle:WallMountBehavior
+66 omniblock:rail material=piston_breakable sound=metal render=MinecartTrack randomTick=false tileEntity=- behaviors=rail[Physics,Lifecycle,Visuals] runtimeSlots=Physics:RailBehavior,Lifecycle:RailBehavior,Visuals:RailBehavior
+67 omniblock:cobblestone_stairs material=stone sound=stone render=Stairs randomTick=false tileEntity=- behaviors=stairs[Physics,Lifecycle,Visuals] runtimeSlots=Physics:StairsBehavior,Lifecycle:StairsBehavior,Visuals:StairsBehavior
+68 omniblock:wall_sign material=wood sound=wood render=Entity randomTick=false tileEntity=sign behaviors=sign[Physics],tile_entity_lifecycle[Lifecycle] runtimeSlots=Physics:SignBehavior,Lifecycle:TileEntityLifecycleBehavior
+69 omniblock:lever material=piston_breakable sound=wood render=Lever randomTick=false tileEntity=- behaviors=lever[Redstone,Physics,Interactable,Lifecycle] runtimeSlots=Physics:LeverBehavior,Lifecycle:LeverBehavior,Interactable:LeverBehavior,Redstone:LeverBehavior
+70 omniblock:stone_pressure_plate material=stone sound=stone render=Standard randomTick=true tileEntity=- behaviors=pressure_plate[Redstone,Physics,Ticker,Interactable,Lifecycle] runtimeSlots=Ticker:PressurePlateBehavior,Physics:PressurePlateBehavior,Lifecycle:PressurePlateBehavior,Interactable:PressurePlateBehavior,Redstone:PressurePlateBehavior
+71 omniblock:iron_door material=metal sound=metal render=Door randomTick=false tileEntity=- behaviors=door[Physics,Interactable,Lifecycle,Visuals] runtimeSlots=Physics:DoorBehavior,Lifecycle:DoorBehavior,Visuals:DoorBehavior,Interactable:DoorBehavior
+72 omniblock:wooden_pressure_plate material=wood sound=wood render=Standard randomTick=true tileEntity=- behaviors=pressure_plate[Redstone,Physics,Ticker,Interactable,Lifecycle] runtimeSlots=Ticker:PressurePlateBehavior,Physics:PressurePlateBehavior,Lifecycle:PressurePlateBehavior,Interactable:PressurePlateBehavior,Redstone:PressurePlateBehavior
+73 omniblock:redstone_ore material=stone sound=stone render=Standard randomTick=false tileEntity=- behaviors=redstone_ore[Ticker,Interactable] runtimeSlots=Ticker:RedstoneOreBehavior,Interactable:RedstoneOreBehavior
+74 omniblock:lit_redstone_ore material=stone sound=stone render=Standard randomTick=true tileEntity=- behaviors=redstone_ore[Ticker,Interactable] runtimeSlots=Ticker:RedstoneOreBehavior,Interactable:RedstoneOreBehavior
+75 omniblock:redstone_torch material=piston_breakable sound=wood render=Torch randomTick=true tileEntity=- behaviors=redstone_torch[Physics,Lifecycle,Redstone,Ticker,Visuals] runtimeSlots=Ticker:RedstoneTorchBehavior,Physics:RedstoneTorchBehavior,Lifecycle:RedstoneTorchBehavior,Visuals:RedstoneTorchBehavior,Redstone:RedstoneTorchBehavior
+76 omniblock:lit_redstone_torch material=piston_breakable sound=wood render=Torch randomTick=true tileEntity=- behaviors=redstone_torch[Physics,Lifecycle,Redstone,Ticker,Visuals] runtimeSlots=Ticker:RedstoneTorchBehavior,Physics:RedstoneTorchBehavior,Lifecycle:RedstoneTorchBehavior,Visuals:RedstoneTorchBehavior,Redstone:RedstoneTorchBehavior
+77 omniblock:button material=piston_breakable sound=stone render=Standard randomTick=true tileEntity=- behaviors=button[Redstone,Physics,Ticker,Interactable,Lifecycle] runtimeSlots=Ticker:ButtonBehavior,Physics:ButtonBehavior,Lifecycle:ButtonBehavior,Interactable:ButtonBehavior,Redstone:ButtonBehavior
+78 omniblock:snow material=snow_layer sound=cloth render=Standard randomTick=true tileEntity=- behaviors=snow[Physics,Ticker,Lifecycle,Visuals] runtimeSlots=Ticker:SnowBehavior,Physics:SnowBehavior,Lifecycle:SnowBehavior,Visuals:SnowBehavior
+79 omniblock:ice material=ice sound=glass render=Standard randomTick=true tileEntity=- behaviors=glass_visual[Visuals],melt[Ticker,Lifecycle] runtimeSlots=Ticker:MeltBehavior,Lifecycle:MeltBehavior,Visuals:GlassVisualBehavior
+80 omniblock:snow_block material=snow_block sound=cloth render=Standard randomTick=true tileEntity=- behaviors=melt[Ticker] runtimeSlots=Ticker:MeltBehavior
+81 omniblock:cactus material=cactus sound=cloth render=Cactus randomTick=true tileEntity=- behaviors=cactus[Ticker,Physics,Interactable,Visuals] runtimeSlots=Ticker:CactusBehavior,Physics:CactusBehavior,Visuals:CactusBehavior,Interactable:CactusBehavior
+82 omniblock:clay material=clay sound=gravel render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+83 omniblock:sugar_cane material=plant sound=grass render=Reed randomTick=true tileEntity=- behaviors=reed[Ticker,Physics] runtimeSlots=Ticker:ReedBehavior,Physics:ReedBehavior
+84 omniblock:jukebox material=wood sound=stone render=Standard randomTick=false tileEntity=record_player behaviors=jukebox[Interactable,Lifecycle] runtimeSlots=Lifecycle:JukeboxBehavior,Interactable:JukeboxBehavior
+85 omniblock:fence material=wood sound=wood render=Fence randomTick=false tileEntity=- behaviors=fence[Physics] runtimeSlots=Physics:FenceBehavior
+86 omniblock:pumpkin material=pumpkin sound=wood render=Standard randomTick=true tileEntity=- behaviors=pumpkin[Physics,Lifecycle,Visuals] runtimeSlots=Physics:PumpkinBehavior,Lifecycle:PumpkinBehavior,Visuals:PumpkinBehavior
+87 omniblock:netherrack material=stone sound=stone render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+88 omniblock:soulsand material=sand sound=sand render=Standard randomTick=false tileEntity=- behaviors=soul_sand[Physics,Interactable] runtimeSlots=Physics:SoulSandBehavior,Interactable:SoulSandBehavior
+89 omniblock:glowstone material=stone sound=glass render=Standard randomTick=false tileEntity=- behaviors= runtimeSlots=
+90 omniblock:nether_portal material=nether_portal sound=glass render=Standard randomTick=false tileEntity=- behaviors=portal[Physics,Visuals,Interactable,Ticker] runtimeSlots=Ticker:PortalBehavior,Physics:PortalBehavior,Visuals:PortalBehavior,Interactable:PortalBehavior
+91 omniblock:jack_lantern material=pumpkin sound=wood render=Standard randomTick=true tileEntity=- behaviors=pumpkin[Physics,Lifecycle,Visuals] runtimeSlots=Physics:PumpkinBehavior,Lifecycle:PumpkinBehavior,Visuals:PumpkinBehavior
+92 omniblock:cake material=cake sound=cloth render=Standard randomTick=true tileEntity=- behaviors=cake[Physics,Visuals,Interactable] runtimeSlots=Physics:CakeBehavior,Visuals:CakeBehavior,Interactable:CakeBehavior
+93 omniblock:repeater material=piston_breakable sound=wood render=Repeater randomTick=false tileEntity=- behaviors=repeater[Redstone,Ticker,Physics,Interactable,Lifecycle,Visuals] runtimeSlots=Ticker:RepeaterBehavior,Physics:RepeaterBehavior,Lifecycle:RepeaterBehavior,Visuals:RepeaterBehavior,Interactable:RepeaterBehavior,Redstone:RepeaterBehavior
+94 omniblock:powered_repeater material=piston_breakable sound=wood render=Repeater randomTick=false tileEntity=- behaviors=repeater[Redstone,Ticker,Physics,Interactable,Lifecycle,Visuals] runtimeSlots=Ticker:RepeaterBehavior,Physics:RepeaterBehavior,Lifecycle:RepeaterBehavior,Visuals:RepeaterBehavior,Interactable:RepeaterBehavior,Redstone:RepeaterBehavior
+95 omniblock:locked_chest material=wood sound=powder render=Standard randomTick=false tileEntity=- behaviors=locked_chest[Ticker,Visuals] runtimeSlots=Ticker:LockedChestBehavior,Visuals:LockedChestBehavior
+96 omniblock:trapdoor material=wood sound=wood render=Standard randomTick=false tileEntity=- behaviors=trap_door[Physics,Interactable,Lifecycle] runtimeSlots=Physics:TrapDoorBehavior,Lifecycle:TrapDoorBehavior,Interactable:TrapDoorBehavior
+
+[items]
+256 omniblock:shovel_iron stack=1 durability=250 behavior=ToolBehaviorDefinition
+257 omniblock:pickaxe_iron stack=1 durability=250 behavior=ToolBehaviorDefinition
+258 omniblock:hatchet_iron stack=1 durability=250 behavior=ToolBehaviorDefinition
+259 omniblock:flint_and_steel stack=1 durability=64 behavior=FlintAndSteelBehaviorDefinition
+260 omniblock:apple stack=1 durability=0 behavior=FoodBehaviorDefinition
+261 omniblock:bow stack=1 durability=0 behavior=BowBehaviorDefinition
+262 omniblock:arrow stack=64 durability=0 behavior=-
+263 omniblock:coal stack=64 durability=0 behavior=CoalBehaviorDefinition
+264 omniblock:diamond stack=64 durability=0 behavior=-
+265 omniblock:ingot_iron stack=64 durability=0 behavior=-
+266 omniblock:ingot_gold stack=64 durability=0 behavior=-
+267 omniblock:sword_iron stack=1 durability=250 behavior=SwordBehaviorDefinition
+268 omniblock:sword_wood stack=1 durability=59 behavior=SwordBehaviorDefinition
+269 omniblock:shovel_wood stack=1 durability=59 behavior=ToolBehaviorDefinition
+270 omniblock:pickaxe_wood stack=1 durability=59 behavior=ToolBehaviorDefinition
+271 omniblock:hatchet_wood stack=1 durability=59 behavior=ToolBehaviorDefinition
+272 omniblock:sword_stone stack=1 durability=131 behavior=SwordBehaviorDefinition
+273 omniblock:shovel_stone stack=1 durability=131 behavior=ToolBehaviorDefinition
+274 omniblock:pickaxe_stone stack=1 durability=131 behavior=ToolBehaviorDefinition
+275 omniblock:hatchet_stone stack=1 durability=131 behavior=ToolBehaviorDefinition
+276 omniblock:sword_diamond stack=1 durability=1561 behavior=SwordBehaviorDefinition
+277 omniblock:shovel_diamond stack=1 durability=1561 behavior=ToolBehaviorDefinition
+278 omniblock:pickaxe_diamond stack=1 durability=1561 behavior=ToolBehaviorDefinition
+279 omniblock:hatchet_diamond stack=1 durability=1561 behavior=ToolBehaviorDefinition
+280 omniblock:stick stack=64 durability=0 behavior=-
+281 omniblock:bowl stack=64 durability=0 behavior=-
+282 omniblock:mushroom_stew stack=1 durability=0 behavior=FoodBehaviorDefinition
+283 omniblock:sword_gold stack=1 durability=32 behavior=SwordBehaviorDefinition
+284 omniblock:shovel_gold stack=1 durability=32 behavior=ToolBehaviorDefinition
+285 omniblock:pickaxe_gold stack=1 durability=32 behavior=ToolBehaviorDefinition
+286 omniblock:hatchet_gold stack=1 durability=32 behavior=ToolBehaviorDefinition
+287 omniblock:string stack=64 durability=0 behavior=-
+288 omniblock:feather stack=64 durability=0 behavior=-
+289 omniblock:gunpowder stack=64 durability=0 behavior=-
+290 omniblock:hoe_wood stack=1 durability=59 behavior=HoeBehaviorDefinition
+291 omniblock:hoe_stone stack=1 durability=131 behavior=HoeBehaviorDefinition
+292 omniblock:hoe_iron stack=1 durability=250 behavior=HoeBehaviorDefinition
+293 omniblock:hoe_diamond stack=1 durability=1561 behavior=HoeBehaviorDefinition
+294 omniblock:hoe_gold stack=1 durability=32 behavior=HoeBehaviorDefinition
+295 omniblock:seeds stack=64 durability=0 behavior=SeedsBehaviorDefinition
+296 omniblock:wheat stack=64 durability=0 behavior=-
+297 omniblock:bread stack=1 durability=0 behavior=FoodBehaviorDefinition
+298 omniblock:helmet_leather stack=1 durability=33 behavior=ArmorBehaviorDefinition
+299 omniblock:chestplate_leather stack=1 durability=48 behavior=ArmorBehaviorDefinition
+300 omniblock:leggings_leather stack=1 durability=45 behavior=ArmorBehaviorDefinition
+301 omniblock:boots_leather stack=1 durability=39 behavior=ArmorBehaviorDefinition
+302 omniblock:helmet_chain stack=1 durability=66 behavior=ArmorBehaviorDefinition
+303 omniblock:chestplate_chain stack=1 durability=96 behavior=ArmorBehaviorDefinition
+304 omniblock:leggings_chain stack=1 durability=90 behavior=ArmorBehaviorDefinition
+305 omniblock:boots_chain stack=1 durability=78 behavior=ArmorBehaviorDefinition
+306 omniblock:helmet_iron stack=1 durability=132 behavior=ArmorBehaviorDefinition
+307 omniblock:chestplate_iron stack=1 durability=192 behavior=ArmorBehaviorDefinition
+308 omniblock:leggings_iron stack=1 durability=180 behavior=ArmorBehaviorDefinition
+309 omniblock:boots_iron stack=1 durability=156 behavior=ArmorBehaviorDefinition
+310 omniblock:helmet_diamond stack=1 durability=264 behavior=ArmorBehaviorDefinition
+311 omniblock:chestplate_diamond stack=1 durability=384 behavior=ArmorBehaviorDefinition
+312 omniblock:leggings_diamond stack=1 durability=360 behavior=ArmorBehaviorDefinition
+313 omniblock:boots_diamond stack=1 durability=312 behavior=ArmorBehaviorDefinition
+314 omniblock:helmet_gold stack=1 durability=66 behavior=ArmorBehaviorDefinition
+315 omniblock:chestplate_gold stack=1 durability=96 behavior=ArmorBehaviorDefinition
+316 omniblock:leggings_gold stack=1 durability=90 behavior=ArmorBehaviorDefinition
+317 omniblock:boots_gold stack=1 durability=78 behavior=ArmorBehaviorDefinition
+318 omniblock:flint stack=64 durability=0 behavior=-
+319 omniblock:porkchop_raw stack=1 durability=0 behavior=FoodBehaviorDefinition
+320 omniblock:porkchop_cooked stack=1 durability=0 behavior=FoodBehaviorDefinition
+321 omniblock:painting stack=64 durability=0 behavior=PaintingBehaviorDefinition
+322 omniblock:apple_gold stack=1 durability=0 behavior=FoodBehaviorDefinition
+323 omniblock:sign stack=1 durability=0 behavior=SignBehaviorDefinition
+324 omniblock:door_wood stack=1 durability=0 behavior=DoorBehaviorDefinition
+325 omniblock:bucket stack=1 durability=0 behavior=BucketBehaviorDefinition
+326 omniblock:bucket_water stack=1 durability=0 behavior=BucketBehaviorDefinition
+327 omniblock:bucket_lava stack=1 durability=0 behavior=BucketBehaviorDefinition
+328 omniblock:minecart stack=1 durability=0 behavior=MinecartBehaviorDefinition
+329 omniblock:saddle stack=1 durability=0 behavior=SaddleBehaviorDefinition
+330 omniblock:door_iron stack=1 durability=0 behavior=DoorBehaviorDefinition
+331 omniblock:redstone stack=64 durability=0 behavior=RedstoneBehaviorDefinition
+332 omniblock:snowball stack=16 durability=0 behavior=ThrowableBehaviorDefinition
+333 omniblock:boat stack=1 durability=0 behavior=BoatBehaviorDefinition
+334 omniblock:leather stack=64 durability=0 behavior=-
+335 omniblock:milk stack=1 durability=0 behavior=BucketBehaviorDefinition
+336 omniblock:brick stack=64 durability=0 behavior=-
+337 omniblock:clay stack=64 durability=0 behavior=-
+338 omniblock:sugar_canes stack=64 durability=0 behavior=PlaceBlockBehaviorDefinition
+339 omniblock:paper stack=64 durability=0 behavior=-
+340 omniblock:book stack=64 durability=0 behavior=-
+341 omniblock:slimeball stack=64 durability=0 behavior=-
+342 omniblock:minecart_chest stack=1 durability=0 behavior=MinecartBehaviorDefinition
+343 omniblock:minecart_furnace stack=1 durability=0 behavior=MinecartBehaviorDefinition
+344 omniblock:egg stack=16 durability=0 behavior=ThrowableBehaviorDefinition
+345 omniblock:compass stack=64 durability=0 behavior=-
+346 omniblock:fishing_rod stack=1 durability=64 behavior=FishingRodBehaviorDefinition
+347 omniblock:clock stack=64 durability=0 behavior=-
+348 omniblock:yellow_dust stack=64 durability=0 behavior=-
+349 omniblock:fish_raw stack=1 durability=0 behavior=FoodBehaviorDefinition
+350 omniblock:fish_cooked stack=1 durability=0 behavior=FoodBehaviorDefinition
+351 omniblock:dye_powder stack=64 durability=0 behavior=DyeBehaviorDefinition
+352 omniblock:bone stack=64 durability=0 behavior=-
+353 omniblock:sugar stack=64 durability=0 behavior=-
+354 omniblock:cake stack=1 durability=0 behavior=PlaceBlockBehaviorDefinition
+355 omniblock:bed stack=1 durability=0 behavior=BedBehaviorDefinition
+356 omniblock:redstone_repeater stack=64 durability=0 behavior=PlaceBlockBehaviorDefinition
+357 omniblock:cookie stack=8 durability=0 behavior=FoodBehaviorDefinition
+358 omniblock:map stack=1 durability=0 behavior=MapBehaviorDefinition
+359 omniblock:shears stack=1 durability=238 behavior=ShearsBehaviorDefinition
+2256 omniblock:record stack=1 durability=0 behavior=RecordBehaviorDefinition
+2257 omniblock:record_2257 stack=1 durability=0 behavior=RecordBehaviorDefinition
+
+[entities]
+1 omniblock:item runtime=EntityObject health=10 speed=0.7 spawnObject=0 globalSpawn=0 behaviors=DroppedItemDefinition[Ticker,Lifecycle,Persistence,Interactable,Physics]
+9 omniblock:painting runtime=EntityObject health=10 speed=0.7 spawnObject=0 globalSpawn=0 behaviors=HangingArtDefinition[Ticker,Lifecycle,Persistence,Physics]
+10 omniblock:arrow runtime=EntityObject health=10 speed=0.7 spawnObject=60 globalSpawn=0 behaviors=ArrowDefinition[Ticker,Persistence,Interactable,Physics]
+11 omniblock:snowball runtime=EntityObject health=10 speed=0.7 spawnObject=61 globalSpawn=0 behaviors=ThrownProjectileDefinition[Ticker,Persistence,Interactable,Physics]
+20 omniblock:primedtnt runtime=EntityObject health=10 speed=0.7 spawnObject=50 globalSpawn=0 behaviors=PrimedExplosiveDefinition[Ticker,Lifecycle,Persistence]
+21 omniblock:fallingsand runtime=EntityObject health=10 speed=0.7 spawnObject=0 globalSpawn=0 behaviors=SettleAsBlockDefinition[Ticker,Persistence]
+40 omniblock:minecart runtime=EntityObject health=10 speed=0.7 spawnObject=0 globalSpawn=0 behaviors=MinecartDefinition[Ticker,Lifecycle,Persistence,Interactable,Physics]
+41 omniblock:boat runtime=EntityObject health=10 speed=0.7 spawnObject=1 globalSpawn=0 behaviors=BoatDefinition[Ticker,Lifecycle,Persistence,Interactable,Physics]
+50 omniblock:creeper runtime=EntityCreature health=20 speed=0.7 spawnObject=0 globalSpawn=0 behaviors=all[Attack,Ticker,Lifecycle,Physics],always_hunt[Targeting],loot_table[Loot]
+51 omniblock:skeleton runtime=EntityCreature health=20 speed=0.7 spawnObject=0 globalSpawn=0 behaviors=all[Ticker,Physics,Lifecycle],ranged[Attack],always_hunt[Targeting],loot_table[Loot]
+52 omniblock:spider runtime=EntityCreature health=20 speed=0.8 spawnObject=0 globalSpawn=0 behaviors=all[Physics,Lifecycle,Ticker],lose_target_in_daylight[Attack],darkness_only[Targeting],loot_table[Loot]
+53 omniblock:giant runtime=EntityCreature health=200 speed=0.5 spawnObject=0 globalSpawn=0 behaviors=all[Physics,Ticker,Lifecycle],melee[Attack],always_hunt[Targeting]
+54 omniblock:zombie runtime=EntityCreature health=20 speed=0.5 spawnObject=0 globalSpawn=0 behaviors=all[Ticker,Physics,Lifecycle],melee[Attack],always_hunt[Targeting],loot_table[Loot]
+55 omniblock:slime runtime=EntityLiving health=10 speed=0.7 spawnObject=0 globalSpawn=0 behaviors=all[Ticker,Lifecycle,Persistence],slime_chunk_spawn[Physics],contact_damage[Interactable],loot_table[Loot]
+56 omniblock:ghast runtime=EntityLiving health=10 speed=0.7 spawnObject=0 globalSpawn=0 behaviors=all[Physics],all[Ticker],loot_table[Loot]
+57 omniblock:pigzombie runtime=EntityCreature health=20 speed=0.5 spawnObject=0 globalSpawn=0 behaviors=all[Ticker,Targeting,Lifecycle,Persistence,Physics],melee[Attack],loot_table[Loot]
+62 omniblock:egg runtime=EntityObject health=10 speed=0.7 spawnObject=62 globalSpawn=0 behaviors=ThrownProjectileDefinition[Ticker,Persistence,Interactable,Physics]
+63 omniblock:fireball runtime=EntityObject health=10 speed=0.7 spawnObject=63 globalSpawn=0 behaviors=FireballDefinition[Ticker,Lifecycle,Persistence]
+64 omniblock:fishhook runtime=EntityObject health=10 speed=0.7 spawnObject=90 globalSpawn=0 behaviors=FishingBobberDefinition[Ticker,Persistence,Physics]
+65 omniblock:lightningbolt runtime=EntityObject health=10 speed=0.7 spawnObject=0 globalSpawn=1 behaviors=LightningStrikeDefinition[Ticker,Lifecycle,Physics]
+90 omniblock:pig runtime=EntityCreature health=10 speed=0.7 spawnObject=0 globalSpawn=0 behaviors=all[Physics],loot_table[Loot],lightning_conversion[Lifecycle],ride_if_saddled[Interactable]
+91 omniblock:sheep runtime=EntityCreature health=10 speed=0.7 spawnObject=0 globalSpawn=0 behaviors=grazing_animal[Physics],wool[Interactable,Persistence,Lifecycle],loot_table[Loot]
+92 omniblock:cow runtime=EntityCreature health=10 speed=0.7 spawnObject=0 globalSpawn=0 behaviors=grazing_animal[Physics],loot_table[Loot],swap_held_item[Interactable]
+93 omniblock:chicken runtime=EntityCreature health=4 speed=0.7 spawnObject=0 globalSpawn=0 behaviors=all[Physics],lay_eggs[Ticker],loot_table[Loot]
+94 omniblock:squid runtime=EntityLiving health=10 speed=0.7 spawnObject=0 globalSpawn=0 behaviors=all[Physics,Ticker],loot_table[Loot]
+95 omniblock:wolf runtime=EntityCreature health=8 speed=1.1 spawnObject=0 globalSpawn=0 behaviors=all[Interactable,Persistence,Targeting,Ticker,Lifecycle,Physics],jump[Attack]

@@ -26,7 +26,7 @@ public sealed class PistonExtensionBehavior : IBlockPhysics, IBlockLifecycle, IB
         int meta = @event.World.Reader.GetBlockMeta(x, y, z);
         if (!PistonBaseBehavior.IsExtended(meta)) return;
 
-        Block.Blocks[blockId].DropStacks(new OnDropEvent(@event.World, x, y, z, meta));
+        BlockRegistry.GetByProtocolId(blockId).DropStacks(new OnDropEvent(@event.World, x, y, z, meta));
         @event.World.Writer.SetBlock(x, y, z, 0);
     }
 
@@ -68,7 +68,7 @@ public sealed class PistonExtensionBehavior : IBlockPhysics, IBlockLifecycle, IB
         }
         else
         {
-            Block.Blocks[blockId].NeighborUpdate(new OnTickEvent(@event.World, @event.X - PistonConstants.HeadOffsetX[facing], @event.Y - PistonConstants.HeadOffsetY[facing], @event.Z - PistonConstants.HeadOffsetZ[facing],
+            BlockRegistry.GetByProtocolId(blockId).NeighborUpdate(new OnTickEvent(@event.World, @event.X - PistonConstants.HeadOffsetX[facing], @event.Y - PistonConstants.HeadOffsetY[facing], @event.Z - PistonConstants.HeadOffsetZ[facing],
                 @event.World.Reader.GetBlockMeta(@event.X - PistonConstants.HeadOffsetX[facing], @event.Y - PistonConstants.HeadOffsetY[facing], @event.Z - PistonConstants.HeadOffsetZ[facing]), block.Id));
         }
     }

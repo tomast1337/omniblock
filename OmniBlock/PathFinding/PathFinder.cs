@@ -282,7 +282,7 @@ internal class PathFinder
 
                     if (blockId != BlockRegistry.Get("iron_door").Id && blockId != BlockRegistry.Get("door").Id)
                     {
-                        Material material = Block.Blocks[blockId].Material;
+                        Material material = BlockRegistry.GetByProtocolId(blockId).Material;
                         if (material.BlocksMovement)
                         {
                             return 0;

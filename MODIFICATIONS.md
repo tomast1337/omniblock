@@ -256,3 +256,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-30 — test(e2e): add isolated client smoke runner and CI display backend (Nicolas Vyčas Nery; `134893b82829dc8876d1d68beece5fb9de123cd9`)
 - 2026-08-31 — Enhance E2E testing framework and UI automation (Nicolas Vyčas Nery; `33310ee727af93d3841ae86b2be7cd0878a53cce`)
 - 2026-08-31 — feat: implement Luau command history management and navigation (Nicolas Vyčas Nery; `b9f698926f64214dbea53caa8ceaaf30c9cba1ca`)
+- 2026-08-31 — Implement ContentRuntimeBuilder and update DefaultRegistries for block initialization (Nicolas Vyčas Nery; `50fe7264b8adf90b147fd6d35d6c5345d4d74bca`)

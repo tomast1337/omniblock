@@ -579,7 +579,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
             poweredRailBraking = !poweredRailActive;
         }
 
-        if (RailBehavior.IsAlwaysStraight(Block.Blocks[railBlockId]))
+        if (RailBehavior.IsAlwaysStraight(BlockRegistry.GetByProtocolId(railBlockId)))
         {
             railMeta &= 7;
         }
@@ -930,7 +930,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         }
 
         int railMeta = self.World.Reader.GetBlockMeta(blockX, blockY, blockZ);
-        if (RailBehavior.IsAlwaysStraight(Block.Blocks[blockId]))
+        if (RailBehavior.IsAlwaysStraight(BlockRegistry.GetByProtocolId(blockId)))
         {
             railMeta &= 7;
         }
@@ -976,7 +976,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         }
 
         int railMeta = self.World.Reader.GetBlockMeta(blockX, blockY, blockZ);
-        if (RailBehavior.IsAlwaysStraight(Block.Blocks[blockId]))
+        if (RailBehavior.IsAlwaysStraight(BlockRegistry.GetByProtocolId(blockId)))
         {
             railMeta &= 7;
         }

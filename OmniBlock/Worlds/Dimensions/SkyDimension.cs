@@ -27,7 +27,9 @@ public class SkyDimension : Dimension
     public override bool IsValidSpawnPoint(int x, int y)
     {
         int topBlockId = World.GetSpawnBlockId(x, y);
-        return topBlockId != 0 && Block.Blocks[topBlockId] != null && Block.Blocks[topBlockId].Material.BlocksMovement;
+        return topBlockId != 0
+               && BlockRegistry.TryGetByProtocolId(topBlockId, out Block? block)
+               && block.Material.BlocksMovement;
     }
 
     public override float CloudHeight => 8.0F;

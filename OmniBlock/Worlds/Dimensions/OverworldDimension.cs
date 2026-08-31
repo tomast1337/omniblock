@@ -48,7 +48,9 @@ internal class OverworldDimension : Dimension
             int topSolidY = World.Reader.GetTopSolidBlockY(x, z);
             if (topSolidY <= 0) return false;
             int blockId = World.Reader.GetBlockId(x, topSolidY - 1, z);
-            return blockId != 0 && Block.Blocks[blockId] != null && Block.Blocks[blockId].Material.BlocksMovement;
+            return blockId != 0
+                   && BlockRegistry.TryGetByProtocolId(blockId, out Block? block)
+                   && block.Material.BlocksMovement;
         }
 
         return base.IsValidSpawnPoint(x, z);

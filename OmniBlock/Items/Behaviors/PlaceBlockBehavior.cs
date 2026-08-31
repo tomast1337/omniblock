@@ -37,12 +37,12 @@ internal sealed class PlaceBlockBehavior : IItemBehavior
             return false;
         }
 
-        if (Block.Blocks[_blockId].CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
+        Block block = BlockRegistry.GetByProtocolId(_blockId);
+        if (block.CanPlaceAt(new CanPlaceAtContext(world, 0, x, y, z)))
         {
-            Block block = Block.Blocks[_blockId];
             if (world.Writer.SetBlock(x, y, z, _blockId))
             {
-                Block.Blocks[_blockId].OnPlaced(new OnPlacedEvent(world, player, meta.ToSide(), meta.ToSide(), x, y, z));
+                block.OnPlaced(new OnPlacedEvent(world, player, meta.ToSide(), meta.ToSide(), x, y, z));
                 world.Broadcaster.PlaySoundAtEntity(player, block.SoundGroup.StepSound, (block.SoundGroup.Volume + 1.0F) / 2.0F, block.SoundGroup.Pitch * 0.8F);
                 itemStack.ConsumeItem(player);
             }

@@ -6,6 +6,8 @@ namespace OmniBlock.Blocks;
 
 public static class BlockRegistry
 {
+    public const int ProtocolIdCapacity = 256;
+
     private static readonly CanonicalRegistry<BlockDefinition> s_registry = new("block");
 
     private static readonly Dictionary<int, string> s_idToName = [];
@@ -13,16 +15,53 @@ public static class BlockRegistry
     /// <summary>Returns the live, constructed <see cref="Block" /> registered under <paramref name="name" />.</summary>
     public static Block Get(string name)
     {
-        BlockDefinition definition = s_registry.Get(name);
-        return Block.Blocks[definition.ProtocolId]
-            ?? throw new InvalidOperationException($"Block '{name}' is registered but LoadAndBuild has not run yet.");
+        ResourceLocation key = ResourceLocation.Parse(name);
+        if (ContentRuntime.TryGetCurrent(out ContentRuntime? runtime))
+        {
+            return runtime.Blocks.Get(key);
+        }
+
+        // Bootstrap still initializes stats, achievements, and entity definitions after blocks but
+        // before ContentRuntime is published. Keep that construction-only path isolated here; once
+        // publication succeeds every lookup above is served by the immutable runtime snapshot.
+        BlockDefinition definition = s_registry.Get(key.Path);
+        return Block.GetDuringBootstrap(definition.ProtocolId)
+               ?? throw new InvalidOperationException(
+                   $"Block '{key}' is registered but its content runtime has not been built yet.");
+    }
+
+    /// <summary>Returns the live block registered under the protocol-level numeric id.</summary>
+    public static Block GetByProtocolId(int protocolId)
+    {
+        if (ContentRuntime.TryGetCurrent(out ContentRuntime? runtime))
+        {
+            return runtime.Blocks.GetByProtocolId(protocolId);
+        }
+
+        // Block-derived items are constructed while the runtime snapshot is still being built.
+        // Keep that bootstrap exception behind this boundary so consumers never own catalog state.
+        return Block.GetDuringBootstrap(protocolId) is { } block
+            ? block
+            : throw new KeyNotFoundException($"Unknown block protocol id {protocolId}.");
+    }
+
+    public static bool TryGetByProtocolId(int protocolId, out Block? block)
+    {
+        if (ContentRuntime.TryGetCurrent(out ContentRuntime? runtime))
+        {
+            return runtime.Blocks.TryGetByProtocolId(protocolId, out block);
+        }
+
+        block = Block.GetDuringBootstrap(protocolId);
+        return block is not null;
     }
 
     /// <summary>Reverse lookup: the registry name a block was defined under, given its protocol id.</summary>
     public static string? TryGetName(int protocolId) => s_idToName.GetValueOrDefault(protocolId);
 
-    internal static void Initialize()
+    internal static void Initialize(ContentRuntimeBuilder content)
     {
+        ArgumentNullException.ThrowIfNull(content);
         if (s_registry.IsInitialized) return;
 
         var loader = (BlockDefinitionJsonLoader)RegistryDefinitions.Blocks.CreateLoader();
@@ -39,12 +78,12 @@ public static class BlockRegistry
             s_idToName[def.ProtocolId] = def.Name;
         }
 
-        LoadAndBuild(definitions);
+        LoadAndBuild(definitions, content);
         BridgeToItems(definitions);
         Block.BlocksAllowVision[0] = true;
     }
 
-    private static void LoadAndBuild(IEnumerable<BlockDefinition> definitions)
+    private static void LoadAndBuild(IEnumerable<BlockDefinition> definitions, ContentRuntimeBuilder content)
     {
         List<BlockDefinition> defs = definitions.ToList();
 
@@ -57,7 +96,14 @@ public static class BlockRegistry
 
         foreach (BlockDefinition def in defs)
         {
-            BlockFactory.AttachBehaviors(Block.Blocks[def.ProtocolId], def);
+            Block block = Block.GetDuringBootstrap(def.ProtocolId)
+                          ?? throw new InvalidOperationException($"Block '{def.Name}' was not constructed.");
+            BlockFactory.AttachBehaviors(
+                block,
+                def,
+                content.BlockBehaviorProviders,
+                content.BehaviorBuildContext);
+            content.AddBlock(def, block);
         }
     }
 
@@ -89,7 +135,7 @@ public static class BlockRegistry
             // instance per slot, so instance state set via OnInit wouldn't reliably reach
             // the Ticker/Physics/etc-slot instances anyway; behaviors needing resolved
             // cross-block ids use static readonly fields instead).
-            Block.Blocks[id].Init();
+            GetByProtocolId(id).Init();
         }
     }
 }

@@ -371,19 +371,19 @@ public abstract partial class Entity
         }
 
         _nextStepSoundDistance = (int)HorizontalSpeed + 1;
-        BlockSoundGroup soundGroup = Block.Blocks[blockId].SoundGroup;
+        BlockSoundGroup soundGroup = BlockRegistry.GetByProtocolId(blockId).SoundGroup;
 
         if (World.Reader.GetBlockId(blockX, blockY + 1, blockZ) == BlockRegistry.Get("snow").Id)
         {
             soundGroup = BlockRegistry.Get("snow").SoundGroup;
             World.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
         }
-        else if (!Block.Blocks[blockId].Material.IsFluid)
+        else if (!BlockRegistry.GetByProtocolId(blockId).Material.IsFluid)
         {
             World.Broadcaster.PlaySoundAtEntity(this, soundGroup.StepSound, soundGroup.Volume * 0.15F, soundGroup.Pitch);
         }
 
-        Block.Blocks[blockId].onSteppedOn(new OnEntityStepEvent(World, this, blockX, blockY, blockZ));
+        BlockRegistry.GetByProtocolId(blockId).onSteppedOn(new OnEntityStepEvent(World, this, blockX, blockY, blockZ));
     }
 
     /// <summary>Tells every block the box now overlaps that something is standing in it.</summary>
@@ -410,7 +410,7 @@ public abstract partial class Entity
                     int blockId = World.Reader.GetBlockId(x, y, z);
                     if (blockId > 0)
                     {
-                        Block.Blocks[blockId].OnEntityCollision(new OnEntityCollisionEvent(World, this, x, y, z));
+                        BlockRegistry.GetByProtocolId(blockId).OnEntityCollision(new OnEntityCollisionEvent(World, this, x, y, z));
                     }
                 }
             }
@@ -483,7 +483,7 @@ public abstract partial class Entity
         int floorEyeY = MathHelper.Floor(MathHelper.Floor(eyeY));
         int floorZ = MathHelper.Floor(Z);
         int id = World.Reader.GetBlockId(floorX, floorEyeY, floorZ);
-        if (id != 0 && Block.Blocks[id].Material == mat)
+        if (id != 0 && BlockRegistry.GetByProtocolId(id).Material == mat)
         {
             float fluidHeight = FluidMath.GetFluidHeightFromMeta(World.Reader.GetBlockMeta(floorX, floorEyeY, floorZ)) - 1.0F / 9.0F;
             float fluidSurfaceY = floorEyeY + 1 - fluidHeight;

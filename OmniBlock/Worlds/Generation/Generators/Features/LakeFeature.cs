@@ -112,7 +112,7 @@ internal class LakeFeature : Feature
             }
         }
 
-        if (Block.Blocks[_waterBlockId].Material == Material.Lava)
+        if (BlockRegistry.GetByProtocolId(_waterBlockId).Material == Material.Lava)
         {
             for (int dx = 0; dx < 16; ++dx)
             {

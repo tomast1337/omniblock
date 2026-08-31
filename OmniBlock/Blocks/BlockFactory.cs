@@ -63,13 +63,19 @@ internal static class BlockFactory
         return block;
     }
 
-    public static void AttachBehaviors(Block block, BlockDefinition def)
+    internal static void AttachBehaviors(
+        Block block,
+        BlockDefinition def,
+        IBlockBehaviorProviderRegistry behaviorProviders,
+        in BehaviorBuildContext context)
     {
+        ArgumentNullException.ThrowIfNull(behaviorProviders);
+
         foreach (JsonElement entry in def.Behaviors)
         {
             string type = entry.GetProperty("Type").GetString()
                 ?? throw new ArgumentException("Behavior entry is missing its 'Type' property.");
-            object behavior = BehaviorRegistry.Build(type, entry);
+            object behavior = behaviorProviders.Build(ResourceLocation.Parse(type), entry, context);
 
             foreach (JsonElement slotJson in entry.GetProperty("Slots").EnumerateArray())
             {
@@ -105,7 +111,11 @@ internal static class BlockFactory
         if (def.LootTable is { } loot)
         {
             LootEntry[] entries = loot.Entries
-                .Select(e => new LootEntry(() => ResolveItemOrBlockId(e.ItemName), e.Weight))
+                .Select(e =>
+                {
+                    int itemId = ResolveItemOrBlockId(e.ItemName);
+                    return new LootEntry(() => itemId, e.Weight);
+                })
                 .ToArray();
             block.SetLootTable(new LootTable(entries), loot.MinCount, loot.MaxCount, loot.Meta);
         }

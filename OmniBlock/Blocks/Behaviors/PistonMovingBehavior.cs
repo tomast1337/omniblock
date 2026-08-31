@@ -44,7 +44,7 @@ public sealed class PistonMovingBehavior : IBlockPhysics, IBlockLifecycle, IBloc
         BlockEntityPiston? piston = @event.World.Entities.GetBlockEntity<BlockEntityPiston>(@event.X, @event.Y, @event.Z);
         if (piston != null)
         {
-            Block.Blocks[piston.PushedBlockId].DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, piston.PushedBlockData));
+            BlockRegistry.GetByProtocolId(piston.PushedBlockId).DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, piston.PushedBlockData));
         }
     }
 
@@ -69,7 +69,7 @@ public sealed class PistonMovingBehavior : IBlockPhysics, IBlockLifecycle, IBloc
         BlockEntityPiston? piston = entities?.GetBlockEntity<BlockEntityPiston>(x, y, z);
         if (piston == null) return;
 
-        Block pushed = Block.Blocks[piston.PushedBlockId];
+        Block pushed = BlockRegistry.GetByProtocolId(piston.PushedBlockId);
         if (pushed == block) return;
 
         pushed.UpdateBoundingBox(reader, entities, x, y, z);
@@ -90,7 +90,7 @@ public sealed class PistonMovingBehavior : IBlockPhysics, IBlockLifecycle, IBloc
     {
         if (blockId == 0 || blockId == block.Id) return null;
 
-        Box? shape = Block.Blocks[blockId].GetCollisionShape(world, entities, x, y, z);
+        Box? shape = BlockRegistry.GetByProtocolId(blockId).GetCollisionShape(world, entities, x, y, z);
         if (shape == null) return null;
 
         Box res = shape.Value;

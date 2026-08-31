@@ -197,7 +197,7 @@ public sealed class MapBehavior : IItemBehavior
                 colorIndex = 0;
                 if (sampleZ > 0)
                 {
-                    MapColor mapColor = Block.Blocks[sampleZ].Material.MapColor;
+                    MapColor mapColor = BlockRegistry.GetByProtocolId(sampleZ).Material.MapColor;
                     if (mapColor == MapColor.Water)
                     {
                         shadeFactor = fluidDepth * 0.1D + ((pixelX + pixelZ) & 1) * 0.2D;
@@ -258,7 +258,7 @@ public sealed class MapBehavior : IItemBehavior
             {
                 foundSurface = false;
             }
-            else if (scanY > 0 && blockId > 0 && Block.Blocks[blockId].Material.MapColor == MapColor.Air)
+            else if (scanY > 0 && blockId > 0 && BlockRegistry.GetByProtocolId(blockId).Material.MapColor == MapColor.Air)
             {
                 foundSurface = false;
             }
@@ -271,7 +271,7 @@ public sealed class MapBehavior : IItemBehavior
 
             if (foundSurface)
             {
-                if (blockId == 0 || !Block.Blocks[blockId].Material.IsFluid)
+                if (blockId == 0 || !BlockRegistry.GetByProtocolId(blockId).Material.IsFluid)
                 {
                     exitLoop = true;
                 }
@@ -282,7 +282,7 @@ public sealed class MapBehavior : IItemBehavior
                     {
                         int fluidBlockId = chunk.GetBlockId(chunkX + dx, depthCheckY--, chunkZ + dz);
                         ++fluidDepth;
-                        if (depthCheckY <= 0 || fluidBlockId == 0 || !Block.Blocks[fluidBlockId].Material.IsFluid)
+                        if (depthCheckY <= 0 || fluidBlockId == 0 || !BlockRegistry.GetByProtocolId(fluidBlockId).Material.IsFluid)
                         {
                             exitLoop = true;
                             break;

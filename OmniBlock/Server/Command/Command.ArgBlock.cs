@@ -23,7 +23,7 @@ public abstract partial class Command
                 // No meta data, resolve id.
                 if (int.TryParse(name, out int id))
                 {
-                    if (id == 0 || Block.Blocks.Length > id && Block.Blocks[id] != null) return (id, 0);
+                    if (id == 0 || BlockRegistry.TryGetByProtocolId(id, out _)) return (id, 0);
                     throw s_blockNotFound.Create(name);
                 }
 
@@ -40,7 +40,7 @@ public abstract partial class Command
                 // Resolve id and meta data.
                 if (int.TryParse(idPart, out int id))
                 {
-                    if (id != 0 && (Block.Blocks.Length <= id || Block.Blocks[id] == null)) throw s_blockNotFound.Create(name);
+                    if (id != 0 && !BlockRegistry.TryGetByProtocolId(id, out _)) throw s_blockNotFound.Create(name);
                     return (id, int.Parse(metaPart));
                 }
 
@@ -51,7 +51,8 @@ public abstract partial class Command
             }
 
 
-            if (ItemLookup.TryGetItem(name, out ItemStack? result) && Block.Blocks.Length > result.ItemId && Block.Blocks[result.ItemId] != null)
+            if (ItemLookup.TryGetItem(name, out ItemStack? result)
+                && BlockRegistry.TryGetByProtocolId(result.ItemId, out _))
             {
                 return (result.ItemId, result.GetDamage());
             }

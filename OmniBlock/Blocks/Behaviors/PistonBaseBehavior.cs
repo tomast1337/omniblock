@@ -94,7 +94,7 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
                         @event.World.Writer.SetBlock(headX, headY, headZ, 0);
                     }
                     else if (targetId > 0 && CanMoveBlock(targetId, @event.World, targetX, targetY, targetZ, false) &&
-                             (Block.Blocks[targetId].PistonBehavior == PistonBehavior.Normal || targetId == BlockRegistry.Get("piston").Id || targetId == BlockRegistry.Get("sticky_piston").Id))
+                             (BlockRegistry.GetByProtocolId(targetId).PistonBehavior == PistonBehavior.Normal || targetId == BlockRegistry.Get("piston").Id || targetId == BlockRegistry.Get("sticky_piston").Id))
                     {
                         @event.World.Writer.SetBlock(headX, headY, headZ, 0);
                         @event.World.Writer.SetBlock(targetX, targetY, targetZ, 0);
@@ -258,9 +258,9 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
 
         if (id != BlockRegistry.Get("piston").Id && id != BlockRegistry.Get("sticky_piston").Id)
         {
-            if (Math.Abs(Block.Blocks[id].Hardness - (-1.0F)) < 0.001F) return false;
-            if (Block.Blocks[id].PistonBehavior == PistonBehavior.Unpushable) return false;
-            if (!allowBreaking && Block.Blocks[id].PistonBehavior == PistonBehavior.Destroy) return false;
+            if (Math.Abs(BlockRegistry.GetByProtocolId(id).Hardness - (-1.0F)) < 0.001F) return false;
+            if (BlockRegistry.GetByProtocolId(id).PistonBehavior == PistonBehavior.Unpushable) return false;
+            if (!allowBreaking && BlockRegistry.GetByProtocolId(id).PistonBehavior == PistonBehavior.Destroy) return false;
         }
         else if (IsExtended(ctx.Reader.GetBlockMeta(x, y, z))) return false;
 
@@ -289,7 +289,7 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
                 return false;
             }
 
-            if (Block.Blocks[blockId].PistonBehavior == PistonBehavior.Destroy) return true;
+            if (BlockRegistry.GetByProtocolId(blockId).PistonBehavior == PistonBehavior.Destroy) return true;
 
             if (pushCount == 12) return false;
 
@@ -321,7 +321,7 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
                         return false;
                     }
 
-                    if (Block.Blocks[blockId].PistonBehavior != PistonBehavior.Destroy)
+                    if (BlockRegistry.GetByProtocolId(blockId).PistonBehavior != PistonBehavior.Destroy)
                     {
                         if (pushCount == 12)
                         {
@@ -335,7 +335,7 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
                         continue;
                     }
 
-                    Block.Blocks[blockId].DropStacks(new OnDropEvent(ctx, nextX, nextY, nextZ, ctx.Reader.GetBlockMeta(nextX, nextY, nextZ)));
+                    BlockRegistry.GetByProtocolId(blockId).DropStacks(new OnDropEvent(ctx, nextX, nextY, nextZ, ctx.Reader.GetBlockMeta(nextX, nextY, nextZ)));
                     ctx.Writer.SetBlock(nextX, nextY, nextZ, 0);
                 }
             }

@@ -148,14 +148,13 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 
     public bool ShouldSuffocate(int x, int y, int z)
     {
-        Block block = Block.Blocks[GetBlockId(x, y, z)];
-        return block != null && block.Material.BlocksMovement && block.IsFullCube();
+        return BlockRegistry.TryGetByProtocolId(GetBlockId(x, y, z), out Block? block)
+               && block.Material.BlocksMovement && block.IsFullCube();
     }
 
     public bool IsOpaque(int x, int y, int z)
     {
-        Block block = Block.Blocks[GetBlockId(x, y, z)];
-        return block != null && block.IsOpaque;
+        return BlockRegistry.TryGetByProtocolId(GetBlockId(x, y, z), out Block? block) && block.IsOpaque;
     }
 
     public int GetBlockMeta(int x, int y, int z)
@@ -171,7 +170,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
     public Material GetMaterial(int x, int y, int z)
     {
         int blockId = GetBlockId(x, y, z);
-        return blockId == 0 ? Material.Air : Block.Blocks[blockId].Material;
+        return blockId == 0 ? Material.Air : BlockRegistry.GetByProtocolId(blockId).Material;
     }
 
     public bool IsAir(int x, int y, int z) => GetBlockId(x, y, z) == 0;

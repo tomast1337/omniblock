@@ -370,7 +370,7 @@ public class ParticleManager
             return;
         }
 
-        Block block = Block.Blocks[blockId];
+        Block block = BlockRegistry.GetByProtocolId(blockId);
         AddBlockDestroyEffects(x, y, z, block, meta);
     }
 
@@ -400,7 +400,7 @@ public class ParticleManager
         int blockId = worldObj.Reader.GetBlockId(blockX, blockY, blockZ);
         if (blockId != 0)
         {
-            Block block = Block.Blocks[blockId];
+            Block block = BlockRegistry.GetByProtocolId(blockId);
             Box bb = block.BoundingBox;
             float margin = 0.1F;
 

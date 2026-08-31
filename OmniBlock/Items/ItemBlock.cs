@@ -13,7 +13,7 @@ internal class ItemBlock : Item
     public ItemBlock(int id) : base(id)
     {
         _blockId = id + 256;
-        SetTextureId(Block.Blocks[id + 256].GetTexture(2.ToSide()));
+        SetTextureId(BlockRegistry.GetByProtocolId(id + 256).GetTexture(2.ToSide()));
     }
 
     public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
@@ -53,7 +53,7 @@ internal class ItemBlock : Item
         }
 
         int existingBlockId = world.Reader.GetBlockId(x, y, z);
-        if (existingBlockId != 0 && !Block.Blocks[existingBlockId].Material.IsReplaceable)
+        if (existingBlockId != 0 && !BlockRegistry.GetByProtocolId(existingBlockId).Material.IsReplaceable)
         {
             return false;
         }
@@ -63,7 +63,7 @@ internal class ItemBlock : Item
             return false;
         }
 
-        Block block = Block.Blocks[_blockId];
+        Block block = BlockRegistry.GetByProtocolId(_blockId);
         Box? collisionBox = block.GetCollisionShape(world.Reader, world.Entities, x, y, z);
         if (collisionBox is { } box)
         {
@@ -86,7 +86,7 @@ internal class ItemBlock : Item
             return true;
         }
 
-        Block.Blocks[_blockId].OnPlaced(new OnPlacedEvent(world, entityPlayer, meta.ToSide(), meta.ToSide(), x, y, z));
+        block.OnPlaced(new OnPlacedEvent(world, entityPlayer, meta.ToSide(), meta.ToSide(), x, y, z));
         world.Broadcaster.PlaySoundAtPos(x + 0.5F, y + 0.5F, z + 0.5F, block.SoundGroup.StepSound, (block.SoundGroup.Volume + 1.0F) / 2.0F, block.SoundGroup.Pitch * 0.8F);
         itemStack.ConsumeItem(entityPlayer);
 
@@ -94,7 +94,7 @@ internal class ItemBlock : Item
 
     }
 
-    public override string GetItemNameIs(ItemStack itemStack) => Block.Blocks[_blockId].BlockName;
+    public override string GetItemNameIs(ItemStack itemStack) => BlockRegistry.GetByProtocolId(_blockId).BlockName;
 
-    public override string GetItemName() => Block.Blocks[_blockId].BlockName;
+    public override string GetItemName() => BlockRegistry.GetByProtocolId(_blockId).BlockName;
 }

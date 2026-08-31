@@ -265,7 +265,7 @@ public sealed class RedstoneWireBehavior(Block wire, Block[] conductors, Block r
             if (blockId == conductor.Id) return true;
         }
 
-        if (blockId != repeater.Id && blockId != poweredRepeater.Id) return Block.Blocks[blockId].CanEmitRedstonePower();
+        if (blockId != repeater.Id && blockId != poweredRepeater.Id) return BlockRegistry.GetByProtocolId(blockId).CanEmitRedstonePower();
         if (direction < 0) return false;
         int meta = reader.GetBlockMeta(x, y, z);
         int orientation = meta & 3;

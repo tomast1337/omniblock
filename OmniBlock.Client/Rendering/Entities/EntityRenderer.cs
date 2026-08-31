@@ -168,7 +168,7 @@ public abstract class EntityRenderer
                     if (blockId > 0 && World.Lighting.GetLightLevel(blockX, blockY, blockZ) > 3)
                     {
                         renderShadowOnBlock(
-                            Block.Blocks[blockId],
+                            BlockRegistry.GetByProtocolId(blockId),
                             new Vec3D(pos.X, pos.Y + target.GetShadowRadius(), pos.Z),
                             blockX, blockY, blockZ,
                             shadowiness,

@@ -18,8 +18,7 @@ public static class ParticlePhysics
         int bz = MathHelper.Floor(nz);
 
         int blockId = world.Reader.GetBlockId(bx, by, bz);
-        bool solid = blockId > 0 && Block.Blocks[blockId] != null &&
-                     Block.Blocks[blockId].Material.BlocksMovement;
+        bool solid = IsSolid(blockId);
 
         if (!solid)
         {
@@ -33,8 +32,7 @@ public static class ParticlePhysics
             // Try each axis independently using the already-computed target block coords
             // Y axis
             int yBlockId = world.Reader.GetBlockId(MathHelper.Floor(buf.X[i]), by, MathHelper.Floor(buf.Z[i]));
-            bool ySolid = yBlockId > 0 && Block.Blocks[yBlockId] != null &&
-                          Block.Blocks[yBlockId].Material.BlocksMovement;
+            bool ySolid = IsSolid(yBlockId);
             if (!ySolid)
             {
                 buf.Y[i] += buf.VelY[i];
@@ -48,8 +46,7 @@ public static class ParticlePhysics
 
             // X axis
             int xBlockId = world.Reader.GetBlockId(bx, MathHelper.Floor(buf.Y[i]), MathHelper.Floor(buf.Z[i]));
-            bool xSolid = xBlockId > 0 && Block.Blocks[xBlockId] != null &&
-                          Block.Blocks[xBlockId].Material.BlocksMovement;
+            bool xSolid = IsSolid(xBlockId);
             if (!xSolid)
             {
                 buf.X[i] += buf.VelX[i];
@@ -61,8 +58,7 @@ public static class ParticlePhysics
 
             // Z axis
             int zBlockId = world.Reader.GetBlockId(MathHelper.Floor(buf.X[i]), MathHelper.Floor(buf.Y[i]), bz);
-            bool zSolid = zBlockId > 0 && Block.Blocks[zBlockId] != null &&
-                          Block.Blocks[zBlockId].Material.BlocksMovement;
+            bool zSolid = IsSolid(zBlockId);
             if (!zSolid)
             {
                 buf.Z[i] += buf.VelZ[i];
@@ -73,4 +69,9 @@ public static class ParticlePhysics
             }
         }
     }
+
+    private static bool IsSolid(int blockId) =>
+        blockId > 0
+        && BlockRegistry.TryGetByProtocolId(blockId, out Block? block)
+        && block.Material.BlocksMovement;
 }

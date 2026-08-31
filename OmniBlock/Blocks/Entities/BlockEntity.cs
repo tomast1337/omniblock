@@ -117,7 +117,7 @@ public abstract class BlockEntity : IEntity
         return dx * dx + dy * dy + dz * dz;
     }
 
-    public Block GetBlock() => Block.Blocks[World!.Reader.GetBlockId(X, Y, Z)];
+    public Block GetBlock() => BlockRegistry.GetByProtocolId(World!.Reader.GetBlockId(X, Y, Z));
 
     /// <summary>
     ///     What to send a client that has just loaded this block entity, or null when its NBT is

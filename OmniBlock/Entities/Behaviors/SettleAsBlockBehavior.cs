@@ -67,9 +67,9 @@ public sealed class SettleAsBlockBehavior : IEntityTicker, IEntityPersistence
             self.VelocityZ *= 0.7F;
             self.VelocityY *= -0.5D;
             self.MarkDead();
-            bool canFallThrough = Block.Blocks[blockId].Physics is FallingBlockBehavior fallingBlockPhysics
+            bool canFallThrough = BlockRegistry.GetByProtocolId(blockId).Physics is FallingBlockBehavior fallingBlockPhysics
                                   && fallingBlockPhysics.CanFallThrough(new OnTickEvent(self.World, floorX, floorY - 1, floorZ, 0, blockId));
-            if ((!Block.Blocks[blockId].CanPlaceAt(new CanPlaceAtContext(self.World, 0, floorX, floorY, floorZ)) || canFallThrough ||
+            if ((!BlockRegistry.GetByProtocolId(blockId).CanPlaceAt(new CanPlaceAtContext(self.World, 0, floorX, floorY, floorZ)) || canFallThrough ||
                  !self.World.Writer.SetBlock(floorX, floorY, floorZ, blockId)) && !self.World.IsRemote)
             {
                 self.DropItem(blockId, 1);

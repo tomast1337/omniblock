@@ -90,7 +90,7 @@ public class FlatGeneratorInfo
                 meta = int.Parse(blockParts[1]);
             }
 
-            if (blockId < 0 || blockId >= 256 || Block.Blocks[blockId] == null)
+            if (!BlockRegistry.TryGetByProtocolId(blockId, out _))
             {
                 blockId = 0;
                 meta = 0;

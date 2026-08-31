@@ -52,13 +52,13 @@ public class ItemRenderer : EntityRenderer
         float minU;
         float maxU;
         float minV;
-        if (stack.ItemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[stack.ItemId].RenderType))
+        if (stack.ItemId < 256 && BlockRenderer.IsSideLit(BlockRegistry.GetByProtocolId(stack.ItemId).RenderType))
         {
             GLManager.ModelView.Rotate(spinAngle, 0.0F, 1.0F, 0.0F);
             loadTexture("/terrain.png");
             float blockScale = 0.25F;
-            if (!Block.Blocks[stack.ItemId].IsFullCube() && stack.ItemId != BlockRegistry.Get("slab").Id
-                && Block.Blocks[stack.ItemId].RenderType != BlockRendererType.PistonBase)
+            if (!BlockRegistry.GetByProtocolId(stack.ItemId).IsFullCube() && stack.ItemId != BlockRegistry.Get("slab").Id
+                && BlockRegistry.GetByProtocolId(stack.ItemId).RenderType != BlockRendererType.PistonBase)
             {
                 blockScale = 0.5F;
             }
@@ -76,7 +76,7 @@ public class ItemRenderer : EntityRenderer
                     GLManager.ModelView.Translate(minU, maxU, minV);
                 }
 
-                BlockRenderer.RenderBlockOnInventory(Block.Blocks[stack.ItemId], stack.GetDamage(), entityItem.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
+                BlockRenderer.RenderBlockOnInventory(BlockRegistry.GetByProtocolId(stack.ItemId), stack.GetDamage(), entityItem.GetBrightnessAtEyes(tickDelta), Tessellator.instance);
                 GLManager.ModelView.Pop();
             }
         }
@@ -144,10 +144,10 @@ public class ItemRenderer : EntityRenderer
     public void drawItemIntoGui(TextRenderer fontRenderer, TextureManager textureManager, int itemId, int itemDamage, int iconIndex, int x, int y)
     {
         float blue;
-        if (itemId < 256 && BlockRenderer.IsSideLit(Block.Blocks[itemId].RenderType))
+        if (itemId < 256 && BlockRenderer.IsSideLit(BlockRegistry.GetByProtocolId(itemId).RenderType))
         {
             textureManager.BindTexture(textureManager.GetTextureId("/terrain.png"));
-            Block block = Block.Blocks[itemId];
+            Block block = BlockRegistry.GetByProtocolId(itemId);
             GLManager.ModelView.Push();
             GLManager.ModelView.Translate(x - 2, y + 3, -3.0F);
             GLManager.ModelView.Scale(10.0F, 10.0F, 10.0F);

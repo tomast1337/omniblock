@@ -61,7 +61,7 @@ public sealed class StationaryFluidBehavior(Block ignitionTarget, Block sourceSo
                 return;
             }
 
-            if (Block.Blocks[neighborBlockId].Material.BlocksMovement)
+            if (BlockRegistry.GetByProtocolId(neighborBlockId).Material.BlocksMovement)
             {
                 return;
             }

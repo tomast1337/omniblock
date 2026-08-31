@@ -154,9 +154,9 @@ internal static class ItemLookup
             }
         }
 
-        for (int id = 0; id < Block.Blocks.Length; id++)
+        for (int id = 0; id < BlockRegistry.ProtocolIdCapacity; id++)
         {
-            if (Block.Blocks[id] is not { } block) continue;
+            if (!BlockRegistry.TryGetByProtocolId(id, out Block? block)) continue;
 
             if (BlockRegistry.TryGetName(id) is { } name)
             {

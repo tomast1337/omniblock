@@ -85,7 +85,7 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
             @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.Id);
         }
         else if (block.Id > 0 &&
-                 Block.Blocks[block.Id].CanEmitRedstonePower() &&
+                 BlockRegistry.GetByProtocolId(block.Id).CanEmitRedstonePower() &&
                  !_isPoweredTrack &&
                  new TrackLogic(@event.World, new Vec3I(@event.X, @event.Y, @event.Z)).GetAdjacentTracks() == 3)
         {
@@ -205,8 +205,8 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
             int blockId = level.Reader.GetBlockId(pos.X, pos.Y, pos.Z);
             int meta = level.Reader.GetBlockMeta(pos.X, pos.Y, pos.Z);
 
-            Block candidate = Block.Blocks[blockId];
-            if (candidate != null && IsAlwaysStraight(candidate))
+            if (BlockRegistry.TryGetByProtocolId(blockId, out Block? candidate)
+                && IsAlwaysStraight(candidate))
             {
                 _isPoweredRail = true;
                 meta &= -9;

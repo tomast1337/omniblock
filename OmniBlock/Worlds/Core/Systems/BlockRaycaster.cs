@@ -31,7 +31,7 @@ public static class BlockRaycaster
 
         int initialId = reader.GetBlockId(currentX, currentY, currentZ);
         int initialMeta = reader.GetBlockMeta(currentX, currentY, currentZ);
-        Block? initialBlock = Block.Blocks[initialId];
+        BlockRegistry.TryGetByProtocolId(initialId, out Block? initialBlock);
 
         if ((!ignoreNonSolid || initialBlock == null ||
              initialBlock.GetCollisionShape(reader, entities, currentX, currentY, currentZ) != null) &&
@@ -161,7 +161,7 @@ public static class BlockRaycaster
 
             int blockIdAtStep = reader.GetBlockId(currentX, currentY, currentZ);
             int metaAtStep = reader.GetBlockMeta(currentX, currentY, currentZ);
-            Block? blockAtStep = Block.Blocks[blockIdAtStep];
+            BlockRegistry.TryGetByProtocolId(blockIdAtStep, out Block? blockAtStep);
 
             if ((!ignoreNonSolid || blockAtStep == null ||
                  blockAtStep.GetCollisionShape(reader, entities, currentX, currentY, currentZ) != null) &&

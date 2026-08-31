@@ -53,13 +53,13 @@ public class BlockCommand : Command.Command
         int meta = world.Reader.GetBlockMeta(p.X, p.Y, p.Z);
         BlockEntity? blockEntity = world.Entities.GetBlockEntity<BlockEntity>(p.X, p.Y, p.Z);
 
-        if (Block.Blocks.Length <= id || Block.Blocks[id] == null)
+        if (!BlockRegistry.TryGetByProtocolId(id, out Block? block))
         {
             context.Source.Output.SendMessage($"Block at {p.X} {p.Y} {p.Z} -> {id}:{meta}");
         }
         else
         {
-            context.Source.Output.SendMessage($"Block at {p.X} {p.Y} {p.Z} -> {id}:{meta} ({Block.Blocks[id].TranslateBlockName()})");
+            context.Source.Output.SendMessage($"Block at {p.X} {p.Y} {p.Z} -> {id}:{meta} ({block.TranslateBlockName()})");
         }
 
         if (blockEntity != null)

@@ -1,19 +1,30 @@
+using System.Collections.Frozen;
 using System.Text.Json;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Items;
-using OmniBlock.Textures;
 
 namespace OmniBlock.Blocks.Behaviors;
 
-internal static class BehaviorRegistry
+internal sealed class BlockBehaviorProviderRegistry : IBlockBehaviorProviderRegistry
 {
     public delegate object BehaviorFactory(JsonElement json);
 
-    private static readonly Dictionary<string, BehaviorFactory> s_factories = new()
+    private readonly BehaviorBuildContext _context;
+    private readonly FrozenDictionary<ResourceLocation, BehaviorFactory> _factories;
+
+    public BlockBehaviorProviderRegistry(BehaviorBuildContext context)
+    {
+        _context = context;
+        _factories = BuiltInFactories().ToFrozenDictionary(
+            static pair => ResourceLocation.Parse(pair.Key),
+            static pair => pair.Value);
+    }
+
+    private Dictionary<string, BehaviorFactory> BuiltInFactories() => new()
     {
         // Parameterized behaviors extract their state from JSON data
-        ["door"] = json => new DoorBehavior(MaterialRegistry.Get(json.GetProperty("material").GetString() ?? "wood")),
-        ["trap_door"] = json => new TrapDoorBehavior(MaterialRegistry.Get(json.GetProperty("material").GetString() ?? "wood")),
+        ["door"] = json => new DoorBehavior(ResolveMaterial(json.GetProperty("material").GetString() ?? "wood")),
+        ["trap_door"] = json => new TrapDoorBehavior(ResolveMaterial(json.GetProperty("material").GetString() ?? "wood")),
         ["furnace"] = json => new FurnaceBehavior(json.TryGetProperty("lit", out var lit) && lit.GetBoolean(),
             Texture(json, "top"), Texture(json, "front_off"), Texture(json, "front_on")),
         ["rail"] = json => new RailBehavior(json.TryGetProperty("powered", out var p) && p.GetBoolean(),
@@ -32,12 +43,23 @@ internal static class BehaviorRegistry
         ["pressure_plate"] = json => new PressurePlateBehavior(Enum.Parse<PressurePlateActiviationRule>(json.GetProperty("activation_rule").GetString() ?? "EVERYTHING", true)),
         ["glass_visual"] = json => new GlassVisualBehavior(json.TryGetProperty("hide_adjacent_faces", out var h) && h.GetBoolean()),
         ["wall_mount"] = json => new WallMountBehavior(json.TryGetProperty("is_ladder", out var l) && l.GetBoolean()),
-        ["stairs"] = json => new StairsBehavior(() => ResolveBlock(json.GetProperty("base").GetString()!)),
+        ["stairs"] = json =>
+        {
+            Block baseBlock = ResolveBlock(json.GetProperty("base").GetString()!);
+            return new StairsBehavior(() => baseBlock);
+        },
         ["plant_survival"] = json => new PlantSurvivalBehavior(ResolveBlockArray(json.GetProperty("valid_ground"))),
-        ["melt"] = json => new MeltBehavior(
-            () => ResolveBlockOrAir(json.GetProperty("melt_replacement").GetString()!),
-            json.TryGetProperty("subtract_opacity", out var sub) && sub.GetBoolean(),
-            json.TryGetProperty("broken_replacement", out var broken) ? () => ResolveBlockOrAir(broken.GetString()!) : null),
+        ["melt"] = json =>
+        {
+            int meltReplacement = ResolveBlockOrAir(json.GetProperty("melt_replacement").GetString()!);
+            int? brokenReplacement = json.TryGetProperty("broken_replacement", out var broken)
+                ? ResolveBlockOrAir(broken.GetString()!)
+                : null;
+            return new MeltBehavior(
+                () => meltReplacement,
+                json.TryGetProperty("subtract_opacity", out var sub) && sub.GetBoolean(),
+                brokenReplacement is { } replacement ? () => replacement : null);
+        },
         ["redstone_torch"] = _ => new RedstoneTorchBehavior(new WallMountBehavior(false)),
         ["bed"] = json => new BedBehavior(Texture(json, "bottom"),
             Texture(json, "foot_top"), Texture(json, "foot_side"), Texture(json, "foot_end"),
@@ -109,21 +131,19 @@ internal static class BehaviorRegistry
         ["workbench_interact"] = _ => new WorkbenchInteractBehavior(),
     };
 
-    public static object Build(string type, JsonElement json) =>
-        s_factories.TryGetValue(type, out BehaviorFactory? factory)
-            ? factory(json)
+    public object Build(ResourceLocation type, JsonElement definition, in BehaviorBuildContext context) =>
+        _factories.TryGetValue(type, out BehaviorFactory? factory)
+            ? factory(definition)
             : throw new ArgumentException($"Unknown block behavior type '{type}'");
 
-    private static string ResolveName(string namespaced) => ResourceLocation.Parse(namespaced).Path;
+    private int ResolveTexture(string name) => _context.ResolveTerrainTexture(name);
 
-    private static int ResolveTexture(string name) => Atlases.Terrain.IndexOf(name);
+    private int Texture(JsonElement json, string property) => ResolveTexture(json.GetProperty(property).GetString()!);
 
-    private static int Texture(JsonElement json, string property) => ResolveTexture(json.GetProperty(property).GetString()!);
-
-    private static BlockFaceTextures ResolveFaceTextures(JsonElement json) =>
+    private BlockFaceTextures ResolveFaceTextures(JsonElement json) =>
         new(Texture(json, "top"), Texture(json, "side"), Texture(json, "bottom"));
 
-    private static int[] ResolveTextures(JsonElement array)
+    private int[] ResolveTextures(JsonElement array)
     {
         int[] textures = new int[array.GetArrayLength()];
         int i = 0;
@@ -135,13 +155,22 @@ internal static class BehaviorRegistry
         return textures;
     }
 
-    private static Block ResolveBlock(string name) => BlockRegistry.Get(ResolveName(name));
+    private Block ResolveBlock(string name) => _context.ResolveBlock(ResourceLocation.Parse(name));
 
-    private static int ResolveBlockOrAir(string name) => ResolveName(name) == "air" ? 0 : ResolveBlock(name).Id;
+    private int ResolveBlockOrAir(string name)
+    {
+        ResourceLocation key = ResourceLocation.Parse(name);
+        return key.Namespace == Namespace.OmniBlock && key.Path == "air"
+            ? 0
+            : _context.ResolveBlock(key).Id;
+    }
 
-    private static Item ResolveItem(string name) => Item.ByName(ResolveName(name));
+    private Item ResolveItem(string name) => _context.ResolveItem(ResourceLocation.Parse(name));
 
-    private static Block[] ResolveBlockArray(JsonElement array)
+    private Material ResolveMaterial(string name) =>
+        _context.ResolveMaterial(ResourceLocation.Parse(name));
+
+    private Block[] ResolveBlockArray(JsonElement array)
     {
         Block[] blocks = new Block[array.GetArrayLength()];
         int i = 0;

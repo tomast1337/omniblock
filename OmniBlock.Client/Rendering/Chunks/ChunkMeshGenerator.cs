@@ -155,7 +155,7 @@ internal class ChunkMeshGenerator : IDisposable
                         int id = cache.GetBlockId(x, y, z);
                         if (id <= 0) continue;
 
-                        Block b = Block.Blocks[id];
+                        Block b = BlockRegistry.GetByProtocolId(id);
                         int blockPass = b.RenderLayer;
 
                         if (blockPass != pass)
@@ -232,7 +232,7 @@ internal class ChunkMeshGenerator : IDisposable
             return false;
         }
 
-        Block candidate = Block.Blocks[id];
+        Block candidate = BlockRegistry.GetByProtocolId(id);
         if (candidate.RenderType != BlockRendererType.Standard || candidate.RenderLayer != 0)
         {
             block = null;

@@ -30,7 +30,7 @@ internal sealed class DoorBehavior(Material material) : IBlockPhysics, IBlockInt
             {
                 @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
             }
-            else if (@event.BlockId > 0 && Block.Blocks[@event.BlockId].CanEmitRedstonePower())
+            else if (@event.BlockId > 0 && BlockRegistry.GetByProtocolId(@event.BlockId).CanEmitRedstonePower())
             {
                 int bottomMeta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y - 1, @event.Z);
                 NeighborUpdate(block, new OnTickEvent(@event.World, @event.X, @event.Y - 1, @event.Z, bottomMeta, @event.BlockId));
@@ -63,7 +63,7 @@ internal sealed class DoorBehavior(Material material) : IBlockPhysics, IBlockInt
                     block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, meta));
                 }
             }
-            else if (@event.BlockId > 0 && Block.Blocks[@event.BlockId].CanEmitRedstonePower())
+            else if (@event.BlockId > 0 && BlockRegistry.GetByProtocolId(@event.BlockId).CanEmitRedstonePower())
             {
                 bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) ||
                                  @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);

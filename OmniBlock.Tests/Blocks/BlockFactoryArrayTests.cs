@@ -8,7 +8,7 @@ namespace OmniBlock.Tests.Blocks;
 // named in that entry's "Slots" array — so slots sharing an entry share the literal same object,
 // not just equal config. Verified against the real vanilla block JSONs (leaves/log/fire/wheat/
 // farmland), not a synthetic BlockDefinition — constructing a throwaway Block permanently
-// occupies a slot in the global Block.Blocks[] array (the constructor throws if the slot is
+// occupies a slot in the bootstrap block store (the constructor throws if the slot is
 // already taken and there's no unregister), so reusing already-loaded blocks avoids polluting
 // shared test-process state.
 public sealed class BlockFactoryArrayTests

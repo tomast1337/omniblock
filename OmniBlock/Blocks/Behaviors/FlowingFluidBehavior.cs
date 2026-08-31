@@ -201,7 +201,7 @@ public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidifie
             }
             else
             {
-                Block.Blocks[currentId].DropStacks(new OnDropEvent(world, x, y, z, world.Reader.GetBlockMeta(x, y, z)));
+                BlockRegistry.GetByProtocolId(currentId).DropStacks(new OnDropEvent(world, x, y, z, world.Reader.GetBlockMeta(x, y, z)));
             }
         }
 
@@ -339,7 +339,7 @@ public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidifie
 
         if (blockId == 0) return false;
 
-        Material mat = Block.Blocks[blockId].Material;
+        Material mat = BlockRegistry.GetByProtocolId(blockId).Material;
         return mat.BlocksMovement;
     }
 

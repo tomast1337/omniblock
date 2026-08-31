@@ -19,7 +19,7 @@ public class BlockEntityRendererPiston : BlockEntitySpecialRenderer
             throw new ArgumentException("BlockEntity is not a Piston");
         }
 
-        Block? block = Block.Blocks[piston.PushedBlockId];
+        Block? block = BlockRegistry.GetByProtocolId(piston.PushedBlockId);
         if (block == null) return;
         if (piston.GetProgress(tickDelta) < 1.0F)
         {

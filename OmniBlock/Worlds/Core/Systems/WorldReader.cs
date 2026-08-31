@@ -48,13 +48,12 @@ public class WorldReader : IBlockReader
     public Material GetMaterial(int x, int y, int z)
     {
         int blockId = GetBlockId(x, y, z);
-        return blockId == 0 ? Material.Air : Block.Blocks[blockId].Material;
+        return blockId == 0 ? Material.Air : BlockRegistry.GetByProtocolId(blockId).Material;
     }
 
     public bool IsOpaque(int x, int y, int z)
     {
-        Block? block = Block.Blocks[GetBlockId(x, y, z)];
-        return block != null && block.IsOpaque;
+        return BlockRegistry.TryGetByProtocolId(GetBlockId(x, y, z), out Block? block) && block.IsOpaque;
     }
 
     public bool ShouldSuffocate(int x, int y, int z)
@@ -64,8 +63,8 @@ public class WorldReader : IBlockReader
             return false;
         }
 
-        Block? block = Block.Blocks[GetBlockId(x, y, z)];
-        return block != null && block.Material.Suffocates && block.IsFullCube();
+        return BlockRegistry.TryGetByProtocolId(GetBlockId(x, y, z), out Block? block)
+               && block.Material.Suffocates && block.IsFullCube();
     }
 
     public BiomeSource GetBiomeSource() => _dimension.BiomeSource;
@@ -137,7 +136,7 @@ public class WorldReader : IBlockReader
         for (; currentY > 0; --currentY)
         {
             int blockId = chunk.GetBlockId(localX, currentY, localZ);
-            Material material = blockId == 0 ? Material.Air : Block.Blocks[blockId].Material;
+            Material material = blockId == 0 ? Material.Air : BlockRegistry.GetByProtocolId(blockId).Material;
 
             if (material.BlocksMovement || material.IsFluid)
             {
@@ -158,7 +157,7 @@ public class WorldReader : IBlockReader
         for (; currentY > 0; currentY--)
         {
             int blockId = chunk.GetBlockId(localX, currentY, localZ);
-            if (blockId != 0 && Block.Blocks[blockId].Material.BlocksMovement)
+            if (blockId != 0 && BlockRegistry.GetByProtocolId(blockId).Material.BlocksMovement)
             {
                 return currentY + 1;
             }
@@ -265,8 +264,8 @@ public class WorldReader : IBlockReader
             {
                 for (int z = minZ; z < maxZ; ++z)
                 {
-                    Block? block = Block.Blocks[GetBlockId(x, y, z)];
-                    if (block != null && block.Material == fluidMaterial)
+                    if (BlockRegistry.TryGetByProtocolId(GetBlockId(x, y, z), out Block? block)
+                        && block.Material == fluidMaterial)
                     {
                         double fluidSurfaceY = y + 1 - FluidMath.GetFluidHeightFromMeta(GetBlockMeta(x, y, z));
 

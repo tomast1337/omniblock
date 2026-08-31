@@ -29,4 +29,8 @@
     <ProjectReference Include="..\OmniBlock.Luau\OmniBlock.Luau.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Catalog\catalog.snapshot.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

@@ -82,9 +82,8 @@ internal sealed class LocalPlayerInfoWindow(DebugWindowContext ctx) : DebugWindo
         {
             name = "Air";
         }
-        else if (id > 0 && id < Block.Blocks.Length && Block.Blocks[id] != null)
+        else if (id > 0 && BlockRegistry.TryGetByProtocolId(id, out Block? block))
         {
-            Block block = Block.Blocks[id];
             string t = block.TranslateBlockName();
             name = !string.IsNullOrWhiteSpace(t) ? t : block.BlockName;
         }

@@ -17,7 +17,7 @@ internal class BlockSource
             {
                 byte blockId = (byte)i;
 
-                if (blockId != 0 && Block.Blocks[blockId] == null)
+                if (blockId != 0 && !BlockRegistry.TryGetByProtocolId(blockId, out _))
                     blockId = 0;
 
                 SanitizationTable[i] = blockId;

@@ -8,7 +8,7 @@ namespace OmniBlock.Util;
 ///         Static call-graph analysis (see <c>OmniBlock.Tests/Determinism/StepPurityTests.cs</c>)
 ///         proves what is <em>written</em>, but it cannot see through the virtual dispatch this
 ///         codebase is built on: <c>IEntityPhysics.Travel</c>, the <c>Ticker</c> hooks,
-///         <c>Block.Blocks[id].slipperiness</c>, and JSON-selected behavior composition. This guard
+///         <c>BlockRegistry.GetByProtocolId(id).slipperiness</c>, and JSON-selected behavior composition. This guard
 ///         catches what actually <em>executes</em>.
 ///     </para>
 ///     <para>
