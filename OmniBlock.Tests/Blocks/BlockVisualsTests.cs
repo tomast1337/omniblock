@@ -34,8 +34,8 @@ public class BlockVisualsTests
         Assert.IsType<Block>(BlockRegistry.Get("glass"));
         Assert.IsType<GlassVisualBehavior>(BlockRegistry.Get("glass").Visuals);
         Assert.False(BlockRegistry.Get("glass").IsOpaque);
-        Assert.False(Block.BlocksOpaque[BlockRegistry.Get("glass").Id]);
-        Assert.Equal(0, Block.BlockLightOpacity[BlockRegistry.Get("glass").Id]);
+        Assert.False(BlockRegistry.IsOpaque(BlockRegistry.Get("glass").Id));
+        Assert.Equal(0, BlockRegistry.GetOpacity(BlockRegistry.Get("glass").Id));
         Assert.Equal(0, BlockRegistry.Get("glass").GetDroppedItemCount());
 
         // Wool: plain Block composed with ClothVisualBehavior.

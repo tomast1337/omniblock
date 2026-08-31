@@ -113,7 +113,7 @@ internal sealed class RenderInfoWindow(DebugWindowContext ctx) : DebugWindow
     {
         int id = world.Reader.GetBlockId(x, y, z);
         LightLevels levels = StoredLight(world, x, y, z);
-        bool opaque = !Block.BlocksAllowVision[id];
+        bool opaque = !BlockRegistry.AllowsVision(id);
 
         ImGuiTextSafe.Text($"{label} id {id,3}  {(opaque ? "opaque" : "see-thru")}  sky {levels.Sky,2}  block {levels.Block,2}");
     }

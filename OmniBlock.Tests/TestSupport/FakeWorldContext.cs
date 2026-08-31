@@ -280,13 +280,13 @@ public sealed class FakeBlockGrid : IBlockReader, IBlockWriter
     public bool IsOpaque(int x, int y, int z)
     {
         int id = GetBlockId(x, y, z);
-        return id != 0 && Block.BlocksOpaque[id];
+        return id != 0 && BlockRegistry.IsOpaque(id);
     }
 
     public bool ShouldSuffocate(int x, int y, int z)
     {
         int id = GetBlockId(x, y, z);
-        return id != 0 && Block.BlocksOpaque[id];
+        return id != 0 && BlockRegistry.IsOpaque(id);
     }
 
     public BiomeSource GetBiomeSource() => throw new NotSupportedException();
@@ -375,7 +375,7 @@ public sealed class FakeBlockGrid : IBlockReader, IBlockWriter
     {
         int blockId = WriteMetaCell(x, y, z, meta);
 
-        if (Block.BlocksIgnoreMetaUpdate[blockId & 255])
+        if (BlockRegistry.IgnoresMetaUpdates(blockId & 255))
         {
             OnBlockChanged?.Invoke(x, y, z, blockId);
         }

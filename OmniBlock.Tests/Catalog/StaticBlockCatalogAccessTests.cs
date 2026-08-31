@@ -9,6 +9,23 @@ namespace OmniBlock.Tests.Catalog;
 /// </summary>
 public sealed class StaticBlockCatalogAccessTests
 {
+    private static readonly string[] s_forbiddenDerivedMetadataArrays =
+    [
+        "BlocksOpaque",
+        "BlocksRandomTick",
+        "BlocksWithEntity",
+        "BlockLightOpacity",
+        "BlocksAllowVision",
+        "BlocksLightLuminance",
+        "BlocksIgnoreMetaUpdate"
+    ];
+
+    private static readonly string[] s_forbiddenBootstrapStoreIdentifiers =
+    [
+        "s_" + "bootstrapBlocks",
+        "GetDuring" + "Bootstrap"
+    ];
+
     [Fact]
     public void Direct_static_block_catalog_access_is_forbidden()
     {
@@ -19,17 +36,60 @@ public sealed class StaticBlockCatalogAccessTests
             + string.Join(Environment.NewLine, accesses));
     }
 
+    [Fact]
+    public void Parallel_static_block_metadata_arrays_are_forbidden()
+    {
+        string[] violations = FindSourceFiles()
+            .SelectMany(file => File.ReadLines(file)
+                .Select((line, index) => (line, number: index + 1))
+                .Where(entry => s_forbiddenDerivedMetadataArrays.Any(entry.line.Contains))
+                .Select(entry => $"{Path.GetRelativePath(FindRepositoryRoot(), file)}:{entry.number}"))
+            .ToArray();
+
+        Assert.True(violations.Length == 0,
+            $"Derived block metadata belongs on runtime blocks:{Environment.NewLine}"
+            + string.Join(Environment.NewLine, violations));
+    }
+
+    [Fact]
+    public void Block_cannot_own_a_bootstrap_catalog()
+    {
+        string[] violations = FindSourceFiles()
+            .SelectMany(file => File.ReadLines(file)
+                .Select((line, index) => (line, number: index + 1))
+                .Where(entry => s_forbiddenBootstrapStoreIdentifiers.Any(entry.line.Contains))
+                .Select(entry => $"{Path.GetRelativePath(FindRepositoryRoot(), file)}:{entry.number}"))
+            .ToArray();
+
+        Assert.True(violations.Length == 0,
+            $"ContentRuntimeBuilder must own blocks during bootstrap:{Environment.NewLine}"
+            + string.Join(Environment.NewLine, violations));
+    }
+
+    [Fact]
+    public void Runtime_block_behaviors_cannot_access_global_content_registries()
+    {
+        string behaviorDirectory = Path.Combine(FindRepositoryRoot(), "OmniBlock", "Blocks", "Behaviors");
+        string[] forbidden = ["BlockRegistry.", "MaterialRegistry.", "Item.ByName", "ItemLookup", "Atlases.", "SoundGroupRegistry."];
+        string[] violations = Directory.EnumerateFiles(behaviorDirectory, "*.cs")
+            .Where(static file => Path.GetFileName(file) != "BehaviorBuildContext.cs")
+            .SelectMany(file => File.ReadLines(file)
+                .Select((line, index) => (line, number: index + 1))
+                .Where(entry => forbidden.Any(entry.line.Contains))
+                .Select(entry => $"{Path.GetRelativePath(FindRepositoryRoot(), file)}:{entry.number}"))
+            .ToArray();
+
+        Assert.True(violations.Length == 0,
+            $"Runtime block behaviors must use resolved dependencies or their bound runtime view:{Environment.NewLine}"
+            + string.Join(Environment.NewLine, violations));
+    }
+
     private static IReadOnlyList<StaticAccess> FindAccesses()
     {
         string sourceRoot = FindRepositoryRoot();
         var accesses = new List<StaticAccess>();
 
-        IEnumerable<string> sourceFiles = Directory.EnumerateDirectories(sourceRoot, "OmniBlock*")
-            .SelectMany(static directory => Directory.EnumerateFiles(directory, "*.cs", SearchOption.AllDirectories));
-
-        foreach (string file in sourceFiles
-                     .Where(static file => !file.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}")
-                                           && !file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}")))
+        foreach (string file in FindSourceFiles())
         {
             SyntaxTree tree = CSharpSyntaxTree.ParseText(File.ReadAllText(file), path: file);
             foreach (MemberAccessExpressionSyntax member in tree.GetRoot()
@@ -49,6 +109,16 @@ public sealed class StaticBlockCatalogAccessTests
         }
 
         return accesses;
+    }
+
+    private static IEnumerable<string> FindSourceFiles()
+    {
+        string sourceRoot = FindRepositoryRoot();
+        return Directory.EnumerateDirectories(sourceRoot, "OmniBlock*")
+            .SelectMany(static directory => Directory.EnumerateFiles(directory, "*.cs", SearchOption.AllDirectories))
+            .Where(static file => !file.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}")
+                                  && !file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}")
+                                  && Path.GetFileName(file) != nameof(StaticBlockCatalogAccessTests) + ".cs");
     }
 
     private static string FindRepositoryRoot()

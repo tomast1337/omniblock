@@ -60,10 +60,11 @@ internal sealed class BlockBehaviorProviderRegistry : IBlockBehaviorProviderRegi
                 json.TryGetProperty("subtract_opacity", out var sub) && sub.GetBoolean(),
                 brokenReplacement is { } replacement ? () => replacement : null);
         },
-        ["redstone_torch"] = _ => new RedstoneTorchBehavior(new WallMountBehavior(false)),
+        ["redstone_torch"] = _ => new RedstoneTorchBehavior(new WallMountBehavior(false),
+            ResolveBlock("redstone_torch"), ResolveBlock("lit_redstone_torch"), ResolveBlock("redstone_wire")),
         ["bed"] = json => new BedBehavior(Texture(json, "bottom"),
             Texture(json, "foot_top"), Texture(json, "foot_side"), Texture(json, "foot_end"),
-            Texture(json, "head_top"), Texture(json, "head_side"), Texture(json, "head_end")),
+            Texture(json, "head_top"), Texture(json, "head_side"), Texture(json, "head_end"), ResolveItem("bed")),
         ["button"] = _ => new ButtonBehavior(),
         ["cactus"] = json => new CactusBehavior(ResolveBlock(json.GetProperty("stem").GetString()!), ResolveBlock(json.GetProperty("soil").GetString()!), json.GetProperty("max_height").GetInt32(),
             Texture(json, "top"), Texture(json, "side"), Texture(json, "bottom")),
@@ -114,7 +115,8 @@ internal sealed class BlockBehaviorProviderRegistry : IBlockBehaviorProviderRegi
             ResolveBlock(json.GetProperty("powered_repeater").GetString()!)),
         ["reed"] = json => new ReedBehavior(ResolveBlockArray(json.GetProperty("valid_ground"))),
         ["repeater"] = json => new RepeaterBehavior(Texture(json, "top_off"), Texture(json, "top_on"),
-            Texture(json, "torch_off"), Texture(json, "torch_on"), Texture(json, "side")),
+            Texture(json, "torch_off"), Texture(json, "torch_on"), Texture(json, "side"),
+            ResolveBlock("repeater"), ResolveBlock("powered_repeater"), ResolveBlock("redstone_wire")),
         ["sapling"] = json => new SaplingBehavior(ResolveTextures(json.GetProperty("textures"))),
         ["scripted_ticker"] = json => new ScriptedTickerBehavior(json.GetProperty("script_hook").GetString()!),
         ["snow"] = json => new SnowBehavior(ResolveItem(json.GetProperty("drop_item").GetString()!), json.GetProperty("drop_spread").GetSingle()),
@@ -131,10 +133,16 @@ internal sealed class BlockBehaviorProviderRegistry : IBlockBehaviorProviderRegi
         ["workbench_interact"] = _ => new WorkbenchInteractBehavior(),
     };
 
-    public object Build(ResourceLocation type, JsonElement definition, in BehaviorBuildContext context) =>
-        _factories.TryGetValue(type, out BehaviorFactory? factory)
-            ? factory(definition)
-            : throw new ArgumentException($"Unknown block behavior type '{type}'");
+    public object Build(ResourceLocation type, JsonElement definition, in BehaviorBuildContext context)
+    {
+        if (!_factories.TryGetValue(type, out BehaviorFactory? factory))
+            throw new ArgumentException($"Unknown block behavior type '{type}'");
+
+        object behavior = factory(definition);
+        if (behavior is BlockRuntimeBehavior runtimeBehavior)
+            runtimeBehavior.BindRuntime(_context.Blocks);
+        return behavior;
+    }
 
     private int ResolveTexture(string name) => _context.ResolveTerrainTexture(name);
 

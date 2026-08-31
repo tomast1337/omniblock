@@ -12,7 +12,7 @@ namespace OmniBlock.Blocks.Behaviors;
 ///         Igniter tool item is a required, (see <c>BehaviorRegistry</c>'s <c>"tnt"</c> entry).
 ///     </para>
 /// </summary>
-internal sealed class TntBehavior(Item igniter, int top, int side, int bottom) : IBlockPhysics, IBlockLifecycle, IBlockInteractable, IBlockVisuals
+internal sealed class TntBehavior(Item igniter, int top, int side, int bottom) : BlockRuntimeBehavior, IBlockPhysics, IBlockLifecycle, IBlockInteractable, IBlockVisuals
 {
     public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event)
     {
@@ -59,7 +59,7 @@ internal sealed class TntBehavior(Item igniter, int top, int side, int bottom) :
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        if (@event.BlockId <= 0 || !BlockRegistry.GetByProtocolId(@event.BlockId).CanEmitRedstonePower() || !@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z))
+        if (@event.BlockId <= 0 || !Blocks.GetByProtocolId(@event.BlockId).CanEmitRedstonePower() || !@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z))
             return;
 
         Ignite(block, @event.World, @event.X, @event.Y, @event.Z);

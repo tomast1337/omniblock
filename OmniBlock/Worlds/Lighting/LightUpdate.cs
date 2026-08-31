@@ -85,7 +85,7 @@ internal struct LightUpdate
                         int currentLight = lighting.GetBrightness(LightType, x, y, z);
                         int blockId = reader.GetBlockId(x, y, z);
 
-                        int opacity = Block.BlockLightOpacity[blockId];
+                        int opacity = BlockRegistry.GetOpacity(blockId);
                         if (opacity == 0)
                         {
                             opacity = 1;
@@ -101,7 +101,7 @@ internal struct LightUpdate
                         }
                         else if (LightType == LightType.Block)
                         {
-                            emittedLight = Block.BlocksLightLuminance[blockId];
+                            emittedLight = BlockRegistry.GetLightEmission(blockId);
                         }
 
                         int targetLight;

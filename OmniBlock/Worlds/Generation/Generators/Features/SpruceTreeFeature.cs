@@ -81,7 +81,7 @@ internal class SpruceTreeFeature : Feature
                 {
                     int offsetZ = cz - z;
 
-                    if ((Math.Abs(offsetX) != currentRadius || Math.Abs(offsetZ) != currentRadius || currentRadius <= 0) && !Block.BlocksOpaque[level.Reader.GetBlockId(cx, leafY, cz)])
+                    if ((Math.Abs(offsetX) != currentRadius || Math.Abs(offsetZ) != currentRadius || currentRadius <= 0) && !BlockRegistry.IsOpaque(level.Reader.GetBlockId(cx, leafY, cz)))
                     {
                         level.Writer.SetBlockWithoutNotifyingNeighbors(cx, leafY, cz, BlockRegistry.Get("leaves").Id, 1, false);
                     }

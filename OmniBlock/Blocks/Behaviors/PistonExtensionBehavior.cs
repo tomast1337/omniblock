@@ -6,7 +6,7 @@ namespace OmniBlock.Blocks.Behaviors;
 ///     Piston head/extension: never independently placeable, breaks the base piston behind it when
 ///     destroyed, and forwards neighbor updates to the base piston it's still attached to.
 /// </summary>
-public sealed class PistonExtensionBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
+public sealed class PistonExtensionBehavior : BlockRuntimeBehavior, IBlockPhysics, IBlockLifecycle, IBlockVisuals
 {
     private const int PistonHeadSprite = -1;
 
@@ -21,12 +21,12 @@ public sealed class PistonExtensionBehavior : IBlockPhysics, IBlockLifecycle, IB
         z += PistonConstants.HeadOffsetZ[oppositeFace.ToInt()];
 
         int blockId = @event.World.Reader.GetBlockId(x, y, z);
-        if (blockId != BlockRegistry.Get("piston").Id && blockId != BlockRegistry.Get("sticky_piston").Id) return;
+        if (blockId != Blocks.Get("piston").Id && blockId != Blocks.Get("sticky_piston").Id) return;
 
         int meta = @event.World.Reader.GetBlockMeta(x, y, z);
         if (!PistonBaseBehavior.IsExtended(meta)) return;
 
-        BlockRegistry.GetByProtocolId(blockId).DropStacks(new OnDropEvent(@event.World, x, y, z, meta));
+        Blocks.GetByProtocolId(blockId).DropStacks(new OnDropEvent(@event.World, x, y, z, meta));
         @event.World.Writer.SetBlock(x, y, z, 0);
     }
 
@@ -62,13 +62,13 @@ public sealed class PistonExtensionBehavior : IBlockPhysics, IBlockLifecycle, IB
     {
         int facing = GetFacing(@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)).ToInt();
         int blockId = @event.World.Reader.GetBlockId(@event.X - PistonConstants.HeadOffsetX[facing], @event.Y - PistonConstants.HeadOffsetY[facing], @event.Z - PistonConstants.HeadOffsetZ[facing]);
-        if (blockId != BlockRegistry.Get("piston").Id && blockId != BlockRegistry.Get("sticky_piston").Id)
+        if (blockId != Blocks.Get("piston").Id && blockId != Blocks.Get("sticky_piston").Id)
         {
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
         else
         {
-            BlockRegistry.GetByProtocolId(blockId).NeighborUpdate(new OnTickEvent(@event.World, @event.X - PistonConstants.HeadOffsetX[facing], @event.Y - PistonConstants.HeadOffsetY[facing], @event.Z - PistonConstants.HeadOffsetZ[facing],
+            Blocks.GetByProtocolId(blockId).NeighborUpdate(new OnTickEvent(@event.World, @event.X - PistonConstants.HeadOffsetX[facing], @event.Y - PistonConstants.HeadOffsetY[facing], @event.Z - PistonConstants.HeadOffsetZ[facing],
                 @event.World.Reader.GetBlockMeta(@event.X - PistonConstants.HeadOffsetX[facing], @event.Y - PistonConstants.HeadOffsetY[facing], @event.Z - PistonConstants.HeadOffsetZ[facing]), block.Id));
         }
     }

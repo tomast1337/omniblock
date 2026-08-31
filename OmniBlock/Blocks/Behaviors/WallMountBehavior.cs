@@ -11,7 +11,7 @@ namespace OmniBlock.Blocks.Behaviors;
 ///     <c>_isLadder</c> rather than sharing formulas; only the random-tick/particle hooks are
 ///     torch-only (ladders never get a Ticker slot assigned, so those simply aren't invoked for them).
 /// </summary>
-public sealed class WallMountBehavior(bool isLadder) : IBlockPhysics, IBlockLifecycle, IBlockTicker
+public sealed class WallMountBehavior(bool isLadder) : BlockRuntimeBehavior, IBlockPhysics, IBlockLifecycle, IBlockTicker
 {
     private const float TorchWidth = 0.15F;
     private const float TorchWidthGround = 0.1F;
@@ -108,8 +108,8 @@ public sealed class WallMountBehavior(bool isLadder) : IBlockPhysics, IBlockLife
         }
     }
 
-    private static bool CanPlaceOnGround(IBlockReader world, int x, int y, int z)
-        => world.ShouldSuffocate(x, y, z) || world.GetBlockId(x, y, z) == BlockRegistry.Get("fence").Id;
+    private bool CanPlaceOnGround(IBlockReader world, int x, int y, int z)
+        => world.ShouldSuffocate(x, y, z) || world.GetBlockId(x, y, z) == Blocks.Get("fence").Id;
 
     private static void OnLadderPlaced(OnPlacedEvent ctx)
     {
@@ -137,7 +137,7 @@ public sealed class WallMountBehavior(bool isLadder) : IBlockPhysics, IBlockLife
         ctx.World.Writer.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, rotation.ToInt());
     }
 
-    private static void OnTorchPlaced(OnPlacedEvent @event)
+    private void OnTorchPlaced(OnPlacedEvent @event)
     {
         IBlockReader reader = @event.World.Reader;
         int meta = reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
@@ -174,7 +174,7 @@ public sealed class WallMountBehavior(bool isLadder) : IBlockPhysics, IBlockLife
         @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
     }
 
-    private static int ResolveTorchMetaVanillaOrder(IBlockReader reader, int x, int y, int z)
+    private int ResolveTorchMetaVanillaOrder(IBlockReader reader, int x, int y, int z)
     {
         if (reader.ShouldSuffocate(x - 1, y, z)) return 1;
         if (reader.ShouldSuffocate(x + 1, y, z)) return 2;
@@ -210,7 +210,7 @@ public sealed class WallMountBehavior(bool isLadder) : IBlockPhysics, IBlockLife
         return false;
     }
 
-    private static int? TryResolveTorchMetaForDownPlacement(IBlockReader reader, int x, int y, int z, EntityLiving? placer)
+    private int? TryResolveTorchMetaForDownPlacement(IBlockReader reader, int x, int y, int z, EntityLiving? placer)
     {
         bool ceiling = reader.ShouldSuffocate(x, y + 1, z);
         bool west = reader.ShouldSuffocate(x - 1, y, z);

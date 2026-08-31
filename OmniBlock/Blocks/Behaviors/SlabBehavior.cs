@@ -6,7 +6,7 @@ namespace OmniBlock.Blocks.Behaviors;
 ///     Physics, lifecycle, and visuals for slab blocks. A single instance handles both
 ///     single and double slabs via the <c>_isDoubleSlab</c> constructor parameter.
 /// </summary>
-internal sealed class SlabBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisuals
+internal sealed class SlabBehavior : BlockRuntimeBehavior, IBlockPhysics, IBlockLifecycle, IBlockVisuals
 {
     public static readonly string[] Names = ["stone", "sand", "wood", "cobble"];
 
@@ -37,9 +37,9 @@ internal sealed class SlabBehavior : IBlockPhysics, IBlockLifecycle, IBlockVisua
         int slabMeta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         int blockBelowMeta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y - 1, @event.Z);
         if (slabMeta != blockBelowMeta) return;
-        if (blockBelowId != BlockRegistry.Get("slab").Id) return;
+        if (blockBelowId != Blocks.Get("slab").Id) return;
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
-        @event.World.Writer.SetBlock(@event.X, @event.Y - 1, @event.Z, BlockRegistry.Get("double_slab").Id, slabMeta);
+        @event.World.Writer.SetBlock(@event.X, @event.Y - 1, @event.Z, Blocks.Get("double_slab").Id, slabMeta);
     }
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)

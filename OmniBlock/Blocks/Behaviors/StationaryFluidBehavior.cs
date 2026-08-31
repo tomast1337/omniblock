@@ -13,7 +13,7 @@ namespace OmniBlock.Blocks.Behaviors;
 ///         required, (see <c>BehaviorRegistry</c>'s <c>"stationary_fluid"</c> entry).
 ///     </para>
 /// </summary>
-public sealed class StationaryFluidBehavior(Block ignitionTarget, Block sourceSolidified, Block flowSolidified, int still, int flowing) : IBlockPhysics, IBlockVisuals, IBlockLifecycle, IBlockTicker
+public sealed class StationaryFluidBehavior(Block ignitionTarget, Block sourceSolidified, Block flowSolidified, int still, int flowing) : BlockRuntimeBehavior, IBlockPhysics, IBlockVisuals, IBlockLifecycle, IBlockTicker
 {
     public void OnPlaced(Block block, OnPlacedEvent @event)
         => FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z, sourceSolidified, flowSolidified);
@@ -61,7 +61,7 @@ public sealed class StationaryFluidBehavior(Block ignitionTarget, Block sourceSo
                 return;
             }
 
-            if (BlockRegistry.GetByProtocolId(neighborBlockId).Material.BlocksMovement)
+            if (Blocks.GetByProtocolId(neighborBlockId).Material.BlocksMovement)
             {
                 return;
             }
@@ -76,7 +76,7 @@ public sealed class StationaryFluidBehavior(Block ignitionTarget, Block sourceSo
     public float GetLuminance(Block block, ILightProvider lighting, int x, int y, int z, float defaultLuminance) => FluidMath.GetLuminance(lighting, x, y, z);
 
     public LightLevels GetLightLevels(Block block, ILightProvider lighting, int x, int y, int z, LightLevels defaultLevels) =>
-        FluidMath.GetLightLevels(lighting, x, y, z, Block.BlocksLightLuminance[block.Id]);
+        FluidMath.GetLightLevels(lighting, x, y, z, Blocks.GetLightEmission(block.Id));
 
     private static void ConvertToFlowing(Block block, OnTickEvent @event)
     {

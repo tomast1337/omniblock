@@ -11,10 +11,8 @@ namespace OmniBlock.Blocks.Behaviors;
 ///     item). The meta helpers and <see cref="FindWakeUpPosition" /> are public statics consumed
 ///     externally by <c>EntityPlayer</c>, <c>NaturalSpawner</c>, and the client's bed renderer.
 /// </summary>
-public sealed class BedBehavior(int bottom, int footTop, int footSide, int footEnd, int headTop, int headSide, int headEnd) : IBlockInteractable, IBlockPhysics, IBlockLifecycle, IBlockVisuals
+public sealed class BedBehavior(int bottom, int footTop, int footSide, int footEnd, int headTop, int headSide, int headEnd, Item bedItem) : IBlockInteractable, IBlockPhysics, IBlockLifecycle, IBlockVisuals
 {
-    private static readonly int s_bedId = Item.ByName("bed").Id;
-
     private static readonly Side[][] s_bedFacings =
     [
         [Side.Up, Side.Down, Side.South, Side.North, Side.East, Side.West],
@@ -105,7 +103,7 @@ public sealed class BedBehavior(int bottom, int footTop, int footSide, int footE
 
         return true;
     }
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => IsHeadOfBed(blockMeta) ? 0 : s_bedId;
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => IsHeadOfBed(blockMeta) ? 0 : bedItem.Id;
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {

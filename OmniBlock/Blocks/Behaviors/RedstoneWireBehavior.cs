@@ -16,7 +16,7 @@ namespace OmniBlock.Blocks.Behaviors;
 ///         all required, (see <c>BehaviorRegistry</c>'s <c>"redstone_wire"</c> entry).
 ///     </para>
 /// </summary>
-public sealed class RedstoneWireBehavior(Block wire, Block[] conductors, Block repeater, Block poweredRepeater) : IRedstoneComponent, IBlockPhysics, IBlockTicker, IBlockLifecycle, IBlockVisuals
+public sealed class RedstoneWireBehavior(Block wire, Block[] conductors, Block repeater, Block poweredRepeater) : BlockRuntimeBehavior, IRedstoneComponent, IBlockPhysics, IBlockTicker, IBlockLifecycle, IBlockVisuals
 {
     private static readonly ThreadLocal<bool> s_wiresProvidePower = new(() => true);
 
@@ -265,7 +265,7 @@ public sealed class RedstoneWireBehavior(Block wire, Block[] conductors, Block r
             if (blockId == conductor.Id) return true;
         }
 
-        if (blockId != repeater.Id && blockId != poweredRepeater.Id) return BlockRegistry.GetByProtocolId(blockId).CanEmitRedstonePower();
+        if (blockId != repeater.Id && blockId != poweredRepeater.Id) return Blocks.GetByProtocolId(blockId).CanEmitRedstonePower();
         if (direction < 0) return false;
         int meta = reader.GetBlockMeta(x, y, z);
         int orientation = meta & 3;

@@ -56,7 +56,9 @@ public class BlockEntityPiston : BlockEntity
             collisionShapeSizeMultiplier = 1.0F - collisionShapeSizeMultiplier;
         }
 
-        Box? pushCollisionBox = PistonMovingBehavior.GetPushedBlockCollisionShape(BlockRegistry.Get("moving_piston"), World!.Reader, entities, X, Y, Z, PushedBlockId, collisionShapeSizeMultiplier, Facing);
+        Block movingPiston = BlockRegistry.Get("moving_piston");
+        Box? pushCollisionBox = ((PistonMovingBehavior)movingPiston.Physics)
+            .GetPushedBlockCollisionShape(movingPiston, World!.Reader, entities, X, Y, Z, PushedBlockId, collisionShapeSizeMultiplier, Facing);
         if (pushCollisionBox == null) return;
 
         var entitiesToPush = World!.Entities.GetEntities(null!, pushCollisionBox.Value);

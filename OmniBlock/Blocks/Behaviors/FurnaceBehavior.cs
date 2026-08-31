@@ -5,7 +5,7 @@ using OmniBlock.Worlds.Core.Systems;
 namespace OmniBlock.Blocks.Behaviors;
 
 internal sealed class FurnaceBehavior(bool lit, int top, int frontOff, int frontOn)
-    : IBlockInteractable, IBlockLifecycle, IBlockPhysics, IBlockTicker, IBlockVisuals
+    : BlockRuntimeBehavior, IBlockInteractable, IBlockLifecycle, IBlockPhysics, IBlockTicker, IBlockVisuals
 {
     private const float FlameParticleOffset = 0.52F;
 
@@ -101,7 +101,7 @@ internal sealed class FurnaceBehavior(bool lit, int top, int frontOff, int front
         return lit ? frontOn : frontOff;
     }
 
-    private static void UpdateDirection(OnPlacedEvent @event)
+    private void UpdateDirection(OnPlacedEvent @event)
     {
         if (@event.World.IsRemote)
         {
@@ -111,10 +111,10 @@ internal sealed class FurnaceBehavior(bool lit, int top, int frontOff, int front
         IBlockReader reader = @event.World.Reader;
         int x = @event.X, y = @event.Y, z = @event.Z;
 
-        bool isNorthOpaque = Block.BlocksOpaque[reader.GetBlockId(x, y, z - 1)];
-        bool isSouthOpaque = Block.BlocksOpaque[reader.GetBlockId(x, y, z + 1)];
-        bool isWestOpaque = Block.BlocksOpaque[reader.GetBlockId(x - 1, y, z)];
-        bool isEastOpaque = Block.BlocksOpaque[reader.GetBlockId(x + 1, y, z)];
+        bool isNorthOpaque = Blocks.IsOpaque(reader.GetBlockId(x, y, z - 1));
+        bool isSouthOpaque = Blocks.IsOpaque(reader.GetBlockId(x, y, z + 1));
+        bool isWestOpaque = Blocks.IsOpaque(reader.GetBlockId(x - 1, y, z));
+        bool isEastOpaque = Blocks.IsOpaque(reader.GetBlockId(x + 1, y, z));
 
         byte direction = 3;
         if (isNorthOpaque && !isSouthOpaque)
@@ -138,12 +138,12 @@ internal sealed class FurnaceBehavior(bool lit, int top, int frontOff, int front
         @event.World.Writer.SetBlockMeta(x, y, z, direction);
     }
 
-    public static void UpdateLitState(bool lit, IWorldContext world, int x, int y, int z)
+    public void UpdateLitState(bool lit, IWorldContext world, int x, int y, int z)
     {
         int meta = world.Reader.GetBlockMeta(x, y, z);
         BlockEntity? furnace = world.Entities.GetBlockEntity<BlockEntity>(x, y, z);
         InventoryUtility.IgnoreBlockRemoval.Value = true;
-        world.Writer.SetBlock(x, y, z, lit ? BlockRegistry.Get("lit_furnace").Id : BlockRegistry.Get("furnace").Id);
+        world.Writer.SetBlock(x, y, z, lit ? Blocks.Get("lit_furnace").Id : Blocks.Get("furnace").Id);
         InventoryUtility.IgnoreBlockRemoval.Value = false;
         world.Writer.SetBlockMeta(x, y, z, meta);
         furnace?.CancelRemoval();

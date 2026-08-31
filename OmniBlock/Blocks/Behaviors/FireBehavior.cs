@@ -19,7 +19,7 @@ namespace OmniBlock.Blocks.Behaviors;
 ///         random display tick) are also required.
 ///     </para>
 /// </summary>
-internal sealed class FireBehavior(Block portalBase, Block portalFill, Block eternalFuel, Block explosive, int maxAge, int crackleSoundChanceOneIn) : IBlockTicker, IBlockPhysics, IBlockLifecycle
+internal sealed class FireBehavior(Block portalBase, Block portalFill, Block eternalFuel, Block explosive, int maxAge, int crackleSoundChanceOneIn) : BlockRuntimeBehavior, IBlockTicker, IBlockPhysics, IBlockLifecycle
 {
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
@@ -277,9 +277,9 @@ internal sealed class FireBehavior(Block portalBase, Block portalFill, Block ete
         return blockBurnChance > currentChance ? blockBurnChance : currentChance;
     }
 
-    private static int BurnChanceAt(IBlockReader world, int x, int y, int z) =>
-        BlockRegistry.TryGetByProtocolId(world.GetBlockId(x, y, z), out Block? block) ? block.BurnChance : 0;
+    private int BurnChanceAt(IBlockReader world, int x, int y, int z) =>
+        Blocks.TryGetByProtocolId(world.GetBlockId(x, y, z), out Block? block) ? block.BurnChance : 0;
 
-    private static int SpreadChanceAt(IBlockReader world, int x, int y, int z) =>
-        BlockRegistry.TryGetByProtocolId(world.GetBlockId(x, y, z), out Block? block) ? block.SpreadChance : 0;
+    private int SpreadChanceAt(IBlockReader world, int x, int y, int z) =>
+        Blocks.TryGetByProtocolId(world.GetBlockId(x, y, z), out Block? block) ? block.SpreadChance : 0;
 }

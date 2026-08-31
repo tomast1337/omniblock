@@ -21,7 +21,7 @@ public sealed class EntityMinecartTests
 
     private static void PlaceRailWithFloor(FakeWorldContext world, int x, int y, int z, int railBlockId, int meta)
     {
-        if (!RailBehavior.IsRail(railBlockId))
+        if (!RailBehavior.IsRail(BlockRegistry.GetByProtocolId(railBlockId)))
         {
             throw new ArgumentException("Not a rail block id", nameof(railBlockId));
         }

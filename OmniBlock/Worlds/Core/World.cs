@@ -623,7 +623,7 @@ public abstract class World : IWorldContext
                 int localY = (randomTickVal >> 16) & 127;
 
                 int blockId = currentChunk.GetBlockId(localX, localY, localZ);
-                if (Block.BlocksRandomTick[blockId])
+                if (BlockRegistry.TicksRandomly(blockId))
                 {
                     BlockRegistry.GetByProtocolId(blockId).OnTick(new OnTickEvent(this, localX + worldXBase, localY, localZ + worldZBase, currentChunk.GetBlockMeta(localX, localY, localZ), blockId));
                 }

@@ -870,7 +870,7 @@ public class EntityManager
         }
 
         int blockId = _world.Reader.GetBlockId(x, y, z);
-        if (blockId == 0 || !Block.BlocksWithEntity[blockId])
+        if (blockId == 0 || !BlockRegistry.HasBlockEntity(blockId))
         {
             return null;
         }

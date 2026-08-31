@@ -56,7 +56,7 @@ public sealed class WorldWriter : IBlockWriter
         if (!SetBlockMetaWithoutNotifyingNeighbors(x, y, z, meta)) return;
 
         int blockId = _reader.GetBlockId(x, y, z);
-        if (Block.BlocksIgnoreMetaUpdate[blockId & 255])
+        if (BlockRegistry.IgnoresMetaUpdates(blockId & 255))
         {
             OnBlockChanged?.Invoke(x, y, z, blockId);
         }

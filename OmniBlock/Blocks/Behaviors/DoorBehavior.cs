@@ -9,7 +9,7 @@ namespace OmniBlock.Blocks.Behaviors;
 ///     right-click and redstone; iron doors only respond to redstone. Manages the multi-block
 ///     dependency between the top and bottom halves.
 /// </summary>
-internal sealed class DoorBehavior(Material material) : IBlockPhysics, IBlockInteractable, IBlockLifecycle, IBlockVisuals
+internal sealed class DoorBehavior(Material material) : BlockRuntimeBehavior, IBlockPhysics, IBlockInteractable, IBlockLifecycle, IBlockVisuals
 {
     private const float Thickness = 3.0F / 16.0F;
 
@@ -30,7 +30,7 @@ internal sealed class DoorBehavior(Material material) : IBlockPhysics, IBlockInt
             {
                 @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
             }
-            else if (@event.BlockId > 0 && BlockRegistry.GetByProtocolId(@event.BlockId).CanEmitRedstonePower())
+            else if (@event.BlockId > 0 && Blocks.GetByProtocolId(@event.BlockId).CanEmitRedstonePower())
             {
                 int bottomMeta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y - 1, @event.Z);
                 NeighborUpdate(block, new OnTickEvent(@event.World, @event.X, @event.Y - 1, @event.Z, bottomMeta, @event.BlockId));
@@ -63,7 +63,7 @@ internal sealed class DoorBehavior(Material material) : IBlockPhysics, IBlockInt
                     block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, meta));
                 }
             }
-            else if (@event.BlockId > 0 && BlockRegistry.GetByProtocolId(@event.BlockId).CanEmitRedstonePower())
+            else if (@event.BlockId > 0 && Blocks.GetByProtocolId(@event.BlockId).CanEmitRedstonePower())
             {
                 bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) ||
                                  @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);

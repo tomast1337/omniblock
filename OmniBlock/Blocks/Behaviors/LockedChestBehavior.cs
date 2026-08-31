@@ -4,7 +4,7 @@ namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>Vanilla Beta's unused locked-chest stub: renders as a facing-aware chest but
 /// self-destructs the tick after it's placed (never had real lock functionality).</summary>
-internal sealed class LockedChestBehavior(int top, int side, int front) : IBlockVisuals, IBlockTicker
+internal sealed class LockedChestBehavior(int top, int side, int front) : BlockRuntimeBehavior, IBlockVisuals, IBlockTicker
 {
     public int GetTexture(Block block, Side renderSide, int defaultTexture) => renderSide switch
     {
@@ -23,10 +23,10 @@ internal sealed class LockedChestBehavior(int top, int side, int front) : IBlock
         int blockEast = reader.GetBlockId(x + 1, y, z);
 
         Side facing = Side.South;
-        if (Block.BlocksOpaque[blockNorth] && !Block.BlocksOpaque[blockSouth]) facing = Side.South;
-        if (Block.BlocksOpaque[blockSouth] && !Block.BlocksOpaque[blockNorth]) facing = Side.North;
-        if (Block.BlocksOpaque[blockWest] && !Block.BlocksOpaque[blockEast]) facing = Side.East;
-        if (Block.BlocksOpaque[blockEast] && !Block.BlocksOpaque[blockWest]) facing = Side.West;
+        if (Blocks.IsOpaque(blockNorth) && !Blocks.IsOpaque(blockSouth)) facing = Side.South;
+        if (Blocks.IsOpaque(blockSouth) && !Blocks.IsOpaque(blockNorth)) facing = Side.North;
+        if (Blocks.IsOpaque(blockWest) && !Blocks.IsOpaque(blockEast)) facing = Side.East;
+        if (Blocks.IsOpaque(blockEast) && !Blocks.IsOpaque(blockWest)) facing = Side.West;
 
         return renderSide == facing ? front : side;
     }

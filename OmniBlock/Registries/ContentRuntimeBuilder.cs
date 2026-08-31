@@ -12,19 +12,25 @@ namespace OmniBlock.Registries;
 public sealed class ContentRuntimeBuilder
 {
     private readonly List<(ResourceLocation Key, BlockDefinition Definition, Block Block)> _blocks = [];
+    private readonly Dictionary<ResourceLocation, Block> _blocksByKey = [];
+    private readonly Block?[] _blocksByProtocolId = new Block?[BlockRegistry.ProtocolIdCapacity];
+    private readonly StagedBlockRuntimeView _blockRuntimeView;
     private bool _built;
 
     public ContentRuntimeBuilder(
         IBlockBehaviorProviderRegistry blockBehaviorProviders,
-        BehaviorBuildContext behaviorBuildContext)
+        BlockBuildContext blockBuildContext,
+        StagedBlockRuntimeView? blockRuntimeView = null)
     {
         ArgumentNullException.ThrowIfNull(blockBehaviorProviders);
         BlockBehaviorProviders = blockBehaviorProviders;
-        BehaviorBuildContext = behaviorBuildContext;
+        _blockRuntimeView = blockRuntimeView ?? new StagedBlockRuntimeView();
+        BlockBuildContext = blockBuildContext;
     }
 
     public IBlockBehaviorProviderRegistry BlockBehaviorProviders { get; }
-    public BehaviorBuildContext BehaviorBuildContext { get; }
+    public BlockBuildContext BlockBuildContext { get; }
+    public BehaviorBuildContext BehaviorBuildContext => BlockBuildContext.Behaviors;
 
     public object BuildBlockBehavior(ResourceLocation type, JsonElement definition) =>
         BlockBehaviorProviders.Build(type, definition, BehaviorBuildContext);
@@ -34,7 +40,35 @@ public sealed class ContentRuntimeBuilder
         if (_built) throw new InvalidOperationException("Cannot add content after the runtime has been built.");
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(block);
-        _blocks.Add((new ResourceLocation(definition.Namespace, definition.Name), definition, block));
+        if (definition.ProtocolId is < 0 or >= BlockRegistry.ProtocolIdCapacity)
+            throw new ArgumentOutOfRangeException(
+                nameof(definition), definition.ProtocolId,
+                $"Block protocol id must be between 0 and {BlockRegistry.ProtocolIdCapacity - 1}.");
+
+        ResourceLocation key = new(definition.Namespace, definition.Name);
+        _blocksByKey.TryAdd(key, block);
+        _blocksByProtocolId[definition.ProtocolId] ??= block;
+        _blockRuntimeView.Add(key, block);
+        _blocks.Add((key, definition, block));
+    }
+
+    internal Block GetBlock(ResourceLocation key) =>
+        _blocksByKey.TryGetValue(key, out Block? block)
+            ? block
+            : throw new KeyNotFoundException($"Unknown block '{key}'.");
+
+    internal Block GetBlockByProtocolId(int protocolId) =>
+        protocolId is >= 0 and < BlockRegistry.ProtocolIdCapacity
+        && _blocksByProtocolId[protocolId] is { } block
+            ? block
+            : throw new KeyNotFoundException($"Unknown block protocol id {protocolId}.");
+
+    internal bool TryGetBlockByProtocolId(int protocolId, out Block? block)
+    {
+        block = protocolId is >= 0 and < BlockRegistry.ProtocolIdCapacity
+            ? _blocksByProtocolId[protocolId]
+            : null;
+        return block is not null;
     }
 
     public ContentRuntime Build()
@@ -42,6 +76,7 @@ public sealed class ContentRuntimeBuilder
         if (_built) throw new InvalidOperationException("This content runtime builder has already been built.");
 
         ValidateBlocks();
+        _blockRuntimeView.Freeze();
         ContentRuntime runtime = new(
             _blocks.Select(static entry => (entry.Key, entry.Block)),
             BlockBehaviorProviders);
@@ -95,5 +130,15 @@ public sealed class ContentRuntimeBuilder
         CreateBuiltIns(BehaviorBuildContext.BuiltIns);
 
     internal static ContentRuntimeBuilder CreateBuiltIns(BehaviorBuildContext context) =>
-        new(new BlockBehaviorProviderRegistry(context), context);
+        CreateWithRuntimeView(context);
+
+    private static ContentRuntimeBuilder CreateWithRuntimeView(BehaviorBuildContext context)
+    {
+        StagedBlockRuntimeView blocks = new();
+        BehaviorBuildContext runtimeContext = context.WithBlocks(blocks);
+        return new(
+            new BlockBehaviorProviderRegistry(runtimeContext),
+            BlockBuildContext.BuiltIns(runtimeContext),
+            blocks);
+    }
 }

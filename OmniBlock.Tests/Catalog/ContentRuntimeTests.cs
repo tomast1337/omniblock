@@ -29,6 +29,26 @@ public sealed class ContentRuntimeTests
     }
 
     [Fact]
+    public void Derived_metadata_is_owned_by_runtime_blocks_with_explicit_air_defaults()
+    {
+        Block glowstone = ContentRuntime.Current.Blocks.Get("omniblock:glowstone");
+        Block glass = ContentRuntime.Current.Blocks.Get("omniblock:glass");
+        Block chest = ContentRuntime.Current.Blocks.Get("omniblock:chest");
+
+        Assert.Equal(glowstone.LightEmission, BlockRegistry.GetLightEmission(glowstone.Id));
+        Assert.Equal(glass.Opacity, BlockRegistry.GetOpacity(glass.Id));
+        Assert.Equal(glass.IsOpaque, BlockRegistry.IsOpaque(glass.Id));
+        Assert.Equal(chest.HasBlockEntity, BlockRegistry.HasBlockEntity(chest.Id));
+        Assert.True(BlockRegistry.AllowsVision(0));
+        Assert.False(BlockRegistry.IsOpaque(0));
+        Assert.Equal(0, BlockRegistry.GetOpacity(0));
+        Assert.Equal(0, BlockRegistry.GetLightEmission(0));
+        Assert.False(BlockRegistry.HasBlockEntity(0));
+        Assert.False(BlockRegistry.TicksRandomly(0));
+        Assert.False(BlockRegistry.IgnoresMetaUpdates(0));
+    }
+
+    [Fact]
     public void Failed_builder_validation_does_not_replace_the_published_runtime()
     {
         ContentRuntime published = ContentRuntime.Current;
@@ -69,6 +89,26 @@ public sealed class ContentRuntimeTests
         Assert.True(second.Blocks.TryGet("omniblock:second_stone", out _));
         Assert.False(second.Blocks.TryGet("omniblock:first_stone", out _));
         Assert.NotSame(first.BlockBehaviorProviders, second.BlockBehaviorProviders);
+    }
+
+    [Fact]
+    public void Builders_own_new_blocks_without_global_protocol_id_collisions()
+    {
+        BlockDefinition firstDefinition = Definition("first_builder_block", 240);
+        BlockDefinition secondDefinition = Definition("second_builder_block", 240);
+        ContentRuntimeBuilder firstBuilder = ContentRuntimeBuilder.CreateBuiltIns();
+        ContentRuntimeBuilder secondBuilder = ContentRuntimeBuilder.CreateBuiltIns();
+        Block firstBlock = BlockFactory.Create(firstDefinition, firstBuilder.BlockBuildContext);
+        Block secondBlock = BlockFactory.Create(secondDefinition, secondBuilder.BlockBuildContext);
+        firstBuilder.AddBlock(firstDefinition, firstBlock);
+        secondBuilder.AddBlock(secondDefinition, secondBlock);
+
+        ContentRuntime first = firstBuilder.Build();
+        ContentRuntime second = secondBuilder.Build();
+
+        Assert.NotSame(firstBlock, secondBlock);
+        Assert.Same(firstBlock, first.Blocks.GetByProtocolId(240));
+        Assert.Same(secondBlock, second.Blocks.GetByProtocolId(240));
     }
 
     [Fact]

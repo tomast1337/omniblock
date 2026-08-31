@@ -11,7 +11,7 @@ namespace OmniBlock.Blocks.Behaviors;
 ///     Which items get projectile-spawn behavior (vs. a plain item toss) are required,
 ///     (see <c>BehaviorRegistry</c>'s <c>"dispenser"</c> entry).
 /// </summary>
-internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball, int front, int top, int side) : IBlockInteractable, IBlockLifecycle, IBlockPhysics, IBlockTicker, IBlockVisuals
+internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball, int front, int top, int side) : BlockRuntimeBehavior, IBlockInteractable, IBlockLifecycle, IBlockPhysics, IBlockTicker, IBlockVisuals
 {
     public bool OnUse(Block block, OnUseEvent @event)
     {
@@ -52,10 +52,10 @@ internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball, int
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        bool emits = @event.BlockId > 0 && BlockRegistry.GetByProtocolId(@event.BlockId).CanEmitRedstonePower();
+        bool emits = @event.BlockId > 0 && Blocks.GetByProtocolId(@event.BlockId).CanEmitRedstonePower();
         bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) ||
                          @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
-        if (@event.BlockId <= 0 || !BlockRegistry.GetByProtocolId(@event.BlockId).CanEmitRedstonePower()) return;
+        if (@event.BlockId <= 0 || !Blocks.GetByProtocolId(@event.BlockId).CanEmitRedstonePower()) return;
         if (isPowered) @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
     }
 
@@ -82,17 +82,17 @@ internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball, int
         return renderSide != facing ? side : front;
     }
 
-    private static void UpdateDirection(OnPlacedEvent @event)
+    private void UpdateDirection(OnPlacedEvent @event)
     {
         if (@event.World.IsRemote) return;
 
         IBlockReader reader = @event.World.Reader;
         int x = @event.X, y = @event.Y, z = @event.Z;
 
-        bool isNorthOpaque = Block.BlocksOpaque[reader.GetBlockId(x, y, z - 1)];
-        bool isSouthOpaque = Block.BlocksOpaque[reader.GetBlockId(x, y, z + 1)];
-        bool isWestOpaque = Block.BlocksOpaque[reader.GetBlockId(x - 1, y, z)];
-        bool isEastOpaque = Block.BlocksOpaque[reader.GetBlockId(x + 1, y, z)];
+        bool isNorthOpaque = Blocks.IsOpaque(reader.GetBlockId(x, y, z - 1));
+        bool isSouthOpaque = Blocks.IsOpaque(reader.GetBlockId(x, y, z + 1));
+        bool isWestOpaque = Blocks.IsOpaque(reader.GetBlockId(x - 1, y, z));
+        bool isEastOpaque = Blocks.IsOpaque(reader.GetBlockId(x + 1, y, z));
 
         byte direction = 3;
         if (isNorthOpaque && !isSouthOpaque) direction = 3;

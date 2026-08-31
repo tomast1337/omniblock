@@ -440,7 +440,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         int blockY = MathHelper.Floor(self.Y);
         int blockZ = MathHelper.Floor(self.Z);
 
-        if (RailBehavior.IsRail(self.World, blockX, blockY - 1, blockZ))
+        if (IsRailBlock(self.World.Reader.GetBlockId(blockX, blockY - 1, blockZ)))
         {
             --blockY;
         }
@@ -448,7 +448,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         bool shouldEmitSmoke = false;
         int railBlockId = self.World.Reader.GetBlockId(blockX, blockY, blockZ);
 
-        if (RailBehavior.IsRail(railBlockId))
+        if (IsRailBlock(railBlockId))
         {
             shouldEmitSmoke = RideRail(self, blockX, blockY, blockZ, railBlockId);
         }
@@ -918,13 +918,13 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         int blockY = MathHelper.Floor(y);
         int blockZ = MathHelper.Floor(z);
 
-        if (RailBehavior.IsRail(self.World, blockX, blockY - 1, blockZ))
+        if (IsRailBlock(self.World.Reader.GetBlockId(blockX, blockY - 1, blockZ)))
         {
             --blockY;
         }
 
         int blockId = self.World.Reader.GetBlockId(blockX, blockY, blockZ);
-        if (!RailBehavior.IsRail(blockId))
+        if (!IsRailBlock(blockId))
         {
             return null;
         }
@@ -964,13 +964,13 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
         int blockY = MathHelper.Floor(y);
         int blockZ = MathHelper.Floor(z);
 
-        if (RailBehavior.IsRail(self.World, blockX, blockY - 1, blockZ))
+        if (IsRailBlock(self.World.Reader.GetBlockId(blockX, blockY - 1, blockZ)))
         {
             --blockY;
         }
 
         int blockId = self.World.Reader.GetBlockId(blockX, blockY, blockZ);
-        if (!RailBehavior.IsRail(blockId))
+        if (!IsRailBlock(blockId))
         {
             return null;
         }
@@ -1025,6 +1025,9 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
 
         return new Vec3D(x, y, z);
     }
+
+    private static bool IsRailBlock(int blockId) =>
+        BlockRegistry.TryGetByProtocolId(blockId, out Block? block) && RailBehavior.IsRail(block);
 
     private static double WrapDegrees(double angle)
     {

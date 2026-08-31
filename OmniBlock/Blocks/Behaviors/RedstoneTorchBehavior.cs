@@ -13,18 +13,16 @@ namespace OmniBlock.Blocks.Behaviors;
 ///         Assign to the Redstone, Ticker, Visuals, Physics, and Lifecycle slots.
 ///     </para>
 /// </summary>
-public sealed class RedstoneTorchBehavior(WallMountBehavior torchPhysics) : IRedstoneComponent, IBlockTicker, IBlockVisuals, IBlockPhysics, IBlockLifecycle
+public sealed class RedstoneTorchBehavior(WallMountBehavior torchPhysics, Block redstoneTorch,
+    Block litRedstoneTorch, Block redstoneWire) : BlockRuntimeBehavior, IRedstoneComponent, IBlockTicker, IBlockVisuals, IBlockPhysics, IBlockLifecycle
 {
-    // Resolved once here rather than via BlockRegistry.Get(string) on every OnTick/IsLit/GetTexture call.
-    private static readonly Block s_redstoneTorch = BlockRegistry.Get("redstone_torch");
-    private static readonly Block s_litRedstoneTorch = BlockRegistry.Get("lit_redstone_torch");
-    private static readonly Block s_redstoneWireBlock = BlockRegistry.Get("redstone_wire");
-
     private const double VerticalOffset = 0.22F;
     private const double HorizontalOffset = 0.27F;
 
     private readonly List<RedstoneUpdateInfo> _torchUpdates = [];
     private readonly Lock _updateLock = new();
+
+    protected override void OnRuntimeBound(IBlockRuntimeView blocks) => torchPhysics.BindRuntime(blocks);
 
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
@@ -73,7 +71,7 @@ public sealed class RedstoneTorchBehavior(WallMountBehavior torchPhysics) : IRed
         {
             if (!shouldTurnOff) return;
 
-            @event.World.Writer.SetBlock(x, y, z, s_redstoneTorch.Id, @event.World.Reader.GetBlockMeta(x, y, z));
+            @event.World.Writer.SetBlock(x, y, z, redstoneTorch.Id, @event.World.Reader.GetBlockMeta(x, y, z));
 
             if (!IsBurnedOut(@event, true, currentTime)) return;
 
@@ -88,11 +86,11 @@ public sealed class RedstoneTorchBehavior(WallMountBehavior torchPhysics) : IRed
             }
 
             int spatialBias = (x + y + z) % 3;
-            @event.World.TickScheduler.ScheduleBlockUpdate(x, y, z, s_redstoneTorch.Id, 160 + spatialBias);
+            @event.World.TickScheduler.ScheduleBlockUpdate(x, y, z, redstoneTorch.Id, 160 + spatialBias);
         }
         else if (!shouldTurnOff && !IsBurnedOut(@event, false, currentTime))
         {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, s_litRedstoneTorch.Id, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z));
+            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, litRedstoneTorch.Id, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z));
         }
     }
 
@@ -125,7 +123,7 @@ public sealed class RedstoneTorchBehavior(WallMountBehavior torchPhysics) : IRed
     }
 
     public int GetTexture(Block block, Side side, int meta, int defaultTexture)
-        => side == Side.Up ? s_redstoneWireBlock.GetTexture(side, meta) : defaultTexture;
+        => side == Side.Up ? redstoneWire.GetTexture(side, meta) : defaultTexture;
 
     public bool CanEmitRedstonePower(Block block) => true;
 
@@ -138,7 +136,7 @@ public sealed class RedstoneTorchBehavior(WallMountBehavior torchPhysics) : IRed
 
     public bool IsStrongPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) => side == 0 && IsPoweringSide(block, reader, x, y, z, side);
 
-    private static bool IsLit(Block block) => block.Id == s_litRedstoneTorch.Id;
+    private bool IsLit(Block block) => block.Id == litRedstoneTorch.Id;
 
     private bool IsBurnedOut(OnTickEvent ctx, bool recordUpdate, long currentTime)
     {

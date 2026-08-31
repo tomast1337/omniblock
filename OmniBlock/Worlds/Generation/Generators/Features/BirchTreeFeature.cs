@@ -75,7 +75,7 @@ internal class BirchTreeFeature : Feature
                         int offsetZ = leafZ - z;
                         bool isCorner = (Math.Abs(offsetX) != leafRadius ||
                                          Math.Abs(offsetZ) != leafRadius ||
-                                         (rand.NextInt(2) != 0 && relativeY != 0)) && !Block.BlocksOpaque[level.Reader.GetBlockId(leafX, leafY, leafZ)];
+                                         (rand.NextInt(2) != 0 && relativeY != 0)) && !BlockRegistry.IsOpaque(level.Reader.GetBlockId(leafX, leafY, leafZ));
                         if (isCorner)
                         {
                             level.Writer.SetBlockWithoutNotifyingNeighbors(leafX, leafY, leafZ, BlockRegistry.Get("leaves").Id, 2, false);

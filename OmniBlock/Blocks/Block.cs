@@ -12,18 +12,6 @@ namespace OmniBlock.Blocks;
 
 public class Block
 {
-    private static readonly Block?[] s_bootstrapBlocks = new Block?[256];
-    public static readonly bool[] BlocksRandomTick = new bool[256];
-    public static readonly bool[] BlocksOpaque = new bool[256];
-    public static readonly bool[] BlocksWithEntity = new bool[256];
-    public static readonly int[] BlockLightOpacity = new int[256];
-    public static readonly bool[] BlocksAllowVision = new bool[256];
-    public static readonly int[] BlocksLightLuminance = new int[256];
-    public static readonly bool[] BlocksIgnoreMetaUpdate = new bool[256];
-
-    internal static Block? GetDuringBootstrap(int protocolId) =>
-        protocolId is >= 0 and < 256 ? s_bootstrapBlocks[protocolId] : null;
-
     public readonly int Id;
     public readonly Material Material;
     private string[]? _blockAlias;
@@ -44,31 +32,20 @@ public class Block
     public BlockSoundGroup SoundGroup;
     public int TextureId;
 
-    private Block(int id, Material material)
+    private Block(int id, Material material, BlockSoundGroup defaultSoundGroup)
     {
         EnableStats = true;
-        SoundGroup = SoundPowderFootstep;
+        SoundGroup = defaultSoundGroup;
         ParticleFallSpeedModifier = 1.0F;
         Slipperiness = 0.6F;
-        if (s_bootstrapBlocks[id] != null)
-        {
-            throw new ArgumentException(
-                $"Slot {id} is already occupied by {s_bootstrapBlocks[id]} when adding {this}", nameof(id));
-        }
-
         this.Material = material;
-        s_bootstrapBlocks[id] = this;
         this.Id = id;
         SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-        BlocksOpaque[id] = IsOpaque;
-        BlockLightOpacity[id] = IsOpaque ? 255 : 0;
-        BlocksAllowVision[id] = !material.BlocksVision;
-        BlocksWithEntity[id] = false;
+        Opacity = IsOpaque ? 255 : 0;
     }
 
-    protected internal Block(int id, int textureId, Material material) : this(id, material) => TextureId = textureId;
-
-    private static BlockSoundGroup SoundPowderFootstep => SoundGroupRegistry.Get("powder");
+    protected internal Block(int id, int textureId, Material material, BlockSoundGroup defaultSoundGroup)
+        : this(id, material, defaultSoundGroup) => TextureId = textureId;
     public static BlockSoundGroup SoundStoneFootstep => SoundGroupRegistry.Get("stone");
 
     public TextureVariance TopVariance { get; protected internal set; } = TextureVariance.None;
@@ -102,8 +79,7 @@ public class Block
         protected internal set
         {
             field = value;
-            BlocksOpaque[Id] = value;
-            BlockLightOpacity[Id] = value ? 255 : 0;
+            Opacity = value ? 255 : 0;
         }
     } = true;
 
@@ -122,29 +98,22 @@ public class Block
     public PistonBehavior PistonBehavior => _pistonBehaviorOverride ?? Material.PistonBehavior;
     public bool IsFullCube() => _isFullCube;
 
-    public bool IgnoreMetaUpdates
-    {
-        get => BlocksIgnoreMetaUpdate[Id];
-        protected internal set => BlocksIgnoreMetaUpdate[Id] = value;
-    }
+    public bool IgnoreMetaUpdates { get; protected internal set; }
 
-    public bool TickRandomly
-    {
-        get => BlocksRandomTick[Id];
-        protected internal set => BlocksRandomTick[Id] = value;
-    }
+    public bool TickRandomly { get; protected internal set; }
 
-    public int Opacity
-    {
-        get => BlockLightOpacity[Id];
-        protected internal set => BlockLightOpacity[Id] = value;
-    }
+    public int Opacity { get; protected internal set; }
+
+    public int LightEmission { get; protected internal set; }
 
     public float Luminance
     {
-        get => BlocksLightLuminance[Id] / 15.0F;
-        protected internal set => BlocksLightLuminance[Id] = (int)(15.0F * value);
+        get => LightEmission / 15.0F;
+        protected internal set => LightEmission = (int)(15.0F * value);
     }
+
+    public bool AllowsVision => !Material.BlocksVision;
+    public bool HasBlockEntity => _blockEntityFactory is not null;
 
     public bool PreservesMetaOnDrop
     {
@@ -208,11 +177,11 @@ public class Block
         float baseLuminance;
         if (lighting != null)
         {
-            baseLuminance = lighting.GetNaturalBrightness(x, y, z, BlocksLightLuminance[Id]);
+            baseLuminance = lighting.GetNaturalBrightness(x, y, z, LightEmission);
         }
         else
         {
-            int baseLum = BlocksLightLuminance[Id];
+            int baseLum = LightEmission;
             baseLuminance = baseLum > 0 ? baseLum / 15.0f : 1.0f;
         }
 
@@ -227,7 +196,7 @@ public class Block
     /// </remarks>
     public LightLevels GetLightLevels(ILightProvider? lighting, int x, int y, int z)
     {
-        int emission = BlocksLightLuminance[Id];
+        int emission = LightEmission;
 
         LightLevels baseLevels = lighting != null
             ? lighting.GetLightLevels(x, y, z, emission)
@@ -470,7 +439,6 @@ public class Block
 
     protected internal void SetHasTileEntity(Func<BlockEntity> factory)
     {
-        BlocksWithEntity[Id] = true;
         _blockEntityFactory = factory;
     }
 

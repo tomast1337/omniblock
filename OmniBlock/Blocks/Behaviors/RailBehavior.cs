@@ -10,7 +10,7 @@ namespace OmniBlock.Blocks.Behaviors;
 ///     shares this instance for shape/placement rules but keeps its own <see cref="DetectorRailBehavior" />
 ///     for the actual minecart-detection redstone signal.
 /// </summary>
-public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) : IBlockPhysics, IBlockLifecycle, IBlockVisuals
+public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) : BlockRuntimeBehavior, IBlockPhysics, IBlockLifecycle, IBlockVisuals
 {
     private readonly bool _isPoweredTrack = isPoweredTrack;
 
@@ -18,7 +18,7 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
     {
         if (@event.World.IsRemote) return;
         UpdateShape(@event.World, @event.X, @event.Y, @event.Z, true);
-        if (block.Id != BlockRegistry.Get("powered_rail").Id) return;
+        if (block.Id != Blocks.Get("powered_rail").Id) return;
         int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         NeighborUpdate(block, new OnTickEvent(@event.World, @event.X, @event.Y, @event.Z, meta, block.Id));
     }
@@ -57,7 +57,7 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
             block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
-        else if (block.Id == BlockRegistry.Get("powered_rail").Id)
+        else if (block.Id == Blocks.Get("powered_rail").Id)
         {
             bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) || @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
             isPowered = isPowered
@@ -85,9 +85,9 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
             @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.Id);
         }
         else if (block.Id > 0 &&
-                 BlockRegistry.GetByProtocolId(block.Id).CanEmitRedstonePower() &&
+                 Blocks.GetByProtocolId(block.Id).CanEmitRedstonePower() &&
                  !_isPoweredTrack &&
-                 new TrackLogic(@event.World, new Vec3I(@event.X, @event.Y, @event.Z)).GetAdjacentTracks() == 3)
+                 new TrackLogic(Blocks, @event.World, new Vec3I(@event.X, @event.Y, @event.Z)).GetAdjacentTracks() == 3)
         {
             UpdateShape(@event.World, @event.X, @event.Y, @event.Z, false);
         }
@@ -97,7 +97,7 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
     {
         if (_isPoweredTrack)
         {
-            if (block.Id == BlockRegistry.Get("powered_rail").Id && (meta & 8) == 0) return unpowered;
+            if (block.Id == Blocks.Get("powered_rail").Id && (meta & 8) == 0) return unpowered;
         }
         else if (meta >= 6)
         {
@@ -107,12 +107,12 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
         return defaultTexture;
     }
 
-    private static void UpdateShape(IWorldContext level, int x, int y, int z, bool force)
+    private void UpdateShape(IWorldContext level, int x, int y, int z, bool force)
     {
-        if (!level.IsRemote) new TrackLogic(level, new Vec3I(x, y, z)).UpdateState(level.Redstone.IsPowered(x, y, z), force);
+        if (!level.IsRemote) new TrackLogic(Blocks, level, new Vec3I(x, y, z)).UpdateState(level.Redstone.IsPowered(x, y, z), force);
     }
 
-    private static bool IsPoweredByConnectedRails(IWorldContext level, int x, int y, int z, int meta, bool towardsNegative, int depth)
+    private bool IsPoweredByConnectedRails(IWorldContext level, int x, int y, int z, int meta, bool towardsNegative, int depth)
     {
         if (depth >= 8) return false;
 
@@ -152,10 +152,10 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
                (isSameY && IsPoweredByRail(level, x, y - 1, z, towardsNegative, depth, shape));
     }
 
-    private static bool IsPoweredByRail(IWorldContext level, int x, int y, int z, bool towardsNegative, int depth, int shape)
+    private bool IsPoweredByRail(IWorldContext level, int x, int y, int z, bool towardsNegative, int depth, int shape)
     {
         int blockId = level.Reader.GetBlockId(x, y, z);
-        if (blockId != BlockRegistry.Get("powered_rail").Id) return false;
+        if (blockId != Blocks.Get("powered_rail").Id) return false;
 
         int meta = level.Reader.GetBlockMeta(x, y, z);
         int railMeta = meta & 7;
@@ -173,14 +173,7 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
         return true;
     }
 
-    public static bool IsRail(IWorldContext level, int x, int y, int z)
-    {
-        int blockId = level.Reader.GetBlockId(x, y, z);
-        return IsRail(blockId);
-    }
-
-    public static bool IsRail(int blockId)
-        => blockId == BlockRegistry.Get("rail").Id || blockId == BlockRegistry.Get("powered_rail").Id || blockId == BlockRegistry.Get("detector_rail").Id;
+    public static bool IsRail(Block block) => block.Physics is RailBehavior;
 
     /// <summary>True for powered/detector rail: straight+ramp shapes only, no corners.</summary>
     public static bool IsAlwaysStraight(Block block) => block.Physics is RailBehavior { _isPoweredTrack: true };
@@ -194,18 +187,20 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
     {
         private readonly List<Vec3I> _connectedTracks = [];
         private readonly bool _isPoweredRail;
+        private readonly IBlockRuntimeView _blocks;
         private readonly IWorldContext _level;
         private readonly Vec3I _trackPos;
 
-        public TrackLogic(IWorldContext level, Vec3I pos)
+        public TrackLogic(IBlockRuntimeView blocks, IWorldContext level, Vec3I pos)
         {
+            _blocks = blocks;
             _level = level;
             _trackPos = pos;
 
             int blockId = level.Reader.GetBlockId(pos.X, pos.Y, pos.Z);
             int meta = level.Reader.GetBlockMeta(pos.X, pos.Y, pos.Z);
 
-            if (BlockRegistry.TryGetByProtocolId(blockId, out Block? candidate)
+            if (_blocks.TryGetByProtocolId(blockId, out Block? candidate)
                 && IsAlwaysStraight(candidate))
             {
                 _isPoweredRail = true;
@@ -357,11 +352,14 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
 
         private TrackLogic? GetMinecartTrackLogic(Vec3I pos)
         {
-            if (IsRail(_level, pos.X, pos.Y, pos.Z)) return new TrackLogic(_level, pos);
-            if (IsRail(_level, pos.X, pos.Y + 1, pos.Z)) return new TrackLogic(_level, new Vec3I(pos.X, pos.Y + 1, pos.Z));
-            if (IsRail(_level, pos.X, pos.Y - 1, pos.Z)) return new TrackLogic(_level, new Vec3I(pos.X, pos.Y - 1, pos.Z));
+            if (IsRail(_level, pos.X, pos.Y, pos.Z)) return new TrackLogic(_blocks, _level, pos);
+            if (IsRail(_level, pos.X, pos.Y + 1, pos.Z)) return new TrackLogic(_blocks, _level, new Vec3I(pos.X, pos.Y + 1, pos.Z));
+            if (IsRail(_level, pos.X, pos.Y - 1, pos.Z)) return new TrackLogic(_blocks, _level, new Vec3I(pos.X, pos.Y - 1, pos.Z));
             return null;
         }
+
+        private bool IsRail(IWorldContext level, int x, int y, int z) =>
+            _blocks.TryGetByProtocolId(level.Reader.GetBlockId(x, y, z), out Block? block) && RailBehavior.IsRail(block);
 
         private bool IsConnectedTo(TrackLogic targetLogic)
         {

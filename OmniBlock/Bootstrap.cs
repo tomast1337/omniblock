@@ -1,3 +1,4 @@
+using OmniBlock.Blocks;
 using OmniBlock.Registries;
 
 namespace OmniBlock;
@@ -13,8 +14,15 @@ public class Bootstrap
             if (ContentRuntime.IsPublished) return;
 
             ContentRuntimeBuilder content = ContentRuntimeBuilder.CreateBuiltIns();
-            DefaultRegistries.Initialize(content);
-            ContentRuntime.Publish(content.Build());
+            try
+            {
+                DefaultRegistries.Initialize(content);
+                ContentRuntime.Publish(content.Build());
+            }
+            finally
+            {
+                BlockRegistry.CompleteBootstrap(content);
+            }
         }
     }
 }

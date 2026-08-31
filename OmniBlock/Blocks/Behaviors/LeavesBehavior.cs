@@ -14,12 +14,12 @@ namespace OmniBlock.Blocks.Behaviors;
 ///     <para>
 ///         Trunk block, sapling drop, and harvest tool are all required, (see <c>BehaviorRegistry</c>'s <c>"leaves"</c> entry).
 ///         Resolved eagerly, not lazily: every <see cref="Block" /> already exists by the time any
-///         behavior factory runs (pass 2 of <c>BlockRegistry.LoadAndBuild</c> starts only after
+///         behavior factory runs (pass 2 of <c>Blocks.LoadAndBuild</c> starts only after
 ///         pass 1 finishes constructing all of them). "Same-species leaves" checks compare against
 ///         the owning <see cref="Block" /> passed into each call, not a separate cached id.
 ///     </para>
 /// </summary>
-public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestToolItem, int[] fancyTextures, int[] fastTextures) : IBlockTicker, IBlockLifecycle, IBlockVisuals
+public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestToolItem, int[] fancyTextures, int[] fastTextures) : BlockRuntimeBehavior, IBlockTicker, IBlockLifecycle, IBlockVisuals
 {
     private const sbyte DecayRadius = 4;
     private const sbyte RegionSize = 32;

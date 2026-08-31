@@ -11,10 +11,10 @@ namespace OmniBlock.Blocks.Behaviors;
 ///     Piston base (normal or sticky, per <paramref name="sticky" />): tracks extend/retract via
 ///     redstone quasi-connectivity, drives the block-action animation packet, and on retract either
 ///     pulls the adjacent block along (sticky) or just clears the head. The multi-block push/pull
-///     dance temporarily writes <see cref="BlockRegistry.Get("moving_piston")" /> placeholders backed by
+///     dance temporarily writes moving-piston placeholders backed by
 ///     <see cref="BlockEntityPiston" /> for the client-visible slide animation.
 /// </summary>
-public sealed class PistonBaseBehavior(bool sticky, int top, int side, int bottom, int extensionSide) : IBlockPhysics, IBlockLifecycle, IBlockTicker, IBlockVisuals
+public sealed class PistonBaseBehavior(bool sticky, int top, int side, int bottom, int extensionSide) : BlockRuntimeBehavior, IBlockPhysics, IBlockLifecycle, IBlockTicker, IBlockVisuals
 {
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
@@ -57,7 +57,7 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
                     extendingPiston.Finish();
                 }
 
-                @event.World.Writer.SetBlockWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, BlockRegistry.Get("moving_piston").Id, facing);
+                @event.World.Writer.SetBlockWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, Blocks.Get("moving_piston").Id, facing);
                 @event.World.Entities.SetBlockEntity(@event.X, @event.Y, @event.Z, PistonMovingBehavior.CreatePistonBlockEntity(block.Id, facing, facing, false, true));
 
                 if (sticky)
@@ -70,7 +70,7 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
                     int targetMeta = @event.World.Reader.GetBlockMeta(targetX, targetY, targetZ);
                     bool stickySpit = false;
 
-                    if (targetId == BlockRegistry.Get("moving_piston").Id)
+                    if (targetId == Blocks.Get("moving_piston").Id)
                     {
                         BlockEntity? movingTarget = @event.World.Entities.GetBlockEntity<BlockEntityPiston>(targetX, targetY, targetZ);
                         if (movingTarget is BlockEntityPiston movingPistonTarget && movingPistonTarget.Facing == facing && movingPistonTarget.IsExtending)
@@ -94,12 +94,12 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
                         @event.World.Writer.SetBlock(headX, headY, headZ, 0);
                     }
                     else if (targetId > 0 && CanMoveBlock(targetId, @event.World, targetX, targetY, targetZ, false) &&
-                             (BlockRegistry.GetByProtocolId(targetId).PistonBehavior == PistonBehavior.Normal || targetId == BlockRegistry.Get("piston").Id || targetId == BlockRegistry.Get("sticky_piston").Id))
+                             (Blocks.GetByProtocolId(targetId).PistonBehavior == PistonBehavior.Normal || targetId == Blocks.Get("piston").Id || targetId == Blocks.Get("sticky_piston").Id))
                     {
                         @event.World.Writer.SetBlock(headX, headY, headZ, 0);
                         @event.World.Writer.SetBlock(targetX, targetY, targetZ, 0);
 
-                        @event.World.Writer.SetBlockWithoutNotifyingNeighbors(headX, headY, headZ, BlockRegistry.Get("moving_piston").Id, targetMeta);
+                        @event.World.Writer.SetBlockWithoutNotifyingNeighbors(headX, headY, headZ, Blocks.Get("moving_piston").Id, targetMeta);
                         @event.World.Entities.SetBlockEntity(headX, headY, headZ, PistonMovingBehavior.CreatePistonBlockEntity(targetId, targetMeta, facing, false, false));
                     }
                     else
@@ -188,7 +188,7 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
 
     public int GetTopTexture() => top;
 
-    private static void CheckExtended(IWorldContext ctx, int x, int y, int z)
+    private void CheckExtended(IWorldContext ctx, int x, int y, int z)
     {
         int meta = ctx.Reader.GetBlockMeta(x, y, z);
         int facing = GetFacing(meta);
@@ -252,15 +252,15 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
         };
     }
 
-    private static bool CanMoveBlock(int id, IWorldContext ctx, int x, int y, int z, bool allowBreaking)
+    private bool CanMoveBlock(int id, IWorldContext ctx, int x, int y, int z, bool allowBreaking)
     {
-        if (id == BlockRegistry.Get("obsidian").Id) return false;
+        if (id == Blocks.Get("obsidian").Id) return false;
 
-        if (id != BlockRegistry.Get("piston").Id && id != BlockRegistry.Get("sticky_piston").Id)
+        if (id != Blocks.Get("piston").Id && id != Blocks.Get("sticky_piston").Id)
         {
-            if (Math.Abs(BlockRegistry.GetByProtocolId(id).Hardness - (-1.0F)) < 0.001F) return false;
-            if (BlockRegistry.GetByProtocolId(id).PistonBehavior == PistonBehavior.Unpushable) return false;
-            if (!allowBreaking && BlockRegistry.GetByProtocolId(id).PistonBehavior == PistonBehavior.Destroy) return false;
+            if (Math.Abs(Blocks.GetByProtocolId(id).Hardness - (-1.0F)) < 0.001F) return false;
+            if (Blocks.GetByProtocolId(id).PistonBehavior == PistonBehavior.Unpushable) return false;
+            if (!allowBreaking && Blocks.GetByProtocolId(id).PistonBehavior == PistonBehavior.Destroy) return false;
         }
         else if (IsExtended(ctx.Reader.GetBlockMeta(x, y, z))) return false;
 
@@ -268,7 +268,7 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
         return targetEntity == null;
     }
 
-    private static bool CanExtend(IWorldContext ctx, int x, int y, int z, int dir)
+    private bool CanExtend(IWorldContext ctx, int x, int y, int z, int dir)
     {
         int checkX = x + PistonConstants.HeadOffsetX[dir];
         int checkY = y + PistonConstants.HeadOffsetY[dir];
@@ -289,7 +289,7 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
                 return false;
             }
 
-            if (BlockRegistry.GetByProtocolId(blockId).PistonBehavior == PistonBehavior.Destroy) return true;
+            if (Blocks.GetByProtocolId(blockId).PistonBehavior == PistonBehavior.Destroy) return true;
 
             if (pushCount == 12) return false;
 
@@ -321,7 +321,7 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
                         return false;
                     }
 
-                    if (BlockRegistry.GetByProtocolId(blockId).PistonBehavior != PistonBehavior.Destroy)
+                    if (Blocks.GetByProtocolId(blockId).PistonBehavior != PistonBehavior.Destroy)
                     {
                         if (pushCount == 12)
                         {
@@ -335,7 +335,7 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
                         continue;
                     }
 
-                    BlockRegistry.GetByProtocolId(blockId).DropStacks(new OnDropEvent(ctx, nextX, nextY, nextZ, ctx.Reader.GetBlockMeta(nextX, nextY, nextZ)));
+                    Blocks.GetByProtocolId(blockId).DropStacks(new OnDropEvent(ctx, nextX, nextY, nextZ, ctx.Reader.GetBlockMeta(nextX, nextY, nextZ)));
                     ctx.Writer.SetBlock(nextX, nextY, nextZ, 0);
                 }
             }
@@ -351,12 +351,12 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
 
                 if (prevBlockId == block.Id && prevX == x && prevY == y && prevZ == z)
                 {
-                    ctx.Writer.SetBlockWithoutNotifyingNeighbors(nextX, nextY, nextZ, BlockRegistry.Get("moving_piston").Id, dir | (sticky ? 8 : 0));
-                    ctx.Entities.SetBlockEntity(nextX, nextY, nextZ, PistonMovingBehavior.CreatePistonBlockEntity(BlockRegistry.Get("piston_head").Id, dir | (sticky ? 8 : 0), dir, true, false));
+                    ctx.Writer.SetBlockWithoutNotifyingNeighbors(nextX, nextY, nextZ, Blocks.Get("moving_piston").Id, dir | (sticky ? 8 : 0));
+                    ctx.Entities.SetBlockEntity(nextX, nextY, nextZ, PistonMovingBehavior.CreatePistonBlockEntity(Blocks.Get("piston_head").Id, dir | (sticky ? 8 : 0), dir, true, false));
                 }
                 else
                 {
-                    ctx.Writer.SetBlockWithoutNotifyingNeighbors(nextX, nextY, nextZ, BlockRegistry.Get("moving_piston").Id, prevMeta);
+                    ctx.Writer.SetBlockWithoutNotifyingNeighbors(nextX, nextY, nextZ, Blocks.Get("moving_piston").Id, prevMeta);
                     ctx.Entities.SetBlockEntity(nextX, nextY, nextZ, PistonMovingBehavior.CreatePistonBlockEntity(prevBlockId, prevMeta, dir, true, false));
                 }
 

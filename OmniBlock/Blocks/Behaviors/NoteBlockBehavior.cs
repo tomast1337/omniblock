@@ -8,7 +8,7 @@ namespace OmniBlock.Blocks.Behaviors;
 ///     comes from the block's <c>setHasTileEntity</c> factory. Assign to the Interactable,
 ///     Lifecycle, and Physics slots.
 /// </summary>
-public sealed class NoteBlockBehavior : IBlockInteractable, IBlockLifecycle, IBlockPhysics
+public sealed class NoteBlockBehavior : BlockRuntimeBehavior, IBlockInteractable, IBlockLifecycle, IBlockPhysics
 {
     public bool OnUse(Block block, OnUseEvent @event)
     {
@@ -58,7 +58,7 @@ public sealed class NoteBlockBehavior : IBlockInteractable, IBlockLifecycle, IBl
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        if (!(@event.BlockId > 0 && BlockRegistry.GetByProtocolId(@event.BlockId).CanEmitRedstonePower()))
+        if (!(@event.BlockId > 0 && Blocks.GetByProtocolId(@event.BlockId).CanEmitRedstonePower()))
         {
             return;
         }

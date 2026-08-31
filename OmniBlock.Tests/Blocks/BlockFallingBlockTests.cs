@@ -15,7 +15,7 @@ public sealed class BlockFallingBlockTests
         Block customPassable = BlockRegistry.Get("torch");
         world.ReaderWriter.SetInitial(0, 63, 0, customPassable.Id);
 
-        FallingBlockBehavior behavior = new([customPassable], 32);
+        FallingBlockBehavior behavior = Bound(new FallingBlockBehavior([customPassable], 32));
 
         Assert.True(behavior.CanFallThrough(Tick(world, 0, 63, 0)));
     }
@@ -27,7 +27,7 @@ public sealed class BlockFallingBlockTests
         Block customPassable = BlockRegistry.Get("torch");
         world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("fire").Id);
 
-        FallingBlockBehavior behavior = new([customPassable], 32);
+        FallingBlockBehavior behavior = Bound(new FallingBlockBehavior([customPassable], 32));
 
         Assert.False(behavior.CanFallThrough(Tick(world, 0, 63, 0)));
     }
@@ -36,7 +36,7 @@ public sealed class BlockFallingBlockTests
     public void CanFallThrough_Air_AlwaysReturnsTrue()
     {
         FakeWorldContext world = new();
-        FallingBlockBehavior behavior = new([], 32);
+        FallingBlockBehavior behavior = Bound(new FallingBlockBehavior([], 32));
 
         Assert.True(behavior.CanFallThrough(Tick(world, 0, 63, 0)));
     }
@@ -46,7 +46,7 @@ public sealed class BlockFallingBlockTests
     {
         FakeWorldContext world = new();
         world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("water").Id);
-        FallingBlockBehavior behavior = new([], 32);
+        FallingBlockBehavior behavior = Bound(new FallingBlockBehavior([], 32));
 
         Assert.True(behavior.CanFallThrough(Tick(world, 0, 63, 0)));
     }
@@ -70,5 +70,11 @@ public sealed class BlockFallingBlockTests
     {
         using JsonDocument json = JsonDocument.Parse("""{"Type":"falling_block","passable":["omniblock:fire"]}""");
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("falling_block", json.RootElement));
+    }
+
+    private static FallingBlockBehavior Bound(FallingBlockBehavior behavior)
+    {
+        behavior.BindRuntime(OmniBlock.Registries.ContentRuntime.Current.Blocks);
+        return behavior;
     }
 }

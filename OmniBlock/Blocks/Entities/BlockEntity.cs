@@ -130,7 +130,7 @@ public abstract class BlockEntity : IEntity
         if (_removed) return true;
         if (World is not { } world) return false;
         int id = world.Reader.GetBlockId(X, Y, Z);
-        return id == 0 || !Block.BlocksWithEntity[id];
+        return id == 0 || !BlockRegistry.HasBlockEntity(id);
     }
 
     public void MarkRemoved() => _removed = true;

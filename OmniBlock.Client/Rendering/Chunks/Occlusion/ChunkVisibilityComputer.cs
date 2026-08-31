@@ -124,7 +124,7 @@ public static class ChunkVisibilityComputer
     {
         int id = cache.GetBlockId(x, y, z);
         if (id <= 0) return true;
-        return !Block.BlocksOpaque[id];
+        return !BlockRegistry.IsOpaque(id);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

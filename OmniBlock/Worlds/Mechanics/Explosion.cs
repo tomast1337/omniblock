@@ -128,7 +128,7 @@ public class Explosion
             int z = blockPos.Z;
             int blockIdAtPos = _level.Reader.GetBlockId(x, y, z);
             int belowBlockId = _level.Reader.GetBlockId(x, y - 1, z);
-            if (blockIdAtPos == 0 && Block.BlocksOpaque[belowBlockId] && ExplosionRNG.NextInt(3) == 0)
+            if (blockIdAtPos == 0 && BlockRegistry.IsOpaque(belowBlockId) && ExplosionRNG.NextInt(3) == 0)
             {
                 _level.Writer.SetBlock(x, y, z, BlockRegistry.Get("fire").Id);
             }

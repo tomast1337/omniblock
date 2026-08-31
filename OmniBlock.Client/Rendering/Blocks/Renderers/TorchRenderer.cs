@@ -9,7 +9,7 @@ public class TorchRenderer : IBlockRenderer
     {
         int metadata = ctx.BlockReader.GetBlockMeta(pos.X, pos.Y, pos.Z);
 
-        if (Block.BlocksLightLuminance[block.Id] > 0)
+        if (BlockRegistry.GetLightEmission(block.Id) > 0)
         {
             ctx.SetFullBright();
         }

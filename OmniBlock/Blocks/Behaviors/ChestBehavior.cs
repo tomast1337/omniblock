@@ -5,7 +5,7 @@ using OmniBlock.Worlds.Core.Systems;
 namespace OmniBlock.Blocks.Behaviors;
 
 internal sealed class ChestBehavior(int top, int side, int front, int doubleFrontLeft, int doubleFrontRight, int doubleBackLeft, int doubleBackRight)
-    : IBlockInteractable, IBlockLifecycle, IBlockPhysics, IBlockVisuals
+    : BlockRuntimeBehavior, IBlockInteractable, IBlockLifecycle, IBlockPhysics, IBlockVisuals
 {
     public bool OnUse(Block block, OnUseEvent @event)
     {
@@ -112,10 +112,10 @@ internal sealed class ChestBehavior(int top, int side, int front, int doubleFron
         if (!isDoubleNs && !isDoubleEw)
         {
             Side facing = Side.South;
-            if (Block.BlocksOpaque[blockNorth] && !Block.BlocksOpaque[blockSouth]) facing = Side.South;
-            if (Block.BlocksOpaque[blockSouth] && !Block.BlocksOpaque[blockNorth]) facing = Side.North;
-            if (Block.BlocksOpaque[blockWest] && !Block.BlocksOpaque[blockEast]) facing = Side.East;
-            if (Block.BlocksOpaque[blockEast] && !Block.BlocksOpaque[blockWest]) facing = Side.West;
+            if (Blocks.IsOpaque(blockNorth) && !Blocks.IsOpaque(blockSouth)) facing = Side.South;
+            if (Blocks.IsOpaque(blockSouth) && !Blocks.IsOpaque(blockNorth)) facing = Side.North;
+            if (Blocks.IsOpaque(blockWest) && !Blocks.IsOpaque(blockEast)) facing = Side.East;
+            if (Blocks.IsOpaque(blockEast) && !Blocks.IsOpaque(blockWest)) facing = Side.West;
             return renderSide == facing ? front : side;
         }
 
@@ -128,8 +128,8 @@ internal sealed class ChestBehavior(int top, int side, int front, int doubleFron
             int corner2 = reader.GetBlockId(isWestPartner ? x - 1 : x + 1, y, z + 1);
 
             Side facing = Side.South;
-            if ((Block.BlocksOpaque[blockNorth] || Block.BlocksOpaque[corner1]) && !Block.BlocksOpaque[blockSouth] && !Block.BlocksOpaque[corner2]) facing = Side.South;
-            if ((Block.BlocksOpaque[blockSouth] || Block.BlocksOpaque[corner2]) && !Block.BlocksOpaque[blockNorth] && !Block.BlocksOpaque[corner1]) facing = Side.North;
+            if ((Blocks.IsOpaque(blockNorth) || Blocks.IsOpaque(corner1)) && !Blocks.IsOpaque(blockSouth) && !Blocks.IsOpaque(corner2)) facing = Side.South;
+            if ((Blocks.IsOpaque(blockSouth) || Blocks.IsOpaque(corner2)) && !Blocks.IsOpaque(blockNorth) && !Blocks.IsOpaque(corner1)) facing = Side.North;
 
             bool isRightHalf = facing == Side.South ? isWestPartner : !isWestPartner;
 
@@ -145,8 +145,8 @@ internal sealed class ChestBehavior(int top, int side, int front, int doubleFron
             int corner2 = reader.GetBlockId(x + 1, y, isNorthPartner ? z - 1 : z + 1);
 
             Side facing = Side.East;
-            if ((Block.BlocksOpaque[blockWest] || Block.BlocksOpaque[corner1]) && !Block.BlocksOpaque[blockEast] && !Block.BlocksOpaque[corner2]) facing = Side.East;
-            if ((Block.BlocksOpaque[blockEast] || Block.BlocksOpaque[corner2]) && !Block.BlocksOpaque[blockWest] && !Block.BlocksOpaque[corner1]) facing = Side.West;
+            if ((Blocks.IsOpaque(blockWest) || Blocks.IsOpaque(corner1)) && !Blocks.IsOpaque(blockEast) && !Blocks.IsOpaque(corner2)) facing = Side.East;
+            if ((Blocks.IsOpaque(blockEast) || Blocks.IsOpaque(corner2)) && !Blocks.IsOpaque(blockWest) && !Blocks.IsOpaque(corner1)) facing = Side.West;
 
             bool isRightHalf = facing == Side.East ? !isNorthPartner : isNorthPartner;
 

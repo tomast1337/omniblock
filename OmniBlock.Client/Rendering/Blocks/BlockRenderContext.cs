@@ -490,7 +490,7 @@ public ref struct BlockRenderContext
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private readonly bool IsOpaque(int x, int y, int z) => !Block.BlocksAllowVision[BlockReader.GetBlockId(x, y, z)];
+    private readonly bool IsOpaque(int x, int y, int z) => !BlockRegistry.AllowsVision(BlockReader.GetBlockId(x, y, z));
 
     /// <summary>
     ///     Sets the light the next vertices carry from one cell, for a primitive lit as a whole.

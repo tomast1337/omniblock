@@ -161,7 +161,8 @@ public class BlockEntityFurnace : BlockEntity, IInventory
             if (wasBurning != BurnTime > 0)
             {
                 stateChanged = true;
-                FurnaceBehavior.UpdateLitState(BurnTime > 0, World, X, Y, Z);
+                Block furnaceBlock = BlockRegistry.GetByProtocolId(World.Reader.GetBlockId(X, Y, Z));
+                ((FurnaceBehavior)furnaceBlock.Visuals).UpdateLitState(BurnTime > 0, World, X, Y, Z);
             }
         }
 

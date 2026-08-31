@@ -16,7 +16,7 @@ public class DoorRenderer : IBlockRenderer
         const float lightZ = 0.8F; // East/West
         const float lightX = 0.6F; // North/South
 
-        bool isLightEmitter = Block.BlocksLightLuminance[block.Id] > 0;
+        bool isLightEmitter = BlockRegistry.GetLightEmission(block.Id) > 0;
 
         // Dummy colors since Door uses flat shading (ctx.Tess.setColorOpaque_F) instead of AO
         FaceColors dummyColors = new FaceColors();

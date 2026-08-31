@@ -9,7 +9,7 @@ namespace OmniBlock.Blocks.Behaviors;
 ///     piston; all its shape and behavior is borrowed from the <see cref="BlockEntityPiston" /> sitting
 ///     on the same tile, interpolated by push progress. Not independently placeable.
 /// </summary>
-public sealed class PistonMovingBehavior : IBlockPhysics, IBlockLifecycle, IBlockInteractable
+public sealed class PistonMovingBehavior : BlockRuntimeBehavior, IBlockPhysics, IBlockLifecycle, IBlockInteractable
 {
     public bool OnUse(Block block, OnUseEvent @event)
     {
@@ -44,7 +44,7 @@ public sealed class PistonMovingBehavior : IBlockPhysics, IBlockLifecycle, IBloc
         BlockEntityPiston? piston = @event.World.Entities.GetBlockEntity<BlockEntityPiston>(@event.X, @event.Y, @event.Z);
         if (piston != null)
         {
-            BlockRegistry.GetByProtocolId(piston.PushedBlockId).DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, piston.PushedBlockData));
+            Blocks.GetByProtocolId(piston.PushedBlockId).DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, piston.PushedBlockData));
         }
     }
 
@@ -69,7 +69,7 @@ public sealed class PistonMovingBehavior : IBlockPhysics, IBlockLifecycle, IBloc
         BlockEntityPiston? piston = entities?.GetBlockEntity<BlockEntityPiston>(x, y, z);
         if (piston == null) return;
 
-        Block pushed = BlockRegistry.GetByProtocolId(piston.PushedBlockId);
+        Block pushed = Blocks.GetByProtocolId(piston.PushedBlockId);
         if (pushed == block) return;
 
         pushed.UpdateBoundingBox(reader, entities, x, y, z);
@@ -86,11 +86,11 @@ public sealed class PistonMovingBehavior : IBlockPhysics, IBlockLifecycle, IBloc
     public static BlockEntity CreatePistonBlockEntity(int blockId, int blockMeta, int facing, bool extending, bool source)
         => new BlockEntityPiston(blockId, blockMeta, facing, extending, source);
 
-    public static Box? GetPushedBlockCollisionShape(Block block, IBlockReader world, EntityManager entities, int x, int y, int z, int blockId, float sizeMultiplier, int facing)
+    public Box? GetPushedBlockCollisionShape(Block block, IBlockReader world, EntityManager entities, int x, int y, int z, int blockId, float sizeMultiplier, int facing)
     {
         if (blockId == 0 || blockId == block.Id) return null;
 
-        Box? shape = BlockRegistry.GetByProtocolId(blockId).GetCollisionShape(world, entities, x, y, z);
+        Box? shape = Blocks.GetByProtocolId(blockId).GetCollisionShape(world, entities, x, y, z);
         if (shape == null) return null;
 
         Box res = shape.Value;

@@ -11,12 +11,12 @@ namespace OmniBlock.Blocks.Behaviors;
 ///     Block id to melt into (deferred so it can reference block statics regardless of declaration order).
 /// </param>
 /// <param name="subtractOpacity">
-///     When true the melt threshold is <c>11 - BlockLightOpacity[id]</c> (ice); otherwise a flat 11 (snow).
+///     When true the melt threshold is <c>11 - block.Opacity</c> (ice); otherwise a flat 11 (snow).
 /// </param>
 /// <param name="brokenReplacement">
 ///     Optional block id placed after the block is mined over solid or fluid ground (ice → flowing water).
 /// </param>
-public sealed class MeltBehavior(Func<int> meltReplacement, bool subtractOpacity = false, Func<int>? brokenReplacement = null) : IBlockTicker, IBlockLifecycle
+public sealed class MeltBehavior(Func<int> meltReplacement, bool subtractOpacity = false, Func<int>? brokenReplacement = null) : BlockRuntimeBehavior, IBlockTicker, IBlockLifecycle
 {
     public void OnAfterBreak(Block block, OnAfterBreakEvent @event)
     {
@@ -31,7 +31,7 @@ public sealed class MeltBehavior(Func<int> meltReplacement, bool subtractOpacity
 
     public void OnTick(Block block, OnTickEvent @event)
     {
-        int threshold = subtractOpacity ? 11 - Block.BlockLightOpacity[block.Id] : 11;
+        int threshold = subtractOpacity ? 11 - Blocks.GetOpacity(block.Id) : 11;
         if (@event.World.Lighting.GetBrightness(LightType.Block, @event.X, @event.Y, @event.Z) <= threshold)
         {
             return;

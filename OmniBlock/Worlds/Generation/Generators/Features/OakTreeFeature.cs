@@ -72,7 +72,7 @@ internal class OakTreeFeature : Feature
                     for (int leafZ = z - leafRadius; leafZ <= z + leafRadius; ++leafZ)
                     {
                         int offsetZ = leafZ - z;
-                        if ((Math.Abs(offsetX) != leafRadius || Math.Abs(offsetZ) != leafRadius || (rand.NextInt(2) != 0 && relativeY != 0)) && !Block.BlocksOpaque[level.Reader.GetBlockId(leafX, leafY, leafZ)])
+                        if ((Math.Abs(offsetX) != leafRadius || Math.Abs(offsetZ) != leafRadius || (rand.NextInt(2) != 0 && relativeY != 0)) && !BlockRegistry.IsOpaque(level.Reader.GetBlockId(leafX, leafY, leafZ)))
                         {
                             level.Writer.SetBlockWithoutNotifyingNeighbors(leafX, leafY, leafZ, BlockRegistry.Get("leaves").Id, 0, false);
                         }

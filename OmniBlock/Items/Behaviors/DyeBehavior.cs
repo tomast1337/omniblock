@@ -34,7 +34,7 @@ internal sealed class DyeBehavior(int[] textures) : IItemBehavior
         {
             if (!world.IsRemote)
             {
-                SaplingBehavior.Generate(world, x, y, z);
+                SaplingBehavior.Generate(world, x, y, z, blockId);
                 itemStack.ConsumeItem(player);
             }
 

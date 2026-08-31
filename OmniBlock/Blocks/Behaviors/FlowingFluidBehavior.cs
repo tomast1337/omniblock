@@ -16,7 +16,7 @@ namespace OmniBlock.Blocks.Behaviors;
 ///         all required, (see <c>BehaviorRegistry</c>'s <c>"flowing_fluid"</c> entry).
 ///     </para>
 /// </summary>
-public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidified, Block flowSolidified, int still, int flowing) : IBlockPhysics, IBlockVisuals, IBlockLifecycle, IBlockTicker
+public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidified, Block flowSolidified, int still, int flowing) : BlockRuntimeBehavior, IBlockPhysics, IBlockVisuals, IBlockLifecycle, IBlockTicker
 {
     private readonly ThreadLocal<int> _adjacentSources = new(() => 0);
     private readonly ThreadLocal<int[]> _distanceToGap = new(() => new int[4]);
@@ -180,7 +180,7 @@ public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidifie
     public float GetLuminance(Block block, ILightProvider lighting, int x, int y, int z, float defaultLuminance) => FluidMath.GetLuminance(lighting, x, y, z);
 
     public LightLevels GetLightLevels(Block block, ILightProvider lighting, int x, int y, int z, LightLevels defaultLevels) =>
-        FluidMath.GetLightLevels(lighting, x, y, z, Block.BlocksLightLuminance[block.Id]);
+        FluidMath.GetLightLevels(lighting, x, y, z, Blocks.GetLightEmission(block.Id));
 
     private static void ConvertToSource(Block block, IWorldContext world, int x, int y, int z)
     {
@@ -201,7 +201,7 @@ public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidifie
             }
             else
             {
-                BlockRegistry.GetByProtocolId(currentId).DropStacks(new OnDropEvent(world, x, y, z, world.Reader.GetBlockMeta(x, y, z)));
+                Blocks.GetByProtocolId(currentId).DropStacks(new OnDropEvent(world, x, y, z, world.Reader.GetBlockMeta(x, y, z)));
             }
         }
 
@@ -339,7 +339,7 @@ public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidifie
 
         if (blockId == 0) return false;
 
-        Material mat = BlockRegistry.GetByProtocolId(blockId).Material;
+        Material mat = Blocks.GetByProtocolId(blockId).Material;
         return mat.BlocksMovement;
     }
 

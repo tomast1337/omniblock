@@ -127,7 +127,7 @@ public class Chunk
                 int y = h;
                 int index = ChuckFormat.GetIndex(localX, localZ);
 
-                while (y > 0 && Block.BlockLightOpacity[Blocks[index + y - 1]] == 0)
+                while (y > 0 && BlockRegistry.GetOpacity(Blocks[index + y - 1]) == 0)
                 {
                     --y;
                 }
@@ -153,7 +153,7 @@ public class Chunk
                 int y = h;
                 int index = ChuckFormat.GetIndex(localX, localZ);
 
-                while (y > 0 && Block.BlockLightOpacity[Blocks[index + y - 1]] == 0)
+                while (y > 0 && BlockRegistry.GetOpacity(Blocks[index + y - 1]) == 0)
                 {
                     --y;
                 }
@@ -168,7 +168,7 @@ public class Chunk
 
                     do
                     {
-                        lightLevel -= Block.BlockLightOpacity[Blocks[index + currentY]];
+                        lightLevel -= BlockRegistry.GetOpacity(Blocks[index + currentY]);
                         if (lightLevel > 0)
                         {
                             SkyLight.SetNibble(localX, currentY, localZ, lightLevel);
@@ -221,7 +221,7 @@ public class Chunk
 
                 for (int y = 0; y < ChuckFormat.ChunkHeight; ++y)
                 {
-                    if (Block.BlocksLightLuminance[Blocks[column + y]] == 0)
+                    if (BlockRegistry.GetLightEmission(Blocks[column + y]) == 0)
                     {
                         continue;
                     }
@@ -267,7 +267,7 @@ public class Chunk
         if (y > oldHeight) newHeight = y;
 
         int index = ChuckFormat.GetIndex(localX, localZ);
-        while (newHeight > 0 && Block.BlockLightOpacity[Blocks[index + newHeight - 1]] == 0)
+        while (newHeight > 0 && BlockRegistry.GetOpacity(Blocks[index + newHeight - 1]) == 0)
         {
             --newHeight;
         }
@@ -338,14 +338,14 @@ public class Chunk
                 SkyLight.SetNibble(localX, newHeight, localZ, lightLevel);
                 --newHeight;
 
-                int opacity = Block.BlockLightOpacity[GetBlockId(localX, newHeight, localZ)];
+                int opacity = BlockRegistry.GetOpacity(GetBlockId(localX, newHeight, localZ));
                 if (opacity == 0) opacity = 1;
 
                 lightLevel -= opacity;
                 if (lightLevel < 0) lightLevel = 0;
             }
 
-            while (newHeight > 0 && Block.BlockLightOpacity[GetBlockId(localX, newHeight - 1, localZ)] == 0)
+            while (newHeight > 0 && BlockRegistry.GetOpacity(GetBlockId(localX, newHeight - 1, localZ)) == 0)
             {
                 --newHeight;
             }
@@ -391,7 +391,7 @@ public class Chunk
 
         if (!World.Dimension.HasCeiling)
         {
-            if (Block.BlockLightOpacity[newId] != 0)
+            if (BlockRegistry.GetOpacity(newId) != 0)
             {
                 if (y >= height) UpdateHeightMap(localX, y + 1, localZ);
             }
@@ -443,7 +443,7 @@ public class Chunk
 
         Meta.SetNibble(localX, y, localZ, 0);
 
-        if (Block.BlockLightOpacity[newId] != 0)
+        if (BlockRegistry.GetOpacity(newId) != 0)
         {
             if (y >= height) UpdateHeightMap(localX, y + 1, localZ);
         }
@@ -703,7 +703,7 @@ public class Chunk
         blockEntity.Z = Z * 16 + localZ;
 
         int id = GetBlockId(localX, y, localZ);
-        if (id != 0 && Block.BlocksWithEntity[id])
+        if (id != 0 && BlockRegistry.HasBlockEntity(id))
         {
             blockEntity.CancelRemoval();
             BlockEntities[pos] = blockEntity;
@@ -869,7 +869,7 @@ public class Chunk
                     for (int y = minY; y < maxY; y++)
                     {
                         int id = GetBlockId(x, y, z);
-                        if (id > 0 && Block.BlocksWithEntity[id])
+                        if (id > 0 && BlockRegistry.HasBlockEntity(id))
                         {
                             GetBlockEntity(x, y, z);
                         }
@@ -913,7 +913,7 @@ public class Chunk
                     for (int y = 0; y < ChuckFormat.ChunkHeight; y++)
                     {
                         int id = GetBlockId(x, y, z);
-                        if (id > 0 && Block.BlocksWithEntity[id])
+                        if (id > 0 && BlockRegistry.HasBlockEntity(id))
                         {
                             GetBlockEntity(x, y, z);
                         }

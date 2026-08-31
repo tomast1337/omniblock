@@ -11,6 +11,7 @@ public static class BlockRegistry
     private static readonly CanonicalRegistry<BlockDefinition> s_registry = new("block");
 
     private static readonly Dictionary<int, string> s_idToName = [];
+    private static ContentRuntimeBuilder? s_bootstrapBuilder;
 
     /// <summary>Returns the live, constructed <see cref="Block" /> registered under <paramref name="name" />.</summary>
     public static Block Get(string name)
@@ -24,10 +25,7 @@ public static class BlockRegistry
         // Bootstrap still initializes stats, achievements, and entity definitions after blocks but
         // before ContentRuntime is published. Keep that construction-only path isolated here; once
         // publication succeeds every lookup above is served by the immutable runtime snapshot.
-        BlockDefinition definition = s_registry.Get(key.Path);
-        return Block.GetDuringBootstrap(definition.ProtocolId)
-               ?? throw new InvalidOperationException(
-                   $"Block '{key}' is registered but its content runtime has not been built yet.");
+        return GetBootstrapBuilder().GetBlock(key);
     }
 
     /// <summary>Returns the live block registered under the protocol-level numeric id.</summary>
@@ -40,9 +38,7 @@ public static class BlockRegistry
 
         // Block-derived items are constructed while the runtime snapshot is still being built.
         // Keep that bootstrap exception behind this boundary so consumers never own catalog state.
-        return Block.GetDuringBootstrap(protocolId) is { } block
-            ? block
-            : throw new KeyNotFoundException($"Unknown block protocol id {protocolId}.");
+        return GetBootstrapBuilder().GetBlockByProtocolId(protocolId);
     }
 
     public static bool TryGetByProtocolId(int protocolId, out Block? block)
@@ -52,9 +48,33 @@ public static class BlockRegistry
             return runtime.Blocks.TryGetByProtocolId(protocolId, out block);
         }
 
-        block = Block.GetDuringBootstrap(protocolId);
-        return block is not null;
+        ContentRuntimeBuilder? builder = Volatile.Read(ref s_bootstrapBuilder);
+        if (builder is not null) return builder.TryGetBlockByProtocolId(protocolId, out block);
+
+        block = null;
+        return false;
     }
+
+    public static bool IsOpaque(int protocolId) =>
+        TryGetByProtocolId(protocolId, out Block? block) && block.IsOpaque;
+
+    public static int GetOpacity(int protocolId) =>
+        TryGetByProtocolId(protocolId, out Block? block) ? block.Opacity : 0;
+
+    public static int GetLightEmission(int protocolId) =>
+        TryGetByProtocolId(protocolId, out Block? block) ? block.LightEmission : 0;
+
+    public static bool AllowsVision(int protocolId) =>
+        !TryGetByProtocolId(protocolId, out Block? block) || block.AllowsVision;
+
+    public static bool HasBlockEntity(int protocolId) =>
+        TryGetByProtocolId(protocolId, out Block? block) && block.HasBlockEntity;
+
+    public static bool TicksRandomly(int protocolId) =>
+        TryGetByProtocolId(protocolId, out Block? block) && block.TickRandomly;
+
+    public static bool IgnoresMetaUpdates(int protocolId) =>
+        TryGetByProtocolId(protocolId, out Block? block) && block.IgnoreMetaUpdates;
 
     /// <summary>Reverse lookup: the registry name a block was defined under, given its protocol id.</summary>
     public static string? TryGetName(int protocolId) => s_idToName.GetValueOrDefault(protocolId);
@@ -63,6 +83,8 @@ public static class BlockRegistry
     {
         ArgumentNullException.ThrowIfNull(content);
         if (s_registry.IsInitialized) return;
+        if (Interlocked.CompareExchange(ref s_bootstrapBuilder, content, null) is not null)
+            throw new InvalidOperationException("Block content bootstrap is already in progress.");
 
         var loader = (BlockDefinitionJsonLoader)RegistryDefinitions.Blocks.CreateLoader();
         loader.LoadFromPaths(null, null, null);
@@ -80,8 +102,18 @@ public static class BlockRegistry
 
         LoadAndBuild(definitions, content);
         BridgeToItems(definitions);
-        Block.BlocksAllowVision[0] = true;
     }
+
+    internal static void CompleteBootstrap(ContentRuntimeBuilder content)
+    {
+        ContentRuntimeBuilder? active = Interlocked.CompareExchange(ref s_bootstrapBuilder, null, content);
+        if (active is not null && !ReferenceEquals(active, content))
+            throw new InvalidOperationException("The active block content builder changed during bootstrap.");
+    }
+
+    private static ContentRuntimeBuilder GetBootstrapBuilder() =>
+        Volatile.Read(ref s_bootstrapBuilder)
+        ?? throw new InvalidOperationException("Block content runtime is neither being built nor published.");
 
     private static void LoadAndBuild(IEnumerable<BlockDefinition> definitions, ContentRuntimeBuilder content)
     {
@@ -89,21 +121,19 @@ public static class BlockRegistry
 
         foreach (BlockDefinition def in defs)
         {
-            BlockFactory.Create(def);
+            content.AddBlock(def, BlockFactory.Create(def, content.BlockBuildContext));
         }
 
         ItemLookup.Initialize();
 
         foreach (BlockDefinition def in defs)
         {
-            Block block = Block.GetDuringBootstrap(def.ProtocolId)
-                          ?? throw new InvalidOperationException($"Block '{def.Name}' was not constructed.");
+            Block block = content.GetBlockByProtocolId(def.ProtocolId);
             BlockFactory.AttachBehaviors(
                 block,
                 def,
                 content.BlockBehaviorProviders,
-                content.BehaviorBuildContext);
-            content.AddBlock(def, block);
+                content.BlockBuildContext);
         }
     }
 

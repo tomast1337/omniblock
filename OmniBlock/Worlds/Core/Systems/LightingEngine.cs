@@ -170,9 +170,9 @@ public class LightingEngine : ILightProvider
             else if (lightType == LightType.Block)
             {
                 int blockId = _world.Reader.GetBlockId(x, y, z);
-                if (Block.BlocksLightLuminance[blockId] > targetLuminance)
+                if (BlockRegistry.GetLightEmission(blockId) > targetLuminance)
                 {
-                    targetLuminance = Block.BlocksLightLuminance[blockId];
+                    targetLuminance = BlockRegistry.GetLightEmission(blockId);
                 }
             }
 

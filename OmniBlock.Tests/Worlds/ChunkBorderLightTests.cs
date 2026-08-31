@@ -76,7 +76,7 @@ public sealed class ChunkBorderLightTests
     public void A_light_source_already_in_the_terrain_lights_the_chunk_it_loads_with()
     {
         int glowstone = BlockRegistry.Get("glowstone").Id;
-        int luminance = Block.BlocksLightLuminance[glowstone];
+        int luminance = BlockRegistry.GetLightEmission(glowstone);
         Assert.True(luminance > 0, "test needs an emitting block");
 
         LightTestWorld world = new();
@@ -112,7 +112,7 @@ public sealed class ChunkBorderLightTests
             world.DrainLighting();
         }
 
-        Assert.Equal(Block.BlocksLightLuminance[glowstone], world.Lighting.GetBrightness(LightType.Block, 24, 40, 8));
+        Assert.Equal(BlockRegistry.GetLightEmission(glowstone), world.Lighting.GetBrightness(LightType.Block, 24, 40, 8));
     }
 
     /// <summary>

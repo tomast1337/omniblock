@@ -47,7 +47,7 @@ public sealed class ContentRuntime
 }
 
 /// <summary>Frozen key and protocol-ID indexes over the constructed block catalog.</summary>
-public sealed class RuntimeBlockRegistry
+public sealed class RuntimeBlockRegistry : IBlockRuntimeView
 {
     private readonly FrozenDictionary<ResourceLocation, Block> _byKey;
     private readonly Block?[] _byProtocolId;

@@ -74,7 +74,7 @@ internal class PineTreeFeature : Feature
                     for (int cz = z - currentLeafRadius; cz <= z + currentLeafRadius; ++cz)
                     {
                         int offsetZ = cz - z;
-                        if ((Math.Abs(offsetX) != currentLeafRadius || Math.Abs(offsetZ) != currentLeafRadius || currentLeafRadius <= 0) && !Block.BlocksOpaque[level.Reader.GetBlockId(cx, cy, cz)])
+                        if ((Math.Abs(offsetX) != currentLeafRadius || Math.Abs(offsetZ) != currentLeafRadius || currentLeafRadius <= 0) && !BlockRegistry.IsOpaque(level.Reader.GetBlockId(cx, cy, cz)))
                         {
                             level.Writer.SetBlockWithoutNotifyingNeighbors(cx, cy, cz, BlockRegistry.Get("leaves").Id, 1, false);
                         }

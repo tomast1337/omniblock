@@ -1,19 +1,17 @@
 using System.Text.Json;
 using OmniBlock.Blocks.Behaviors;
-using OmniBlock.Blocks.Entities;
 using OmniBlock.Blocks.Materials;
-using OmniBlock.Textures;
 
 namespace OmniBlock.Blocks;
 
 internal static class BlockFactory
 {
-    public static Block Create(BlockDefinition def)
+    public static Block Create(BlockDefinition def, in BlockBuildContext context)
     {
-        Material material = MaterialRegistry.Get(def.Material);
+        var material = context.Behaviors.ResolveMaterial(ResourceLocation.Parse(def.Material));
         // An unset TextureId keeps the implicit default the int field used to have.
-        int textureId = string.IsNullOrEmpty(def.TextureId) ? 0 : Atlases.Terrain.IndexOf(def.TextureId);
-        Block block = new(def.ProtocolId, textureId, material);
+        int textureId = string.IsNullOrEmpty(def.TextureId) ? 0 : context.Behaviors.ResolveTerrainTexture(def.TextureId);
+        Block block = new(def.ProtocolId, textureId, material, context.ResolveSoundGroup("omniblock:powder"));
 
         block.SetHardness(def.Hardness);
         block.SetResistance(def.Resistance);
@@ -24,12 +22,12 @@ internal static class BlockFactory
         block.TickRandomly = def.TickRandomly;
         block.IgnoreMetaUpdates = def.IgnoreMetaUpdates;
         block.EnableStats = def.TrackStatistics;
-        if (def.SoundGroup is { } sg) block.SoundGroup = SoundGroupRegistry.Get(sg);
+        if (def.SoundGroup is { } sg) block.SoundGroup = context.ResolveSoundGroup(ResourceLocation.Parse(sg));
         if (def.FaceTextures is { } faces)
         {
             foreach ((string sideName, string faceTextureId) in faces)
             {
-                block.SetFaceTexture(Enum.Parse<Side>(sideName, true), Atlases.Terrain.IndexOf(faceTextureId));
+                block.SetFaceTexture(Enum.Parse<Side>(sideName, true), context.Behaviors.ResolveTerrainTexture(faceTextureId));
             }
         }
 
@@ -67,7 +65,7 @@ internal static class BlockFactory
         Block block,
         BlockDefinition def,
         IBlockBehaviorProviderRegistry behaviorProviders,
-        in BehaviorBuildContext context)
+        BlockBuildContext context)
     {
         ArgumentNullException.ThrowIfNull(behaviorProviders);
 
@@ -75,7 +73,7 @@ internal static class BlockFactory
         {
             string type = entry.GetProperty("Type").GetString()
                 ?? throw new ArgumentException("Behavior entry is missing its 'Type' property.");
-            object behavior = behaviorProviders.Build(ResourceLocation.Parse(type), entry, context);
+            object behavior = behaviorProviders.Build(ResourceLocation.Parse(type), entry, context.Behaviors);
 
             foreach (JsonElement slotJson in entry.GetProperty("Slots").EnumerateArray())
             {
@@ -113,7 +111,7 @@ internal static class BlockFactory
             LootEntry[] entries = loot.Entries
                 .Select(e =>
                 {
-                    int itemId = ResolveItemOrBlockId(e.ItemName);
+                    int itemId = context.ResolveLootItemOrBlockId(ResourceLocation.Parse(e.ItemName));
                     return new LootEntry(() => itemId, e.Weight);
                 })
                 .ToArray();
@@ -122,10 +120,7 @@ internal static class BlockFactory
 
         if (def.TileEntity is { } tileEntity)
         {
-            block.SetHasTileEntity(BlockEntityFactoryRegistry.Get(tileEntity));
+            block.SetHasTileEntity(context.ResolveBlockEntityFactory(ResourceLocation.Parse(tileEntity)));
         }
     }
-
-    private static int ResolveItemOrBlockId(string name) =>
-        ItemLookup.TryGetItemId(name, out int id) ? id : throw new ArgumentException($"Unknown item or block: '{name}'");
 }

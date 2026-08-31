@@ -13,13 +13,13 @@ namespace OmniBlock.Blocks.Behaviors;
 ///         light threshold (<paramref name="spreadLightThreshold" />) are also required.
 ///     </para>
 /// </summary>
-public sealed class GrassTickerBehavior(Block soil, int dieLightThreshold, int dieChanceOneIn, int spreadLightThreshold) : IBlockTicker
+public sealed class GrassTickerBehavior(Block soil, int dieLightThreshold, int dieChanceOneIn, int spreadLightThreshold) : BlockRuntimeBehavior, IBlockTicker
 {
     public void OnTick(Block block, OnTickEvent ctx)
     {
         if (ctx.World.IsRemote) return;
 
-        if (ctx.World.Lighting.GetLightLevel(ctx.X, ctx.Y + 1, ctx.Z) < dieLightThreshold && Block.BlockLightOpacity[ctx.World.Reader.GetBlockId(ctx.X, ctx.Y + 1, ctx.Z)] > 2)
+        if (ctx.World.Lighting.GetLightLevel(ctx.X, ctx.Y + 1, ctx.Z) < dieLightThreshold && Blocks.GetOpacity(ctx.World.Reader.GetBlockId(ctx.X, ctx.Y + 1, ctx.Z)) > 2)
         {
             if (Random.Shared.Next(dieChanceOneIn) != 0) return;
 
@@ -31,7 +31,7 @@ public sealed class GrassTickerBehavior(Block soil, int dieLightThreshold, int d
             int spreadY = ctx.Y + Random.Shared.Next(5) - 3;
             int spreadZ = ctx.Z + Random.Shared.Next(3) - 1;
             int blockAboveId = ctx.World.Reader.GetBlockId(spreadX, spreadY + 1, spreadZ);
-            if (ctx.World.Reader.GetBlockId(spreadX, spreadY, spreadZ) == soil.Id && ctx.World.Lighting.GetLightLevel(spreadX, spreadY + 1, spreadZ) >= dieLightThreshold && Block.BlockLightOpacity[blockAboveId] <= 2)
+            if (ctx.World.Reader.GetBlockId(spreadX, spreadY, spreadZ) == soil.Id && ctx.World.Lighting.GetLightLevel(spreadX, spreadY + 1, spreadZ) >= dieLightThreshold && Blocks.GetOpacity(blockAboveId) <= 2)
             {
                 ctx.World.Writer.SetBlock(spreadX, spreadY, spreadZ, block.Id);
             }

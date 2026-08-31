@@ -13,7 +13,7 @@ namespace OmniBlock.Blocks.Behaviors;
 ///         <see cref="Generate" /> is called externally by <c>ItemDye</c> for bone meal.
 ///     </para>
 /// </summary>
-internal sealed class SaplingBehavior(int[] textures) : IBlockTicker, IBlockVisuals, IBlockLifecycle
+internal sealed class SaplingBehavior(int[] textures) : BlockRuntimeBehavior, IBlockTicker, IBlockVisuals, IBlockLifecycle
 {
     private static readonly JavaRandom s_random = new();
 
@@ -32,13 +32,13 @@ internal sealed class SaplingBehavior(int[] textures) : IBlockTicker, IBlockVisu
         }
         else
         {
-            Generate(@event.World, @event.X, @event.Y, @event.Z);
+            Generate(@event.World, @event.X, @event.Y, @event.Z, block.Id);
         }
     }
 
     public int GetTexture(Block block, Side side, int meta, int defaultTexture) => textures[meta & 3];
 
-    public static void Generate(IWorldContext world, int x, int y, int z)
+    public static void Generate(IWorldContext world, int x, int y, int z, int saplingId)
     {
         int saplingType = world.Reader.GetBlockMeta(x, y, z) & 3;
         world.Writer.SetBlock(x, y, z, 0);
@@ -62,7 +62,7 @@ internal sealed class SaplingBehavior(int[] textures) : IBlockTicker, IBlockVisu
 
         if (!treeFeature.Generate(world, s_random, x, y, z))
         {
-            world.Writer.SetBlock(x, y, z, BlockRegistry.Get("sapling").Id, saplingType);
+            world.Writer.SetBlock(x, y, z, saplingId, saplingType);
         }
     }
 }

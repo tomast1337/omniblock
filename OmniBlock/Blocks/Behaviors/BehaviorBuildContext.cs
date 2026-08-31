@@ -20,7 +20,8 @@ public readonly struct BehaviorBuildContext
         Func<ResourceLocation, Block> resolveBlock,
         Func<ResourceLocation, Item> resolveItem,
         Func<ResourceLocation, Material> resolveMaterial,
-        Func<string, int> resolveTerrainTexture)
+        Func<string, int> resolveTerrainTexture,
+        IBlockRuntimeView? blocks = null)
     {
         ArgumentNullException.ThrowIfNull(resolveBlock);
         ArgumentNullException.ThrowIfNull(resolveItem);
@@ -31,6 +32,7 @@ public readonly struct BehaviorBuildContext
         _resolveItem = resolveItem;
         _resolveMaterial = resolveMaterial;
         _resolveTerrainTexture = resolveTerrainTexture;
+        Blocks = blocks ?? new DelegateBlockRuntimeView(resolveBlock);
     }
 
     public Block ResolveBlock(ResourceLocation key) =>
@@ -45,6 +47,11 @@ public readonly struct BehaviorBuildContext
     public int ResolveTerrainTexture(string key) =>
         (_resolveTerrainTexture ?? throw Uninitialized()).Invoke(key);
 
+    public IBlockRuntimeView Blocks { get; }
+
+    internal BehaviorBuildContext WithBlocks(IBlockRuntimeView blocks) =>
+        new(_resolveBlock, _resolveItem, _resolveMaterial, _resolveTerrainTexture, blocks);
+
     internal static BehaviorBuildContext BuiltIns { get; } = new(
         static key => BlockRegistry.Get(key.Path),
         static key => Item.ByName(key.Path),
@@ -53,4 +60,12 @@ public readonly struct BehaviorBuildContext
 
     private static InvalidOperationException Uninitialized() =>
         new($"{nameof(BehaviorBuildContext)} must be initialized before resolving dependencies.");
+
+    private sealed class DelegateBlockRuntimeView(Func<ResourceLocation, Block> resolveBlock) : IBlockRuntimeView
+    {
+        public Block Get(ResourceLocation key) => resolveBlock(key);
+        public Block GetByProtocolId(int protocolId) => BlockRegistry.GetByProtocolId(protocolId);
+        public bool TryGetByProtocolId(int protocolId, out Block? block) =>
+            BlockRegistry.TryGetByProtocolId(protocolId, out block);
+    }
 }
