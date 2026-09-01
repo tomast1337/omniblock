@@ -12,11 +12,14 @@ internal sealed class PumpkinBehavior(int top, int side, int face, int itemFace)
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
         if (@event.Placer == null) return;
-        int direction = MathHelper.Floor(@event.Placer.Yaw * 4.0F / 360.0F + 2.5D) & 3;
+        var direction = MathHelper.Floor(@event.Placer.Yaw * 4.0F / 360.0F + 2.5D) & 3;
         @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, direction);
     }
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
+    public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
+    {
+        return @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
+    }
 
     public int GetTexture(Block block, Side renderSide, int meta, int defaultTexture)
     {
@@ -30,10 +33,13 @@ internal sealed class PumpkinBehavior(int top, int side, int face, int itemFace)
     // Without a world there is no facing to read, so the south face is carved by convention. A lit
     // pumpkin shows the unlit carving here: the item icon has never lit up, and it is a separate
     // texture rather than the same one, so the two have to be named apart.
-    public int GetTexture(Block block, Side renderSide, int defaultTexture) => renderSide switch
+    public int GetTexture(Block block, Side renderSide, int defaultTexture)
     {
-        Side.Up or Side.Down => top,
-        Side.South => itemFace,
-        _ => side
-    };
+        return renderSide switch
+        {
+            Side.Up or Side.Down => top,
+            Side.South => itemFace,
+            _ => side
+        };
+    }
 }

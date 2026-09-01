@@ -1,4 +1,3 @@
-using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.Items;
 using OmniBlock.Util.Maths;
@@ -22,29 +21,35 @@ internal sealed class SnowBehavior(Item dropItem, float dropSpread) : BlockRunti
 {
     public void OnAfterBreak(Block block, OnAfterBreakEvent @event)
     {
-        double offsetX = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
-        double offsetY = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
-        double offsetZ = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
-        Entity entityItem = DroppedItemBehavior.Create(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(dropItem.Id, 1, 0), pickupDelay: 10);
+        var offsetX = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
+        var offsetY = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
+        var offsetZ = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
+        var entityItem = DroppedItemBehavior.Create(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(dropItem.Id, 1, 0), 10);
         @event.World.Entities.SpawnEntity(entityItem);
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         @event.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[block.Id], 1);
     }
 
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => dropItem.Id;
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId)
+    {
+        return dropItem.Id;
+    }
 
-    public int GetDroppedItemCount(Block block, int defaultCount) => 0;
+    public int GetDroppedItemCount(Block block, int defaultCount)
+    {
+        return 0;
+    }
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
     {
-        int meta = reader.GetBlockMeta(x, y, z) & 7;
-        float height = 2 * (1 + meta) / 16.0F;
+        var meta = reader.GetBlockMeta(x, y, z) & 7;
+        var height = 2 * (1 + meta) / 16.0F;
         block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, height, 1.0F);
     }
 
     public Box? GetCollisionShape(Block block, IBlockReader reader, EntityManager entities, int x, int y, int z, Box? defaultShape)
     {
-        int meta = reader.GetBlockMeta(x, y, z) & 7;
+        var meta = reader.GetBlockMeta(x, y, z) & 7;
         if (meta < 3) return null;
 
         return new Box(x + block.BoundingBox.MinX, y + block.BoundingBox.MinY, z + block.BoundingBox.MinZ, x + block.BoundingBox.MaxX, y + 0.5F, z + block.BoundingBox.MaxZ);
@@ -52,7 +57,7 @@ internal sealed class SnowBehavior(Item dropItem, float dropSpread) : BlockRunti
 
     public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
     {
-        int blockBelowId = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z);
+        var blockBelowId = @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z);
         return blockBelowId != 0 && Blocks.GetByProtocolId(blockBelowId).IsOpaque && @event.World.Reader.GetMaterial(@event.X, @event.Y - 1, @event.Z).BlocksMovement;
     }
 
@@ -72,5 +77,7 @@ internal sealed class SnowBehavior(Item dropItem, float dropSpread) : BlockRunti
     }
 
     public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
-        => side == Side.Up || defaultVisibility;
+    {
+        return side == Side.Up || defaultVisibility;
+    }
 }

@@ -19,7 +19,7 @@ public sealed class SignBehavior(bool isStanding) : IBlockPhysics
     {
         if (isStanding) return;
 
-        Side facing = reader.GetBlockMeta(x, y, z).ToSide();
+        var facing = reader.GetBlockMeta(x, y, z).ToSide();
 
         block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         switch (facing)
@@ -41,17 +41,14 @@ public sealed class SignBehavior(bool isStanding) : IBlockPhysics
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        bool shouldBreak = false;
+        var shouldBreak = false;
         if (isStanding)
         {
-            if (!@event.World.Reader.GetMaterial(@event.X, @event.Y - 1, @event.Z).IsSolid)
-            {
-                shouldBreak = true;
-            }
+            if (!@event.World.Reader.GetMaterial(@event.X, @event.Y - 1, @event.Z).IsSolid) shouldBreak = true;
         }
         else
         {
-            Side facing = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z).ToSide();
+            var facing = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z).ToSide();
             shouldBreak = true;
             switch (facing)
             {

@@ -27,12 +27,12 @@ public sealed class BedBehavior(int bottom, int footTop, int footSide, int footE
     {
         if (@event.World.IsRemote) return true;
 
-        (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
+        var (x, y, z) = (@event.X, @event.Y, @event.Z);
 
-        int meta = @event.World.Reader.GetBlockMeta(x, y, z);
+        var meta = @event.World.Reader.GetBlockMeta(x, y, z);
         if (!IsHeadOfBed(meta))
         {
-            int direction = GetDirection(meta);
+            var direction = GetDirection(meta);
             x += s_bedOffsets[direction][0];
             z += s_bedOffsets[direction][1];
 
@@ -45,14 +45,11 @@ public sealed class BedBehavior(int bottom, int footTop, int footSide, int footE
         {
             @event.World.Writer.SetBlock(x, y, z, 0);
 
-            int direction = GetDirection(meta);
+            var direction = GetDirection(meta);
             x += s_bedOffsets[direction][0];
             z += s_bedOffsets[direction][1];
 
-            if (@event.World.Reader.GetBlockId(x, y, z) == block.Id)
-            {
-                @event.World.Writer.SetBlock(x, y, z, 0);
-            }
+            if (@event.World.Reader.GetBlockId(x, y, z) == block.Id) @event.World.Writer.SetBlock(x, y, z, 0);
 
             @event.World.CreateExplosion(null, x + 0.5F, y + 0.5F, z + 0.5F, 5.0F, true);
             return true;
@@ -61,18 +58,12 @@ public sealed class BedBehavior(int bottom, int footTop, int footSide, int footE
         if (IsBedOccupied(meta))
         {
             EntityPlayer? occupant = null;
-            foreach (EntityPlayer otherPlayer in @event.World.Entities.Players)
+            foreach (var otherPlayer in @event.World.Entities.Players)
             {
-                if (!otherPlayer.IsSleeping)
-                {
-                    continue;
-                }
+                if (!otherPlayer.IsSleeping) continue;
 
-                Vec3I? sleepingPos = otherPlayer.SleepingPos;
-                if (sleepingPos != null && sleepingPos.Value.X == x && sleepingPos.Value.Y == y && sleepingPos.Value.Z == z)
-                {
-                    occupant = otherPlayer;
-                }
+                var sleepingPos = otherPlayer.SleepingPos;
+                if (sleepingPos != null && sleepingPos.Value.X == x && sleepingPos.Value.Y == y && sleepingPos.Value.Z == z) occupant = otherPlayer;
             }
 
             if (occupant != null)
@@ -84,7 +75,7 @@ public sealed class BedBehavior(int bottom, int footTop, int footSide, int footE
             UpdateState(@event.World.Writer, x, y, z, meta, false);
         }
 
-        SleepAttemptResult result = @event.Player.TrySleep(x, y, z);
+        var result = @event.Player.TrySleep(x, y, z);
         switch (result)
         {
             case SleepAttemptResult.OK:
@@ -103,34 +94,32 @@ public sealed class BedBehavior(int bottom, int footTop, int footSide, int footE
 
         return true;
     }
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => IsHeadOfBed(blockMeta) ? 0 : bedItem.Id;
+
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId)
+    {
+        return IsHeadOfBed(blockMeta) ? 0 : bedItem.Id;
+    }
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        int blockMeta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        int direction = GetDirection(blockMeta);
+        var blockMeta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var direction = GetDirection(blockMeta);
 
         if (IsHeadOfBed(blockMeta))
         {
-            if (@event.World.Reader.GetBlockId(@event.X - s_bedOffsets[direction][0], @event.Y, @event.Z - s_bedOffsets[direction][1]) != block.Id)
-            {
-                @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
-            }
+            if (@event.World.Reader.GetBlockId(@event.X - s_bedOffsets[direction][0], @event.Y, @event.Z - s_bedOffsets[direction][1]) != block.Id) @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         }
         else if (@event.World.Reader.GetBlockId(@event.X + s_bedOffsets[direction][0], @event.Y, @event.Z + s_bedOffsets[direction][1]) != block.Id)
         {
             @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
-            if (!@event.World.IsRemote)
-            {
-                block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, blockMeta));
-            }
+            if (!@event.World.IsRemote) block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, blockMeta));
         }
     }
 
     public int GetTexture(Block block, Side side, int meta, int defaultTexture)
     {
-        int direction = GetDirection(meta);
-        Side sideFacing = s_bedFacings[direction][side.ToInt()];
+        var direction = GetDirection(meta);
+        var sideFacing = s_bedFacings[direction][side.ToInt()];
         if (side == Side.Down) return bottom;
 
         if (IsHeadOfBed(meta))
@@ -147,30 +136,35 @@ public sealed class BedBehavior(int bottom, int footTop, int footSide, int footE
         return footSide;
     }
 
-    public static int GetDirection(int meta) => meta & 3;
+    public static int GetDirection(int meta)
+    {
+        return meta & 3;
+    }
 
-    public static bool IsHeadOfBed(int meta) => (meta & 8) != 0;
+    public static bool IsHeadOfBed(int meta)
+    {
+        return (meta & 8) != 0;
+    }
 
-    private static bool IsBedOccupied(int meta) => (meta & 4) != 0;
+    private static bool IsBedOccupied(int meta)
+    {
+        return (meta & 4) != 0;
+    }
 
     public static void UpdateState(IBlockWriter worldWriter, int x, int y, int z, int meta, bool occupied)
     {
         if (occupied)
-        {
             meta |= 4;
-        }
         else
-        {
             meta &= ~4;
-        }
 
         worldWriter.SetBlockMeta(x, y, z, meta);
     }
 
     public static Vec3I? FindWakeUpPosition(IBlockReader reader, int x, int y, int z, int skip)
     {
-        int blockMeta = reader.GetBlockMeta(x, y, z);
-        int direction = GetDirection(blockMeta);
+        var blockMeta = reader.GetBlockMeta(x, y, z);
+        var direction = GetDirection(blockMeta);
 
         if (IsHeadOfBed(blockMeta))
         {
@@ -178,34 +172,27 @@ public sealed class BedBehavior(int bottom, int footTop, int footSide, int footE
             z -= s_bedOffsets[direction][1];
         }
 
-        for (int bedHalf = 0; bedHalf <= 1; ++bedHalf)
+        for (var bedHalf = 0; bedHalf <= 1; ++bedHalf)
         {
-            int centerX = x + s_bedOffsets[direction][0] * bedHalf;
-            int centerZ = z + s_bedOffsets[direction][1] * bedHalf;
+            var centerX = x + s_bedOffsets[direction][0] * bedHalf;
+            var centerZ = z + s_bedOffsets[direction][1] * bedHalf;
 
-            int searchMinX = centerX - 1;
-            int searchMinZ = centerZ - 1;
-            int searchMaxX = centerX + 1;
-            int searchMaxZ = centerZ + 1;
+            var searchMinX = centerX - 1;
+            var searchMinZ = centerZ - 1;
+            var searchMaxX = centerX + 1;
+            var searchMaxZ = centerZ + 1;
 
-            for (int checkX = searchMinX; checkX <= searchMaxX; ++checkX)
+            for (var checkX = searchMinX; checkX <= searchMaxX; ++checkX)
+            for (var checkZ = searchMinZ; checkZ <= searchMaxZ; ++checkZ)
             {
-                for (int checkZ = searchMinZ; checkZ <= searchMaxZ; ++checkZ)
-                {
-                    if (!reader.ShouldSuffocate(checkX, y - 1, checkZ) ||
-                        !reader.IsAir(checkX, y, checkZ) ||
-                        !reader.IsAir(checkX, y + 1, checkZ))
-                    {
-                        continue;
-                    }
+                if (!reader.ShouldSuffocate(checkX, y - 1, checkZ) ||
+                    !reader.IsAir(checkX, y, checkZ) ||
+                    !reader.IsAir(checkX, y + 1, checkZ))
+                    continue;
 
-                    if (skip <= 0)
-                    {
-                        return new Vec3I(checkX, y, checkZ);
-                    }
+                if (skip <= 0) return new Vec3I(checkX, y, checkZ);
 
-                    --skip;
-                }
+                --skip;
             }
         }
 

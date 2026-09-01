@@ -20,13 +20,20 @@ internal sealed class CactusBehavior(Block stem, Block soil, int maxHeight, int 
 {
     private const float EdgeInset = 1.0F / 16.0F;
 
-    public void OnEntityCollision(Block block, OnEntityCollisionEvent @event) => @event.Entity.Damage(null, 1);
+    public void OnEntityCollision(Block block, OnEntityCollisionEvent @event)
+    {
+        @event.Entity.Damage(null, 1);
+    }
 
     public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-        => CanGrowAt(@event.World.Reader, @event.X, @event.Y, @event.Z);
+    {
+        return CanGrowAt(@event.World.Reader, @event.X, @event.Y, @event.Z);
+    }
 
     public bool CanGrow(Block block, OnTickEvent @event)
-        => CanGrowAt(@event.World.Reader, @event.X, @event.Y, @event.Z);
+    {
+        return CanGrowAt(@event.World.Reader, @event.X, @event.Y, @event.Z);
+    }
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
@@ -37,21 +44,20 @@ internal sealed class CactusBehavior(Block stem, Block soil, int maxHeight, int 
     }
 
     public Box? GetCollisionShape(Block block, IBlockReader reader, EntityManager entities, int x, int y, int z, Box? defaultShape)
-        => new Box(x + EdgeInset, y, z + EdgeInset, x + 1 - EdgeInset, y + 1 - EdgeInset, z + 1 - EdgeInset);
+    {
+        return new Box(x + EdgeInset, y, z + EdgeInset, x + 1 - EdgeInset, y + 1 - EdgeInset, z + 1 - EdgeInset);
+    }
 
     public void OnTick(Block block, OnTickEvent @event)
     {
         if (!@event.World.Reader.IsAir(@event.X, @event.Y + 1, @event.Z)) return;
 
-        int heightBelow = 1;
-        while (@event.World.Reader.GetBlockId(@event.X, @event.Y - heightBelow, @event.Z) == block.Id)
-        {
-            heightBelow++;
-        }
+        var heightBelow = 1;
+        while (@event.World.Reader.GetBlockId(@event.X, @event.Y - heightBelow, @event.Z) == block.Id) heightBelow++;
 
         if (heightBelow >= maxHeight) return;
 
-        int growthStage = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var growthStage = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if (growthStage == 15)
         {
             @event.World.Writer.SetBlock(@event.X, @event.Y + 1, @event.Z, block.Id);
@@ -63,12 +69,15 @@ internal sealed class CactusBehavior(Block stem, Block soil, int maxHeight, int 
         }
     }
 
-    public int GetTexture(Block block, Side renderSide, int defaultTexture) => renderSide switch
+    public int GetTexture(Block block, Side renderSide, int defaultTexture)
     {
-        Side.Up => top,
-        Side.Down => bottom,
-        _ => side
-    };
+        return renderSide switch
+        {
+            Side.Up => top,
+            Side.Down => bottom,
+            _ => side
+        };
+    }
 
     private bool CanGrowAt(IBlockReader world, int x, int y, int z)
     {
@@ -77,7 +86,7 @@ internal sealed class CactusBehavior(Block stem, Block soil, int maxHeight, int 
         if (world.GetMaterial(x, y, z - 1).IsSolid) return false;
         if (world.GetMaterial(x, y, z + 1).IsSolid) return false;
 
-        int blockBelowId = world.GetBlockId(x, y - 1, z);
+        var blockBelowId = world.GetBlockId(x, y - 1, z);
         return blockBelowId == stem.Id || blockBelowId == soil.Id;
     }
 }

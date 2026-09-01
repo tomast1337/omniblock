@@ -14,7 +14,7 @@ public sealed class NoteBlockBehavior : BlockRuntimeBehavior, IBlockInteractable
     {
         if (@event.World.IsRemote) return true;
 
-        BlockEntityNote? blockEntity = @event.World.Entities.GetBlockEntity<BlockEntityNote>(@event.X, @event.Y, @event.Z);
+        var blockEntity = @event.World.Entities.GetBlockEntity<BlockEntityNote>(@event.X, @event.Y, @event.Z);
         if (blockEntity == null) return false;
 
         blockEntity.CycleNote();
@@ -26,24 +26,24 @@ public sealed class NoteBlockBehavior : BlockRuntimeBehavior, IBlockInteractable
     {
         if (@event.World.IsRemote) return;
 
-        BlockEntityNote? blockEntity = @event.World.Entities.GetBlockEntity<BlockEntityNote>(@event.X, @event.Y, @event.Z);
+        var blockEntity = @event.World.Entities.GetBlockEntity<BlockEntityNote>(@event.X, @event.Y, @event.Z);
         blockEntity?.PlayNote(@event.World, @event.X, @event.Y, @event.Z);
     }
 
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        if (block.GetBlockEntity() is { } blockEntity)
-        {
-            @event.World.Entities.SetBlockEntity(@event.X, @event.Y, @event.Z, blockEntity);
-        }
+        if (block.GetBlockEntity() is { } blockEntity) @event.World.Entities.SetBlockEntity(@event.X, @event.Y, @event.Z, blockEntity);
     }
 
-    public void OnBreak(Block block, OnBreakEvent @event) => @event.World.Entities.RemoveBlockEntity(@event.X, @event.Y, @event.Z);
+    public void OnBreak(Block block, OnBreakEvent @event)
+    {
+        @event.World.Entities.RemoveBlockEntity(@event.X, @event.Y, @event.Z);
+    }
 
     public void OnBlockAction(Block block, OnBlockActionEvent @event)
     {
-        float pitch = (float)Math.Pow(2.0D, (@event.Data2 - 12) / 12.0D);
-        string instrumentName = @event.Data1 switch
+        var pitch = (float)Math.Pow(2.0D, (@event.Data2 - 12) / 12.0D);
+        var instrumentName = @event.Data1 switch
         {
             1 => "bd",
             2 => "snare",
@@ -58,22 +58,13 @@ public sealed class NoteBlockBehavior : BlockRuntimeBehavior, IBlockInteractable
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        if (!(@event.BlockId > 0 && Blocks.GetByProtocolId(@event.BlockId).CanEmitRedstonePower()))
-        {
-            return;
-        }
+        if (!(@event.BlockId > 0 && Blocks.GetByProtocolId(@event.BlockId).CanEmitRedstonePower())) return;
 
-        bool isPowered = @event.World.Redstone.IsStrongPowered(@event.X, @event.Y, @event.Z);
-        BlockEntityNote? blockEntity = @event.World.Entities.GetBlockEntity<BlockEntityNote>(@event.X, @event.Y, @event.Z);
-        if (blockEntity == null || blockEntity.powered == isPowered)
-        {
-            return;
-        }
+        var isPowered = @event.World.Redstone.IsStrongPowered(@event.X, @event.Y, @event.Z);
+        var blockEntity = @event.World.Entities.GetBlockEntity<BlockEntityNote>(@event.X, @event.Y, @event.Z);
+        if (blockEntity == null || blockEntity.powered == isPowered) return;
 
-        if (isPowered)
-        {
-            blockEntity.PlayNote(@event.World, @event.X, @event.Y, @event.Z);
-        }
+        if (isPowered) blockEntity.PlayNote(@event.World, @event.X, @event.Y, @event.Z);
 
         blockEntity.powered = isPowered;
     }

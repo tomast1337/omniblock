@@ -33,7 +33,7 @@ internal class BlockEntityNote : BlockEntity
     public void PlayNote(IWorldContext level, int x, int y, int z)
     {
         if (level.Reader.GetMaterial(x, y + 1, z) != Material.Air) return;
-        Material material = level.Reader.GetMaterial(x, y - 1, z);
+        var material = level.Reader.GetMaterial(x, y - 1, z);
         byte instrument = 0;
         if (material == Material.Stone) instrument = 1;
         if (material == Material.Sand) instrument = 2;

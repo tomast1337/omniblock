@@ -10,9 +10,18 @@ namespace OmniBlock.Blocks.Behaviors;
 /// </remarks>
 public sealed class ClothVisualBehavior(int[] textures) : IBlockVisuals
 {
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture) => textures[meta & 15];
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture)
+    {
+        return textures[meta & 15];
+    }
 
-    public static int GetBlockMeta(int itemMeta) => ~itemMeta & 15;
+    public static int GetBlockMeta(int itemMeta)
+    {
+        return ~itemMeta & 15;
+    }
 
-    public static int GetItemMeta(int blockMeta) => ~blockMeta & 15;
+    public static int GetItemMeta(int blockMeta)
+    {
+        return ~blockMeta & 15;
+    }
 }

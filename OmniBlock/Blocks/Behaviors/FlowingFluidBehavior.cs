@@ -25,74 +25,64 @@ public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidifie
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
         FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z, sourceSolidified, flowSolidified);
-        int placedId = @event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z);
-        if (placedId == block.Id && !@event.World.IsRemote)
-        {
-            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
-        }
+        var placedId = @event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z);
+        if (placedId == block.Id && !@event.World.IsRemote) @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
     }
 
-    public bool HasCollision(Block block, int meta, bool allowLiquids, bool defaultHasCollision) => allowLiquids && meta == 0;
+    public bool HasCollision(Block block, int meta, bool allowLiquids, bool defaultHasCollision)
+    {
+        return allowLiquids && meta == 0;
+    }
 
-    public Vec3D ApplyVelocity(Block block, OnApplyVelocityEvent @event, Vec3D defaultVelocity) => FluidMath.ApplyVelocity(@event.World.Reader, @event.X, @event.Y, @event.Z, block.Material);
+    public Vec3D ApplyVelocity(Block block, OnApplyVelocityEvent @event, Vec3D defaultVelocity)
+    {
+        return FluidMath.ApplyVelocity(@event.World.Reader, @event.X, @event.Y, @event.Z, block.Material);
+    }
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
         FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z, sourceSolidified, flowSolidified);
-        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z) == block.Id)
-        {
-            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
-        }
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z) == block.Id) @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
     }
 
-    public void RandomDisplayTick(Block block, OnTickEvent @event) => FluidMath.RandomDisplayTick(block, @event);
+    public void RandomDisplayTick(Block block, OnTickEvent @event)
+    {
+        FluidMath.RandomDisplayTick(block, @event);
+    }
 
     public void OnTick(Block block, OnTickEvent ctx)
     {
-        int currentState = GetLiquidState(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z, block.Material);
+        var currentState = GetLiquidState(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z, block.Material);
         sbyte spreadRate = 1;
-        if (block.Material == Material.Lava && !ctx.World.Dimension.EvaporatesWater)
-        {
-            spreadRate = 2;
-        }
+        if (block.Material == Material.Lava && !ctx.World.Dimension.EvaporatesWater) spreadRate = 2;
 
-        bool convertToSource = true;
+        var convertToSource = true;
         int newLevel;
         if (currentState > 0)
         {
             const int minDepth = -100;
             _adjacentSources.Value = 0;
-            int lowestNeighborDepth = GetLowestDepth(ctx.World.Reader, ctx.X - 1, ctx.Y, ctx.Z, minDepth, block.Material);
+            var lowestNeighborDepth = GetLowestDepth(ctx.World.Reader, ctx.X - 1, ctx.Y, ctx.Z, minDepth, block.Material);
             lowestNeighborDepth = GetLowestDepth(ctx.World.Reader, ctx.X + 1, ctx.Y, ctx.Z, lowestNeighborDepth, block.Material);
             lowestNeighborDepth = GetLowestDepth(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z - 1, lowestNeighborDepth, block.Material);
             lowestNeighborDepth = GetLowestDepth(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z + 1, lowestNeighborDepth, block.Material);
             newLevel = lowestNeighborDepth + spreadRate;
-            if (newLevel >= 8 || lowestNeighborDepth < 0)
-            {
-                newLevel = -1;
-            }
+            if (newLevel >= 8 || lowestNeighborDepth < 0) newLevel = -1;
 
-            int stateAbove = GetLiquidState(ctx.World.Reader, ctx.X, ctx.Y + 1, ctx.Z, block.Material);
+            var stateAbove = GetLiquidState(ctx.World.Reader, ctx.X, ctx.Y + 1, ctx.Z, block.Material);
             if (stateAbove >= 0)
             {
                 if (stateAbove >= 8)
-                {
                     newLevel = stateAbove;
-                }
                 else
-                {
                     newLevel = stateAbove + 8;
-                }
             }
 
             if (_adjacentSources.Value >= 2 && block.Material == Material.Water)
             {
-                Material matUnder = ctx.World.Reader.GetMaterial(ctx.X, ctx.Y - 1, ctx.Z);
+                var matUnder = ctx.World.Reader.GetMaterial(ctx.X, ctx.Y - 1, ctx.Z);
                 // block under is solid or water source
-                if (matUnder.IsSolid || (matUnder == block.Material && ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z) == 0))
-                {
-                    newLevel = 0;
-                }
+                if (matUnder.IsSolid || (matUnder == block.Material && ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z) == 0)) newLevel = 0;
             }
             else if (block.Material == Material.Lava && currentState < 8 && newLevel < 8 && newLevel > currentState && ctx.World.Random.NextInt(4) != 0)
             {
@@ -130,29 +120,19 @@ public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidifie
             GetLowestDepth(ctx.World.Reader, ctx.X, ctx.Y, ctx.Z + 1, minDepth, block.Material);
         }
 
-        if (currentState < 0)
-        {
-            return;
-        }
+        if (currentState < 0) return;
 
         if (currentState >= 8)
-        {
             SpreadTo(block, ctx.World, ctx.X, ctx.Y - 1, ctx.Z, currentState);
-        }
         else
-        {
             SpreadTo(block, ctx.World, ctx.X, ctx.Y - 1, ctx.Z, currentState + 8);
-        }
 
         if (currentState == 0 || IsLiquidBreaking(ctx.World, ctx.X, ctx.Y - 1, ctx.Z))
         {
             newLevel = currentState + spreadRate;
-            if (currentState >= 8)
-            {
-                newLevel = 1;
-            }
+            if (currentState >= 8) newLevel = 1;
 
-            bool[] spreadArray = GetSpread(ctx.World, ctx.X, ctx.Y, ctx.Z, block.Material);
+            var spreadArray = GetSpread(ctx.World, ctx.X, ctx.Y, ctx.Z, block.Material);
 
             if (newLevel < 8)
             {
@@ -166,25 +146,32 @@ public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidifie
             }
         }
 
-        if (currentState == 0 && ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z) == block.Id)
-        {
-            ConvertToSource(block, ctx.World, ctx.X, ctx.Y, ctx.Z);
-        }
+        if (currentState == 0 && ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z) == block.Id) ConvertToSource(block, ctx.World, ctx.X, ctx.Y, ctx.Z);
     }
 
-    public int GetTexture(Block block, Side side, int defaultTexture) => FluidMath.GetTexture(side, still, flowing);
+    public int GetTexture(Block block, Side side, int defaultTexture)
+    {
+        return FluidMath.GetTexture(side, still, flowing);
+    }
 
     public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
-        => FluidMath.IsSideVisible(block, reader, x, y, z, side, defaultVisibility);
+    {
+        return FluidMath.IsSideVisible(block, reader, x, y, z, side, defaultVisibility);
+    }
 
-    public float GetLuminance(Block block, ILightProvider lighting, int x, int y, int z, float defaultLuminance) => FluidMath.GetLuminance(lighting, x, y, z);
+    public float GetLuminance(Block block, ILightProvider lighting, int x, int y, int z, float defaultLuminance)
+    {
+        return FluidMath.GetLuminance(lighting, x, y, z);
+    }
 
-    public LightLevels GetLightLevels(Block block, ILightProvider lighting, int x, int y, int z, LightLevels defaultLevels) =>
-        FluidMath.GetLightLevels(lighting, x, y, z, Blocks.GetLightEmission(block.Id));
+    public LightLevels GetLightLevels(Block block, ILightProvider lighting, int x, int y, int z, LightLevels defaultLevels)
+    {
+        return FluidMath.GetLightLevels(lighting, x, y, z, Blocks.GetLightEmission(block.Id));
+    }
 
     private static void ConvertToSource(Block block, IWorldContext world, int x, int y, int z)
     {
-        int meta = world.Reader.GetBlockMeta(x, y, z);
+        var meta = world.Reader.GetBlockMeta(x, y, z);
         world.Writer.SetBlockWithoutNotifyingNeighbors(x, y, z, block.Id + 1, meta, false);
     }
 
@@ -192,17 +179,13 @@ public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidifie
     {
         if (!CanSpreadTo(world, x, y, z, block.Material)) return;
 
-        int currentId = world.Reader.GetBlockId(x, y, z);
+        var currentId = world.Reader.GetBlockId(x, y, z);
         if (currentId > 0)
         {
             if (block.Material == Material.Lava)
-            {
                 FluidMath.Fizz(world.Broadcaster, x, y, z);
-            }
             else
-            {
                 Blocks.GetByProtocolId(currentId).DropStacks(new OnDropEvent(world, x, y, z, world.Reader.GetBlockMeta(x, y, z)));
-            }
         }
 
         world.Writer.SetBlock(x, y, z, block.Id, depth);
@@ -210,20 +193,18 @@ public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidifie
 
     private int GetDistanceToGap(IWorldContext world, int x, int y, int z, int distance, int fromDirection, Material material)
     {
-        int minDistance = 1000;
+        var minDistance = 1000;
 
-        for (int direction = 0; direction < 4; ++direction)
+        for (var direction = 0; direction < 4; ++direction)
         {
             if ((direction == 0 && fromDirection == 1) ||
                 (direction == 1 && fromDirection == 0) ||
                 (direction == 2 && fromDirection == 3) ||
                 (direction == 3 && fromDirection == 2))
-            {
                 continue;
-            }
 
-            int neighborX = x;
-            int neighborZ = z;
+            var neighborX = x;
+            var neighborZ = z;
             switch (direction)
             {
                 case 0:
@@ -240,26 +221,14 @@ public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidifie
                     break;
             }
 
-            if (IsLiquidBreaking(world, neighborX, y, neighborZ) || (world.Reader.GetMaterial(neighborX, y, neighborZ) == material && world.Reader.GetBlockMeta(neighborX, y, neighborZ) == 0))
-            {
-                continue;
-            }
+            if (IsLiquidBreaking(world, neighborX, y, neighborZ) || (world.Reader.GetMaterial(neighborX, y, neighborZ) == material && world.Reader.GetBlockMeta(neighborX, y, neighborZ) == 0)) continue;
 
-            if (!IsLiquidBreaking(world, neighborX, y - 1, neighborZ))
-            {
-                return distance;
-            }
+            if (!IsLiquidBreaking(world, neighborX, y - 1, neighborZ)) return distance;
 
-            if (distance >= 4)
-            {
-                continue;
-            }
+            if (distance >= 4) continue;
 
-            int childDistance = GetDistanceToGap(world, neighborX, y, neighborZ, distance + 1, direction, material);
-            if (childDistance < minDistance)
-            {
-                minDistance = childDistance;
-            }
+            var childDistance = GetDistanceToGap(world, neighborX, y, neighborZ, distance + 1, direction, material);
+            if (childDistance < minDistance) minDistance = childDistance;
         }
 
         return minDistance;
@@ -269,12 +238,12 @@ public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidifie
     {
         int direction;
         int neighborX;
-        int[] distanceToGap = _distanceToGap.Value!;
+        var distanceToGap = _distanceToGap.Value!;
         for (direction = 0; direction < 4; ++direction)
         {
             distanceToGap[direction] = 1000;
             neighborX = x;
-            int neighborZ = z;
+            var neighborZ = z;
             switch (direction)
             {
                 case 0:
@@ -291,36 +260,22 @@ public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidifie
                     break;
             }
 
-            if (IsLiquidBreaking(world, neighborX, y, neighborZ) || (world.Reader.GetMaterial(neighborX, y, neighborZ) == material && world.Reader.GetBlockMeta(neighborX, y, neighborZ) == 0))
-            {
-                continue;
-            }
+            if (IsLiquidBreaking(world, neighborX, y, neighborZ) || (world.Reader.GetMaterial(neighborX, y, neighborZ) == material && world.Reader.GetBlockMeta(neighborX, y, neighborZ) == 0)) continue;
 
             if (!IsLiquidBreaking(world, neighborX, y - 1, neighborZ))
-            {
                 distanceToGap[direction] = 0;
-            }
             else
-            {
                 distanceToGap[direction] = GetDistanceToGap(world, neighborX, y, neighborZ, 1, direction, material);
-            }
         }
 
         direction = distanceToGap[0];
 
         for (neighborX = 1; neighborX < 4; ++neighborX)
-        {
             if (distanceToGap[neighborX] < direction)
-            {
                 direction = distanceToGap[neighborX];
-            }
-        }
 
-        bool[] spread = _spread.Value!;
-        for (neighborX = 0; neighborX < 4; ++neighborX)
-        {
-            spread[neighborX] = distanceToGap[neighborX] == direction;
-        }
+        var spread = _spread.Value!;
+        for (neighborX = 0; neighborX < 4; ++neighborX) spread[neighborX] = distanceToGap[neighborX] == direction;
 
         return spread;
     }
@@ -331,21 +286,20 @@ public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidifie
 
         if (!world.Reader.IsPosLoaded(x, y, z)) return true;
 
-        int blockId = world.Reader.GetBlockId(x, y, z);
-        foreach (Block obstacle in passable)
-        {
-            if (blockId == obstacle.Id) return true;
-        }
+        var blockId = world.Reader.GetBlockId(x, y, z);
+        foreach (var obstacle in passable)
+            if (blockId == obstacle.Id)
+                return true;
 
         if (blockId == 0) return false;
 
-        Material mat = Blocks.GetByProtocolId(blockId).Material;
+        var mat = Blocks.GetByProtocolId(blockId).Material;
         return mat.BlocksMovement;
     }
 
     private int GetLowestDepth(IBlockReader reader, int x, int y, int z, int depth, Material material)
     {
-        int liquidState = GetLiquidState(reader, x, y, z, material);
+        var liquidState = GetLiquidState(reader, x, y, z, material);
         switch (liquidState)
         {
             case < 0:
@@ -367,12 +321,15 @@ public sealed class FlowingFluidBehavior(Block[] passable, Block sourceSolidifie
 
         if (!world.Reader.IsPosLoaded(x, y, z)) return false;
 
-        int blockId = world.Reader.GetBlockId(x, y, z);
+        var blockId = world.Reader.GetBlockId(x, y, z);
         if (blockId == 0) return true;
 
-        Material mat = world.Reader.GetMaterial(x, y, z);
+        var mat = world.Reader.GetMaterial(x, y, z);
         return mat != material && mat != Material.Lava && !IsLiquidBreaking(world, x, y, z);
     }
 
-    private static int GetLiquidState(IBlockReader reader, int x, int y, int z, Material material) => reader.GetMaterial(x, y, z) != material ? -1 : reader.GetBlockMeta(x, y, z);
+    private static int GetLiquidState(IBlockReader reader, int x, int y, int z, Material material)
+    {
+        return reader.GetMaterial(x, y, z) != material ? -1 : reader.GetBlockMeta(x, y, z);
+    }
 }

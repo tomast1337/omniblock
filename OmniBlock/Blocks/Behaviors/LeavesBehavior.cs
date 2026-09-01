@@ -12,7 +12,8 @@ namespace OmniBlock.Blocks.Behaviors;
 ///     <see cref="SetGraphicsLevel" /> mutates shared state on this singleton rather than
 ///     per-<see cref="Block" /> instance state.
 ///     <para>
-///         Trunk block, sapling drop, and harvest tool are all required, (see <c>BehaviorRegistry</c>'s <c>"leaves"</c> entry).
+///         Trunk block, sapling drop, and harvest tool are all required, (see <c>BehaviorRegistry</c>'s <c>"leaves"</c>
+///         entry).
 ///         Resolved eagerly, not lazily: every <see cref="Block" /> already exists by the time any
 ///         behavior factory runs (pass 2 of <c>Blocks.LoadAndBuild</c> starts only after
 ///         pass 1 finishes constructing all of them). "Same-species leaves" checks compare against
@@ -34,54 +35,53 @@ public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestT
     {
         const sbyte searchRadius = 1;
         const int loadCheckExtent = searchRadius + 1;
-        if (!@event.World.ChunkHost.IsRegionLoaded(@event.X - loadCheckExtent, @event.Y - loadCheckExtent, @event.Z - loadCheckExtent, @event.X + loadCheckExtent, @event.Y + loadCheckExtent, @event.Z + loadCheckExtent))
-        {
-            return;
-        }
+        if (!@event.World.ChunkHost.IsRegionLoaded(@event.X - loadCheckExtent, @event.Y - loadCheckExtent, @event.Z - loadCheckExtent, @event.X + loadCheckExtent, @event.Y + loadCheckExtent, @event.Z + loadCheckExtent)) return;
 
-        for (int offsetX = -searchRadius; offsetX <= searchRadius; ++offsetX)
+        for (var offsetX = -searchRadius; offsetX <= searchRadius; ++offsetX)
+        for (var offsetY = -searchRadius; offsetY <= searchRadius; ++offsetY)
+        for (var offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
         {
-            for (int offsetY = -searchRadius; offsetY <= searchRadius; ++offsetY)
-            {
-                for (int offsetZ = -searchRadius; offsetZ <= searchRadius; ++offsetZ)
-                {
-                    int blockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
-                    if (blockId != block.Id)
-                    {
-                        continue;
-                    }
+            var blockId = @event.World.Reader.GetBlockId(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
+            if (blockId != block.Id) continue;
 
-                    int leavesMeta = @event.World.Reader.GetBlockMeta(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
-                    @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, leavesMeta | 8);
-                }
-            }
+            var leavesMeta = @event.World.Reader.GetBlockMeta(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ);
+            @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, leavesMeta | 8);
         }
     }
 
     public void OnAfterBreak(Block block, OnAfterBreakEvent ctx)
     {
-        ItemStack? hand = ctx.Player.GetHand();
+        var hand = ctx.Player.GetHand();
         if (ctx.World.IsRemote || hand == null || hand.ItemId != harvestToolItem.Id) return;
 
         ctx.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[block.Id], 1);
         Block.DropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(block.Id, 1, ctx.Meta & 3));
     }
 
-    public int GetDroppedItemCount(Block block, int defaultCount) => Random.Shared.Next(20) == 0 ? 1 : 0;
+    public int GetDroppedItemCount(Block block, int defaultCount)
+    {
+        return Random.Shared.Next(20) == 0 ? 1 : 0;
+    }
 
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => saplingItem.Id;
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId)
+    {
+        return saplingItem.Id;
+    }
 
-    public (int primaryMeta, int backupItemId, int backupMeta) GetPickBlockItem(Block block, int blockMeta, int defaultBackupId, int defaultBackupMeta) => (blockMeta & 3, saplingItem.Id, blockMeta & 3);
+    public (int primaryMeta, int backupItemId, int backupMeta) GetPickBlockItem(Block block, int blockMeta, int defaultBackupId, int defaultBackupMeta)
+    {
+        return (blockMeta & 3, saplingItem.Id, blockMeta & 3);
+    }
 
     public void OnTick(Block block, OnTickEvent @event)
     {
         if (@event.World.IsRemote) return;
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if ((meta & 8) == 0) return;
         _decayRegion.Value ??= new int[RegionSize * RegionSize * RegionSize];
 
-        int[] decayRegion = _decayRegion.Value;
-        int trunkId = trunk.Id;
+        var decayRegion = _decayRegion.Value;
+        var trunkId = trunk.Id;
 
         int distanceToLog;
         if (@event.World.ChunkHost.IsRegionLoaded(@event.X - LoadCheckExtent, @event.Y - LoadCheckExtent, @event.Z - LoadCheckExtent, @event.X + LoadCheckExtent, @event.Y + LoadCheckExtent, @event.Z + LoadCheckExtent))
@@ -90,110 +90,86 @@ public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestT
 
             while (distanceToLog <= DecayRadius)
             {
-                for (int dx = -DecayRadius; dx <= DecayRadius; ++dx)
+                for (var dx = -DecayRadius; dx <= DecayRadius; ++dx)
+                for (var dy = -DecayRadius; dy <= DecayRadius; ++dy)
                 {
-                    for (int dy = -DecayRadius; dy <= DecayRadius; ++dy)
-                    {
-                        int blockId = @event.World.Reader.GetBlockId(@event.X + distanceToLog, @event.Y + dx, @event.Z + dy);
-                        if (blockId == trunkId)
-                        {
-                            decayRegion[(distanceToLog + CenterOffset) * PlaneSize + (dx + CenterOffset) * RegionSize + dy + CenterOffset] = 0;
-                        }
-                        else if (blockId == block.Id)
-                        {
-                            decayRegion[(distanceToLog + CenterOffset) * PlaneSize + (dx + CenterOffset) * RegionSize + dy + CenterOffset] = -2;
-                        }
-                        else
-                        {
-                            decayRegion[(distanceToLog + CenterOffset) * PlaneSize + (dx + CenterOffset) * RegionSize + dy + CenterOffset] = -1;
-                        }
-                    }
+                    var blockId = @event.World.Reader.GetBlockId(@event.X + distanceToLog, @event.Y + dx, @event.Z + dy);
+                    if (blockId == trunkId)
+                        decayRegion[(distanceToLog + CenterOffset) * PlaneSize + (dx + CenterOffset) * RegionSize + dy + CenterOffset] = 0;
+                    else if (blockId == block.Id)
+                        decayRegion[(distanceToLog + CenterOffset) * PlaneSize + (dx + CenterOffset) * RegionSize + dy + CenterOffset] = -2;
+                    else
+                        decayRegion[(distanceToLog + CenterOffset) * PlaneSize + (dx + CenterOffset) * RegionSize + dy + CenterOffset] = -1;
                 }
 
                 ++distanceToLog;
             }
 
             for (distanceToLog = 1; distanceToLog <= 4; ++distanceToLog)
+            for (var dx = -DecayRadius; dx <= DecayRadius; ++dx)
+            for (var dy = -DecayRadius; dy <= DecayRadius; ++dy)
+            for (var dz = -DecayRadius; dz <= DecayRadius; ++dz)
             {
-                for (int dx = -DecayRadius; dx <= DecayRadius; ++dx)
-                {
-                    for (int dy = -DecayRadius; dy <= DecayRadius; ++dy)
-                    {
-                        for (int dz = -DecayRadius; dz <= DecayRadius; ++dz)
-                        {
-                            if (decayRegion[(dx + CenterOffset) * PlaneSize + (dy + CenterOffset) * RegionSize + dz + CenterOffset] != distanceToLog - 1)
-                            {
-                                continue;
-                            }
+                if (decayRegion[(dx + CenterOffset) * PlaneSize + (dy + CenterOffset) * RegionSize + dz + CenterOffset] != distanceToLog - 1) continue;
 
-                            if (decayRegion[(dx + CenterOffset - 1) * PlaneSize + (dy + CenterOffset) * RegionSize + dz + CenterOffset] == -2)
-                            {
-                                decayRegion[(dx + CenterOffset - 1) * PlaneSize + (dy + CenterOffset) * RegionSize + dz + CenterOffset] = distanceToLog;
-                            }
+                if (decayRegion[(dx + CenterOffset - 1) * PlaneSize + (dy + CenterOffset) * RegionSize + dz + CenterOffset] == -2)
+                    decayRegion[(dx + CenterOffset - 1) * PlaneSize + (dy + CenterOffset) * RegionSize + dz + CenterOffset] = distanceToLog;
 
-                            if (decayRegion[(dx + CenterOffset + 1) * PlaneSize + (dy + CenterOffset) * RegionSize + dz + CenterOffset] == -2)
-                            {
-                                decayRegion[(dx + CenterOffset + 1) * PlaneSize + (dy + CenterOffset) * RegionSize + dz + CenterOffset] = distanceToLog;
-                            }
+                if (decayRegion[(dx + CenterOffset + 1) * PlaneSize + (dy + CenterOffset) * RegionSize + dz + CenterOffset] == -2)
+                    decayRegion[(dx + CenterOffset + 1) * PlaneSize + (dy + CenterOffset) * RegionSize + dz + CenterOffset] = distanceToLog;
 
-                            if (decayRegion[(dx + CenterOffset) * PlaneSize + (dy + CenterOffset - 1) * RegionSize + dz + CenterOffset] == -2)
-                            {
-                                decayRegion[(dx + CenterOffset) * PlaneSize + (dy + CenterOffset - 1) * RegionSize + dz + CenterOffset] = distanceToLog;
-                            }
+                if (decayRegion[(dx + CenterOffset) * PlaneSize + (dy + CenterOffset - 1) * RegionSize + dz + CenterOffset] == -2)
+                    decayRegion[(dx + CenterOffset) * PlaneSize + (dy + CenterOffset - 1) * RegionSize + dz + CenterOffset] = distanceToLog;
 
-                            if (decayRegion[(dx + CenterOffset) * PlaneSize + (dy + CenterOffset + 1) * RegionSize + dz + CenterOffset] == -2)
-                            {
-                                decayRegion[(dx + CenterOffset) * PlaneSize + (dy + CenterOffset + 1) * RegionSize + dz + CenterOffset] = distanceToLog;
-                            }
+                if (decayRegion[(dx + CenterOffset) * PlaneSize + (dy + CenterOffset + 1) * RegionSize + dz + CenterOffset] == -2)
+                    decayRegion[(dx + CenterOffset) * PlaneSize + (dy + CenterOffset + 1) * RegionSize + dz + CenterOffset] = distanceToLog;
 
-                            if (decayRegion[(dx + CenterOffset) * PlaneSize + (dy + CenterOffset) * RegionSize + (dz + CenterOffset - 1)] == -2)
-                            {
-                                decayRegion[(dx + CenterOffset) * PlaneSize + (dy + CenterOffset) * RegionSize + (dz + CenterOffset - 1)] = distanceToLog;
-                            }
+                if (decayRegion[(dx + CenterOffset) * PlaneSize + (dy + CenterOffset) * RegionSize + (dz + CenterOffset - 1)] == -2)
+                    decayRegion[(dx + CenterOffset) * PlaneSize + (dy + CenterOffset) * RegionSize + (dz + CenterOffset - 1)] = distanceToLog;
 
-                            if (decayRegion[(dx + CenterOffset) * PlaneSize + (dy + CenterOffset) * RegionSize + dz + CenterOffset + 1] == -2)
-                            {
-                                decayRegion[(dx + CenterOffset) * PlaneSize + (dy + CenterOffset) * RegionSize + dz + CenterOffset + 1] = distanceToLog;
-                            }
-                        }
-                    }
-                }
+                if (decayRegion[(dx + CenterOffset) * PlaneSize + (dy + CenterOffset) * RegionSize + dz + CenterOffset + 1] == -2)
+                    decayRegion[(dx + CenterOffset) * PlaneSize + (dy + CenterOffset) * RegionSize + dz + CenterOffset + 1] = distanceToLog;
             }
         }
 
         distanceToLog = decayRegion[CenterOffset * PlaneSize + CenterOffset * RegionSize + CenterOffset];
         if (distanceToLog >= 0)
-        {
             @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, meta & -9);
-        }
         else
-        {
             BreakLeaves(block, @event.World, @event.X, @event.Y, @event.Z);
-        }
     }
 
     public int GetColor(Block block, int meta, int defaultColor)
-        => (meta & 1) == 1 ? FoliageColors.getSpruceColor() : (meta & 2) == 2 ? FoliageColors.getBirchColor() : FoliageColors.getDefaultColor();
+    {
+        return (meta & 1) == 1 ? FoliageColors.getSpruceColor() : (meta & 2) == 2 ? FoliageColors.getBirchColor() : FoliageColors.getDefaultColor();
+    }
 
     public int GetColorMultiplier(Block block, IBlockReader reader, int x, int y, int z, int defaultColor)
     {
-        int meta = reader.GetBlockMeta(x, y, z);
+        var meta = reader.GetBlockMeta(x, y, z);
         if ((meta & 1) == 1) return FoliageColors.getSpruceColor();
         if ((meta & 2) == 2) return FoliageColors.getBirchColor();
         reader.GetBiomeSource().GetBiomesInArea(x, z, 1, 1);
-        double temperature = reader.GetBiomeSource().TemperatureMap[0];
-        double downfall = reader.GetBiomeSource().DownfallMap[0];
+        var temperature = reader.GetBiomeSource().TemperatureMap[0];
+        var downfall = reader.GetBiomeSource().DownfallMap[0];
         return FoliageColors.getFoliageColor(temperature, downfall);
     }
 
     // Four species slots for two metadata bits, the same as the log the canopy grew from.
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture) =>
-        (_graphicsLevel ? fancyTextures : fastTextures)[meta & 3];
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture)
+    {
+        return (_graphicsLevel ? fancyTextures : fastTextures)[meta & 3];
+    }
 
     public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
-        => (_graphicsLevel || reader.GetBlockId(x, y, z) != block.Id) && defaultVisibility;
+    {
+        return (_graphicsLevel || reader.GetBlockId(x, y, z) != block.Id) && defaultVisibility;
+    }
 
-    public bool IsOpaque(Block block, bool defaultOpaque) => !_graphicsLevel;
+    public bool IsOpaque(Block block, bool defaultOpaque)
+    {
+        return !_graphicsLevel;
+    }
 
     private static void BreakLeaves(Block block, IWorldContext level, int x, int y, int z)
     {

@@ -15,12 +15,16 @@ namespace OmniBlock.Blocks.Behaviors;
 internal sealed class MushroomBehavior(Block[] validGround, int spreadChanceOneIn, int maxBrightness) : IBlockTicker, IBlockPhysics
 {
     public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-        => CanPlantOnTop(@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z));
+    {
+        return CanPlantOnTop(@event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z));
+    }
 
     public bool CanGrow(Block block, OnTickEvent ctx)
-        => ctx.Y >= 0 && ctx.Y < ChuckFormat.WorldHeight
-                      && ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) < maxBrightness
-                      && CanPlantOnTop(ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z));
+    {
+        return ctx.Y >= 0 && ctx.Y < ChuckFormat.WorldHeight
+                          && ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) < maxBrightness
+                          && CanPlantOnTop(ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z));
+    }
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
@@ -29,29 +33,26 @@ internal sealed class MushroomBehavior(Block[] validGround, int spreadChanceOneI
         block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
     }
+
     public void OnTick(Block block, OnTickEvent @event)
     {
         if (Random.Shared.Next(spreadChanceOneIn) != 0) return;
 
-        int tryX = @event.X + Random.Shared.Next(3) - 1;
-        int tryY = @event.Y + Random.Shared.Next(2) - Random.Shared.Next(2);
-        int tryZ = @event.Z + Random.Shared.Next(3) - 1;
+        var tryX = @event.X + Random.Shared.Next(3) - 1;
+        var tryY = @event.Y + Random.Shared.Next(2) - Random.Shared.Next(2);
+        var tryZ = @event.Z + Random.Shared.Next(3) - 1;
 
         OnTickEvent tryEvent = new(@event.World, tryX, tryY, tryZ, @event.World.Reader.GetBlockMeta(tryX, tryY, tryZ), @event.World.Reader.GetBlockId(tryX, tryY, tryZ));
-        if (!@event.World.Reader.IsAir(tryX, tryY, tryZ) || !CanGrow(block, tryEvent))
-        {
-            return;
-        }
+        if (!@event.World.Reader.IsAir(tryX, tryY, tryZ) || !CanGrow(block, tryEvent)) return;
 
         @event.World.Writer.SetBlock(tryX, tryY, tryZ, block.Id);
     }
 
     private bool CanPlantOnTop(int id)
     {
-        foreach (Block ground in validGround)
-        {
-            if (id == ground.Id) return true;
-        }
+        foreach (var ground in validGround)
+            if (id == ground.Id)
+                return true;
 
         return false;
     }

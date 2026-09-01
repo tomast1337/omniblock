@@ -1,6 +1,5 @@
 using OmniBlock.NBT;
 using OmniBlock.Network.Messages;
-using OmniBlock.Network.Packets;
 
 namespace OmniBlock.Blocks.Entities;
 
@@ -25,20 +24,25 @@ public class BlockEntitySign : BlockEntity
         _editable = false;
         base.ReadNbt(nbt);
 
-        for (int line = 0; line < 4; ++line)
+        for (var line = 0; line < 4; ++line)
         {
             Texts[line] = nbt.GetString("Text" + (line + 1));
-            if (Texts[line].Length > 15)
-            {
-                Texts[line] = Texts[line].Substring(0, 15);
-            }
+            if (Texts[line].Length > 15) Texts[line] = Texts[line].Substring(0, 15);
         }
     }
 
-    public override Message? CreateUpdateMessage() =>
-        new UpdateSignMessage { X = X, Y = (short)Y, Z = Z, Lines = Texts };
+    public override Message? CreateUpdateMessage()
+    {
+        return new UpdateSignMessage { X = X, Y = (short)Y, Z = Z, Lines = Texts };
+    }
 
-    public bool IsEditable() => _editable;
+    public bool IsEditable()
+    {
+        return _editable;
+    }
 
-    public void SetEditable(bool editable) => _editable = editable;
+    public void SetEditable(bool editable)
+    {
+        _editable = editable;
+    }
 }

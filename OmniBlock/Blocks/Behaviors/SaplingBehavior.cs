@@ -17,7 +17,10 @@ internal sealed class SaplingBehavior(int[] textures) : BlockRuntimeBehavior, IB
 {
     private static readonly JavaRandom s_random = new();
 
-    public int GetDroppedItemMeta(Block block, int blockMeta, int defaultMeta) => blockMeta & 3;
+    public int GetDroppedItemMeta(Block block, int blockMeta, int defaultMeta)
+    {
+        return blockMeta & 3;
+    }
 
     public void OnTick(Block block, OnTickEvent @event)
     {
@@ -25,22 +28,21 @@ internal sealed class SaplingBehavior(int[] textures) : BlockRuntimeBehavior, IB
 
         PlantSurvivalBehavior.BreakIfCannotSurvive(block, @event.World, @event.X, @event.Y, @event.Z);
         if (@event.World.Reader.GetBrightness(@event.X, @event.Y + 1, @event.Z) < 9 || Random.Shared.Next(30) != 0) return;
-        int saplingMeta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var saplingMeta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if ((saplingMeta & 8) == 0)
-        {
             @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, saplingMeta | 8);
-        }
         else
-        {
             Generate(@event.World, @event.X, @event.Y, @event.Z, block.Id);
-        }
     }
 
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture) => textures[meta & 3];
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture)
+    {
+        return textures[meta & 3];
+    }
 
     public static void Generate(IWorldContext world, int x, int y, int z, int saplingId)
     {
-        int saplingType = world.Reader.GetBlockMeta(x, y, z) & 3;
+        var saplingType = world.Reader.GetBlockMeta(x, y, z) & 3;
         world.Writer.SetBlock(x, y, z, 0);
         Feature treeFeature;
         if (saplingType == 1)
@@ -54,15 +56,9 @@ internal sealed class SaplingBehavior(int[] textures) : BlockRuntimeBehavior, IB
         else
         {
             treeFeature = new OakTreeFeature();
-            if (Random.Shared.Next(10) == 0)
-            {
-                treeFeature = new LargeOakTreeFeature();
-            }
+            if (Random.Shared.Next(10) == 0) treeFeature = new LargeOakTreeFeature();
         }
 
-        if (!treeFeature.Generate(world, s_random, x, y, z))
-        {
-            world.Writer.SetBlock(x, y, z, saplingId, saplingType);
-        }
+        if (!treeFeature.Generate(world, s_random, x, y, z)) world.Writer.SetBlock(x, y, z, saplingId, saplingType);
     }
 }

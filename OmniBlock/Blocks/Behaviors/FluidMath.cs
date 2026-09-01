@@ -16,29 +16,26 @@ public static class FluidMath
 {
     public static float GetFluidHeightFromMeta(int meta)
     {
-        if (meta >= 8)
-        {
-            meta = 0;
-        }
+        if (meta >= 8) meta = 0;
 
         return (meta + 1) / 9.0F;
     }
 
     public static double GetFlowingAngle(IBlockReader reader, int x, int y, int z, Material material)
     {
-        Vector3D<double> flowVec = GetFlow(reader, x, y, z, material);
+        var flowVec = GetFlow(reader, x, y, z, material);
         return flowVec is { X: 0.0D, Z: 0.0D } ? -1000.0D : Math.Atan2(flowVec.Z, flowVec.X) - Math.PI * 0.5D;
     }
 
     private static Vector3D<double> GetFlow(IBlockReader reader, int x, int y, int z, Material material)
     {
         Vector3D<double> flowVector = new(0.0);
-        int depth = GetLiquidDepth(reader, x, y, z, material);
+        var depth = GetLiquidDepth(reader, x, y, z, material);
 
-        for (int direction = 0; direction < 4; ++direction)
+        for (var direction = 0; direction < 4; ++direction)
         {
-            int neighborX = x;
-            int neighborZ = z;
+            var neighborX = x;
+            var neighborZ = z;
             switch (direction)
             {
                 case 0:
@@ -55,20 +52,14 @@ public static class FluidMath
                     break;
             }
 
-            int neighborDepth = GetLiquidDepth(reader, neighborX, y, neighborZ, material);
+            var neighborDepth = GetLiquidDepth(reader, neighborX, y, neighborZ, material);
             int depthDiff;
             if (neighborDepth < 0)
             {
-                if (reader.GetMaterial(neighborX, y, neighborZ).BlocksMovement)
-                {
-                    continue;
-                }
+                if (reader.GetMaterial(neighborX, y, neighborZ).BlocksMovement) continue;
 
                 neighborDepth = GetLiquidDepth(reader, neighborX, y - 1, neighborZ, material);
-                if (neighborDepth < 0)
-                {
-                    continue;
-                }
+                if (neighborDepth < 0) continue;
 
                 depthDiff = neighborDepth - (depth - 8);
             }
@@ -82,7 +73,7 @@ public static class FluidMath
 
         if (reader.GetBlockMeta(x, y, z) < 8) return Normalize(flowVector);
 
-        bool hasAdjacentSolid =
+        var hasAdjacentSolid =
             IsSolidFace(reader, x, y, z - 1, 2, material) ||
             IsSolidFace(reader, x, y, z + 1, 3, material) ||
             IsSolidFace(reader, x - 1, y, z, 4, material) ||
@@ -92,10 +83,7 @@ public static class FluidMath
             IsSolidFace(reader, x - 1, y + 1, z, 4, material) ||
             IsSolidFace(reader, x + 1, y + 1, z, 5, material);
 
-        if (hasAdjacentSolid)
-        {
-            flowVector = Normalize(flowVector) + new Vector3D<double>(0.0, -0.6, 0.0);
-        }
+        if (hasAdjacentSolid) flowVector = Normalize(flowVector) + new Vector3D<double>(0.0, -0.6, 0.0);
 
         return Normalize(flowVector);
     }
@@ -111,7 +99,7 @@ public static class FluidMath
         if (reader.GetBlockId(x, y, z) != block.Id) return;
         if (block.Material != Material.Lava) return;
 
-        bool hasWaterAdjacent =
+        var hasWaterAdjacent =
             reader.GetMaterial(x, y, z - 1) == Material.Water ||
             reader.GetMaterial(x, y, z + 1) == Material.Water ||
             reader.GetMaterial(x - 1, y, z) == Material.Water ||
@@ -120,7 +108,7 @@ public static class FluidMath
 
         if (!hasWaterAdjacent) return;
 
-        int meta = reader.GetBlockMeta(x, y, z);
+        var meta = reader.GetBlockMeta(x, y, z);
         if (meta == 0)
         {
             writer.SetBlock(x, y, z, sourceSolidified.Id);
@@ -134,18 +122,21 @@ public static class FluidMath
         Fizz(broadcaster, x, y, z);
     }
 
-    public static int GetTexture(Side side, int still, int flowing) => side != Side.Down && side != Side.Up ? flowing : still;
+    public static int GetTexture(Side side, int still, int flowing)
+    {
+        return side != Side.Down && side != Side.Up ? flowing : still;
+    }
 
     public static bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
     {
-        Material mat = reader.GetMaterial(x, y, z);
+        var mat = reader.GetMaterial(x, y, z);
         return mat != block.Material && mat != Material.Ice && (side == Side.Up || defaultVisibility);
     }
 
     public static float GetLuminance(ILightProvider lighting, int x, int y, int z)
     {
-        float luminance = lighting.GetLuminance(x, y, z);
-        float luminanceAbove = lighting.GetLuminance(x, y + 1, z);
+        var luminance = lighting.GetLuminance(x, y, z);
+        var luminanceAbove = lighting.GetLuminance(x, y + 1, z);
         return luminance > luminanceAbove ? luminance : luminanceAbove;
     }
 
@@ -153,13 +144,15 @@ public static class FluidMath
     ///     A fluid surface takes the brighter of its own cell and the one above, so the top face is
     ///     lit by the open air rather than by the water it sits in.
     /// </summary>
-    public static LightLevels GetLightLevels(ILightProvider lighting, int x, int y, int z, int minBlockLight) =>
-        lighting.GetLightLevels(x, y, z, minBlockLight)
+    public static LightLevels GetLightLevels(ILightProvider lighting, int x, int y, int z, int minBlockLight)
+    {
+        return lighting.GetLightLevels(x, y, z, minBlockLight)
             .Max(lighting.GetLightLevels(x, y + 1, z, minBlockLight));
+    }
 
     public static Vec3D ApplyVelocity(IBlockReader reader, int x, int y, int z, Material material)
     {
-        Vector3D<double> flow = GetFlow(reader, x, y, z, material);
+        var flow = GetFlow(reader, x, y, z, material);
         return new Vec3D(flow.X, flow.Y, flow.Z);
     }
 
@@ -167,19 +160,15 @@ public static class FluidMath
     {
         broadcaster.WorldEvent(1004, x, y, z, 0);
 
-        for (int particleIndex = 0; particleIndex < 8; ++particleIndex)
-        {
-            broadcaster.AddParticle("largesmoke", x + Random.Shared.NextDouble(), y + 1.2D, z + Random.Shared.NextDouble(), 0.0D, 0.0D, 0.0D);
-        }
+        for (var particleIndex = 0; particleIndex < 8; ++particleIndex) broadcaster.AddParticle("largesmoke", x + Random.Shared.NextDouble(), y + 1.2D, z + Random.Shared.NextDouble(), 0.0D, 0.0D, 0.0D);
     }
 
     public static void RandomDisplayTick(Block block, OnTickEvent @event)
     {
         if (block.Material == Material.Water && Random.Shared.Next(64) == 0)
         {
-            int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+            var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
             if (meta is > 0 and < 8)
-            {
                 @event.World.Broadcaster.PlaySoundAtPos(
                     @event.X + 0.5F,
                     @event.Y + 0.5F,
@@ -188,41 +177,32 @@ public static class FluidMath
                     Random.Shared.NextSingle() * 0.25F + 12.0F / 16.0F,
                     Random.Shared.NextSingle() * 1.0F + 0.5F
                 );
-            }
         }
 
         if (block.Material != Material.Lava ||
             @event.World.Reader.GetMaterial(@event.X, @event.Y + 1, @event.Z) != Material.Air ||
             @event.World.Reader.IsOpaque(@event.X, @event.Y + 1, @event.Z) || Random.Shared.Next(100) != 0)
-        {
             return;
-        }
 
         double particleX = @event.X + Random.Shared.NextSingle();
-        double particleY = @event.Y + block.BoundingBox.MaxY;
+        var particleY = @event.Y + block.BoundingBox.MaxY;
         double particleZ = @event.Z + Random.Shared.NextSingle();
         @event.World.Broadcaster.AddParticle("lava", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
     }
 
     private static int GetLiquidDepth(IBlockReader reader, int x, int y, int z, Material material)
     {
-        if (reader.GetMaterial(x, y, z) != material)
-        {
-            return -1;
-        }
+        if (reader.GetMaterial(x, y, z) != material) return -1;
 
-        int depth = reader.GetBlockMeta(x, y, z);
-        if (depth >= 8)
-        {
-            depth = 0;
-        }
+        var depth = reader.GetBlockMeta(x, y, z);
+        if (depth >= 8) depth = 0;
 
         return depth;
     }
 
     private static bool IsSolidFace(IBlockReader reader, int x, int y, int z, int face, Material material)
     {
-        Material mat = reader.GetMaterial(x, y, z);
+        var mat = reader.GetMaterial(x, y, z);
         return mat != material && mat != Material.Ice && (face == 1 || mat.IsSolid);
     }
 

@@ -17,10 +17,14 @@ namespace OmniBlock.Blocks.Behaviors;
 internal sealed class ReedBehavior(Block[] validGround) : IBlockTicker, IBlockPhysics
 {
     public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-        => CanSurviveAt(@event.World.Reader, block.Id, @event.X, @event.Y, @event.Z);
+    {
+        return CanSurviveAt(@event.World.Reader, block.Id, @event.X, @event.Y, @event.Z);
+    }
 
     public bool CanGrow(Block block, OnTickEvent @event)
-        => CanSurviveAt(@event.World.Reader, block.Id, @event.X, @event.Y, @event.Z);
+    {
+        return CanSurviveAt(@event.World.Reader, block.Id, @event.X, @event.Y, @event.Z);
+    }
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
@@ -29,19 +33,17 @@ internal sealed class ReedBehavior(Block[] validGround) : IBlockTicker, IBlockPh
         block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
     }
+
     public void OnTick(Block block, OnTickEvent @event)
     {
         if (!@event.World.Reader.IsAir(@event.X, @event.Y + 1, @event.Z)) return;
 
-        int heightBelow = 1;
-        while (@event.World.Reader.GetBlockId(@event.X, @event.Y - heightBelow, @event.Z) == block.Id)
-        {
-            heightBelow++;
-        }
+        var heightBelow = 1;
+        while (@event.World.Reader.GetBlockId(@event.X, @event.Y - heightBelow, @event.Z) == block.Id) heightBelow++;
 
         if (heightBelow >= 3) return;
 
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if (meta == 15)
         {
             @event.World.Writer.SetBlock(@event.X, @event.Y + 1, @event.Z, block.Id);
@@ -55,19 +57,17 @@ internal sealed class ReedBehavior(Block[] validGround) : IBlockTicker, IBlockPh
 
     private bool CanSurviveAt(IBlockReader reader, int selfId, int x, int y, int z)
     {
-        int blockBelowId = reader.GetBlockId(x, y - 1, z);
+        var blockBelowId = reader.GetBlockId(x, y - 1, z);
 
         if (blockBelowId == selfId) return true;
 
-        bool onValidGround = false;
-        foreach (Block ground in validGround)
-        {
+        var onValidGround = false;
+        foreach (var ground in validGround)
             if (blockBelowId == ground.Id)
             {
                 onValidGround = true;
                 break;
             }
-        }
 
         if (!onValidGround) return false;
 

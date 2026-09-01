@@ -9,14 +9,59 @@ namespace OmniBlock.Blocks;
 internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locations) : DataAssetLoader(locations), IReadableRegistry<BlockDefinition>
 {
     private const string DefaultsFileName = "_defaults.json";
+
     private static readonly JsonSerializerOptions s_options = new()
     {
         Converters = { new JsonStringEnumConverter() }
     };
 
-    private readonly Dictionary<ResourceLocation, BlockDefinition> _byLocation = [];
     private readonly Dictionary<int, BlockDefinition> _byId = [];
+
+    private readonly Dictionary<ResourceLocation, BlockDefinition> _byLocation = [];
     private JsonElement? _defaults;
+
+    public ResourceLocation RegistryKey => new(Namespace.OmniBlock, path);
+
+    public Holder<BlockDefinition>? Get(ResourceLocation key)
+    {
+        return _byLocation.TryGetValue(key, out var value) ? new Holder<BlockDefinition>(value) : null;
+    }
+
+    public BlockDefinition? Get(int id)
+    {
+        return _byId.TryGetValue(id, out var value) ? value : null;
+    }
+
+    public int GetId(BlockDefinition value)
+    {
+        return value.ProtocolId >= 0 && _byId.TryGetValue(value.ProtocolId, out var existing) && ReferenceEquals(existing, value) ? value.ProtocolId : -1;
+    }
+
+    public ResourceLocation? GetKey(BlockDefinition value)
+    {
+        foreach (var pair in _byLocation)
+            if (ReferenceEquals(pair.Value, value))
+                return pair.Key;
+
+        return null;
+    }
+
+    public bool ContainsKey(ResourceLocation key)
+    {
+        return _byLocation.ContainsKey(key);
+    }
+
+    public IEnumerable<ResourceLocation> Keys => _byLocation.Keys;
+
+    public IEnumerator<BlockDefinition> GetEnumerator()
+    {
+        return _byLocation.Values.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 
     private protected override void Clear()
     {
@@ -33,25 +78,24 @@ internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locat
 
     private void LoadAssetsFromFolders(string assetPath, LoadLocations location)
     {
-        foreach (string dir in Directory.GetDirectories(assetPath, "*", SearchOption.TopDirectoryOnly))
+        foreach (var dir in Directory.GetDirectories(assetPath, "*", SearchOption.TopDirectoryOnly))
         {
-            string dirName = Path.GetFileName(dir);
+            var dirName = Path.GetFileName(dir);
             LoadAssets(Namespace.Get(dirName), dir, location);
         }
     }
 
     private void LoadAssets(Namespace @namespace, string basePath, LoadLocations location)
     {
-        string dir = Path.Join(basePath, path);
+        var dir = Path.Join(basePath, path);
         if (!Directory.Exists(dir))
         {
             Directory.CreateDirectory(dir);
             return;
         }
 
-        string defaultsPath = Path.Combine(dir, DefaultsFileName);
+        var defaultsPath = Path.Combine(dir, DefaultsFileName);
         if (File.Exists(defaultsPath))
-        {
             try
             {
                 _defaults = JsonSerializer.Deserialize<JsonElement>(File.ReadAllText(defaultsPath), s_options);
@@ -62,18 +106,17 @@ internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locat
                 FirstErrorMessage ??= $"Syntax error in '_defaults.json' at line {ex.LineNumber}, pos {ex.BytePositionInLine}: {ex.Message}";
                 return;
             }
-        }
 
-        foreach (string file in Directory.EnumerateFiles(dir, "*.json").OrderBy(f => f, StringComparer.Ordinal))
+        foreach (var file in Directory.EnumerateFiles(dir, "*.json").OrderBy(f => f, StringComparer.Ordinal))
         {
             if (Path.GetFileName(file) == DefaultsFileName) continue;
 
             try
             {
-                JsonElement raw = JsonSerializer.Deserialize<JsonElement>(File.ReadAllText(file), s_options);
-                JsonElement merged = _defaults is { } d ? JsonMerge.Merge(d, raw, s_options) : raw;
+                var raw = JsonSerializer.Deserialize<JsonElement>(File.ReadAllText(file), s_options);
+                var merged = _defaults is { } d ? JsonMerge.Merge(d, raw, s_options) : raw;
 
-                BlockDefinition? definition = merged.Deserialize<BlockDefinition>(s_options);
+                var definition = merged.Deserialize<BlockDefinition>(s_options);
                 if (definition is null)
                 {
                     HasErrors = true;
@@ -88,25 +131,25 @@ internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locat
                     continue;
                 }
 
-                string name = Path.GetFileNameWithoutExtension(file);
+                var name = Path.GetFileNameWithoutExtension(file);
                 var key = new ResourceLocation(@namespace, name);
                 definition.Name = key.Path;
                 definition.Namespace = key.Namespace;
 
-                if (_byLocation.TryGetValue(key, out BlockDefinition? existing))
-                {
-                    if (existing.ProtocolId >= 0) _byId.Remove(existing.ProtocolId);
-                }
+                if (_byLocation.TryGetValue(key, out var existing))
+                    if (existing.ProtocolId >= 0)
+                        _byId.Remove(existing.ProtocolId);
 
                 _byLocation[key] = definition;
                 if (definition.ProtocolId >= 0)
                 {
-                    if (_byId.TryGetValue(definition.ProtocolId, out BlockDefinition? collision))
+                    if (_byId.TryGetValue(definition.ProtocolId, out var collision))
                     {
                         HasErrors = true;
                         FirstErrorMessage ??= $"Blocks '{collision.Namespace}:{collision.Name}' and '{key}' both declare ProtocolId {definition.ProtocolId}.";
                         continue;
                     }
+
                     _byId[definition.ProtocolId] = definition;
                 }
             }
@@ -123,45 +166,15 @@ internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locat
         if (!Locations.HasFlag(LoadLocations.WorldDatapack)) return null;
 
         var clone = new BlockDefinitionJsonLoader(path, Locations);
-        foreach (KeyValuePair<ResourceLocation, BlockDefinition> pair in _byLocation)
-        {
-            clone._byLocation[pair.Key] = pair.Value;
-        }
-        foreach (KeyValuePair<int, BlockDefinition> pair in _byId)
-        {
-            clone._byId[pair.Key] = pair.Value;
-        }
+        foreach (var pair in _byLocation) clone._byLocation[pair.Key] = pair.Value;
+        foreach (var pair in _byId) clone._byId[pair.Key] = pair.Value;
         clone._defaults = _defaults;
         clone.LoadPacksFrom(worldDatapackPath, LoadLocations.WorldDatapack);
         return clone;
     }
 
-    public ResourceLocation RegistryKey => new(Namespace.OmniBlock, path);
-
-    public Holder<BlockDefinition>? Get(ResourceLocation key) =>
-        _byLocation.TryGetValue(key, out BlockDefinition? value) ? new Holder<BlockDefinition>(value) : null;
-
-    public BlockDefinition? Get(int id) => _byId.TryGetValue(id, out BlockDefinition? value) ? value : null;
-
-    public bool ContainsId(int id) => _byId.ContainsKey(id);
-
-    public int GetId(BlockDefinition value) => value.ProtocolId >= 0 && _byId.TryGetValue(value.ProtocolId, out BlockDefinition? existing) && ReferenceEquals(existing, value) ? value.ProtocolId : -1;
-
-    public ResourceLocation? GetKey(BlockDefinition value)
+    public bool ContainsId(int id)
     {
-        foreach (KeyValuePair<ResourceLocation, BlockDefinition> pair in _byLocation)
-        {
-            if (ReferenceEquals(pair.Value, value)) return pair.Key;
-        }
-
-        return null;
+        return _byId.ContainsKey(id);
     }
-
-    public bool ContainsKey(ResourceLocation key) => _byLocation.ContainsKey(key);
-
-    public IEnumerable<ResourceLocation> Keys => _byLocation.Keys;
-
-    public IEnumerator<BlockDefinition> GetEnumerator() => _byLocation.Values.GetEnumerator();
-
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

@@ -8,7 +8,10 @@ namespace OmniBlock.Blocks.Behaviors;
 /// </summary>
 public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlockPhysics, IBlockLifecycle
 {
-    public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event) => ToggleLever(block, @event.World, @event.X, @event.Y, @event.Z);
+    public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event)
+    {
+        ToggleLever(block, @event.World, @event.X, @event.Y, @event.Z);
+    }
 
     public bool OnUse(Block block, OnUseEvent @event)
     {
@@ -20,8 +23,8 @@ public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlo
 
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        int powered = meta & 8;
+        var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var powered = meta & 8;
         meta = -1;
 
         switch (@event.Direction)
@@ -42,30 +45,19 @@ public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlo
                 meta = 1;
                 break;
             default:
-                {
-                    if (@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z))
-                    {
-                        meta = 1;
-                    }
-                    else if (@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z))
-                    {
-                        meta = 2;
-                    }
-                    else if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1))
-                    {
-                        meta = 3;
-                    }
-                    else if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1))
-                    {
-                        meta = 4;
-                    }
-                    else if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z))
-                    {
-                        meta = 5 + Random.Shared.Next(2);
-                    }
+            {
+                if (@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z))
+                    meta = 1;
+                else if (@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z))
+                    meta = 2;
+                else if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1))
+                    meta = 3;
+                else if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1))
+                    meta = 4;
+                else if (@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z)) meta = 5 + Random.Shared.Next(2);
 
-                    break;
-                }
+                break;
+            }
         }
 
         if (meta == -1)
@@ -81,11 +73,11 @@ public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlo
 
     public void OnBreak(Block block, OnBreakEvent ctx)
     {
-        int meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
+        var meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
         if ((meta & 8) <= 0) return;
 
         ctx.World.Broadcaster.NotifyNeighbors(ctx.X, ctx.Y, ctx.Z, block.Id);
-        int direction = meta & 7;
+        var direction = meta & 7;
 
         switch (direction)
         {
@@ -107,20 +99,23 @@ public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlo
         }
     }
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext context) => HasSupport(context.World.Reader, context.X, context.Y, context.Z);
+    public bool CanPlaceAt(Block block, CanPlaceAtContext context)
+    {
+        return HasSupport(context.World.Reader, context.X, context.Y, context.Z);
+    }
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
         if (!BreakIfCannotPlaceAt(block, @event)) return;
 
-        int direction = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) & 7;
+        var direction = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) & 7;
 
-        bool shouldDrop = (!@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z) && direction == 1) ||
-                          (!@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z) && direction == 2) ||
-                          (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1) && direction == 3) ||
-                          (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1) && direction == 4) ||
-                          (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) && direction == 5) ||
-                          (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) && direction == 6);
+        var shouldDrop = (!@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z) && direction == 1) ||
+                         (!@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z) && direction == 2) ||
+                         (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1) && direction == 3) ||
+                         (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1) && direction == 4) ||
+                         (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) && direction == 5) ||
+                         (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) && direction == 6);
 
         if (!shouldDrop) return;
 
@@ -130,8 +125,8 @@ public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlo
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
     {
-        int meta = reader.GetBlockMeta(x, y, z) & 7;
-        float width = 3.0F / 16.0F;
+        var meta = reader.GetBlockMeta(x, y, z) & 7;
+        var width = 3.0F / 16.0F;
 
         switch (meta)
         {
@@ -154,15 +149,17 @@ public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlo
         }
     }
 
-    public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) =>
-        (reader.GetBlockMeta(x, y, z) & 8) > 0;
+    public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side)
+    {
+        return (reader.GetBlockMeta(x, y, z) & 8) > 0;
+    }
 
     public bool IsStrongPoweringSide(Block block, IBlockReader world, int x, int y, int z, int side)
     {
-        int meta = world.GetBlockMeta(x, y, z);
+        var meta = world.GetBlockMeta(x, y, z);
         if ((meta & 8) == 0) return false;
 
-        int direction = meta & 7;
+        var direction = meta & 7;
         return (direction == 6 && side == 1) ||
                (direction == 5 && side == 1) ||
                (direction == 4 && side == 2) ||
@@ -171,14 +168,19 @@ public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlo
                (direction == 1 && side == 5);
     }
 
-    public bool CanEmitRedstonePower(Block block) => true;
+    public bool CanEmitRedstonePower(Block block)
+    {
+        return true;
+    }
 
-    private static bool HasSupport(IBlockReader reader, int x, int y, int z) =>
-        reader.ShouldSuffocate(x - 1, y, z) ||
-        reader.ShouldSuffocate(x + 1, y, z) ||
-        reader.ShouldSuffocate(x, y, z - 1) ||
-        reader.ShouldSuffocate(x, y, z + 1) ||
-        reader.ShouldSuffocate(x, y - 1, z);
+    private static bool HasSupport(IBlockReader reader, int x, int y, int z)
+    {
+        return reader.ShouldSuffocate(x - 1, y, z) ||
+               reader.ShouldSuffocate(x + 1, y, z) ||
+               reader.ShouldSuffocate(x, y, z - 1) ||
+               reader.ShouldSuffocate(x, y, z + 1) ||
+               reader.ShouldSuffocate(x, y - 1, z);
+    }
 
     private static bool BreakIfCannotPlaceAt(Block block, OnTickEvent ctx)
     {
@@ -191,9 +193,9 @@ public sealed class LeverBehavior : IRedstoneComponent, IBlockInteractable, IBlo
 
     private static void ToggleLever(Block block, IWorldContext world, int x, int y, int z)
     {
-        int meta = world.Reader.GetBlockMeta(x, y, z);
-        int direction = meta & 7;
-        int powered = 8 - (meta & 8);
+        var meta = world.Reader.GetBlockMeta(x, y, z);
+        var direction = meta & 7;
+        var powered = 8 - (meta & 8);
 
         world.Writer.SetBlockMeta(x, y, z, direction + powered);
         world.Broadcaster.SetBlocksDirty(x, y, z);

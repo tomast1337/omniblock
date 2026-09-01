@@ -10,7 +10,7 @@ namespace OmniBlock.Blocks.Behaviors;
 ///     slightly-recessed render bounding box.
 ///     <para>
 ///         The block it reverts to (<paramref name="revertBlock" />) and the crop that keeps it
-///         wet (<paramref name="crop" />) are both required (see <c>BehaviorRegistry</c>'s 
+///         wet (<paramref name="crop" />) are both required (see <c>BehaviorRegistry</c>'s
 ///         <c>"farmland"</c> entry. so a non-vanilla soil variant reads naturally.
 ///     </para>
 ///     <para>
@@ -20,28 +20,28 @@ namespace OmniBlock.Blocks.Behaviors;
 ///         required.
 ///     </para>
 /// </summary>
-internal sealed class FarmlandBehavior(Block revertBlock, Block crop, int trampleChanceOneIn, int tickChanceOneIn, int waterCheckRadius, int wet, int dry, int side) : IBlockTicker, IBlockPhysics, IBlockInteractable, IBlockLifecycle, IBlockVisuals
+internal sealed class FarmlandBehavior(Block revertBlock, Block crop, int trampleChanceOneIn, int tickChanceOneIn, int waterCheckRadius, int wet, int dry, int side)
+    : IBlockTicker, IBlockPhysics, IBlockInteractable, IBlockLifecycle, IBlockVisuals
 {
     public void OnSteppedOn(Block block, OnEntityStepEvent @event)
     {
-        if (Random.Shared.Next(trampleChanceOneIn) == 0)
-        {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, revertBlock.Id);
-        }
+        if (Random.Shared.Next(trampleChanceOneIn) == 0) @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, revertBlock.Id);
     }
 
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => revertBlock.GetDroppedItemId(0);
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId)
+    {
+        return revertBlock.GetDroppedItemId(0);
+    }
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        if (@event.World.Reader.GetMaterial(@event.X, @event.Y + 1, @event.Z).IsSolid)
-        {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, revertBlock.Id);
-        }
+        if (@event.World.Reader.GetMaterial(@event.X, @event.Y + 1, @event.Z).IsSolid) @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, revertBlock.Id);
     }
 
     public Box? GetCollisionShape(Block block, IBlockReader reader, EntityManager entities, int x, int y, int z, Box? defaultShape)
-        => new Box(x, y, z, x + 1, y + 1, z + 1);
+    {
+        return new Box(x, y, z, x + 1, y + 1, z + 1);
+    }
 
     public void OnTick(Block block, OnTickEvent @event)
     {
@@ -49,15 +49,10 @@ internal sealed class FarmlandBehavior(Block revertBlock, Block crop, int trampl
 
         if (!IsWaterNearby(@event.World.Reader, @event.X, @event.Y, @event.Z) && !@event.World.Environment.IsRaining)
         {
-            int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+            var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
             if (meta > 0)
-            {
                 @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta - 1);
-            }
-            else if (!HasCrop(@event.World.Reader, @event.X, @event.Y, @event.Z))
-            {
-                @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, revertBlock.Id);
-            }
+            else if (!HasCrop(@event.World.Reader, @event.X, @event.Y, @event.Z)) @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, revertBlock.Id);
         }
         else
         {
@@ -65,41 +60,33 @@ internal sealed class FarmlandBehavior(Block revertBlock, Block crop, int trampl
         }
     }
 
-    public int GetTexture(Block block, Side renderSide, int meta, int defaultTexture) => renderSide switch
+    public int GetTexture(Block block, Side renderSide, int meta, int defaultTexture)
     {
-        Side.Up when meta > 0 => wet,
-        Side.Up => dry,
-        _ => side
-    };
+        return renderSide switch
+        {
+            Side.Up when meta > 0 => wet,
+            Side.Up => dry,
+            _ => side
+        };
+    }
 
     private bool HasCrop(IBlockReader world, int x, int y, int z)
     {
-        for (int dx = x - 0; dx <= x + 0; ++dx)
-        {
-            for (int dy = z - 0; dy <= z + 0; ++dy)
-            {
-                if (world.GetBlockId(dx, y + 1, dy) == crop.Id) return true;
-            }
-        }
+        for (var dx = x - 0; dx <= x + 0; ++dx)
+        for (var dy = z - 0; dy <= z + 0; ++dy)
+            if (world.GetBlockId(dx, y + 1, dy) == crop.Id)
+                return true;
 
         return false;
     }
 
     private bool IsWaterNearby(IBlockReader reader, int x, int y, int z)
     {
-        for (int checkX = x - waterCheckRadius; checkX <= x + waterCheckRadius; ++checkX)
-        {
-            for (int checkY = y; checkY <= y + 1; ++checkY)
-            {
-                for (int checkZ = z - waterCheckRadius; checkZ <= z + waterCheckRadius; ++checkZ)
-                {
-                    if (reader.GetMaterial(checkX, checkY, checkZ) == Material.Water)
-                    {
-                        return true;
-                    }
-                }
-            }
-        }
+        for (var checkX = x - waterCheckRadius; checkX <= x + waterCheckRadius; ++checkX)
+        for (var checkY = y; checkY <= y + 1; ++checkY)
+        for (var checkZ = z - waterCheckRadius; checkZ <= z + waterCheckRadius; ++checkZ)
+            if (reader.GetMaterial(checkX, checkY, checkZ) == Material.Water)
+                return true;
 
         return false;
     }

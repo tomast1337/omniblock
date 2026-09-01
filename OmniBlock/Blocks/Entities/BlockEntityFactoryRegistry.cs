@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace OmniBlock.Blocks.Entities;
 
 internal static class BlockEntityFactoryRegistry
@@ -15,11 +12,13 @@ internal static class BlockEntityFactoryRegistry
         ["mob_spawner"] = BlockEntity.MobSpawner.Create,
         ["note"] = BlockEntity.Note.Create,
         ["piston"] = BlockEntity.Piston.Create,
-        ["generic"] = BlockEntity.Generic.Create,
+        ["generic"] = BlockEntity.Generic.Create
     };
 
-    public static Func<BlockEntity> Get(string key) =>
-        s_factories.TryGetValue(key, out Func<BlockEntity>? factory)
+    public static Func<BlockEntity> Get(string key)
+    {
+        return s_factories.TryGetValue(key, out var factory)
             ? factory
             : throw new ArgumentException($"Unknown tile entity type: '{key}'");
+    }
 }

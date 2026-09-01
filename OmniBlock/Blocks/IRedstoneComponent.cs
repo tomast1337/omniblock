@@ -9,7 +9,18 @@ namespace OmniBlock.Blocks;
 /// </summary>
 public interface IRedstoneComponent
 {
-    bool CanEmitRedstonePower(Block block) => false;
-    bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) => false;
-    bool IsStrongPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) => false;
+    bool CanEmitRedstonePower(Block block)
+    {
+        return false;
+    }
+
+    bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side)
+    {
+        return false;
+    }
+
+    bool IsStrongPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side)
+    {
+        return false;
+    }
 }

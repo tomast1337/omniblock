@@ -15,14 +15,20 @@ public sealed class ButtonBehavior : IRedstoneComponent, IBlockInteractable, IBl
     private const float Thickness = 2.0F / 16.0F;
     private const float PressedThickness = 1.0F / 16.0F;
 
-    public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event) => UpdateState(block, @event.World, @event.X, @event.Y, @event.Z);
+    public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event)
+    {
+        UpdateState(block, @event.World, @event.X, @event.Y, @event.Z);
+    }
 
-    public bool OnUse(Block block, OnUseEvent @event) => UpdateState(block, @event.World, @event.X, @event.Y, @event.Z);
+    public bool OnUse(Block block, OnUseEvent @event)
+    {
+        return UpdateState(block, @event.World, @event.X, @event.Y, @event.Z);
+    }
 
     public void OnPlaced(Block block, OnPlacedEvent evt)
     {
-        int facing = evt.World.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
-        int pressedBit = facing & 8;
+        var facing = evt.World.Reader.GetBlockMeta(evt.X, evt.Y, evt.Z);
+        var pressedBit = facing & 8;
         facing = evt.Direction switch
         {
             Side.North when evt.World.Reader.ShouldSuffocate(evt.X, evt.Y, evt.Z + 1) => 4,
@@ -37,11 +43,11 @@ public sealed class ButtonBehavior : IRedstoneComponent, IBlockInteractable, IBl
 
     public void OnBreak(Block block, OnBreakEvent @event)
     {
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if ((meta & 8) <= 0) return;
 
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, block.Id);
-        int facing = meta & 7;
+        var facing = meta & 7;
         switch (facing)
         {
             case 1:
@@ -62,17 +68,20 @@ public sealed class ButtonBehavior : IRedstoneComponent, IBlockInteractable, IBl
         }
     }
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext context) => IsValidPlacementSide(context.World.Reader, context.X, context.Y, context.Z, context.Direction);
+    public bool CanPlaceAt(Block block, CanPlaceAtContext context)
+    {
+        return IsValidPlacementSide(context.World.Reader, context.X, context.Y, context.Z, context.Direction);
+    }
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
         if (!BreakIfCannotPlaceAt(block, @event)) return;
 
-        int facing = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) & 7;
-        bool shouldBreak = (!@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z) && facing == 1) ||
-                           (!@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z) && facing == 2) ||
-                           (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1) && facing == 3) ||
-                           (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1) && facing == 4);
+        var facing = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) & 7;
+        var shouldBreak = (!@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z) && facing == 1) ||
+                          (!@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z) && facing == 2) ||
+                          (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1) && facing == 3) ||
+                          (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1) && facing == 4);
 
         if (!shouldBreak) return;
 
@@ -82,15 +91,12 @@ public sealed class ButtonBehavior : IRedstoneComponent, IBlockInteractable, IBl
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
     {
-        int meta = reader.GetBlockMeta(x, y, z);
-        Side facing = (meta & 7).ToSide();
-        bool isPressed = (meta & 8) > 0;
+        var meta = reader.GetBlockMeta(x, y, z);
+        var facing = (meta & 7).ToSide();
+        var isPressed = (meta & 8) > 0;
 
-        float height = Thickness;
-        if (isPressed)
-        {
-            height = PressedThickness;
-        }
+        var height = Thickness;
+        if (isPressed) height = PressedThickness;
 
         switch (facing)
         {
@@ -109,18 +115,20 @@ public sealed class ButtonBehavior : IRedstoneComponent, IBlockInteractable, IBl
         }
     }
 
-    public void SetupRenderBoundingBox(Block block) =>
+    public void SetupRenderBoundingBox(Block block)
+    {
         block.SetRuntimeBoundingBox(0.5F - HalfWidth, 0.5F - Thickness, 0.5F - Thickness, 0.5F + HalfWidth, 0.5F + Thickness, 0.5F + Thickness);
+    }
 
     public void OnTick(Block block, OnTickEvent @event)
     {
         if (@event.World.IsRemote) return;
 
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if ((meta & 8) == 0) return;
         @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta & 7);
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, block.Id);
-        int facing = meta & 7;
+        var facing = meta & 7;
         switch (facing)
         {
             case 1:
@@ -144,14 +152,17 @@ public sealed class ButtonBehavior : IRedstoneComponent, IBlockInteractable, IBl
         @event.World.Broadcaster.SetBlocksDirty(@event.X, @event.Y, @event.Z);
     }
 
-    public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) => (reader.GetBlockMeta(x, y, z) & 8) > 0;
+    public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side)
+    {
+        return (reader.GetBlockMeta(x, y, z) & 8) > 0;
+    }
 
     public bool IsStrongPoweringSide(Block block, IBlockReader read, int x, int y, int z, int side)
     {
-        int meta = read.GetBlockMeta(x, y, z);
+        var meta = read.GetBlockMeta(x, y, z);
         if ((meta & 8) == 0) return false;
 
-        int facing = meta & 7;
+        var facing = meta & 7;
         return (facing == 5 && side == 1) ||
                (facing == 4 && side == 2) ||
                (facing == 3 && side == 3) ||
@@ -159,7 +170,10 @@ public sealed class ButtonBehavior : IRedstoneComponent, IBlockInteractable, IBl
                (facing == 1 && side == 5);
     }
 
-    public bool CanEmitRedstonePower(Block block) => true;
+    public bool CanEmitRedstonePower(Block block)
+    {
+        return true;
+    }
 
     private static bool IsValidPlacementSide(IBlockReader read, int x, int y, int z, Side side = Side.Down)
     {
@@ -171,8 +185,10 @@ public sealed class ButtonBehavior : IRedstoneComponent, IBlockInteractable, IBl
                read.ShouldSuffocate(x, y, z + 1);
     }
 
-    private static int GetPlacementSide(IBlockReader world, int x, int y, int z) =>
-        world.ShouldSuffocate(x - 1, y, z) ? 1 : world.ShouldSuffocate(x + 1, y, z) ? 2 : world.ShouldSuffocate(x, y, z - 1) ? 3 : world.ShouldSuffocate(x, y, z + 1) ? 4 : 1;
+    private static int GetPlacementSide(IBlockReader world, int x, int y, int z)
+    {
+        return world.ShouldSuffocate(x - 1, y, z) ? 1 : world.ShouldSuffocate(x + 1, y, z) ? 2 : world.ShouldSuffocate(x, y, z - 1) ? 3 : world.ShouldSuffocate(x, y, z + 1) ? 4 : 1;
+    }
 
     private static bool BreakIfCannotPlaceAt(Block block, OnTickEvent @event)
     {
@@ -185,9 +201,9 @@ public sealed class ButtonBehavior : IRedstoneComponent, IBlockInteractable, IBl
 
     private static bool UpdateState(Block block, IWorldContext level, int x, int y, int z)
     {
-        int meta = level.Reader.GetBlockMeta(x, y, z);
-        int facing = meta & 7;
-        int pressToggle = 8 - (meta & 8);
+        var meta = level.Reader.GetBlockMeta(x, y, z);
+        var facing = meta & 7;
+        var pressToggle = 8 - (meta & 8);
         if (pressToggle == 0) return true;
 
         level.Writer.SetBlockMeta(x, y, z, facing + pressToggle);

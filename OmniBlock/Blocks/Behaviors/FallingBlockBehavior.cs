@@ -29,20 +29,29 @@ public class FallingBlockBehavior(Block[] passable, int regionLoadCheckRadius) :
         set => s_fallInstantly.Value = value;
     }
 
-    public void OnPlaced(Block block, OnPlacedEvent @event) => @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
+    public void OnPlaced(Block block, OnPlacedEvent @event)
+    {
+        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
+    }
 
-    public void NeighborUpdate(Block block, OnTickEvent @event) => @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
+    public void NeighborUpdate(Block block, OnTickEvent @event)
+    {
+        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
+    }
 
-    public void OnTick(Block block, OnTickEvent @event) => ProcessFall(block, @event);
+    public void OnTick(Block block, OnTickEvent @event)
+    {
+        ProcessFall(block, @event);
+    }
 
     private void ProcessFall(Block block, OnTickEvent @event)
     {
-        (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
+        var (x, y, z) = (@event.X, @event.Y, @event.Z);
         if (y <= 0 || !CanFallThrough(new OnTickEvent(@event.World, x, y - 1, z, 0, @event.BlockId))) return;
 
         if (!FallInstantly && @event.World.ChunkHost.IsRegionLoaded(x - regionLoadCheckRadius, y - regionLoadCheckRadius, z - regionLoadCheckRadius, x + regionLoadCheckRadius, y + regionLoadCheckRadius, z + regionLoadCheckRadius))
         {
-            Entity fallingSand = EntityRegistry.ByName("fallingsand").Create(@event.World);
+            var fallingSand = EntityRegistry.ByName("fallingsand").Create(@event.World);
             fallingSand.Behaviors.Find<SettleAsBlockBehavior>()!.SetBlock(fallingSand, block.Id);
             fallingSand.SetPositionAndAngles(x + 0.5F, y + 0.5F, z + 0.5F, 0.0F, 0.0F);
             @event.World.Entities.SpawnEntity(fallingSand);
@@ -51,29 +60,22 @@ public class FallingBlockBehavior(Block[] passable, int regionLoadCheckRadius) :
         {
             @event.World.Writer.SetBlock(x, y, z, 0);
 
-            while (CanFallThrough(new OnTickEvent(@event.World, x, y - 1, z, 0, @event.BlockId)) && y > 0)
-            {
-                --y;
-            }
+            while (CanFallThrough(new OnTickEvent(@event.World, x, y - 1, z, 0, @event.BlockId)) && y > 0) --y;
 
-            if (y > 0)
-            {
-                @event.World.Writer.SetBlock(x, y, z, block.Id);
-            }
+            if (y > 0) @event.World.Writer.SetBlock(x, y, z, block.Id);
         }
     }
 
     public bool CanFallThrough(OnTickEvent ctx)
     {
-        int blockId = ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z);
+        var blockId = ctx.World.Reader.GetBlockId(ctx.X, ctx.Y, ctx.Z);
         if (blockId == 0) return true;
 
-        foreach (Block obstacle in passable)
-        {
-            if (blockId == obstacle.Id) return true;
-        }
+        foreach (var obstacle in passable)
+            if (blockId == obstacle.Id)
+                return true;
 
-        Material material = Blocks.GetByProtocolId(blockId).Material;
+        var material = Blocks.GetByProtocolId(blockId).Material;
         return material == Material.Water || material == Material.Lava;
     }
 }

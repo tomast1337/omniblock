@@ -1,9 +1,8 @@
+using Microsoft.Extensions.Logging;
 using OmniBlock.Blocks.Entities;
-using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.Items;
 using OmniBlock.Worlds.Core.Systems;
-using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Blocks.Behaviors;
 
@@ -29,10 +28,7 @@ public sealed class JukeboxBehavior(float dropSpread) : IBlockInteractable, IBlo
 
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        if (block.GetBlockEntity() is { } blockEntity)
-        {
-            @event.World.Entities.SetBlockEntity(@event.X, @event.Y, @event.Z, blockEntity);
-        }
+        if (block.GetBlockEntity() is { } blockEntity) @event.World.Entities.SetBlockEntity(@event.X, @event.Y, @event.Z, blockEntity);
     }
 
     public void OnBreak(Block block, OnBreakEvent @event)
@@ -43,12 +39,9 @@ public sealed class JukeboxBehavior(float dropSpread) : IBlockInteractable, IBlo
 
     public static void InsertRecord(IWorldContext world, int x, int y, int z, int id)
     {
-        if (world.IsRemote)
-        {
-            return;
-        }
+        if (world.IsRemote) return;
 
-        BlockEntityRecordPlayer? jukebox = world.Entities.GetBlockEntity<BlockEntityRecordPlayer>(x, y, z);
+        var jukebox = world.Entities.GetBlockEntity<BlockEntityRecordPlayer>(x, y, z);
         if (jukebox == null)
         {
             s_logger.LogWarning("Jukebox at {x}, {y}, {z} is missing a block entity", x, y, z);
@@ -64,8 +57,8 @@ public sealed class JukeboxBehavior(float dropSpread) : IBlockInteractable, IBlo
     {
         if (level.IsRemote) return;
 
-        BlockEntityRecordPlayer? jukebox = level.Entities.GetBlockEntity<BlockEntityRecordPlayer>(x, y, z);
-        int recordId = jukebox?.RecordId ?? 0;
+        var jukebox = level.Entities.GetBlockEntity<BlockEntityRecordPlayer>(x, y, z);
+        var recordId = jukebox?.RecordId ?? 0;
         if (recordId == 0) return;
 
         level.Broadcaster.WorldEvent(1005, x, y, z, 0);
@@ -74,10 +67,10 @@ public sealed class JukeboxBehavior(float dropSpread) : IBlockInteractable, IBlo
         jukebox.MarkDirty();
         level.Writer.SetBlockMeta(x, y, z, 0);
 
-        double offsetX = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
-        double offsetY = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.2D + 0.6D;
-        double offsetZ = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
-        Entity entityItem = DroppedItemBehavior.Create(level, x + offsetX, y + offsetY, z + offsetZ, new ItemStack(recordId, 1, 0), pickupDelay: 10);
+        var offsetX = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
+        var offsetY = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.2D + 0.6D;
+        var offsetZ = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
+        var entityItem = DroppedItemBehavior.Create(level, x + offsetX, y + offsetY, z + offsetZ, new ItemStack(recordId, 1, 0), 10);
         level.SpawnEntity(entityItem);
     }
 }

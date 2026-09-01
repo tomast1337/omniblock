@@ -1,11 +1,10 @@
+using Microsoft.Extensions.Logging;
 using OmniBlock.Entities;
 using OmniBlock.NBT;
 using OmniBlock.Network.Messages;
-using OmniBlock.Network.Packets;
 using OmniBlock.Registries;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core.Systems;
-using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Blocks.Entities;
 
@@ -13,8 +12,6 @@ public abstract class BlockEntity : IEntity
 {
     private static readonly IRegistry<BlockEntityType> s_registry = DefaultRegistries.BlockEntityTypes;
     private static readonly ILogger<BlockEntity> s_logger = Log.Instance.For<BlockEntity>();
-
-    public Vec3D Position => new(X, Y, Z);
 
     public static readonly BlockEntityType Furnace = Register(() => new BlockEntityFurnace(), "Furnace");
     public static readonly BlockEntityType Chest = Register(() => new BlockEntityChest(), "Chest");
@@ -42,6 +39,30 @@ public abstract class BlockEntity : IEntity
 
     public int PushedBlockData => World!.Reader.GetBlockMeta(X, Y, Z);
 
+    public Vec3D Position => new(X, Y, Z);
+
+    void IEntity.Read(NBTTagCompound nbt)
+    {
+        ReadNbt(nbt);
+    }
+
+    void IEntity.Write(NBTTagCompound nbt)
+    {
+        WriteNbt(nbt);
+    }
+
+    void IEntity.Tick()
+    {
+        Tick(World!.Entities);
+    }
+
+    int IEntity.GetId()
+    {
+        return GetBlock().Id;
+    }
+
+    IWorldContext IEntity.World => World!;
+
     private static BlockEntityType Register<T>(Func<T> factory, string id) where T : BlockEntity
     {
         BlockEntityType type = new(factory, id);
@@ -68,22 +89,12 @@ public abstract class BlockEntity : IEntity
     {
     }
 
-    void IEntity.Read(NBTTagCompound nbt) => ReadNbt(nbt);
-
-    void IEntity.Write(NBTTagCompound nbt) => WriteNbt(nbt);
-
-    void IEntity.Tick() => Tick(World!.Entities);
-
-    int IEntity.GetId() => GetBlock().Id;
-
-    IWorldContext IEntity.World => World!;
-
     public static BlockEntity? CreateFromNbt(NBTTagCompound nbt)
     {
-        string id = nbt.GetString("id");
+        var id = nbt.GetString("id");
         if (string.IsNullOrEmpty(id)) return null;
 
-        BlockEntityType? type = s_registry.Get(ResourceLocation.Parse(id.ToLower()))?.Value;
+        var type = s_registry.Get(ResourceLocation.Parse(id.ToLower()))?.Value;
         if (type == null)
         {
             s_logger.LogInformation($"{id} is missing a mapping!");
@@ -92,7 +103,7 @@ public abstract class BlockEntity : IEntity
 
         try
         {
-            BlockEntity blockEntity = type.Create();
+            var blockEntity = type.Create();
             blockEntity.ReadNbt(nbt);
             return blockEntity;
         }
@@ -111,29 +122,41 @@ public abstract class BlockEntity : IEntity
 
     public double distanceFrom(double x, double y, double z)
     {
-        double dx = X + 0.5D - x;
-        double dy = Y + 0.5D - y;
-        double dz = Z + 0.5D - z;
+        var dx = X + 0.5D - x;
+        var dy = Y + 0.5D - y;
+        var dz = Z + 0.5D - z;
         return dx * dx + dy * dy + dz * dz;
     }
 
-    public Block GetBlock() => World!.Content.Blocks.GetByProtocolId(World.Reader.GetBlockId(X, Y, Z));
+    public Block GetBlock()
+    {
+        return World!.Content.Blocks.GetByProtocolId(World.Reader.GetBlockId(X, Y, Z));
+    }
 
     /// <summary>
     ///     What to send a client that has just loaded this block entity, or null when its NBT is
     ///     everything the client needs.
     /// </summary>
-    public virtual Message? CreateUpdateMessage() => null;
+    public virtual Message? CreateUpdateMessage()
+    {
+        return null;
+    }
 
     public bool IsRemoved()
     {
         if (_removed) return true;
         if (World is not { } world) return false;
-        int id = world.Reader.GetBlockId(X, Y, Z);
+        var id = world.Reader.GetBlockId(X, Y, Z);
         return id == 0 || !World!.Content.Blocks.GetByProtocolId(id).HasBlockEntity;
     }
 
-    public void MarkRemoved() => _removed = true;
+    public void MarkRemoved()
+    {
+        _removed = true;
+    }
 
-    public void CancelRemoval() => _removed = false;
+    public void CancelRemoval()
+    {
+        _removed = false;
+    }
 }

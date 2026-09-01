@@ -17,34 +17,37 @@ public sealed class DetectorRailBehavior : IRedstoneComponent, IBlockInteractabl
     {
         if (@event.World.IsRemote) return;
 
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        if ((meta & 8) == 0)
-        {
-            UpdatePoweredStatus(block, @event.World, @event.X, @event.Y, @event.Z, meta);
-        }
+        var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        if ((meta & 8) == 0) UpdatePoweredStatus(block, @event.World, @event.X, @event.Y, @event.Z, meta);
     }
 
     public void OnTick(Block block, OnTickEvent @event)
     {
         if (@event.World.IsRemote) return;
 
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        if ((meta & 8) != 0)
-        {
-            UpdatePoweredStatus(block, @event.World, @event.X, @event.Y, @event.Z, meta);
-        }
+        var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        if ((meta & 8) != 0) UpdatePoweredStatus(block, @event.World, @event.X, @event.Y, @event.Z, meta);
     }
 
-    public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) => (reader.GetBlockMeta(x, y, z) & 8) != 0;
+    public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side)
+    {
+        return (reader.GetBlockMeta(x, y, z) & 8) != 0;
+    }
 
-    public bool IsStrongPoweringSide(Block block, IBlockReader world, int x, int y, int z, int side) => (world.GetBlockMeta(x, y, z) & 8) != 0 && side == 1;
+    public bool IsStrongPoweringSide(Block block, IBlockReader world, int x, int y, int z, int side)
+    {
+        return (world.GetBlockMeta(x, y, z) & 8) != 0 && side == 1;
+    }
 
-    public bool CanEmitRedstonePower(Block block) => true;
+    public bool CanEmitRedstonePower(Block block)
+    {
+        return true;
+    }
 
     private static void UpdatePoweredStatus(Block block, IWorldContext context, int x, int y, int z, int meta)
     {
-        bool isPowered = (meta & 8) != 0;
-        bool hasMinecart = false;
+        var isPowered = (meta & 8) != 0;
+        var hasMinecart = false;
 
         Box detectionBox = new(x + DetectionInset, y, z + DetectionInset, x + 1 - DetectionInset, y + 0.25D, z + 1 - DetectionInset);
         if (context.Entities.GetEntities(null, detectionBox).Any(MinecartBehavior.IsMinecart)) hasMinecart = true;
@@ -65,9 +68,6 @@ public sealed class DetectorRailBehavior : IRedstoneComponent, IBlockInteractabl
             context.Broadcaster.SetBlocksDirty(x, y, z, x, y, z);
         }
 
-        if (hasMinecart)
-        {
-            context.TickScheduler.ScheduleBlockUpdate(x, y, z, block.Id, block.TickRate);
-        }
+        if (hasMinecart) context.TickScheduler.ScheduleBlockUpdate(x, y, z, block.Id, block.TickRate);
     }
 }

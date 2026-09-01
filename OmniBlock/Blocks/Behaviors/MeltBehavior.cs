@@ -1,5 +1,3 @@
-using OmniBlock.Blocks.Materials;
-
 namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
@@ -22,20 +20,14 @@ public sealed class MeltBehavior(Func<int> meltReplacement, bool subtractOpacity
     {
         if (brokenReplacement == null) return;
 
-        Material materialBelow = @event.World.Reader.GetMaterial(@event.X, @event.Y - 1, @event.Z);
-        if (materialBelow.BlocksMovement || materialBelow.IsFluid)
-        {
-            @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, brokenReplacement());
-        }
+        var materialBelow = @event.World.Reader.GetMaterial(@event.X, @event.Y - 1, @event.Z);
+        if (materialBelow.BlocksMovement || materialBelow.IsFluid) @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, brokenReplacement());
     }
 
     public void OnTick(Block block, OnTickEvent @event)
     {
-        int threshold = subtractOpacity ? 11 - Blocks.GetOpacity(block.Id) : 11;
-        if (@event.World.Lighting.GetBrightness(LightType.Block, @event.X, @event.Y, @event.Z) <= threshold)
-        {
-            return;
-        }
+        var threshold = subtractOpacity ? 11 - Blocks.GetOpacity(block.Id) : 11;
+        if (@event.World.Lighting.GetBrightness(LightType.Block, @event.X, @event.Y, @event.Z) <= threshold) return;
 
         block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, meltReplacement());

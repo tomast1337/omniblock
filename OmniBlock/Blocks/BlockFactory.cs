@@ -1,4 +1,3 @@
-using System.Text.Json;
 using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Blocks.Materials;
 
@@ -10,7 +9,7 @@ internal static class BlockFactory
     {
         var material = context.Behaviors.ResolveMaterial(ResourceLocation.Parse(def.Material));
         // An unset TextureId keeps the implicit default the int field used to have.
-        int textureId = string.IsNullOrEmpty(def.TextureId) ? 0 : context.Behaviors.ResolveTerrainTexture(def.TextureId);
+        var textureId = string.IsNullOrEmpty(def.TextureId) ? 0 : context.Behaviors.ResolveTerrainTexture(def.TextureId);
         Block block = new(def.ProtocolId, textureId, material, context.ResolveSoundGroup("omniblock:powder"));
         BlockDraft draft = new(block)
         {
@@ -40,24 +39,14 @@ internal static class BlockFactory
         else draft.Opacity = draft.IsOpaque ? 255 : 0;
         if (def.SoundGroup is { } sg) draft.SoundGroup = context.ResolveSoundGroup(ResourceLocation.Parse(sg));
         if (def.FaceTextures is { } faces)
-        {
-            foreach ((string sideName, string faceTextureId) in faces)
-            {
+            foreach (var (sideName, faceTextureId) in faces)
                 block.SetFaceTexture(Enum.Parse<Side>(sideName, true), context.Behaviors.ResolveTerrainTexture(faceTextureId));
-            }
-        }
 
         block.SetSlipperiness(def.Slipperiness);
         if (def.NotFullCube) block.SetNotFullCube();
-        if (def.BoundingBox is { } box)
-        {
-            block.SetBoundingBox(box.MinX, box.MinY, box.MinZ, box.MaxX, box.MaxY, box.MaxZ);
-        }
+        if (def.BoundingBox is { } box) block.SetBoundingBox(box.MinX, box.MinY, box.MinZ, box.MaxX, box.MaxY, box.MaxZ);
 
-        if (def.PistonBehavior is { } pistonBehavior)
-        {
-            block.SetPistonBehavior(Enum.Parse<PistonBehavior>(pistonBehavior, true));
-        }
+        if (def.PistonBehavior is { } pistonBehavior) block.SetPistonBehavior(Enum.Parse<PistonBehavior>(pistonBehavior, true));
 
         if (def.DropCount is { } dropCount) draft.DropCount = dropCount;
         if (def.BlockAlias is { Length: > 0 } aliases) block.SetBlockAlias(aliases);
@@ -76,16 +65,16 @@ internal static class BlockFactory
         ArgumentNullException.ThrowIfNull(behaviorProviders);
         BlockDraft draft = new(block);
 
-        foreach (JsonElement entry in def.Behaviors)
+        foreach (var entry in def.Behaviors)
         {
-            string type = entry.GetProperty("Type").GetString()
-                ?? throw new ArgumentException("Behavior entry is missing its 'Type' property.");
-            object behavior = behaviorProviders.Build(ResourceLocation.Parse(type), entry, context.Behaviors);
+            var type = entry.GetProperty("Type").GetString()
+                       ?? throw new ArgumentException("Behavior entry is missing its 'Type' property.");
+            var behavior = behaviorProviders.Build(ResourceLocation.Parse(type), entry, context.Behaviors);
 
-            foreach (JsonElement slotJson in entry.GetProperty("Slots").EnumerateArray())
+            foreach (var slotJson in entry.GetProperty("Slots").EnumerateArray())
             {
-                string slot = slotJson.GetString()
-                    ?? throw new ArgumentException($"Behavior entry of type '{type}' has a null entry in 'Slots'.");
+                var slot = slotJson.GetString()
+                           ?? throw new ArgumentException($"Behavior entry of type '{type}' has a null entry in 'Slots'.");
 
                 switch (slot)
                 {
@@ -117,20 +106,16 @@ internal static class BlockFactory
 
         if (def.LootTable is { } loot)
         {
-            LootEntry[] entries = loot.Entries
+            var entries = loot.Entries
                 .Select(e =>
                 {
-                    int itemId = context.ResolveLootItemOrBlockId(ResourceLocation.Parse(e.ItemName));
+                    var itemId = context.ResolveLootItemOrBlockId(ResourceLocation.Parse(e.ItemName));
                     return new LootEntry(() => itemId, e.Weight);
                 })
                 .ToArray();
             block.SetLootTable(new LootTable(entries), loot.MinCount, loot.MaxCount, loot.Meta);
         }
 
-        if (def.TileEntity is { } tileEntity)
-        {
-            block.SetHasTileEntity(context.ResolveBlockEntityFactory(ResourceLocation.Parse(tileEntity)));
-        }
-
+        if (def.TileEntity is { } tileEntity) block.SetHasTileEntity(context.ResolveBlockEntityFactory(ResourceLocation.Parse(tileEntity)));
     }
 }

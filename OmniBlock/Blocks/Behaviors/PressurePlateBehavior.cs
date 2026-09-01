@@ -20,36 +20,33 @@ public sealed class PressurePlateBehavior(PressurePlateActiviationRule activatio
 
     public void OnEntityCollision(Block block, OnEntityCollisionEvent @event)
     {
-        bool wasPressed = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) > 0;
-        if (!wasPressed)
-        {
-            UpdatePlateState(block, @event.World, @event.X, @event.Y, @event.Z, wasPressed);
-        }
+        var wasPressed = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) > 0;
+        if (!wasPressed) UpdatePlateState(block, @event.World, @event.X, @event.Y, @event.Z, wasPressed);
     }
 
     public void OnMetadataChange(Block block, OnMetadataChangeEvent @event)
     {
         if (!@event.World.IsRemote) return;
 
-        if (@event.Meta == 0)
-        {
-            UpdatePlateState(block, @event.World, @event.X, @event.Y, @event.Z, true, false);
-        }
+        if (@event.Meta == 0) UpdatePlateState(block, @event.World, @event.X, @event.Y, @event.Z, true, false);
     }
 
     public void OnBreak(Block block, OnBreakEvent @event)
     {
-        int plateState = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var plateState = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if (plateState <= 0) return;
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y, @event.Z, block.Id);
         @event.World.Broadcaster.NotifyNeighbors(@event.X, @event.Y - 1, @event.Z, block.Id);
     }
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext context) => context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z);
+    public bool CanPlaceAt(Block block, CanPlaceAtContext context)
+    {
+        return context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z);
+    }
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        bool shouldBreak = !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
+        var shouldBreak = !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
 
         if (!shouldBreak) return;
 
@@ -59,37 +56,42 @@ public sealed class PressurePlateBehavior(PressurePlateActiviationRule activatio
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
     {
-        bool isPressed = reader.GetBlockMeta(x, y, z) == 1;
+        var isPressed = reader.GetBlockMeta(x, y, z) == 1;
         if (isPressed)
-        {
             block.SetRuntimeBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, 1 / 32f, 1.0F - EdgeInset);
-        }
         else
-        {
             block.SetRuntimeBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, 1.0F / 16.0F, 1.0F - EdgeInset);
-        }
     }
 
-    public void SetupRenderBoundingBox(Block block) => block.SetRuntimeBoundingBox(0.5F - HalfWidth, 0.5F - HalfHeight, 0.5F - HalfDepth, 0.5F + HalfWidth, 0.5F + HalfHeight, 0.5F + HalfDepth);
+    public void SetupRenderBoundingBox(Block block)
+    {
+        block.SetRuntimeBoundingBox(0.5F - HalfWidth, 0.5F - HalfHeight, 0.5F - HalfDepth, 0.5F + HalfWidth, 0.5F + HalfHeight, 0.5F + HalfDepth);
+    }
 
     public void OnTick(Block block, OnTickEvent @event)
     {
-        bool wasPressed = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) > 0;
-        if (wasPressed)
-        {
-            UpdatePlateState(block, @event.World, @event.X, @event.Y, @event.Z, wasPressed);
-        }
+        var wasPressed = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) > 0;
+        if (wasPressed) UpdatePlateState(block, @event.World, @event.X, @event.Y, @event.Z, wasPressed);
     }
 
-    public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) => reader.GetBlockMeta(x, y, z) > 0;
+    public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side)
+    {
+        return reader.GetBlockMeta(x, y, z) > 0;
+    }
 
-    public bool IsStrongPoweringSide(Block block, IBlockReader world, int x, int y, int z, int side) => world.GetBlockMeta(x, y, z) != 0 && side == 1;
+    public bool IsStrongPoweringSide(Block block, IBlockReader world, int x, int y, int z, int side)
+    {
+        return world.GetBlockMeta(x, y, z) != 0 && side == 1;
+    }
 
-    public bool CanEmitRedstonePower(Block block) => true;
+    public bool CanEmitRedstonePower(Block block)
+    {
+        return true;
+    }
 
     private void UpdatePlateState(Block block, IWorldContext ctx, int x, int y, int z, bool wasPressed)
     {
-        bool shouldBePressed = activationRule switch
+        var shouldBePressed = activationRule switch
         {
             PressurePlateActiviationRule.EVERYTHING => ctx.Entities.CollectEntitiesOfType<Entity>(new Box(x + DetectionInset, y, z + DetectionInset, x + 1 - DetectionInset, y + 0.25D, z + 1 - DetectionInset)).Any(),
             PressurePlateActiviationRule.MOBS => ctx.Entities.CollectEntitiesOfType<EntityLiving>(new Box(x + DetectionInset, y, z + DetectionInset, x + 1 - DetectionInset, y + 0.25D, z + 1 - DetectionInset)).Any(),
@@ -116,9 +118,6 @@ public sealed class PressurePlateBehavior(PressurePlateActiviationRule activatio
             }
         }
 
-        if (shouldBePressed)
-        {
-            ctx.TickScheduler.ScheduleBlockUpdate(x, y, z, block.Id, block.TickRate);
-        }
+        if (shouldBePressed) ctx.TickScheduler.ScheduleBlockUpdate(x, y, z, block.Id, block.TickRate);
     }
 }

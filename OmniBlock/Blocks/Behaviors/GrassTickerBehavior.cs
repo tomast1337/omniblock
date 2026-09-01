@@ -4,7 +4,8 @@ namespace OmniBlock.Blocks.Behaviors;
 ///     Grass spread and death: dies in low light when covered, spreads to adjacent dirt in high light.
 ///     <para>
 ///         "Dead" state (dirt) is a required, see <c>BehaviorRegistry</c>'s <c>"grass_ticker"</c> entry.
-///         The spread target is always the owning <see cref="Block" /> passed into each call (<c>block.id</c>), not a separate
+///         The spread target is always the owning <see cref="Block" /> passed into each call (<c>block.id</c>), not a
+///         separate
 ///         cached self-reference, a grass block always spreads into more of itself.
 ///     </para>
 ///     <para>
@@ -27,14 +28,12 @@ public sealed class GrassTickerBehavior(Block soil, int dieLightThreshold, int d
         }
         else if (ctx.World.Lighting.GetLightLevel(ctx.X, ctx.Y + 1, ctx.Z) >= spreadLightThreshold)
         {
-            int spreadX = ctx.X + Random.Shared.Next(3) - 1;
-            int spreadY = ctx.Y + Random.Shared.Next(5) - 3;
-            int spreadZ = ctx.Z + Random.Shared.Next(3) - 1;
-            int blockAboveId = ctx.World.Reader.GetBlockId(spreadX, spreadY + 1, spreadZ);
+            var spreadX = ctx.X + Random.Shared.Next(3) - 1;
+            var spreadY = ctx.Y + Random.Shared.Next(5) - 3;
+            var spreadZ = ctx.Z + Random.Shared.Next(3) - 1;
+            var blockAboveId = ctx.World.Reader.GetBlockId(spreadX, spreadY + 1, spreadZ);
             if (ctx.World.Reader.GetBlockId(spreadX, spreadY, spreadZ) == soil.Id && ctx.World.Lighting.GetLightLevel(spreadX, spreadY + 1, spreadZ) >= dieLightThreshold && Blocks.GetOpacity(blockAboveId) <= 2)
-            {
                 ctx.World.Writer.SetBlock(spreadX, spreadY, spreadZ, block.Id);
-            }
         }
     }
 }

@@ -13,16 +13,17 @@ namespace OmniBlock.Blocks.Behaviors;
 ///         Assign to the Redstone, Ticker, Visuals, Physics, and Lifecycle slots.
 ///     </para>
 /// </summary>
-public sealed class RedstoneTorchBehavior(WallMountBehavior torchPhysics, Block redstoneTorch,
-    Block litRedstoneTorch, Block redstoneWire) : BlockRuntimeBehavior, IRedstoneComponent, IBlockTicker, IBlockVisuals, IBlockPhysics, IBlockLifecycle
+public sealed class RedstoneTorchBehavior(
+    WallMountBehavior torchPhysics,
+    Block redstoneTorch,
+    Block litRedstoneTorch,
+    Block redstoneWire) : BlockRuntimeBehavior, IRedstoneComponent, IBlockTicker, IBlockVisuals, IBlockPhysics, IBlockLifecycle
 {
     private const double VerticalOffset = 0.22F;
     private const double HorizontalOffset = 0.27F;
 
     private readonly List<RedstoneUpdateInfo> _torchUpdates = [];
     private readonly Lock _updateLock = new();
-
-    protected override void OnRuntimeBound(IBlockRuntimeView blocks) => torchPhysics.BindRuntime(blocks);
 
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
@@ -33,18 +34,20 @@ public sealed class RedstoneTorchBehavior(WallMountBehavior torchPhysics, Block 
 
     public void OnBreak(Block block, OnBreakEvent @event)
     {
-        if (!IsLit(block))
-        {
-            return;
-        }
+        if (!IsLit(block)) return;
 
         NotifyAllNeighbors(@event.World, @event.X, @event.Y, @event.Z, block.Id);
     }
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext @event) => torchPhysics.CanPlaceAt(block, @event);
+    public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
+    {
+        return torchPhysics.CanPlaceAt(block, @event);
+    }
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
-        => torchPhysics.UpdateBoundingBox(block, reader, x, y, z);
+    {
+        torchPhysics.UpdateBoundingBox(block, reader, x, y, z);
+    }
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
@@ -54,17 +57,14 @@ public sealed class RedstoneTorchBehavior(WallMountBehavior torchPhysics, Block 
 
     public void OnTick(Block block, OnTickEvent @event)
     {
-        (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
-        bool shouldTurnOff = ShouldUnpower(@event);
+        var (x, y, z) = (@event.X, @event.Y, @event.Z);
+        var shouldTurnOff = ShouldUnpower(@event);
 
-        long currentTime = @event.World.GetTime();
+        var currentTime = @event.World.GetTime();
 
         lock (_updateLock)
         {
-            while (_torchUpdates.Count > 0 && currentTime - _torchUpdates[0].updateTime > 60L)
-            {
-                _torchUpdates.RemoveAt(0);
-            }
+            while (_torchUpdates.Count > 0 && currentTime - _torchUpdates[0].updateTime > 60L) _torchUpdates.RemoveAt(0);
         }
 
         if (IsLit(block))
@@ -77,15 +77,15 @@ public sealed class RedstoneTorchBehavior(WallMountBehavior torchPhysics, Block 
 
             @event.World.Broadcaster.WorldEvent(1004, x, y, z, 0);
 
-            for (int particleIndex = 0; particleIndex < 5; ++particleIndex)
+            for (var particleIndex = 0; particleIndex < 5; ++particleIndex)
             {
-                double particleX = x + Random.Shared.NextDouble() * 0.6D + 0.2D;
-                double particleY = y + Random.Shared.NextDouble() * 0.6D + 0.2D;
-                double particleZ = z + Random.Shared.NextDouble() * 0.6D + 0.2D;
+                var particleX = x + Random.Shared.NextDouble() * 0.6D + 0.2D;
+                var particleY = y + Random.Shared.NextDouble() * 0.6D + 0.2D;
+                var particleZ = z + Random.Shared.NextDouble() * 0.6D + 0.2D;
                 @event.World.Broadcaster.AddParticle("smoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
             }
 
-            int spatialBias = (x + y + z) % 3;
+            var spatialBias = (x + y + z) % 3;
             @event.World.TickScheduler.ScheduleBlockUpdate(x, y, z, redstoneTorch.Id, 160 + spatialBias);
         }
         else if (!shouldTurnOff && !IsBurnedOut(@event, false, currentTime))
@@ -98,10 +98,10 @@ public sealed class RedstoneTorchBehavior(WallMountBehavior torchPhysics, Block 
     {
         if (!IsLit(block)) return;
 
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        double particleX = @event.X + 0.5F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
-        double particleY = @event.Y + 0.7F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
-        double particleZ = @event.Z + 0.5F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
+        var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var particleX = @event.X + 0.5F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
+        var particleY = @event.Y + 0.7F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
+        var particleZ = @event.Z + 0.5F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
         switch (meta)
         {
             case 1:
@@ -123,20 +123,36 @@ public sealed class RedstoneTorchBehavior(WallMountBehavior torchPhysics, Block 
     }
 
     public int GetTexture(Block block, Side side, int meta, int defaultTexture)
-        => side == Side.Up ? redstoneWire.GetTexture(side, meta) : defaultTexture;
+    {
+        return side == Side.Up ? redstoneWire.GetTexture(side, meta) : defaultTexture;
+    }
 
-    public bool CanEmitRedstonePower(Block block) => true;
+    public bool CanEmitRedstonePower(Block block)
+    {
+        return true;
+    }
 
     public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side)
     {
         if (!IsLit(block)) return false;
-        int meta = reader.GetBlockMeta(x, y, z);
+        var meta = reader.GetBlockMeta(x, y, z);
         return (meta != 5 || side != 1) && (meta != 3 || side != 3) && (meta != 4 || side != 2) && (meta != 1 || side != 5) && (meta != 2 || side != 4);
     }
 
-    public bool IsStrongPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side) => side == 0 && IsPoweringSide(block, reader, x, y, z, side);
+    public bool IsStrongPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side)
+    {
+        return side == 0 && IsPoweringSide(block, reader, x, y, z, side);
+    }
 
-    private bool IsLit(Block block) => block.Id == litRedstoneTorch.Id;
+    protected override void OnRuntimeBound(IBlockRuntimeView blocks)
+    {
+        torchPhysics.BindRuntime(blocks);
+    }
+
+    private bool IsLit(Block block)
+    {
+        return block.Id == litRedstoneTorch.Id;
+    }
 
     private bool IsBurnedOut(OnTickEvent ctx, bool recordUpdate, long currentTime)
     {
@@ -144,20 +160,14 @@ public sealed class RedstoneTorchBehavior(WallMountBehavior torchPhysics, Block 
         {
             if (recordUpdate) _torchUpdates.Add(new RedstoneUpdateInfo(ctx.X, ctx.Y, ctx.Z, currentTime));
 
-            int updateCount = 0;
+            var updateCount = 0;
 
-            foreach (RedstoneUpdateInfo updateInfo in _torchUpdates)
+            foreach (var updateInfo in _torchUpdates)
             {
-                if (updateInfo.x != ctx.X || updateInfo.y != ctx.Y || updateInfo.z != ctx.Z)
-                {
-                    continue;
-                }
+                if (updateInfo.x != ctx.X || updateInfo.y != ctx.Y || updateInfo.z != ctx.Z) continue;
 
                 ++updateCount;
-                if (updateCount >= 8)
-                {
-                    return true;
-                }
+                if (updateCount >= 8) return true;
             }
 
             return false;
@@ -166,9 +176,9 @@ public sealed class RedstoneTorchBehavior(WallMountBehavior torchPhysics, Block 
 
     private static bool ShouldUnpower(OnTickEvent @event)
     {
-        (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
-        RedstoneEngine redstoneEngine = @event.World.Redstone;
-        int meta = @event.World.Reader.GetBlockMeta(x, y, z);
+        var (x, y, z) = (@event.X, @event.Y, @event.Z);
+        var redstoneEngine = @event.World.Redstone;
+        var meta = @event.World.Reader.GetBlockMeta(x, y, z);
         return (meta == 5 && redstoneEngine.IsPoweringSide(x, y - 1, z, 0)) || (meta == 3 && redstoneEngine.IsPoweringSide(x, y, z - 1, 2)) ||
                (meta == 4 && redstoneEngine.IsPoweringSide(x, y, z + 1, 3)) || (meta == 1 && redstoneEngine.IsPoweringSide(x - 1, y, z, 4)) || (meta == 2 && redstoneEngine.IsPoweringSide(x + 1, y, z, 5));
     }

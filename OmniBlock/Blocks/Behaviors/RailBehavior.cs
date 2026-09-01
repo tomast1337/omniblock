@@ -19,38 +19,36 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
         if (@event.World.IsRemote) return;
         UpdateShape(@event.World, @event.X, @event.Y, @event.Z, true);
         if (block.Id != Blocks.Get("powered_rail").Id) return;
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         NeighborUpdate(block, new OnTickEvent(@event.World, @event.X, @event.Y, @event.Z, meta, block.Id));
     }
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
     {
-        int meta = reader.GetBlockMeta(x, y, z);
+        var meta = reader.GetBlockMeta(x, y, z);
         if (meta is >= 2 and <= 5)
-        {
             block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 10.0F / 16.0F, 1.0F);
-        }
         else
-        {
             block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
-        }
     }
 
     public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-        => @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
+    {
+        return @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
+    }
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
         if (@event.World.IsRemote) return;
 
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        int railMeta = _isPoweredTrack ? meta & 7 : meta;
+        var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var railMeta = _isPoweredTrack ? meta & 7 : meta;
 
-        bool shouldBreak = !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) ||
-                           railMeta == 2 && !@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z) ||
-                           railMeta == 3 && !@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z) ||
-                           railMeta == 4 && !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1) ||
-                           railMeta == 5 && !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1);
+        var shouldBreak = !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z) ||
+                          (railMeta == 2 && !@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z)) ||
+                          (railMeta == 3 && !@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z)) ||
+                          (railMeta == 4 && !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1)) ||
+                          (railMeta == 5 && !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1));
 
         if (shouldBreak)
         {
@@ -59,12 +57,12 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
         }
         else if (block.Id == Blocks.Get("powered_rail").Id)
         {
-            bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) || @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
+            var isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) || @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
             isPowered = isPowered
                         || IsPoweredByConnectedRails(@event.World, @event.X, @event.Y, @event.Z, meta, true, 0)
                         || IsPoweredByConnectedRails(@event.World, @event.X, @event.Y, @event.Z, meta, false, 0);
 
-            bool stateChanged = false;
+            var stateChanged = false;
             if (isPowered && (meta & 8) == 0)
             {
                 @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, railMeta | 8);
@@ -116,34 +114,72 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
     {
         if (depth >= 8) return false;
 
-        int shape = meta & 7;
-        bool isSameY = true;
+        var shape = meta & 7;
+        var isSameY = true;
         switch (shape)
         {
             case 0:
-                if (towardsNegative) ++z; else --z;
+                if (towardsNegative) ++z;
+                else --z;
                 break;
             case 1:
-                if (towardsNegative) --x; else ++x;
+                if (towardsNegative) --x;
+                else ++x;
                 break;
             case 2:
-                if (towardsNegative) { --x; }
-                else { ++x; ++y; isSameY = false; }
+                if (towardsNegative)
+                {
+                    --x;
+                }
+                else
+                {
+                    ++x;
+                    ++y;
+                    isSameY = false;
+                }
+
                 shape = 1;
                 break;
             case 3:
-                if (towardsNegative) { --x; ++y; isSameY = false; }
-                else { ++x; }
+                if (towardsNegative)
+                {
+                    --x;
+                    ++y;
+                    isSameY = false;
+                }
+                else
+                {
+                    ++x;
+                }
+
                 shape = 1;
                 break;
             case 4:
-                if (towardsNegative) { ++z; }
-                else { --z; ++y; isSameY = false; }
+                if (towardsNegative)
+                {
+                    ++z;
+                }
+                else
+                {
+                    --z;
+                    ++y;
+                    isSameY = false;
+                }
+
                 shape = 0;
                 break;
             case 5:
-                if (towardsNegative) { ++z; ++y; isSameY = false; }
-                else { --z; }
+                if (towardsNegative)
+                {
+                    ++z;
+                    ++y;
+                    isSameY = false;
+                }
+                else
+                {
+                    --z;
+                }
+
                 shape = 0;
                 break;
         }
@@ -154,29 +190,32 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
 
     private bool IsPoweredByRail(IWorldContext level, int x, int y, int z, bool towardsNegative, int depth, int shape)
     {
-        int blockId = level.Reader.GetBlockId(x, y, z);
+        var blockId = level.Reader.GetBlockId(x, y, z);
         if (blockId != Blocks.Get("powered_rail").Id) return false;
 
-        int meta = level.Reader.GetBlockMeta(x, y, z);
-        int railMeta = meta & 7;
+        var meta = level.Reader.GetBlockMeta(x, y, z);
+        var railMeta = meta & 7;
 
         if (shape == 1 && railMeta is 0 or 4 or 5) return false;
         if (shape == 0 && railMeta is 1 or 2 or 3) return false;
 
         if ((meta & 8) == 0) return false;
 
-        if (!level.Redstone.IsPowered(x, y, z) && !level.Redstone.IsPowered(x, y + 1, z))
-        {
-            return IsPoweredByConnectedRails(level, x, y, z, meta, towardsNegative, depth + 1);
-        }
+        if (!level.Redstone.IsPowered(x, y, z) && !level.Redstone.IsPowered(x, y + 1, z)) return IsPoweredByConnectedRails(level, x, y, z, meta, towardsNegative, depth + 1);
 
         return true;
     }
 
-    public static bool IsRail(Block block) => block.Physics is RailBehavior;
+    public static bool IsRail(Block block)
+    {
+        return block.Physics is RailBehavior;
+    }
 
     /// <summary>True for powered/detector rail: straight+ramp shapes only, no corners.</summary>
-    public static bool IsAlwaysStraight(Block block) => block.Physics is RailBehavior { _isPoweredTrack: true };
+    public static bool IsAlwaysStraight(Block block)
+    {
+        return block.Physics is RailBehavior { _isPoweredTrack: true };
+    }
 
     /// <summary>
     ///     Computes the metadata (0-9) representing which two neighbors a rail piece connects to,
@@ -185,9 +224,9 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
     /// </summary>
     private sealed class TrackLogic
     {
+        private readonly IBlockRuntimeView _blocks;
         private readonly List<Vec3I> _connectedTracks = [];
         private readonly bool _isPoweredRail;
-        private readonly IBlockRuntimeView _blocks;
         private readonly IWorldContext _level;
         private readonly Vec3I _trackPos;
 
@@ -197,10 +236,10 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
             _level = level;
             _trackPos = pos;
 
-            int blockId = level.Reader.GetBlockId(pos.X, pos.Y, pos.Z);
-            int meta = level.Reader.GetBlockMeta(pos.X, pos.Y, pos.Z);
+            var blockId = level.Reader.GetBlockId(pos.X, pos.Y, pos.Z);
+            var meta = level.Reader.GetBlockMeta(pos.X, pos.Y, pos.Z);
 
-            if (_blocks.TryGetByProtocolId(blockId, out Block? candidate)
+            if (_blocks.TryGetByProtocolId(blockId, out var candidate)
                 && IsAlwaysStraight(candidate))
             {
                 _isPoweredRail = true;
@@ -216,12 +255,12 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
 
         public void UpdateState(bool powered, bool forceUpdate)
         {
-            bool north = AttemptConnectionAt(new Vec3I(_trackPos.X, _trackPos.Y, _trackPos.Z - 1));
-            bool south = AttemptConnectionAt(new Vec3I(_trackPos.X, _trackPos.Y, _trackPos.Z + 1));
-            bool west = AttemptConnectionAt(new Vec3I(_trackPos.X - 1, _trackPos.Y, _trackPos.Z));
-            bool east = AttemptConnectionAt(new Vec3I(_trackPos.X + 1, _trackPos.Y, _trackPos.Z));
+            var north = AttemptConnectionAt(new Vec3I(_trackPos.X, _trackPos.Y, _trackPos.Z - 1));
+            var south = AttemptConnectionAt(new Vec3I(_trackPos.X, _trackPos.Y, _trackPos.Z + 1));
+            var west = AttemptConnectionAt(new Vec3I(_trackPos.X - 1, _trackPos.Y, _trackPos.Z));
+            var east = AttemptConnectionAt(new Vec3I(_trackPos.X + 1, _trackPos.Y, _trackPos.Z));
 
-            int meta = -1;
+            var meta = -1;
             if ((north || south) && !west && !east) meta = 0;
             if ((west || east) && !north && !south) meta = 1;
 
@@ -273,29 +312,23 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
 
             SetConnections(meta);
 
-            int finalMeta = meta;
-            if (_isPoweredRail)
-            {
-                finalMeta = _level.Reader.GetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) & 8 | meta;
-            }
+            var finalMeta = meta;
+            if (_isPoweredRail) finalMeta = (_level.Reader.GetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) & 8) | meta;
 
             if (!forceUpdate && _level.Reader.GetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) == finalMeta) return;
             _level.Writer.SetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z, finalMeta);
-            foreach (Vec3I pos in _connectedTracks)
+            foreach (var pos in _connectedTracks)
             {
-                TrackLogic? logic = GetMinecartTrackLogic(pos);
+                var logic = GetMinecartTrackLogic(pos);
                 if (logic == null) continue;
                 logic.RefreshConnectedTracks();
-                if (logic.CanConnectTo(this))
-                {
-                    logic.ConnectTo(this);
-                }
+                if (logic.CanConnectTo(this)) logic.ConnectTo(this);
             }
         }
 
         public int GetAdjacentTracks()
         {
-            int count = 0;
+            var count = 0;
             if (IsMinecartTrack(new Vec3I(_trackPos.X, _trackPos.Y, _trackPos.Z - 1))) ++count;
             if (IsMinecartTrack(new Vec3I(_trackPos.X, _trackPos.Y, _trackPos.Z + 1))) ++count;
             if (IsMinecartTrack(new Vec3I(_trackPos.X - 1, _trackPos.Y, _trackPos.Z))) ++count;
@@ -307,9 +340,9 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
         {
             _connectedTracks.Clear();
 
-            int trackX = _trackPos.X;
-            int trackY = _trackPos.Y;
-            int trackZ = _trackPos.Z;
+            var trackX = _trackPos.X;
+            var trackY = _trackPos.Y;
+            var trackZ = _trackPos.Z;
 
             _connectedTracks.AddRange(meta switch
             {
@@ -329,26 +362,24 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
 
         private void RefreshConnectedTracks()
         {
-            for (int i = _connectedTracks.Count - 1; i >= 0; i--)
+            for (var i = _connectedTracks.Count - 1; i >= 0; i--)
             {
-                Vec3I pos = _connectedTracks[i];
-                TrackLogic? logic = GetMinecartTrackLogic(pos);
+                var pos = _connectedTracks[i];
+                var logic = GetMinecartTrackLogic(pos);
 
                 if (logic != null && logic.IsConnectedTo(this))
-                {
                     _connectedTracks[i] = new Vec3I(logic._trackPos.X, logic._trackPos.Y, logic._trackPos.Z);
-                }
                 else
-                {
                     _connectedTracks.RemoveAt(i);
-                }
             }
         }
 
-        private bool IsMinecartTrack(Vec3I pos) =>
-            IsRail(_level, pos.X, pos.Y, pos.Z) ||
-            IsRail(_level, pos.X, pos.Y + 1, pos.Z) ||
-            IsRail(_level, pos.X, pos.Y - 1, pos.Z);
+        private bool IsMinecartTrack(Vec3I pos)
+        {
+            return IsRail(_level, pos.X, pos.Y, pos.Z) ||
+                   IsRail(_level, pos.X, pos.Y + 1, pos.Z) ||
+                   IsRail(_level, pos.X, pos.Y - 1, pos.Z);
+        }
 
         private TrackLogic? GetMinecartTrackLogic(Vec3I pos)
         {
@@ -358,31 +389,25 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
             return null;
         }
 
-        private bool IsRail(IWorldContext level, int x, int y, int z) =>
-            _blocks.TryGetByProtocolId(level.Reader.GetBlockId(x, y, z), out Block? block) && RailBehavior.IsRail(block);
+        private bool IsRail(IWorldContext level, int x, int y, int z)
+        {
+            return _blocks.TryGetByProtocolId(level.Reader.GetBlockId(x, y, z), out var block) && RailBehavior.IsRail(block);
+        }
 
         private bool IsConnectedTo(TrackLogic targetLogic)
         {
-            foreach (Vec3I pos in _connectedTracks)
-            {
+            foreach (var pos in _connectedTracks)
                 if (pos.X == targetLogic._trackPos.X && pos.Z == targetLogic._trackPos.Z)
-                {
                     return true;
-                }
-            }
 
             return false;
         }
 
         private bool IsInTrack(Vec3I pos)
         {
-            foreach (Vec3I connectedPos in _connectedTracks)
-            {
+            foreach (var connectedPos in _connectedTracks)
                 if (connectedPos.X == pos.X && connectedPos.Z == pos.Z)
-                {
                     return true;
-                }
-            }
 
             return false;
         }
@@ -402,12 +427,12 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
         {
             _connectedTracks.Add(new Vec3I(targetLogic._trackPos.X, targetLogic._trackPos.Y, targetLogic._trackPos.Z));
 
-            bool north = IsInTrack(new Vec3I(_trackPos.X, _trackPos.Y, _trackPos.Z - 1));
-            bool south = IsInTrack(new Vec3I(_trackPos.X, _trackPos.Y, _trackPos.Z + 1));
-            bool west = IsInTrack(new Vec3I(_trackPos.X - 1, _trackPos.Y, _trackPos.Z));
-            bool east = IsInTrack(new Vec3I(_trackPos.X + 1, _trackPos.Y, _trackPos.Z));
+            var north = IsInTrack(new Vec3I(_trackPos.X, _trackPos.Y, _trackPos.Z - 1));
+            var south = IsInTrack(new Vec3I(_trackPos.X, _trackPos.Y, _trackPos.Z + 1));
+            var west = IsInTrack(new Vec3I(_trackPos.X - 1, _trackPos.Y, _trackPos.Z));
+            var east = IsInTrack(new Vec3I(_trackPos.X + 1, _trackPos.Y, _trackPos.Z));
 
-            int meta = -1;
+            var meta = -1;
             if (north || south) meta = 0;
             if (west || east) meta = 1;
 
@@ -433,18 +458,15 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
 
             if (meta < 0) meta = 0;
 
-            int finalMeta = meta;
-            if (_isPoweredRail)
-            {
-                finalMeta = _level.Reader.GetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) & 8 | meta;
-            }
+            var finalMeta = meta;
+            if (_isPoweredRail) finalMeta = (_level.Reader.GetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z) & 8) | meta;
 
             _level.Writer.SetBlockMeta(_trackPos.X, _trackPos.Y, _trackPos.Z, finalMeta);
         }
 
         private bool AttemptConnectionAt(Vec3I pos)
         {
-            TrackLogic? logic = GetMinecartTrackLogic(pos);
+            var logic = GetMinecartTrackLogic(pos);
             if (logic == null) return false;
 
             logic.RefreshConnectedTracks();

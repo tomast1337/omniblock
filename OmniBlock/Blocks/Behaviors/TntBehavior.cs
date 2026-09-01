@@ -16,10 +16,7 @@ internal sealed class TntBehavior(Item igniter, int top, int side, int bottom) :
 {
     public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event)
     {
-        if (@event.Player.GetHand() != null && @event.Player.GetHand()!.ItemId == igniter.Id)
-        {
-            @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, 1);
-        }
+        if (@event.Player.GetHand() != null && @event.Player.GetHand()!.ItemId == igniter.Id) @event.World.Writer.SetBlockMetaWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, 1);
     }
 
     public void OnPlaced(Block block, OnPlacedEvent @event)
@@ -45,16 +42,8 @@ internal sealed class TntBehavior(Item igniter, int top, int side, int bottom) :
 
     public void OnDestroyedByExplosion(Block block, OnDestroyedByExplosionEvent @event)
     {
-        Entity primed = SpawnPrimed(@event.World, @event.X, @event.Y, @event.Z);
+        var primed = SpawnPrimed(@event.World, @event.X, @event.Y, @event.Z);
         primed.Behaviors.Find<PrimedExplosiveBehavior>()!.ShortenFuse(primed);
-    }
-
-    private static Entity SpawnPrimed(IWorldContext world, int x, int y, int z)
-    {
-        Entity primed = EntityRegistry.ByName("primedtnt").Create(world);
-        primed.SetPositionAndAngles(x + 0.5F, y + 0.5F, z + 0.5F, 0.0F, 0.0F);
-        world.Entities.SpawnEntity(primed);
-        return primed;
     }
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
@@ -65,12 +54,23 @@ internal sealed class TntBehavior(Item igniter, int top, int side, int bottom) :
         Ignite(block, @event.World, @event.X, @event.Y, @event.Z);
     }
 
-    public int GetTexture(Block block, Side renderSide, int defaultTexture) => renderSide switch
+    public int GetTexture(Block block, Side renderSide, int defaultTexture)
     {
-        Side.Down => bottom,
-        Side.Up => top,
-        _ => side
-    };
+        return renderSide switch
+        {
+            Side.Down => bottom,
+            Side.Up => top,
+            _ => side
+        };
+    }
+
+    private static Entity SpawnPrimed(IWorldContext world, int x, int y, int z)
+    {
+        var primed = EntityRegistry.ByName("primedtnt").Create(world);
+        primed.SetPositionAndAngles(x + 0.5F, y + 0.5F, z + 0.5F, 0.0F, 0.0F);
+        world.Entities.SpawnEntity(primed);
+        return primed;
+    }
 
     private void Ignite(Block block, IWorldContext world, int x, int y, int z)
     {

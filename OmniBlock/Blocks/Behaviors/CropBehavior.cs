@@ -1,4 +1,3 @@
-using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.Items;
 using OmniBlock.Rules;
@@ -27,35 +26,44 @@ namespace OmniBlock.Blocks.Behaviors;
 /// </summary>
 internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item seeds, float dropSpread, int seedScatterChanceBound, int growthChanceDenominator, int[] stages) : IBlockTicker, IBlockPhysics, IBlockLifecycle, IBlockVisuals
 {
-    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId) => blockMeta == 7 ? matureCropItem.Id : -1;
+    public int GetDroppedItemId(Block block, int blockMeta, int defaultItemId)
+    {
+        return blockMeta == 7 ? matureCropItem.Id : -1;
+    }
 
     public void OnDropStacks(Block block, OnDropEvent @event)
     {
         if (@event.World.IsRemote || !@event.World.Rules.GetBool(DefaultRules.DoTileDrops))
             return;
 
-        for (int attempt = 0; attempt < 3; ++attempt)
+        for (var attempt = 0; attempt < 3; ++attempt)
         {
             if (Random.Shared.Next(seedScatterChanceBound) > @event.Meta)
                 continue;
 
-            float offsetX = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5F;
-            float offsetY = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5F;
-            float offsetZ = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5F;
-            Entity entityItem = DroppedItemBehavior.Create(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(seeds), pickupDelay: 10);
+            var offsetX = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5F;
+            var offsetY = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5F;
+            var offsetZ = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5F;
+            var entityItem = DroppedItemBehavior.Create(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(seeds), 10);
             @event.World.Entities.SpawnEntity(entityItem);
         }
     }
 
     public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
-        => @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == requiredSoil.Id;
+    {
+        return @event.World.Reader.GetBlockId(@event.X, @event.Y - 1, @event.Z) == requiredSoil.Id;
+    }
 
     public bool CanGrow(Block block, OnTickEvent ctx)
-        => (ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) >= 8 || ctx.World.Lighting.HasSkyLight(ctx.X, ctx.Y, ctx.Z))
-           && ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z) == requiredSoil.Id;
+    {
+        return (ctx.World.Reader.GetBrightness(ctx.X, ctx.Y, ctx.Z) >= 8 || ctx.World.Lighting.HasSkyLight(ctx.X, ctx.Y, ctx.Z))
+               && ctx.World.Reader.GetBlockId(ctx.X, ctx.Y - 1, ctx.Z) == requiredSoil.Id;
+    }
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
-        => BreakIfCannotSurvive(block, @event.World, @event.X, @event.Y, @event.Z);
+    {
+        BreakIfCannotSurvive(block, @event.World, @event.X, @event.Y, @event.Z);
+    }
 
     public void OnTick(Block block, OnTickEvent @event)
     {
@@ -63,10 +71,10 @@ internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item
 
         if (@event.World.Lighting.GetBrightness(LightType.Block, @event.X, @event.Y + 1, @event.Z) < 9) return;
 
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         if (meta >= 7) return;
 
-        float moisture = GetAvailableMoisture(block, @event.World.Reader, @event.X, @event.Y, @event.Z);
+        var moisture = GetAvailableMoisture(block, @event.World.Reader, @event.X, @event.Y, @event.Z);
         if (Random.Shared.Next(growthChanceDenominator) / moisture != 0) return;
 
         ++meta;
@@ -75,57 +83,51 @@ internal sealed class CropBehavior(Block requiredSoil, Item matureCropItem, Item
 
     // A negative age means "fully grown" to the item renderer, which has no crop to measure.
     public int GetTexture(Block block, Side side, int meta, int defaultTexture)
-        => meta < 0 ? stages[^1] : stages[meta];
+    {
+        return meta < 0 ? stages[^1] : stages[meta];
+    }
 
     private float GetAvailableMoisture(Block block, IBlockReader read, int x, int y, int z)
     {
-        float totalMoisture = 1.0F;
-        int blockNorth = read.GetBlockId(x, y, z - 1);
-        int blockSouth = read.GetBlockId(x, y, z + 1);
-        int blockWest = read.GetBlockId(x - 1, y, z);
-        int blockEast = read.GetBlockId(x + 1, y, z);
-        int blockNorthWest = read.GetBlockId(x - 1, y, z - 1);
-        int blockNorthEast = read.GetBlockId(x + 1, y, z - 1);
-        int blockSouthEast = read.GetBlockId(x + 1, y, z + 1);
-        int blockSouthWest = read.GetBlockId(x - 1, y, z + 1);
-        bool cropsEastWest = blockWest == block.Id || blockEast == block.Id;
-        bool cropsNorthSouth = blockNorth == block.Id || blockSouth == block.Id;
-        bool cropsDiagonals = blockNorthWest == block.Id || blockNorthEast == block.Id || blockSouthEast == block.Id || blockSouthWest == block.Id;
+        var totalMoisture = 1.0F;
+        var blockNorth = read.GetBlockId(x, y, z - 1);
+        var blockSouth = read.GetBlockId(x, y, z + 1);
+        var blockWest = read.GetBlockId(x - 1, y, z);
+        var blockEast = read.GetBlockId(x + 1, y, z);
+        var blockNorthWest = read.GetBlockId(x - 1, y, z - 1);
+        var blockNorthEast = read.GetBlockId(x + 1, y, z - 1);
+        var blockSouthEast = read.GetBlockId(x + 1, y, z + 1);
+        var blockSouthWest = read.GetBlockId(x - 1, y, z + 1);
+        var cropsEastWest = blockWest == block.Id || blockEast == block.Id;
+        var cropsNorthSouth = blockNorth == block.Id || blockSouth == block.Id;
+        var cropsDiagonals = blockNorthWest == block.Id || blockNorthEast == block.Id || blockSouthEast == block.Id || blockSouthWest == block.Id;
 
-        for (int dx = x - 1; dx <= x + 1; ++dx)
+        for (var dx = x - 1; dx <= x + 1; ++dx)
+        for (var dz = z - 1; dz <= z + 1; ++dz)
         {
-            for (int dz = z - 1; dz <= z + 1; ++dz)
+            var blockBelow = read.GetBlockId(dx, y - 1, dz);
+            var cellMoisture = 0.0F;
+            if (blockBelow == requiredSoil.Id)
             {
-                int blockBelow = read.GetBlockId(dx, y - 1, dz);
-                float cellMoisture = 0.0F;
-                if (blockBelow == requiredSoil.Id)
-                {
-                    cellMoisture = 1.0F;
-                    if (read.GetBlockMeta(dx, y - 1, dz) > 0)
-                    {
-                        cellMoisture = 3.0F;
-                    }
-                }
-
-                if (dx != x || dz != z)
-                {
-                    cellMoisture /= 4.0F;
-                }
-
-                totalMoisture += cellMoisture;
+                cellMoisture = 1.0F;
+                if (read.GetBlockMeta(dx, y - 1, dz) > 0) cellMoisture = 3.0F;
             }
+
+            if (dx != x || dz != z) cellMoisture /= 4.0F;
+
+            totalMoisture += cellMoisture;
         }
 
-        if (cropsDiagonals || (cropsEastWest && cropsNorthSouth))
-        {
-            totalMoisture /= 2.0F;
-        }
+        if (cropsDiagonals || (cropsEastWest && cropsNorthSouth)) totalMoisture /= 2.0F;
 
         return totalMoisture;
     }
 
     /// <summary>Instant full-growth for bone meal (<c>ItemDye</c>).</summary>
-    public static void ApplyFullGrowth(IWorldContext world, int x, int y, int z) => world.Writer.SetBlockMeta(x, y, z, 7);
+    public static void ApplyFullGrowth(IWorldContext world, int x, int y, int z)
+    {
+        world.Writer.SetBlockMeta(x, y, z, 7);
+    }
 
     private static void BreakIfCannotSurvive(Block block, IWorldContext level, int x, int y, int z)
     {

@@ -1,5 +1,4 @@
 using OmniBlock.Entities;
-using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Blocks.Behaviors;
@@ -20,27 +19,21 @@ public sealed class WallMountBehavior(bool isLadder) : BlockRuntimeBehavior, IBl
     public void OnPlaced(Block block, OnPlacedEvent @event)
     {
         if (isLadder)
-        {
             OnLadderPlaced(@event);
-        }
         else
-        {
             OnTorchPlaced(@event);
-        }
     }
 
     public bool CanPlaceAt(Block block, CanPlaceAtContext @event)
     {
-        IBlockReader reader = @event.World.Reader;
+        var reader = @event.World.Reader;
         int x = @event.X, y = @event.Y, z = @event.Z;
 
         if (isLadder)
-        {
             return reader.ShouldSuffocate(x - 1, y, z) ||
                    reader.ShouldSuffocate(x + 1, y, z) ||
                    reader.ShouldSuffocate(x, y, z - 1) ||
                    reader.ShouldSuffocate(x, y, z + 1);
-        }
 
         return reader.ShouldSuffocate(x - 1, y, z) ||
                reader.ShouldSuffocate(x + 1, y, z) ||
@@ -65,21 +58,18 @@ public sealed class WallMountBehavior(bool isLadder) : BlockRuntimeBehavior, IBl
     {
         if (@event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z) != 0) return;
 
-        int resolved = ResolveTorchMetaVanillaOrder(@event.World.Reader, @event.X, @event.Y, @event.Z);
-        if (resolved != -1)
-        {
-            @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, resolved);
-        }
+        var resolved = ResolveTorchMetaVanillaOrder(@event.World.Reader, @event.X, @event.Y, @event.Z);
+        if (resolved != -1) @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, resolved);
 
         BreakIfCannotPlaceAt(block, @event, @event.X, @event.Y, @event.Z);
     }
 
     public void RandomDisplayTick(Block block, OnTickEvent @event)
     {
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        float flameX = @event.X + 0.5F;
-        float flameY = @event.Y + 0.7F;
-        float flameZ = @event.Z + 0.5F;
+        var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var flameX = @event.X + 0.5F;
+        var flameY = @event.Y + 0.7F;
+        var flameZ = @event.Z + 0.5F;
         const float yOffset = 0.22F;
         const float xOffset = 0.27F;
 
@@ -109,38 +99,28 @@ public sealed class WallMountBehavior(bool isLadder) : BlockRuntimeBehavior, IBl
     }
 
     private bool CanPlaceOnGround(IBlockReader world, int x, int y, int z)
-        => world.ShouldSuffocate(x, y, z) || world.GetBlockId(x, y, z) == Blocks.Get("fence").Id;
+    {
+        return world.ShouldSuffocate(x, y, z) || world.GetBlockId(x, y, z) == Blocks.Get("fence").Id;
+    }
 
     private static void OnLadderPlaced(OnPlacedEvent ctx)
     {
-        Side rotation = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z).ToSide();
-        if ((rotation == 0 || ctx.Direction == Side.North) && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1))
-        {
-            rotation = Side.North;
-        }
+        var rotation = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z).ToSide();
+        if ((rotation == 0 || ctx.Direction == Side.North) && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1)) rotation = Side.North;
 
-        if ((rotation == 0 || ctx.Direction == Side.South) && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1))
-        {
-            rotation = Side.South;
-        }
+        if ((rotation == 0 || ctx.Direction == Side.South) && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1)) rotation = Side.South;
 
-        if ((rotation == 0 || ctx.Direction == Side.West) && ctx.World.Reader.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z))
-        {
-            rotation = Side.West;
-        }
+        if ((rotation == 0 || ctx.Direction == Side.West) && ctx.World.Reader.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z)) rotation = Side.West;
 
-        if ((rotation == 0 || ctx.Direction == Side.East) && ctx.World.Reader.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z))
-        {
-            rotation = Side.East;
-        }
+        if ((rotation == 0 || ctx.Direction == Side.East) && ctx.World.Reader.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z)) rotation = Side.East;
 
         ctx.World.Writer.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, rotation.ToInt());
     }
 
     private void OnTorchPlaced(OnPlacedEvent @event)
     {
-        IBlockReader reader = @event.World.Reader;
-        int meta = reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var reader = @event.World.Reader;
+        var meta = reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
 
         switch (@event.Direction)
         {
@@ -160,15 +140,12 @@ public sealed class WallMountBehavior(bool isLadder) : BlockRuntimeBehavior, IBl
                 meta = 1;
                 break;
             case Side.Down:
-                {
-                    int? resolved = TryResolveTorchMetaForDownPlacement(reader, @event.X, @event.Y, @event.Z, @event.Placer);
-                    if (resolved.HasValue)
-                    {
-                        meta = resolved.Value;
-                    }
+            {
+                var resolved = TryResolveTorchMetaForDownPlacement(reader, @event.X, @event.Y, @event.Z, @event.Placer);
+                if (resolved.HasValue) meta = resolved.Value;
 
-                    break;
-                }
+                break;
+            }
         }
 
         @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
@@ -186,8 +163,8 @@ public sealed class WallMountBehavior(bool isLadder) : BlockRuntimeBehavior, IBl
 
     private static bool TryGetHorizontalWallPickRay(EntityLiving placer, int torchX, int torchZ, out double lx, out double lz)
     {
-        Vec3D look = placer.GetLook(1.0F);
-        double h = Math.Sqrt(look.X * look.X + look.Z * look.Z);
+        var look = placer.GetLook(1.0F);
+        var h = Math.Sqrt(look.X * look.X + look.Z * look.Z);
         if (h >= 1e-3)
         {
             lx = look.X / h;
@@ -195,8 +172,8 @@ public sealed class WallMountBehavior(bool isLadder) : BlockRuntimeBehavior, IBl
             return true;
         }
 
-        double vx = placer.X - (torchX + 0.5);
-        double vz = placer.Z - (torchZ + 0.5);
+        var vx = placer.X - (torchX + 0.5);
+        var vz = placer.Z - (torchZ + 0.5);
         h = Math.Sqrt(vx * vx + vz * vz);
         if (h >= 1e-4)
         {
@@ -212,30 +189,30 @@ public sealed class WallMountBehavior(bool isLadder) : BlockRuntimeBehavior, IBl
 
     private int? TryResolveTorchMetaForDownPlacement(IBlockReader reader, int x, int y, int z, EntityLiving? placer)
     {
-        bool ceiling = reader.ShouldSuffocate(x, y + 1, z);
-        bool west = reader.ShouldSuffocate(x - 1, y, z);
-        bool east = reader.ShouldSuffocate(x + 1, y, z);
-        bool north = reader.ShouldSuffocate(x, y, z - 1);
-        bool south = reader.ShouldSuffocate(x, y, z + 1);
-        int wallCount = (west ? 1 : 0) + (east ? 1 : 0) + (north ? 1 : 0) + (south ? 1 : 0);
+        var ceiling = reader.ShouldSuffocate(x, y + 1, z);
+        var west = reader.ShouldSuffocate(x - 1, y, z);
+        var east = reader.ShouldSuffocate(x + 1, y, z);
+        var north = reader.ShouldSuffocate(x, y, z - 1);
+        var south = reader.ShouldSuffocate(x, y, z + 1);
+        var wallCount = (west ? 1 : 0) + (east ? 1 : 0) + (north ? 1 : 0) + (south ? 1 : 0);
         if (ceiling && wallCount >= 2 && placer is not null)
         {
-            if (!TryGetHorizontalWallPickRay(placer, x, z, out double lx, out double lz))
+            if (!TryGetHorizontalWallPickRay(placer, x, z, out var lx, out var lz))
             {
-                int v = ResolveTorchMetaVanillaOrder(reader, x, y, z);
+                var v = ResolveTorchMetaVanillaOrder(reader, x, y, z);
                 return v == -1 ? null : v;
             }
 
             const double tieEps = 1e-4;
-            double westScore = west ? lx * -1.0 + lz * 0.0 : double.NegativeInfinity;
-            double eastScore = east ? lx * 1.0 + lz * 0.0 : double.NegativeInfinity;
-            double northScore = north ? lx * 0.0 + lz * -1.0 : double.NegativeInfinity;
-            double southScore = south ? lx * 0.0 + lz * 1.0 : double.NegativeInfinity;
-            double maxD = Math.Max(Math.Max(westScore, eastScore), Math.Max(northScore, southScore));
+            var westScore = west ? lx * -1.0 + lz * 0.0 : double.NegativeInfinity;
+            var eastScore = east ? lx * 1.0 + lz * 0.0 : double.NegativeInfinity;
+            var northScore = north ? lx * 0.0 + lz * -1.0 : double.NegativeInfinity;
+            var southScore = south ? lx * 0.0 + lz * 1.0 : double.NegativeInfinity;
+            var maxD = Math.Max(Math.Max(westScore, eastScore), Math.Max(northScore, southScore));
 
-            for (int meta = 1; meta <= 4; meta++)
+            for (var meta = 1; meta <= 4; meta++)
             {
-                double d = meta switch
+                var d = meta switch
                 {
                     1 => westScore,
                     2 => eastScore,
@@ -243,7 +220,7 @@ public sealed class WallMountBehavior(bool isLadder) : BlockRuntimeBehavior, IBl
                     4 => southScore,
                     _ => double.NegativeInfinity
                 };
-                bool solid = meta switch
+                var solid = meta switch
                 {
                     1 => west,
                     2 => east,
@@ -251,24 +228,21 @@ public sealed class WallMountBehavior(bool isLadder) : BlockRuntimeBehavior, IBl
                     4 => south,
                     _ => false
                 };
-                if (solid && Math.Abs(d - maxD) < tieEps)
-                {
-                    return meta;
-                }
+                if (solid && Math.Abs(d - maxD) < tieEps) return meta;
             }
         }
 
-        int vanilla = ResolveTorchMetaVanillaOrder(reader, x, y, z);
+        var vanilla = ResolveTorchMetaVanillaOrder(reader, x, y, z);
         return vanilla == -1 ? null : vanilla;
     }
 
     private static void LadderNeighborUpdate(Block block, OnTickEvent ctx)
     {
-        Side rotation = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z).ToSide();
-        bool hasSupport = rotation == Side.North && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1) ||
-                          rotation == Side.South && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1) ||
-                          rotation == Side.West && ctx.World.Reader.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z) ||
-                          rotation == Side.East && ctx.World.Reader.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z);
+        var rotation = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z).ToSide();
+        var hasSupport = (rotation == Side.North && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z + 1)) ||
+                         (rotation == Side.South && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y, ctx.Z - 1)) ||
+                         (rotation == Side.West && ctx.World.Reader.ShouldSuffocate(ctx.X + 1, ctx.Y, ctx.Z)) ||
+                         (rotation == Side.East && ctx.World.Reader.ShouldSuffocate(ctx.X - 1, ctx.Y, ctx.Z));
 
         if (hasSupport) return;
         block.DropStacks(new OnDropEvent(ctx.World, ctx.X, ctx.Y, ctx.Z, rotation.ToInt()));
@@ -279,12 +253,12 @@ public sealed class WallMountBehavior(bool isLadder) : BlockRuntimeBehavior, IBl
     {
         if (!BreakIfCannotPlaceAt(block, @event, @event.X, @event.Y, @event.Z)) return;
 
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        bool shouldDrop = !@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z) && meta == 1 ||
-                          !@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z) && meta == 2 ||
-                          !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1) && meta == 3 ||
-                          !@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1) && meta == 4 ||
-                          !CanPlaceOnGround(@event.World.Reader, @event.X, @event.Y - 1, @event.Z) && meta == 5;
+        var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var shouldDrop = (!@event.World.Reader.ShouldSuffocate(@event.X - 1, @event.Y, @event.Z) && meta == 1) ||
+                         (!@event.World.Reader.ShouldSuffocate(@event.X + 1, @event.Y, @event.Z) && meta == 2) ||
+                         (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z - 1) && meta == 3) ||
+                         (!@event.World.Reader.ShouldSuffocate(@event.X, @event.Y, @event.Z + 1) && meta == 4) ||
+                         (!CanPlaceOnGround(@event.World.Reader, @event.X, @event.Y - 1, @event.Z) && meta == 5);
 
         if (!shouldDrop) return;
         block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z)));
@@ -301,7 +275,7 @@ public sealed class WallMountBehavior(bool isLadder) : BlockRuntimeBehavior, IBl
 
     private static void UpdateLadderBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
     {
-        Side rotation = reader.GetBlockMeta(x, y, z).ToSide();
+        var rotation = reader.GetBlockMeta(x, y, z).ToSide();
         switch (rotation)
         {
             case Side.North:
@@ -321,7 +295,7 @@ public sealed class WallMountBehavior(bool isLadder) : BlockRuntimeBehavior, IBl
 
     private static void UpdateTorchBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
     {
-        int rotation = reader.GetBlockMeta(x, y, z) & 7;
+        var rotation = reader.GetBlockMeta(x, y, z) & 7;
         switch (rotation)
         {
             case 1:

@@ -1,5 +1,3 @@
-using System;
-
 namespace OmniBlock.Blocks;
 
 public sealed record LootEntryDefinition(string ItemName, int Weight = 1);
@@ -32,17 +30,14 @@ public sealed class LootTable
     {
         _entries = entries;
         Array.Sort(_entries, static (a, b) => b.Weight.CompareTo(a.Weight));
-        foreach (LootEntry entry in _entries)
-        {
-            _totalWeight += entry.Weight;
-        }
+        foreach (var entry in _entries) _totalWeight += entry.Weight;
     }
 
     public int Roll(Random random)
     {
-        int roll = random.Next(_totalWeight);
-        int cumulative = 0;
-        foreach (LootEntry entry in _entries)
+        var roll = random.Next(_totalWeight);
+        var cumulative = 0;
+        foreach (var entry in _entries)
         {
             cumulative += entry.Weight;
             if (roll < cumulative) return entry.ItemId;
@@ -51,5 +46,8 @@ public sealed class LootTable
         return _entries[^1].ItemId;
     }
 
-    public int GetPrimaryItemId() => _entries[0].ItemId;
+    public int GetPrimaryItemId()
+    {
+        return _entries[0].ItemId;
+    }
 }

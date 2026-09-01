@@ -1,6 +1,5 @@
 using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Blocks.Entities;
-using OmniBlock.Items;
 
 namespace OmniBlock.Blocks;
 
@@ -30,19 +29,19 @@ public readonly struct BlockBuildContext
 
     public BlockSoundGroup ResolveSoundGroup(ResourceLocation key)
     {
-        Func<ResourceLocation, BlockSoundGroup> resolver = _resolveSoundGroup ?? throw Uninitialized();
+        var resolver = _resolveSoundGroup ?? throw Uninitialized();
         return Resolve(() => resolver(key), "sound group", key);
     }
 
     public int ResolveLootItemOrBlockId(ResourceLocation key)
     {
-        Func<ResourceLocation, int> resolver = _resolveLootItemOrBlockId ?? throw Uninitialized();
+        var resolver = _resolveLootItemOrBlockId ?? throw Uninitialized();
         return Resolve(() => resolver(key), "loot item or block", key);
     }
 
     public Func<BlockEntity> ResolveBlockEntityFactory(ResourceLocation key)
     {
-        Func<ResourceLocation, Func<BlockEntity>> resolver = _resolveBlockEntityFactory ?? throw Uninitialized();
+        var resolver = _resolveBlockEntityFactory ?? throw Uninitialized();
         return Resolve(() => resolver(key), "block entity", key);
     }
 
@@ -58,14 +57,19 @@ public readonly struct BlockBuildContext
         }
     }
 
-    internal static BlockBuildContext BuiltIns(BehaviorBuildContext behaviors) => new(
-        behaviors,
-        static key => SoundGroupRegistry.Get(key.Path),
-        static key => ItemLookup.TryGetItemId(key.Path, out int id)
-            ? id
-            : throw new ArgumentException($"Unknown item or block: '{key}'"),
-        static key => BlockEntityFactoryRegistry.Get(key.Path));
+    internal static BlockBuildContext BuiltIns(BehaviorBuildContext behaviors)
+    {
+        return new BlockBuildContext(
+            behaviors,
+            static key => SoundGroupRegistry.Get(key.Path),
+            static key => ItemLookup.TryGetItemId(key.Path, out var id)
+                ? id
+                : throw new ArgumentException($"Unknown item or block: '{key}'"),
+            static key => BlockEntityFactoryRegistry.Get(key.Path));
+    }
 
-    private static InvalidOperationException Uninitialized() =>
-        new($"{nameof(BlockBuildContext)} must be initialized before resolving dependencies.");
+    private static InvalidOperationException Uninitialized()
+    {
+        return new InvalidOperationException($"{nameof(BlockBuildContext)} must be initialized before resolving dependencies.");
+    }
 }

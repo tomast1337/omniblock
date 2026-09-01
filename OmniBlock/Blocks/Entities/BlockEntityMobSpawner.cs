@@ -1,9 +1,8 @@
-using System;
+using Microsoft.Extensions.Logging;
 using OmniBlock.Entities;
 using OmniBlock.NBT;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core.Systems;
-using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Blocks.Entities;
 
@@ -12,17 +11,30 @@ public class BlockEntityMobSpawner : BlockEntity
     private readonly ILogger<BlockEntityMobSpawner> _logger = Log.Instance.For<BlockEntityMobSpawner>();
     private string _spawnedEntityId = "Pig";
 
-    public BlockEntityMobSpawner() => SpawnDelay = 20;
+    public BlockEntityMobSpawner()
+    {
+        SpawnDelay = 20;
+    }
+
     protected override BlockEntityType Type => MobSpawner;
     public int SpawnDelay { get; set; } = -1;
     public double Rotation { get; set; }
     public double LastRotation { get; set; }
 
-    public string GetSpawnedEntityId() => _spawnedEntityId;
+    public string GetSpawnedEntityId()
+    {
+        return _spawnedEntityId;
+    }
 
-    public void SetSpawnedEntityId(string spawnedEntityId) => _spawnedEntityId = spawnedEntityId;
+    public void SetSpawnedEntityId(string spawnedEntityId)
+    {
+        _spawnedEntityId = spawnedEntityId;
+    }
 
-    private bool IsPlayerInRange() => World!.Entities.GetClosestPlayer(X + 0.5D, Y + 0.5D, Z + 0.5D, 16.0D) != null;
+    private bool IsPlayerInRange()
+    {
+        return World!.Entities.GetClosestPlayer(X + 0.5D, Y + 0.5D, Z + 0.5D, 16.0D) != null;
+    }
 
     public override void Tick(EntityManager entities)
     {
@@ -35,17 +47,11 @@ public class BlockEntityMobSpawner : BlockEntity
         World!.Broadcaster.AddParticle("smoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
         World!.Broadcaster.AddParticle("flame", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
 
-        for (Rotation += 1000.0F / (SpawnDelay + 200.0F); Rotation > 360.0D; LastRotation -= 360.0D)
-        {
-            Rotation -= 360.0D;
-        }
+        for (Rotation += 1000.0F / (SpawnDelay + 200.0F); Rotation > 360.0D; LastRotation -= 360.0D) Rotation -= 360.0D;
 
         if (!World!.IsRemote)
         {
-            if (SpawnDelay == -1)
-            {
-                ResetDelay();
-            }
+            if (SpawnDelay == -1) ResetDelay();
 
             if (SpawnDelay > 0)
             {
@@ -55,12 +61,12 @@ public class BlockEntityMobSpawner : BlockEntity
 
             byte max = 4;
 
-            for (int spawnAttempt = 0; spawnAttempt < max; ++spawnAttempt)
+            for (var spawnAttempt = 0; spawnAttempt < max; ++spawnAttempt)
             {
-                EntityLiving? entityLiving = (EntityLiving?)EntityRegistry.Create(_spawnedEntityId, World);
+                var entityLiving = (EntityLiving?)EntityRegistry.Create(_spawnedEntityId, World);
                 if (entityLiving == null) return;
 
-                int count = World!.Entities
+                var count = World!.Entities
                     .CollectEntitiesOfType<EntityLiving>(new Box(X, Y, Z, X + 1, Y + 1, Z + 1)
                         .Expand(8.0D, 4.0D, 8.0D))
                     .Count(e => e.GetType() == entityLiving.GetType());
@@ -70,15 +76,15 @@ public class BlockEntityMobSpawner : BlockEntity
                     return;
                 }
 
-                double posX = X + (World!.Random.NextDouble() - World!.Random.NextDouble()) * 4.0D;
+                var posX = X + (World!.Random.NextDouble() - World!.Random.NextDouble()) * 4.0D;
                 double posY = Y + World!.Random.NextInt(3) - 1;
-                double posZ = Z + (World!.Random.NextDouble() - World!.Random.NextDouble()) * 4.0D;
+                var posZ = Z + (World!.Random.NextDouble() - World!.Random.NextDouble()) * 4.0D;
                 entityLiving.SetPositionAndAnglesKeepPrevAngles(posX, posY, posZ, World!.Random.NextFloat() * 360.0F, 0.0F);
                 if (!entityLiving.CanSpawn()) continue;
 
                 World!.SpawnEntity(entityLiving);
 
-                for (int particleIndex = 0; particleIndex < 20; ++particleIndex)
+                for (var particleIndex = 0; particleIndex < 20; ++particleIndex)
                 {
                     particleX = X + 0.5D + (World!.Random.NextFloat() - 0.5D) * 2.0D;
                     particleY = Y + 0.5D + (World!.Random.NextFloat() - 0.5D) * 2.0D;

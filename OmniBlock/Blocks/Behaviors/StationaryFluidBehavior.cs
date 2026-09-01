@@ -16,74 +16,90 @@ namespace OmniBlock.Blocks.Behaviors;
 public sealed class StationaryFluidBehavior(Block ignitionTarget, Block sourceSolidified, Block flowSolidified, int still, int flowing) : BlockRuntimeBehavior, IBlockPhysics, IBlockVisuals, IBlockLifecycle, IBlockTicker
 {
     public void OnPlaced(Block block, OnPlacedEvent @event)
-        => FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z, sourceSolidified, flowSolidified);
+    {
+        FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z, sourceSolidified, flowSolidified);
+    }
 
-    public bool HasCollision(Block block, int meta, bool allowLiquids, bool defaultHasCollision) => allowLiquids && meta == 0;
+    public bool HasCollision(Block block, int meta, bool allowLiquids, bool defaultHasCollision)
+    {
+        return allowLiquids && meta == 0;
+    }
 
-    public Vec3D ApplyVelocity(Block block, OnApplyVelocityEvent @event, Vec3D defaultVelocity) => FluidMath.ApplyVelocity(@event.World.Reader, @event.X, @event.Y, @event.Z, block.Material);
+    public Vec3D ApplyVelocity(Block block, OnApplyVelocityEvent @event, Vec3D defaultVelocity)
+    {
+        return FluidMath.ApplyVelocity(@event.World.Reader, @event.X, @event.Y, @event.Z, block.Material);
+    }
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
         FluidMath.CheckBlockCollisions(block, @event.World.Reader, @event.World.Writer, @event.World.Broadcaster, @event.X, @event.Y, @event.Z, sourceSolidified, flowSolidified);
-        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z) != block.Id)
-        {
-            return;
-        }
+        if (@event.World.Reader.GetBlockId(@event.X, @event.Y, @event.Z) != block.Id) return;
 
         ConvertToFlowing(block, @event);
     }
 
-    public void RandomDisplayTick(Block block, OnTickEvent @event) => FluidMath.RandomDisplayTick(block, @event);
+    public void RandomDisplayTick(Block block, OnTickEvent @event)
+    {
+        FluidMath.RandomDisplayTick(block, @event);
+    }
 
     public void OnTick(Block block, OnTickEvent @event)
     {
-        (int x, int y, int z) = (@event.X, @event.Y, @event.Z);
+        var (x, y, z) = (@event.X, @event.Y, @event.Z);
 
         if (block.Material != Material.Lava) return;
 
-        int attempts = @event.World.Random.NextInt(3);
+        var attempts = @event.World.Random.NextInt(3);
 
-        for (int attempt = 0; attempt < attempts; ++attempt)
+        for (var attempt = 0; attempt < attempts; ++attempt)
         {
             x += @event.World.Random.NextInt(3) - 1;
             ++y;
             z += @event.World.Random.NextInt(3) - 1;
-            int neighborBlockId = @event.World.Reader.GetBlockId(x, y, z);
+            var neighborBlockId = @event.World.Reader.GetBlockId(x, y, z);
             if (neighborBlockId == 0)
             {
                 if (!IsFlammable(@event.World.Reader, x - 1, y, z) && !IsFlammable(@event.World.Reader, x + 1, y, z) && !IsFlammable(@event.World.Reader, x, y, z - 1) &&
                     !IsFlammable(@event.World.Reader, x, y, z + 1) && !IsFlammable(@event.World.Reader, x, y - 1, z) && !IsFlammable(@event.World.Reader, x, y + 1, z))
-                {
                     continue;
-                }
 
                 @event.World.Writer.SetBlock(x, y, z, ignitionTarget.Id);
                 return;
             }
 
-            if (Blocks.GetByProtocolId(neighborBlockId).Material.BlocksMovement)
-            {
-                return;
-            }
+            if (Blocks.GetByProtocolId(neighborBlockId).Material.BlocksMovement) return;
         }
     }
 
-    public int GetTexture(Block block, Side side, int defaultTexture) => FluidMath.GetTexture(side, still, flowing);
+    public int GetTexture(Block block, Side side, int defaultTexture)
+    {
+        return FluidMath.GetTexture(side, still, flowing);
+    }
 
     public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
-        => FluidMath.IsSideVisible(block, reader, x, y, z, side, defaultVisibility);
+    {
+        return FluidMath.IsSideVisible(block, reader, x, y, z, side, defaultVisibility);
+    }
 
-    public float GetLuminance(Block block, ILightProvider lighting, int x, int y, int z, float defaultLuminance) => FluidMath.GetLuminance(lighting, x, y, z);
+    public float GetLuminance(Block block, ILightProvider lighting, int x, int y, int z, float defaultLuminance)
+    {
+        return FluidMath.GetLuminance(lighting, x, y, z);
+    }
 
-    public LightLevels GetLightLevels(Block block, ILightProvider lighting, int x, int y, int z, LightLevels defaultLevels) =>
-        FluidMath.GetLightLevels(lighting, x, y, z, Blocks.GetLightEmission(block.Id));
+    public LightLevels GetLightLevels(Block block, ILightProvider lighting, int x, int y, int z, LightLevels defaultLevels)
+    {
+        return FluidMath.GetLightLevels(lighting, x, y, z, Blocks.GetLightEmission(block.Id));
+    }
 
     private static void ConvertToFlowing(Block block, OnTickEvent @event)
     {
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         @event.World.Writer.SetBlockWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, block.Id - 1, meta, false);
         @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id - 1, block.TickRate);
     }
 
-    private static bool IsFlammable(IBlockReader world, int x, int y, int z) => world.GetMaterial(x, y, z).IsBurnable;
+    private static bool IsFlammable(IBlockReader world, int x, int y, int z)
+    {
+        return world.GetMaterial(x, y, z).IsBurnable;
+    }
 }

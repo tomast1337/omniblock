@@ -5,9 +5,9 @@ using OmniBlock.Textures;
 namespace OmniBlock.Blocks.Behaviors;
 
 /// <summary>
-/// Dependencies available while a block behavior definition is being compiled into its runtime
-/// behavior. Keeping resolution here lets providers remain independent of process-global content
-/// storage and gives a future content runtime one explicit adapter to replace.
+///     Dependencies available while a block behavior definition is being compiled into its runtime
+///     behavior. Keeping resolution here lets providers remain independent of process-global content
+///     storage and gives a future content runtime one explicit adapter to replace.
 /// </summary>
 public readonly struct BehaviorBuildContext
 {
@@ -37,26 +37,26 @@ public readonly struct BehaviorBuildContext
 
     public Block ResolveBlock(ResourceLocation key)
     {
-        Func<ResourceLocation, Block> resolver = _resolveBlock ?? throw Uninitialized();
+        var resolver = _resolveBlock ?? throw Uninitialized();
         return Resolve(() => resolver(key), "block", key.ToString());
     }
 
     public Item ResolveItem(ResourceLocation key)
     {
-        Func<ResourceLocation, Item> resolver = _resolveItem ?? throw Uninitialized();
+        var resolver = _resolveItem ?? throw Uninitialized();
         return Resolve(() => resolver(key), "item", key.ToString());
     }
 
     public Material ResolveMaterial(ResourceLocation key)
     {
-        Func<ResourceLocation, Material> resolver = _resolveMaterial ?? throw Uninitialized();
+        var resolver = _resolveMaterial ?? throw Uninitialized();
         return Resolve(() => resolver(key), "material", key.ToString());
     }
 
     public int ResolveTerrainTexture(string key)
     {
-        Func<string, int> resolver = _resolveTerrainTexture ?? throw Uninitialized();
-        int id = Resolve(() => resolver(key), "terrain texture", key);
+        var resolver = _resolveTerrainTexture ?? throw Uninitialized();
+        var id = Resolve(() => resolver(key), "terrain texture", key);
         return id >= 0 ? id : throw new KeyNotFoundException($"Unknown terrain texture '{key}'.");
     }
 
@@ -76,8 +76,10 @@ public readonly struct BehaviorBuildContext
 
     public IBlockRuntimeView Blocks { get; }
 
-    internal BehaviorBuildContext WithBlocks(IBlockRuntimeView blocks) =>
-        new(_resolveBlock, _resolveItem, _resolveMaterial, _resolveTerrainTexture, blocks);
+    internal BehaviorBuildContext WithBlocks(IBlockRuntimeView blocks)
+    {
+        return new BehaviorBuildContext(_resolveBlock, _resolveItem, _resolveMaterial, _resolveTerrainTexture, blocks);
+    }
 
     internal static BehaviorBuildContext BuiltIns { get; } = new(
         static key => BlockRegistry.Get(key.Path),
@@ -85,14 +87,26 @@ public readonly struct BehaviorBuildContext
         static key => MaterialRegistry.Get(key.Path),
         static key => Atlases.Terrain.IndexOf(key));
 
-    private static InvalidOperationException Uninitialized() =>
-        new($"{nameof(BehaviorBuildContext)} must be initialized before resolving dependencies.");
+    private static InvalidOperationException Uninitialized()
+    {
+        return new InvalidOperationException($"{nameof(BehaviorBuildContext)} must be initialized before resolving dependencies.");
+    }
 
     private sealed class DelegateBlockRuntimeView(Func<ResourceLocation, Block> resolveBlock) : IBlockRuntimeView
     {
-        public Block Get(ResourceLocation key) => resolveBlock(key);
-        public Block GetByProtocolId(int protocolId) => BlockRegistry.GetByProtocolId(protocolId);
-        public bool TryGetByProtocolId(int protocolId, out Block? block) =>
-            BlockRegistry.TryGetByProtocolId(protocolId, out block);
+        public Block Get(ResourceLocation key)
+        {
+            return resolveBlock(key);
+        }
+
+        public Block GetByProtocolId(int protocolId)
+        {
+            return BlockRegistry.GetByProtocolId(protocolId);
+        }
+
+        public bool TryGetByProtocolId(int protocolId, out Block? block)
+        {
+            return BlockRegistry.TryGetByProtocolId(protocolId, out block);
+        }
     }
 }

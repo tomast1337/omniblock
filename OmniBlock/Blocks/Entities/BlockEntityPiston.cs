@@ -1,8 +1,6 @@
-using System.Collections.Generic;
 using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Entities;
 using OmniBlock.NBT;
-using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Blocks.Entities;
@@ -39,25 +37,30 @@ public class BlockEntityPiston : BlockEntity
         return _progress + (_lastProgress - _progress) * tickDelta;
     }
 
-    public float GetRenderOffsetX(float tickDelta) => IsExtending ? (GetProgress(tickDelta) - 1.0F) * PistonConstants.HeadOffsetX[Facing] : (1.0F - GetProgress(tickDelta)) * PistonConstants.HeadOffsetX[Facing];
+    public float GetRenderOffsetX(float tickDelta)
+    {
+        return IsExtending ? (GetProgress(tickDelta) - 1.0F) * PistonConstants.HeadOffsetX[Facing] : (1.0F - GetProgress(tickDelta)) * PistonConstants.HeadOffsetX[Facing];
+    }
 
-    public float GetRenderOffsetY(float tickDelta) => IsExtending ? (GetProgress(tickDelta) - 1.0F) * PistonConstants.HeadOffsetY[Facing] : (1.0F - GetProgress(tickDelta)) * PistonConstants.HeadOffsetY[Facing];
+    public float GetRenderOffsetY(float tickDelta)
+    {
+        return IsExtending ? (GetProgress(tickDelta) - 1.0F) * PistonConstants.HeadOffsetY[Facing] : (1.0F - GetProgress(tickDelta)) * PistonConstants.HeadOffsetY[Facing];
+    }
 
-    public float GetRenderOffsetZ(float tickDelta) => IsExtending ? (GetProgress(tickDelta) - 1.0F) * PistonConstants.HeadOffsetZ[Facing] : (1.0F - GetProgress(tickDelta)) * PistonConstants.HeadOffsetZ[Facing];
+    public float GetRenderOffsetZ(float tickDelta)
+    {
+        return IsExtending ? (GetProgress(tickDelta) - 1.0F) * PistonConstants.HeadOffsetZ[Facing] : (1.0F - GetProgress(tickDelta)) * PistonConstants.HeadOffsetZ[Facing];
+    }
 
     private void PushEntities(EntityManager entities, float collisionShapeSizeMultiplier, float entityMoveMultiplier)
     {
         if (!IsExtending)
-        {
             --collisionShapeSizeMultiplier;
-        }
         else
-        {
             collisionShapeSizeMultiplier = 1.0F - collisionShapeSizeMultiplier;
-        }
 
-        Block movingPiston = World!.Content.Blocks.Get("moving_piston");
-        Box? pushCollisionBox = ((PistonMovingBehavior)movingPiston.Physics)
+        var movingPiston = World!.Content.Blocks.Get("moving_piston");
+        var pushCollisionBox = ((PistonMovingBehavior)movingPiston.Physics)
             .GetPushedBlockCollisionShape(movingPiston, World!.Reader, entities, X, Y, Z, PushedBlockId, collisionShapeSizeMultiplier, Facing);
         if (pushCollisionBox == null) return;
 
@@ -66,16 +69,14 @@ public class BlockEntityPiston : BlockEntity
 
         List<Entity> pushedEntities = [];
         pushedEntities.AddRange(entitiesToPush); // Cannot resolve method:
-                                                 //     AddRange(List<Entity>)
-                                                 // Candidates are:
-        foreach (Entity entity in pushedEntities)
-        {
+        //     AddRange(List<Entity>)
+        // Candidates are:
+        foreach (var entity in pushedEntities)
             entity.Move(
                 entityMoveMultiplier * PistonConstants.HeadOffsetX[Facing],
                 entityMoveMultiplier * PistonConstants.HeadOffsetY[Facing],
                 entityMoveMultiplier * PistonConstants.HeadOffsetZ[Facing]
             );
-        }
 
         pushedEntities.Clear();
     }
@@ -90,10 +91,7 @@ public class BlockEntityPiston : BlockEntity
                 World!.Broadcaster.NotifyNeighbors(X, Y, Z, PushedBlockId);
                 World!.Broadcaster.BlockUpdateEvent(X, Y, Z);
 
-                if (PushedBlockId == World.Content.Blocks.Get("piston").Id || PushedBlockId == World.Content.Blocks.Get("sticky_piston").Id)
-                {
-                    World!.TickScheduler.ScheduleBlockUpdate(X, Y, Z, PushedBlockId, 1);
-                }
+                if (PushedBlockId == World.Content.Blocks.Get("piston").Id || PushedBlockId == World.Content.Blocks.Get("sticky_piston").Id) World!.TickScheduler.ScheduleBlockUpdate(X, Y, Z, PushedBlockId, 1);
             }
         }
 
@@ -101,7 +99,10 @@ public class BlockEntityPiston : BlockEntity
         MarkRemoved();
     }
 
-    public void AbandonExtensionToStaticBlock() => FinalizeBlock();
+    public void AbandonExtensionToStaticBlock()
+    {
+        FinalizeBlock();
+    }
 
     public void Finish()
     {
@@ -122,15 +123,9 @@ public class BlockEntityPiston : BlockEntity
         else
         {
             _lastProgress += 0.5F;
-            if (_lastProgress >= 1.0F)
-            {
-                _lastProgress = 1.0F;
-            }
+            if (_lastProgress >= 1.0F) _lastProgress = 1.0F;
 
-            if (IsExtending)
-            {
-                PushEntities(entities, _lastProgress, _lastProgress - _progress + 1.0F / 16.0F);
-            }
+            if (IsExtending) PushEntities(entities, _lastProgress, _lastProgress - _progress + 1.0F / 16.0F);
         }
     }
 

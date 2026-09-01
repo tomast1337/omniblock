@@ -11,10 +11,15 @@ internal sealed class TrapDoorBehavior(Material material) : IBlockPhysics, IBloc
 {
     private const float Thickness = 3.0F / 16.0F;
 
-    public bool OnUse(Block block, OnUseEvent ctx) => ToggleState(block, ctx.World, ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z);
+    public bool OnUse(Block block, OnUseEvent ctx)
+    {
+        return ToggleState(block, ctx.World, ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z);
+    }
 
     public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent ctx)
-        => ToggleState(block, ctx.World, ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z);
+    {
+        ToggleState(block, ctx.World, ctx.World.Broadcaster, ctx.X, ctx.Y, ctx.Z);
+    }
 
     public void OnPlaced(Block block, OnPlacedEvent ctx)
     {
@@ -34,9 +39,9 @@ internal sealed class TrapDoorBehavior(Material material) : IBlockPhysics, IBloc
     {
         if (ctx.World.IsRemote) return;
 
-        int meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
-        int xPos = ctx.X;
-        int zPos = ctx.Z;
+        var meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
+        var xPos = ctx.X;
+        var zPos = ctx.Z;
 
         switch (meta & 3)
         {
@@ -53,13 +58,15 @@ internal sealed class TrapDoorBehavior(Material material) : IBlockPhysics, IBloc
         }
         else
         {
-            bool isPowered = ctx.World.Redstone.IsPowered(ctx.X, ctx.Y, ctx.Z);
+            var isPowered = ctx.World.Redstone.IsPowered(ctx.X, ctx.Y, ctx.Z);
             SetOpen(ctx, isPowered);
         }
     }
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
-        => ApplyBoundingBox(block, reader.GetBlockMeta(x, y, z));
+    {
+        ApplyBoundingBox(block, reader.GetBlockMeta(x, y, z));
+    }
 
     public void SetupRenderBoundingBox(Block block)
     {
@@ -69,9 +76,9 @@ internal sealed class TrapDoorBehavior(Material material) : IBlockPhysics, IBloc
 
     public bool CanPlaceAt(Block block, CanPlaceAtContext ctx)
     {
-        int x = ctx.X;
-        int y = ctx.Y;
-        int z = ctx.Z;
+        var x = ctx.X;
+        var y = ctx.Y;
+        var z = ctx.Z;
 
         switch (ctx.Direction)
         {
@@ -91,7 +98,7 @@ internal sealed class TrapDoorBehavior(Material material) : IBlockPhysics, IBloc
     {
         if (world.IsRemote) return true;
         if (material == Material.Metal) return true;
-        int meta = world.Reader.GetBlockMeta(x, y, z);
+        var meta = world.Reader.GetBlockMeta(x, y, z);
         world.Writer.SetBlockMeta(x, y, z, meta ^ 4);
         broadcaster.WorldEvent(1003, x, y, z, 0);
         return true;
@@ -116,10 +123,10 @@ internal sealed class TrapDoorBehavior(Material material) : IBlockPhysics, IBloc
     {
         if (ctx.World.IsRemote) return;
 
-        int x = ctx.X;
-        int y = ctx.Y;
-        int z = ctx.Z;
-        int meta = ctx.World.Reader.GetBlockMeta(x, y, z);
+        var x = ctx.X;
+        var y = ctx.Y;
+        var z = ctx.Z;
+        var meta = ctx.World.Reader.GetBlockMeta(x, y, z);
 
         if (IsOpen(meta) == open) return;
 
@@ -127,5 +134,8 @@ internal sealed class TrapDoorBehavior(Material material) : IBlockPhysics, IBloc
         ctx.World.Broadcaster.WorldEvent(1003, x, y, z, 0);
     }
 
-    public static bool IsOpen(int meta) => (meta & 4) != 0;
+    public static bool IsOpen(int meta)
+    {
+        return (meta & 4) != 0;
+    }
 }

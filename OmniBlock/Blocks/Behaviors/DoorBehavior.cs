@@ -14,15 +14,19 @@ internal sealed class DoorBehavior(Material material) : BlockRuntimeBehavior, IB
     private const float Thickness = 3.0F / 16.0F;
 
     public bool OnUse(Block block, OnUseEvent @event)
-        => ToggleDoor(block, @event.Player, @event.World, @event.X, @event.Y, @event.Z);
+    {
+        return ToggleDoor(block, @event.Player, @event.World, @event.X, @event.Y, @event.Z);
+    }
 
     public void OnBlockBreakStart(Block block, OnBlockBreakStartEvent @event)
-        => ToggleDoor(block, @event.Player, @event.World, @event.X, @event.Y, @event.Z);
+    {
+        ToggleDoor(block, @event.Player, @event.World, @event.X, @event.Y, @event.Z);
+    }
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        int doorId = block.Id;
+        var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var doorId = block.Id;
 
         if ((meta & 8) != 0) // Top half
         {
@@ -32,13 +36,13 @@ internal sealed class DoorBehavior(Material material) : BlockRuntimeBehavior, IB
             }
             else if (@event.BlockId > 0 && Blocks.GetByProtocolId(@event.BlockId).CanEmitRedstonePower())
             {
-                int bottomMeta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y - 1, @event.Z);
+                var bottomMeta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y - 1, @event.Z);
                 NeighborUpdate(block, new OnTickEvent(@event.World, @event.X, @event.Y - 1, @event.Z, bottomMeta, @event.BlockId));
             }
         }
         else // Bottom half
         {
-            bool wasBroken = false;
+            var wasBroken = false;
 
             if (@event.World.Reader.GetBlockId(@event.X, @event.Y + 1, @event.Z) != doorId)
             {
@@ -50,23 +54,17 @@ internal sealed class DoorBehavior(Material material) : BlockRuntimeBehavior, IB
             {
                 @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
                 wasBroken = true;
-                if (@event.World.Reader.GetBlockId(@event.X, @event.Y + 1, @event.Z) == doorId)
-                {
-                    @event.World.Writer.SetBlock(@event.X, @event.Y + 1, @event.Z, 0);
-                }
+                if (@event.World.Reader.GetBlockId(@event.X, @event.Y + 1, @event.Z) == doorId) @event.World.Writer.SetBlock(@event.X, @event.Y + 1, @event.Z, 0);
             }
 
             if (wasBroken)
             {
-                if (!@event.World.IsRemote)
-                {
-                    block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, meta));
-                }
+                if (!@event.World.IsRemote) block.DropStacks(new OnDropEvent(@event.World, @event.X, @event.Y, @event.Z, meta));
             }
             else if (@event.BlockId > 0 && Blocks.GetByProtocolId(@event.BlockId).CanEmitRedstonePower())
             {
-                bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) ||
-                                 @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
+                var isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) ||
+                                @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
 
                 SetOpen(block, @event.World, @event.X, @event.Y, @event.Z, isPowered);
             }
@@ -74,25 +72,26 @@ internal sealed class DoorBehavior(Material material) : BlockRuntimeBehavior, IB
     }
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
-        => ApplyBoundingBox(block, SetOpen(reader.GetBlockMeta(x, y, z)));
+    {
+        ApplyBoundingBox(block, SetOpen(reader.GetBlockMeta(x, y, z)));
+    }
 
     public bool CanPlaceAt(Block block, CanPlaceAtContext ctx)
-        => ctx.Y < 127 && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z);
+    {
+        return ctx.Y < 127 && ctx.World.Reader.ShouldSuffocate(ctx.X, ctx.Y - 1, ctx.Z);
+    }
 
     public int GetTexture(Block block, Side side, int meta, int defaultTexture)
     {
         if (side is Side.Up or Side.Down) return block.TextureId;
 
-        int facing = SetOpen(meta);
+        var facing = SetOpen(meta);
         if (facing is 0 or 2 ^ (side <= Side.South)) return block.TextureId;
 
-        int textureIndex = facing / 2 + ((side.ToInt() & 1) ^ facing);
+        var textureIndex = facing / 2 + ((side.ToInt() & 1) ^ facing);
         textureIndex += (meta & 4) / 4;
-        int texture = block.TextureId - (meta & 8) * 2;
-        if ((textureIndex & 1) != 0)
-        {
-            texture = -texture;
-        }
+        var texture = block.TextureId - (meta & 8) * 2;
+        if ((textureIndex & 1) != 0) texture = -texture;
 
         return texture;
     }
@@ -101,8 +100,8 @@ internal sealed class DoorBehavior(Material material) : BlockRuntimeBehavior, IB
     {
         if (material == Material.Metal) return true;
 
-        int meta = world.Reader.GetBlockMeta(x, y, z);
-        int doorId = block.Id;
+        var meta = world.Reader.GetBlockMeta(x, y, z);
+        var doorId = block.Id;
 
         if ((meta & 8) != 0)
         {
@@ -117,10 +116,7 @@ internal sealed class DoorBehavior(Material material) : BlockRuntimeBehavior, IB
             }
         }
 
-        if (world.Reader.GetBlockId(x, y + 1, z) == doorId)
-        {
-            world.Writer.SetBlockMeta(x, y + 1, z, (meta ^ 4) + 8);
-        }
+        if (world.Reader.GetBlockId(x, y + 1, z) == doorId) world.Writer.SetBlockMeta(x, y + 1, z, (meta ^ 4) + 8);
 
         world.Writer.SetBlockMeta(x, y, z, meta ^ 4);
 
@@ -133,17 +129,23 @@ internal sealed class DoorBehavior(Material material) : BlockRuntimeBehavior, IB
     ///     Computes the visual facing (0-3) from door metadata, accounting for the
     ///     open/closed swing hinge.
     /// </summary>
-    private static int SetOpen(int meta) => (meta & 4) == 0 ? (meta - 1) & 3 : meta & 3;
+    private static int SetOpen(int meta)
+    {
+        return (meta & 4) == 0 ? (meta - 1) & 3 : meta & 3;
+    }
 
     /// <summary>Returns true when the door is in the open position.</summary>
-    public static bool IsOpen(int meta) => (meta & 4) != 0;
+    public static bool IsOpen(int meta)
+    {
+        return (meta & 4) != 0;
+    }
 
     private static void SetOpen(Block block, IWorldContext world, int x, int y, int z, bool open)
     {
         if (world.IsRemote) return;
 
-        int meta = world.Reader.GetBlockMeta(x, y, z);
-        int doorId = block.Id;
+        var meta = world.Reader.GetBlockMeta(x, y, z);
+        var doorId = block.Id;
 
         if ((meta & 8) != 0)
         {
@@ -160,10 +162,7 @@ internal sealed class DoorBehavior(Material material) : BlockRuntimeBehavior, IB
 
         if (IsOpen(meta) == open) return;
 
-        if (world.Reader.GetBlockId(x, y + 1, z) == doorId)
-        {
-            world.Writer.SetBlockMeta(x, y + 1, z, (meta ^ 4) + 8);
-        }
+        if (world.Reader.GetBlockId(x, y + 1, z) == doorId) world.Writer.SetBlockMeta(x, y + 1, z, (meta ^ 4) + 8);
 
         world.Writer.SetBlockMeta(x, y, z, meta ^ 4);
         world.Broadcaster.SetBlocksDirty(x, y - 1, z, x, y + 1, z);

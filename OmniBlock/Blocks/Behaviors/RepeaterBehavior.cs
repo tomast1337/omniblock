@@ -8,16 +8,23 @@ namespace OmniBlock.Blocks.Behaviors;
 ///     shared by the unlit and powered blocks, lit state is derived from the block id, and the
 ///     delay state machine swaps between the two ids. Assign to all six slots.
 /// </summary>
-public sealed class RepeaterBehavior(int topOff, int topOn, int torchOff, int torchOn, int side,
-    Block repeater, Block poweredRepeater, Block redstoneWire) : BlockRuntimeBehavior, IRedstoneComponent, IBlockTicker, IBlockPhysics, IBlockInteractable, IBlockLifecycle, IBlockVisuals
+public sealed class RepeaterBehavior(
+    int topOff,
+    int topOn,
+    int torchOff,
+    int torchOn,
+    int side,
+    Block repeater,
+    Block poweredRepeater,
+    Block redstoneWire) : BlockRuntimeBehavior, IRedstoneComponent, IBlockTicker, IBlockPhysics, IBlockInteractable, IBlockLifecycle, IBlockVisuals
 {
     public static readonly float[] RenderOffset = [-0.0625f, 1.0f / 16.0f, 0.1875f, 0.3125f];
     private static readonly int[] s_delay = [1, 2, 3, 4];
 
     public bool OnUse(Block block, OnUseEvent ctx)
     {
-        int meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
-        int newDelaySetting = (meta & 12) >> 2;
+        var meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
+        var newDelaySetting = (meta & 12) >> 2;
         newDelaySetting = ((newDelaySetting + 1) << 2) & 12;
         ctx.World.Writer.SetBlockMeta(ctx.X, ctx.Y, ctx.Z, newDelaySetting | (meta & 3));
         return true;
@@ -26,7 +33,7 @@ public sealed class RepeaterBehavior(int topOff, int topOn, int torchOff, int to
     public void OnBreak(Block block, OnBreakEvent @event)
     {
         if (@event.World.IsRemote) return;
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
         NotifyTargetNeighbors(block, @event.World, @event.X, @event.Y, @event.Z, meta);
     }
 
@@ -34,18 +41,15 @@ public sealed class RepeaterBehavior(int topOff, int topOn, int torchOff, int to
     {
         if (@event.Placer != null)
         {
-            float yaw = @event.Placer.Yaw;
-            int facing = ((MathHelper.Floor(yaw * 4.0F / 360.0F + 0.5D) & 3) + 2) % 4;
+            var yaw = @event.Placer.Yaw;
+            var facing = ((MathHelper.Floor(yaw * 4.0F / 360.0F + 0.5D) & 3) + 2) % 4;
             @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, facing);
         }
 
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
 
-        bool powered = IsPowered(@event.World.Reader, @event.World.Redstone, @event.X, @event.Y, @event.Z, meta);
-        if (powered)
-        {
-            @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, 1);
-        }
+        var powered = IsPowered(@event.World.Reader, @event.World.Redstone, @event.X, @event.Y, @event.Z, meta);
+        if (powered) @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, 1);
 
         @event.World.Broadcaster.NotifyNeighbors(@event.X + 1, @event.Y, @event.Z, block.Id);
         @event.World.Broadcaster.NotifyNeighbors(@event.X - 1, @event.Y, @event.Z, block.Id);
@@ -57,9 +61,15 @@ public sealed class RepeaterBehavior(int topOff, int topOn, int torchOff, int to
         if (!@event.World.IsRemote) NotifyTargetNeighbors(block, @event.World, @event.X, @event.Y, @event.Z, meta);
     }
 
-    public bool CanPlaceAt(Block block, CanPlaceAtContext context) => context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z);
+    public bool CanPlaceAt(Block block, CanPlaceAtContext context)
+    {
+        return context.World.Reader.ShouldSuffocate(context.X, context.Y - 1, context.Z);
+    }
 
-    public bool CanGrow(Block block, OnTickEvent @event) => @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
+    public bool CanGrow(Block block, OnTickEvent @event)
+    {
+        return @event.World.Reader.ShouldSuffocate(@event.X, @event.Y - 1, @event.Z);
+    }
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
@@ -70,20 +80,17 @@ public sealed class RepeaterBehavior(int topOff, int topOn, int torchOff, int to
         }
         else
         {
-            int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-            bool powered = IsPowered(@event.World.Reader, @event.World.Redstone, @event.X, @event.Y, @event.Z, meta);
-            int delaySetting = (meta & 12) >> 2;
-            if ((IsLit(block) && !powered) || (!IsLit(block) && powered))
-            {
-                @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, s_delay[delaySetting] * 2);
-            }
+            var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+            var powered = IsPowered(@event.World.Reader, @event.World.Redstone, @event.X, @event.Y, @event.Z, meta);
+            var delaySetting = (meta & 12) >> 2;
+            if ((IsLit(block) && !powered) || (!IsLit(block) && powered)) @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, s_delay[delaySetting] * 2);
         }
     }
 
     public void OnTick(Block block, OnTickEvent @event)
     {
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        bool powered = IsPowered(@event.World.Reader, @event.World.Redstone, @event.X, @event.Y, @event.Z, meta);
+        var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var powered = IsPowered(@event.World.Reader, @event.World.Redstone, @event.X, @event.Y, @event.Z, meta);
 
         switch (IsLit(block))
         {
@@ -91,17 +98,17 @@ public sealed class RepeaterBehavior(int topOff, int topOn, int torchOff, int to
                 @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, repeater.Id, meta);
                 break;
             case false:
+            {
+                @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, poweredRepeater.Id, meta);
+
+                if (!powered)
                 {
-                    @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, poweredRepeater.Id, meta);
-
-                    if (!powered)
-                    {
-                        int delaySetting = (meta & 12) >> 2;
-                        @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, poweredRepeater.Id, s_delay[delaySetting] * 2);
-                    }
-
-                    break;
+                    var delaySetting = (meta & 12) >> 2;
+                    @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, poweredRepeater.Id, s_delay[delaySetting] * 2);
                 }
+
+                break;
+            }
         }
     }
 
@@ -109,12 +116,12 @@ public sealed class RepeaterBehavior(int topOff, int topOn, int torchOff, int to
     {
         if (!IsLit(block)) return;
 
-        int meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
-        double particleX = ctx.X + 0.5F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
-        double particleY = ctx.Y + 0.4F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
-        double particleZ = ctx.Z + 0.5F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
-        double offsetX = 0.0D;
-        double offsetY = 0.0D;
+        var meta = ctx.World.Reader.GetBlockMeta(ctx.X, ctx.Y, ctx.Z);
+        var particleX = ctx.X + 0.5F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
+        var particleY = ctx.Y + 0.4F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
+        var particleZ = ctx.Z + 0.5F + (Random.Shared.NextSingle() - 0.5F) * 0.2D;
+        var offsetX = 0.0D;
+        var offsetY = 0.0D;
         if (Random.Shared.Next(2) == 0)
         {
             switch (meta & 3)
@@ -135,7 +142,7 @@ public sealed class RepeaterBehavior(int topOff, int topOn, int torchOff, int to
         }
         else
         {
-            int delayIndex = (meta & 12) >> 2;
+            var delayIndex = (meta & 12) >> 2;
             switch (meta & 3)
             {
                 case 0:
@@ -156,39 +163,60 @@ public sealed class RepeaterBehavior(int topOff, int topOn, int torchOff, int to
         ctx.World.Broadcaster.AddParticle("reddust", particleX + offsetX, particleY, particleZ + offsetY, 0.0D, 0.0D, 0.0D);
     }
 
-    public int GetTexture(Block block, Side side, int defaultTexture) => TextureFor(block, side);
+    public int GetTexture(Block block, Side side, int defaultTexture)
+    {
+        return TextureFor(block, side);
+    }
 
-    public int GetTexture(Block block, Side side, int meta, int defaultTexture) => TextureFor(block, side);
+    public int GetTexture(Block block, Side side, int meta, int defaultTexture)
+    {
+        return TextureFor(block, side);
+    }
 
-    public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility) => side != Side.Down && side != Side.Up;
+    public bool IsSideVisible(Block block, IBlockReader reader, int x, int y, int z, Side side, bool defaultVisibility)
+    {
+        return side != Side.Down && side != Side.Up;
+    }
 
-    public bool IsStrongPoweringSide(Block block, IBlockReader world, int x, int y, int z, int side) => IsPoweringSide(block, world, x, y, z, side);
+    public bool IsStrongPoweringSide(Block block, IBlockReader world, int x, int y, int z, int side)
+    {
+        return IsPoweringSide(block, world, x, y, z, side);
+    }
 
     public bool IsPoweringSide(Block block, IBlockReader reader, int x, int y, int z, int side)
     {
         if (!IsLit(block)) return false;
 
-        int facing = reader.GetBlockMeta(x, y, z) & 3;
+        var facing = reader.GetBlockMeta(x, y, z) & 3;
         return (facing == 0 && side == 3) ||
                (facing == 1 && side == 4) ||
                (facing == 2 && side == 2) ||
                (facing == 3 && side == 5);
     }
 
-    public bool CanEmitRedstonePower(Block block) => true;
-
-    private bool IsLit(Block block) => block.Id == poweredRepeater.Id;
-
-    private int TextureFor(Block block, Side renderSide) => renderSide switch
+    public bool CanEmitRedstonePower(Block block)
     {
-        Side.Down => IsLit(block) ? torchOn : torchOff,
-        Side.Up => IsLit(block) ? topOn : topOff,
-        _ => side
-    };
+        return true;
+    }
+
+    private bool IsLit(Block block)
+    {
+        return block.Id == poweredRepeater.Id;
+    }
+
+    private int TextureFor(Block block, Side renderSide)
+    {
+        return renderSide switch
+        {
+            Side.Down => IsLit(block) ? torchOn : torchOff,
+            Side.Up => IsLit(block) ? topOn : topOff,
+            _ => side
+        };
+    }
 
     private bool IsPowered(IBlockReader world, RedstoneEngine redstoneEngine, int x, int y, int z, int meta)
     {
-        int facing = meta & 3;
+        var facing = meta & 3;
         return facing switch
         {
             0 => redstoneEngine.IsPoweringSide(x, y, z + 1, 3) || (world.GetBlockId(x, y, z + 1) == redstoneWire.Id && world.GetBlockMeta(x, y, z + 1) > 0),
@@ -201,9 +229,9 @@ public sealed class RepeaterBehavior(int topOff, int topOn, int torchOff, int to
 
     private static void NotifyTargetNeighbors(Block block, IWorldContext ctx, int x, int y, int z, int meta)
     {
-        int facing = meta & 3;
-        int targetX = x;
-        int targetZ = z;
+        var facing = meta & 3;
+        var targetX = x;
+        var targetZ = z;
 
         switch (facing)
         {

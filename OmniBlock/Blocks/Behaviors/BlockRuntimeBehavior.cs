@@ -6,8 +6,8 @@ public abstract class BlockRuntimeBehavior
     private IBlockRuntimeView? _blocks;
 
     protected IBlockRuntimeView Blocks => _blocks
-        ?? throw new InvalidOperationException(
-            $"{GetType().Name} was used before being bound to a block runtime.");
+                                          ?? throw new InvalidOperationException(
+                                              $"{GetType().Name} was used before being bound to a block runtime.");
 
     internal void BindRuntime(IBlockRuntimeView blocks)
     {
@@ -18,5 +18,7 @@ public abstract class BlockRuntimeBehavior
         OnRuntimeBound(blocks);
     }
 
-    protected virtual void OnRuntimeBound(IBlockRuntimeView blocks) { }
+    protected virtual void OnRuntimeBound(IBlockRuntimeView blocks)
+    {
+    }
 }

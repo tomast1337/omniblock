@@ -6,14 +6,9 @@ namespace OmniBlock.Blocks;
 
 public sealed record BlockDefinition : IDataAsset
 {
-    [JsonIgnore]
-    public string Name { get; set; } = "";
-
-    [JsonIgnore]
-    public Namespace Namespace { get; set; } = Namespace.OmniBlock;
-
     /// <summary>Explicit protocol ID, or -1 to allocate one deterministically.</summary>
     public int ProtocolId { get; init; } = -1;
+
     public string? TranslationKey { get; init; }
 
     public string Material { get; init; } = "stone";
@@ -55,6 +50,10 @@ public sealed record BlockDefinition : IDataAsset
     public byte SpreadChance { get; init; }
 
     public List<JsonElement> Behaviors { get; init; } = [];
+
+    [JsonIgnore] public string Name { get; set; } = "";
+
+    [JsonIgnore] public Namespace Namespace { get; set; } = Namespace.OmniBlock;
 }
 
 public sealed record BoundingBoxDefinition(float MinX, float MinY, float MinZ, float MaxX, float MaxY, float MaxZ);

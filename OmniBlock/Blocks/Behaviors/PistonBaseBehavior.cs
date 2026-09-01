@@ -20,20 +20,17 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
     {
         if (@event.Placer is EntityPlayer player)
         {
-            int facing = GetFacingForPlacement(@event.X, @event.Y, @event.Z, player);
+            var facing = GetFacingForPlacement(@event.X, @event.Y, @event.Z, player);
             @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, facing);
         }
 
-        if (!@event.World.IsRemote)
-        {
-            CheckExtended(@event.World, @event.X, @event.Y, @event.Z);
-        }
+        if (!@event.World.IsRemote) CheckExtended(@event.World, @event.X, @event.Y, @event.Z);
     }
 
     public void OnBlockAction(Block block, OnBlockActionEvent @event)
     {
-        int actionId = @event.Data1;
-        int facing = @event.Data2;
+        var actionId = @event.Data1;
+        var facing = @event.Data2;
 
         switch (actionId)
         {
@@ -47,28 +44,25 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
                 break;
             case 1: // Retracting
 
-                int headX = @event.X + PistonConstants.HeadOffsetX[facing];
-                int headY = @event.Y + PistonConstants.HeadOffsetY[facing];
-                int headZ = @event.Z + PistonConstants.HeadOffsetZ[facing];
+                var headX = @event.X + PistonConstants.HeadOffsetX[facing];
+                var headY = @event.Y + PistonConstants.HeadOffsetY[facing];
+                var headZ = @event.Z + PistonConstants.HeadOffsetZ[facing];
 
                 BlockEntity? entityAtHead = @event.World.Entities.GetBlockEntity<BlockEntityPiston>(headX, headY, headZ);
-                if (entityAtHead is BlockEntityPiston extendingPiston)
-                {
-                    extendingPiston.Finish();
-                }
+                if (entityAtHead is BlockEntityPiston extendingPiston) extendingPiston.Finish();
 
                 @event.World.Writer.SetBlockWithoutNotifyingNeighbors(@event.X, @event.Y, @event.Z, Blocks.Get("moving_piston").Id, facing);
                 @event.World.Entities.SetBlockEntity(@event.X, @event.Y, @event.Z, PistonMovingBehavior.CreatePistonBlockEntity(block.Id, facing, facing, false, true));
 
                 if (sticky)
                 {
-                    int targetX = headX + PistonConstants.HeadOffsetX[facing];
-                    int targetY = headY + PistonConstants.HeadOffsetY[facing];
-                    int targetZ = headZ + PistonConstants.HeadOffsetZ[facing];
+                    var targetX = headX + PistonConstants.HeadOffsetX[facing];
+                    var targetY = headY + PistonConstants.HeadOffsetY[facing];
+                    var targetZ = headZ + PistonConstants.HeadOffsetZ[facing];
 
-                    int targetId = @event.World.Reader.GetBlockId(targetX, targetY, targetZ);
-                    int targetMeta = @event.World.Reader.GetBlockMeta(targetX, targetY, targetZ);
-                    bool stickySpit = false;
+                    var targetId = @event.World.Reader.GetBlockId(targetX, targetY, targetZ);
+                    var targetMeta = @event.World.Reader.GetBlockMeta(targetX, targetY, targetZ);
+                    var stickySpit = false;
 
                     if (targetId == Blocks.Get("moving_piston").Id)
                     {
@@ -119,9 +113,8 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
     {
-        int meta = reader.GetBlockMeta(x, y, z);
+        var meta = reader.GetBlockMeta(x, y, z);
         if (IsExtended(meta))
-        {
             switch (GetFacing(meta))
             {
                 case 0: block.SetRuntimeBoundingBox(0.0F, 0.25F, 0.0F, 1.0F, 1.0F, 1.0F); break;
@@ -131,68 +124,69 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
                 case 4: block.SetRuntimeBoundingBox(0.25F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F); break;
                 case 5: block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 12.0F / 16.0F, 1.0F, 1.0F); break;
             }
-        }
         else
-        {
             block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-        }
     }
 
-    public void SetupRenderBoundingBox(Block block) => block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+    public void SetupRenderBoundingBox(Block block)
+    {
+        block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+    }
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        if (!@event.World.IsRemote && @event.World.Entities.GetBlockEntity<BlockEntity>(@event.X, @event.Y, @event.Z) == null)
-        {
-            CheckExtended(@event.World, @event.X, @event.Y, @event.Z);
-        }
+        if (!@event.World.IsRemote && @event.World.Entities.GetBlockEntity<BlockEntity>(@event.X, @event.Y, @event.Z) == null) CheckExtended(@event.World, @event.X, @event.Y, @event.Z);
     }
 
     public void OnTick(Block block, OnTickEvent @event)
     {
-        if (!@event.World.IsRemote && @event.World.Entities.GetBlockEntity<BlockEntity>(@event.X, @event.Y, @event.Z) == null)
-        {
-            CheckExtended(@event.World, @event.X, @event.Y, @event.Z);
-        }
+        if (!@event.World.IsRemote && @event.World.Entities.GetBlockEntity<BlockEntity>(@event.X, @event.Y, @event.Z) == null) CheckExtended(@event.World, @event.X, @event.Y, @event.Z);
     }
 
-    public int GetTexture(Block block, Side renderSide, int defaultTexture) => renderSide switch
+    public int GetTexture(Block block, Side renderSide, int defaultTexture)
     {
-        Side.Up => GetTopTexture(),
-        Side.Down => bottom,
-        _ => side
-    };
+        return renderSide switch
+        {
+            Side.Up => GetTopTexture(),
+            Side.Down => bottom,
+            _ => side
+        };
+    }
 
     public int GetTexture(Block block, Side renderSide, int meta, int defaultTexture)
     {
-        Side facing = GetFacing(meta).ToSide();
-        if (facing > Side.East)
-        {
-            return block.TextureId;
-        }
+        var facing = GetFacing(meta).ToSide();
+        if (facing > Side.East) return block.TextureId;
 
         if (renderSide == facing)
-        {
             return !IsExtended(meta) &&
                    block.BoundingBox is { MinX: <= 0.0D, MinY: <= 0.0D, MinZ: <= 0.0D, MaxX: >= 1.0D, MaxY: >= 1.0D, MaxZ: >= 1.0D }
                 ? block.TextureId
                 : extensionSide;
-        }
 
         return renderSide == facing.OppositeFace() ? bottom : side;
     }
 
-    public static int GetFacing(int meta) => meta & 7;
+    public static int GetFacing(int meta)
+    {
+        return meta & 7;
+    }
 
-    public static bool IsExtended(int meta) => (meta & 8) != 0;
+    public static bool IsExtended(int meta)
+    {
+        return (meta & 8) != 0;
+    }
 
-    public int GetTopTexture() => top;
+    public int GetTopTexture()
+    {
+        return top;
+    }
 
     private void CheckExtended(IWorldContext ctx, int x, int y, int z)
     {
-        int meta = ctx.Reader.GetBlockMeta(x, y, z);
-        int facing = GetFacing(meta);
-        bool needsExtension = ShouldExtend(ctx, x, y, z, facing);
+        var meta = ctx.Reader.GetBlockMeta(x, y, z);
+        var facing = GetFacing(meta);
+        var needsExtension = ShouldExtend(ctx, x, y, z, facing);
 
         if (meta == 7) return;
 
@@ -211,37 +205,33 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
         }
     }
 
-    private static bool ShouldExtend(IWorldContext ctx, int x, int y, int z, int facing) =>
-        (facing != 0 && ctx.Redstone.IsPoweringSide(x, y - 1, z, 0)) ||
-        (facing != 1 && ctx.Redstone.IsPoweringSide(x, y + 1, z, 1)) ||
-        (facing != 2 && ctx.Redstone.IsPoweringSide(x, y, z - 1, 2)) ||
-        (facing != 3 && ctx.Redstone.IsPoweringSide(x, y, z + 1, 3)) ||
-        (facing != 4 && ctx.Redstone.IsPoweringSide(x - 1, y, z, 4)) ||
-        (facing != 5 && ctx.Redstone.IsPoweringSide(x + 1, y, z, 5)) ||
-        ctx.Redstone.IsPoweringSide(x, y, z, 0) ||
-        ctx.Redstone.IsPoweringSide(x, y + 2, z, 1) ||
-        ctx.Redstone.IsPoweringSide(x, y + 1, z - 1, 2) ||
-        ctx.Redstone.IsPoweringSide(x, y + 1, z + 1, 3) ||
-        ctx.Redstone.IsPoweringSide(x - 1, y + 1, z, 4) ||
-        ctx.Redstone.IsPoweringSide(x + 1, y + 1, z, 5);
+    private static bool ShouldExtend(IWorldContext ctx, int x, int y, int z, int facing)
+    {
+        return (facing != 0 && ctx.Redstone.IsPoweringSide(x, y - 1, z, 0)) ||
+               (facing != 1 && ctx.Redstone.IsPoweringSide(x, y + 1, z, 1)) ||
+               (facing != 2 && ctx.Redstone.IsPoweringSide(x, y, z - 1, 2)) ||
+               (facing != 3 && ctx.Redstone.IsPoweringSide(x, y, z + 1, 3)) ||
+               (facing != 4 && ctx.Redstone.IsPoweringSide(x - 1, y, z, 4)) ||
+               (facing != 5 && ctx.Redstone.IsPoweringSide(x + 1, y, z, 5)) ||
+               ctx.Redstone.IsPoweringSide(x, y, z, 0) ||
+               ctx.Redstone.IsPoweringSide(x, y + 2, z, 1) ||
+               ctx.Redstone.IsPoweringSide(x, y + 1, z - 1, 2) ||
+               ctx.Redstone.IsPoweringSide(x, y + 1, z + 1, 3) ||
+               ctx.Redstone.IsPoweringSide(x - 1, y + 1, z, 4) ||
+               ctx.Redstone.IsPoweringSide(x + 1, y + 1, z, 5);
+    }
 
     private static int GetFacingForPlacement(int x, int y, int z, EntityPlayer player)
     {
         if (MathF.Abs((float)player.X - x) < 2.0F && MathF.Abs((float)player.Z - z) < 2.0F)
         {
-            double diffY = player.Y + 1.82D - player.StandingEyeHeight;
-            if (diffY - y > 2.0D)
-            {
-                return 1;
-            }
+            var diffY = player.Y + 1.82D - player.StandingEyeHeight;
+            if (diffY - y > 2.0D) return 1;
 
-            if (y - diffY > 0.0D)
-            {
-                return 0;
-            }
+            if (y - diffY > 0.0D) return 0;
         }
 
-        int playerYaw = MathHelper.Floor(player.Yaw * 4.0F / 360.0F + 0.5D) & 3;
+        var playerYaw = MathHelper.Floor(player.Yaw * 4.0F / 360.0F + 0.5D) & 3;
         return playerYaw switch
         {
             0 => 2,
@@ -258,22 +248,25 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
 
         if (id != Blocks.Get("piston").Id && id != Blocks.Get("sticky_piston").Id)
         {
-            if (Math.Abs(Blocks.GetByProtocolId(id).Hardness - (-1.0F)) < 0.001F) return false;
+            if (Math.Abs(Blocks.GetByProtocolId(id).Hardness - -1.0F) < 0.001F) return false;
             if (Blocks.GetByProtocolId(id).PistonBehavior == PistonBehavior.Unpushable) return false;
             if (!allowBreaking && Blocks.GetByProtocolId(id).PistonBehavior == PistonBehavior.Destroy) return false;
         }
-        else if (IsExtended(ctx.Reader.GetBlockMeta(x, y, z))) return false;
+        else if (IsExtended(ctx.Reader.GetBlockMeta(x, y, z)))
+        {
+            return false;
+        }
 
-        BlockEntity? targetEntity = ctx.Entities.GetBlockEntity<BlockEntity>(x, y, z);
+        var targetEntity = ctx.Entities.GetBlockEntity<BlockEntity>(x, y, z);
         return targetEntity == null;
     }
 
     private bool CanExtend(IWorldContext ctx, int x, int y, int z, int dir)
     {
-        int checkX = x + PistonConstants.HeadOffsetX[dir];
-        int checkY = y + PistonConstants.HeadOffsetY[dir];
-        int checkZ = z + PistonConstants.HeadOffsetZ[dir];
-        int pushCount = 0;
+        var checkX = x + PistonConstants.HeadOffsetX[dir];
+        var checkY = y + PistonConstants.HeadOffsetY[dir];
+        var checkZ = z + PistonConstants.HeadOffsetZ[dir];
+        var pushCount = 0;
 
         while (true)
         {
@@ -281,13 +274,10 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
 
             if (checkY <= 0 || checkY >= ChuckFormat.WorldHeight - 1) return false;
 
-            int blockId = ctx.Reader.GetBlockId(checkX, checkY, checkZ);
+            var blockId = ctx.Reader.GetBlockId(checkX, checkY, checkZ);
             if (blockId == 0) return true;
 
-            if (!CanMoveBlock(blockId, ctx, checkX, checkY, checkZ, true))
-            {
-                return false;
-            }
+            if (!CanMoveBlock(blockId, ctx, checkX, checkY, checkZ, true)) return false;
 
             if (Blocks.GetByProtocolId(blockId).PistonBehavior == PistonBehavior.Destroy) return true;
 
@@ -302,10 +292,10 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
 
     private bool Push(Block block, IWorldContext ctx, int x, int y, int z, int dir)
     {
-        int nextX = x + PistonConstants.HeadOffsetX[dir];
-        int nextY = y + PistonConstants.HeadOffsetY[dir];
-        int nextZ = z + PistonConstants.HeadOffsetZ[dir];
-        int pushCount = 0;
+        var nextX = x + PistonConstants.HeadOffsetX[dir];
+        var nextY = y + PistonConstants.HeadOffsetY[dir];
+        var nextZ = z + PistonConstants.HeadOffsetZ[dir];
+        var pushCount = 0;
 
         while (true)
         {
@@ -313,20 +303,14 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
             {
                 if (nextY <= 0 || nextY >= ChuckFormat.WorldHeight - 1) return false;
 
-                int blockId = ctx.Reader.GetBlockId(nextX, nextY, nextZ);
+                var blockId = ctx.Reader.GetBlockId(nextX, nextY, nextZ);
                 if (blockId != 0)
                 {
-                    if (!CanMoveBlock(blockId, ctx, nextX, nextY, nextZ, true))
-                    {
-                        return false;
-                    }
+                    if (!CanMoveBlock(blockId, ctx, nextX, nextY, nextZ, true)) return false;
 
                     if (Blocks.GetByProtocolId(blockId).PistonBehavior != PistonBehavior.Destroy)
                     {
-                        if (pushCount == 12)
-                        {
-                            return false;
-                        }
+                        if (pushCount == 12) return false;
 
                         nextX += PistonConstants.HeadOffsetX[dir];
                         nextY += PistonConstants.HeadOffsetY[dir];
@@ -342,12 +326,12 @@ public sealed class PistonBaseBehavior(bool sticky, int top, int side, int botto
 
             while (nextX != x || nextY != y || nextZ != z)
             {
-                int prevX = nextX - PistonConstants.HeadOffsetX[dir];
-                int prevY = nextY - PistonConstants.HeadOffsetY[dir];
-                int prevZ = nextZ - PistonConstants.HeadOffsetZ[dir];
+                var prevX = nextX - PistonConstants.HeadOffsetX[dir];
+                var prevY = nextY - PistonConstants.HeadOffsetY[dir];
+                var prevZ = nextZ - PistonConstants.HeadOffsetZ[dir];
 
-                int prevBlockId = ctx.Reader.GetBlockId(prevX, prevY, prevZ);
-                int prevMeta = ctx.Reader.GetBlockMeta(prevX, prevY, prevZ);
+                var prevBlockId = ctx.Reader.GetBlockId(prevX, prevY, prevZ);
+                var prevMeta = ctx.Reader.GetBlockMeta(prevX, prevY, prevZ);
 
                 if (prevBlockId == block.Id && prevX == x && prevY == y && prevZ == z)
                 {

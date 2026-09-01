@@ -16,7 +16,7 @@ internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball, int
     public bool OnUse(Block block, OnUseEvent @event)
     {
         if (@event.World.IsRemote) return true;
-        BlockEntityDispenser? dispenser = @event.World.Entities.GetBlockEntity<BlockEntityDispenser>(@event.X, @event.Y, @event.Z);
+        var dispenser = @event.World.Entities.GetBlockEntity<BlockEntityDispenser>(@event.X, @event.Y, @event.Z);
         if (dispenser != null) @event.Player.openDispenserScreen(dispenser);
         return true;
     }
@@ -29,8 +29,8 @@ internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball, int
         }
         else
         {
-            int direction = MathHelper.Floor(@event.Placer.Yaw * 4.0F / 360.0F + 0.5D) & 3;
-            int meta = direction switch
+            var direction = MathHelper.Floor(@event.Placer.Yaw * 4.0F / 360.0F + 0.5D) & 3;
+            var meta = direction switch
             {
                 0 => 2,
                 1 => 5,
@@ -39,46 +39,45 @@ internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball, int
                 _ => 2
             };
             @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
-            if (!@event.World.IsRemote)
-            {
-                @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
-            }
+            if (!@event.World.IsRemote) @event.World.Writer.SetBlockMeta(@event.X, @event.Y, @event.Z, meta);
         }
 
         InventoryUtility.OnPlaced(block, @event);
     }
 
-    public void OnBreak(Block block, OnBreakEvent @event) => InventoryUtility.OnBreak(block, @event);
+    public void OnBreak(Block block, OnBreakEvent @event)
+    {
+        InventoryUtility.OnBreak(block, @event);
+    }
 
     public void NeighborUpdate(Block block, OnTickEvent @event)
     {
-        bool emits = @event.BlockId > 0 && Blocks.GetByProtocolId(@event.BlockId).CanEmitRedstonePower();
-        bool isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) ||
-                         @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
+        var emits = @event.BlockId > 0 && Blocks.GetByProtocolId(@event.BlockId).CanEmitRedstonePower();
+        var isPowered = @event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) ||
+                        @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z);
         if (@event.BlockId <= 0 || !Blocks.GetByProtocolId(@event.BlockId).CanEmitRedstonePower()) return;
         if (isPowered) @event.World.TickScheduler.ScheduleBlockUpdate(@event.X, @event.Y, @event.Z, block.Id, block.TickRate);
     }
 
     public void OnTick(Block block, OnTickEvent @event)
     {
-        if (@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) || @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z))
-        {
-            Dispense(@event);
-        }
+        if (@event.World.Redstone.IsPowered(@event.X, @event.Y, @event.Z) || @event.World.Redstone.IsPowered(@event.X, @event.Y + 1, @event.Z)) Dispense(@event);
     }
 
-    public int GetTexture(Block block, Side side, int defaultTexture) =>
-        side switch
+    public int GetTexture(Block block, Side side, int defaultTexture)
+    {
+        return side switch
         {
             Side.Up or Side.Down => top,
             Side.South => front,
             _ => defaultTexture
         };
+    }
 
     public int GetTextureId(Block block, IBlockReader reader, int x, int y, int z, Side renderSide, int defaultTexture)
     {
         if (renderSide is Side.Up or Side.Down) return top;
-        Side facing = reader.GetBlockMeta(x, y, z).ToSide();
+        var facing = reader.GetBlockMeta(x, y, z).ToSide();
         return renderSide != facing ? side : front;
     }
 
@@ -86,13 +85,13 @@ internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball, int
     {
         if (@event.World.IsRemote) return;
 
-        IBlockReader reader = @event.World.Reader;
+        var reader = @event.World.Reader;
         int x = @event.X, y = @event.Y, z = @event.Z;
 
-        bool isNorthOpaque = Blocks.IsOpaque(reader.GetBlockId(x, y, z - 1));
-        bool isSouthOpaque = Blocks.IsOpaque(reader.GetBlockId(x, y, z + 1));
-        bool isWestOpaque = Blocks.IsOpaque(reader.GetBlockId(x - 1, y, z));
-        bool isEastOpaque = Blocks.IsOpaque(reader.GetBlockId(x + 1, y, z));
+        var isNorthOpaque = Blocks.IsOpaque(reader.GetBlockId(x, y, z - 1));
+        var isSouthOpaque = Blocks.IsOpaque(reader.GetBlockId(x, y, z + 1));
+        var isWestOpaque = Blocks.IsOpaque(reader.GetBlockId(x - 1, y, z));
+        var isEastOpaque = Blocks.IsOpaque(reader.GetBlockId(x + 1, y, z));
 
         byte direction = 3;
         if (isNorthOpaque && !isSouthOpaque) direction = 3;
@@ -105,9 +104,9 @@ internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball, int
 
     private void Dispense(OnTickEvent @event)
     {
-        int meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
-        int dirX = 0;
-        int dirZ = 0;
+        var meta = @event.World.Reader.GetBlockMeta(@event.X, @event.Y, @event.Z);
+        var dirX = 0;
+        var dirZ = 0;
 
         switch (meta)
         {
@@ -125,13 +124,13 @@ internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball, int
                 break;
         }
 
-        BlockEntityDispenser? dispenser = @event.World.Entities.GetBlockEntity<BlockEntityDispenser>(@event.X, @event.Y, @event.Z);
+        var dispenser = @event.World.Entities.GetBlockEntity<BlockEntityDispenser>(@event.X, @event.Y, @event.Z);
         if (dispenser == null) return;
 
-        ItemStack? itemStack = dispenser.GetItemToDispose();
-        double spawnX = @event.X + dirX * 0.6D + 0.5D;
-        double spawnY = @event.Y + 0.5D;
-        double spawnZ = @event.Z + dirZ * 0.6D + 0.5D;
+        var itemStack = dispenser.GetItemToDispose();
+        var spawnX = @event.X + dirX * 0.6D + 0.5D;
+        var spawnY = @event.Y + 0.5D;
+        var spawnZ = @event.Z + dirZ * 0.6D + 0.5D;
 
         if (itemStack == null)
         {
@@ -141,9 +140,9 @@ internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball, int
 
         if (itemStack.ItemId == arrow.Id)
         {
-            Entity shot = EntityRegistry.ByName("arrow").Create(@event.World);
+            var shot = EntityRegistry.ByName("arrow").Create(@event.World);
             shot.SetPositionAndAngles(spawnX, spawnY, spawnZ, 0.0F, 0.0F);
-            ArrowBehavior flight = shot.Behaviors.Find<ArrowBehavior>()!;
+            var flight = shot.Behaviors.Find<ArrowBehavior>()!;
             flight.SetHeading(shot, dirX, 0.1D, dirZ, 1.1F, 6.0F);
             flight.SetBelongsToPlayer(shot, true);
             @event.World.Entities.SpawnEntity(shot);
@@ -159,8 +158,8 @@ internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball, int
         }
         else
         {
-            Entity item = DroppedItemBehavior.Create(@event.World, spawnX, spawnY - 0.3D, spawnZ, itemStack);
-            double randomVelocity = Random.Shared.NextDouble() * 0.1D + 0.2D;
+            var item = DroppedItemBehavior.Create(@event.World, spawnX, spawnY - 0.3D, spawnZ, itemStack);
+            var randomVelocity = Random.Shared.NextDouble() * 0.1D + 0.2D;
             item.VelocityX = dirX * randomVelocity;
             item.VelocityY = 0.2F;
             item.VelocityZ = dirZ * randomVelocity;
@@ -178,7 +177,7 @@ internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball, int
 
     private static void DispenseProjectile(OnTickEvent @event, string typeName, double spawnX, double spawnY, double spawnZ, int dirX, int dirZ)
     {
-        Entity projectile = EntityRegistry.ByName(typeName).Create(@event.World);
+        var projectile = EntityRegistry.ByName(typeName).Create(@event.World);
         projectile.SetPositionAndAngles(spawnX, spawnY, spawnZ, 0.0F, 0.0F);
         projectile.Behaviors.Find<ThrownProjectileBehavior>()!.SetHeading(projectile, dirX, 0.1D, dirZ, 1.1F, 6.0F);
         @event.World.Entities.SpawnEntity(projectile);

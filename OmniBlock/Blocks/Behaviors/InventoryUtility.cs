@@ -1,5 +1,4 @@
 using OmniBlock.Blocks.Entities;
-using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.Inventories;
 using OmniBlock.Items;
@@ -22,48 +21,39 @@ public static class InventoryUtility
 
     public static void OnPlaced(Block block, OnPlacedEvent @event)
     {
-        if (block.GetBlockEntity() is { } blockEntity)
-        {
-            @event.World.Entities.SetBlockEntity(@event.X, @event.Y, @event.Z, blockEntity);
-        }
+        if (block.GetBlockEntity() is { } blockEntity) @event.World.Entities.SetBlockEntity(@event.X, @event.Y, @event.Z, blockEntity);
     }
 
     public static void OnBreak(Block block, OnBreakEvent @event)
     {
         if (IgnoreBlockRemoval.Value) return;
 
-        BlockEntity? entity = @event.World.Entities.GetBlockEntity<BlockEntity>(@event.X, @event.Y, @event.Z);
+        var entity = @event.World.Entities.GetBlockEntity<BlockEntity>(@event.X, @event.Y, @event.Z);
         if (entity is not IInventory inventory)
         {
-            if (entity != null)
-            {
-                @event.World.Entities.RemoveBlockEntity(@event.X, @event.Y, @event.Z);
-            }
+            if (entity != null) @event.World.Entities.RemoveBlockEntity(@event.X, @event.Y, @event.Z);
 
             return;
         }
 
-        JavaRandom random = s_random.Value!;
+        var random = s_random.Value!;
 
-        for (int slot = 0; slot < inventory.Size; ++slot)
+        for (var slot = 0; slot < inventory.Size; ++slot)
         {
-            ItemStack? stack = inventory.GetStack(slot);
+            var stack = inventory.GetStack(slot);
             if (stack == null) continue;
 
-            float offsetX = random.NextFloat() * 0.8F + 0.1F;
-            float offsetY = random.NextFloat() * 0.8F + 0.1F;
-            float offsetZ = random.NextFloat() * 0.8F + 0.1F;
+            var offsetX = random.NextFloat() * 0.8F + 0.1F;
+            var offsetY = random.NextFloat() * 0.8F + 0.1F;
+            var offsetZ = random.NextFloat() * 0.8F + 0.1F;
 
             while (stack.Count > 0)
             {
-                int amount = random.NextInt(21) + 10;
-                if (amount > stack.Count)
-                {
-                    amount = stack.Count;
-                }
+                var amount = random.NextInt(21) + 10;
+                if (amount > stack.Count) amount = stack.Count;
 
                 stack.Count -= amount;
-                Entity entityItem = DroppedItemBehavior.Create(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, amount, stack.GetDamage()));
+                var entityItem = DroppedItemBehavior.Create(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(stack.ItemId, amount, stack.GetDamage()));
                 entityItem.VelocityX = (float)random.NextGaussian() * DropSpread;
                 entityItem.VelocityY = (float)random.NextGaussian() * DropSpread + 0.2F;
                 entityItem.VelocityZ = (float)random.NextGaussian() * DropSpread;
