@@ -2,6 +2,7 @@
   "ProtocolId": 29,
   "Name": "sticky_piston",
   "TranslationKey": "pistonStickyBase",
+  "BlockItem": { "Type": "piston" },
   "Material": "piston",
   "SoundGroup": "stone",
   "Hardness": 0.5,

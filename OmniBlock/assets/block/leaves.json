@@ -1,6 +1,7 @@
 {
   "ProtocolId": 18,
   "Name": "leaves",
+  "BlockItem": { "Type": "leaves", "TranslationKey": "leaves" },
   "Material": "leaves",
   "SoundGroup": "grass",
   "Hardness": 0.2,

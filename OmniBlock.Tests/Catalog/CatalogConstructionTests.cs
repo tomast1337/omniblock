@@ -42,6 +42,43 @@ public sealed class CatalogConstructionTests
     }
 
     [Fact]
+    public void Every_shipped_block_has_a_builder_owned_item_in_the_runtime()
+    {
+        ContentRuntime runtime = ContentRuntime.Current;
+
+        foreach (BlockDefinition definition in LoadBlocks())
+        {
+            ResourceLocation key = new(definition.Namespace, definition.Name);
+            Item item = runtime.BlockItems.Get(key);
+
+            Assert.Equal(definition.ProtocolId, item.Id);
+            Assert.Same(item, runtime.BlockItems.GetByProtocolId(definition.ProtocolId));
+            Assert.Same(item, Item.Items[definition.ProtocolId]);
+        }
+    }
+
+    [Theory]
+    [InlineData("wool", "cloth", typeof(ItemCloth))]
+    [InlineData("log", "log", typeof(ItemLog))]
+    [InlineData("slab", "slab", typeof(ItemSlab))]
+    [InlineData("sapling", "sapling", typeof(ItemSapling))]
+    [InlineData("grass", "grass", typeof(ItemGrass))]
+    [InlineData("leaves", "leaves", typeof(ItemLeaves))]
+    [InlineData("piston", "piston", typeof(ItemPiston))]
+    [InlineData("sticky_piston", "piston", typeof(ItemPiston))]
+    public void Special_block_item_behavior_is_declared_in_the_catalog(
+        string blockName,
+        string declaredType,
+        Type expectedItemType)
+    {
+        BlockDefinition definition = Assert.Single(LoadBlocks(), definition => definition.Name == blockName);
+        Item item = ContentRuntime.Current.BlockItems.Get(new ResourceLocation(definition.Namespace, definition.Name));
+
+        Assert.Equal(declaredType, definition.BlockItem.Type);
+        Assert.IsType(expectedItemType, item);
+    }
+
+    [Fact]
     public void Every_shipped_entity_definition_has_a_constructed_type_and_all_declared_slots()
     {
         foreach (EntityType type in DefaultRegistries.EntityTypes.Where(static type => type.Definition is not null))

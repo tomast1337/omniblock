@@ -1,6 +1,7 @@
 using System.Collections.Frozen;
 using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Items;
 
 namespace OmniBlock.Registries;
 
@@ -15,10 +16,12 @@ public sealed class ContentRuntime
 
     internal ContentRuntime(
         IEnumerable<(ResourceLocation Key, Block Block)> blocks,
+        IEnumerable<(ResourceLocation Key, Item Item)> blockItems,
         IBlockBehaviorProviderRegistry blockBehaviorProviders)
     {
         ArgumentNullException.ThrowIfNull(blockBehaviorProviders);
         Blocks = new RuntimeBlockRegistry(blocks);
+        BlockItems = new RuntimeBlockItemRegistry(blockItems);
         BlockBehaviorProviders = blockBehaviorProviders;
     }
 
@@ -34,6 +37,7 @@ public sealed class ContentRuntime
     }
 
     public RuntimeBlockRegistry Blocks { get; }
+    public RuntimeBlockItemRegistry BlockItems { get; }
     public IBlockBehaviorProviderRegistry BlockBehaviorProviders { get; }
 
     internal static void Publish(ContentRuntime runtime)
@@ -44,6 +48,38 @@ public sealed class ContentRuntime
             throw new InvalidOperationException("A content runtime has already been published.");
         }
     }
+}
+
+/// <summary>Immutable index of the item representations derived from runtime blocks.</summary>
+public sealed class RuntimeBlockItemRegistry
+{
+    private readonly FrozenDictionary<ResourceLocation, Item> _byKey;
+    private readonly Item?[] _byProtocolId = new Item?[BlockRegistry.ProtocolIdCapacity];
+
+    internal RuntimeBlockItemRegistry(IEnumerable<(ResourceLocation Key, Item Item)> entries)
+    {
+        var byKey = new Dictionary<ResourceLocation, Item>();
+        foreach ((ResourceLocation key, Item item) in entries)
+        {
+            if (!byKey.TryAdd(key, item)) throw new ArgumentException($"Duplicate block-item key '{key}'.");
+            if (item.Id is < 0 or >= BlockRegistry.ProtocolIdCapacity)
+                throw new ArgumentOutOfRangeException(nameof(entries), item.Id,
+                    $"Block-item protocol id must be between 0 and {BlockRegistry.ProtocolIdCapacity - 1}.");
+            if (_byProtocolId[item.Id] is not null) throw new ArgumentException($"Duplicate block-item protocol id {item.Id}.");
+            _byProtocolId[item.Id] = item;
+        }
+
+        _byKey = byKey.ToFrozenDictionary();
+    }
+
+    public int Count => _byKey.Count;
+    public Item Get(ResourceLocation key) => _byKey.TryGetValue(key, out Item? item)
+        ? item
+        : throw new KeyNotFoundException($"Unknown block item '{key}'.");
+    public Item GetByProtocolId(int protocolId) =>
+        protocolId is >= 0 and < BlockRegistry.ProtocolIdCapacity && _byProtocolId[protocolId] is { } item
+            ? item
+            : throw new KeyNotFoundException($"Unknown block-item protocol id {protocolId}.");
 }
 
 /// <summary>Frozen key and protocol-ID indexes over the constructed block catalog.</summary>

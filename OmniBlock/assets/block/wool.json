@@ -2,6 +2,7 @@
   "ProtocolId": 35,
   "Name": "wool",
   "TranslationKey": "cloth",
+  "BlockItem": { "Type": "cloth" },
   "Material": "wool",
   "SoundGroup": "cloth",
   "Hardness": 0.8,

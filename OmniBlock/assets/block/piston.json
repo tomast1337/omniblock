@@ -2,6 +2,7 @@
   "ProtocolId": 33,
   "Name": "piston",
   "TranslationKey": "pistonBase",
+  "BlockItem": { "Type": "piston" },
   "Material": "piston",
   "SoundGroup": "stone",
   "Hardness": 0.5,

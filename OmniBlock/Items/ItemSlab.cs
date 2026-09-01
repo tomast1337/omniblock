@@ -5,13 +5,13 @@ namespace OmniBlock.Items;
 
 internal class ItemSlab : ItemBlock
 {
-    public ItemSlab(int id) : base(id)
+    public ItemSlab(Block block) : base(block)
     {
         SetMaxDamage(0);
         SetHasSubtypes(true);
     }
 
-    public override int GetTextureId(int meta) => BlockRegistry.Get("slab").GetTexture(2.ToSide(), meta);
+    public override int GetTextureId(int meta) => Block.GetTexture(2.ToSide(), meta);
 
     protected override int GetPlacementMetadata(int meta) => meta;
 

@@ -1,6 +1,7 @@
 {
   "ProtocolId": 6,
   "Name": "sapling",
+  "BlockItem": { "Type": "sapling", "TranslationKey": "sapling" },
   "Material": "plant",
   "SoundGroup": "grass",
   "NonOpaque": true,

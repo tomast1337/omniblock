@@ -4,7 +4,7 @@ namespace OmniBlock.Items;
 
 internal class ItemSapling : ItemBlock
 {
-    public ItemSapling(int id) : base(id)
+    public ItemSapling(Block block) : base(block)
     {
         SetMaxDamage(0);
         SetHasSubtypes(true);
@@ -12,5 +12,5 @@ internal class ItemSapling : ItemBlock
 
     protected override int GetPlacementMetadata(int meta) => meta;
 
-    public override int GetTextureId(int meta) => BlockRegistry.Get("sapling").GetTexture(0, meta);
+    public override int GetTextureId(int meta) => Block.GetTexture(0, meta);
 }

@@ -45,6 +45,7 @@ public sealed record BlockDefinition : IDataAsset
     public int? DropCount { get; init; }
     public bool PreservesMetaOnDrop { get; init; }
     public string[]? BlockAlias { get; init; }
+    public BlockItemDefinition BlockItem { get; init; } = new();
 
     public LootTableDefinition? LootTable { get; init; }
     public string? TileEntity { get; init; }
@@ -56,3 +57,9 @@ public sealed record BlockDefinition : IDataAsset
 }
 
 public sealed record BoundingBoxDefinition(float MinX, float MinY, float MinZ, float MaxX, float MaxY, float MaxZ);
+
+public sealed record BlockItemDefinition
+{
+    public string Type { get; init; } = "block";
+    public string? TranslationKey { get; init; }
+}

@@ -8,17 +8,18 @@ namespace OmniBlock.Items;
 
 internal class ItemBlock : Item
 {
-    private readonly int _blockId;
+    protected readonly Block Block;
+    private int BlockId => Block.Id;
 
-    public ItemBlock(int id) : base(id)
+    public ItemBlock(Block block) : base(block.Id - 256, publishLegacy: false)
     {
-        _blockId = id + 256;
-        SetTextureId(BlockRegistry.GetByProtocolId(id + 256).GetTexture(2.ToSide()));
+        Block = block;
+        SetTextureId(block.GetTexture(2.ToSide()));
     }
 
     public override bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
     {
-        if (world.Reader.GetBlockId(x, y, z) == BlockRegistry.Get("snow").Id)
+        if (world.Reader.GetBlockId(x, y, z) == world.Content.Blocks.Get("snow").Id)
         {
             meta = 0;
         }
@@ -53,7 +54,7 @@ internal class ItemBlock : Item
         }
 
         int existingBlockId = world.Reader.GetBlockId(x, y, z);
-        if (existingBlockId != 0 && !BlockRegistry.GetByProtocolId(existingBlockId).Material.IsReplaceable)
+        if (existingBlockId != 0 && !world.Content.Blocks.GetByProtocolId(existingBlockId).Material.IsReplaceable)
         {
             return false;
         }
@@ -63,7 +64,7 @@ internal class ItemBlock : Item
             return false;
         }
 
-        Block block = BlockRegistry.GetByProtocolId(_blockId);
+        Block block = world.Content.Blocks.GetByProtocolId(BlockId);
         Box? collisionBox = block.GetCollisionShape(world.Reader, world.Entities, x, y, z);
         if (collisionBox is { } box)
         {
@@ -81,7 +82,7 @@ internal class ItemBlock : Item
         }
 
         int placementMeta = GetPlacementMetadata(itemStack.GetDamage());
-        if (!world.Writer.SetBlockWithoutCallingOnPlaced(x, y, z, _blockId, placementMeta))
+        if (!world.Writer.SetBlockWithoutCallingOnPlaced(x, y, z, BlockId, placementMeta))
         {
             return true;
         }
@@ -94,7 +95,7 @@ internal class ItemBlock : Item
 
     }
 
-    public override string GetItemNameIs(ItemStack itemStack) => BlockRegistry.GetByProtocolId(_blockId).BlockName;
+    public override string GetItemNameIs(ItemStack itemStack) => Block.BlockName;
 
-    public override string GetItemName() => BlockRegistry.GetByProtocolId(_blockId).BlockName;
+    public override string GetItemName() => Block.BlockName;
 }

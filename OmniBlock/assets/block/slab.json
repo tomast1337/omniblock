@@ -2,6 +2,7 @@
   "ProtocolId": 44,
   "Name": "slab",
   "TranslationKey": "stoneSlab",
+  "BlockItem": { "Type": "slab" },
   "SoundGroup": "stone",
   "Hardness": 2,
   "Resistance": 10,

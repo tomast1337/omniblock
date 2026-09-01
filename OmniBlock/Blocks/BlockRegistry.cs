@@ -1,4 +1,3 @@
-using OmniBlock.Items;
 using OmniBlock.Registries;
 using OmniBlock.Registries.Data;
 
@@ -101,7 +100,6 @@ public static class BlockRegistry
         }
 
         LoadAndBuild(definitions, content);
-        BridgeToItems(definitions);
     }
 
     internal static void CompleteBootstrap(ContentRuntimeBuilder content)
@@ -135,37 +133,7 @@ public static class BlockRegistry
                 content.BlockBehaviorProviders,
                 content.BlockBuildContext);
         }
-    }
 
-    private static void BridgeToItems(IEnumerable<BlockDefinition> definitions)
-    {
-        var specialCased = new Dictionary<string, Func<int, Item>>
-        {
-            ["wool"] = id => new ItemCloth(id - 256).SetItemName("cloth"),
-            ["log"] = id => new ItemLog(id - 256).SetItemName("log"),
-            ["slab"] = id => new ItemSlab(id - 256).SetItemName("stoneSlab"),
-            ["sapling"] = id => new ItemSapling(id - 256).SetItemName("sapling"),
-            ["grass"] = id => new ItemGrass(id - 256).SetItemName("grass"),
-            ["leaves"] = id => new ItemLeaves(id - 256).SetItemName("leaves"),
-            ["piston"] = id => new ItemPiston(id - 256),
-            ["sticky_piston"] = id => new ItemPiston(id - 256),
-        };
-
-        foreach (BlockDefinition def in definitions)
-        {
-            int id = def.ProtocolId;
-            Item.Items[id] = specialCased.TryGetValue(def.Name, out Func<int, Item>? factory)
-                ? factory(id)
-                : new ItemBlock(id - 256);
-
-            // Every block gets Init() called once, all definitions guaranteed constructed,
-            // simpler than the old code's skip-if-Item.ITEMS-already-set quirk, and provably
-            // identical in practice: none of the seven special-cased blocks above override
-            // IBlockLifecycle.OnInit (no block does, AttachBehaviors builds a separate
-            // instance per slot, so instance state set via OnInit wouldn't reliably reach
-            // the Ticker/Physics/etc-slot instances anyway; behaviors needing resolved
-            // cross-block ids use static readonly fields instead).
-            GetByProtocolId(id).Init();
-        }
+        content.BuildBlockItems(defs);
     }
 }

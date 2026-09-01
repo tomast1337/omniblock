@@ -67,6 +67,16 @@ public sealed class StaticBlockCatalogAccessTests
     }
 
     [Fact]
+    public void Block_registry_cannot_bridge_items_or_write_the_legacy_item_array()
+    {
+        string blockRegistry = Path.Combine(FindRepositoryRoot(), "OmniBlock", "Blocks", "BlockRegistry.cs");
+        string source = File.ReadAllText(blockRegistry);
+
+        Assert.DoesNotContain("BridgeTo" + "Items", source);
+        Assert.DoesNotContain("Item." + "Items", source);
+    }
+
+    [Fact]
     public void Runtime_block_behaviors_cannot_access_global_content_registries()
     {
         string behaviorDirectory = Path.Combine(FindRepositoryRoot(), "OmniBlock", "Blocks", "Behaviors");

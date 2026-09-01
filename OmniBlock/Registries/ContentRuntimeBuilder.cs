@@ -1,6 +1,7 @@
 using System.Text.Json;
 using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
+using OmniBlock.Items;
 
 namespace OmniBlock.Registries;
 
@@ -14,6 +15,7 @@ public sealed class ContentRuntimeBuilder
     private readonly List<(ResourceLocation Key, BlockDefinition Definition, Block Block)> _blocks = [];
     private readonly Dictionary<ResourceLocation, Block> _blocksByKey = [];
     private readonly Block?[] _blocksByProtocolId = new Block?[BlockRegistry.ProtocolIdCapacity];
+    private readonly List<(ResourceLocation Key, Item Item)> _blockItems = [];
     private readonly StagedBlockRuntimeView _blockRuntimeView;
     private bool _built;
 
@@ -71,6 +73,37 @@ public sealed class ContentRuntimeBuilder
         return block is not null;
     }
 
+    internal void BuildBlockItems(IEnumerable<BlockDefinition> definitions)
+    {
+        if (_built) throw new InvalidOperationException("Cannot add content after the runtime has been built.");
+        if (_blockItems.Count != 0) throw new InvalidOperationException("Block items have already been built.");
+
+        var staged = new List<(ResourceLocation Key, Block Block, Item Item)>();
+        var keys = new HashSet<ResourceLocation>();
+        var protocolIds = new HashSet<int>();
+        foreach (BlockDefinition definition in definitions)
+        {
+            ResourceLocation key = new(definition.Namespace, definition.Name);
+            if (!keys.Add(key)) throw new InvalidOperationException($"Duplicate block-item key '{key}'.");
+            if (!protocolIds.Add(definition.ProtocolId))
+                throw new InvalidOperationException($"Duplicate block-item protocol id {definition.ProtocolId}.");
+            Block block = GetBlock(key);
+            Item item = BlockItemFactory.Create(definition, block);
+            if (item.Id != block.Id)
+                throw new InvalidOperationException($"Block item '{key}' has id {item.Id}, expected {block.Id}.");
+            if (Item.Items[item.Id] is not null)
+                throw new InvalidOperationException($"Block item '{key}' collides with item protocol id {item.Id}.");
+            staged.Add((key, block, item));
+        }
+
+        foreach ((ResourceLocation key, Block block, Item item) in staged)
+        {
+            _blockItems.Add((key, item));
+            Item.Items[item.Id] = item; // Transitional publication for legacy item consumers.
+            block.Init();
+        }
+    }
+
     public ContentRuntime Build()
     {
         if (_built) throw new InvalidOperationException("This content runtime builder has already been built.");
@@ -80,6 +113,7 @@ public sealed class ContentRuntimeBuilder
         _blockRuntimeView.Freeze();
         ContentRuntime runtime = new(
             _blocks.Select(static entry => (entry.Key, entry.Block)),
+            _blockItems,
             BlockBehaviorProviders);
         _built = true;
         return runtime;

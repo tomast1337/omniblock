@@ -58,15 +58,15 @@ public class Item
     internal int _textureId;
     private string _translationKey;
 
-    internal Item(int id)
+    internal Item(int id, bool publishLegacy = true)
     {
         Id = 256 + id;
-        if (Items[256 + id] != null)
+        if (publishLegacy && Items[256 + id] != null)
         {
             _logger.LogInformation($"CONFLICT @ {id}");
         }
 
-        Items[256 + id] = this;
+        if (publishLegacy) Items[256 + id] = this;
     }
 
     public IReadOnlyList<string> GetItemAlias => _behavior?.GetItemAliases(this) ?? [];

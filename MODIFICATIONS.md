@@ -260,3 +260,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-08-31 — Refactor block handling and registry system (Nicolas Vyčas Nery; `02761f631c1dbb940b2ed6454c6bd6593e6812cc`)
 - 2026-09-01 — Inject content runtime into worlds and deduplicate lighting update (Nicolas Vyčas Nery; `22c257eeff9377cd226ead110e840e980ebb9d77`)
 - 2026-09-01 — Make finalized blocks immutable (Nicolas Vyčas Nery; `1896a1e52826eb7c0b967cb49aebdf34dd54f713`)
+- 2026-09-01 — Move block-derived items into the builder (Nicolas Vyčas Nery; `a5f9c4e5ba3ac0f8ed157e96a4646b809954bd17`)

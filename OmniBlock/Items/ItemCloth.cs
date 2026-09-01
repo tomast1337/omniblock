@@ -6,13 +6,13 @@ namespace OmniBlock.Items;
 
 internal class ItemCloth : ItemBlock
 {
-    public ItemCloth(int id) : base(id)
+    public ItemCloth(Block block) : base(block)
     {
         SetMaxDamage(0);
         SetHasSubtypes(true);
     }
 
-    public override int GetTextureId(int meta) => BlockRegistry.Get("wool").GetTexture(2.ToSide(), ClothVisualBehavior.GetBlockMeta(meta));
+    public override int GetTextureId(int meta) => Block.GetTexture(2.ToSide(), ClothVisualBehavior.GetBlockMeta(meta));
 
     protected override int GetPlacementMetadata(int meta) => meta;
 

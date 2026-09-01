@@ -1,6 +1,7 @@
 {
   "ProtocolId": 17,
   "Name": "log",
+  "BlockItem": { "Type": "log", "TranslationKey": "log" },
   "Material": "wood",
   "SoundGroup": "wood",
   "Hardness": 2,

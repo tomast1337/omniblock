@@ -2,6 +2,7 @@
   "ProtocolId": 31,
   "Name": "grass",
   "TranslationKey": "tallgrass",
+  "BlockItem": { "Type": "grass", "TranslationKey": "grass" },
   "Material": "plant",
   "SoundGroup": "grass",
   "NonOpaque": true,
