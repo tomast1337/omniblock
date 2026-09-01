@@ -16,6 +16,7 @@ public sealed class ContentRuntimeBuilder
     private readonly Dictionary<ResourceLocation, Block> _blocksByKey = [];
     private readonly Dictionary<int, Block> _blocksByProtocolId = [];
     private readonly List<(ResourceLocation Key, Item Item)> _blockItems = [];
+    private readonly List<BlockDefinition> _pendingBlockDefinitions = [];
     private readonly StagedBlockRuntimeView _blockRuntimeView;
     private bool _built;
 
@@ -36,6 +37,13 @@ public sealed class ContentRuntimeBuilder
 
     public object BuildBlockBehavior(ResourceLocation type, JsonElement definition) =>
         BlockBehaviorProviders.Build(type, definition, BehaviorBuildContext);
+
+    internal void AddBlockDefinition(BlockDefinition definition)
+    {
+        if (_built) throw new InvalidOperationException("Cannot add content after the runtime has been built.");
+        ArgumentNullException.ThrowIfNull(definition);
+        _pendingBlockDefinitions.Add(definition);
+    }
 
     internal void AddBlock(BlockDefinition definition, Block block)
     {
@@ -104,6 +112,7 @@ public sealed class ContentRuntimeBuilder
     {
         if (_built) throw new InvalidOperationException("This content runtime builder has already been built.");
 
+        BuildPendingBlockDefinitions();
         ValidateBlocks();
         foreach ((_, _, Block block) in _blocks) block.Freeze();
         _blockRuntimeView.Freeze();
@@ -113,6 +122,37 @@ public sealed class ContentRuntimeBuilder
             BlockBehaviorProviders);
         _built = true;
         return runtime;
+    }
+
+    private void BuildPendingBlockDefinitions()
+    {
+        if (_pendingBlockDefinitions.Count == 0) return;
+        List<BlockDefinition> definitions = ContentIdAllocator.AssignBlockIds(_pendingBlockDefinitions);
+        foreach (BlockDefinition definition in definitions)
+        {
+            ResourceLocation key = new(definition.Namespace, definition.Name);
+            try
+            {
+                AddBlock(definition, BlockFactory.Create(definition, BlockBuildContext));
+            }
+            catch (Exception error)
+            {
+                throw new InvalidOperationException($"Block '{key}' failed construction: {error.Message}", error);
+            }
+        }
+
+        foreach (BlockDefinition definition in definitions)
+        {
+            ResourceLocation key = new(definition.Namespace, definition.Name);
+            try
+            {
+                BlockFactory.AttachBehaviors(GetBlock(key), definition, BlockBehaviorProviders, BlockBuildContext);
+            }
+            catch (Exception error)
+            {
+                throw new InvalidOperationException($"Block '{key}' failed reference validation: {error.Message}", error);
+            }
+        }
     }
 
     private void ValidateBlocks()
@@ -134,12 +174,15 @@ public sealed class ContentRuntimeBuilder
 
     private static void ValidateSlots(ResourceLocation key, BlockDefinition definition, Block block)
     {
+        HashSet<string> occupiedSlots = [];
         foreach (JsonElement behavior in definition.Behaviors)
         {
             foreach (JsonElement slotElement in behavior.GetProperty("Slots").EnumerateArray())
             {
                 string slot = slotElement.GetString()
                     ?? throw new InvalidOperationException($"Block '{key}' has a null behavior slot.");
+                if (!occupiedSlots.Add(slot))
+                    throw new InvalidOperationException($"Block '{key}' declares duplicate behavior slot '{slot}'.");
                 object? attached = slot switch
                 {
                     "Ticker" => block.Ticker,

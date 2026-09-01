@@ -28,14 +28,35 @@ public readonly struct BlockBuildContext
 
     public BehaviorBuildContext Behaviors { get; }
 
-    public BlockSoundGroup ResolveSoundGroup(ResourceLocation key) =>
-        (_resolveSoundGroup ?? throw Uninitialized()).Invoke(key);
+    public BlockSoundGroup ResolveSoundGroup(ResourceLocation key)
+    {
+        Func<ResourceLocation, BlockSoundGroup> resolver = _resolveSoundGroup ?? throw Uninitialized();
+        return Resolve(() => resolver(key), "sound group", key);
+    }
 
-    public int ResolveLootItemOrBlockId(ResourceLocation key) =>
-        (_resolveLootItemOrBlockId ?? throw Uninitialized()).Invoke(key);
+    public int ResolveLootItemOrBlockId(ResourceLocation key)
+    {
+        Func<ResourceLocation, int> resolver = _resolveLootItemOrBlockId ?? throw Uninitialized();
+        return Resolve(() => resolver(key), "loot item or block", key);
+    }
 
-    public Func<BlockEntity> ResolveBlockEntityFactory(ResourceLocation key) =>
-        (_resolveBlockEntityFactory ?? throw Uninitialized()).Invoke(key);
+    public Func<BlockEntity> ResolveBlockEntityFactory(ResourceLocation key)
+    {
+        Func<ResourceLocation, Func<BlockEntity>> resolver = _resolveBlockEntityFactory ?? throw Uninitialized();
+        return Resolve(() => resolver(key), "block entity", key);
+    }
+
+    private static T Resolve<T>(Func<T> resolver, string kind, ResourceLocation key)
+    {
+        try
+        {
+            return resolver() ?? throw new KeyNotFoundException();
+        }
+        catch (Exception error) when (error is KeyNotFoundException or ArgumentException)
+        {
+            throw new KeyNotFoundException($"Unknown {kind} '{key}'.", error);
+        }
+    }
 
     internal static BlockBuildContext BuiltIns(BehaviorBuildContext behaviors) => new(
         behaviors,

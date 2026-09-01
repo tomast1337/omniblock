@@ -35,17 +35,44 @@ public readonly struct BehaviorBuildContext
         Blocks = blocks ?? new DelegateBlockRuntimeView(resolveBlock);
     }
 
-    public Block ResolveBlock(ResourceLocation key) =>
-        (_resolveBlock ?? throw Uninitialized()).Invoke(key);
+    public Block ResolveBlock(ResourceLocation key)
+    {
+        Func<ResourceLocation, Block> resolver = _resolveBlock ?? throw Uninitialized();
+        return Resolve(() => resolver(key), "block", key.ToString());
+    }
 
-    public Item ResolveItem(ResourceLocation key) =>
-        (_resolveItem ?? throw Uninitialized()).Invoke(key);
+    public Item ResolveItem(ResourceLocation key)
+    {
+        Func<ResourceLocation, Item> resolver = _resolveItem ?? throw Uninitialized();
+        return Resolve(() => resolver(key), "item", key.ToString());
+    }
 
-    public Material ResolveMaterial(ResourceLocation key) =>
-        (_resolveMaterial ?? throw Uninitialized()).Invoke(key);
+    public Material ResolveMaterial(ResourceLocation key)
+    {
+        Func<ResourceLocation, Material> resolver = _resolveMaterial ?? throw Uninitialized();
+        return Resolve(() => resolver(key), "material", key.ToString());
+    }
 
-    public int ResolveTerrainTexture(string key) =>
-        (_resolveTerrainTexture ?? throw Uninitialized()).Invoke(key);
+    public int ResolveTerrainTexture(string key)
+    {
+        Func<string, int> resolver = _resolveTerrainTexture ?? throw Uninitialized();
+        int id = Resolve(() => resolver(key), "terrain texture", key);
+        return id >= 0 ? id : throw new KeyNotFoundException($"Unknown terrain texture '{key}'.");
+    }
+
+    private static T Resolve<T>(Func<T> resolver, string kind, string key)
+    {
+        try
+        {
+            return resolver() ?? throw new KeyNotFoundException();
+        }
+        catch (Exception error) when (error is KeyNotFoundException or ArgumentException)
+        {
+            if (error is ArgumentException)
+                throw new ArgumentException($"Unknown {kind} '{key}'.", error);
+            throw new KeyNotFoundException($"Unknown {kind} '{key}'.", error);
+        }
+    }
 
     public IBlockRuntimeView Blocks { get; }
 

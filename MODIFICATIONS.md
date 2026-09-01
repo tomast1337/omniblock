@@ -262,3 +262,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-09-01 — Make finalized blocks immutable (Nicolas Vyčas Nery; `1896a1e52826eb7c0b967cb49aebdf34dd54f713`)
 - 2026-09-01 — Move block-derived items into the builder (Nicolas Vyčas Nery; `a5f9c4e5ba3ac0f8ed157e96a4646b809954bd17`)
 - 2026-09-01 — Implemented dynamic block-ID allocation and compatibility rules (Nicolas Vyčas Nery; `0a48f4501d7c5b038f6be97fc061ffd31f3fba84`)
+- 2026-09-01 — Implemented the reference-validation matrix (Nicolas Vyčas Nery; `14b0dafa4ac06db23eab4c79073e82f73c6c71bc`)
