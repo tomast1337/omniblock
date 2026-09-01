@@ -9,6 +9,7 @@ using OmniBlock.Worlds.Core;
 using OmniBlock.Worlds.Core.Systems;
 using OmniBlock.Worlds.Dimensions;
 using OmniBlock.Worlds.Storage;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Client.Worlds;
 
@@ -24,7 +25,7 @@ public class ClientWorld : World
     private readonly HashSet<Entity> forcedEntities = [];
     private readonly HashSet<Entity> pendingEntities = [];
 
-    public ClientWorld(ClientNetworkHandler netHandler, long seed, int dimId) : base(new EmptyWorldStorage(), "MpServer", new WorldSettings(seed, WorldType.Default, ""), Dimension.FromId(dimId))
+    public ClientWorld(ClientNetworkHandler netHandler, long seed, int dimId, ContentRuntime? content = null) : base(new EmptyWorldStorage(), "MpServer", new WorldSettings(seed, WorldType.Default, ""), Dimension.FromId(dimId), content ?? ContentRuntime.Current)
     {
         _networkHandler = netHandler;
         SetSpawnPos(new Vec3I(8, 64, 8));

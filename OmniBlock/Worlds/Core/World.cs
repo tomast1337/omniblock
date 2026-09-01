@@ -16,6 +16,7 @@ using OmniBlock.Worlds.Mechanics;
 using OmniBlock.Worlds.Storage;
 using Microsoft.Extensions.Logging;
 using Silk.NET.Maths;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Worlds.Core;
 
@@ -48,8 +49,10 @@ public abstract class World : IWorldContext
     public bool IsFindingSpawnPoint { get; private set; }
     public bool IsNewWorld;
 
-    protected World(IWorldStorage worldStorage, string levelName, WorldSettings settings, Dimension? dim = null)
+    protected World(IWorldStorage worldStorage, string levelName, WorldSettings settings, Dimension? dim,
+        ContentRuntime content)
     {
+        Content = content ?? throw new ArgumentNullException(nameof(content));
         Pathing = new PathFinder(this);
         Storage = worldStorage;
         StateManager = new PersistentStateManager(worldStorage);
@@ -94,14 +97,14 @@ public abstract class World : IWorldContext
         // construction and (unlike Pathing) is never re-primed via SetWorld before use, so it
         // needs Reader to already be assigned.
         PathingRequests = new PathFinding.PathingCoordinator(this);
-        Writer = new WorldWriter(BlockHost, Reader);
+        Writer = new WorldWriter(BlockHost, Reader, Content.Blocks);
         Writer.OnBlockChanged += BlockUpdate;
 
         Broadcaster = new WorldEventBroadcaster(EventListeners, Reader, this);
 
         Writer.OnNeighborsShouldUpdate += (x, y, z, id) => Broadcaster.NotifyNeighbors(x, y, z, id);
 
-        Redstone = new RedstoneEngine(Reader);
+        Redstone = new RedstoneEngine(Reader, Content.Blocks);
         Lighting = new LightingEngine(this);
         Lighting.OnLightUpdated += (x, y, z) => Broadcaster.BlockUpdateEvent(x, y, z);
         TickScheduler = new WorldTickScheduler(this);
@@ -136,6 +139,7 @@ public abstract class World : IWorldContext
     }
 
     public ChunkHost BlockHost { get; }
+    public ContentRuntime Content { get; }
     public IBlockReader Reader { get; }
     public IBlockWriter Writer { get; }
     public WorldEventBroadcaster Broadcaster { get; }
@@ -427,7 +431,7 @@ public abstract class World : IWorldContext
                 break;
         }
 
-        if (Reader.GetBlockId(x, y, z) == BlockRegistry.Get("fire").Id)
+        if (Reader.GetBlockId(x, y, z) == Content.Blocks.Get("fire").Id)
         {
             Broadcaster.WorldEvent(player, 1004, x, y, z, 0);
             Writer.SetBlock(x, y, z, 0);
@@ -600,16 +604,16 @@ public abstract class World : IWorldContext
                     int blockBelowId = currentChunk.GetBlockId(localX, worldY - 1, localZ);
                     int currentBlockId = currentChunk.GetBlockId(localX, worldY, localZ);
 
-                    if (Environment.IsRaining && currentBlockId == 0 && BlockRegistry.Get("snow").CanPlaceAt(new CanPlaceAtContext(this, 1.ToSide(), worldX, worldY, worldZ)) &&
-                        blockBelowId != 0 && blockBelowId != BlockRegistry.Get("ice").Id &&
-                        BlockRegistry.GetByProtocolId(blockBelowId).Material.BlocksMovement)
+                    if (Environment.IsRaining && currentBlockId == 0 && Content.Blocks.Get("snow").CanPlaceAt(new CanPlaceAtContext(this, 1.ToSide(), worldX, worldY, worldZ)) &&
+                        blockBelowId != 0 && blockBelowId != Content.Blocks.Get("ice").Id &&
+                        Content.Blocks.GetByProtocolId(blockBelowId).Material.BlocksMovement)
                     {
-                        Writer.SetBlock(worldX, worldY, worldZ, BlockRegistry.Get("snow").Id);
+                        Writer.SetBlock(worldX, worldY, worldZ, Content.Blocks.Get("snow").Id);
                     }
 
-                    if (blockBelowId == BlockRegistry.Get("water").Id && currentChunk.GetBlockMeta(localX, worldY - 1, localZ) == 0)
+                    if (blockBelowId == Content.Blocks.Get("water").Id && currentChunk.GetBlockMeta(localX, worldY - 1, localZ) == 0)
                     {
-                        Writer.SetBlock(worldX, worldY - 1, worldZ, BlockRegistry.Get("ice").Id);
+                        Writer.SetBlock(worldX, worldY - 1, worldZ, Content.Blocks.Get("ice").Id);
                     }
                 }
             }
@@ -622,13 +626,18 @@ public abstract class World : IWorldContext
                 int localZ = (randomTickVal >> 8) & 15;
                 int localY = (randomTickVal >> 16) & 127;
 
-                int blockId = currentChunk.GetBlockId(localX, localY, localZ);
-                if (BlockRegistry.TicksRandomly(blockId))
-                {
-                    BlockRegistry.GetByProtocolId(blockId).OnTick(new OnTickEvent(this, localX + worldXBase, localY, localZ + worldZBase, currentChunk.GetBlockMeta(localX, localY, localZ), blockId));
-                }
+                RandomTickBlock(currentChunk, localX, localY, localZ, worldXBase, worldZBase);
             }
         }
+    }
+
+    internal void RandomTickBlock(Chunk chunk, int localX, int localY, int localZ, int worldXBase, int worldZBase)
+    {
+        int blockId = chunk.GetBlockId(localX, localY, localZ);
+        if (!Content.Blocks.TryGetByProtocolId(blockId, out Block? block) || !block.TickRandomly) return;
+
+        block.OnTick(new OnTickEvent(this, localX + worldXBase, localY, localZ + worldZBase,
+            chunk.GetBlockMeta(localX, localY, localZ), blockId));
     }
 
     public void displayTick(int centerX, int centerY, int centerZ)
@@ -644,7 +653,7 @@ public abstract class World : IWorldContext
             int blockId = Reader.GetBlockId(targetX, targetY, targetZ);
             if (blockId > 0)
             {
-                BlockRegistry.GetByProtocolId(blockId).RandomDisplayTick(new OnTickEvent(this, targetX, targetY, targetZ, Reader.GetBlockMeta(targetX, targetY, targetZ), blockId));
+                Content.Blocks.GetByProtocolId(blockId).RandomDisplayTick(new OnTickEvent(this, targetX, targetY, targetZ, Reader.GetBlockMeta(targetX, targetY, targetZ), blockId));
             }
         }
     }

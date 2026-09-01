@@ -117,7 +117,7 @@ public abstract class BlockEntity : IEntity
         return dx * dx + dy * dy + dz * dz;
     }
 
-    public Block GetBlock() => BlockRegistry.GetByProtocolId(World!.Reader.GetBlockId(X, Y, Z));
+    public Block GetBlock() => World!.Content.Blocks.GetByProtocolId(World.Reader.GetBlockId(X, Y, Z));
 
     /// <summary>
     ///     What to send a client that has just loaded this block entity, or null when its NBT is
@@ -130,7 +130,7 @@ public abstract class BlockEntity : IEntity
         if (_removed) return true;
         if (World is not { } world) return false;
         int id = world.Reader.GetBlockId(X, Y, Z);
-        return id == 0 || !BlockRegistry.HasBlockEntity(id);
+        return id == 0 || !World!.Content.Blocks.GetByProtocolId(id).HasBlockEntity;
     }
 
     public void MarkRemoved() => _removed = true;

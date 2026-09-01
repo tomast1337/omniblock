@@ -2,12 +2,12 @@ using OmniBlock.Blocks;
 
 namespace OmniBlock.Worlds.Core.Systems;
 
-public class RedstoneEngine(IBlockReader world)
+public class RedstoneEngine(IBlockReader world, IBlockRuntimeView blocks)
 {
     public bool IsStrongPoweringSide(int x, int y, int z, int side)
     {
         int blockId = world.GetBlockId(x, y, z);
-        return blockId != 0 && BlockRegistry.GetByProtocolId(blockId).IsStrongPoweringSide(world, x, y, z, side);
+        return blockId != 0 && blocks.GetByProtocolId(blockId).IsStrongPoweringSide(world, x, y, z, side);
     }
 
     public bool IsStrongPowered(int x, int y, int z)
@@ -24,7 +24,7 @@ public class RedstoneEngine(IBlockReader world)
     {
         if (world.ShouldSuffocate(x, y, z)) return IsStrongPowered(x, y, z);
         int blockId = world.GetBlockId(x, y, z);
-        return blockId != 0 && BlockRegistry.GetByProtocolId(blockId).IsPoweringSide(world, x, y, z, side);
+        return blockId != 0 && blocks.GetByProtocolId(blockId).IsPoweringSide(world, x, y, z, side);
     }
 
     public bool IsPowered(int x, int y, int z)

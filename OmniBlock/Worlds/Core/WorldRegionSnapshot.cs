@@ -25,6 +25,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
     private readonly BiomeSource _biomeSource;
     private readonly float[] _lightTable;
     private readonly int _skylightSubtracted;
+    private readonly IBlockRuntimeView _contentBlocks;
 
     private readonly int _minX;
     private readonly int _minY;
@@ -40,6 +41,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 
     public WorldRegionSnapshot(IWorldContext world, int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
+        _contentBlocks = world.Content.Blocks;
         _biomeSource = world.Dimension.BiomeSource.Clone();
 
         _minX = minX;
@@ -148,13 +150,13 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
 
     public bool ShouldSuffocate(int x, int y, int z)
     {
-        return BlockRegistry.TryGetByProtocolId(GetBlockId(x, y, z), out Block? block)
+        return _contentBlocks.TryGetByProtocolId(GetBlockId(x, y, z), out Block? block)
                && block.Material.BlocksMovement && block.IsFullCube();
     }
 
     public bool IsOpaque(int x, int y, int z)
     {
-        return BlockRegistry.TryGetByProtocolId(GetBlockId(x, y, z), out Block? block) && block.IsOpaque;
+        return _contentBlocks.TryGetByProtocolId(GetBlockId(x, y, z), out Block? block) && block.IsOpaque;
     }
 
     public int GetBlockMeta(int x, int y, int z)
@@ -170,7 +172,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
     public Material GetMaterial(int x, int y, int z)
     {
         int blockId = GetBlockId(x, y, z);
-        return blockId == 0 ? Material.Air : BlockRegistry.GetByProtocolId(blockId).Material;
+        return blockId == 0 ? Material.Air : _contentBlocks.GetByProtocolId(blockId).Material;
     }
 
     public bool IsAir(int x, int y, int z) => GetBlockId(x, y, z) == 0;
@@ -215,7 +217,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         if (checkStairs)
         {
             int blockId = GetBlockId(x, y, z);
-            if (blockId == BlockRegistry.Get("slab").Id || blockId == BlockRegistry.Get("farmland").Id || blockId == BlockRegistry.Get("wooden_stairs").Id || blockId == BlockRegistry.Get("cobblestone_stairs").Id)
+            if (blockId == _contentBlocks.Get("slab").Id || blockId == _contentBlocks.Get("farmland").Id || blockId == _contentBlocks.Get("wooden_stairs").Id || blockId == _contentBlocks.Get("cobblestone_stairs").Id)
             {
                 return GetLightLevelsExt(x, y + 1, z, false)
                     .Max(GetLightLevelsExt(x + 1, y, z, false))
@@ -265,7 +267,7 @@ public class WorldRegionSnapshot : IBlockReader, ILightProvider, IDisposable
         if (checkStairs)
         {
             int blockId = GetBlockId(x, y, z);
-            if (blockId == BlockRegistry.Get("slab").Id || blockId == BlockRegistry.Get("farmland").Id || blockId == BlockRegistry.Get("wooden_stairs").Id || blockId == BlockRegistry.Get("cobblestone_stairs").Id)
+            if (blockId == _contentBlocks.Get("slab").Id || blockId == _contentBlocks.Get("farmland").Id || blockId == _contentBlocks.Get("wooden_stairs").Id || blockId == _contentBlocks.Get("cobblestone_stairs").Id)
             {
                 int maxLight = GetLightValueExt(x, y + 1, z, false);
                 maxLight = Math.Max(maxLight, GetLightValueExt(x + 1, y, z, false)); // East

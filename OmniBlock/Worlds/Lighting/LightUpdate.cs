@@ -16,6 +16,9 @@ internal struct LightUpdate
     public int MaxY;
     public int MaxZ;
 
+    public readonly bool IsSingleCell =>
+        MinX == MaxX && MinY == MaxY && MinZ == MaxZ;
+
     public LightUpdate(LightType lightType, int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
         LightType = lightType;

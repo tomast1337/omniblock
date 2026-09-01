@@ -589,7 +589,7 @@ public class EntityManager
                 {
                     for (int y = minY - 1; y < maxY; ++y)
                     {
-                        if (BlockRegistry.TryGetByProtocolId(
+                        if (_world.Content.Blocks.TryGetByProtocolId(
                                 _world.Reader.GetBlockId(x, y, z), out Block? block))
                         {
                             block.AddIntersectingBoundingBox(_world.Reader, this, x, y, z, area, collidingBoundingBoxes);
@@ -870,12 +870,12 @@ public class EntityManager
         }
 
         int blockId = _world.Reader.GetBlockId(x, y, z);
-        if (blockId == 0 || !BlockRegistry.HasBlockEntity(blockId))
+        if (blockId == 0 || !_world.Content.Blocks.GetByProtocolId(blockId).HasBlockEntity)
         {
             return null;
         }
 
-        entity = BlockRegistry.GetByProtocolId(blockId).GetBlockEntity();
+        entity = _world.Content.Blocks.GetByProtocolId(blockId).GetBlockEntity();
 
         if (entity == null)
         {

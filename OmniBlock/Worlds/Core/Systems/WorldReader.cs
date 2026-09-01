@@ -48,12 +48,12 @@ public class WorldReader : IBlockReader
     public Material GetMaterial(int x, int y, int z)
     {
         int blockId = GetBlockId(x, y, z);
-        return blockId == 0 ? Material.Air : BlockRegistry.GetByProtocolId(blockId).Material;
+        return blockId == 0 ? Material.Air : _context.Content.Blocks.GetByProtocolId(blockId).Material;
     }
 
     public bool IsOpaque(int x, int y, int z)
     {
-        return BlockRegistry.TryGetByProtocolId(GetBlockId(x, y, z), out Block? block) && block.IsOpaque;
+        return _context.Content.Blocks.TryGetByProtocolId(GetBlockId(x, y, z), out Block? block) && block.IsOpaque;
     }
 
     public bool ShouldSuffocate(int x, int y, int z)
@@ -63,7 +63,7 @@ public class WorldReader : IBlockReader
             return false;
         }
 
-        return BlockRegistry.TryGetByProtocolId(GetBlockId(x, y, z), out Block? block)
+        return _context.Content.Blocks.TryGetByProtocolId(GetBlockId(x, y, z), out Block? block)
                && block.Material.Suffocates && block.IsFullCube();
     }
 
@@ -136,7 +136,7 @@ public class WorldReader : IBlockReader
         for (; currentY > 0; --currentY)
         {
             int blockId = chunk.GetBlockId(localX, currentY, localZ);
-            Material material = blockId == 0 ? Material.Air : BlockRegistry.GetByProtocolId(blockId).Material;
+            Material material = blockId == 0 ? Material.Air : _context.Content.Blocks.GetByProtocolId(blockId).Material;
 
             if (material.BlocksMovement || material.IsFluid)
             {
@@ -157,7 +157,7 @@ public class WorldReader : IBlockReader
         for (; currentY > 0; currentY--)
         {
             int blockId = chunk.GetBlockId(localX, currentY, localZ);
-            if (blockId != 0 && BlockRegistry.GetByProtocolId(blockId).Material.BlocksMovement)
+            if (blockId != 0 && _context.Content.Blocks.GetByProtocolId(blockId).Material.BlocksMovement)
             {
                 return currentY + 1;
             }
@@ -167,7 +167,7 @@ public class WorldReader : IBlockReader
     }
 
     public HitResult Raycast(Vec3D start, Vec3D end, bool includeFluids = false, bool ignoreNonSolid = false) =>
-        BlockRaycaster.Cast(this, _context.Entities, start, end, includeFluids, ignoreNonSolid);
+        BlockRaycaster.Cast(this, _context.Entities, _context.Content.Blocks, start, end, includeFluids, ignoreNonSolid);
 
     public float GetVisibilityRatio(Vec3D sourcePosition, Box targetBox)
     {
@@ -264,7 +264,7 @@ public class WorldReader : IBlockReader
             {
                 for (int z = minZ; z < maxZ; ++z)
                 {
-                    if (BlockRegistry.TryGetByProtocolId(GetBlockId(x, y, z), out Block? block)
+                    if (_context.Content.Blocks.TryGetByProtocolId(GetBlockId(x, y, z), out Block? block)
                         && block.Material == fluidMaterial)
                     {
                         double fluidSurfaceY = y + 1 - FluidMath.GetFluidHeightFromMeta(GetBlockMeta(x, y, z));

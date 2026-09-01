@@ -23,7 +23,7 @@ public sealed class LightTestWorld : World
 {
     private ControlledChunkSource _chunks = null!;
 
-    public LightTestWorld() : base(new NoStorage(), "light", new WorldSettings(0L, WorldType.Default))
+    public LightTestWorld() : base(new NoStorage(), "light", new WorldSettings(0L, WorldType.Default), null, OmniBlock.Registries.ContentRuntime.Current)
     {
     }
 

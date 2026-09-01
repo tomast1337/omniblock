@@ -16,6 +16,7 @@ using OmniBlock.Worlds.Dimensions;
 using OmniBlock.Worlds.Mechanics;
 using OmniBlock.Worlds.Storage;
 using OmniBlock.Worlds.Storage.RegionFormat;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Tests.TestSupport;
 
@@ -26,10 +27,12 @@ public sealed class FakeWorldContext : IWorldContext
     private readonly PathFinder _pathFinder;
     private readonly PathingCoordinator _pathingRequests;
 
-    public FakeWorldContext()
+    public FakeWorldContext(ContentRuntime? content = null)
     {
+        Content = content ?? ContentRuntime.Current;
         ReaderWriter = new FakeBlockGrid();
-        Redstone = new RedstoneEngine(ReaderWriter);
+        ReaderWriter.ContentBlocks = Content.Blocks;
+        Redstone = new RedstoneEngine(ReaderWriter, Content.Blocks);
         _chunkSource = new FakeChunkSource(this);
         ChunkHost = new ChunkHost(_chunkSource);
         Entities = new EntityManager(this);
@@ -38,7 +41,7 @@ public sealed class FakeWorldContext : IWorldContext
         Dimension.SetWorld(this);
         Lighting = new LightingEngine(this);
         Environment = new EnvironmentManager(this);
-        _broadcasterWorld = new BroadcasterWorldStub();
+        _broadcasterWorld = new BroadcasterWorldStub(Content);
         Broadcaster = new TestWorldEventBroadcaster(this, _broadcasterWorld);
         TickSchedulerSpy = new RecordingTickScheduler(this);
         Rules = new RuleSet(RuleRegistry.Instance);
@@ -47,6 +50,7 @@ public sealed class FakeWorldContext : IWorldContext
     }
 
     public FakeBlockGrid ReaderWriter { get; }
+    public ContentRuntime Content { get; }
     public RecordingTickScheduler TickSchedulerSpy { get; }
 
     public IBlockReader Reader => ReaderWriter;
@@ -192,7 +196,7 @@ public sealed class TestWorldEventBroadcaster(IWorldContext ctx, World world) : 
 
 sealed file class BroadcasterWorldStub : World
 {
-    public BroadcasterWorldStub() : base(new DummyWorldStorage(), "test", new WorldSettings(0L, WorldType.Default))
+    public BroadcasterWorldStub(ContentRuntime content) : base(new DummyWorldStorage(), "test", new WorldSettings(0L, WorldType.Default), null, content)
     {
     }
 
@@ -314,13 +318,14 @@ public sealed class FakeBlockGrid : IBlockReader, IBlockWriter
     ///     reach block shapes that consult entities.
     /// </summary>
     public EntityManager? Entities { get; set; }
+    public IBlockRuntimeView ContentBlocks { get; set; } = null!;
 
     /// <summary>
     ///     Runs the production traversal over this grid rather than reporting a blanket miss, so
     ///     line-of-sight checks (<c>CanSee</c>, mob targeting) see real walls.
     /// </summary>
     public HitResult Raycast(Vec3D start, Vec3D end, bool includeFluids = false, bool ignoreNonSolid = false) =>
-        BlockRaycaster.Cast(this, Entities!, start, end, includeFluids, ignoreNonSolid);
+        BlockRaycaster.Cast(this, Entities!, ContentBlocks, start, end, includeFluids, ignoreNonSolid);
     public bool IsPosLoaded(int x, int y, int z) => true;
 
     public bool IsMaterialInBox(Box area, Func<Material, bool> predicate)

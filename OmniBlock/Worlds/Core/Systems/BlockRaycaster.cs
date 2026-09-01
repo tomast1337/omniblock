@@ -14,7 +14,7 @@ namespace OmniBlock.Worlds.Core.Systems;
 /// </summary>
 public static class BlockRaycaster
 {
-    public static HitResult Cast(IBlockReader reader, EntityManager entities, Vec3D start, Vec3D end, bool includeFluids, bool ignoreNonSolid)
+    public static HitResult Cast(IBlockReader reader, EntityManager entities, IBlockRuntimeView blocks, Vec3D start, Vec3D end, bool includeFluids, bool ignoreNonSolid)
     {
         if (double.IsNaN(start.X) || double.IsNaN(start.Y) || double.IsNaN(start.Z) ||
             double.IsNaN(end.X) || double.IsNaN(end.Y) || double.IsNaN(end.Z))
@@ -31,7 +31,7 @@ public static class BlockRaycaster
 
         int initialId = reader.GetBlockId(currentX, currentY, currentZ);
         int initialMeta = reader.GetBlockMeta(currentX, currentY, currentZ);
-        BlockRegistry.TryGetByProtocolId(initialId, out Block? initialBlock);
+        blocks.TryGetByProtocolId(initialId, out Block? initialBlock);
 
         if ((!ignoreNonSolid || initialBlock == null ||
              initialBlock.GetCollisionShape(reader, entities, currentX, currentY, currentZ) != null) &&
@@ -161,7 +161,7 @@ public static class BlockRaycaster
 
             int blockIdAtStep = reader.GetBlockId(currentX, currentY, currentZ);
             int metaAtStep = reader.GetBlockMeta(currentX, currentY, currentZ);
-            BlockRegistry.TryGetByProtocolId(blockIdAtStep, out Block? blockAtStep);
+            blocks.TryGetByProtocolId(blockIdAtStep, out Block? blockAtStep);
 
             if ((!ignoreNonSolid || blockAtStep == null ||
                  blockAtStep.GetCollisionShape(reader, entities, currentX, currentY, currentZ) != null) &&

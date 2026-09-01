@@ -11,6 +11,7 @@ using OmniBlock.Worlds.Dimensions;
 using OmniBlock.Worlds.Mechanics;
 using OmniBlock.Worlds.Storage;
 using OmniBlock.Worlds.Storage.RegionFormat;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Worlds.Core;
 
@@ -23,7 +24,8 @@ public class ServerWorld : World
     internal ChunkMap ChunkMap;
     public bool savingDisabled;
 
-    public ServerWorld(OmniBlockServer server, IWorldStorage storage, string saveName, int dimensionId, WorldSettings settings, ServerWorld del) : base(storage, saveName, settings, Dimension.FromId(dimensionId))
+    public ServerWorld(OmniBlockServer server, IWorldStorage storage, string saveName, int dimensionId, WorldSettings settings, ServerWorld del,
+        ContentRuntime? content = null) : base(storage, saveName, settings, Dimension.FromId(dimensionId), content ?? ContentRuntime.Current)
     {
         this.server = server;
         BypassSpawnProtection = dimensionId != 0;

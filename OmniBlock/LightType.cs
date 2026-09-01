@@ -32,8 +32,5 @@ public readonly struct LightType : IEquatable<LightType>
         return !(left == right);
     }
 
-    public override int GetHashCode()
-    {
-        throw new NotImplementedException();
-    }
+    public override int GetHashCode() => lightValue;
 }

@@ -161,7 +161,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
             if (wasBurning != BurnTime > 0)
             {
                 stateChanged = true;
-                Block furnaceBlock = BlockRegistry.GetByProtocolId(World.Reader.GetBlockId(X, Y, Z));
+                Block furnaceBlock = World.Content.Blocks.GetByProtocolId(World.Reader.GetBlockId(X, Y, Z));
                 ((FurnaceBehavior)furnaceBlock.Visuals).UpdateLitState(BurnTime > 0, World, X, Y, Z);
             }
         }
@@ -225,10 +225,10 @@ public class BlockEntityFurnace : BlockEntity, IInventory
         }
     }
 
-    private static int GetFuelTime(ItemStack? itemStack)
+    private int GetFuelTime(ItemStack? itemStack)
     {
         if (itemStack == null) return 0;
         int itemId = itemStack.GetItem().Id;
-        return itemId < 256 && BlockRegistry.GetByProtocolId(itemId).Material == MaterialRegistry.Get("wood") ? 300 : itemId == s_stickId ? 100 : itemId == s_coalId ? 1600 : itemId == s_bucketLavaId ? 20000 : itemId == BlockRegistry.Get("sapling").Id ? 100 : 0;
+        return itemId < 256 && World!.Content.Blocks.GetByProtocolId(itemId).Material == MaterialRegistry.Get("wood") ? 300 : itemId == s_stickId ? 100 : itemId == s_coalId ? 1600 : itemId == s_bucketLavaId ? 20000 : itemId == World!.Content.Blocks.Get("sapling").Id ? 100 : 0;
     }
 }

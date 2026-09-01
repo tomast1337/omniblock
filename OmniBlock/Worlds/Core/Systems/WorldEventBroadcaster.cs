@@ -98,7 +98,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
         if (isRemote) return;
 
         int targetBlockId = reader.GetBlockId(x, y, z);
-        if (!BlockRegistry.TryGetByProtocolId(targetBlockId, out Block? block)) return;
+        if (!worldContext.Content.Blocks.TryGetByProtocolId(targetBlockId, out Block? block)) return;
 
         int meta = reader.GetBlockMeta(x, y, z);
         OnTickEvent tickEvent = new(worldContext, x, y, z, meta, blockId);
@@ -124,7 +124,7 @@ public class WorldEventBroadcaster(List<IWorldEventListener> eventListeners, IBl
         int blockId = reader.GetBlockId(x, y, z);
         if (blockId > 0)
         {
-            BlockRegistry.GetByProtocolId(blockId).OnBlockAction(new OnBlockActionEvent(worldContext, soundType, pitch, x, y, z));
+            worldContext.Content.Blocks.GetByProtocolId(blockId).OnBlockAction(new OnBlockActionEvent(worldContext, soundType, pitch, x, y, z));
         }
 
         for (int i = 0; i < eventListeners.Count; ++i)

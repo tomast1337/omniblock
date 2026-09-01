@@ -1,11 +1,24 @@
 using System.Text.Json;
 using OmniBlock.Blocks;
 using OmniBlock.Registries;
+using OmniBlock.Tests.TestSupport;
 
 namespace OmniBlock.Tests.Catalog;
 
 public sealed class ContentRuntimeTests
 {
+    [Fact]
+    public void World_context_owns_the_injected_content_runtime()
+    {
+        ContentRuntimeBuilder builder = ContentRuntimeBuilder.CreateBuiltIns();
+        ContentRuntime isolated = builder.Build();
+
+        FakeWorldContext world = new(isolated);
+
+        Assert.Same(isolated, world.Content);
+        Assert.NotSame(ContentRuntime.Current, world.Content);
+    }
+
     [Fact]
     public void Published_runtime_contains_the_finalized_block_catalog_and_provider_registry()
     {

@@ -6,11 +6,13 @@ using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Dimensions;
 using OmniBlock.Worlds.Mechanics;
 using OmniBlock.Worlds.Storage;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Worlds.Core.Systems;
 
 public interface IWorldContext
 {
+    public ContentRuntime Content { get; }
     public IBlockReader Reader { get; }
     public IBlockWriter Writer { get; }
     public ChunkHost ChunkHost { get; }

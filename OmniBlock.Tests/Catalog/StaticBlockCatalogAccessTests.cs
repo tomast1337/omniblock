@@ -84,6 +84,28 @@ public sealed class StaticBlockCatalogAccessTests
             + string.Join(Environment.NewLine, violations));
     }
 
+    [Fact]
+    public void World_core_cannot_access_the_static_block_registry()
+    {
+        string root = FindRepositoryRoot();
+        string[] directories =
+        [
+            Path.Combine(root, "OmniBlock", "Worlds", "Core"),
+            Path.Combine(root, "OmniBlock", "Blocks", "Entities")
+        ];
+        string[] violations = directories
+            .SelectMany(static directory => Directory.EnumerateFiles(directory, "*.cs", SearchOption.AllDirectories))
+            .SelectMany(file => File.ReadLines(file)
+                .Select((line, index) => (line, number: index + 1))
+                .Where(static entry => entry.line.Contains("BlockRegistry."))
+                .Select(entry => $"{Path.GetRelativePath(root, file)}:{entry.number}"))
+            .ToArray();
+
+        Assert.True(violations.Length == 0,
+            $"World-scoped code must resolve blocks through world.Content.Blocks:{Environment.NewLine}"
+            + string.Join(Environment.NewLine, violations));
+    }
+
     private static IReadOnlyList<StaticAccess> FindAccesses()
     {
         string sourceRoot = FindRepositoryRoot();

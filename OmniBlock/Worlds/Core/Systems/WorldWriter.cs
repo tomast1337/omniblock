@@ -11,11 +11,13 @@ public sealed class WorldWriter : IBlockWriter
 {
     private readonly ChunkHost _host;
     private readonly IBlockReader _reader;
+    private readonly IBlockRuntimeView _blocks;
 
-    public WorldWriter(ChunkHost host, IBlockReader reader)
+    public WorldWriter(ChunkHost host, IBlockReader reader, IBlockRuntimeView blocks)
     {
         _host = host;
         _reader = reader;
+        _blocks = blocks;
     }
 
     public event Action<int, int, int, int>? OnBlockChanged;
@@ -56,7 +58,7 @@ public sealed class WorldWriter : IBlockWriter
         if (!SetBlockMetaWithoutNotifyingNeighbors(x, y, z, meta)) return;
 
         int blockId = _reader.GetBlockId(x, y, z);
-        if (BlockRegistry.IgnoresMetaUpdates(blockId & 255))
+        if (_blocks.TryGetByProtocolId(blockId & 255, out Block? block) && block.IgnoreMetaUpdates)
         {
             OnBlockChanged?.Invoke(x, y, z, blockId);
         }
