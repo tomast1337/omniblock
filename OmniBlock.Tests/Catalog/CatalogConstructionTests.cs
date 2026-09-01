@@ -108,7 +108,7 @@ public sealed class CatalogConstructionTests
     }
 
     [Theory]
-    [InlineData("block", -1)]
+    [InlineData("block", -2)]
     [InlineData("item", 255)]
     [InlineData("entity", 128)]
     public void Invalid_protocol_id_fails_during_definition_loading(string catalog, int protocolId)

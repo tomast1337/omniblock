@@ -14,7 +14,7 @@ public sealed class ContentRuntimeBuilder
 {
     private readonly List<(ResourceLocation Key, BlockDefinition Definition, Block Block)> _blocks = [];
     private readonly Dictionary<ResourceLocation, Block> _blocksByKey = [];
-    private readonly Block?[] _blocksByProtocolId = new Block?[BlockRegistry.ProtocolIdCapacity];
+    private readonly Dictionary<int, Block> _blocksByProtocolId = [];
     private readonly List<(ResourceLocation Key, Item Item)> _blockItems = [];
     private readonly StagedBlockRuntimeView _blockRuntimeView;
     private bool _built;
@@ -49,7 +49,7 @@ public sealed class ContentRuntimeBuilder
 
         ResourceLocation key = new(definition.Namespace, definition.Name);
         _blocksByKey.TryAdd(key, block);
-        _blocksByProtocolId[definition.ProtocolId] ??= block;
+        _blocksByProtocolId.TryAdd(definition.ProtocolId, block);
         _blockRuntimeView.Add(key, block);
         _blocks.Add((key, definition, block));
     }
@@ -60,17 +60,13 @@ public sealed class ContentRuntimeBuilder
             : throw new KeyNotFoundException($"Unknown block '{key}'.");
 
     internal Block GetBlockByProtocolId(int protocolId) =>
-        protocolId is >= 0 and < BlockRegistry.ProtocolIdCapacity
-        && _blocksByProtocolId[protocolId] is { } block
+        _blocksByProtocolId.TryGetValue(protocolId, out Block? block)
             ? block
             : throw new KeyNotFoundException($"Unknown block protocol id {protocolId}.");
 
     internal bool TryGetBlockByProtocolId(int protocolId, out Block? block)
     {
-        block = protocolId is >= 0 and < BlockRegistry.ProtocolIdCapacity
-            ? _blocksByProtocolId[protocolId]
-            : null;
-        return block is not null;
+        return _blocksByProtocolId.TryGetValue(protocolId, out block);
     }
 
     internal void BuildBlockItems(IEnumerable<BlockDefinition> definitions)

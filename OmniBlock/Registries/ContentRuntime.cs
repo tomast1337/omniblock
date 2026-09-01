@@ -22,6 +22,8 @@ public sealed class ContentRuntime
         ArgumentNullException.ThrowIfNull(blockBehaviorProviders);
         Blocks = new RuntimeBlockRegistry(blocks);
         BlockItems = new RuntimeBlockItemRegistry(blockItems);
+        Manifest = new ContentCatalogManifest(Blocks.Keys.Select(key =>
+            new KeyValuePair<ResourceLocation, int>(key, Blocks.Get(key).Id)));
         BlockBehaviorProviders = blockBehaviorProviders;
     }
 
@@ -38,6 +40,7 @@ public sealed class ContentRuntime
 
     public RuntimeBlockRegistry Blocks { get; }
     public RuntimeBlockItemRegistry BlockItems { get; }
+    public ContentCatalogManifest Manifest { get; }
     public IBlockBehaviorProviderRegistry BlockBehaviorProviders { get; }
 
     internal static void Publish(ContentRuntime runtime)
@@ -54,22 +57,23 @@ public sealed class ContentRuntime
 public sealed class RuntimeBlockItemRegistry
 {
     private readonly FrozenDictionary<ResourceLocation, Item> _byKey;
-    private readonly Item?[] _byProtocolId = new Item?[BlockRegistry.ProtocolIdCapacity];
+    private readonly FrozenDictionary<int, Item> _byProtocolId;
 
     internal RuntimeBlockItemRegistry(IEnumerable<(ResourceLocation Key, Item Item)> entries)
     {
         var byKey = new Dictionary<ResourceLocation, Item>();
+        var byProtocolId = new Dictionary<int, Item>();
         foreach ((ResourceLocation key, Item item) in entries)
         {
             if (!byKey.TryAdd(key, item)) throw new ArgumentException($"Duplicate block-item key '{key}'.");
             if (item.Id is < 0 or >= BlockRegistry.ProtocolIdCapacity)
                 throw new ArgumentOutOfRangeException(nameof(entries), item.Id,
                     $"Block-item protocol id must be between 0 and {BlockRegistry.ProtocolIdCapacity - 1}.");
-            if (_byProtocolId[item.Id] is not null) throw new ArgumentException($"Duplicate block-item protocol id {item.Id}.");
-            _byProtocolId[item.Id] = item;
+            if (!byProtocolId.TryAdd(item.Id, item)) throw new ArgumentException($"Duplicate block-item protocol id {item.Id}.");
         }
 
         _byKey = byKey.ToFrozenDictionary();
+        _byProtocolId = byProtocolId.ToFrozenDictionary();
     }
 
     public int Count => _byKey.Count;
@@ -77,7 +81,7 @@ public sealed class RuntimeBlockItemRegistry
         ? item
         : throw new KeyNotFoundException($"Unknown block item '{key}'.");
     public Item GetByProtocolId(int protocolId) =>
-        protocolId is >= 0 and < BlockRegistry.ProtocolIdCapacity && _byProtocolId[protocolId] is { } item
+        _byProtocolId.TryGetValue(protocolId, out Item? item)
             ? item
             : throw new KeyNotFoundException($"Unknown block-item protocol id {protocolId}.");
 }
@@ -86,12 +90,12 @@ public sealed class RuntimeBlockItemRegistry
 public sealed class RuntimeBlockRegistry : IBlockRuntimeView
 {
     private readonly FrozenDictionary<ResourceLocation, Block> _byKey;
-    private readonly Block?[] _byProtocolId;
+    private readonly FrozenDictionary<int, Block> _byProtocolId;
 
     internal RuntimeBlockRegistry(IEnumerable<(ResourceLocation Key, Block Block)> entries)
     {
         var byKey = new Dictionary<ResourceLocation, Block>();
-        _byProtocolId = new Block?[256];
+        var byProtocolId = new Dictionary<int, Block>();
 
         foreach ((ResourceLocation key, Block block) in entries)
         {
@@ -100,17 +104,17 @@ public sealed class RuntimeBlockRegistry : IBlockRuntimeView
                 throw new ArgumentException($"Duplicate block key '{key}'.", nameof(entries));
             }
 
-            if (_byProtocolId[block.Id] is { } existing)
+            if (!byProtocolId.TryAdd(block.Id, block))
             {
                 throw new ArgumentException(
-                    $"Duplicate block protocol id {block.Id} for '{key}' and block {existing.Id}.",
+                    $"Duplicate block protocol id {block.Id} for '{key}'.",
                     nameof(entries));
             }
 
-            _byProtocolId[block.Id] = block;
         }
 
         _byKey = byKey.ToFrozenDictionary();
+        _byProtocolId = byProtocolId.ToFrozenDictionary();
     }
 
     public int Count => _byKey.Count;
@@ -122,14 +126,13 @@ public sealed class RuntimeBlockRegistry : IBlockRuntimeView
             : throw new KeyNotFoundException($"Unknown block '{key}'.");
 
     public Block GetByProtocolId(int protocolId) =>
-        protocolId is >= 0 and < 256 && _byProtocolId[protocolId] is { } block
+        _byProtocolId.TryGetValue(protocolId, out Block? block)
             ? block
             : throw new KeyNotFoundException($"Unknown block protocol id {protocolId}.");
 
     public bool TryGetByProtocolId(int protocolId, out Block? block)
     {
-        block = protocolId is >= 0 and < 256 ? _byProtocolId[protocolId] : null;
-        return block is not null;
+        return _byProtocolId.TryGetValue(protocolId, out block);
     }
 
     public bool TryGet(ResourceLocation key, out Block? block) => _byKey.TryGetValue(key, out block);

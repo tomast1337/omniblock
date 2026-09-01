@@ -12,7 +12,8 @@ public sealed record BlockDefinition : IDataAsset
     [JsonIgnore]
     public Namespace Namespace { get; set; } = Namespace.OmniBlock;
 
-    public required int ProtocolId { get; init; }
+    /// <summary>Explicit protocol ID, or -1 to allocate one deterministically.</summary>
+    public int ProtocolId { get; init; } = -1;
     public string? TranslationKey { get; init; }
 
     public string Material { get; init; } = "stone";

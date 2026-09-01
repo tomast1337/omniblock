@@ -92,7 +92,7 @@ public static class BlockRegistry
             throw new AssetLoadException(loader.FirstErrorMessage ?? "One or more block definitions failed to load.");
         }
 
-        List<BlockDefinition> definitions = loader.ToList();
+        List<BlockDefinition> definitions = ContentIdAllocator.AssignBlockIds(loader);
         s_registry.Initialize(definitions, static d => d);
         foreach (BlockDefinition def in definitions)
         {

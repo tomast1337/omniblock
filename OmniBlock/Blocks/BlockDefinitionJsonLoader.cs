@@ -81,10 +81,10 @@ internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locat
                     continue;
                 }
 
-                if (definition.ProtocolId is < 0 or > 255)
+                if (definition.ProtocolId < -1 || definition.ProtocolId >= BlockRegistry.ProtocolIdCapacity)
                 {
                     HasErrors = true;
-                    FirstErrorMessage ??= $"Block '{file}' has ProtocolId {definition.ProtocolId}, outside the valid 0-255 range.";
+                    FirstErrorMessage ??= $"Block '{file}' has ProtocolId {definition.ProtocolId}, outside the valid automatic-or-0-{BlockRegistry.ProtocolIdCapacity - 1} range.";
                     continue;
                 }
 
@@ -95,11 +95,20 @@ internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locat
 
                 if (_byLocation.TryGetValue(key, out BlockDefinition? existing))
                 {
-                    _byId.Remove(existing.ProtocolId);
+                    if (existing.ProtocolId >= 0) _byId.Remove(existing.ProtocolId);
                 }
 
                 _byLocation[key] = definition;
-                _byId[definition.ProtocolId] = definition;
+                if (definition.ProtocolId >= 0)
+                {
+                    if (_byId.TryGetValue(definition.ProtocolId, out BlockDefinition? collision))
+                    {
+                        HasErrors = true;
+                        FirstErrorMessage ??= $"Blocks '{collision.Namespace}:{collision.Name}' and '{key}' both declare ProtocolId {definition.ProtocolId}.";
+                        continue;
+                    }
+                    _byId[definition.ProtocolId] = definition;
+                }
             }
             catch (JsonException ex)
             {
@@ -136,7 +145,7 @@ internal sealed class BlockDefinitionJsonLoader(string path, LoadLocations locat
 
     public bool ContainsId(int id) => _byId.ContainsKey(id);
 
-    public int GetId(BlockDefinition value) => _byId.TryGetValue(value.ProtocolId, out BlockDefinition? existing) && ReferenceEquals(existing, value) ? value.ProtocolId : -1;
+    public int GetId(BlockDefinition value) => value.ProtocolId >= 0 && _byId.TryGetValue(value.ProtocolId, out BlockDefinition? existing) && ReferenceEquals(existing, value) ? value.ProtocolId : -1;
 
     public ResourceLocation? GetKey(BlockDefinition value)
     {

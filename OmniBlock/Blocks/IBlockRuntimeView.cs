@@ -1,6 +1,6 @@
 namespace OmniBlock.Blocks;
 
-/// <summary>Bounded protocol-ID view shared by blocks and their compiled behaviors.</summary>
+/// <summary>Protocol-ID view shared by blocks and their compiled behaviors.</summary>
 public interface IBlockRuntimeView
 {
     Block Get(ResourceLocation key);
@@ -22,14 +22,14 @@ public static class BlockRuntimeViewExtensions
 
 public sealed class StagedBlockRuntimeView : IBlockRuntimeView
 {
-    private readonly Block?[] _blocks = new Block?[BlockRegistry.ProtocolIdCapacity];
+    private readonly Dictionary<int, Block> _blocks = [];
     private readonly Dictionary<ResourceLocation, Block> _blocksByKey = [];
     private bool _frozen;
 
     internal void Add(ResourceLocation key, Block block)
     {
         if (_frozen) throw new InvalidOperationException("Block runtime view is finalized.");
-        _blocks[block.Id] ??= block;
+        _blocks.TryAdd(block.Id, block);
         _blocksByKey.TryAdd(key, block);
     }
 
@@ -47,7 +47,6 @@ public sealed class StagedBlockRuntimeView : IBlockRuntimeView
 
     public bool TryGetByProtocolId(int protocolId, out Block? block)
     {
-        block = protocolId is >= 0 and < BlockRegistry.ProtocolIdCapacity ? _blocks[protocolId] : null;
-        return block is not null;
+        return _blocks.TryGetValue(protocolId, out block);
     }
 }
