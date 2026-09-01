@@ -64,7 +64,7 @@ internal sealed class TrapDoorBehavior(Material material) : IBlockPhysics, IBloc
     public void SetupRenderBoundingBox(Block block)
     {
         const float height = 3.0F / 16.0F;
-        block.SetBoundingBox(0.0F, 0.5F - height / 2.0F, 0.0F, 1.0F, 0.5F + height / 2.0F, 1.0F);
+        block.SetRuntimeBoundingBox(0.0F, 0.5F - height / 2.0F, 0.0F, 1.0F, 0.5F + height / 2.0F, 1.0F);
     }
 
     public bool CanPlaceAt(Block block, CanPlaceAtContext ctx)
@@ -99,16 +99,16 @@ internal sealed class TrapDoorBehavior(Material material) : IBlockPhysics, IBloc
 
     private static void ApplyBoundingBox(Block block, int meta)
     {
-        block.SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, Thickness, 1.0F);
+        block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, Thickness, 1.0F);
 
         if (!IsOpen(meta)) return;
 
         switch (meta & 3)
         {
-            case 0: block.SetBoundingBox(0.0F, 0.0F, 1.0F - Thickness, 1.0F, 1.0F, 1.0F); break;
-            case 1: block.SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, Thickness); break;
-            case 2: block.SetBoundingBox(1.0F - Thickness, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F); break;
-            case 3: block.SetBoundingBox(0.0F, 0.0F, 0.0F, Thickness, 1.0F, 1.0F); break;
+            case 0: block.SetRuntimeBoundingBox(0.0F, 0.0F, 1.0F - Thickness, 1.0F, 1.0F, 1.0F); break;
+            case 1: block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, Thickness); break;
+            case 2: block.SetRuntimeBoundingBox(1.0F - Thickness, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F); break;
+            case 3: block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, Thickness, 1.0F, 1.0F); break;
         }
     }
 

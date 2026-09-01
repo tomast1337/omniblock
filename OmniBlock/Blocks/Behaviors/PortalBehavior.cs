@@ -32,11 +32,11 @@ internal sealed class PortalBehavior(Block portalBase) : IBlockPhysics, IBlockVi
     {
         if (reader.GetBlockId(x - 1, y, z) != block.Id && reader.GetBlockId(x + 1, y, z) != block.Id)
         {
-            block.SetBoundingBox(0.5F - Thickness, 0.0F, 0.5F - HalfExtent, 0.5F + Thickness, 1.0F, 0.5F + HalfExtent);
+            block.SetRuntimeBoundingBox(0.5F - Thickness, 0.0F, 0.5F - HalfExtent, 0.5F + Thickness, 1.0F, 0.5F + HalfExtent);
         }
         else
         {
-            block.SetBoundingBox(0.5F - HalfExtent, 0.0F, 0.5F - Thickness, 0.5F + HalfExtent, 1.0F, 0.5F + Thickness);
+            block.SetRuntimeBoundingBox(0.5F - HalfExtent, 0.0F, 0.5F - Thickness, 0.5F + HalfExtent, 1.0F, 0.5F + Thickness);
         }
     }
 

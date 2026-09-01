@@ -76,6 +76,7 @@ public sealed class ContentRuntimeBuilder
         if (_built) throw new InvalidOperationException("This content runtime builder has already been built.");
 
         ValidateBlocks();
+        foreach ((_, _, Block block) in _blocks) block.Freeze();
         _blockRuntimeView.Freeze();
         ContentRuntime runtime = new(
             _blocks.Select(static entry => (entry.Key, entry.Block)),

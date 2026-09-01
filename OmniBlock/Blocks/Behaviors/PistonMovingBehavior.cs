@@ -80,7 +80,10 @@ public sealed class PistonMovingBehavior : BlockRuntimeBehavior, IBlockPhysics, 
         }
 
         int facing = piston.Facing;
-        block.BoundingBox = block.BoundingBox.Offset(-(double)(PistonConstants.HeadOffsetX[facing] * progress), -(double)(PistonConstants.HeadOffsetY[facing] * progress), -(double)(PistonConstants.HeadOffsetZ[facing] * progress));
+        block.SetRuntimeBoundingBox(block.BoundingBox.Offset(
+            -(double)(PistonConstants.HeadOffsetX[facing] * progress),
+            -(double)(PistonConstants.HeadOffsetY[facing] * progress),
+            -(double)(PistonConstants.HeadOffsetZ[facing] * progress)));
     }
 
     public static BlockEntity CreatePistonBlockEntity(int blockId, int blockMeta, int facing, bool extending, bool source)

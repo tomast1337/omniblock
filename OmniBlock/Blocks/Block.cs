@@ -12,9 +12,11 @@ namespace OmniBlock.Blocks;
 
 public class Block
 {
-    public readonly int Id;
-    public readonly Material Material;
-    private string[]? _blockAlias;
+    private bool _isFrozen;
+    [ThreadStatic] private static Dictionary<Block, Box>? s_runtimeBoundingBoxes;
+    public int Id { get; }
+    public Material Material { get; }
+    private IReadOnlyList<string> _blockAliases = [];
     private Func<BlockEntity>? _blockEntityFactory;
     private int _droppedItemMetaValue;
     private bool _dropsWithBlockMeta;
@@ -24,13 +26,17 @@ public class Block
     private int _maxDroppedCount = 1;
     private int _minDroppedCount = 1;
     private PistonBehavior? _pistonBehaviorOverride;
-    public Box BoundingBox;
-    public float Hardness;
-    public readonly float ParticleFallSpeedModifier;
+    private Box _boundingBox;
+    public Box BoundingBox => s_runtimeBoundingBoxes is not null
+                              && s_runtimeBoundingBoxes.TryGetValue(this, out Box runtimeBounds)
+        ? runtimeBounds
+        : _boundingBox;
+    public float Hardness { get; private set; }
+    public float ParticleFallSpeedModifier { get; }
     private float _resistance;
-    public float Slipperiness;
-    public BlockSoundGroup SoundGroup;
-    public int TextureId;
+    public float Slipperiness { get; private set; }
+    public BlockSoundGroup SoundGroup { get; private set; }
+    public int TextureId { get; private set; }
 
     private Block(int id, Material material, BlockSoundGroup defaultSoundGroup)
     {
@@ -48,68 +54,69 @@ public class Block
         : this(id, material, defaultSoundGroup) => TextureId = textureId;
     public static BlockSoundGroup SoundStoneFootstep => SoundGroupRegistry.Get("stone");
 
-    public TextureVariance TopVariance { get; protected internal set; } = TextureVariance.None;
-    public TextureVariance BottomVariance { get; protected internal set; } = TextureVariance.None;
-    public TextureVariance SideVariance { get; protected internal set; } = TextureVariance.None;
+    public TextureVariance TopVariance { get; private set; } = TextureVariance.None;
+    public TextureVariance BottomVariance { get; private set; } = TextureVariance.None;
+    public TextureVariance SideVariance { get; private set; } = TextureVariance.None;
 
-    public IBlockTicker? Ticker { get; internal set; }
+    public IBlockTicker? Ticker { get; private set; }
 
-    public IBlockInteractable? Interactable { get; internal set; }
+    public IBlockInteractable? Interactable { get; private set; }
 
-    public IBlockVisuals? Visuals { get; internal set; }
+    public IBlockVisuals? Visuals { get; private set; }
 
-    public IBlockLifecycle? Lifecycle { get; internal set; }
+    public IBlockLifecycle? Lifecycle { get; private set; }
 
-    public IBlockPhysics? Physics { get; internal set; }
+    public IBlockPhysics? Physics { get; private set; }
 
-    public IRedstoneComponent? Redstone { get; internal set; }
+    public IRedstoneComponent? Redstone { get; private set; }
 
-    public IReadOnlyList<string> GetBlockAlias => _blockAlias ?? [];
+    public IReadOnlyList<string> GetBlockAlias => _blockAliases;
+    public bool IsFrozen => _isFrozen;
 
-    public BlockRendererType RenderType { get; protected internal set; } = BlockRendererType.Standard;
+    public BlockRendererType RenderType { get; private set; } = BlockRendererType.Standard;
 
-    public bool HasCollisionBox { get; protected internal set; } = true;
+    public bool HasCollisionBox { get; private set; } = true;
 
-    public byte BurnChance { get; protected internal set; }
-    public byte SpreadChance { get; protected internal set; }
+    public byte BurnChance { get; private set; }
+    public byte SpreadChance { get; private set; }
 
     public bool IsOpaque
     {
         get => Visuals?.IsOpaque(this, field) ?? field;
-        protected internal set
+        private set
         {
             field = value;
             Opacity = value ? 255 : 0;
         }
     } = true;
 
-    public int TickRate { get; protected internal set; } = 10;
+    public int TickRate { get; private set; } = 10;
 
-    public int RenderLayer { get; protected internal set; }
+    public int RenderLayer { get; private set; }
 
     public string BlockName
     {
         get;
-        set => field = $"tile.{value}";
+        private set => field = $"tile.{value}";
     } = "";
 
-    public bool EnableStats { get; protected internal set; }
+    public bool EnableStats { get; private set; }
 
     public PistonBehavior PistonBehavior => _pistonBehaviorOverride ?? Material.PistonBehavior;
     public bool IsFullCube() => _isFullCube;
 
-    public bool IgnoreMetaUpdates { get; protected internal set; }
+    public bool IgnoreMetaUpdates { get; private set; }
 
-    public bool TickRandomly { get; protected internal set; }
+    public bool TickRandomly { get; private set; }
 
-    public int Opacity { get; protected internal set; }
+    public int Opacity { get; private set; }
 
-    public int LightEmission { get; protected internal set; }
+    public int LightEmission { get; private set; }
 
     public float Luminance
     {
         get => LightEmission / 15.0F;
-        protected internal set => LightEmission = (int)(15.0F * value);
+        private set => LightEmission = (int)(15.0F * value);
     }
 
     public bool AllowsVision => !Material.BlocksVision;
@@ -118,13 +125,13 @@ public class Block
     public bool PreservesMetaOnDrop
     {
         get => _dropsWithBlockMeta;
-        protected internal set => _dropsWithBlockMeta = value;
+        private set => _dropsWithBlockMeta = value;
     }
 
     public int DropCount
     {
         get => _minDroppedCount;
-        protected internal set
+        private set
         {
             _minDroppedCount = value;
             _maxDroppedCount = value;
@@ -133,16 +140,22 @@ public class Block
 
     protected internal void Init() => Lifecycle?.OnInit(this);
 
-    protected internal void SetResistance(float resistance) => this._resistance = resistance * 3.0F;
+    protected internal void SetResistance(float resistance)
+    {
+        EnsureMutable();
+        _resistance = resistance * 3.0F;
+    }
 
     protected internal void SetFaceTexture(Side side, int textureId)
     {
+        EnsureMutable();
         _faceTextureIds ??= new int?[6];
         _faceTextureIds[(int)side] = textureId;
     }
 
     protected internal void SetLootTable(LootTable table, int minCount = 1, int maxCount = -1, int meta = 0)
     {
+        EnsureMutable();
         _lootTable = table;
         _minDroppedCount = minCount;
         _maxDroppedCount = maxCount < 0 ? minCount : maxCount;
@@ -156,13 +169,22 @@ public class Block
         return Lifecycle?.GetPickBlockItem(this, blockMeta, defaultBackupId, defaultBackupMeta) ?? (blockMeta, defaultBackupId, defaultBackupMeta);
     }
 
-    protected internal void SetBlockAlias(params string[] aliases) => _blockAlias = aliases;
+    protected internal void SetBlockAlias(params string[] aliases)
+    {
+        EnsureMutable();
+        _blockAliases = Array.AsReadOnly([.. aliases]);
+    }
 
 
-    protected internal void SetNotFullCube() => _isFullCube = false;
+    protected internal void SetNotFullCube()
+    {
+        EnsureMutable();
+        _isFullCube = false;
+    }
 
     protected internal void SetHardness(float hardness)
     {
+        EnsureMutable();
         Hardness = hardness;
         if (_resistance < hardness * 5.0F)
         {
@@ -170,7 +192,17 @@ public class Block
         }
     }
 
-    public void SetBoundingBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) => BoundingBox = new Box(minX, minY, minZ, maxX, maxY, maxZ);
+    protected internal void SetBoundingBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
+    {
+        EnsureMutable();
+        _boundingBox = new Box(minX, minY, minZ, maxX, maxY, maxZ);
+    }
+
+    internal void SetRuntimeBoundingBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) =>
+        SetRuntimeBoundingBox(new Box(minX, minY, minZ, maxX, maxY, maxZ));
+
+    internal void SetRuntimeBoundingBox(Box box) =>
+        (s_runtimeBoundingBoxes ??= [])[this] = box;
 
     public float GetLuminance(ILightProvider? lighting, int x, int y, int z)
     {
@@ -373,7 +405,11 @@ public class Block
 
     public void OnDestroyedByExplosion(OnDestroyedByExplosionEvent @event) => Lifecycle?.OnDestroyedByExplosion(this, @event);
 
-    protected internal void SetSlipperiness(float slipperiness) => this.Slipperiness = slipperiness;
+    protected internal void SetSlipperiness(float slipperiness)
+    {
+        EnsureMutable();
+        Slipperiness = slipperiness;
+    }
 
     public bool CanPlaceAt(CanPlaceAtContext evt)
     {
@@ -435,12 +471,56 @@ public class Block
 
     public void OnBlockAction(OnBlockActionEvent ctx) => Lifecycle?.OnBlockAction(this, ctx);
 
-    protected internal void SetPistonBehavior(PistonBehavior behavior) => _pistonBehaviorOverride = behavior;
+    protected internal void SetPistonBehavior(PistonBehavior behavior)
+    {
+        EnsureMutable();
+        _pistonBehaviorOverride = behavior;
+    }
 
     protected internal void SetHasTileEntity(Func<BlockEntity> factory)
     {
+        EnsureMutable();
         _blockEntityFactory = factory;
     }
 
     public BlockEntity? GetBlockEntity() => _blockEntityFactory?.Invoke();
+
+    internal void ApplyDraft(BlockDraft draft)
+    {
+        EnsureMutable();
+        TopVariance = draft.TopVariance;
+        BottomVariance = draft.BottomVariance;
+        SideVariance = draft.SideVariance;
+        Ticker = draft.Ticker;
+        Interactable = draft.Interactable;
+        Visuals = draft.Visuals;
+        Lifecycle = draft.Lifecycle;
+        Physics = draft.Physics;
+        Redstone = draft.Redstone;
+        RenderType = draft.RenderType;
+        HasCollisionBox = draft.HasCollisionBox;
+        BurnChance = draft.BurnChance;
+        SpreadChance = draft.SpreadChance;
+        IsOpaque = draft.IsOpaque;
+        TickRate = draft.TickRate;
+        RenderLayer = draft.RenderLayer;
+        BlockName = draft.BlockName;
+        EnableStats = draft.EnableStats;
+        IgnoreMetaUpdates = draft.IgnoreMetaUpdates;
+        TickRandomly = draft.TickRandomly;
+        Opacity = draft.Opacity;
+        Luminance = draft.Luminance;
+        SoundGroup = draft.SoundGroup;
+        TextureId = draft.TextureId;
+        DropCount = draft.DropCount;
+        PreservesMetaOnDrop = draft.PreservesMetaOnDrop;
+    }
+
+    internal void Freeze() => _isFrozen = true;
+
+    private void EnsureMutable()
+    {
+        if (_isFrozen)
+            throw new InvalidOperationException($"Block {Id} is part of a finalized content runtime and cannot be mutated.");
+    }
 }

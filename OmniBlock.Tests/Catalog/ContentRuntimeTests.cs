@@ -30,6 +30,18 @@ public sealed class ContentRuntimeTests
     }
 
     [Fact]
+    public void Published_blocks_are_frozen_and_reject_definition_mutation()
+    {
+        Block stone = ContentRuntime.Current.Blocks.Get("stone");
+
+        Assert.True(stone.IsFrozen);
+        Assert.Throws<InvalidOperationException>(() => stone.SetHardness(99));
+        Assert.Throws<InvalidOperationException>(() => stone.SetBoundingBox(0, 0, 0, 0.5F, 0.5F, 0.5F));
+        Assert.DoesNotContain(typeof(Block).GetProperties(), static property => property.SetMethod?.IsPublic == true);
+        Assert.DoesNotContain(typeof(Block).GetFields(), static field => field.IsPublic && !field.IsInitOnly);
+    }
+
+    [Fact]
     public void Block_registry_public_lookup_delegates_to_the_published_runtime()
     {
         ContentRuntime runtime = ContentRuntime.Current;

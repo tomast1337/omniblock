@@ -305,16 +305,16 @@ public sealed class WallMountBehavior(bool isLadder) : BlockRuntimeBehavior, IBl
         switch (rotation)
         {
             case Side.North:
-                block.SetBoundingBox(0.0F, 0.0F, 1.0F - LadderThickness, 1.0F, 1.0F, 1.0F);
+                block.SetRuntimeBoundingBox(0.0F, 0.0F, 1.0F - LadderThickness, 1.0F, 1.0F, 1.0F);
                 break;
             case Side.South:
-                block.SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, LadderThickness);
+                block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, LadderThickness);
                 break;
             case Side.West:
-                block.SetBoundingBox(1.0F - LadderThickness, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+                block.SetRuntimeBoundingBox(1.0F - LadderThickness, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
                 break;
             case Side.East:
-                block.SetBoundingBox(0.0F, 0.0F, 0.0F, LadderThickness, 1.0F, 1.0F);
+                block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, LadderThickness, 1.0F, 1.0F);
                 break;
         }
     }
@@ -325,19 +325,19 @@ public sealed class WallMountBehavior(bool isLadder) : BlockRuntimeBehavior, IBl
         switch (rotation)
         {
             case 1:
-                block.SetBoundingBox(0.0F, 0.2F, 0.5F - TorchWidth, TorchWidth * 2.0F, 0.8F, 0.5F + TorchWidth);
+                block.SetRuntimeBoundingBox(0.0F, 0.2F, 0.5F - TorchWidth, TorchWidth * 2.0F, 0.8F, 0.5F + TorchWidth);
                 break;
             case 2:
-                block.SetBoundingBox(1.0F - TorchWidth * 2.0F, 0.2F, 0.5F - TorchWidth, 1.0F, 0.8F, 0.5F + TorchWidth);
+                block.SetRuntimeBoundingBox(1.0F - TorchWidth * 2.0F, 0.2F, 0.5F - TorchWidth, 1.0F, 0.8F, 0.5F + TorchWidth);
                 break;
             case 3:
-                block.SetBoundingBox(0.5F - TorchWidth, 0.2F, 0.0F, 0.5F + TorchWidth, 0.8F, TorchWidth * 2.0F);
+                block.SetRuntimeBoundingBox(0.5F - TorchWidth, 0.2F, 0.0F, 0.5F + TorchWidth, 0.8F, TorchWidth * 2.0F);
                 break;
             case 4:
-                block.SetBoundingBox(0.5F - TorchWidth, 0.2F, 1.0F - TorchWidth * 2.0F, 0.5F + TorchWidth, 0.8F, 1.0F);
+                block.SetRuntimeBoundingBox(0.5F - TorchWidth, 0.2F, 1.0F - TorchWidth * 2.0F, 0.5F + TorchWidth, 0.8F, 1.0F);
                 break;
             default:
-                block.SetBoundingBox(0.5F - TorchWidthGround, 0.0F, 0.5F - TorchWidthGround, 0.5F + TorchWidthGround, 0.6F, 0.5F + TorchWidthGround);
+                block.SetRuntimeBoundingBox(0.5F - TorchWidthGround, 0.0F, 0.5F - TorchWidthGround, 0.5F + TorchWidthGround, 0.6F, 0.5F + TorchWidthGround);
                 break;
         }
     }

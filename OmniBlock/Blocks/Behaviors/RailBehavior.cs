@@ -28,11 +28,11 @@ public sealed class RailBehavior(bool isPoweredTrack, int turn, int unpowered) :
         int meta = reader.GetBlockMeta(x, y, z);
         if (meta is >= 2 and <= 5)
         {
-            block.SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 10.0F / 16.0F, 1.0F);
+            block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 10.0F / 16.0F, 1.0F);
         }
         else
         {
-            block.SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
+            block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F / 16.0F, 1.0F);
         }
     }
 

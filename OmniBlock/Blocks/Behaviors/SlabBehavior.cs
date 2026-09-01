@@ -46,7 +46,7 @@ internal sealed class SlabBehavior : BlockRuntimeBehavior, IBlockPhysics, IBlock
     {
         if (_isDoubleSlab)
         {
-            block.SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+            block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         }
         else
         {
@@ -54,11 +54,11 @@ internal sealed class SlabBehavior : BlockRuntimeBehavior, IBlockPhysics, IBlock
             bool isTop = (meta & 8) != 0;
             if (isTop)
             {
-                block.SetBoundingBox(0.0F, 0.5F, 0.0F, 1.0F, 1.0F, 1.0F);
+                block.SetRuntimeBoundingBox(0.0F, 0.5F, 0.0F, 1.0F, 1.0F, 1.0F);
             }
             else
             {
-                block.SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.5F, 1.0F);
+                block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 0.5F, 1.0F);
             }
         }
     }

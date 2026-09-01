@@ -12,17 +12,33 @@ internal static class BlockFactory
         // An unset TextureId keeps the implicit default the int field used to have.
         int textureId = string.IsNullOrEmpty(def.TextureId) ? 0 : context.Behaviors.ResolveTerrainTexture(def.TextureId);
         Block block = new(def.ProtocolId, textureId, material, context.ResolveSoundGroup("omniblock:powder"));
+        BlockDraft draft = new(block)
+        {
+            TextureId = textureId,
+            IsOpaque = !def.NonOpaque,
+            Luminance = def.Luminance,
+            TickRandomly = def.TickRandomly,
+            IgnoreMetaUpdates = def.IgnoreMetaUpdates,
+            EnableStats = def.TrackStatistics,
+            TopVariance = def.TopVariance,
+            BottomVariance = def.BottomVariance,
+            SideVariance = def.SideVariance,
+            BurnChance = def.BurnChance,
+            SpreadChance = def.SpreadChance,
+            RenderType = Enum.Parse<BlockRendererType>(def.RenderType, true),
+            RenderLayer = def.RenderLayer,
+            TickRate = def.TickRate,
+            HasCollisionBox = !def.NoCollision,
+            PreservesMetaOnDrop = def.PreservesMetaOnDrop,
+            BlockName = def.TranslationKey ?? def.Name
+        };
 
         block.SetHardness(def.Hardness);
         block.SetResistance(def.Resistance);
 
-        block.IsOpaque = !def.NonOpaque;
-        block.Luminance = def.Luminance;
-        if (def.Opacity >= 0) block.Opacity = def.Opacity;
-        block.TickRandomly = def.TickRandomly;
-        block.IgnoreMetaUpdates = def.IgnoreMetaUpdates;
-        block.EnableStats = def.TrackStatistics;
-        if (def.SoundGroup is { } sg) block.SoundGroup = context.ResolveSoundGroup(ResourceLocation.Parse(sg));
+        if (def.Opacity >= 0) draft.Opacity = def.Opacity;
+        else draft.Opacity = draft.IsOpaque ? 255 : 0;
+        if (def.SoundGroup is { } sg) draft.SoundGroup = context.ResolveSoundGroup(ResourceLocation.Parse(sg));
         if (def.FaceTextures is { } faces)
         {
             foreach ((string sideName, string faceTextureId) in faces)
@@ -31,17 +47,8 @@ internal static class BlockFactory
             }
         }
 
-        block.TopVariance = def.TopVariance;
-        block.BottomVariance = def.BottomVariance;
-        block.SideVariance = def.SideVariance;
-        block.BurnChance = def.BurnChance;
-        block.SpreadChance = def.SpreadChance;
-        block.RenderType = Enum.Parse<BlockRendererType>(def.RenderType, true);
-        block.RenderLayer = def.RenderLayer;
-        block.TickRate = def.TickRate;
         block.SetSlipperiness(def.Slipperiness);
         if (def.NotFullCube) block.SetNotFullCube();
-        if (def.NoCollision) block.HasCollisionBox = false;
         if (def.BoundingBox is { } box)
         {
             block.SetBoundingBox(box.MinX, box.MinY, box.MinZ, box.MaxX, box.MaxY, box.MaxZ);
@@ -52,11 +59,10 @@ internal static class BlockFactory
             block.SetPistonBehavior(Enum.Parse<PistonBehavior>(pistonBehavior, true));
         }
 
-        if (def.DropCount is { } dropCount) block.DropCount = dropCount;
-        block.PreservesMetaOnDrop = def.PreservesMetaOnDrop;
+        if (def.DropCount is { } dropCount) draft.DropCount = dropCount;
         if (def.BlockAlias is { Length: > 0 } aliases) block.SetBlockAlias(aliases);
 
-        block.BlockName = def.TranslationKey ?? def.Name;
+        draft.Apply();
 
         return block;
     }
@@ -68,6 +74,7 @@ internal static class BlockFactory
         BlockBuildContext context)
     {
         ArgumentNullException.ThrowIfNull(behaviorProviders);
+        BlockDraft draft = new(block);
 
         foreach (JsonElement entry in def.Behaviors)
         {
@@ -83,28 +90,30 @@ internal static class BlockFactory
                 switch (slot)
                 {
                     case "Ticker":
-                        block.Ticker = (IBlockTicker)behavior;
+                        draft.Ticker = (IBlockTicker)behavior;
                         break;
                     case "Physics":
-                        block.Physics = (IBlockPhysics)behavior;
+                        draft.Physics = (IBlockPhysics)behavior;
                         break;
                     case "Lifecycle":
-                        block.Lifecycle = (IBlockLifecycle)behavior;
+                        draft.Lifecycle = (IBlockLifecycle)behavior;
                         break;
                     case "Visuals":
-                        block.Visuals = (IBlockVisuals)behavior;
+                        draft.Visuals = (IBlockVisuals)behavior;
                         break;
                     case "Interactable":
-                        block.Interactable = (IBlockInteractable)behavior;
+                        draft.Interactable = (IBlockInteractable)behavior;
                         break;
                     case "Redstone":
-                        block.Redstone = (IRedstoneComponent)behavior;
+                        draft.Redstone = (IRedstoneComponent)behavior;
                         break;
                     default:
                         throw new ArgumentException($"Unknown behavior slot '{slot}'.");
                 }
             }
         }
+
+        draft.Apply();
 
         if (def.LootTable is { } loot)
         {
@@ -122,5 +131,6 @@ internal static class BlockFactory
         {
             block.SetHasTileEntity(context.ResolveBlockEntityFactory(ResourceLocation.Parse(tileEntity)));
         }
+
     }
 }

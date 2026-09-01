@@ -45,7 +45,7 @@ internal sealed class StairsBehavior(Func<Block> baseBlock) : IBlockPhysics, IBl
     }
 
     public void UpdateBoundingBox(Block block, IBlockReader reader, int x, int y, int z)
-        => block.SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+        => block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
 
     public void AddCollisionBoxes(Block block, IBlockReader reader, int x, int y, int z, Box queryBox, List<Box> results)
     {

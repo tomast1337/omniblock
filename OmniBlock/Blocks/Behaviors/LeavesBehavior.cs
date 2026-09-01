@@ -206,6 +206,5 @@ public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestT
     {
         if (block.Visuals is not LeavesBehavior behavior) return;
         behavior._graphicsLevel = fancy;
-        block.TextureId = behavior.GetTexture(block, Side.North, 0, 0);
     }
 }

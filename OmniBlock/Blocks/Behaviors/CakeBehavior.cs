@@ -26,10 +26,10 @@ internal sealed class CakeBehavior(int top, int side, int inner, int bottom) : I
     {
         int slicesEaten = reader.GetBlockMeta(x, y, z);
         float minX = (1 + slicesEaten * 2) / 16.0F;
-        block.SetBoundingBox(minX, 0.0F, EdgeInset, 1.0F - EdgeInset, CakeHeight, 1.0F - EdgeInset);
+        block.SetRuntimeBoundingBox(minX, 0.0F, EdgeInset, 1.0F - EdgeInset, CakeHeight, 1.0F - EdgeInset);
     }
 
-    public void SetupRenderBoundingBox(Block block) => block.SetBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, CakeHeight, 1.0F - EdgeInset);
+    public void SetupRenderBoundingBox(Block block) => block.SetRuntimeBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, CakeHeight, 1.0F - EdgeInset);
 
     public Box? GetCollisionShape(Block block, IBlockReader reader, EntityManager entities, int x, int y, int z, Box? defaultShape)
     {

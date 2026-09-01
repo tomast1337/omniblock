@@ -39,7 +39,7 @@ internal sealed class SnowBehavior(Item dropItem, float dropSpread) : BlockRunti
     {
         int meta = reader.GetBlockMeta(x, y, z) & 7;
         float height = 2 * (1 + meta) / 16.0F;
-        block.SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, height, 1.0F);
+        block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, height, 1.0F);
     }
 
     public Box? GetCollisionShape(Block block, IBlockReader reader, EntityManager entities, int x, int y, int z, Box? defaultShape)

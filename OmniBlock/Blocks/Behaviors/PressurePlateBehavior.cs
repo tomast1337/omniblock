@@ -62,15 +62,15 @@ public sealed class PressurePlateBehavior(PressurePlateActiviationRule activatio
         bool isPressed = reader.GetBlockMeta(x, y, z) == 1;
         if (isPressed)
         {
-            block.SetBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, 1 / 32f, 1.0F - EdgeInset);
+            block.SetRuntimeBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, 1 / 32f, 1.0F - EdgeInset);
         }
         else
         {
-            block.SetBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, 1.0F / 16.0F, 1.0F - EdgeInset);
+            block.SetRuntimeBoundingBox(EdgeInset, 0.0F, EdgeInset, 1.0F - EdgeInset, 1.0F / 16.0F, 1.0F - EdgeInset);
         }
     }
 
-    public void SetupRenderBoundingBox(Block block) => block.SetBoundingBox(0.5F - HalfWidth, 0.5F - HalfHeight, 0.5F - HalfDepth, 0.5F + HalfWidth, 0.5F + HalfHeight, 0.5F + HalfDepth);
+    public void SetupRenderBoundingBox(Block block) => block.SetRuntimeBoundingBox(0.5F - HalfWidth, 0.5F - HalfHeight, 0.5F - HalfDepth, 0.5F + HalfWidth, 0.5F + HalfHeight, 0.5F + HalfDepth);
 
     public void OnTick(Block block, OnTickEvent @event)
     {

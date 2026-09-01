@@ -21,20 +21,20 @@ public sealed class SignBehavior(bool isStanding) : IBlockPhysics
 
         Side facing = reader.GetBlockMeta(x, y, z).ToSide();
 
-        block.SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+        block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         switch (facing)
         {
             case Side.North:
-                block.SetBoundingBox(MinExtent, TopOffset, 1.0F - Thickness, MaxExtent, BottomOffset, 1.0F);
+                block.SetRuntimeBoundingBox(MinExtent, TopOffset, 1.0F - Thickness, MaxExtent, BottomOffset, 1.0F);
                 break;
             case Side.South:
-                block.SetBoundingBox(MinExtent, TopOffset, 0.0F, MaxExtent, BottomOffset, Thickness);
+                block.SetRuntimeBoundingBox(MinExtent, TopOffset, 0.0F, MaxExtent, BottomOffset, Thickness);
                 break;
             case Side.West:
-                block.SetBoundingBox(1.0F - Thickness, TopOffset, MinExtent, 1.0F, BottomOffset, MaxExtent);
+                block.SetRuntimeBoundingBox(1.0F - Thickness, TopOffset, MinExtent, 1.0F, BottomOffset, MaxExtent);
                 break;
             case Side.East:
-                block.SetBoundingBox(0.0F, TopOffset, MinExtent, Thickness, BottomOffset, MaxExtent);
+                block.SetRuntimeBoundingBox(0.0F, TopOffset, MinExtent, Thickness, BottomOffset, MaxExtent);
                 break;
         }
     }

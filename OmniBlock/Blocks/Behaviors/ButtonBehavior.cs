@@ -95,22 +95,22 @@ public sealed class ButtonBehavior : IRedstoneComponent, IBlockInteractable, IBl
         switch (facing)
         {
             case Side.Up:
-                block.SetBoundingBox(0.0F, MinY, 0.5F - HalfWidth, height, MaxY, 0.5F + HalfWidth);
+                block.SetRuntimeBoundingBox(0.0F, MinY, 0.5F - HalfWidth, height, MaxY, 0.5F + HalfWidth);
                 break;
             case Side.North:
-                block.SetBoundingBox(1.0F - height, MinY, 0.5F - HalfWidth, 1.0F, MaxY, 0.5F + HalfWidth);
+                block.SetRuntimeBoundingBox(1.0F - height, MinY, 0.5F - HalfWidth, 1.0F, MaxY, 0.5F + HalfWidth);
                 break;
             case Side.South:
-                block.SetBoundingBox(0.5F - HalfWidth, MinY, 0.0F, 0.5F + HalfWidth, MaxY, height);
+                block.SetRuntimeBoundingBox(0.5F - HalfWidth, MinY, 0.0F, 0.5F + HalfWidth, MaxY, height);
                 break;
             case Side.West:
-                block.SetBoundingBox(0.5F - HalfWidth, MinY, 1.0F - height, 0.5F + HalfWidth, MaxY, 1.0F);
+                block.SetRuntimeBoundingBox(0.5F - HalfWidth, MinY, 1.0F - height, 0.5F + HalfWidth, MaxY, 1.0F);
                 break;
         }
     }
 
     public void SetupRenderBoundingBox(Block block) =>
-        block.SetBoundingBox(0.5F - HalfWidth, 0.5F - Thickness, 0.5F - Thickness, 0.5F + HalfWidth, 0.5F + Thickness, 0.5F + Thickness);
+        block.SetRuntimeBoundingBox(0.5F - HalfWidth, 0.5F - Thickness, 0.5F - Thickness, 0.5F + HalfWidth, 0.5F + Thickness, 0.5F + Thickness);
 
     public void OnTick(Block block, OnTickEvent @event)
     {

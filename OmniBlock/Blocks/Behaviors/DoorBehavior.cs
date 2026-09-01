@@ -172,13 +172,13 @@ internal sealed class DoorBehavior(Material material) : BlockRuntimeBehavior, IB
 
     private static void ApplyBoundingBox(Block block, int facing)
     {
-        block.SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F, 1.0F);
+        block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F, 1.0F);
         switch (facing)
         {
-            case 0: block.SetBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, Thickness); break;
-            case 1: block.SetBoundingBox(1.0F - Thickness, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F); break;
-            case 2: block.SetBoundingBox(0.0F, 0.0F, 1.0F - Thickness, 1.0F, 1.0F, 1.0F); break;
-            case 3: block.SetBoundingBox(0.0F, 0.0F, 0.0F, Thickness, 1.0F, 1.0F); break;
+            case 0: block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, Thickness); break;
+            case 1: block.SetRuntimeBoundingBox(1.0F - Thickness, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F); break;
+            case 2: block.SetRuntimeBoundingBox(0.0F, 0.0F, 1.0F - Thickness, 1.0F, 1.0F, 1.0F); break;
+            case 3: block.SetRuntimeBoundingBox(0.0F, 0.0F, 0.0F, Thickness, 1.0F, 1.0F); break;
         }
     }
 }
