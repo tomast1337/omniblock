@@ -77,6 +77,10 @@ public static class DefaultRegistries
         // EntityDefinition from here as they run, and touching the class is what triggers them.
         EntityDefinitionRegistry.Initialize();
 
+        // Blocks and entity definitions now exist, so every item cross-reference can be resolved
+        // and the item catalog frozen before entity constructors consume item behaviors.
+        content.FinalizeItemsForBootstrap();
+
         EntityTypes.Bootstrap(typeof(EntityRegistry));
         Biomes.Bootstrap(typeof(Biome));
 

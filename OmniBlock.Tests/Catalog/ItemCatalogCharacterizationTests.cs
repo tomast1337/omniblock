@@ -18,7 +18,7 @@ namespace OmniBlock.Tests.Catalog;
 /// </summary>
 public sealed class ItemCatalogCharacterizationTests
 {
-    private const string ExpectedSnapshot = "1922c2ebddac096e57d9b49d743067818a2369e9";
+    private const string ExpectedSnapshot = "81c5e6b41499e8e4de154624f6ff053a28f62b86";
 
     private static readonly JsonSerializerOptions s_json = new()
     {

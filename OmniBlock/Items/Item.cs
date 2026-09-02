@@ -60,6 +60,7 @@ public class Item
     private readonly IItemBehavior?[] _behaviors = new IItemBehavior[MaxBehaviors];
     private int _behaviorCount;
     private Item _craftingReturnItem;
+    private Item[] _repairIngredients = [];
     public bool Handheld { get; private set; }
     public bool HasSubtypes { get; private set; }
     private int _maxCount = 64;
@@ -275,6 +276,14 @@ public class Item
     public Item GetContainerItem() => _craftingReturnItem;
 
     public bool HasContainerItem() => _craftingReturnItem != null;
+
+    public IReadOnlyList<Item> RepairIngredients => _repairIngredients;
+
+    internal void SetRepairIngredients(Item[] ingredients)
+    {
+        EnsureMutable();
+        _repairIngredients = ingredients;
+    }
 
     internal void Freeze() => _frozen = true;
 

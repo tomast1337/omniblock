@@ -1,5 +1,7 @@
 using System.Collections.Frozen;
 using System.Text.Json;
+using OmniBlock.Blocks;
+using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 
 namespace OmniBlock.Items.Behaviors;
@@ -34,19 +36,13 @@ public sealed class ItemBehaviorProviderRegistry : IItemBehaviorProviderRegistry
         [Key("flint_and_steel")] = static (_, _) => new FlintAndSteelBehavior(),
         [Key("fishing_rod")] = static (j, c) => new FishingRodBehavior(c.ResolveItemTexture(String(j, "Cast"))),
         [Key("bow")] = static (_, _) => new BowBehavior(),
-        [Key("bucket")] = static (j, c) => new BucketBehavior(() => String(j, "Liquid", "empty") switch
-        {
-            "water" => c.ResolveBlock("omniblock:flowing_water").Id,
-            "lava" => c.ResolveBlock("omniblock:flowing_lava").Id,
-            "milk" => -1,
-            _ => 0
-        }),
+        [Key("bucket")] = static (j, c) => BuildBucket(j, c),
         [Key("minecart")] = static (j, _) => new MinecartBehavior(Int(j, "CartType")),
         [Key("boat")] = static (_, _) => new BoatBehavior(), [Key("bed")] = static (_, _) => new BedBehavior(),
         [Key("door")] = static (j, c) => new DoorBehavior(c.ResolveBlockMaterial(String(j, "DoorMaterial", "wood") == "iron" ? "omniblock:metal" : "omniblock:wood")),
-        [Key("seeds")] = static (j, c) => new SeedsBehavior(() => c.ResolveBlock(ResourceLocation.Parse(String(j, "PlacesBlock"))).Id),
-        [Key("place_block")] = static (j, c) => new PlaceBlockBehavior(() => c.ResolveBlock(ResourceLocation.Parse(String(j, "PlacesBlock")))),
-        [Key("throwable")] = static (j, c) => new ThrowableBehavior((world, _) => c.ResolveEntityType(ResourceLocation.Parse(String(j, "ProjectileType", "snowball"))).Create(world)),
+        [Key("seeds")] = static (j, c) => BuildSeeds(j, c),
+        [Key("place_block")] = static (j, c) => BuildPlaceBlock(j, c),
+        [Key("throwable")] = static (j, c) => BuildThrowable(j, c),
         [Key("dye")] = static (j, c) => new DyeBehavior([.. j.GetProperty("Textures").EnumerateArray().Select(value => c.ResolveItemTexture(value.GetString()!))]),
         [Key("coal")] = static (_, _) => new CoalBehavior(), [Key("record")] = static (j, _) => new RecordBehavior(String(j, "RecordName")),
         [Key("redstone")] = static (_, _) => new RedstoneBehavior(), [Key("sign")] = static (_, _) => new SignBehavior(),
@@ -61,9 +57,47 @@ public sealed class ItemBehaviorProviderRegistry : IItemBehaviorProviderRegistry
         {
             "pickaxe" => new ToolBehavior(material, 2, () => Item.s_pickaxeBlocks, Item.PickaxeSuitableFor(material)),
             "axe" => new ToolBehavior(material, 3, () => Item.s_axeBlocks),
-            "shovel" => new ToolBehavior(material, 1, () => Item.s_spadeBlocks, block => block == context.ResolveBlock("omniblock:snow") || block == context.ResolveBlock("omniblock:snow_block")),
+            "shovel" => BuildShovel(material, context),
             string kind => throw new ArgumentException($"Unknown tool kind '{kind}'.")
         };
+    }
+
+    private static IItemBehavior BuildBucket(JsonElement json, ItemBuildContext context)
+    {
+        int liquid = String(json, "Liquid", "empty") switch
+        {
+            "water" => context.ResolveBlock("omniblock:flowing_water").Id,
+            "lava" => context.ResolveBlock("omniblock:flowing_lava").Id,
+            "milk" => -1,
+            _ => 0
+        };
+        return new BucketBehavior(() => liquid);
+    }
+
+    private static IItemBehavior BuildSeeds(JsonElement json, ItemBuildContext context)
+    {
+        Block block = context.ResolveBlock(ResourceLocation.Parse(String(json, "PlacesBlock")));
+        return new SeedsBehavior(() => block.Id);
+    }
+
+    private static IItemBehavior BuildPlaceBlock(JsonElement json, ItemBuildContext context)
+    {
+        Block block = context.ResolveBlock(ResourceLocation.Parse(String(json, "PlacesBlock")));
+        return new PlaceBlockBehavior(() => block);
+    }
+
+    private static IItemBehavior BuildThrowable(JsonElement json, ItemBuildContext context)
+    {
+        ResourceLocation key = ResourceLocation.Parse(String(json, "ProjectileType", "snowball"));
+        context.ValidateEntityType(key);
+        return new ThrowableBehavior((world, _) => context.ResolveEntityType(key).Create(world));
+    }
+
+    private static IItemBehavior BuildShovel(ToolMaterial material, ItemBuildContext context)
+    {
+        Block snow = context.ResolveBlock("omniblock:snow");
+        Block snowBlock = context.ResolveBlock("omniblock:snow_block");
+        return new ToolBehavior(material, 1, () => Item.s_spadeBlocks, block => block == snow || block == snowBlock);
     }
 
     private static ResourceLocation Key(string path) => new(Namespace.OmniBlock, path);

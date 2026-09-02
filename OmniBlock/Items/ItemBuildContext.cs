@@ -21,6 +21,7 @@ public readonly struct ItemBuildContext
     private readonly Func<ResourceLocation, BlockEntityType> _resolveBlockEntityType;
     private readonly Func<ResourceLocation, RecipeDefinition> _resolveRecipeDependency;
     private readonly Func<ResourceLocation, object> _resolveInteractionDependency;
+    private readonly Action<ResourceLocation>? _validateEntityType;
 
     public ItemBuildContext(
         Func<ResourceLocation, Block> resolveBlock,
@@ -33,7 +34,8 @@ public readonly struct ItemBuildContext
         Func<ResourceLocation, EntityType> resolveEntityType,
         Func<ResourceLocation, BlockEntityType> resolveBlockEntityType,
         Func<ResourceLocation, RecipeDefinition> resolveRecipeDependency,
-        Func<ResourceLocation, object> resolveInteractionDependency)
+        Func<ResourceLocation, object> resolveInteractionDependency,
+        Action<ResourceLocation>? validateEntityType = null)
     {
         ArgumentNullException.ThrowIfNull(resolveBlock);
         ArgumentNullException.ThrowIfNull(resolveBlockItem);
@@ -58,6 +60,7 @@ public readonly struct ItemBuildContext
         _resolveBlockEntityType = resolveBlockEntityType;
         _resolveRecipeDependency = resolveRecipeDependency;
         _resolveInteractionDependency = resolveInteractionDependency;
+        _validateEntityType = validateEntityType;
     }
 
     public Block ResolveBlock(ResourceLocation key) => Resolve(_resolveBlock, key, "block");
@@ -67,6 +70,16 @@ public readonly struct ItemBuildContext
     public ArmorMaterial ResolveArmorMaterial(ResourceLocation key) => Resolve(_resolveArmorMaterial, key, "armor material");
     public Material ResolveBlockMaterial(ResourceLocation key) => Resolve(_resolveBlockMaterial, key, "block material");
     public EntityType ResolveEntityType(ResourceLocation key) => Resolve(_resolveEntityType, key, "entity type");
+    public void ValidateEntityType(ResourceLocation key)
+    {
+        if (_validateEntityType is null)
+        {
+            _ = ResolveEntityType(key);
+            return;
+        }
+        Action<ResourceLocation> validator = _validateEntityType;
+        ResolveCore(() => { validator(key); return true; }, "entity type", key.ToString());
+    }
     public BlockEntityType ResolveBlockEntityType(ResourceLocation key) => Resolve(_resolveBlockEntityType, key, "block-entity type");
     public RecipeDefinition ResolveRecipeDependency(ResourceLocation key) => Resolve(_resolveRecipeDependency, key, "recipe dependency");
     public object ResolveInteractionDependency(ResourceLocation key) => Resolve(_resolveInteractionDependency, key, "interaction dependency");
@@ -105,7 +118,8 @@ public readonly struct ItemBuildContext
         static key => DefaultRegistries.BlockEntityTypes.Get(key)?.Value
                       ?? throw new KeyNotFoundException($"Unknown block-entity type '{key}'."),
         static key => throw new KeyNotFoundException($"Unknown recipe dependency '{key}'."),
-        static key => throw new KeyNotFoundException($"Unknown interaction dependency '{key}'."));
+        static key => throw new KeyNotFoundException($"Unknown interaction dependency '{key}'."),
+        static key => _ = EntityDefinitionRegistry.Get(key.Path));
 
     private static InvalidOperationException Uninitialized() =>
         new($"{nameof(ItemBuildContext)} must be initialized before resolving dependencies.");

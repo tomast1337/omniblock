@@ -25,6 +25,7 @@ public sealed class ContentRuntimeBuilder
     private readonly Dictionary<ResourceLocation, Item> _itemsByKey = [];
     private readonly Dictionary<int, Item> _itemsByProtocolId = [];
     private readonly StagedBlockRuntimeView _blockRuntimeView;
+    private bool _itemDraftsCreated;
     private bool _itemsFinalized;
     private bool _built;
 
@@ -75,9 +76,11 @@ public sealed class ContentRuntimeBuilder
 
     internal void BuildItemsForBootstrap()
     {
-        BuildPendingItems();
+        CreatePendingItemDrafts();
         foreach ((_, _, Item item) in _items) Item.Items[item.Id] = item;
     }
+
+    internal void FinalizeItemsForBootstrap() => BuildPendingItems();
 
     internal void AddBlock(BlockDefinition definition, Block block)
     {
@@ -100,6 +103,16 @@ public sealed class ContentRuntimeBuilder
         _blocksByKey.TryGetValue(key, out Block? block)
             ? block
             : throw new KeyNotFoundException($"Unknown block '{key}'.");
+
+    private Block ResolveBlockReference(ResourceLocation key)
+    {
+        if (_blocksByKey.TryGetValue(key, out Block? exact)) return exact;
+        foreach ((ResourceLocation candidateKey, BlockDefinition definition, Block block) in _blocks)
+        {
+            if (candidateKey.Namespace == key.Namespace && definition.TranslationKey == key.Path) return block;
+        }
+        throw new KeyNotFoundException($"Unknown block '{key}'.");
+    }
 
     internal Block GetBlockByProtocolId(int protocolId) =>
         _blocksByProtocolId.TryGetValue(protocolId, out Block? block)
@@ -146,8 +159,9 @@ public sealed class ContentRuntimeBuilder
     {
         if (_built) throw new InvalidOperationException("This content runtime builder has already been built.");
 
-        BuildPendingItems();
+        CreatePendingItemDrafts();
         BuildPendingBlockDefinitions();
+        BuildPendingItems();
         ValidateBlocks();
         foreach ((_, _, Block block) in _blocks) block.Freeze();
         foreach ((_, _, Item item) in _items) item.Freeze();
@@ -166,6 +180,35 @@ public sealed class ContentRuntimeBuilder
     private void BuildPendingItems()
     {
         if (_pendingItemDefinitions.Count == 0 || _itemsFinalized) return;
+
+        CreatePendingItemDrafts();
+
+        foreach ((ResourceLocation key, ItemDefinition definition, Item item) in _items)
+        {
+            try
+            {
+                ItemFactory.AttachBehavior(item, definition, ItemBuildContext, ItemBehaviorProviders);
+                if (definition.CraftingReturnItemProtocolId is { } returnId)
+                    item.SetCraftingReturnItem(GetItemByProtocolId(returnId));
+                item.SetRepairIngredients([.. definition.RepairIngredients.Select(reference =>
+                    ItemBuildContext.ResolveItem(ResourceLocation.Parse(reference)))]);
+                if (item.BehaviorCount != definition.Behaviors.Length)
+                    throw new InvalidOperationException(
+                        $"built {item.BehaviorCount} of {definition.Behaviors.Length} declared behaviors");
+            }
+            catch (Exception error)
+            {
+                throw new InvalidOperationException($"Item '{key}' failed reference validation: {error.Message}", error);
+            }
+        }
+
+        foreach ((_, _, Item item) in _items) item.Freeze();
+        _itemsFinalized = true;
+    }
+
+    private void CreatePendingItemDrafts()
+    {
+        if (_itemDraftsCreated) return;
 
         foreach (ItemDefinition definition in _pendingItemDefinitions)
         {
@@ -187,23 +230,7 @@ public sealed class ContentRuntimeBuilder
                 throw new InvalidOperationException($"Item '{key}' failed construction: {error.Message}", error);
             }
         }
-
-        foreach ((ResourceLocation key, ItemDefinition definition, Item item) in _items)
-        {
-            try
-            {
-                ItemFactory.AttachBehavior(item, definition, ItemBuildContext, ItemBehaviorProviders);
-                if (definition.CraftingReturnItemProtocolId is { } returnId)
-                    item.SetCraftingReturnItem(GetItemByProtocolId(returnId));
-            }
-            catch (Exception error)
-            {
-                throw new InvalidOperationException($"Item '{key}' failed reference validation: {error.Message}", error);
-            }
-        }
-
-        foreach ((_, _, Item item) in _items) item.Freeze();
-        _itemsFinalized = true;
+        _itemDraftsCreated = true;
     }
 
     private void BuildPendingBlockDefinitions()
@@ -294,7 +321,7 @@ public sealed class ContentRuntimeBuilder
         BehaviorBuildContext runtimeContext = context.WithBlocks(blocks);
         ContentRuntimeBuilder? builder = null;
         ItemBuildContext items = new(
-            key => builder!.GetBlock(key),
+            key => builder!.ResolveBlockReference(key),
             key => builder!._blockItems.First(entry => entry.Key == key).Item,
             key => builder!.GetItem(key),
             key => ToolMaterialRegistry.Get(key.Path),
@@ -305,7 +332,8 @@ public sealed class ContentRuntimeBuilder
             key => DefaultRegistries.BlockEntityTypes.Get(key)?.Value
                    ?? throw new KeyNotFoundException($"Unknown block-entity type '{key}'."),
             key => throw new KeyNotFoundException($"Unknown recipe '{key}'."),
-            key => throw new KeyNotFoundException($"Unknown interaction dependency '{key}'."));
+            key => throw new KeyNotFoundException($"Unknown interaction dependency '{key}'."),
+            key => _ = EntityDefinitionRegistry.Get(key.Path));
         builder = new(
             new BlockBehaviorProviderRegistry(runtimeContext),
             BlockBuildContext.BuiltIns(runtimeContext),
