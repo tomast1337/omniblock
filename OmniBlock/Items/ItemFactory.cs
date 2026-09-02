@@ -1,22 +1,45 @@
-using OmniBlock.Textures;
+using OmniBlock.Items.Behaviors;
 
 namespace OmniBlock.Items;
 
 public static class ItemFactory
 {
-    public static Item Create(ItemDefinition def)
+    private static readonly IItemBehaviorProviderRegistry s_builtInBehaviors = new ItemBehaviorProviderRegistry();
+
+    public static Item Create(ItemDefinition def) => Create(def, ItemBuildContext.BuiltIns, s_builtInBehaviors);
+
+    public static Item Create(
+        ItemDefinition def,
+        in ItemBuildContext context,
+        IItemBehaviorProviderRegistry behaviorProviders)
     {
-        var item = new Item(def.ProtocolId - 256);
+        ArgumentNullException.ThrowIfNull(def);
+        ArgumentNullException.ThrowIfNull(behaviorProviders);
+        Item item = CreateDraft(def, context, publishLegacy: true);
+        AttachBehavior(item, def, context, behaviorProviders);
+        return item;
+    }
+
+    internal static Item CreateDraft(ItemDefinition def, in ItemBuildContext context, bool publishLegacy)
+    {
+        var item = new Item(def.ProtocolId - 256, publishLegacy);
         item.SetItemName(def.TranslationKey ?? def.Name);
         if (def.MaxStackSize != 64) item.SetMaxCount(def.MaxStackSize);
         if (def.MaxDurability > 0) item.SetMaxDamage(def.MaxDurability);
         // An unset TextureId keeps the implicit default the int field used to have.
-        item.SetTextureId(string.IsNullOrEmpty(def.TextureId) ? 0 : Atlases.Items.IndexOf(def.TextureId));
+        item.SetTextureId(string.IsNullOrEmpty(def.TextureId) ? 0 : context.ResolveItemTexture(def.TextureId));
         if (def.Handheld) item.SetHandheld();
         if (def.HasSubtypes) item.SetHasSubtypes(true);
-        if (def.Behavior is not null) item.SetBehavior(def.Behavior.Build());
-
         return item;
+    }
+
+    internal static void AttachBehavior(
+        Item item,
+        ItemDefinition def,
+        in ItemBuildContext context,
+        IItemBehaviorProviderRegistry behaviorProviders)
+    {
+        if (def.Behavior is not null) item.SetBehavior(behaviorProviders.Build(def.Behavior, context));
     }
 
     public static void ResolveCrossReferences(ItemDefinition def)

@@ -37,6 +37,13 @@ public class Item
     /// </summary>
     public static Item ByName(string name)
     {
+        ResourceLocation key = new(Namespace.OmniBlock, name);
+        if (ContentRuntime.TryGetCurrent(out ContentRuntime? runtime))
+        {
+            if (runtime.Items.TryGet(key, out Item? runtimeItem)) return runtimeItem;
+            throw new ArgumentException($"Unknown item: '{name}'", nameof(name));
+        }
+
         ItemDefinition? def = DefaultRegistries.Items.Get(new ResourceLocation(Namespace.OmniBlock, name))?.Value;
         if (def is null || Items[def.ProtocolId] is not { } item)
         {
@@ -51,12 +58,15 @@ public class Item
     public readonly int Id;
     private IItemBehavior? _behavior;
     private Item _craftingReturnItem;
-    public bool Handheld;
-    public bool HasSubtypes;
+    public bool Handheld { get; private set; }
+    public bool HasSubtypes { get; private set; }
     private int _maxCount = 64;
     private int _maxDamage;
     internal int _textureId;
     private string _translationKey;
+    private bool _frozen;
+
+    public bool IsFrozen => _frozen;
 
     internal Item(int id, bool publishLegacy = true)
     {
@@ -73,6 +83,7 @@ public class Item
 
     public Item SetBehavior(IItemBehavior behavior)
     {
+        EnsureMutable();
         _behavior = behavior;
         behavior.Apply(this);
         return this;
@@ -82,12 +93,14 @@ public class Item
 
     public Item SetTextureId(int textureId)
     {
+        EnsureMutable();
         _textureId = textureId;
         return this;
     }
 
     public Item SetMaxCount(int maxCount)
     {
+        EnsureMutable();
         _maxCount = maxCount;
         return this;
     }
@@ -110,6 +123,7 @@ public class Item
 
     internal Item SetHasSubtypes(bool has)
     {
+        EnsureMutable();
         HasSubtypes = has;
         return this;
     }
@@ -118,6 +132,7 @@ public class Item
 
     internal Item SetMaxDamage(int dmg)
     {
+        EnsureMutable();
         _maxDamage = dmg;
         return this;
     }
@@ -136,6 +151,7 @@ public class Item
 
     public Item SetHandheld()
     {
+        EnsureMutable();
         Handheld = true;
         return this;
     }
@@ -146,6 +162,7 @@ public class Item
 
     public Item SetItemName(string name)
     {
+        EnsureMutable();
         _translationKey = $"item.{name}";
         return this;
     }
@@ -156,6 +173,7 @@ public class Item
 
     public Item SetCraftingReturnItem(Item item)
     {
+        EnsureMutable();
         if (_maxCount > 1)
         {
             throw new ArgumentException("Max stack size must be 1 for items with crafting results");
@@ -168,6 +186,13 @@ public class Item
     public Item GetContainerItem() => _craftingReturnItem;
 
     public bool HasContainerItem() => _craftingReturnItem != null;
+
+    internal void Freeze() => _frozen = true;
+
+    private void EnsureMutable()
+    {
+        if (_frozen) throw new InvalidOperationException($"Item {Id} has been finalized and cannot be mutated.");
+    }
 
     public string GetStatName()
         => StatCollector.TranslateToLocal(GetItemName() + ".name");

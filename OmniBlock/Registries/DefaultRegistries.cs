@@ -58,13 +58,12 @@ public static class DefaultRegistries
         foreach (ItemDefinition definition in itemBootLoader)
         {
             Items.Register(definition.ProtocolId, new ResourceLocation(definition.Namespace, definition.Name), definition);
-            Item.Items[definition.ProtocolId] = ItemFactory.Create(definition);
+            content.AddItemDefinition(definition);
         }
 
-        foreach (ItemDefinition definition in itemBootLoader)
-        {
-            ItemFactory.ResolveCrossReferences(definition);
-        }
+        // The builder creates all drafts first, validates behavior/crafting references in a second
+        // pass, freezes the complete item catalog, and only then exposes the transitional array.
+        content.BuildItemsForBootstrap();
 
         // Now safe: items are fully loaded, so loot-table/behavior lookups by item name inside
         // BlockRegistry.Initialize() will succeed. BlockRegistry, in turn, must run before Stats

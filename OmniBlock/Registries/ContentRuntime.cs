@@ -2,6 +2,7 @@ using System.Collections.Frozen;
 using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Items;
+using OmniBlock.Items.Behaviors;
 
 namespace OmniBlock.Registries;
 
@@ -16,15 +17,19 @@ public sealed class ContentRuntime
 
     internal ContentRuntime(
         IEnumerable<(ResourceLocation Key, Block Block)> blocks,
+        IEnumerable<(ResourceLocation Key, Item Item)> items,
         IEnumerable<(ResourceLocation Key, Item Item)> blockItems,
-        IBlockBehaviorProviderRegistry blockBehaviorProviders)
+        IBlockBehaviorProviderRegistry blockBehaviorProviders,
+        IItemBehaviorProviderRegistry itemBehaviorProviders)
     {
         ArgumentNullException.ThrowIfNull(blockBehaviorProviders);
         Blocks = new RuntimeBlockRegistry(blocks);
+        Items = new RuntimeItemRegistry(items);
         BlockItems = new RuntimeBlockItemRegistry(blockItems);
         Manifest = new ContentCatalogManifest(Blocks.Keys.Select(key =>
             new KeyValuePair<ResourceLocation, int>(key, Blocks.Get(key).Id)));
         BlockBehaviorProviders = blockBehaviorProviders;
+        ItemBehaviorProviders = itemBehaviorProviders;
     }
 
     public static ContentRuntime Current => Volatile.Read(ref s_current)
@@ -39,9 +44,11 @@ public sealed class ContentRuntime
     }
 
     public RuntimeBlockRegistry Blocks { get; }
+    public RuntimeItemRegistry Items { get; }
     public RuntimeBlockItemRegistry BlockItems { get; }
     public ContentCatalogManifest Manifest { get; }
     public IBlockBehaviorProviderRegistry BlockBehaviorProviders { get; }
+    public IItemBehaviorProviderRegistry ItemBehaviorProviders { get; }
 
     internal static void Publish(ContentRuntime runtime)
     {
@@ -51,6 +58,39 @@ public sealed class ContentRuntime
             throw new InvalidOperationException("A content runtime has already been published.");
         }
     }
+}
+
+/// <summary>Immutable key and protocol-ID indexes over finalized non-block items.</summary>
+public sealed class RuntimeItemRegistry
+{
+    private readonly FrozenDictionary<ResourceLocation, Item> _byKey;
+    private readonly FrozenDictionary<int, Item> _byProtocolId;
+
+    internal RuntimeItemRegistry(IEnumerable<(ResourceLocation Key, Item Item)> entries)
+    {
+        var byKey = new Dictionary<ResourceLocation, Item>();
+        var byProtocolId = new Dictionary<int, Item>();
+        foreach ((ResourceLocation key, Item item) in entries)
+        {
+            if (!byKey.TryAdd(key, item)) throw new ArgumentException($"Duplicate item key '{key}'.");
+            if (item.Id is < 256 or >= 32000)
+                throw new ArgumentOutOfRangeException(nameof(entries), item.Id, "Item protocol id must be between 256 and 31999.");
+            if (!byProtocolId.TryAdd(item.Id, item)) throw new ArgumentException($"Duplicate item protocol id {item.Id}.");
+            if (!item.IsFrozen) throw new ArgumentException($"Item '{key}' was not finalized.");
+        }
+
+        _byKey = byKey.ToFrozenDictionary();
+        _byProtocolId = byProtocolId.ToFrozenDictionary();
+    }
+
+    public int Count => _byKey.Count;
+    public IEnumerable<ResourceLocation> Keys => _byKey.Keys;
+    public Item Get(ResourceLocation key) => _byKey.TryGetValue(key, out Item? item)
+        ? item : throw new KeyNotFoundException($"Unknown item '{key}'.");
+    public Item GetByProtocolId(int protocolId) => _byProtocolId.TryGetValue(protocolId, out Item? item)
+        ? item : throw new KeyNotFoundException($"Unknown item protocol id {protocolId}.");
+    public bool TryGet(ResourceLocation key, out Item? item) => _byKey.TryGetValue(key, out item);
+    public bool TryGetByProtocolId(int protocolId, out Item? item) => _byProtocolId.TryGetValue(protocolId, out item);
 }
 
 /// <summary>Immutable index of the item representations derived from runtime blocks.</summary>
