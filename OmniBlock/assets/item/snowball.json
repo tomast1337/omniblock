@@ -2,8 +2,10 @@
   "ProtocolId": 332,
   "TextureId": "omniblock:snowball",
   "MaxStackSize": 16,
-  "Behavior": {
-    "type": "throwable",
-    "ProjectileType": "snowball"
-  }
+  "Behaviors": [
+    {
+      "Type": "throwable",
+      "ProjectileType": "snowball"
+    }
+  ]
 }

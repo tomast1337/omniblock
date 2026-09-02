@@ -1,63 +1,76 @@
+using System.Collections.Frozen;
+using System.Text.Json;
 using OmniBlock.Entities.Behaviors;
 
 namespace OmniBlock.Items.Behaviors;
 
-/// <summary>Built-in C# item behavior providers. Future mod providers implement the same boundary.</summary>
+/// <summary>Namespaced item behavior providers. Future native or Luau providers share this boundary.</summary>
 public sealed class ItemBehaviorProviderRegistry : IItemBehaviorProviderRegistry
 {
-    public IItemBehavior Build(ItemBehaviorDefinition definition, ItemBuildContext context) => definition switch
+    public delegate IItemBehavior BehaviorFactory(JsonElement definition, ItemBuildContext context);
+    private readonly FrozenDictionary<ResourceLocation, BehaviorFactory> _factories;
+
+    public ItemBehaviorProviderRegistry() : this(BuiltInFactories()) { }
+
+    public ItemBehaviorProviderRegistry(IEnumerable<KeyValuePair<ResourceLocation, BehaviorFactory>> factories) =>
+        _factories = factories.ToFrozenDictionary();
+
+    public IItemBehavior Build(ResourceLocation type, JsonElement definition, in ItemBuildContext context)
     {
-        FoodBehaviorDefinition food => new FoodBehavior(food.HealAmount, food.IsMeat,
-            food.ReturnItem is null ? null : context.ResolveItem(ResourceLocation.Parse(food.ReturnItem))),
-        ToolBehaviorDefinition tool => BuildTool(tool, context),
-        SwordBehaviorDefinition sword => new SwordBehavior(context.ResolveToolMaterial(ResourceLocation.Parse(sword.Material))),
-        HoeBehaviorDefinition hoe => new HoeBehavior(context.ResolveToolMaterial(ResourceLocation.Parse(hoe.Material))),
-        ArmorBehaviorDefinition armor => new ArmorBehavior(context.ResolveArmorMaterial(ResourceLocation.Parse(armor.Material)), armor.Slot),
-        ShearsBehaviorDefinition => new ShearsBehavior(),
-        FlintAndSteelBehaviorDefinition => new FlintAndSteelBehavior(),
-        FishingRodBehaviorDefinition rod => new FishingRodBehavior(context.ResolveItemTexture(rod.Cast)),
-        BowBehaviorDefinition => new BowBehavior(),
-        BucketBehaviorDefinition bucket => new BucketBehavior(() => bucket.Liquid switch
+        if (!_factories.TryGetValue(type, out BehaviorFactory? factory))
+            throw new ArgumentException($"Unknown item behavior type '{type}'.");
+        return factory(definition, context);
+    }
+
+    private static Dictionary<ResourceLocation, BehaviorFactory> BuiltInFactories() => new()
+    {
+        [Key("food")] = static (j, c) => new FoodBehavior(Int(j, "HealAmount"), Bool(j, "IsMeat"),
+            OptionalString(j, "ReturnItem") is { } key ? c.ResolveItem(ResourceLocation.Parse(key)) : null),
+        [Key("tool")] = static (j, c) => BuildTool(j, c),
+        [Key("sword")] = static (j, c) => new SwordBehavior(c.ResolveToolMaterial(ResourceLocation.Parse(String(j, "Material")))),
+        [Key("hoe")] = static (j, c) => new HoeBehavior(c.ResolveToolMaterial(ResourceLocation.Parse(String(j, "Material")))),
+        [Key("armor")] = static (j, c) => new ArmorBehavior(c.ResolveArmorMaterial(ResourceLocation.Parse(String(j, "Material"))), (ArmorSlot)Int(j, "Slot")),
+        [Key("shears")] = static (_, _) => new ShearsBehavior(),
+        [Key("flint_and_steel")] = static (_, _) => new FlintAndSteelBehavior(),
+        [Key("fishing_rod")] = static (j, c) => new FishingRodBehavior(c.ResolveItemTexture(String(j, "Cast"))),
+        [Key("bow")] = static (_, _) => new BowBehavior(),
+        [Key("bucket")] = static (j, c) => new BucketBehavior(() => String(j, "Liquid", "empty") switch
         {
-            "water" => context.ResolveBlock("omniblock:flowing_water").Id,
-            "lava" => context.ResolveBlock("omniblock:flowing_lava").Id,
+            "water" => c.ResolveBlock("omniblock:flowing_water").Id,
+            "lava" => c.ResolveBlock("omniblock:flowing_lava").Id,
             "milk" => -1,
             _ => 0
         }),
-        MinecartBehaviorDefinition cart => new MinecartBehavior(cart.CartType),
-        BoatBehaviorDefinition => new BoatBehavior(),
-        BedBehaviorDefinition => new BedBehavior(),
-        DoorBehaviorDefinition door => new DoorBehavior(door.DoorMaterial == "iron"
-            ? context.ResolveBlockMaterial("omniblock:metal")
-            : context.ResolveBlockMaterial("omniblock:wood")),
-        SeedsBehaviorDefinition seeds => new SeedsBehavior(() => context.ResolveBlock(ParseRequired(seeds.PlacesBlock, "PlacesBlock")).Id),
-        PlaceBlockBehaviorDefinition place => new PlaceBlockBehavior(() => context.ResolveBlock(ParseRequired(place.PlacesBlock, "PlacesBlock"))),
-        ThrowableBehaviorDefinition thrown => new ThrowableBehavior((world, _) =>
-            context.ResolveEntityType(ResourceLocation.Parse(thrown.ProjectileType)).Create(world)),
-        DyeBehaviorDefinition dye => new DyeBehavior([.. dye.Textures.Select(context.ResolveItemTexture)]),
-        CoalBehaviorDefinition => new CoalBehavior(),
-        RecordBehaviorDefinition record => new RecordBehavior(record.RecordName),
-        RedstoneBehaviorDefinition => new RedstoneBehavior(),
-        SignBehaviorDefinition => new SignBehavior(),
-        PaintingBehaviorDefinition => new PaintingBehavior(),
-        SaddleBehaviorDefinition => new SaddleBehavior(),
-        MapBehaviorDefinition => new MapBehavior(),
-        _ => throw new ArgumentException($"Unknown item behavior definition '{definition.GetType().FullName}'.", nameof(definition))
+        [Key("minecart")] = static (j, _) => new MinecartBehavior(Int(j, "CartType")),
+        [Key("boat")] = static (_, _) => new BoatBehavior(), [Key("bed")] = static (_, _) => new BedBehavior(),
+        [Key("door")] = static (j, c) => new DoorBehavior(c.ResolveBlockMaterial(String(j, "DoorMaterial", "wood") == "iron" ? "omniblock:metal" : "omniblock:wood")),
+        [Key("seeds")] = static (j, c) => new SeedsBehavior(() => c.ResolveBlock(ResourceLocation.Parse(String(j, "PlacesBlock"))).Id),
+        [Key("place_block")] = static (j, c) => new PlaceBlockBehavior(() => c.ResolveBlock(ResourceLocation.Parse(String(j, "PlacesBlock")))),
+        [Key("throwable")] = static (j, c) => new ThrowableBehavior((world, _) => c.ResolveEntityType(ResourceLocation.Parse(String(j, "ProjectileType", "snowball"))).Create(world)),
+        [Key("dye")] = static (j, c) => new DyeBehavior([.. j.GetProperty("Textures").EnumerateArray().Select(value => c.ResolveItemTexture(value.GetString()!))]),
+        [Key("coal")] = static (_, _) => new CoalBehavior(), [Key("record")] = static (j, _) => new RecordBehavior(String(j, "RecordName")),
+        [Key("redstone")] = static (_, _) => new RedstoneBehavior(), [Key("sign")] = static (_, _) => new SignBehavior(),
+        [Key("painting")] = static (_, _) => new PaintingBehavior(), [Key("saddle")] = static (_, _) => new SaddleBehavior(),
+        [Key("map")] = static (_, _) => new MapBehavior()
     };
 
-    private static IItemBehavior BuildTool(ToolBehaviorDefinition definition, ItemBuildContext context)
+    private static IItemBehavior BuildTool(JsonElement json, ItemBuildContext context)
     {
-        ToolMaterial material = context.ResolveToolMaterial(ResourceLocation.Parse(definition.Material));
-        return definition.ToolType switch
+        ToolMaterial material = context.ResolveToolMaterial(ResourceLocation.Parse(String(json, "Material")));
+        return String(json, "Kind", "shovel") switch
         {
             "pickaxe" => new ToolBehavior(material, 2, () => Item.s_pickaxeBlocks, Item.PickaxeSuitableFor(material)),
             "axe" => new ToolBehavior(material, 3, () => Item.s_axeBlocks),
-            _ => new ToolBehavior(material, 1, () => Item.s_spadeBlocks,
-                block => block == context.ResolveBlock("omniblock:snow")
-                         || block == context.ResolveBlock("omniblock:snow_block"))
+            "shovel" => new ToolBehavior(material, 1, () => Item.s_spadeBlocks, block => block == context.ResolveBlock("omniblock:snow") || block == context.ResolveBlock("omniblock:snow_block")),
+            string kind => throw new ArgumentException($"Unknown tool kind '{kind}'.")
         };
     }
 
-    private static ResourceLocation ParseRequired(string? value, string property) =>
-        ResourceLocation.Parse(value ?? throw new ArgumentException($"Item behavior requires '{property}'."));
+    private static ResourceLocation Key(string path) => new(Namespace.OmniBlock, path);
+    private static string String(JsonElement json, string property, string? fallback = null) =>
+        json.TryGetProperty(property, out JsonElement value) ? value.GetString()! : fallback ?? throw new ArgumentException($"Item behavior requires '{property}'.");
+    private static string? OptionalString(JsonElement json, string property) =>
+        json.TryGetProperty(property, out JsonElement value) && value.ValueKind != JsonValueKind.Null ? value.GetString() : null;
+    private static int Int(JsonElement json, string property) => json.GetProperty(property).GetInt32();
+    private static bool Bool(JsonElement json, string property) => json.TryGetProperty(property, out JsonElement value) && value.GetBoolean();
 }

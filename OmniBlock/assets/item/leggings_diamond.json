@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 312,
-    "TranslationKey": "leggingsDiamond",
-    "TextureId": "omniblock:diamond_leggings",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "armor",
-        "Material": "diamond",
-        "Slot": 2
+  "ProtocolId": 312,
+  "TranslationKey": "leggingsDiamond",
+  "TextureId": "omniblock:diamond_leggings",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "armor",
+      "Material": "diamond",
+      "Slot": 2
     }
+  ]
 }

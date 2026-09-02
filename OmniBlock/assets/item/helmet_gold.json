@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 314,
-    "TranslationKey": "helmetGold",
-    "TextureId": "omniblock:golden_helmet",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "armor",
-        "Material": "gold",
-        "Slot": 0
+  "ProtocolId": 314,
+  "TranslationKey": "helmetGold",
+  "TextureId": "omniblock:golden_helmet",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "armor",
+      "Material": "gold",
+      "Slot": 0
     }
+  ]
 }

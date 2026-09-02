@@ -1,10 +1,12 @@
 {
-    "ProtocolId": 324,
-    "TranslationKey": "doorWood",
-    "TextureId": "omniblock:wooden_door",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "door",
-        "DoorMaterial": "wood"
+  "ProtocolId": 324,
+  "TranslationKey": "doorWood",
+  "TextureId": "omniblock:wooden_door",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "door",
+      "DoorMaterial": "wood"
     }
+  ]
 }

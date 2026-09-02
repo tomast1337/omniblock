@@ -1,10 +1,12 @@
 {
-    "ProtocolId": 268,
-    "TranslationKey": "swordWood",
-    "TextureId": "omniblock:wooden_sword",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "sword",
-        "Material": "wood"
+  "ProtocolId": 268,
+  "TranslationKey": "swordWood",
+  "TextureId": "omniblock:wooden_sword",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "sword",
+      "Material": "wood"
     }
+  ]
 }

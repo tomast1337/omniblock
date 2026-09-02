@@ -1,11 +1,13 @@
 {
   "ProtocolId": 260,
   "TextureId": "omniblock:apple",
-  "Behavior": {
-    "type": "food",
-    "HealAmount": 4,
-    "IsMeat": false,
-    "ReturnItem": null
-  },
-  "MaxStackSize": 1
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "food",
+      "HealAmount": 4,
+      "IsMeat": false,
+      "ReturnItem": null
+    }
+  ]
 }

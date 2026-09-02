@@ -2,7 +2,9 @@
   "ProtocolId": 263,
   "TextureId": "omniblock:coal",
   "HasSubtypes": true,
-  "Behavior": {
-    "type": "coal"
-  }
+  "Behaviors": [
+    {
+      "Type": "coal"
+    }
+  ]
 }

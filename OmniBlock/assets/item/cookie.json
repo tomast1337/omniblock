@@ -1,11 +1,13 @@
 {
   "ProtocolId": 357,
   "TextureId": "omniblock:cookie",
-  "Behavior": {
-    "type": "food",
-    "HealAmount": 1,
-    "IsMeat": false,
-    "ReturnItem": null
-  },
-  "MaxStackSize": 8
+  "MaxStackSize": 8,
+  "Behaviors": [
+    {
+      "Type": "food",
+      "HealAmount": 1,
+      "IsMeat": false,
+      "ReturnItem": null
+    }
+  ]
 }

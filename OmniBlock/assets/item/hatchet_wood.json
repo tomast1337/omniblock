@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 271,
-    "TranslationKey": "hatchetWood",
-    "TextureId": "omniblock:wooden_axe",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "tool",
-        "ToolType": "axe",
-        "Material": "wood"
+  "ProtocolId": 271,
+  "TranslationKey": "hatchetWood",
+  "TextureId": "omniblock:wooden_axe",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "tool",
+      "Material": "wood",
+      "Kind": "axe"
     }
+  ]
 }

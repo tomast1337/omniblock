@@ -95,7 +95,7 @@ public readonly struct ItemBuildContext
 
     internal static ItemBuildContext BuiltIns { get; } = new(
         static key => BlockRegistry.Get(key.Path),
-        static key => ContentRuntime.Current.BlockItems.Get(key),
+        static key => ContentRuntime.Current.Items.GetByProtocolId(ContentRuntime.Current.Blocks.Get(key).Id),
         static key => Item.ByName(key.Path),
         static key => ToolMaterialRegistry.Get(key.Path),
         static key => ArmorMaterialRegistry.Get(key.Path),

@@ -2,7 +2,9 @@
   "ProtocolId": 355,
   "TextureId": "omniblock:bed",
   "MaxStackSize": 1,
-  "Behavior": {
-    "type": "bed"
-  }
+  "Behaviors": [
+    {
+      "Type": "bed"
+    }
+  ]
 }

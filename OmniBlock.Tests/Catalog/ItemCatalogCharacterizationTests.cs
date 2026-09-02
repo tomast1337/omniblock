@@ -18,7 +18,7 @@ namespace OmniBlock.Tests.Catalog;
 /// </summary>
 public sealed class ItemCatalogCharacterizationTests
 {
-    private const string ExpectedSnapshot = "b92fbbacc472ab3c89d139659541a676653f8210";
+    private const string ExpectedSnapshot = "1922c2ebddac096e57d9b49d743067818a2369e9";
 
     private static readonly JsonSerializerOptions s_json = new()
     {
@@ -68,36 +68,32 @@ public sealed class ItemCatalogCharacterizationTests
     {
         foreach (ItemDefinition definition in DefaultRegistries.Items)
         {
-            switch (definition.Behavior)
+            foreach (JsonElement behavior in definition.Behaviors)
             {
-                case FoodBehaviorDefinition { ReturnItem: { } item }:
-                    AssertItem(item, definition);
-                    break;
-                case ToolBehaviorDefinition tool:
-                    Assert.NotNull(ToolMaterialRegistry.Get(tool.Material));
-                    break;
-                case SwordBehaviorDefinition sword:
-                    Assert.NotNull(ToolMaterialRegistry.Get(sword.Material));
-                    break;
-                case HoeBehaviorDefinition hoe:
-                    Assert.NotNull(ToolMaterialRegistry.Get(hoe.Material));
-                    break;
-                case ArmorBehaviorDefinition armor:
-                    Assert.NotNull(ArmorMaterialRegistry.Get(armor.Material));
-                    break;
-                case FishingRodBehaviorDefinition rod:
-                    Assert.True(Atlases.Items.IndexOf(rod.Cast) >= 0, $"Item '{definition.Name}' has unknown texture '{rod.Cast}'.");
-                    break;
-                case SeedsBehaviorDefinition seeds:
-                    AssertBlock(seeds.PlacesBlock, definition);
-                    break;
-                case PlaceBlockBehaviorDefinition place:
-                    AssertBlock(place.PlacesBlock, definition);
-                    break;
-                case DyeBehaviorDefinition dye:
-                    foreach (string texture in dye.Textures)
-                        Assert.True(Atlases.Items.IndexOf(texture) >= 0, $"Item '{definition.Name}' has unknown texture '{texture}'.");
-                    break;
+                string type = behavior.GetProperty("Type").GetString()!;
+                switch (type)
+                {
+                    case "food" when behavior.TryGetProperty("ReturnItem", out JsonElement item) && item.ValueKind != JsonValueKind.Null:
+                        AssertItem(item.GetString()!, definition);
+                        break;
+                    case "tool" or "sword" or "hoe":
+                        Assert.NotNull(ToolMaterialRegistry.Get(behavior.GetProperty("Material").GetString()!));
+                        break;
+                    case "armor":
+                        Assert.NotNull(ArmorMaterialRegistry.Get(behavior.GetProperty("Material").GetString()!));
+                        break;
+                    case "fishing_rod":
+                        string cast = behavior.GetProperty("Cast").GetString()!;
+                        Assert.True(Atlases.Items.IndexOf(cast) >= 0, $"Item '{definition.Name}' has unknown texture '{cast}'.");
+                        break;
+                    case "seeds" or "place_block":
+                        AssertBlock(behavior.GetProperty("PlacesBlock").GetString(), definition);
+                        break;
+                    case "dye":
+                        foreach (JsonElement texture in behavior.GetProperty("Textures").EnumerateArray())
+                            Assert.True(Atlases.Items.IndexOf(texture.GetString()!) >= 0, $"Item '{definition.Name}' has unknown texture '{texture}'.");
+                        break;
+                }
             }
         }
 
@@ -121,7 +117,7 @@ public sealed class ItemCatalogCharacterizationTests
                 .Append(definition.Namespace).Append(':').Append(definition.Name)
                 .Append(" definition=").Append(JsonSerializer.Serialize(definition, s_json))
                 .Append(" runtime=").Append(item.GetType().Name)
-                .Append(" behavior=").Append(definition.Behavior?.GetType().Name ?? "-")
+                .Append(" behaviors=").Append(string.Join(',', definition.Behaviors.Select(static behavior => behavior.GetProperty("Type").GetString())))
                 .Append(" runtimeBehavior=").Append(item.GetBehavior<IItemBehavior>()?.GetType().Name ?? "-")
                 .Append(" translation=").Append(item.GetItemName())
                 .Append(" stack=").Append(item.GetMaxCount().ToString(CultureInfo.InvariantCulture))
@@ -143,7 +139,7 @@ public sealed class ItemCatalogCharacterizationTests
         foreach (BlockDefinition block in LoadBlocks().OrderBy(static block => block.ProtocolId))
         {
             ResourceLocation key = new(block.Namespace, block.Name);
-            Item item = ContentRuntime.Current.BlockItems.Get(key);
+            Item item = ContentRuntime.Current.Items.GetByProtocolId(block.ProtocolId);
             text.Append("block-item ").Append(key).Append(" id=").Append(item.Id)
                 .Append(" declared=").Append(block.BlockItem.Type)
                 .Append(" runtime=").Append(item.GetType().Name)
@@ -188,12 +184,16 @@ public sealed class ItemCatalogCharacterizationTests
             $"Item '{owner.Namespace}:{owner.Name}' references unknown block '{key}'.");
     }
 
-    private static int ExpectedDurability(ItemDefinition definition) => definition.Behavior switch
+    private static int ExpectedDurability(ItemDefinition definition)
     {
-        ToolBehaviorDefinition tool => ToolMaterialRegistry.Get(tool.Material).MaxUses,
-        SwordBehaviorDefinition sword => ToolMaterialRegistry.Get(sword.Material).MaxUses,
-        HoeBehaviorDefinition hoe => ToolMaterialRegistry.Get(hoe.Material).MaxUses,
-        ArmorBehaviorDefinition armor => (new[] { 11, 16, 15, 13 }[(int)armor.Slot] * 3) << ArmorMaterialRegistry.Get(armor.Material).ArmorLevel,
-        _ => definition.MaxDurability
-    };
+        if (definition.Behaviors.FirstOrDefault() is not { ValueKind: JsonValueKind.Object } behavior)
+            return definition.MaxDurability;
+        string type = behavior.GetProperty("Type").GetString()!;
+        return type switch
+        {
+            "tool" or "sword" or "hoe" => ToolMaterialRegistry.Get(behavior.GetProperty("Material").GetString()!).MaxUses,
+            "armor" => (new[] { 11, 16, 15, 13 }[behavior.GetProperty("Slot").GetInt32()] * 3) << ArmorMaterialRegistry.Get(behavior.GetProperty("Material").GetString()!).ArmorLevel,
+            _ => definition.MaxDurability
+        };
+    }
 }

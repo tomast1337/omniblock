@@ -2,8 +2,10 @@
   "ProtocolId": 338,
   "TranslationKey": "sugarCanes",
   "TextureId": "omniblock:sugar_cane",
-  "Behavior": {
-    "type": "place_block",
-    "PlacesBlock": "omniblock:reeds"
-  }
+  "Behaviors": [
+    {
+      "Type": "place_block",
+      "PlacesBlock": "omniblock:reeds"
+    }
+  ]
 }

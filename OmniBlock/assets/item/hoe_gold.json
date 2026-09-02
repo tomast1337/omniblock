@@ -1,10 +1,12 @@
 {
-    "ProtocolId": 294,
-    "TranslationKey": "hoeGold",
-    "TextureId": "omniblock:golden_hoe",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "hoe",
-        "Material": "gold"
+  "ProtocolId": 294,
+  "TranslationKey": "hoeGold",
+  "TextureId": "omniblock:golden_hoe",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "hoe",
+      "Material": "gold"
     }
+  ]
 }

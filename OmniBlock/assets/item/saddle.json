@@ -2,7 +2,9 @@
   "ProtocolId": 329,
   "TextureId": "omniblock:saddle",
   "MaxStackSize": 1,
-  "Behavior": {
-    "type": "saddle"
-  }
+  "Behaviors": [
+    {
+      "Type": "saddle"
+    }
+  ]
 }

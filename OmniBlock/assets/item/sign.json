@@ -2,7 +2,9 @@
   "ProtocolId": 323,
   "TextureId": "omniblock:sign",
   "MaxStackSize": 1,
-  "Behavior": {
-    "type": "sign"
-  }
+  "Behaviors": [
+    {
+      "Type": "sign"
+    }
+  ]
 }

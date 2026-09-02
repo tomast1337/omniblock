@@ -2,11 +2,13 @@
   "ProtocolId": 349,
   "TranslationKey": "fishRaw",
   "TextureId": "omniblock:raw_fish",
-  "Behavior": {
-    "type": "food",
-    "HealAmount": 2,
-    "IsMeat": false,
-    "ReturnItem": null
-  },
-  "MaxStackSize": 1
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "food",
+      "HealAmount": 2,
+      "IsMeat": false,
+      "ReturnItem": null
+    }
+  ]
 }

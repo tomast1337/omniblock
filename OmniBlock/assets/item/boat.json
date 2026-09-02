@@ -2,7 +2,9 @@
   "ProtocolId": 333,
   "TextureId": "omniblock:boat",
   "MaxStackSize": 1,
-  "Behavior": {
-    "type": "boat"
-  }
+  "Behaviors": [
+    {
+      "Type": "boat"
+    }
+  ]
 }

@@ -24,8 +24,7 @@ public sealed class ContentRuntime
     {
         ArgumentNullException.ThrowIfNull(blockBehaviorProviders);
         Blocks = new RuntimeBlockRegistry(blocks);
-        Items = new RuntimeItemRegistry(items);
-        BlockItems = new RuntimeBlockItemRegistry(blockItems);
+        Items = new RuntimeItemRegistry(items, blockItems);
         Manifest = new ContentCatalogManifest(Blocks.Keys.Select(key =>
             new KeyValuePair<ResourceLocation, int>(key, Blocks.Get(key).Id)));
         BlockBehaviorProviders = blockBehaviorProviders;
@@ -45,7 +44,6 @@ public sealed class ContentRuntime
 
     public RuntimeBlockRegistry Blocks { get; }
     public RuntimeItemRegistry Items { get; }
-    public RuntimeBlockItemRegistry BlockItems { get; }
     public ContentCatalogManifest Manifest { get; }
     public IBlockBehaviorProviderRegistry BlockBehaviorProviders { get; }
     public IItemBehaviorProviderRegistry ItemBehaviorProviders { get; }
@@ -60,30 +58,43 @@ public sealed class ContentRuntime
     }
 }
 
-/// <summary>Immutable key and protocol-ID indexes over finalized non-block items.</summary>
+/// <summary>
+/// Immutable unified index over standalone and block-derived items. Standalone items win the
+/// resource-key lookup when a legacy block and item share a name; both remain addressable by ID.
+/// </summary>
 public sealed class RuntimeItemRegistry
 {
     private readonly FrozenDictionary<ResourceLocation, Item> _byKey;
     private readonly FrozenDictionary<int, Item> _byProtocolId;
 
-    internal RuntimeItemRegistry(IEnumerable<(ResourceLocation Key, Item Item)> entries)
+    internal RuntimeItemRegistry(
+        IEnumerable<(ResourceLocation Key, Item Item)> items,
+        IEnumerable<(ResourceLocation Key, Item Item)> blockItems)
     {
         var byKey = new Dictionary<ResourceLocation, Item>();
         var byProtocolId = new Dictionary<int, Item>();
-        foreach ((ResourceLocation key, Item item) in entries)
-        {
-            if (!byKey.TryAdd(key, item)) throw new ArgumentException($"Duplicate item key '{key}'.");
-            if (item.Id is < 256 or >= 32000)
-                throw new ArgumentOutOfRangeException(nameof(entries), item.Id, "Item protocol id must be between 256 and 31999.");
-            if (!byProtocolId.TryAdd(item.Id, item)) throw new ArgumentException($"Duplicate item protocol id {item.Id}.");
-            if (!item.IsFrozen) throw new ArgumentException($"Item '{key}' was not finalized.");
-        }
+        Add(items, allowKeyCollision: false);
+        Add(blockItems, allowKeyCollision: true);
 
         _byKey = byKey.ToFrozenDictionary();
         _byProtocolId = byProtocolId.ToFrozenDictionary();
+
+        void Add(IEnumerable<(ResourceLocation Key, Item Item)> entries, bool allowKeyCollision)
+        {
+            foreach ((ResourceLocation key, Item item) in entries)
+            {
+                if (!byKey.TryAdd(key, item) && !allowKeyCollision)
+                    throw new ArgumentException($"Duplicate item key '{key}'.");
+                if (item.Id is < 0 or >= 32000)
+                    throw new ArgumentOutOfRangeException(nameof(entries), item.Id, "Item protocol id must be between 0 and 31999.");
+                if (!byProtocolId.TryAdd(item.Id, item))
+                    throw new ArgumentException($"Duplicate item protocol id {item.Id}.");
+                if (!item.IsFrozen) throw new ArgumentException($"Item '{key}' was not finalized.");
+            }
+        }
     }
 
-    public int Count => _byKey.Count;
+    public int Count => _byProtocolId.Count;
     public IEnumerable<ResourceLocation> Keys => _byKey.Keys;
     public Item Get(ResourceLocation key) => _byKey.TryGetValue(key, out Item? item)
         ? item : throw new KeyNotFoundException($"Unknown item '{key}'.");
@@ -91,39 +102,6 @@ public sealed class RuntimeItemRegistry
         ? item : throw new KeyNotFoundException($"Unknown item protocol id {protocolId}.");
     public bool TryGet(ResourceLocation key, out Item? item) => _byKey.TryGetValue(key, out item);
     public bool TryGetByProtocolId(int protocolId, out Item? item) => _byProtocolId.TryGetValue(protocolId, out item);
-}
-
-/// <summary>Immutable index of the item representations derived from runtime blocks.</summary>
-public sealed class RuntimeBlockItemRegistry
-{
-    private readonly FrozenDictionary<ResourceLocation, Item> _byKey;
-    private readonly FrozenDictionary<int, Item> _byProtocolId;
-
-    internal RuntimeBlockItemRegistry(IEnumerable<(ResourceLocation Key, Item Item)> entries)
-    {
-        var byKey = new Dictionary<ResourceLocation, Item>();
-        var byProtocolId = new Dictionary<int, Item>();
-        foreach ((ResourceLocation key, Item item) in entries)
-        {
-            if (!byKey.TryAdd(key, item)) throw new ArgumentException($"Duplicate block-item key '{key}'.");
-            if (item.Id is < 0 or >= BlockRegistry.ProtocolIdCapacity)
-                throw new ArgumentOutOfRangeException(nameof(entries), item.Id,
-                    $"Block-item protocol id must be between 0 and {BlockRegistry.ProtocolIdCapacity - 1}.");
-            if (!byProtocolId.TryAdd(item.Id, item)) throw new ArgumentException($"Duplicate block-item protocol id {item.Id}.");
-        }
-
-        _byKey = byKey.ToFrozenDictionary();
-        _byProtocolId = byProtocolId.ToFrozenDictionary();
-    }
-
-    public int Count => _byKey.Count;
-    public Item Get(ResourceLocation key) => _byKey.TryGetValue(key, out Item? item)
-        ? item
-        : throw new KeyNotFoundException($"Unknown block item '{key}'.");
-    public Item GetByProtocolId(int protocolId) =>
-        _byProtocolId.TryGetValue(protocolId, out Item? item)
-            ? item
-            : throw new KeyNotFoundException($"Unknown block-item protocol id {protocolId}.");
 }
 
 /// <summary>Frozen key and protocol-ID indexes over the constructed block catalog.</summary>

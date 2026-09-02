@@ -1,3 +1,4 @@
+using System.Text.Json;
 using OmniBlock.Items;
 using OmniBlock.Items.Behaviors;
 using OmniBlock.Registries;
@@ -16,7 +17,7 @@ public sealed class BuilderOwnedItemTests
             ProtocolId = 31800,
             MaxStackSize = 1,
             CraftingReturnItemProtocolId = 31801,
-            Behavior = new FoodBehaviorDefinition { ReturnItem = "example:empty" }
+            Behaviors = [JsonSerializer.Deserialize<JsonElement>("""{"Type":"food","HealAmount":1,"ReturnItem":"example:empty"}""")]
         });
         builder.AddItemDefinition(new ItemDefinition
         {

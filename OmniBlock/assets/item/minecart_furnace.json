@@ -1,10 +1,12 @@
 {
-    "ProtocolId": 343,
-    "TranslationKey": "minecartFurnace",
-    "TextureId": "omniblock:minecart_with_furnace",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "minecart",
-        "CartType": 2
+  "ProtocolId": 343,
+  "TranslationKey": "minecartFurnace",
+  "TextureId": "omniblock:minecart_with_furnace",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "minecart",
+      "CartType": 2
     }
+  ]
 }

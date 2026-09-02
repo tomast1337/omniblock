@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 346,
-    "TranslationKey": "fishingRod",
-    "TextureId": "omniblock:fishing_rod",
-    "MaxStackSize": 1,
-    "MaxDurability": 64,
-    "Behavior": {
-        "type": "fishing_rod",
-        "Cast": "omniblock:fishing_rod_cast"
+  "ProtocolId": 346,
+  "TranslationKey": "fishingRod",
+  "TextureId": "omniblock:fishing_rod",
+  "MaxStackSize": 1,
+  "MaxDurability": 64,
+  "Behaviors": [
+    {
+      "Type": "fishing_rod",
+      "Cast": "omniblock:fishing_rod_cast"
     }
+  ]
 }

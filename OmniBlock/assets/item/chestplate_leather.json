@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 299,
-    "TranslationKey": "chestplateLeather",
-    "TextureId": "omniblock:leather_tunic",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "armor",
-        "Material": "leather",
-        "Slot": 1
+  "ProtocolId": 299,
+  "TranslationKey": "chestplateLeather",
+  "TextureId": "omniblock:leather_tunic",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "armor",
+      "Material": "leather",
+      "Slot": 1
     }
+  ]
 }

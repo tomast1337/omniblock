@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 308,
-    "TranslationKey": "leggingsIron",
-    "TextureId": "omniblock:iron_leggings",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "armor",
-        "Material": "iron",
-        "Slot": 2
+  "ProtocolId": 308,
+  "TranslationKey": "leggingsIron",
+  "TextureId": "omniblock:iron_leggings",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "armor",
+      "Material": "iron",
+      "Slot": 2
     }
+  ]
 }

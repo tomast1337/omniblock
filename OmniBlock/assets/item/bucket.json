@@ -2,8 +2,10 @@
   "ProtocolId": 325,
   "TextureId": "omniblock:bucket",
   "MaxStackSize": 1,
-  "Behavior": {
-    "type": "bucket",
-    "Liquid": "empty"
-  }
+  "Behaviors": [
+    {
+      "Type": "bucket",
+      "Liquid": "empty"
+    }
+  ]
 }

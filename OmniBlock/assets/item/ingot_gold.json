@@ -1,5 +1,5 @@
 {
-    "ProtocolId": 266,
-    "TranslationKey": "ingotGold",
-    "TextureId": "omniblock:gold_ingot"
+  "ProtocolId": 266,
+  "TranslationKey": "ingotGold",
+  "TextureId": "omniblock:gold_ingot"
 }

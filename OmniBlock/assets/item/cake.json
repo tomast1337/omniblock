@@ -2,8 +2,10 @@
   "ProtocolId": 354,
   "MaxStackSize": 1,
   "TextureId": "omniblock:cake",
-  "Behavior": {
-    "type": "place_block",
-    "PlacesBlock": "omniblock:cake"
-  }
+  "Behaviors": [
+    {
+      "Type": "place_block",
+      "PlacesBlock": "omniblock:cake"
+    }
+  ]
 }

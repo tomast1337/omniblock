@@ -1,10 +1,12 @@
 {
-    "ProtocolId": 259,
-    "TranslationKey": "flintAndSteel",
-    "TextureId": "omniblock:flint_and_steel",
-    "MaxStackSize": 1,
-    "MaxDurability": 64,
-    "Behavior": {
-        "type": "flint_and_steel"
+  "ProtocolId": 259,
+  "TranslationKey": "flintAndSteel",
+  "TextureId": "omniblock:flint_and_steel",
+  "MaxStackSize": 1,
+  "MaxDurability": 64,
+  "Behaviors": [
+    {
+      "Type": "flint_and_steel"
     }
+  ]
 }

@@ -2,8 +2,10 @@
   "ProtocolId": 328,
   "TextureId": "omniblock:minecart",
   "MaxStackSize": 1,
-  "Behavior": {
-    "type": "minecart",
-    "CartType": 0
-  }
+  "Behaviors": [
+    {
+      "Type": "minecart",
+      "CartType": 0
+    }
+  ]
 }

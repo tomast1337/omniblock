@@ -14,6 +14,7 @@ namespace OmniBlock.Items;
 
 public class Item
 {
+    public const int MaxBehaviors = 8;
     internal static JavaRandom s_itemRand = new();
     public static Item?[] Items = new Item[32000];
 
@@ -38,9 +39,9 @@ public class Item
     public static Item ByName(string name)
     {
         ResourceLocation key = new(Namespace.OmniBlock, name);
-        if (ContentRuntime.TryGetCurrent(out ContentRuntime? runtime))
+        if (ContentRuntime.TryGetCurrent(out ContentRuntime? runtime) && runtime is not null)
         {
-            if (runtime.Items.TryGet(key, out Item? runtimeItem)) return runtimeItem;
+            if (runtime.Items.TryGet(key, out Item? runtimeItem) && runtimeItem is not null) return runtimeItem;
             throw new ArgumentException($"Unknown item: '{name}'", nameof(name));
         }
 
@@ -56,7 +57,8 @@ public class Item
     private readonly ILogger<Item> _logger = Log.Instance.For<Item>();
 
     public readonly int Id;
-    private IItemBehavior? _behavior;
+    private readonly IItemBehavior?[] _behaviors = new IItemBehavior[MaxBehaviors];
+    private int _behaviorCount;
     private Item _craftingReturnItem;
     public bool Handheld { get; private set; }
     public bool HasSubtypes { get; private set; }
@@ -79,17 +81,37 @@ public class Item
         if (publishLegacy) Items[256 + id] = this;
     }
 
-    public IReadOnlyList<string> GetItemAlias => _behavior?.GetItemAliases(this) ?? [];
+    public int BehaviorCount => _behaviorCount;
 
-    public Item SetBehavior(IItemBehavior behavior)
+    public IReadOnlyList<string> GetItemAlias =>
+        _behaviors.Take(_behaviorCount).SelectMany(behavior => behavior!.GetItemAliases(this)).Distinct().ToArray();
+
+    public Item AddBehavior(IItemBehavior behavior)
     {
         EnsureMutable();
-        _behavior = behavior;
+        ArgumentNullException.ThrowIfNull(behavior);
+        if (_behaviorCount == MaxBehaviors)
+            throw new InvalidOperationException($"Item {Id} exceeds the limit of {MaxBehaviors} behaviors.");
+        if (GetBehavior(behavior.GetType()) is not null)
+            throw new InvalidOperationException($"Item {Id} has duplicate behavior type '{behavior.GetType().Name}'.");
+        _behaviors[_behaviorCount++] = behavior;
         behavior.Apply(this);
         return this;
     }
 
-    public TBehavior? GetBehavior<TBehavior>() where TBehavior : class, IItemBehavior => _behavior as TBehavior;
+    public TBehavior? GetBehavior<TBehavior>() where TBehavior : class, IItemBehavior
+    {
+        for (int i = 0; i < _behaviorCount; i++)
+            if (_behaviors[i] is TBehavior behavior) return behavior;
+        return null;
+    }
+
+    private IItemBehavior? GetBehavior(Type type)
+    {
+        for (int i = 0; i < _behaviorCount; i++)
+            if (_behaviors[i]!.GetType() == type) return _behaviors[i];
+        return null;
+    }
 
     public Item SetTextureId(int textureId)
     {
@@ -105,15 +127,40 @@ public class Item
         return this;
     }
 
-    public virtual int GetTextureId(int damage) => _behavior?.GetTextureId(this, damage) ?? _textureId;
+    public virtual int GetTextureId(int damage)
+    {
+        for (int i = 0; i < _behaviorCount; i++)
+        {
+            int texture = _behaviors[i]!.GetTextureId(this, damage);
+            if (texture != _textureId) return texture;
+        }
+        return _textureId;
+    }
 
     public int GetTextureId(ItemStack stack) => GetTextureId(stack.GetDamage());
 
-    public virtual bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta) => _behavior?.UseOnBlock(this, itemStack, entityPlayer, world, x, y, z, meta) ?? false;
+    public virtual bool useOnBlock(ItemStack itemStack, EntityPlayer entityPlayer, IWorldContext world, int x, int y, int z, int meta)
+    {
+        for (int i = 0; i < _behaviorCount; i++)
+            if (_behaviors[i]!.UseOnBlock(this, itemStack, entityPlayer, world, x, y, z, meta)) return true;
+        return false;
+    }
 
-    public float GetMiningSpeedMultiplier(ItemStack itemStack, Block block) => _behavior?.GetMiningSpeedMultiplier(this, itemStack, block) ?? 1.0F;
+    public float GetMiningSpeedMultiplier(ItemStack itemStack, Block block)
+    {
+        for (int i = 0; i < _behaviorCount; i++)
+        {
+            float speed = _behaviors[i]!.GetMiningSpeedMultiplier(this, itemStack, block);
+            if (speed != 1.0F) return speed;
+        }
+        return 1.0F;
+    }
 
-    public ItemStack Use(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer) => _behavior?.Use(this, itemStack, world, entityPlayer) ?? itemStack;
+    public ItemStack Use(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer)
+    {
+        for (int i = 0; i < _behaviorCount; i++) itemStack = _behaviors[i]!.Use(this, itemStack, world, entityPlayer);
+        return itemStack;
+    }
 
     public int GetMaxCount() => _maxCount;
 
@@ -139,15 +186,40 @@ public class Item
 
     public bool IsDamagable() => _maxDamage > 0 && !HasSubtypes;
 
-    public bool PostHit(ItemStack itemStack, EntityLiving entityLiving, EntityPlayer entityPlayer) => _behavior?.PostHit(this, itemStack, entityLiving, entityPlayer) ?? false;
+    public bool PostHit(ItemStack itemStack, EntityLiving entityLiving, EntityPlayer entityPlayer)
+    {
+        bool handled = false;
+        for (int i = 0; i < _behaviorCount; i++) handled |= _behaviors[i]!.PostHit(this, itemStack, entityLiving, entityPlayer);
+        return handled;
+    }
 
-    public bool PostMine(ItemStack itemStack, int blockId, int x, int y, int z, EntityLiving entityLiving) => _behavior?.PostMine(this, itemStack, blockId, x, y, z, entityLiving) ?? false;
+    public bool PostMine(ItemStack itemStack, int blockId, int x, int y, int z, EntityLiving entityLiving)
+    {
+        bool handled = false;
+        for (int i = 0; i < _behaviorCount; i++) handled |= _behaviors[i]!.PostMine(this, itemStack, blockId, x, y, z, entityLiving);
+        return handled;
+    }
 
-    public int GetAttackDamage(Entity entity) => _behavior?.GetAttackDamage(this, entity) ?? 1;
+    public int GetAttackDamage(Entity entity)
+    {
+        for (int i = 0; i < _behaviorCount; i++)
+        {
+            int damage = _behaviors[i]!.GetAttackDamage(this, entity);
+            if (damage != 1) return damage;
+        }
+        return 1;
+    }
 
-    public bool IsSuitableFor(Block block) => _behavior?.IsSuitableFor(this, block) ?? false;
+    public bool IsSuitableFor(Block block)
+    {
+        for (int i = 0; i < _behaviorCount; i++) if (_behaviors[i]!.IsSuitableFor(this, block)) return true;
+        return false;
+    }
 
-    public void useOnEntity(ItemStack itemStack, EntityLiving entityLiving, EntityPlayer entityPlayer) => _behavior?.UseOnEntity(this, itemStack, entityLiving, entityPlayer);
+    public void useOnEntity(ItemStack itemStack, EntityLiving entityLiving, EntityPlayer entityPlayer)
+    {
+        for (int i = 0; i < _behaviorCount; i++) _behaviors[i]!.UseOnEntity(this, itemStack, entityLiving, entityPlayer);
+    }
 
     public Item SetHandheld()
     {
@@ -156,9 +228,18 @@ public class Item
         return this;
     }
 
-    public bool IsHandheld() => _behavior?.IsHandheld(this) ?? Handheld;
+    public bool IsHandheld()
+    {
+        if (Handheld) return true;
+        for (int i = 0; i < _behaviorCount; i++) if (_behaviors[i]!.IsHandheld(this)) return true;
+        return false;
+    }
 
-    public bool IsHandheldRod() => _behavior?.IsHandheldRod(this) ?? false;
+    public bool IsHandheldRod()
+    {
+        for (int i = 0; i < _behaviorCount; i++) if (_behaviors[i]!.IsHandheldRod(this)) return true;
+        return false;
+    }
 
     public Item SetItemName(string name)
     {
@@ -169,7 +250,15 @@ public class Item
 
     public virtual string GetItemName() => _translationKey;
 
-    public virtual string GetItemNameIs(ItemStack itemStack) => _behavior?.GetItemNameIS(this, itemStack) ?? _translationKey;
+    public virtual string GetItemNameIs(ItemStack itemStack)
+    {
+        for (int i = 0; i < _behaviorCount; i++)
+        {
+            string name = _behaviors[i]!.GetItemNameIS(this, itemStack);
+            if (name != _translationKey) return name;
+        }
+        return _translationKey;
+    }
 
     public Item SetCraftingReturnItem(Item item)
     {
@@ -199,13 +288,28 @@ public class Item
 
     public virtual int GetColorMultiplier(int color) => 0xFFFFFF;
 
-    public void InventoryTick(ItemStack itemStack, IWorldContext world, Entity entity, int slotIndex, bool shouldUpdate) => _behavior?.InventoryTick(this, itemStack, world, entity, slotIndex, shouldUpdate);
+    public void InventoryTick(ItemStack itemStack, IWorldContext world, Entity entity, int slotIndex, bool shouldUpdate)
+    {
+        for (int i = 0; i < _behaviorCount; i++) _behaviors[i]!.InventoryTick(this, itemStack, world, entity, slotIndex, shouldUpdate);
+    }
 
-    public void OnCraft(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer) => _behavior?.OnCraft(this, itemStack, world, entityPlayer);
+    public void OnCraft(ItemStack itemStack, IWorldContext world, EntityPlayer entityPlayer)
+    {
+        for (int i = 0; i < _behaviorCount; i++) _behaviors[i]!.OnCraft(this, itemStack, world, entityPlayer);
+    }
 
-    public bool IsNetworkSynced() => _behavior?.IsNetworkSynced(this) ?? false;
+    public bool IsNetworkSynced()
+    {
+        for (int i = 0; i < _behaviorCount; i++) if (_behaviors[i]!.IsNetworkSynced(this)) return true;
+        return false;
+    }
 
-    public Message? GetUpdatePacket(ItemStack stack, IWorldContext world, EntityPlayer player) => _behavior?.GetUpdatePacket(this, stack, world, player);
+    public Message? GetUpdatePacket(ItemStack stack, IWorldContext world, EntityPlayer player)
+    {
+        for (int i = 0; i < _behaviorCount; i++)
+            if (_behaviors[i]!.GetUpdatePacket(this, stack, world, player) is { } packet) return packet;
+        return null;
+    }
 
     internal static Func<Block, bool> PickaxeSuitableFor(ToolMaterial material) => block =>
     {

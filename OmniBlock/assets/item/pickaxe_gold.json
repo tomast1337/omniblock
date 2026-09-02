@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 285,
-    "TranslationKey": "pickaxeGold",
-    "TextureId": "omniblock:golden_pickaxe",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "tool",
-        "ToolType": "pickaxe",
-        "Material": "gold"
+  "ProtocolId": 285,
+  "TranslationKey": "pickaxeGold",
+  "TextureId": "omniblock:golden_pickaxe",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "tool",
+      "Material": "gold",
+      "Kind": "pickaxe"
     }
+  ]
 }

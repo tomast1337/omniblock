@@ -2,8 +2,10 @@
   "ProtocolId": 344,
   "TextureId": "omniblock:egg",
   "MaxStackSize": 16,
-  "Behavior": {
-    "type": "throwable",
-    "ProjectileType": "egg"
-  }
+  "Behaviors": [
+    {
+      "Type": "throwable",
+      "ProjectileType": "egg"
+    }
+  ]
 }

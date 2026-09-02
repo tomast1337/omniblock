@@ -1,10 +1,12 @@
 {
-    "ProtocolId": 342,
-    "TranslationKey": "minecartChest",
-    "TextureId": "omniblock:minecart_with_chest",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "minecart",
-        "CartType": 1
+  "ProtocolId": 342,
+  "TranslationKey": "minecartChest",
+  "TextureId": "omniblock:minecart_with_chest",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "minecart",
+      "CartType": 1
     }
+  ]
 }

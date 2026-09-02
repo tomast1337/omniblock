@@ -2,8 +2,10 @@
   "ProtocolId": 356,
   "TranslationKey": "redstoneRepeater",
   "TextureId": "omniblock:redstone_repeater",
-  "Behavior": {
-    "type": "place_block",
-    "PlacesBlock": "omniblock:diode"
-  }
+  "Behaviors": [
+    {
+      "Type": "place_block",
+      "PlacesBlock": "omniblock:diode"
+    }
+  ]
 }

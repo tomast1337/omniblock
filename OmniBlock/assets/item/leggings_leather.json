@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 300,
-    "TranslationKey": "leggingsLeather",
-    "TextureId": "omniblock:leather_pants",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "armor",
-        "Material": "leather",
-        "Slot": 2
+  "ProtocolId": 300,
+  "TranslationKey": "leggingsLeather",
+  "TextureId": "omniblock:leather_pants",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "armor",
+      "Material": "leather",
+      "Slot": 2
     }
+  ]
 }

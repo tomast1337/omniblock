@@ -2,11 +2,13 @@
   "ProtocolId": 322,
   "TranslationKey": "appleGold",
   "TextureId": "omniblock:golden_apple",
-  "Behavior": {
-    "type": "food",
-    "HealAmount": 42,
-    "IsMeat": false,
-    "ReturnItem": null
-  },
-  "MaxStackSize": 1
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "food",
+      "HealAmount": 42,
+      "IsMeat": false,
+      "ReturnItem": null
+    }
+  ]
 }

@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 278,
-    "TranslationKey": "pickaxeDiamond",
-    "TextureId": "omniblock:diamond_pickaxe",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "tool",
-        "ToolType": "pickaxe",
-        "Material": "diamond"
+  "ProtocolId": 278,
+  "TranslationKey": "pickaxeDiamond",
+  "TextureId": "omniblock:diamond_pickaxe",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "tool",
+      "Material": "diamond",
+      "Kind": "pickaxe"
     }
+  ]
 }

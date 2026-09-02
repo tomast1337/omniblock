@@ -1,3 +1,4 @@
+using System.Text.Json;
 using OmniBlock.Blocks;
 using OmniBlock.Blocks.Entities;
 using OmniBlock.Blocks.Materials;
@@ -68,7 +69,7 @@ public sealed class ItemBuildContextTests
             Name = "injected",
             ProtocolId = 31999,
             TextureId = "example:icon",
-            Behavior = new ShearsBehaviorDefinition()
+            Behaviors = [Behavior("""{"Type":"shears"}""")]
         };
 
         try
@@ -77,7 +78,7 @@ public sealed class ItemBuildContextTests
 
             Assert.Equal(91, item.GetTextureId(0));
             Assert.IsType<ShearsBehavior>(item.GetBehavior<IItemBehavior>());
-            Assert.Equal(["texture:example:icon", "behavior:ShearsBehaviorDefinition"], calls);
+            Assert.Equal(["texture:example:icon", "type:shears"], calls);
         }
         finally
         {
@@ -95,6 +96,57 @@ public sealed class ItemBuildContextTests
         InvalidOperationException uninitialized = Assert.Throws<InvalidOperationException>(
             () => default(ItemBuildContext).ResolveBlock("example:block"));
         Assert.Contains(nameof(ItemBuildContext), uninitialized.Message);
+    }
+
+    [Fact]
+    public void Declarative_item_type_selects_provider_and_validates_unknown_types()
+    {
+        ItemBuildContext context = Context();
+        var providers = new ItemBehaviorProviderRegistry();
+        JsonElement tool = Behavior("""{"Type":"tool","Material":"iron","Kind":"pickaxe"}""");
+
+        Assert.IsType<ToolBehavior>(providers.Build(ResourceLocation.Parse("tool"), tool, context));
+        ArgumentException error = Assert.Throws<ArgumentException>(() => providers.Build(
+            ResourceLocation.Parse("example:missing"), Behavior("""{"Type":"example:missing"}"""), context));
+        Assert.Contains("example:missing", error.Message);
+    }
+
+    [Fact]
+    public void Item_factory_builds_a_bounded_ordered_behavior_collection()
+    {
+        ItemBuildContext context = Context();
+        var providers = new ItemBehaviorProviderRegistry(new Dictionary<ResourceLocation, ItemBehaviorProviderRegistry.BehaviorFactory>
+        {
+            [ResourceLocation.Parse("example:first")] = static (_, _) => new FirstTestBehavior(),
+            [ResourceLocation.Parse("example:second")] = static (_, _) => new SecondTestBehavior()
+        });
+        ItemDefinition definition = new()
+        {
+            ProtocolId = 31996,
+            Behaviors = [Behavior("""{"Type":"example:first"}"""), Behavior("""{"Type":"example:second"}""")]
+        };
+
+        try
+        {
+            Item item = ItemFactory.Create(definition, context, providers);
+            Assert.Equal(2, item.BehaviorCount);
+            Assert.NotNull(item.GetBehavior<FirstTestBehavior>());
+            Assert.NotNull(item.GetBehavior<SecondTestBehavior>());
+            Assert.Throws<InvalidOperationException>(() => item.AddBehavior(new FirstTestBehavior()));
+            item.AddBehavior(new TestBehavior3());
+            item.AddBehavior(new TestBehavior4());
+            item.AddBehavior(new TestBehavior5());
+            item.AddBehavior(new TestBehavior6());
+            item.AddBehavior(new TestBehavior7());
+            item.AddBehavior(new TestBehavior8());
+            Assert.Throws<InvalidOperationException>(() => item.AddBehavior(new OverflowTestBehavior()));
+            item.Freeze();
+            Assert.Throws<InvalidOperationException>(() => item.AddBehavior(new OverflowTestBehavior()));
+        }
+        finally
+        {
+            Item.Items[definition.ProtocolId] = null;
+        }
     }
 
     private static ItemBuildContext Context(
@@ -119,10 +171,22 @@ public sealed class ItemBuildContextTests
 
     private sealed class RecordingProvider(List<string> calls) : IItemBehaviorProviderRegistry
     {
-        public IItemBehavior Build(ItemBehaviorDefinition definition, ItemBuildContext context)
+        public IItemBehavior Build(ResourceLocation type, JsonElement definition, in ItemBuildContext context)
         {
-            calls.Add($"behavior:{definition.GetType().Name}");
+            calls.Add($"type:{type.Path}");
             return new ShearsBehavior();
         }
     }
+
+    private sealed class FirstTestBehavior : IItemBehavior;
+    private sealed class SecondTestBehavior : IItemBehavior;
+    private sealed class TestBehavior3 : IItemBehavior;
+    private sealed class TestBehavior4 : IItemBehavior;
+    private sealed class TestBehavior5 : IItemBehavior;
+    private sealed class TestBehavior6 : IItemBehavior;
+    private sealed class TestBehavior7 : IItemBehavior;
+    private sealed class TestBehavior8 : IItemBehavior;
+    private sealed class OverflowTestBehavior : IItemBehavior;
+
+    private static JsonElement Behavior(string json) => JsonSerializer.Deserialize<JsonElement>(json);
 }

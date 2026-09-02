@@ -1,3 +1,4 @@
+using System.Text.Json;
 using OmniBlock.Items.Behaviors;
 
 namespace OmniBlock.Items;
@@ -39,7 +40,12 @@ public static class ItemFactory
         in ItemBuildContext context,
         IItemBehaviorProviderRegistry behaviorProviders)
     {
-        if (def.Behavior is not null) item.SetBehavior(behaviorProviders.Build(def.Behavior, context));
+        foreach (JsonElement definition in def.Behaviors)
+        {
+            if (!definition.TryGetProperty("Type", out JsonElement typeElement) || typeElement.GetString() is not { } typeName)
+                throw new ArgumentException("Item behavior requires a string 'Type'.");
+            item.AddBehavior(behaviorProviders.Build(ResourceLocation.Parse(typeName), definition, context));
+        }
     }
 
     public static void ResolveCrossReferences(ItemDefinition def)

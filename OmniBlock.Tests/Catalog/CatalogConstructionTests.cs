@@ -48,11 +48,10 @@ public sealed class CatalogConstructionTests
 
         foreach (BlockDefinition definition in LoadBlocks())
         {
-            ResourceLocation key = new(definition.Namespace, definition.Name);
-            Item item = runtime.BlockItems.Get(key);
+            Item item = runtime.Items.GetByProtocolId(definition.ProtocolId);
 
             Assert.Equal(definition.ProtocolId, item.Id);
-            Assert.Same(item, runtime.BlockItems.GetByProtocolId(definition.ProtocolId));
+            Assert.Same(item, runtime.Items.GetByProtocolId(definition.ProtocolId));
             Assert.Same(item, Item.Items[definition.ProtocolId]);
         }
     }
@@ -72,7 +71,7 @@ public sealed class CatalogConstructionTests
         Type expectedItemType)
     {
         BlockDefinition definition = Assert.Single(LoadBlocks(), definition => definition.Name == blockName);
-        Item item = ContentRuntime.Current.BlockItems.Get(new ResourceLocation(definition.Namespace, definition.Name));
+        Item item = ContentRuntime.Current.Items.GetByProtocolId(definition.ProtocolId);
 
         Assert.Equal(declaredType, definition.BlockItem.Type);
         Assert.IsType(expectedItemType, item);

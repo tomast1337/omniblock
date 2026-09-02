@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 309,
-    "TranslationKey": "bootsIron",
-    "TextureId": "omniblock:iron_boots",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "armor",
-        "Material": "iron",
-        "Slot": 3
+  "ProtocolId": 309,
+  "TranslationKey": "bootsIron",
+  "TextureId": "omniblock:iron_boots",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "armor",
+      "Material": "iron",
+      "Slot": 3
     }
+  ]
 }

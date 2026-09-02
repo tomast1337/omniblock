@@ -2,11 +2,13 @@
   "ProtocolId": 320,
   "TranslationKey": "porkchopCooked",
   "TextureId": "omniblock:cooked_porkchop",
-  "Behavior": {
-    "type": "food",
-    "HealAmount": 8,
-    "IsMeat": true,
-    "ReturnItem": null
-  },
-  "MaxStackSize": 1
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "food",
+      "HealAmount": 8,
+      "IsMeat": true,
+      "ReturnItem": null
+    }
+  ]
 }

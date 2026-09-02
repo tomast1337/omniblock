@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 317,
-    "TranslationKey": "bootsGold",
-    "TextureId": "omniblock:golden_boots",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "armor",
-        "Material": "gold",
-        "Slot": 3
+  "ProtocolId": 317,
+  "TranslationKey": "bootsGold",
+  "TextureId": "omniblock:golden_boots",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "armor",
+      "Material": "gold",
+      "Slot": 3
     }
+  ]
 }

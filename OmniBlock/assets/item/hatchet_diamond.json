@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 279,
-    "TranslationKey": "hatchetDiamond",
-    "TextureId": "omniblock:diamond_axe",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "tool",
-        "ToolType": "axe",
-        "Material": "diamond"
+  "ProtocolId": 279,
+  "TranslationKey": "hatchetDiamond",
+  "TextureId": "omniblock:diamond_axe",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "tool",
+      "Material": "diamond",
+      "Kind": "axe"
     }
+  ]
 }

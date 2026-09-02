@@ -1,10 +1,12 @@
 {
-    "ProtocolId": 330,
-    "TranslationKey": "doorIron",
-    "TextureId": "omniblock:iron_door",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "door",
-        "DoorMaterial": "iron"
+  "ProtocolId": 330,
+  "TranslationKey": "doorIron",
+  "TextureId": "omniblock:iron_door",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "door",
+      "DoorMaterial": "iron"
     }
+  ]
 }

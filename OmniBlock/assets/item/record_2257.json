@@ -1,10 +1,12 @@
 {
-    "ProtocolId": 2257,
-    "TranslationKey": "record",
-    "TextureId": "omniblock:music_disc_cat",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "record",
-        "RecordName": "cat"
+  "ProtocolId": 2257,
+  "TranslationKey": "record",
+  "TextureId": "omniblock:music_disc_cat",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "record",
+      "RecordName": "cat"
     }
+  ]
 }

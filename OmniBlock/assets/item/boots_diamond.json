@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 313,
-    "TranslationKey": "bootsDiamond",
-    "TextureId": "omniblock:diamond_boots",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "armor",
-        "Material": "diamond",
-        "Slot": 3
+  "ProtocolId": 313,
+  "TranslationKey": "bootsDiamond",
+  "TextureId": "omniblock:diamond_boots",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "armor",
+      "Material": "diamond",
+      "Slot": 3
     }
+  ]
 }

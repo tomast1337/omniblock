@@ -2,11 +2,13 @@
   "ProtocolId": 350,
   "TranslationKey": "fishCooked",
   "TextureId": "omniblock:cooked_fish",
-  "Behavior": {
-    "type": "food",
-    "HealAmount": 5,
-    "IsMeat": false,
-    "ReturnItem": null
-  },
-  "MaxStackSize": 1
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "food",
+      "HealAmount": 5,
+      "IsMeat": false,
+      "ReturnItem": null
+    }
+  ]
 }

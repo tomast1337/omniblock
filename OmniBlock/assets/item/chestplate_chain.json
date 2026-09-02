@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 303,
-    "TranslationKey": "chestplateChain",
-    "TextureId": "omniblock:chainmail_chestplate",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "armor",
-        "Material": "chain",
-        "Slot": 1
+  "ProtocolId": 303,
+  "TranslationKey": "chestplateChain",
+  "TextureId": "omniblock:chainmail_chestplate",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "armor",
+      "Material": "chain",
+      "Slot": 1
     }
+  ]
 }

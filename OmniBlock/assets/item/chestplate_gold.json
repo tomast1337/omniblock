@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 315,
-    "TranslationKey": "chestplateGold",
-    "TextureId": "omniblock:golden_chestplate",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "armor",
-        "Material": "gold",
-        "Slot": 1
+  "ProtocolId": 315,
+  "TranslationKey": "chestplateGold",
+  "TextureId": "omniblock:golden_chestplate",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "armor",
+      "Material": "gold",
+      "Slot": 1
     }
+  ]
 }

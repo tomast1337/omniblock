@@ -2,8 +2,10 @@
   "ProtocolId": 2256,
   "TextureId": "omniblock:music_disc_13",
   "MaxStackSize": 1,
-  "Behavior": {
-    "type": "record",
-    "RecordName": "13"
-  }
+  "Behaviors": [
+    {
+      "Type": "record",
+      "RecordName": "13"
+    }
+  ]
 }

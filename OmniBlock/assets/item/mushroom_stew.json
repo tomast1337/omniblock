@@ -2,11 +2,13 @@
   "ProtocolId": 282,
   "TranslationKey": "mushroomStew",
   "TextureId": "omniblock:mushroom_stew",
-  "Behavior": {
-    "type": "food",
-    "HealAmount": 10,
-    "IsMeat": false,
-    "ReturnItem": "omniblock:bowl"
-  },
-  "MaxStackSize": 1
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "food",
+      "HealAmount": 10,
+      "IsMeat": false,
+      "ReturnItem": "omniblock:bowl"
+    }
+  ]
 }

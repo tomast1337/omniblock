@@ -3,25 +3,27 @@
   "TranslationKey": "dyePowder",
   "TextureId": "omniblock:ink_sac",
   "HasSubtypes": true,
-  "Behavior": {
-    "type": "dye",
-    "Textures": [
-      "omniblock:ink_sac",
-      "omniblock:rose_red",
-      "omniblock:cactus_green",
-      "omniblock:cocoa_beans",
-      "omniblock:lapis_lazuli",
-      "omniblock:purple_dye",
-      "omniblock:cyan_dye",
-      "omniblock:light_gray_dye",
-      "omniblock:gray_dye",
-      "omniblock:pink_dye",
-      "omniblock:lime_dye",
-      "omniblock:dandelion_yellow",
-      "omniblock:light_blue_dye",
-      "omniblock:magenta_dye",
-      "omniblock:orange_dye",
-      "omniblock:bone_meal"
-    ]
-  }
+  "Behaviors": [
+    {
+      "Type": "dye",
+      "Textures": [
+        "omniblock:ink_sac",
+        "omniblock:rose_red",
+        "omniblock:cactus_green",
+        "omniblock:cocoa_beans",
+        "omniblock:lapis_lazuli",
+        "omniblock:purple_dye",
+        "omniblock:cyan_dye",
+        "omniblock:light_gray_dye",
+        "omniblock:gray_dye",
+        "omniblock:pink_dye",
+        "omniblock:lime_dye",
+        "omniblock:dandelion_yellow",
+        "omniblock:light_blue_dye",
+        "omniblock:magenta_dye",
+        "omniblock:orange_dye",
+        "omniblock:bone_meal"
+      ]
+    }
+  ]
 }

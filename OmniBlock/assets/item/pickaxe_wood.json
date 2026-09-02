@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 270,
-    "TranslationKey": "pickaxeWood",
-    "TextureId": "omniblock:wooden_pickaxe",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "tool",
-        "ToolType": "pickaxe",
-        "Material": "wood"
+  "ProtocolId": 270,
+  "TranslationKey": "pickaxeWood",
+  "TextureId": "omniblock:wooden_pickaxe",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "tool",
+      "Material": "wood",
+      "Kind": "pickaxe"
     }
+  ]
 }

@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 277,
-    "TranslationKey": "shovelDiamond",
-    "TextureId": "omniblock:diamond_shovel",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "tool",
-        "ToolType": "shovel",
-        "Material": "diamond"
+  "ProtocolId": 277,
+  "TranslationKey": "shovelDiamond",
+  "TextureId": "omniblock:diamond_shovel",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "tool",
+      "Material": "diamond",
+      "Kind": "shovel"
     }
+  ]
 }

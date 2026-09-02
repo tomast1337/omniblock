@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 284,
-    "TranslationKey": "shovelGold",
-    "TextureId": "omniblock:golden_shovel",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "tool",
-        "ToolType": "shovel",
-        "Material": "gold"
+  "ProtocolId": 284,
+  "TranslationKey": "shovelGold",
+  "TextureId": "omniblock:golden_shovel",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "tool",
+      "Material": "gold",
+      "Kind": "shovel"
     }
+  ]
 }

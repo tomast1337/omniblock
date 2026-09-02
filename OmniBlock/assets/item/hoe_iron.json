@@ -1,10 +1,12 @@
 {
-    "ProtocolId": 292,
-    "TranslationKey": "hoeIron",
-    "TextureId": "omniblock:iron_hoe",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "hoe",
-        "Material": "iron"
+  "ProtocolId": 292,
+  "TranslationKey": "hoeIron",
+  "TextureId": "omniblock:iron_hoe",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "hoe",
+      "Material": "iron"
     }
+  ]
 }

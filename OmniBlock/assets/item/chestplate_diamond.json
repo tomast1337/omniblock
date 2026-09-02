@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 311,
-    "TranslationKey": "chestplateDiamond",
-    "TextureId": "omniblock:diamond_chestplate",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "armor",
-        "Material": "diamond",
-        "Slot": 1
+  "ProtocolId": 311,
+  "TranslationKey": "chestplateDiamond",
+  "TextureId": "omniblock:diamond_chestplate",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "armor",
+      "Material": "diamond",
+      "Slot": 1
     }
+  ]
 }

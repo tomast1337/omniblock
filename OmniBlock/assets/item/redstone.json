@@ -1,7 +1,9 @@
 {
   "ProtocolId": 331,
   "TextureId": "omniblock:redstone_dust",
-  "Behavior": {
-    "type": "redstone"
-  }
+  "Behaviors": [
+    {
+      "Type": "redstone"
+    }
+  ]
 }

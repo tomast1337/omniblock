@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 298,
-    "TranslationKey": "helmetLeather",
-    "TextureId": "omniblock:leather_cap",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "armor",
-        "Material": "leather",
-        "Slot": 0
+  "ProtocolId": 298,
+  "TranslationKey": "helmetLeather",
+  "TextureId": "omniblock:leather_cap",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "armor",
+      "Material": "leather",
+      "Slot": 0
     }
+  ]
 }

@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 301,
-    "TranslationKey": "bootsLeather",
-    "TextureId": "omniblock:leather_boots",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "armor",
-        "Material": "leather",
-        "Slot": 3
+  "ProtocolId": 301,
+  "TranslationKey": "bootsLeather",
+  "TextureId": "omniblock:leather_boots",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "armor",
+      "Material": "leather",
+      "Slot": 3
     }
+  ]
 }

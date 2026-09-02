@@ -13,7 +13,7 @@ public sealed class ItemRegistryTests
 
         Assert.NotNull(holder);
         Assert.Equal(Item.ByName("apple").Id, holder.Value.ProtocolId);
-        Assert.IsType<FoodBehaviorDefinition>(holder.Value.Behavior);
+        Assert.Equal("food", holder.Value.Behaviors.Single().GetProperty("Type").GetString());
     }
 
     [Fact]

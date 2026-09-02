@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 256,
-    "TranslationKey": "shovelIron",
-    "TextureId": "omniblock:iron_shovel",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "tool",
-        "ToolType": "shovel",
-        "Material": "iron"
+  "ProtocolId": 256,
+  "TranslationKey": "shovelIron",
+  "TextureId": "omniblock:iron_shovel",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "tool",
+      "Material": "iron",
+      "Kind": "shovel"
     }
+  ]
 }

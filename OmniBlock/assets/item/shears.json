@@ -3,7 +3,9 @@
   "TextureId": "omniblock:shears",
   "MaxStackSize": 1,
   "MaxDurability": 238,
-  "Behavior": {
-    "type": "shears"
-  }
+  "Behaviors": [
+    {
+      "Type": "shears"
+    }
+  ]
 }

@@ -1,7 +1,9 @@
 {
   "ProtocolId": 321,
   "TextureId": "omniblock:painting",
-  "Behavior": {
-    "type": "painting"
-  }
+  "Behaviors": [
+    {
+      "Type": "painting"
+    }
+  ]
 }

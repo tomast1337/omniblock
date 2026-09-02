@@ -1,10 +1,12 @@
 {
-    "ProtocolId": 276,
-    "TranslationKey": "swordDiamond",
-    "TextureId": "omniblock:diamond_sword",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "sword",
-        "Material": "diamond"
+  "ProtocolId": 276,
+  "TranslationKey": "swordDiamond",
+  "TextureId": "omniblock:diamond_sword",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "sword",
+      "Material": "diamond"
     }
+  ]
 }

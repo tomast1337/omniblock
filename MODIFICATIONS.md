@@ -265,3 +265,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-09-01 — Implemented the reference-validation matrix (Nicolas Vyčas Nery; `14b0dafa4ac06db23eab4c79073e82f73c6c71bc`)
 - 2026-09-01 — Refactor block entity classes and interfaces for improved readability and consistency (Nicolas Vyčas Nery; `96751d565b5e1a78f1a8a2e2daa10bbd8c0a4f24`)
 - 2026-09-01 — Add builder-owned item definitions (Nicolas Vyčas Nery; `67fce6f6fc543362a423b6952daef21b26621c3e`)
+- 2026-09-02 — Implemented the behavior-aligned item model (Nicolas Vyčas Nery; `ab8e18da1944cc3b2366d1dd20d0854480ae8472`)

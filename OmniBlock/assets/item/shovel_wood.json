@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 269,
-    "TranslationKey": "shovelWood",
-    "TextureId": "omniblock:wooden_shovel",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "tool",
-        "ToolType": "shovel",
-        "Material": "wood"
+  "ProtocolId": 269,
+  "TranslationKey": "shovelWood",
+  "TextureId": "omniblock:wooden_shovel",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "tool",
+      "Material": "wood",
+      "Kind": "shovel"
     }
+  ]
 }

@@ -1,8 +1,10 @@
 {
   "ProtocolId": 295,
   "TextureId": "omniblock:seeds",
-  "Behavior": {
-    "type": "seeds",
-    "PlacesBlock": "omniblock:wheat"
-  }
+  "Behaviors": [
+    {
+      "Type": "seeds",
+      "PlacesBlock": "omniblock:wheat"
+    }
+  ]
 }

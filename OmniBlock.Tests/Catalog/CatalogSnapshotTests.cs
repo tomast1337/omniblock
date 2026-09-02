@@ -77,7 +77,7 @@ internal static class CatalogSnapshot
                 .Append(Key(definition.Namespace, definition.Name))
                 .Append(" stack=").Append(item.GetMaxCount().ToString(CultureInfo.InvariantCulture))
                 .Append(" durability=").Append(item.GetMaxDamage().ToString(CultureInfo.InvariantCulture))
-                .Append(" behavior=").Append(definition.Behavior?.GetType().Name ?? "-")
+                .Append(" behaviors=").Append(string.Join(',', definition.Behaviors.Select(static behavior => behavior.GetProperty("Type").GetString())))
                 .AppendLine();
         }
 

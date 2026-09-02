@@ -1,11 +1,13 @@
 {
-    "ProtocolId": 307,
-    "TranslationKey": "chestplateIron",
-    "TextureId": "omniblock:iron_chestplate",
-    "MaxStackSize": 1,
-    "Behavior": {
-        "type": "armor",
-        "Material": "iron",
-        "Slot": 1
+  "ProtocolId": 307,
+  "TranslationKey": "chestplateIron",
+  "TextureId": "omniblock:iron_chestplate",
+  "MaxStackSize": 1,
+  "Behaviors": [
+    {
+      "Type": "armor",
+      "Material": "iron",
+      "Slot": 1
     }
+  ]
 }

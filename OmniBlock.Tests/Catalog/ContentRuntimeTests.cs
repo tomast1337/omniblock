@@ -1,5 +1,6 @@
 using System.Text.Json;
 using OmniBlock.Blocks;
+using OmniBlock.Items;
 using OmniBlock.Registries;
 using OmniBlock.Tests.TestSupport;
 
@@ -27,6 +28,31 @@ public sealed class ContentRuntimeTests
         Assert.Same(BlockRegistry.Get("stone"), runtime.Blocks.Get("omniblock:stone"));
         Assert.Same(BlockRegistry.Get("stone"), runtime.Blocks.GetByProtocolId(1));
         Assert.NotNull(runtime.BlockBehaviorProviders);
+    }
+
+    [Fact]
+    public void Published_runtime_has_one_unified_item_registry()
+    {
+        ContentRuntime runtime = ContentRuntime.Current;
+        Item coal = Item.ByName("coal");
+        Block stone = BlockRegistry.Get("stone");
+
+        Assert.Same(coal, runtime.Items.Get("omniblock:coal"));
+        Assert.Same(coal, runtime.Items.GetByProtocolId(coal.Id));
+        Assert.Same(runtime.Items.Get("omniblock:stone"), runtime.Items.GetByProtocolId(stone.Id));
+    }
+
+    [Fact]
+    public void Standalone_item_key_wins_legacy_block_item_name_collision_but_both_ids_resolve()
+    {
+        ContentRuntime runtime = ContentRuntime.Current;
+        Item bed = Item.ByName("bed");
+        Item bedBlockItem = runtime.Items.GetByProtocolId(runtime.Blocks.Get("omniblock:bed").Id);
+
+        Assert.Same(bed, runtime.Items.Get("omniblock:bed"));
+        Assert.Same(bed, runtime.Items.GetByProtocolId(bed.Id));
+        Assert.Same(bedBlockItem, runtime.Items.GetByProtocolId(bedBlockItem.Id));
+        Assert.NotSame(bed, bedBlockItem);
     }
 
     [Fact]
