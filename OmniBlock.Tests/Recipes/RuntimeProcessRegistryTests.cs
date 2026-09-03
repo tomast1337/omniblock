@@ -173,6 +173,23 @@ public sealed class RuntimeProcessRegistryTests
     }
 
     [Fact]
+    public void Independently_built_runtimes_do_not_share_process_registries_or_instances()
+    {
+        ContentRuntimeBuilder firstBuilder = Builder(new TestProvider());
+        ContentRuntimeBuilder secondBuilder = Builder(new TestProvider());
+        firstBuilder.AddProcessDefinition(Definition("example:process", "example:test"));
+        secondBuilder.AddProcessDefinition(Definition("example:process", "example:test"));
+
+        ContentRuntime first = firstBuilder.Build();
+        ContentRuntime second = secondBuilder.Build();
+
+        Assert.NotSame(first, second);
+        Assert.NotSame(first.Processes, second.Processes);
+        Assert.NotSame(first.Processes.Get("example:process"), second.Processes.Get("example:process"));
+        Assert.Equal(first.Processes.Get("example:process"), second.Processes.Get("example:process"));
+    }
+
+    [Fact]
     public void Failed_process_replacement_leaves_the_previous_snapshot_usable()
     {
         ContentRuntime current = ContentRuntime.Current;

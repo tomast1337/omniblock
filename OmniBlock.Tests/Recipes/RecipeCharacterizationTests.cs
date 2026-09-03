@@ -1,29 +1,19 @@
 using OmniBlock.Inventories;
 using OmniBlock.Items;
+using OmniBlock.Processes;
 using OmniBlock.Recipes;
 using OmniBlock.Registries;
 using OmniBlock.Registries.Data;
 using OmniBlock.Screens;
 using OmniBlock.Entities;
+using System.Text.Json;
 
 namespace OmniBlock.Tests.Recipes;
 
 [Collection(RecipeCharacterizationCollection.Name)]
-public sealed class RecipeCharacterizationTests : IDisposable
+public sealed class RecipeCharacterizationTests
 {
     private readonly RuntimeItemRegistry _items = ContentRuntime.Current.Items;
-
-    public RecipeCharacterizationTests()
-    {
-        RecipesCrafting.Clear();
-        RecipesSmelting.Recipes.Clear();
-    }
-
-    public void Dispose()
-    {
-        RecipesCrafting.Clear();
-        RecipesSmelting.Recipes.Clear();
-    }
 
     [Fact]
     public void Shipped_catalog_loads_every_named_definition_and_preserves_type_counts()
@@ -41,35 +31,17 @@ public sealed class RecipeCharacterizationTests : IDisposable
         Assert.Contains(ResourceLocation.Parse("omniblock:repeater"), keys);
         Assert.Contains(ResourceLocation.Parse("omniblock:smelt_iron_ingot"), keys);
 
-        var shaped = new ShapedCraftingRegistry();
-        var shapeless = new ShapelessCraftingRegistry();
-        var smelting = new SmeltingCraftingRegistry();
         foreach (ResourceLocation key in keys)
         {
             RecipeDefinition definition = catalog.GetOrThrow(key);
             Assert.Equal(key.Path, definition.Name);
             Assert.Equal(key.Namespace, definition.Namespace);
-
-            switch (definition.Type.ToLowerInvariant())
-            {
-                case ShapedCraftingRegistry.Name:
-                    shaped.BuildRecipe(definition, _items);
-                    break;
-                case ShapelessCraftingRegistry.Name:
-                    shapeless.BuildRecipe(definition, _items);
-                    break;
-                case SmeltingCraftingRegistry.Name:
-                    smelting.BuildRecipe(definition, _items);
-                    break;
-                default:
-                    Assert.Fail($"Unknown shipped recipe type '{definition.Type}' on '{key}'.");
-                    break;
-            }
         }
 
-        Assert.Equal(119, shaped.Count);
-        Assert.Equal(31, shapeless.Count);
-        Assert.Equal(10, smelting.Count);
+        RuntimeProcessRegistry processes = ContentRuntime.Current.Processes;
+        Assert.Equal(119, processes.GetByType(ProcessTypes.CraftingShaped).Count);
+        Assert.Equal(31, processes.GetByType(ProcessTypes.CraftingShapeless).Count);
+        Assert.Equal(10, processes.GetByType(ProcessTypes.Smelting).Count);
     }
 
     [Fact]
@@ -111,39 +83,18 @@ public sealed class RecipeCharacterizationTests : IDisposable
     [Fact]
     public void Construction_resolves_legacy_block_aliases_and_metadata_results()
     {
-        var shaped = new ShapedCraftingRegistry();
-        shaped.BuildRecipe(Definition("legacy_alias", "shaped", result: "omniblock:Wool:4",
-            pattern: ["#"], key: new() { ["#"] = "omniblock:Planks" }), _items);
+        ContentRuntime runtime = ContentRuntime.Current.WithProcesses([
+            Process("legacy_alias", "shaped", """
+                {"pattern":["#"],"key":{"#":"omniblock:Planks"},
+                 "result":{"id":"omniblock:Wool:4","count":1}}
+                """)
+        ]);
 
-        ItemStack? result = RecipesCrafting.Craft(Grid((0, 0, _items.Get("omniblock:planks"), 0)));
+        ItemStack? result = runtime.Processes.Crafting.Craft(
+            Grid((0, 0, runtime.Items.Get("omniblock:planks"), 0)));
         Assert.NotNull(result);
-        Assert.Same(_items.Get("omniblock:wool"), result.GetItem());
+        Assert.Same(runtime.Items.Get("omniblock:wool"), result.GetItem());
         Assert.Equal(4, result.GetDamage());
-    }
-
-    [Fact]
-    public void Duplicate_recipe_id_and_equivalent_recipe_are_rejected()
-    {
-        var registry = new ShapedCraftingRegistry();
-        RecipeDefinition first = Definition("same_id", "shaped", "omniblock:stick",
-            ["#"], new() { ["#"] = "omniblock:coal" });
-        registry.BuildRecipe(first, _items);
-
-        Assert.Throws<DuplicateRecipeException>(() => registry.BuildRecipe(first, _items));
-
-        RecipeDefinition equivalent = Definition("different_id", "shaped", "omniblock:stick",
-            ["#"], new() { ["#"] = "omniblock:coal" });
-        Assert.Throws<DuplicateRecipeException>(() => registry.BuildRecipe(equivalent, _items));
-    }
-
-    [Fact]
-    public void Overlapping_smelting_inputs_are_rejected()
-    {
-        var registry = new SmeltingCraftingRegistry();
-        registry.BuildRecipe(Definition("first", "smelting", "omniblock:ingot_iron", input: "omniblock:IronOre"), _items);
-
-        Assert.Throws<OverlappingRecipeException>(() => registry.BuildRecipe(
-            Definition("second", "smelting", "omniblock:ingot_gold", input: "omniblock:IronOre"), _items));
     }
 
     [Theory]
@@ -151,12 +102,12 @@ public sealed class RecipeCharacterizationTests : IDisposable
     [InlineData("omniblock:coal", "omniblock:missing")]
     public void Unknown_crafting_item_references_fail_construction(string ingredient, string result)
     {
-        var registry = new ShapedCraftingRegistry();
-        RecipeDefinition definition = Definition("invalid_reference", "shaped", result,
-            ["#"], new() { ["#"] = ingredient });
+        string providerJson = "{\"pattern\":[\"#\"],\"key\":{\"#\":\"" + ingredient
+            + "\"},\"result\":{\"id\":\"" + result + "\",\"count\":1}}";
+        ProcessDefinition definition = Process("invalid_reference", "shaped", providerJson);
 
         InvalidOperationException error = Assert.Throws<InvalidOperationException>(
-            () => registry.BuildRecipe(definition, _items));
+            () => ContentRuntime.Current.WithProcesses([definition]));
         Assert.Contains("invalid_reference", error.Message);
         Assert.Contains("missing", error.Message);
     }
@@ -169,22 +120,15 @@ public sealed class RecipeCharacterizationTests : IDisposable
         return inventory;
     }
 
-    private static RecipeDefinition Definition(
-        string name,
-        string type,
-        string result,
-        string[]? pattern = null,
-        Dictionary<string, string>? key = null,
-        string? input = null) => new()
+    private static ProcessDefinition Process(string name, string type, string providerJson)
+    {
+        return new ProcessDefinition
         {
-            Namespace = Namespace.OmniBlock,
-            Name = name,
+            DeclaredId = "omniblock:" + name,
             Type = type,
-            Pattern = pattern,
-            Key = key,
-            Input = input,
-            Result = new ResultRef { Id = result }
+            ProviderData = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(providerJson)!
         };
+    }
 
     private sealed class TestScreenHandler : ScreenHandler
     {

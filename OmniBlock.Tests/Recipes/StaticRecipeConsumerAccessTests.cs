@@ -6,20 +6,17 @@ public sealed class StaticRecipeConsumerAccessTests
     public void Runtime_consumers_do_not_access_legacy_static_recipe_stores()
     {
         string root = FindRepositoryRoot();
-        string[] consumers =
-        [
-            "OmniBlock/Screens/CraftingScreenHandler.cs",
-            "OmniBlock/Screens/PlayerScreenHandler.cs",
-            "OmniBlock/Blocks/Entities/BlockEntityFurnace.cs",
-            "OmniBlock/Stats/Stats.cs"
-        ];
-
-        foreach (string relativePath in consumers)
+        string runtimeRoot = Path.Combine(root, "OmniBlock");
+        foreach (string path in Directory.EnumerateFiles(runtimeRoot, "*.cs", SearchOption.AllDirectories))
         {
-            string source = File.ReadAllText(Path.Combine(root, relativePath));
+            string source = File.ReadAllText(path);
             Assert.DoesNotContain("RecipesCrafting", source, StringComparison.Ordinal);
             Assert.DoesNotContain("RecipesSmelting", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("RecipeManager.CraftingTypes", source, StringComparison.Ordinal);
         }
+
+        Assert.False(File.Exists(Path.Combine(runtimeRoot, "Recipes", "RecipeManager.cs")));
+        Assert.False(File.Exists(Path.Combine(runtimeRoot, "Recipes", "ICraftingRegistry.cs")));
     }
 
     private static string FindRepositoryRoot()
