@@ -472,7 +472,7 @@ internal class EntityTrackerEntry
                 return new LivingEntitySpawnMessage
                 {
                     EntityId = living.ID,
-                    Type = (sbyte)EntityRegistry.GetRawId(living),
+                    Type = (sbyte)living.World.Content.EntityTypes.GetProtocolId(living),
                     X = Fixed(living.X),
                     Y = Fixed(living.Y),
                     Z = Fixed(living.Z),

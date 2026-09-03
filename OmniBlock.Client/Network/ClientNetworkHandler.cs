@@ -765,7 +765,7 @@ public class ClientNetworkHandler : NetHandler
         Entity? entity = null;
         if (packet.EntityType == 63)
         {
-            entity = EntityRegistry.ByName("fireball").Create(_worldClient);
+            entity = _worldClient.Content.EntityTypes.Create("omniblock:fireball", _worldClient);
             entity.SetPositionAndAngles(x, y, z, 0.0F, 0.0F);
             entity.Behaviors.Find<FireballBehavior>()!.SetDirection(entity, packet.VelocityX / 8000.0D, packet.VelocityY / 8000.0D, packet.VelocityZ / 8000.0D);
             packet.EntityData = 0;
@@ -773,7 +773,7 @@ public class ClientNetworkHandler : NetHandler
 
         // Entities that declare their object-spawn id resolve through the registry rather than a
         // per-id branch; the branches above are the ones whose constructors still need arguments.
-        if (entity == null && EntityRegistry.BySpawnObjectId(packet.EntityType) is { } declaredType)
+        if (entity == null && _worldClient.Content.EntityTypes.GetBySpawnObjectId(packet.EntityType) is { } declaredType)
         {
             entity = declaredType.Create(_worldClient);
             entity.SetPositionAndAngles(x, y, z, 0.0F, 0.0F);
@@ -783,8 +783,9 @@ public class ClientNetworkHandler : NetHandler
         // behavior's declared wire ids say which block this spawn carries.
         if (entity == null)
         {
-            foreach (EntityType candidate in DefaultRegistries.EntityTypes)
+            foreach (ResourceLocation key in _worldClient.Content.EntityTypes.Keys)
             {
+                EntityType candidate = _worldClient.Content.EntityTypes.Get(key);
                 if (candidate.Behaviors.Find<SettleAsBlockBehavior>() is not { } settle) continue;
                 if (settle.BlockForSpawnObjectId(packet.EntityType) is not { } carriedBlockId) continue;
 
@@ -798,8 +799,9 @@ public class ClientNetworkHandler : NetHandler
         // Minecarts do the same across their three kinds, and the kind decides how they are drawn.
         if (entity == null)
         {
-            foreach (EntityType candidate in DefaultRegistries.EntityTypes)
+            foreach (ResourceLocation key in _worldClient.Content.EntityTypes.Keys)
             {
+                EntityType candidate = _worldClient.Content.EntityTypes.Get(key);
                 if (candidate.Behaviors.Find<MinecartBehavior>() is not { } cart) continue;
                 if (cart.TypeForSpawnObjectId(packet.EntityType) is not { } cartType) continue;
 
@@ -836,7 +838,7 @@ public class ClientNetworkHandler : NetHandler
         double y = packet.Y / 32.0D;
         double z = packet.Z / 32.0D;
         Entity? ent = null;
-        if (EntityRegistry.ByGlobalSpawnId(packet.Type) is { } globalType)
+        if (_worldClient.Content.EntityTypes.GetByGlobalSpawnId(packet.Type) is { } globalType)
         {
             ent = globalType.Create(_worldClient);
             ent.SetPositionAndAnglesKeepPrevAngles(x, y, z, 0.0F, 0.0F);
@@ -1232,7 +1234,8 @@ public class ClientNetworkHandler : NetHandler
         double z = packet.Z / 32.0D;
         float yaw = packet.Yaw * 360 / 256.0F;
         float pitch = packet.Pitch * 360 / 256.0F;
-        EntityLiving ent = (EntityLiving)EntityRegistry.Create(packet.Type, _context.WorldHost.World);
+        EntityLiving ent = (EntityLiving)_context.WorldHost.World.Content.EntityTypes
+            .CreateByProtocolId(packet.Type, _context.WorldHost.World);
         ent.TrackedPosX = packet.X;
         ent.TrackedPosY = packet.Y;
         ent.TrackedPosZ = packet.Z;

@@ -28,7 +28,7 @@ public abstract partial class Entity : IEntity
         // Prefer the type handed down by the registry factory: two registered types may share one
         // class, so the class alone does not identify the entity. The lookup is the fallback for
         // entities constructed directly (tests, the client's player subclasses).
-        type ??= EntityRegistry.ByRuntimeType(GetType());
+        type ??= world.Content.EntityTypes.GetByRuntimeType(GetType());
         _type = type;
         EntityBehaviorSet behaviors = type?.Behaviors ?? EntityBehaviorSet.Empty;
         Behaviors = behaviors;

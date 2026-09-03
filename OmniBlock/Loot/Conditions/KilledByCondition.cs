@@ -1,5 +1,3 @@
-using OmniBlock.Entities;
-
 namespace OmniBlock.Loot.Conditions;
 
 /// <summary>
@@ -13,5 +11,6 @@ namespace OmniBlock.Loot.Conditions;
 public sealed class KilledByCondition(string killerId) : ILootCondition
 {
     public bool Test(in LootContext context) =>
-        context.Killer is { } killer && EntityRegistry.GetId(killer) == killerId;
+        context.Killer is { } killer &&
+        killer.World.Content.EntityTypes.GetKey(killer)?.Path.Equals(killerId, StringComparison.OrdinalIgnoreCase) == true;
 }

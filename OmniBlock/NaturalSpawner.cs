@@ -17,11 +17,11 @@ internal static class NaturalSpawner
 
     private static readonly HashSet<ChunkPos> ChunksForSpawning = [];
 
-    private static readonly Func<IWorldContext, EntityLiving>[] Monsters =
+    private static readonly string[] Monsters =
     [
-        w => (EntityLiving)EntityRegistry.ByName("spider").Create(w),
-        w => (EntityLiving)EntityRegistry.ByName("zombie").Create(w),
-        w => (EntityLiving)EntityRegistry.ByName("skeleton").Create(w),
+        "omniblock:spider",
+        "omniblock:zombie",
+        "omniblock:skeleton",
     ];
 
     private static BlockPos GetRandomSpawningPointInChunk(IWorldContext world, PathFinder pathFinder, int centerX, int centerZ)
@@ -155,7 +155,7 @@ internal static class NaturalSpawner
 
                 if (newSpawnY < spawnY + 16 && newSpawnY < ChuckFormat.WorldHeight)
                 {
-                    EntityLiving entity = Monsters[r](world);
+                    EntityLiving entity = (EntityLiving)world.Content.EntityTypes.Create(Monsters[r], world);
 
                     // Feet must be on the validated air column (newSpawnY), not random spawnY — spawnY
                     // can be inside stone and collision resolution rockets mobs to the surface.

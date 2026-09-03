@@ -28,19 +28,22 @@ public class SummonCommand : Command.Command
 
         string entityName = context.GetArgument<string>("entity");
 
+        ServerWorld world = context.Source.Server.getWorld(player.DimensionId);
+
         // Resolved once: a misspelled name is one message, not one failed spawn per requested count.
-        if (!EntityRegistry.Exists(entityName))
+        if (!world.Content.EntityTypes.TryGet(entityName, out EntityType? entityType))
         {
             context.Source.Output.SendMessage($"Unknown entity: {entityName}");
             return 0;
         }
 
-        ServerWorld world = context.Source.Server.getWorld(player.DimensionId);
         int summoned = 0;
 
         for (int i = 0; i < count; i++)
         {
-            if (EntityRegistry.CreateEntityAt(entityName, world, (float)player.X, (float)player.Y, (float)player.Z) != null)
+            Entity entity = entityType.Create(world);
+            entity.SetPositionAndAngles((float)player.X, (float)player.Y, (float)player.Z, 0, 0);
+            if (world.SpawnEntity(entity))
             {
                 summoned++;
             }

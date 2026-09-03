@@ -975,7 +975,7 @@ public abstract class EntityPlayer : EntityLiving
                 break;
 
             // Matched by registry id, since a pig has no class of its own to switch on.
-            case { } vehicle when EntityRegistry.GetId(vehicle) == "pig":
+            case { } vehicle when vehicle.World.Content.EntityTypes.GetKey(vehicle)?.Path == "pig":
                 IncreaseStat(Stats.Stats.DistanceByPigStat, distanceScaled);
                 break;
         }

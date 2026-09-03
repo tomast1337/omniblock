@@ -19,8 +19,8 @@ public class BlockEntityMobSpawnerRenderer : BlockEntitySpecialRenderer
         _entityDict.TryGetValue(spawner.GetSpawnedEntityId(), out Entity? displayEntity);
         if (displayEntity == null || !ReferenceEquals(displayEntity.World.Content, world.Content))
         {
-            displayEntity = EntityRegistry.Create(spawner.GetSpawnedEntityId(), world);
-            _entityDict[spawner.GetSpawnedEntityId()] = displayEntity;
+            world.Content.EntityTypes.TryCreate(spawner.GetSpawnedEntityId(), world, out displayEntity);
+            if (displayEntity is not null) _entityDict[spawner.GetSpawnedEntityId()] = displayEntity;
         }
 
         if (displayEntity != null)

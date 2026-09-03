@@ -75,6 +75,7 @@ public sealed class RuntimeEntityTypeRegistry : IEntityTypeBuildView
 
     public Entity Create(ResourceLocation key, IWorldContext world) => Get(key).Create(world);
     public Entity Create(string key, IWorldContext world) => Create(ParseKey(key), world);
+    public Entity CreateByProtocolId(int protocolId, IWorldContext world) => GetByProtocolId(protocolId).Create(world);
     public bool TryCreate(string key, IWorldContext world, [MaybeNullWhen(false)] out Entity entity, EntityType? skip = null)
     {
         if (!TryGet(key, out EntityType? type) || ReferenceEquals(type, skip))

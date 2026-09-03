@@ -22,6 +22,7 @@ public class EntityRenderDispatcher
 
     private readonly Dictionary<Type, EntityRenderer> _entityRenderMap = [];
     private readonly Dictionary<EntityType, EntityRenderer> _declaredRenderMap = [];
+    private ContentRuntime? _declaredRendererContent;
     public static readonly EntityRenderDispatcher Instance = new();
     private TextRenderer _fontRenderer;
     public static double OffsetX { get; set; }
@@ -45,9 +46,7 @@ public class EntityRenderDispatcher
         RegisterRenderer(typeof(EntityLiving), new LivingEntityRenderer(new ModelBiped(), 0.5F));
         RegisterRenderer(typeof(Entity), new BoxEntityRenderer());
 
-        RegisterDeclaredRenderers();
-
-        foreach (EntityRenderer render in _entityRenderMap.Values.Concat(_declaredRenderMap.Values))
+        foreach (EntityRenderer render in _entityRenderMap.Values)
         {
             render.Dispatcher = this;
         }
@@ -58,15 +57,19 @@ public class EntityRenderDispatcher
     ///     precedence over the by-class table, which is what lets several types share a class: a cow
     ///     and a sheep are both an <c>EntityCreature</c>, so the class cannot choose the model.
     /// </summary>
-    private void RegisterDeclaredRenderers()
+    private void RegisterDeclaredRenderers(ContentRuntime content)
     {
-        foreach (ResourceLocation key in ContentRuntime.Current.EntityTypes.Keys)
+        if (ReferenceEquals(_declaredRendererContent, content)) return;
+        _declaredRenderMap.Clear();
+        foreach (ResourceLocation key in content.EntityTypes.Keys)
         {
-            EntityType type = ContentRuntime.Current.EntityTypes.Get(key);
+            EntityType type = content.EntityTypes.Get(key);
             if (type.Definition?.Renderer is not { } json) continue;
             try
             {
-                _declaredRenderMap[type] = EntityRendererRegistry.Create(json);
+                EntityRenderer renderer = EntityRendererRegistry.Create(json);
+                renderer.Dispatcher = this;
+                _declaredRenderMap[type] = renderer;
             }
             catch (Exception error)
             {
@@ -74,6 +77,7 @@ public class EntityRenderDispatcher
                     $"Entity '{key}' references an invalid renderer: {error.Message}", error);
             }
         }
+        _declaredRendererContent = content;
     }
 
     private void RegisterRenderer(Type type, EntityRenderer render)
@@ -104,6 +108,7 @@ public class EntityRenderDispatcher
 
     public void CacheRenderInfo(World world, TextureManager textureManager, TextRenderer textRenderer, EntityLiving camera, GameOptions options, float tickDelta)
     {
+        RegisterDeclaredRenderers(world.Content);
         World = world;
         TextureManager = textureManager;
         Options = options;

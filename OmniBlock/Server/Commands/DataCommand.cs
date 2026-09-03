@@ -104,10 +104,10 @@ public class DataCommand : Command.Command
         IEnumerable<IEntity> items = GetEntityList(context, kind, player);
         string displayName;
 
-        if (EntityRegistry.TryGetTypeFromName(typeName, out Type? type))
+        if (player.World.Content.EntityTypes.TryGet(typeName, out EntityType? entityType))
         {
-            displayName = type!.Name;
-            items = items.Where(e => e.GetType() == type);
+            displayName = entityType.BaseType.Name;
+            items = items.Where(e => e is Entity entity && ReferenceEquals(entity.Type, entityType));
         }
         else
         {
