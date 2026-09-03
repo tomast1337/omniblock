@@ -390,6 +390,7 @@ public partial class OmniBlock :
         // Must run before EntityRenderDispatcher.Instance below constructs every entity model:
         // each one registers its baked geometry here as it is built, on either backend.
         EntityInstanceBatchRenderer.Initialize(Options);
+        EntityRenderDispatcher.Instance.ConfigureContent(Content);
 
         // Program.cs makes Luau a required client dependency before startup reaches this point.
         // Keep this assertion close to VM construction so alternate hosts that bypass Program's
@@ -2000,6 +2001,7 @@ public partial class OmniBlock :
         ContentRuntime? candidate = Interlocked.Exchange(ref _pendingContent, null);
         if (candidate is null) return;
         Content = candidate;
+        EntityRenderDispatcher.Instance.ConfigureContent(candidate);
         World?.ReplaceContent(candidate);
     }
 

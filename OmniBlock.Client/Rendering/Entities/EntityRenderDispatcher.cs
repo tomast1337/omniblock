@@ -22,6 +22,7 @@ public class EntityRenderDispatcher
 
     private readonly Dictionary<Type, EntityRenderer> _entityRenderMap = [];
     private readonly Dictionary<EntityType, EntityRenderer> _declaredRenderMap = [];
+    private readonly ClientEntityRendererRegistry _rendererRegistry = new();
     private ContentRuntime? _declaredRendererContent;
     public static readonly EntityRenderDispatcher Instance = new();
     private TextRenderer _fontRenderer;
@@ -57,25 +58,15 @@ public class EntityRenderDispatcher
     ///     precedence over the by-class table, which is what lets several types share a class: a cow
     ///     and a sheep are both an <c>EntityCreature</c>, so the class cannot choose the model.
     /// </summary>
-    private void RegisterDeclaredRenderers(ContentRuntime content)
+    public void ConfigureContent(ContentRuntime content)
     {
         if (ReferenceEquals(_declaredRendererContent, content)) return;
+        var renderers = _rendererRegistry.Build(content);
         _declaredRenderMap.Clear();
-        foreach (ResourceLocation key in content.EntityTypes.Keys)
+        foreach ((EntityType type, EntityRenderer renderer) in renderers)
         {
-            EntityType type = content.EntityTypes.Get(key);
-            if (type.Definition?.Renderer is not { } json) continue;
-            try
-            {
-                EntityRenderer renderer = EntityRendererRegistry.Create(json);
-                renderer.Dispatcher = this;
-                _declaredRenderMap[type] = renderer;
-            }
-            catch (Exception error)
-            {
-                throw new InvalidOperationException(
-                    $"Entity '{key}' references an invalid renderer: {error.Message}", error);
-            }
+            renderer.Dispatcher = this;
+            _declaredRenderMap[type] = renderer;
         }
         _declaredRendererContent = content;
     }
@@ -108,7 +99,7 @@ public class EntityRenderDispatcher
 
     public void CacheRenderInfo(World world, TextureManager textureManager, TextRenderer textRenderer, EntityLiving camera, GameOptions options, float tickDelta)
     {
-        RegisterDeclaredRenderers(world.Content);
+        ConfigureContent(world.Content);
         World = world;
         TextureManager = textureManager;
         Options = options;

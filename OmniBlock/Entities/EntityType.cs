@@ -7,7 +7,8 @@ public class EntityType(
     Type baseType,
     string id,
     EntityDefinition? definition = null,
-    EntityBehaviorSet? behaviors = null)
+    EntityBehaviorSet? behaviors = null,
+    EntityRenderDescriptor? renderDescriptor = null)
 {
     public Type BaseType { get; } = baseType;
     public string Id { get; } = id;
@@ -23,6 +24,9 @@ public class EntityType(
     ///     at registration and shared by every instance.
     /// </summary>
     public EntityBehaviorSet Behaviors { get; } = behaviors ?? EntityBehaviorSet.Empty;
+
+    /// <summary>Client-interpreted presentation descriptor; never resolves a client-side type here.</summary>
+    public EntityRenderDescriptor? RenderDescriptor { get; } = renderDescriptor;
 
     /// <summary>
     ///     Hands the type to the entity it creates, so identity travels with the instance instead of

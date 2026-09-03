@@ -300,8 +300,12 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
                 ValidateEntityDefinitionReferences(key, definition);
                 EntityBehaviorSet behaviors = EntityFactory.BuildBehaviors(
                     definition, draft.BaseType, context, EntityBehaviorProviders);
+                EntityRenderDescriptor? renderDescriptor = definition.Renderer is { } renderer
+                    ? EntityRenderDescriptor.Compile(renderer)
+                    : null;
                 IEntityConstructorProvider constructor = ConstructorFor(key, definition);
-                EntityType finalized = new(constructor.Create, draft.BaseType, draft.Id, definition, behaviors);
+                EntityType finalized = new(
+                    constructor.Create, draft.BaseType, draft.Id, definition, behaviors, renderDescriptor);
                 _entityTypesByKey[key] = finalized;
                 _entityTypesByProtocolId[definition.ProtocolId] = finalized;
                 _entityTypes.Add((key, definition, finalized));
