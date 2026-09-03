@@ -45,11 +45,11 @@ public static class Profiler
         private SnapshotEntry[]? _snapshot;
 
         public string GetCurrentPath(string name)
-            => _pathStack.Count == 0 ? name : _pathStack.Peek() + "/" + name;
+            => _pathStack.Count == 0 ? name : $"{_pathStack.Peek()}/{name}";
 
         internal ProfilerScope BeginScope(string name)
         {
-            string path = GetCurrentPath(name);
+            var path = GetCurrentPath(name);
             _pathStack.Push(path);
             return new ProfilerScope(path, this);
         }
@@ -89,15 +89,15 @@ public static class Profiler
 
         public void CaptureFrame()
         {
-            foreach (ScopeData scope in _scopes.Values)
+            foreach (var scope in _scopes.Values)
             {
                 scope.History[scope.HistoryHead] = scope.Last;
                 scope.HistoryHead = (scope.HistoryHead + 1) % HistoryLength;
             }
 
             var snap = new SnapshotEntry[_scopes.Count];
-            int i = 0;
-            foreach (ScopeData data in _scopes.Values)
+            var i = 0;
+            foreach (var data in _scopes.Values)
             {
                 snap[i++] = new SnapshotEntry(
                     data.Name,
@@ -116,13 +116,7 @@ public static class Profiler
     /// <summary>
     /// A point-in-time snapshot of a single profiler scope.
     /// </summary>
-    public readonly record struct SnapshotEntry(
-        string Name,
-        double Last,
-        double Avg,
-        double Max,
-        double[] History,
-        int HistoryHead);
+    public readonly record struct SnapshotEntry( string Name, double Last, double Avg, double Max, double[] History, int HistoryHead);
 
     /// <summary>
     /// A zero-allocation profiling scope. Dispose via <c>using</c> to stop the timer.
@@ -143,7 +137,7 @@ public static class Profiler
         public readonly void Dispose()
         {
             if (_context == null) return;
-            double ms = (Stopwatch.GetTimestamp() - _startTicks) * 1000.0 / Stopwatch.Frequency;
+            var ms = (Stopwatch.GetTimestamp() - _startTicks) * 1000.0 / Stopwatch.Frequency;
             _context.EndScope(_path!, ms);
         }
     }
@@ -179,9 +173,7 @@ public static class Profiler
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ProfilerScope Begin(string name)
     {
-        if (s_currentContext == null)
-            return default;
-        return s_currentContext.BeginScope(name);
+        return s_currentContext == null ? default : s_currentContext.BeginScope(name);
     }
 
     /// <summary>
@@ -190,7 +182,7 @@ public static class Profiler
     public static void Record(string name, double milliseconds)
     {
         if (s_currentContext == null) return;
-        string path = s_currentContext.GetCurrentPath(name);
+        var path = s_currentContext.GetCurrentPath(name);
         s_currentContext.RecordDirect(path, milliseconds);
     }
 
@@ -223,13 +215,9 @@ public static class Profiler
         return result.OrderBy(x => x.Item1);
     }
 
-    private static void AppendContext(
-        ThreadContext? ctx,
-        string prefix,
-        List<(string, double, double, double, double[], int)> result)
+    private static void AppendContext( ThreadContext? ctx, string prefix, List<(string, double, double, double, double[], int)> result)
     {
         if (ctx?.GetSnapshot() is not { } snap) return;
-        foreach (SnapshotEntry e in snap)
-            result.Add(($"[{prefix}] {e.Name}", e.Last, e.Avg, e.Max, e.History, e.HistoryHead));
+        foreach (var e in snap) result.Add(($"[{prefix}] {e.Name}", e.Last, e.Avg, e.Max, e.History, e.HistoryHead));
     }
 }

@@ -43,7 +43,7 @@ public static class ProfilerRenderer
             ImGui.TableSetupColumn("Max (ms)");
             ImGui.TableHeadersRow();
 
-            ProfilerNode root = BuildTree(Profiler.GetStats());
+            var root = BuildTree(Profiler.GetStats());
             CalculateGroupTotals(root);
             RenderNode(root, s_sortColumn, s_sortDescending ? ImGuiSortDirection.Descending : ImGuiSortDirection.Ascending);
 
@@ -56,13 +56,13 @@ public static class ProfilerRenderer
     private static ProfilerNode BuildTree(IEnumerable<(string Name, double Last, double Avg, double Max, double[] History, int HistoryHead)> stats)
     {
         var root = new ProfilerNode("Root");
-        foreach ((string? name, double last, double avg, double max, double[]? history, int historyHead) in stats)
+        foreach (var (name, last, avg, max, history, historyHead) in stats)
         {
-            string[] parts = name.Split('/');
-            ProfilerNode current = root;
-            foreach (string part in parts)
+            var parts = name.Split('/');
+            var current = root;
+            foreach (var part in parts)
             {
-                if (!current.Children.TryGetValue(part, out ProfilerNode? child))
+                if (!current.Children.TryGetValue(part, out var child))
                 {
                     child = new ProfilerNode(part);
                     current.Children[part] = child;
@@ -83,16 +83,16 @@ public static class ProfilerRenderer
     {
         if (node.Children.Count == 0) return;
 
-        foreach (ProfilerNode child in node.Children.Values)
+        foreach (var child in node.Children.Values)
             CalculateGroupTotals(child);
 
         if (node.HasData) return;
 
         double sumLast = 0, sumAvg = 0, sumMax = 0;
-        bool hasChildData = false;
+        var hasChildData = false;
         node.History = new double[Profiler.HistoryLength];
 
-        foreach (ProfilerNode child in node.Children.Values)
+        foreach (var child in node.Children.Values)
         {
             if (!child.HasData) continue;
             sumLast += child.Last;
@@ -100,23 +100,21 @@ public static class ProfilerRenderer
             sumMax += child.Max;
             hasChildData = true;
 
-            for (int i = 0; i < Profiler.HistoryLength; i++)
+            for (var i = 0; i < Profiler.HistoryLength; i++)
                 node.History[i] += child.History[i];
             node.HistoryHead = child.HistoryHead;
         }
 
-        if (hasChildData)
-        {
-            node.Last = sumLast;
-            node.Avg = sumAvg;
-            node.Max = sumMax;
-            node.HasData = true;
-        }
+        if (!hasChildData) return;
+        node.Last = sumLast;
+        node.Avg = sumAvg;
+        node.Max = sumMax;
+        node.HasData = true;
     }
 
     private static int CompareNodes(ProfilerNode a, ProfilerNode b, int sortColumn, ImGuiSortDirection direction)
     {
-        int result = sortColumn switch
+        var result = sortColumn switch
         {
             1 => a.Last.CompareTo(b.Last),
             2 => a.Avg.CompareTo(b.Avg),
@@ -131,12 +129,12 @@ public static class ProfilerRenderer
         List<ProfilerNode> children = [.. node.Children.Values];
         children.Sort((a, b) => CompareNodes(a, b, sortColumn, sortDirection));
 
-        foreach (ProfilerNode child in children)
+        foreach (var child in children)
         {
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
 
-            bool isLeaf = child.Children.Count == 0;
+            var isLeaf = child.Children.Count == 0;
 
             if (isLeaf)
             {
@@ -144,7 +142,7 @@ public static class ProfilerRenderer
             }
             else
             {
-                bool open = ImGui.TreeNodeEx(child.Name, ImGuiTreeNodeFlags.DefaultOpen);
+                var open = ImGui.TreeNodeEx(child.Name, ImGuiTreeNodeFlags.DefaultOpen);
                 if (child.HasData)
                 {
                     ImGui.TableNextColumn(); ImGui.Text($"{child.Last:F3}");
