@@ -18,6 +18,7 @@ public class Bootstrap
             {
                 DefaultRegistries.Initialize(content);
                 ContentRuntime runtime = content.Build();
+                content.PublishEntitiesToLegacyRegistry();
                 Stats.Stats.InitializeCraftedItemStats(runtime.Items, runtime.Processes);
                 ContentRuntime.Publish(runtime);
                 return runtime;

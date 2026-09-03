@@ -479,7 +479,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     /// </summary>
     public static Entity Place(IWorldContext world, double x, double y, double z, int type)
     {
-        Entity cart = EntityRegistry.ByName("minecart").Create(world);
+        Entity cart = world.Content.EntityTypes.Create("omniblock:minecart", world);
         MinecartBehavior rolling = cart.Behaviors.Find<MinecartBehavior>()!;
         cart.State[rolling._type] = type;
         if (type == Chest)

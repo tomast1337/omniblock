@@ -282,3 +282,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-09-03 — Implemented entity build dependencies and namespaced behavior providers (Nicolas Vyčas Nery; `a2799422c68f915d29cd140dd59ca5e3f600daa3`)
 - 2026-09-03 — Implemented builder-owned entity definition construction. (Nicolas Vyčas Nery; `04856f9c1c2a697aa22b6fba4b5054c0773c5a07`)
 - 2026-09-03 — Add runtime entity type registry and related tests for entity resolution (Nicolas Vyčas Nery; `37fb500886465c3c863b6dcc68d1ff0ce1885362`)
+- 2026-09-03 — Completed the entity publication and runtime-isolation requirement (Nicolas Vyčas Nery; `f37110538bf14c4d33763ec2f343e6122a35a70a`)

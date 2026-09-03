@@ -196,7 +196,7 @@ public sealed class BoatBehavior : IEntityTicker, IEntityLifecycle, IEntityPersi
     /// </summary>
     public static Entity Launch(IWorldContext world, double x, double y, double z)
     {
-        Entity boat = EntityRegistry.ByName("boat").Create(world);
+        Entity boat = world.Content.EntityTypes.Create("omniblock:boat", world);
         boat.SetPosition(x, y + boat.StandingEyeHeight, z);
         boat.VelocityX = boat.VelocityY = boat.VelocityZ = 0.0D;
         boat.PrevX = x;

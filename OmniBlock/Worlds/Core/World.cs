@@ -590,7 +590,7 @@ public abstract class World : IWorldContext
 
                 if (Environment.IsRainingAt(worldX, worldY, worldZ))
                 {
-                    Entity bolt = EntityRegistry.ByName("lightningbolt").Create(this);
+                    Entity bolt = Content.EntityTypes.Create("omniblock:lightningbolt", this);
                     bolt.SetPositionAndAnglesKeepPrevAngles(worldX, worldY, worldZ, 0.0F, 0.0F);
                     Entities.SpawnGlobalEntity(bolt);
                     Environment.LightningTicksLeft = 2;

@@ -103,7 +103,7 @@ public static class DefaultRegistries
             throw new AssetLoadException(biomeSpawnLoader.FirstErrorMessage ?? "Failed to load biome spawn definitions.");
         }
 
-        Biome.LoadSpawnLists(biomeSpawnLoader);
+        Biome.LoadSpawnLists(biomeSpawnLoader, content);
         BlockEntityTypes.Bootstrap(typeof(BlockEntity));
 
         MetricRegistry.Bootstrap(typeof(ServerMetrics));
@@ -124,7 +124,6 @@ public static class DefaultRegistries
 
     private static void FreezeAll()
     {
-        EntityTypes.Freeze();
         Biomes.Freeze();
         BlockEntityTypes.Freeze();
         Items.Freeze();

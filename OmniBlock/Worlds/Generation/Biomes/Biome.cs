@@ -47,7 +47,9 @@ public class Biome
     ///     after both the biome and entity registries are populated, since each entry names an
     ///     entity type that must already exist.
     /// </summary>
-    internal static void LoadSpawnLists(IEnumerable<BiomeSpawnDefinition> definitions)
+    internal static void LoadSpawnLists(
+        IEnumerable<BiomeSpawnDefinition> definitions,
+        IEntityTypeBuildView entityTypes)
     {
         Dictionary<string, BiomeSpawnDefinition> byName = definitions.ToDictionary(d => d.Name);
 
@@ -60,18 +62,21 @@ public class Biome
 
             if (!byName.TryGetValue(key.Path, out BiomeSpawnDefinition? definition)) continue;
 
-            Fill(biome.MonsterList, definition.Monsters);
-            Fill(biome.CreatureList, definition.Creatures);
-            Fill(biome.WaterCreatureList, definition.WaterCreatures);
+            Fill(biome.MonsterList, definition.Monsters, entityTypes);
+            Fill(biome.CreatureList, definition.Creatures, entityTypes);
+            Fill(biome.WaterCreatureList, definition.WaterCreatures, entityTypes);
         }
     }
 
-    private static void Fill(WeightedRandomSelector<SpawnListEntry> list, BiomeSpawnEntry[] entries)
+    private static void Fill(
+        WeightedRandomSelector<SpawnListEntry> list,
+        BiomeSpawnEntry[] entries,
+        IEntityTypeBuildView entityTypes)
     {
         foreach (BiomeSpawnEntry entry in entries)
         {
-            string path = ResourceLocation.Parse(entry.Entity).Path;
-            if (!DefaultRegistries.EntityTypes.TryGet(ResourceLocation.Parse(path), out EntityType? type))
+            ResourceLocation key = ResourceLocation.Parse(entry.Entity);
+            if (!entityTypes.TryGet(key, out EntityType? type))
             {
                 throw new ArgumentException($"Biome spawn list references unknown entity '{entry.Entity}'.");
             }

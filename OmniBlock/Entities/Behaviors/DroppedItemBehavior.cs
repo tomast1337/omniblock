@@ -176,7 +176,7 @@ public sealed class DroppedItemBehavior : IEntityTicker, IEntityLifecycle, IEnti
     /// </summary>
     public static Entity Create(IWorldContext world, double x, double y, double z, ItemStack stack, int pickupDelay = 0)
     {
-        Entity item = EntityRegistry.ByName("item").Create(world);
+        Entity item = world.Content.EntityTypes.Create("omniblock:item", world);
         DroppedItemBehavior dropped = item.Behaviors.Find<DroppedItemBehavior>()!;
         dropped.SetStack(item, stack);
         dropped.SetPickupDelay(item, pickupDelay);

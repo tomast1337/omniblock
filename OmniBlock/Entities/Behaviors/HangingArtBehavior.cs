@@ -152,7 +152,7 @@ public sealed class HangingArtBehavior : IEntityTicker, IEntityLifecycle, IEntit
 
     private static Entity Create(IWorldContext world, int x, int y, int z)
     {
-        Entity painting = EntityRegistry.ByName("painting").Create(world);
+        Entity painting = world.Content.EntityTypes.Create("omniblock:painting", world);
         HangingArtBehavior hanging = painting.Behaviors.Find<HangingArtBehavior>()!;
         painting.State[hanging._tileX] = x;
         painting.State[hanging._tileY] = y;

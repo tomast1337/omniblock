@@ -253,7 +253,7 @@ public sealed class FireballBehavior : IEntityTicker, IEntityLifecycle, IEntityP
     /// </summary>
     public static Entity Shoot(IWorldContext world, EntityLiving owner, double dx, double dy, double dz)
     {
-        Entity fireball = EntityRegistry.ByName("fireball").Create(world);
+        Entity fireball = world.Content.EntityTypes.Create("omniblock:fireball", world);
         FireballBehavior flight = fireball.Behaviors.Find<FireballBehavior>()!;
         fireball.State.SetRef(flight._owner, owner);
         fireball.SetPositionAndAnglesKeepPrevAngles(owner.X, owner.Y, owner.Z, owner.Yaw, owner.Pitch);

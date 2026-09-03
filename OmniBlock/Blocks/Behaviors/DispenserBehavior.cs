@@ -140,7 +140,7 @@ internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball, int
 
         if (itemStack.ItemId == arrow.Id)
         {
-            var shot = EntityRegistry.ByName("arrow").Create(@event.World);
+            Entity shot = @event.World.Content.EntityTypes.Create("omniblock:arrow", @event.World);
             shot.SetPositionAndAngles(spawnX, spawnY, spawnZ, 0.0F, 0.0F);
             var flight = shot.Behaviors.Find<ArrowBehavior>()!;
             flight.SetHeading(shot, dirX, 0.1D, dirZ, 1.1F, 6.0F);
@@ -177,7 +177,7 @@ internal sealed class DispenserBehavior(Item arrow, Item egg, Item snowball, int
 
     private static void DispenseProjectile(OnTickEvent @event, string typeName, double spawnX, double spawnY, double spawnZ, int dirX, int dirZ)
     {
-        var projectile = EntityRegistry.ByName(typeName).Create(@event.World);
+        Entity projectile = @event.World.Content.EntityTypes.Create(typeName, @event.World);
         projectile.SetPositionAndAngles(spawnX, spawnY, spawnZ, 0.0F, 0.0F);
         projectile.Behaviors.Find<ThrownProjectileBehavior>()!.SetHeading(projectile, dirX, 0.1D, dirZ, 1.1F, 6.0F);
         @event.World.Entities.SpawnEntity(projectile);

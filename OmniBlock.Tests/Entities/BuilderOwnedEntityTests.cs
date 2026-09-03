@@ -2,6 +2,7 @@ using System.Text.Json;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.Registries;
+using OmniBlock.Processes;
 
 namespace OmniBlock.Tests.Entities;
 
@@ -61,6 +62,29 @@ public sealed class BuilderOwnedEntityTests
         Assert.Same(published, ContentRuntime.Current);
         Assert.Equal(legacyCount, DefaultRegistries.EntityTypes.Count());
         Assert.False(DefaultRegistries.EntityTypes.ContainsKey("omniblock:broken"));
+    }
+
+    [Fact]
+    public void Later_process_failure_does_not_publish_successfully_built_entities()
+    {
+        ContentRuntime published = ContentRuntime.Current;
+        int legacyCount = DefaultRegistries.EntityTypes.Count();
+        ContentRuntimeBuilder builder = ContentRuntimeBuilder.CreateBuiltIns();
+        builder.AddEntityDefinition(Definition("complete_but_unpublished", 20));
+        builder.AddProcessDefinition(new ProcessDefinition
+        {
+            Name = "broken_process",
+            Namespace = Namespace.OmniBlock,
+            DeclaredId = "omniblock:broken_process",
+            Type = "example:missing_provider"
+        });
+
+        ArgumentException error = Assert.Throws<ArgumentException>(() => builder.Build());
+
+        Assert.Contains("missing_provider", error.Message);
+        Assert.Same(published, ContentRuntime.Current);
+        Assert.Equal(legacyCount, DefaultRegistries.EntityTypes.Count());
+        Assert.False(DefaultRegistries.EntityTypes.ContainsKey("omniblock:complete_but_unpublished"));
     }
 
     private static EntityDefinition Definition(string name, int protocolId, params string[] behaviors) => new()

@@ -13,7 +13,7 @@ public sealed class LightningConversionBehavior(string becomes) : IEntityLifecyc
             return true;
         }
 
-        Entity replacement = EntityRegistry.ByName(becomes).Create(self.World);
+        Entity replacement = self.World.Content.EntityTypes.Create(becomes, self.World);
         replacement.SetPositionAndAnglesKeepPrevAngles(self.X, self.Y, self.Z, self.Yaw, self.Pitch);
         self.World.SpawnEntity(replacement);
         self.MarkDead();

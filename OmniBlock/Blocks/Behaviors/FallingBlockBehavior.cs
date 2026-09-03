@@ -51,7 +51,7 @@ public class FallingBlockBehavior(Block[] passable, int regionLoadCheckRadius) :
 
         if (!FallInstantly && @event.World.ChunkHost.IsRegionLoaded(x - regionLoadCheckRadius, y - regionLoadCheckRadius, z - regionLoadCheckRadius, x + regionLoadCheckRadius, y + regionLoadCheckRadius, z + regionLoadCheckRadius))
         {
-            var fallingSand = EntityRegistry.ByName("fallingsand").Create(@event.World);
+            Entity fallingSand = @event.World.Content.EntityTypes.Create("omniblock:fallingsand", @event.World);
             fallingSand.Behaviors.Find<SettleAsBlockBehavior>()!.SetBlock(fallingSand, block.Id);
             fallingSand.SetPositionAndAngles(x + 0.5F, y + 0.5F, z + 0.5F, 0.0F, 0.0F);
             @event.World.Entities.SpawnEntity(fallingSand);

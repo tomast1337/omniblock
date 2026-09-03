@@ -66,7 +66,7 @@ internal sealed class TntBehavior(Item igniter, int top, int side, int bottom) :
 
     private static Entity SpawnPrimed(IWorldContext world, int x, int y, int z)
     {
-        var primed = EntityRegistry.ByName("primedtnt").Create(world);
+        Entity primed = world.Content.EntityTypes.Create("omniblock:primedtnt", world);
         primed.SetPositionAndAngles(x + 0.5F, y + 0.5F, z + 0.5F, 0.0F, 0.0F);
         world.Entities.SpawnEntity(primed);
         return primed;

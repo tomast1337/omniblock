@@ -310,7 +310,7 @@ public sealed class ArrowBehavior : IEntityTicker, IEntityPersistence, IEntityIn
     /// </summary>
     public static Entity Shoot(IWorldContext world, EntityLiving owner)
     {
-        Entity arrow = EntityRegistry.ByName("arrow").Create(world);
+        Entity arrow = world.Content.EntityTypes.Create("omniblock:arrow", world);
         ArrowBehavior flight = arrow.Behaviors.Find<ArrowBehavior>()!;
         arrow.State.SetRef(flight._owner, owner);
         arrow.State[flight._belongsToPlayer] = owner is EntityPlayer;

@@ -63,7 +63,8 @@ public class BlockEntityMobSpawner : BlockEntity
 
             for (var spawnAttempt = 0; spawnAttempt < max; ++spawnAttempt)
             {
-                var entityLiving = (EntityLiving?)EntityRegistry.Create(_spawnedEntityId, World);
+                EntityLiving? entityLiving = World.Content.EntityTypes.TryCreate(
+                    _spawnedEntityId, World, out Entity? spawned) ? spawned as EntityLiving : null;
                 if (entityLiving == null) return;
 
                 var count = World!.Entities

@@ -206,7 +206,7 @@ public sealed class FishingBobberBehavior : IEntityTicker, IEntityPersistence, I
     /// </summary>
     public static Entity Cast(IWorldContext world, EntityPlayer angler)
     {
-        Entity bobber = EntityRegistry.ByName("fishhook").Create(world);
+        Entity bobber = world.Content.EntityTypes.Create("omniblock:fishhook", world);
         FishingBobberBehavior hook = bobber.Behaviors.Find<FishingBobberBehavior>()!;
         bobber.State.SetRef(hook._angler, angler);
         angler.FishHook = bobber;

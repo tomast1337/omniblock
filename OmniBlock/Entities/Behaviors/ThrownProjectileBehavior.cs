@@ -255,7 +255,7 @@ public sealed class ThrownProjectileBehavior : IEntityTicker, IEntityPersistence
     /// </summary>
     public static Entity Throw(IWorldContext world, string typeName, EntityLiving thrower)
     {
-        Entity projectile = EntityRegistry.ByName(typeName).Create(world);
+        Entity projectile = world.Content.EntityTypes.Create(typeName, world);
         ThrownProjectileBehavior thrown = projectile.Behaviors.Find<ThrownProjectileBehavior>()!;
         projectile.State.SetRef(thrown._thrower, thrower);
         projectile.SetPositionAndAnglesKeepPrevAngles(thrower.X, thrower.Y + thrower.EyeHeight, thrower.Z, thrower.Yaw, thrower.Pitch);
@@ -305,7 +305,7 @@ public sealed class ThrownProjectileBehavior : IEntityTicker, IEntityPersistence
             int hatchlings = self.Random.NextInt(hatch.BonusChance) == 0 ? hatch.BonusCount : 1;
             for (int i = 0; i < hatchlings; ++i)
             {
-                Entity hatchling = EntityRegistry.ByName(hatch.Entity).Create(self.World);
+                Entity hatchling = self.World.Content.EntityTypes.Create(hatch.Entity, self.World);
                 hatchling.SetPositionAndAnglesKeepPrevAngles(self.X, self.Y, self.Z, self.Yaw, 0.0F);
                 self.World.SpawnEntity(hatchling);
             }
