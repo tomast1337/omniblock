@@ -43,10 +43,7 @@ public sealed class AngerBehavior : IEntityTicker, IEntityTargetBehavior, IEntit
 
         // Whom to hunt once angered is a separate behavior; the anger only gates it.
         _whenAngry = context.Json.TryGetProperty("when_angry", out JsonElement angry)
-            ? (IEntityTargetBehavior)EntityBehaviorRegistry.Build(context with
-            {
-                Json = angry
-            })
+            ? (IEntityTargetBehavior)context.Build(angry)
             : new AlwaysHuntTargetBehavior();
     }
 

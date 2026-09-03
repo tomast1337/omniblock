@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using OmniBlock.Blocks;
 using OmniBlock.Entities.State;
 using OmniBlock.Registries;
 
@@ -12,12 +13,10 @@ namespace OmniBlock.Entities.Behaviors;
 ///     <see cref="Build" /> turns it into the behavior, and the behavior's own constructor takes
 ///     plain values and cannot fail.
 ///     <para>
-///         Behavior parameters are snake_case on disk (<c>fuse_ticks</c>), resolved by the naming
-///         policy in <see cref="EntityBehaviorDefinitionConverter" />, so property names stay
-///         idiomatic C# without an attribute on every one.
+///         Behavior parameters are snake_case on disk and are deserialized by the provider that
+///         owns this schema.
 ///     </para>
 /// </summary>
-[JsonConverter(typeof(EntityBehaviorDefinitionConverter))]
 public abstract class EntityBehaviorDefinition
 {
     /// <summary>Which capability slots this one instance fills.</summary>
@@ -38,7 +37,13 @@ public abstract class EntityBehaviorDefinition
 /// </summary>
 /// <param name="Definition">The owning entity's definition, for resolving synced property names.</param>
 /// <param name="Layout">The type's state layout, for declaring unsynced per-entity fields.</param>
-public readonly record struct EntityBehaviorBuildContext(EntityDefinition Definition, EntityStateLayout Layout, IItemRuntimeView Items)
+public readonly record struct EntityBehaviorBuildContext(
+    EntityDefinition Definition,
+    EntityStateLayout Layout,
+    IBlockRuntimeView Blocks,
+    IItemRuntimeView Items,
+    IEntityTypeBuildView EntityTypes,
+    IEntityBehaviorProviderRegistry Providers)
 {
     public StateHandle<int> DeclareInt(int initial = 0) => Layout.DeclareInt(initial);
     public StateHandle<long> DeclareLong() => Layout.DeclareLong();
@@ -49,4 +54,14 @@ public readonly record struct EntityBehaviorBuildContext(EntityDefinition Defini
 
     /// <summary>Resolves a synced property declared in the entity's JSON to a typed, id-carrying handle.</summary>
     public SyncedHandle<T> Synced<T>(string name) => SyncedPropertyFactory.Resolve<T>(Definition, name);
+
+    public object Build(JsonElement definition)
+    {
+        string name = definition.GetProperty("Type").GetString()
+                      ?? throw new ArgumentException("Entity behavior entry has a null 'Type'.");
+        ResourceLocation type = name.Contains(':')
+            ? ResourceLocation.Parse(name)
+            : new ResourceLocation(Namespace.OmniBlock, name);
+        return Providers.Build(type, definition, this);
+    }
 }

@@ -7,7 +7,7 @@ namespace OmniBlock.Client.Rendering.Entities;
 
 /// <summary>
 ///     Builds an <see cref="EntityRenderer" /> from the <c>"Renderer"</c> block of an entity
-///     definition, mirroring <c>EntityBehaviorRegistry</c> on the server side: a <c>"Type"</c> key
+///     definition, mirroring the entity behavior-provider registry: a <c>"Type"</c> key
 ///     selects a factory, and the factory reads whatever else it needs from the same object.
 ///     <para>
 ///         A renderer that is nothing but a model and a shadow radius needs no class at all — it is

@@ -63,10 +63,7 @@ public sealed class TameableBehavior : IEntityInteractable, IEntityPersistence, 
         _shownHealth = context.Synced<int>("shown_health");
 
         _whenAngry = context.Json.TryGetProperty("when_angry", out JsonElement angry)
-            ? (IEntityTargetBehavior)EntityBehaviorRegistry.Build(context with
-            {
-                Json = angry
-            })
+            ? (IEntityTargetBehavior)context.Build(angry)
             : new AlwaysHuntTargetBehavior();
     }
 

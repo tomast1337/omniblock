@@ -87,7 +87,14 @@ public static class EntityRegistry
                 $"Protocol id for entity '{id}' must fit in a signed byte ({sbyte.MinValue}..{sbyte.MaxValue}).");
         }
 
-        EntityType type = new((w, t) => factory(w, t), typeof(T), id, definition);
+        EntityBehaviorSet behaviors = definition is null
+            ? EntityBehaviorSet.Empty
+            : EntityFactory.BuildBehaviors(
+                definition,
+                typeof(T),
+                EntityDefinitionRegistry.BuildContext,
+                EntityDefinitionRegistry.BehaviorProviders);
+        EntityType type = new((w, t) => factory(w, t), typeof(T), id, definition, behaviors);
         s_registry.Register(rawId, ResourceLocation.Parse(id.ToLower()), type);
 
         // Several types share one class (every mob that paths is an EntityCreature). A class mapping to

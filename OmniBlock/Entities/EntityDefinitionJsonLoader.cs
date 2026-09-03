@@ -34,6 +34,9 @@ internal sealed class EntityDefinitionJsonLoader(string path, LoadLocations loca
 
     private readonly Dictionary<int, EntityDefinition> _byId = [];
 
+    private readonly Dictionary<int, ResourceLocation> _bySpawnObjectId = [];
+    private readonly Dictionary<int, ResourceLocation> _byGlobalSpawnId = [];
+
     private readonly Dictionary<ResourceLocation, EntityDefinition> _byLocation = [];
     private JsonElement? _defaults;
 
@@ -72,6 +75,8 @@ internal sealed class EntityDefinitionJsonLoader(string path, LoadLocations loca
     {
         _byLocation.Clear();
         _byId.Clear();
+        _bySpawnObjectId.Clear();
+        _byGlobalSpawnId.Clear();
         _defaults = null;
     }
 
@@ -156,10 +161,23 @@ internal sealed class EntityDefinitionJsonLoader(string path, LoadLocations loca
                 if (_byLocation.TryGetValue(key, out EntityDefinition? existing))
                 {
                     _byId.Remove(existing.ProtocolId);
+                    if (existing.SpawnObjectId != 0) _bySpawnObjectId.Remove(existing.SpawnObjectId);
+                    if (existing.GlobalSpawnId != 0) _byGlobalSpawnId.Remove(existing.GlobalSpawnId);
                 }
+
+                if (_byId.TryGetValue(definition.ProtocolId, out EntityDefinition? protocolOwner))
+                {
+                    throw new JsonException(
+                        $"Entity '{key}' duplicates ProtocolId {definition.ProtocolId} used by '{protocolOwner.Namespace}:{protocolOwner.Name}'.");
+                }
+
+                ValidateUniqueWireId(_bySpawnObjectId, definition.SpawnObjectId, "SpawnObjectId", key);
+                ValidateUniqueWireId(_byGlobalSpawnId, definition.GlobalSpawnId, "GlobalSpawnId", key);
 
                 _byLocation[key] = definition;
                 _byId[definition.ProtocolId] = definition;
+                if (definition.SpawnObjectId != 0) _bySpawnObjectId[definition.SpawnObjectId] = key;
+                if (definition.GlobalSpawnId != 0) _byGlobalSpawnId[definition.GlobalSpawnId] = key;
             }
             catch (JsonException ex)
             {
@@ -187,10 +205,29 @@ internal sealed class EntityDefinitionJsonLoader(string path, LoadLocations loca
             clone._byId[pair.Key] = pair.Value;
         }
 
+        foreach (KeyValuePair<int, ResourceLocation> pair in _bySpawnObjectId)
+        {
+            clone._bySpawnObjectId[pair.Key] = pair.Value;
+        }
+        foreach (KeyValuePair<int, ResourceLocation> pair in _byGlobalSpawnId)
+        {
+            clone._byGlobalSpawnId[pair.Key] = pair.Value;
+        }
+
         clone._defaults = _defaults;
         clone.LoadPacksFrom(worldDatapackPath, LoadLocations.WorldDatapack);
         return clone;
     }
 
     public bool ContainsId(int id) => _byId.ContainsKey(id);
+
+    private static void ValidateUniqueWireId(
+        IReadOnlyDictionary<int, ResourceLocation> owners,
+        int id,
+        string field,
+        ResourceLocation key)
+    {
+        if (id != 0 && owners.TryGetValue(id, out ResourceLocation? owner))
+            throw new JsonException($"Entity '{key}' duplicates {field} {id} used by '{owner}'.");
+    }
 }

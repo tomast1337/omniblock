@@ -279,3 +279,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-09-03 — Refactor Profiler and ProfilerRenderer for consistency; use var for variable declarations and improve readability (Nicolas Vyčas Nery; `7642dc41a2badc2a29ab87b330a9f6a2ed88d2c0`)
 - 2026-09-03 — Implemented process compatibility rules (Nicolas Vyčas Nery; `49fa29e240b443209460e3243cb437d5a8c8e15a`)
 - 2026-09-03 — Removed the legacy recipe-global layer (Nicolas Vyčas Nery; `a57216821f635af65414d7ae938c550472d0d2c4`)
+- 2026-09-03 — Implemented entity build dependencies and namespaced behavior providers (Nicolas Vyčas Nery; `a2799422c68f915d29cd140dd59ca5e3f600daa3`)

@@ -18,16 +18,29 @@ public sealed class EntityBehaviorJsonTests
     private static JsonElement Json(string json) => JsonSerializer.Deserialize<JsonElement>(json);
 
     /// <summary>Deserializes one behavior entry the way the entity loader does.</summary>
-    private static EntityBehaviorDefinition Behavior(string json) =>
-        JsonSerializer.Deserialize<EntityBehaviorDefinition>(json)!;
+    private static JsonElement Behavior(string json) => Json(json);
 
     /// <summary>Behaviors are now built with a load-time context, once per entity type.</summary>
-    private static object Build(string json, EntityDefinition? definition = null) =>
-        EntityBehaviorRegistry.Build(new EntityBehaviorContext(
-            Json(json),
+    private static object Build(string json, EntityDefinition? definition = null)
+    {
+        var providers = new EntityBehaviorProviderRegistry();
+        var context = new EntityBehaviorBuildContext(
             definition ?? new EntityDefinition { ProtocolId = 1, Name = "test" },
             new EntityStateLayout(),
-            ContentRuntime.Current.Items));
+            ContentRuntime.Current.Blocks,
+            ContentRuntime.Current.Items,
+            new RegistryEntityTypeView(),
+            providers);
+        return context.Build(Json(json));
+    }
+
+    private static EntityBehaviorSet BuildBehaviors(EntityDefinition definition, Type entityType)
+    {
+        var providers = new EntityBehaviorProviderRegistry();
+        var dependencies = new EntityBuildContext(
+            ContentRuntime.Current.Blocks, ContentRuntime.Current.Items, new RegistryEntityTypeView());
+        return EntityFactory.BuildBehaviors(definition, entityType, dependencies, providers);
+    }
 
     [Fact]
     public void Registry_builds_each_attack_type_with_its_parameters()
@@ -173,8 +186,56 @@ public sealed class EntityBehaviorJsonTests
 
         // Validated at load from the registered base type, not per spawn.
         ArgumentException error = Assert.Throws<ArgumentException>(
-            () => EntityFactory.BuildBehaviors(definition, typeof(EntityLiving)));
+            () => BuildBehaviors(definition, typeof(EntityLiving)));
         Assert.Contains("EntityCreature", error.Message);
+    }
+
+    [Fact]
+    public void Unknown_and_duplicate_behavior_slots_fail_loudly()
+    {
+        EntityDefinition unknown = new()
+        {
+            ProtocolId = 20,
+            Name = "bad_slot",
+            Behaviors = [Behavior("""{"Slots":["Teleport"],"Type":"ignore_fall_damage"}""")]
+        };
+        EntityDefinition duplicate = new()
+        {
+            ProtocolId = 21,
+            Name = "duplicate_slot",
+            Behaviors =
+            [
+                Behavior("""{"Slots":["Physics"],"Type":"ignore_fall_damage"}"""),
+                Behavior("""{"Slots":["Physics"],"Type":"ignore_fall_damage"}""")
+            ]
+        };
+
+        ArgumentException unknownError = Assert.Throws<ArgumentException>(
+            () => BuildBehaviors(unknown, typeof(EntityObject)));
+        ArgumentException duplicateError = Assert.Throws<ArgumentException>(
+            () => BuildBehaviors(duplicate, typeof(EntityObject)));
+
+        Assert.Contains("bad_slot", unknownError.Message);
+        Assert.Contains("Teleport", unknownError.Message);
+        Assert.Contains("duplicate_slot", duplicateError.Message);
+        Assert.Contains("Physics", duplicateError.Message);
+    }
+
+    [Fact]
+    public void A_behavior_without_slots_fails_loudly()
+    {
+        EntityDefinition definition = new()
+        {
+            ProtocolId = 20,
+            Name = "slotless",
+            Behaviors = [Behavior("""{"Slots":[],"Type":"ignore_fall_damage"}""")]
+        };
+
+        ArgumentException error = Assert.Throws<ArgumentException>(
+            () => BuildBehaviors(definition, typeof(EntityObject)));
+
+        Assert.Contains("slotless", error.Message);
+        Assert.Contains("no slots", error.Message);
     }
 
     /// <summary>
@@ -184,14 +245,14 @@ public sealed class EntityBehaviorJsonTests
     [Fact]
     public void A_typed_definition_reads_its_parameters_into_properties()
     {
-        BoatDefinition boat = Assert.IsType<BoatDefinition>(Behavior("""
+        BoatDefinition boat = JsonSerializer.Deserialize<BoatDefinition>(Behavior("""
             {
               "Slots": ["Ticker"],
               "Type": "boat",
               "break_damage": 25,
               "wreckage": [{ "Item": "omniblock:planks", "Count": 3 }]
             }
-            """));
+            """), ProviderJsonOptions())!;
 
         Assert.Equal(["Ticker"], boat.Slots);
         Assert.Equal(25, boat.BreakDamage);
@@ -203,7 +264,8 @@ public sealed class EntityBehaviorJsonTests
     [Fact]
     public void An_omitted_parameter_falls_back_to_the_property_default()
     {
-        ArrowDefinition arrow = Assert.IsType<ArrowDefinition>(Behavior("""{"Slots":["Ticker"],"Type":"arrow"}"""));
+        ArrowDefinition arrow = JsonSerializer.Deserialize<ArrowDefinition>(
+            Behavior("""{"Slots":["Ticker"],"Type":"arrow"}"""), ProviderJsonOptions())!;
 
         Assert.Equal(4, arrow.Damage);
     }
@@ -225,7 +287,7 @@ public sealed class EntityBehaviorJsonTests
         };
 
         ArgumentException error = Assert.Throws<ArgumentException>(
-            () => EntityFactory.BuildBehaviors(definition, typeof(EntityObject)));
+            () => BuildBehaviors(definition, typeof(EntityObject)));
 
         Assert.Contains("test_boat", error.Message);
         Assert.Contains("boat", error.Message);
@@ -243,9 +305,23 @@ public sealed class EntityBehaviorJsonTests
         };
 
         ArgumentException error = Assert.Throws<ArgumentException>(
-            () => EntityFactory.BuildBehaviors(definition, typeof(EntityObject)));
+            () => BuildBehaviors(definition, typeof(EntityObject)));
 
         Assert.Contains("no_such_behavior", error.Message);
         Assert.Contains("test_entity", error.Message);
+    }
+
+    private static JsonSerializerOptions ProviderJsonOptions() => new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+    };
+
+    private sealed class RegistryEntityTypeView : IEntityTypeBuildView
+    {
+        public EntityType Get(ResourceLocation key) =>
+            OmniBlock.Registries.DefaultRegistries.EntityTypes.GetOrThrow(key);
+
+        public bool TryGet(ResourceLocation key, out EntityType? type) =>
+            OmniBlock.Registries.DefaultRegistries.EntityTypes.TryGet(key, out type);
     }
 }

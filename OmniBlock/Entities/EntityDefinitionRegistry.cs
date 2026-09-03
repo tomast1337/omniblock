@@ -1,5 +1,6 @@
 using OmniBlock.Registries;
 using OmniBlock.Registries.Data;
+using OmniBlock.Entities.Behaviors;
 
 namespace OmniBlock.Entities;
 
@@ -15,12 +16,17 @@ public static class EntityDefinitionRegistry
 {
     private static EntityDefinitionJsonLoader? s_loader;
     internal static IItemRuntimeView Items { get; private set; } = null!;
+    internal static EntityBuildContext BuildContext { get; private set; }
+    internal static IEntityBehaviorProviderRegistry BehaviorProviders { get; private set; } = null!;
 
     internal static IEnumerable<EntityDefinition> All => s_loader ?? Enumerable.Empty<EntityDefinition>();
 
-    internal static void Initialize(IItemRuntimeView items)
+    internal static void Initialize(ContentRuntimeBuilder content)
     {
-        Items = items ?? throw new ArgumentNullException(nameof(items));
+        ArgumentNullException.ThrowIfNull(content);
+        Items = content;
+        BuildContext = new EntityBuildContext(content.StagedBlocks, content, new BootstrapEntityTypeView());
+        BehaviorProviders = new EntityBehaviorProviderRegistry();
         EntityDefinitionJsonLoader loader = new(RegistryDefinitions.Entities.AssetPath, LoadLocations.Assets);
         loader.LoadFromPaths(null, null, null);
         if (loader.HasErrors)
@@ -29,6 +35,13 @@ public static class EntityDefinitionRegistry
         }
 
         s_loader = loader;
+    }
+
+    private sealed class BootstrapEntityTypeView : IEntityTypeBuildView
+    {
+        public EntityType Get(ResourceLocation key) => DefaultRegistries.EntityTypes.GetOrThrow(key);
+        public bool TryGet(ResourceLocation key, out EntityType? type) =>
+            DefaultRegistries.EntityTypes.TryGet(key, out type);
     }
 
     /// <summary>Resolves a definition by registry name (the JSON filename), e.g. <c>"zombie"</c>.</summary>

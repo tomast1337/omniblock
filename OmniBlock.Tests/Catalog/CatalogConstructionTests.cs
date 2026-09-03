@@ -87,7 +87,7 @@ public sealed class CatalogConstructionTests
 
             foreach (var behavior in definition.Behaviors)
             {
-                foreach (string slot in behavior.Slots)
+                foreach (string slot in behavior.GetProperty("Slots").EnumerateArray().Select(element => element.GetString()!))
                 {
                     AssertEntitySlotAttached(type, slot);
                 }

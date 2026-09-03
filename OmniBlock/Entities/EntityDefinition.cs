@@ -194,7 +194,7 @@ public sealed record EntityDefinition : IDataAsset
     ///     (<c>"Attack"</c>, <c>"Targeting"</c>, <c>"Loot"</c>, <c>"Lifecycle"</c>) and a
     ///     <c>"Type"</c> naming the definition class to deserialize into.
     /// </summary>
-    public List<EntityBehaviorDefinition> Behaviors { get; init; } = [];
+    public JsonElement[] Behaviors { get; init; } = [];
 
     /// <summary>Set by the loader from the JSON filename.</summary>
     [JsonIgnore]

@@ -2,7 +2,12 @@ using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Entities;
 
-public class EntityType(Func<IWorldContext, EntityType, Entity> factory, Type baseType, string id, EntityDefinition? definition = null)
+public class EntityType(
+    Func<IWorldContext, EntityType, Entity> factory,
+    Type baseType,
+    string id,
+    EntityDefinition? definition = null,
+    EntityBehaviorSet? behaviors = null)
 {
     public Type BaseType { get; } = baseType;
     public string Id { get; } = id;
@@ -17,8 +22,7 @@ public class EntityType(Func<IWorldContext, EntityType, Entity> factory, Type ba
     ///     Capability slots and state layout for this type, built once from <see cref="Definition" />
     ///     at registration and shared by every instance.
     /// </summary>
-    public EntityBehaviorSet Behaviors { get; } =
-        definition is null ? EntityBehaviorSet.Empty : EntityFactory.BuildBehaviors(definition, baseType);
+    public EntityBehaviorSet Behaviors { get; } = behaviors ?? EntityBehaviorSet.Empty;
 
     /// <summary>
     ///     Hands the type to the entity it creates, so identity travels with the instance instead of

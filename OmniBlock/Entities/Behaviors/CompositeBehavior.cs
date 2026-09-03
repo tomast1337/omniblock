@@ -29,10 +29,7 @@ public sealed class CompositeBehavior : IEntityTicker, IEntityPhysics, IEntityLi
         List<object> children = [];
         foreach (JsonElement entry in context.Json.GetProperty("behaviors").EnumerateArray())
         {
-            children.Add(EntityBehaviorRegistry.Build(context with
-            {
-                Json = entry
-            }));
+            children.Add(context.Build(entry));
         }
 
         _children = [.. children];

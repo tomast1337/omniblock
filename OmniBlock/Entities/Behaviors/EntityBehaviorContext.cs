@@ -1,4 +1,5 @@
 using System.Text.Json;
+using OmniBlock.Blocks;
 using OmniBlock.Entities.State;
 using OmniBlock.Registries;
 
@@ -13,8 +14,13 @@ namespace OmniBlock.Entities.Behaviors;
 /// <param name="Json">This behavior's own JSON entry, for its parameters.</param>
 /// <param name="Definition">The owning entity's definition, for resolving synced property names.</param>
 /// <param name="Layout">The type's state layout, for declaring unsynced fields.</param>
-public readonly record struct EntityBehaviorContext(JsonElement Json, EntityDefinition Definition, EntityStateLayout Layout, IItemRuntimeView Items)
+public readonly record struct EntityBehaviorContext(JsonElement Json, EntityBehaviorBuildContext BuildContext)
 {
+    public EntityDefinition Definition => BuildContext.Definition;
+    public EntityStateLayout Layout => BuildContext.Layout;
+    public IBlockRuntimeView Blocks => BuildContext.Blocks;
+    public IItemRuntimeView Items => BuildContext.Items;
+    public IEntityTypeBuildView EntityTypes => BuildContext.EntityTypes;
     public StateHandle<int> DeclareInt(int initial = 0) => Layout.DeclareInt(initial);
     public StateHandle<long> DeclareLong() => Layout.DeclareLong();
     public StateHandle<float> DeclareFloat(float initial = 0.0F) => Layout.DeclareFloat(initial);
@@ -24,6 +30,7 @@ public readonly record struct EntityBehaviorContext(JsonElement Json, EntityDefi
 
     /// <summary>Resolves a synced property declared in the entity's JSON to a typed, id-carrying handle.</summary>
     public SyncedHandle<T> Synced<T>(string name) => SyncedPropertyFactory.Resolve<T>(Definition, name);
+    public object Build(JsonElement definition) => BuildContext.Build(definition);
 
     public float Float(string name, float fallback) => Json.TryGetProperty(name, out JsonElement v) ? v.GetSingle() : fallback;
     public double Double(string name, double fallback) => Json.TryGetProperty(name, out JsonElement v) ? v.GetDouble() : fallback;

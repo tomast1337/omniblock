@@ -126,6 +126,24 @@ public sealed class EntityDefinitionLoaderTests : IDisposable
         Assert.Contains("bad_syntax", loader.FirstErrorMessage);
     }
 
+    [Theory]
+    [InlineData("ProtocolId", 54)]
+    [InlineData("SpawnObjectId", 60)]
+    [InlineData("GlobalSpawnId", 1)]
+    public void Duplicate_ids_in_each_wire_space_fail_loudly(string field, int duplicate)
+    {
+        WriteAsset("first", $$"""{"ProtocolId": 10, "{{field}}": {{duplicate}}}""");
+        WriteAsset("second", $$"""{"ProtocolId": 11, "{{field}}": {{duplicate}}}""");
+
+        EntityDefinitionJsonLoader loader = Load();
+
+        Assert.True(loader.HasErrors);
+        Assert.Contains(field, loader.FirstErrorMessage);
+        Assert.Contains(duplicate.ToString(), loader.FirstErrorMessage);
+        Assert.Contains("first", loader.FirstErrorMessage);
+        Assert.Contains("second", loader.FirstErrorMessage);
+    }
+
     [Fact]
     public void Datapack_layer_overrides_the_base_asset()
     {

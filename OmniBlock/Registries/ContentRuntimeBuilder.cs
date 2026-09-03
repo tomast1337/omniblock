@@ -55,6 +55,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView
     public IProcessProviderRegistry ProcessProviders { get; }
     public ItemBuildContext ItemBuildContext { get; }
     public BehaviorBuildContext BehaviorBuildContext => BlockBuildContext.Behaviors;
+    internal IBlockRuntimeView StagedBlocks => _blockRuntimeView;
 
     public object BuildBlockBehavior(ResourceLocation type, JsonElement definition) =>
         BlockBehaviorProviders.Build(type, definition, BehaviorBuildContext);

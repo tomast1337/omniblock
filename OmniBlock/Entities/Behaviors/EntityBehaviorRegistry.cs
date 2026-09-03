@@ -9,11 +9,12 @@ namespace OmniBlock.Entities.Behaviors;
 ///     <c>Blocks/Behaviors/BehaviorRegistry.cs</c>. Factories run once per
 ///     <see cref="EntityType" /> at load, never per spawn.
 /// </summary>
-internal static class EntityBehaviorRegistry
+public sealed class EntityBehaviorProviderRegistry : IEntityBehaviorProviderRegistry
 {
     public delegate object BehaviorFactory(in EntityBehaviorContext context);
 
-    private static readonly Dictionary<string, BehaviorFactory> s_factories = new()
+    private readonly Dictionary<ResourceLocation, IEntityBehaviorProvider> _providers = [];
+    private readonly Dictionary<string, BehaviorFactory> _builtIns = new(StringComparer.Ordinal)
     {
         // Attack
         ["melee"] = (in c) => new MeleeAttackBehavior(c.Float("range", 2.0F)),
@@ -27,17 +28,11 @@ internal static class EntityBehaviorRegistry
             c.Float("max_range", 6.0F),
             c.Int("chance_one_in", 10),
             c.Json.TryGetProperty("fallback", out JsonElement fallback)
-                ? (IEntityAttackBehavior)Build(c with
-                {
-                    Json = fallback
-                })
+                ? (IEntityAttackBehavior)c.Build(fallback)
                 : null),
 
         ["lose_target_in_daylight"] = (in c) => new LoseTargetInDaylightBehavior(
-            (IEntityAttackBehavior)Build(c with
-            {
-                Json = c.Json.GetProperty("inner")
-            }),
+            (IEntityAttackBehavior)c.Build(c.Json.GetProperty("inner")),
             c.Float("brightness_threshold", 0.5F),
             c.Int("chance_one_in", 100)),
 
@@ -134,13 +129,69 @@ internal static class EntityBehaviorRegistry
         Achievements.AllAchievements.Find(a => a.TranslationKey == "achievement." + key)
         ?? throw new ArgumentException($"Unknown achievement '{key}'.", nameof(key));
 
-    public static object Build(in EntityBehaviorContext context)
+    public EntityBehaviorProviderRegistry()
     {
-        string type = context.Json.GetProperty("Type").GetString()
-                      ?? throw new ArgumentException("Behavior entry is missing its 'Type' property.");
+        foreach (string name in _builtIns.Keys)
+            Register(new ResourceLocation(Namespace.OmniBlock, name), new BuiltInProvider(this, name));
 
-        return s_factories.TryGetValue(type, out BehaviorFactory? factory)
-            ? factory(context)
-            : throw new ArgumentException($"Unknown entity behavior type '{type}'.");
+        RegisterTyped<PrimedExplosiveDefinition>("primed_explosive");
+        RegisterTyped<SettleAsBlockDefinition>("settle_as_block");
+        RegisterTyped<LightningStrikeDefinition>("lightning_strike");
+        RegisterTyped<DroppedItemDefinition>("dropped_item");
+        RegisterTyped<ThrownProjectileDefinition>("thrown_projectile");
+        RegisterTyped<FireballDefinition>("fireball");
+        RegisterTyped<ArrowDefinition>("arrow");
+        RegisterTyped<HangingArtDefinition>("hanging_art");
+        RegisterTyped<FishingBobberDefinition>("fishing_bobber");
+        RegisterTyped<BoatDefinition>("boat");
+        RegisterTyped<MinecartDefinition>("minecart");
+    }
+
+    public void Register(ResourceLocation type, IEntityBehaviorProvider provider)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+        if (!_providers.TryAdd(type, provider))
+            throw new ArgumentException($"Entity behavior provider '{type}' is already registered.", nameof(type));
+    }
+
+    public object Build(ResourceLocation type, JsonElement definition, in EntityBehaviorBuildContext context) =>
+        _providers.TryGetValue(type, out IEntityBehaviorProvider? provider)
+            ? provider.Build(type, definition, context)
+            : throw new ArgumentException($"Unknown entity behavior provider '{type}'.");
+
+    private void RegisterTyped<T>(string name) where T : EntityBehaviorDefinition
+    {
+        ResourceLocation type = new(Namespace.OmniBlock, name);
+        _providers[type] = new TypedProvider<T>();
+    }
+
+    private object BuildBuiltIn(string name, JsonElement definition, in EntityBehaviorBuildContext context)
+    {
+        var legacyContext = new EntityBehaviorContext(definition, context);
+        return _builtIns.TryGetValue(name, out BehaviorFactory? factory)
+            ? factory(legacyContext)
+            : throw new ArgumentException($"Unknown entity behavior provider 'omniblock:{name}'.");
+    }
+
+    private sealed class BuiltInProvider(EntityBehaviorProviderRegistry owner, string name) : IEntityBehaviorProvider
+    {
+        public object Build(ResourceLocation type, JsonElement definition, in EntityBehaviorBuildContext context) =>
+            owner.BuildBuiltIn(name, definition, context);
+    }
+
+    private sealed class TypedProvider<T> : IEntityBehaviorProvider where T : EntityBehaviorDefinition
+    {
+        private static readonly JsonSerializerOptions s_options = new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+            Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+        };
+
+        public object Build(ResourceLocation type, JsonElement definition, in EntityBehaviorBuildContext context)
+        {
+            T parsed = definition.Deserialize<T>(s_options)
+                       ?? throw new ArgumentException($"Entity behavior '{type}' deserialized to null.");
+            return parsed.Build(context);
+        }
     }
 }

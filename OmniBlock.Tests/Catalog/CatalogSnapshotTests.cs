@@ -113,18 +113,7 @@ internal static class CatalogSnapshot
 
     private static string EntityBehaviors(EntityDefinition definition) =>
         Join(definition.Behaviors.Select(static behavior =>
-            $"{EntityBehaviorName(behavior)}[{Join(behavior.Slots)}]"));
-
-    private static string EntityBehaviorName(OmniBlock.Entities.Behaviors.EntityBehaviorDefinition behavior)
-    {
-        if (behavior.GetType().Name != "LegacyBehaviorDefinition") return behavior.GetType().Name;
-
-        const string prefix = "legacy behavior '";
-        string description = behavior.ToString() ?? behavior.GetType().Name;
-        return description.StartsWith(prefix, StringComparison.Ordinal) && description.EndsWith("'", StringComparison.Ordinal)
-            ? description[prefix.Length..^1]
-            : description;
-    }
+            $"{behavior.GetProperty("Type").GetString()}[{Join(behavior.GetProperty("Slots").EnumerateArray().Select(static slot => slot.GetString() ?? "?"))}]"));
 
     private static string RuntimeBlockSlots(Block block)
     {
