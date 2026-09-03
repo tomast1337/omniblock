@@ -224,6 +224,10 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView
     {
         if (_itemDraftsCreated) return;
 
+        List<ItemDefinition> assignedDefinitions = ContentIdAllocator.AssignItemIds(_pendingItemDefinitions);
+        _pendingItemDefinitions.Clear();
+        _pendingItemDefinitions.AddRange(assignedDefinitions);
+
         foreach (ItemDefinition definition in _pendingItemDefinitions)
         {
             ResourceLocation key = new(definition.Namespace, definition.Name);

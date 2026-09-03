@@ -24,10 +24,14 @@ public sealed class ContentRuntime
         IItemBehaviorProviderRegistry itemBehaviorProviders)
     {
         ArgumentNullException.ThrowIfNull(blockBehaviorProviders);
-        Blocks = new RuntimeBlockRegistry(blocks);
-        Items = new RuntimeItemRegistry(items, blockItems, Blocks);
+        var blockEntries = blocks.ToArray();
+        var itemEntries = items.ToArray();
+        var blockItemEntries = blockItems.ToArray();
+        Blocks = new RuntimeBlockRegistry(blockEntries);
+        Items = new RuntimeItemRegistry(itemEntries, blockItemEntries, Blocks);
         Manifest = new ContentCatalogManifest(Blocks.Keys.Select(key =>
-            new KeyValuePair<ResourceLocation, int>(key, Blocks.Get(key).Id)));
+                new KeyValuePair<ResourceLocation, int>(key, Blocks.Get(key).Id)),
+            itemEntries.Select(entry => new KeyValuePair<ResourceLocation, int>(entry.Key, entry.Item.Id)));
         BlockBehaviorProviders = blockBehaviorProviders;
         ItemBehaviorProviders = itemBehaviorProviders;
     }

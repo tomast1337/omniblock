@@ -1,4 +1,5 @@
 namespace OmniBlock.Network.Packets;
+using OmniBlock.Registries;
 
 /// <summary>
 ///     Advertises the server's message table so both peers agree on which integer means which
@@ -38,8 +39,9 @@ public class MessageRegistrySyncS2CPacket() : ExtendedProtocolPacket(PacketId.Me
     ///     </para>
     /// </summary>
     public int ProtocolVersion { get; private set; }
+    public string CatalogFingerprint { get; private set; } = "";
 
-    public static MessageRegistrySyncS2CPacket Get(IReadOnlyList<ResourceLocation> keys)
+    public static MessageRegistrySyncS2CPacket Get(IReadOnlyList<ResourceLocation> keys, ContentCatalogManifest? manifest = null)
     {
         ArgumentNullException.ThrowIfNull(keys);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(keys.Count, MaxEntries);
@@ -47,12 +49,14 @@ public class MessageRegistrySyncS2CPacket() : ExtendedProtocolPacket(PacketId.Me
         MessageRegistrySyncS2CPacket p = Get<MessageRegistrySyncS2CPacket>(PacketId.MessageRegistrySyncS2C);
         p.Keys = keys;
         p.ProtocolVersion = ProtocolHandshake.Version;
+        p.CatalogFingerprint = manifest?.Fingerprint ?? "";
         return p;
     }
 
     public override void Read(Stream stream)
     {
         ProtocolVersion = stream.ReadVarInt();
+        CatalogFingerprint = ProtocolVersion >= 2 ? stream.ReadString(128) : "";
 
         int count = stream.ReadVarInt();
         if (count < 0 || count > MaxEntries)
@@ -73,6 +77,7 @@ public class MessageRegistrySyncS2CPacket() : ExtendedProtocolPacket(PacketId.Me
     public override void Write(Stream stream)
     {
         stream.WriteVarInt(ProtocolVersion);
+        if (ProtocolVersion >= 2) stream.WriteString(CatalogFingerprint);
         stream.WriteVarInt(Keys.Count);
 
         foreach (ResourceLocation key in Keys)
@@ -85,7 +90,9 @@ public class MessageRegistrySyncS2CPacket() : ExtendedProtocolPacket(PacketId.Me
 
     public override int Size()
     {
-        int size = StreamExtensions.VarIntSize(ProtocolVersion) + StreamExtensions.VarIntSize(Keys.Count);
+        int size = StreamExtensions.VarIntSize(ProtocolVersion)
+                   + (ProtocolVersion >= 2 ? StreamExtensions.LongStringSize(CatalogFingerprint) : 0)
+                   + StreamExtensions.VarIntSize(Keys.Count);
 
         foreach (ResourceLocation key in Keys)
         {

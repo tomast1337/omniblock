@@ -667,7 +667,7 @@ public abstract class OmniBlockServer : ICommandOutput
         // First: it establishes how every later message is identified, so nothing name-keyed can be
         // sent before the client holds it. Dropped for non-OmniBlock clients by sendPacket, since
         // it is an ExtendedProtocolPacket.
-        send(MessageRegistrySyncS2CPacket.Get(Messages.NegotiatedOrder));
+        send(MessageRegistrySyncS2CPacket.Get(Messages.NegotiatedOrder, Content.Manifest));
 
         foreach (RegistryDataMessage message in RegistryAccess.BuildSyncMessages())
         {

@@ -104,7 +104,7 @@ public sealed class ProtocolHandshakeTests
         DefaultMessages.RegisterAll(server, ContentRuntime.Current.Items);
 
         MemoryStream stream = new();
-        Packet.Write(MessageRegistrySyncS2CPacket.Get(server.NegotiateAsServer()), stream);
+        Packet.Write(MessageRegistrySyncS2CPacket.Get(server.NegotiateAsServer(), ContentRuntime.Current.Manifest), stream);
         stream.Position = 0;
 
         MessageRegistrySyncS2CPacket received =
@@ -112,6 +112,7 @@ public sealed class ProtocolHandshakeTests
 
         Assert.Equal(ProtocolHandshake.Version, received.ProtocolVersion);
         Assert.Equal(server.NegotiatedOrder, received.Keys);
+        Assert.Equal(ContentRuntime.Current.Manifest.Fingerprint, received.CatalogFingerprint);
     }
 
     /// <summary>A connection over a transport that goes nowhere.</summary>

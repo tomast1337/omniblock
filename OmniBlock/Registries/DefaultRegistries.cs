@@ -55,7 +55,7 @@ public static class DefaultRegistries
             throw new AssetLoadException(itemBootLoader.FirstErrorMessage ?? "Failed to load item definitions.");
         }
 
-        foreach (ItemDefinition definition in itemBootLoader)
+        foreach (ItemDefinition definition in ContentIdAllocator.AssignItemIds(itemBootLoader))
         {
             Items.Register(definition.ProtocolId, new ResourceLocation(definition.Namespace, definition.Name), definition);
             content.AddItemDefinition(definition);

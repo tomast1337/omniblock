@@ -386,6 +386,14 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onMessageRegistrySync(MessageRegistrySyncS2CPacket packet)
     {
+        if (packet.CatalogFingerprint.Length != 0 &&
+            !string.Equals(packet.CatalogFingerprint, _context.Content.Manifest.Fingerprint, StringComparison.Ordinal))
+        {
+            _logger.LogError("Server content catalog {ServerFingerprint} does not match client catalog {ClientFingerprint}",
+                packet.CatalogFingerprint, _context.Content.Manifest.Fingerprint);
+            _netManager.disconnect("disconnect.catalog_mismatch");
+            return;
+        }
         base.onMessageRegistrySync(packet);
 
         // Closes the capability loop. The client declared its own revision inside the login field on

@@ -1,6 +1,7 @@
 using OmniBlock.Entities;
 using OmniBlock.NBT;
 using OmniBlock.Util.Maths;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Worlds.Core.Systems;
 
@@ -24,6 +25,7 @@ public class WorldProperties
         IsRaining = nbt.GetBoolean("raining");
         ThunderTime = nbt.GetInteger("thunderTime");
         IsThundering = nbt.GetBoolean("thundering");
+        if (nbt.HasKey("ContentCatalog")) ContentManifest = ContentCatalogManifest.FromNbt(nbt.GetCompoundTag("ContentCatalog"));
 
         if (nbt.HasKey("generatorName"))
         {
@@ -87,6 +89,7 @@ public class WorldProperties
         ThunderTime = WorldProp.ThunderTime;
         IsThundering = WorldProp.IsThundering;
         GeneratorOptions = WorldProp.GeneratorOptions;
+        ContentManifest = WorldProp.ContentManifest;
     }
 
     public virtual long RandomSeed { get; }
@@ -107,6 +110,7 @@ public class WorldProperties
     public virtual bool IsThundering { get; set; }
     public virtual int ThunderTime { get; set; }
     public virtual string GeneratorOptions { get; set; } = "";
+    public ContentCatalogManifest? ContentManifest { get; set; }
 
     public NBTTagCompound getNBTTagCompound()
     {
@@ -169,6 +173,7 @@ public class WorldProperties
         {
             worldNbt.SetCompoundTag("GameRules", RulesTag);
         }
+        if (ContentManifest is not null) worldNbt.SetCompoundTag("ContentCatalog", ContentManifest.ToNbt());
     }
 
     public virtual void SetSpawn(int x, int y, int z)

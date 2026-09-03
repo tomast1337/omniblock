@@ -30,7 +30,7 @@ public static class ProtocolHandshake
     ///         to make that degradation diagnosable, not to refuse anyone.
     ///     </para>
     /// </summary>
-    public const int Version = 1;
+    public const int Version = 2;
 
     /// <summary>
     ///     "bsha". Occupies the high half of the field, leaving the low half for the revision.

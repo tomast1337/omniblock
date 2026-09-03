@@ -60,6 +60,13 @@ public abstract class World : IWorldContext
         WorldProperties? loadedProperties = worldStorage.LoadProperties();
         bool shouldInitializeSpawn = loadedProperties == null;
         Properties = loadedProperties ?? new WorldProperties(settings, levelName);
+        if (Properties.ContentManifest is { } savedManifest)
+        {
+            CatalogCompatibility compatibility = Content.Manifest.CompareTo(savedManifest);
+            if (!compatibility.CanLoadWorld)
+                throw new InvalidOperationException($"World content catalog is incompatible: {compatibility.Diagnostic}");
+        }
+        Properties.ContentManifest = Content.Manifest;
 
         if (dim != null)
         {
