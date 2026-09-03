@@ -9,7 +9,7 @@ namespace OmniBlock.Entities;
 public static class EntityRegistry
 {
     private static readonly ILogger s_logger = Log.Instance.For(nameof(EntityRegistry));
-    private static readonly IRegistry<EntityType> s_registry = DefaultRegistries.EntityTypes;
+    private static RuntimeEntityTypeRegistry Runtime => ContentRuntime.Current.EntityTypes;
 
     /// <summary>
     ///     Resolves the type an entity class was registered as, walking base classes so subclasses
@@ -20,75 +20,34 @@ public static class EntityRegistry
     ///         by several registered types resolves to <c>null</c>, since it names none of them.
     ///     </para>
     /// </summary>
-    public static EntityType? ByRuntimeType(Type runtimeType)
-    {
-        for (Type? candidate = runtimeType; candidate != null; candidate = candidate.BaseType)
-        {
-            EntityType[] matches = [.. s_registry.Where(type => type.BaseType == candidate)];
-            if (matches.Length > 1) return null;
-            if (matches.Length == 1) return matches[0];
-        }
-
-        return null;
-    }
+    public static EntityType? ByRuntimeType(Type runtimeType) => Runtime.GetByRuntimeType(runtimeType);
 
     public static EntityType ByName(string name) =>
-        s_registry.GetOrThrow(ResourceLocation.Parse(name.ToLowerInvariant()));
+        Runtime.Get(name);
 
     /// <summary>Whether a name resolves to a registered type, for callers validating user input.</summary>
     public static bool Exists(string name) =>
-        s_registry.ContainsKey(ResourceLocation.Parse(name.ToLowerInvariant()));
+        Runtime.TryGet(name, out _);
 
     /// <summary>
     ///     Resolves a type by the object-spawn wire id its definition declares, or <c>null</c> if no
     ///     registered type claims it. This is how the client turns an object-spawn packet back into
     ///     an entity without a per-id branch.
     /// </summary>
-    public static EntityType? BySpawnObjectId(int spawnObjectId)
-    {
-        foreach (EntityType type in s_registry)
-        {
-            if (type.Definition?.SpawnObjectId == spawnObjectId)
-            {
-                return type;
-            }
-        }
-
-        return null;
-    }
+    public static EntityType? BySpawnObjectId(int spawnObjectId) => Runtime.GetBySpawnObjectId(spawnObjectId);
 
     /// <summary>Same resolution for the global-entity spawn packet's own id space.</summary>
-    public static EntityType? ByGlobalSpawnId(int globalSpawnId)
-    {
-        foreach (EntityType type in s_registry)
-        {
-            if (type.Definition?.GlobalSpawnId == globalSpawnId)
-            {
-                return type;
-            }
-        }
-
-        return null;
-    }
+    public static EntityType? ByGlobalSpawnId(int globalSpawnId) => Runtime.GetByGlobalSpawnId(globalSpawnId);
 
     public static Entity? Create(string id, IWorldContext world) => TryCreate(id, world, out Entity? entity) ? entity : null;
 
     public static bool TryCreate(string id, IWorldContext world, [MaybeNullWhen(false)] out Entity entity, EntityType? skip = null)
     {
-        if (!s_registry.TryGet(ResourceLocation.Parse(id.ToLower()), out EntityType? type))
+        if (!world.Content.EntityTypes.TryCreate(id, world, out entity, skip))
         {
             s_logger.LogInformation($"Unable to find entity with id {id}");
-            entity = null;
             return false;
         }
-
-        if (type == skip)
-        {
-            entity = null;
-            return false;
-        }
-
-        entity = type.Create(world);
         return true;
     }
 
@@ -96,25 +55,20 @@ public static class EntityRegistry
 
     public static bool TryCreate(int rawId, IWorldContext world, [MaybeNullWhen(false)] out Entity entity)
     {
-        EntityType? type = s_registry.Get(rawId);
-        if (type != null)
-        {
-            entity = type.Create(world);
-            return true;
-        }
+        if (world.Content.EntityTypes.TryCreate(rawId, world, out entity)) return true;
 
         s_logger.LogInformation($"Unable to find entity with raw id {rawId}");
         entity = null;
         return false;
     }
 
-    public static int GetRawId(Entity entity) => entity.Type != null ? s_registry.GetId(entity.Type) : -1;
+    public static int GetRawId(Entity entity) => entity.World.Content.EntityTypes.GetProtocolId(entity);
 
-    public static string? GetId(Entity entity) => entity.Type != null ? s_registry.GetKey(entity.Type)?.Path : null;
+    public static string? GetId(Entity entity) => entity.World.Content.EntityTypes.GetKey(entity)?.Path;
 
     public static bool TryGetTypeFromName(string name, [MaybeNullWhen(false)] out Type type)
     {
-        if (!s_registry.TryGet(ResourceLocation.Parse(name.ToLower()), out EntityType? entityType))
+        if (!Runtime.TryGet(name, out EntityType? entityType))
         {
             type = null;
             return false;
@@ -126,13 +80,7 @@ public static class EntityRegistry
 
     public static Entity? GetEntityFromNbt(NBTTagCompound nbt, IWorldContext world)
     {
-        string id = nbt.GetString("id");
-        if (TryCreate(id, world, out Entity? entity, ByName("player")))
-        {
-            entity!.Read(nbt);
-        }
-
-        return entity;
+        return world.Content.EntityTypes.ReadFromNbt(nbt, world);
     }
 
     public static Entity? CreateEntityAt(string name, IWorldContext world, float x, float y, float z)

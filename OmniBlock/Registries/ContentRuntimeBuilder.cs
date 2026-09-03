@@ -229,6 +229,8 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
             _blocks.Select(static entry => (entry.Key, entry.Block)),
             _items.Select(static entry => (entry.Key, entry.Item)),
             _blockItems,
+            _entityTypes.Select(static entry => (
+                entry.Key, entry.Definition?.ProtocolId ?? 100, entry.Type)),
             BlockBehaviorProviders,
             ItemBehaviorProviders,
             ProcessProviders,
