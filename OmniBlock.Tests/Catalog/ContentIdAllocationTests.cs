@@ -2,6 +2,8 @@ using OmniBlock.Blocks;
 using OmniBlock.Items;
 using OmniBlock.NBT;
 using OmniBlock.Registries;
+using OmniBlock.Processes;
+using System.Text.Json;
 
 namespace OmniBlock.Tests.Catalog;
 
@@ -76,6 +78,7 @@ public sealed class ContentIdAllocationTests
         Assert.Equal(64, ContentRuntime.Current.Manifest.Fingerprint.Length);
         Assert.Equal(ContentRuntime.Current.Blocks.Count, ContentRuntime.Current.Manifest.BlockIds.Count);
         Assert.Equal(DefaultRegistries.Items.Count(), ContentRuntime.Current.Manifest.ItemIds.Count);
+        Assert.Equal(160, ContentRuntime.Current.Manifest.Processes.Count);
     }
 
     [Fact]
@@ -125,6 +128,54 @@ public sealed class ContentIdAllocationTests
         Assert.Contains(changed.IdMismatches, mismatch => mismatch.Kind == CatalogEntryKind.Item);
     }
 
+    [Fact]
+    public void Process_definition_hash_is_canonical_across_whitespace_and_object_property_order()
+    {
+        ProcessDefinition first = JsonSerializer.Deserialize<ProcessDefinition>(
+            """{"type":"example:crusher","energy":4000,"input":{"count":1,"item":"base:ore"}}""")!;
+        ProcessDefinition reordered = JsonSerializer.Deserialize<ProcessDefinition>(
+            """{ "input": { "item":"base:ore", "count":1 }, "energy":4000, "type":"example:crusher" }""")!;
+        ProcessDefinition changed = JsonSerializer.Deserialize<ProcessDefinition>(
+            """{"type":"example:crusher","energy":5000,"input":{"count":1,"item":"base:ore"}}""")!;
+
+        Assert.Equal(first.ComputeCanonicalHash(), reordered.ComputeCanonicalHash());
+        Assert.NotEqual(first.ComputeCanonicalHash(), changed.ComputeCanonicalHash());
+    }
+
+    [Fact]
+    public void Process_compatibility_reports_missing_provider_and_changed_definition()
+    {
+        ContentCatalogManifest required = ProcessManifest(
+            ("example:crushing", "example:crusher", "hash-a"),
+            ("base:smelting", "omniblock:smelting", "hash-b"));
+        ContentCatalogManifest actual = ProcessManifest(
+            ("base:smelting", "omniblock:smelting", "hash-c"));
+
+        CatalogCompatibility compatibility = actual.CompareTo(required);
+
+        Assert.Contains(ResourceLocation.Parse("example:crushing"), compatibility.MissingProcesses);
+        Assert.Contains(ResourceLocation.Parse("example:crusher"), compatibility.MissingProcessProviders);
+        Assert.Contains(compatibility.ChangedProcesses, mismatch => mismatch.Key == "base:smelting");
+        Assert.Contains("missing processes: example:crushing", compatibility.Diagnostic);
+        Assert.Contains("required process providers: example:crusher", compatibility.Diagnostic);
+        Assert.False(compatibility.CanLoadWorld);
+        Assert.False(compatibility.CanSynchronizeClient);
+    }
+
+    [Fact]
+    public void Process_manifest_round_trips_and_affects_catalog_fingerprint()
+    {
+        ContentCatalogManifest withProcess = ProcessManifest(
+            ("example:crushing", "example:crusher", "hash-a"));
+        ContentCatalogManifest changed = ProcessManifest(
+            ("example:crushing", "example:crusher", "hash-b"));
+        ContentCatalogManifest restored = ContentCatalogManifest.FromNbt(withProcess.ToNbt());
+
+        Assert.Equal(withProcess.Processes, restored.Processes);
+        Assert.Equal(withProcess.Fingerprint, restored.Fingerprint);
+        Assert.NotEqual(withProcess.Fingerprint, changed.Fingerprint);
+    }
+
     private static BlockDefinition Definition(string name, int id = -1, string ns = "omniblock") => new()
     {
         Name = name,
@@ -142,6 +193,12 @@ public sealed class ContentIdAllocationTests
     private static ContentCatalogManifest Manifest((string Key, int Id)[] blocks, (string Key, int Id)[] items) =>
         new(blocks.Select(entry => new KeyValuePair<ResourceLocation, int>(ResourceLocation.Parse(entry.Key), entry.Id)),
             items.Select(entry => new KeyValuePair<ResourceLocation, int>(ResourceLocation.Parse(entry.Key), entry.Id)));
+
+    private static ContentCatalogManifest ProcessManifest(
+        params (string Key, string Type, string Hash)[] processes) => new([], [],
+        processes.Select(entry => new KeyValuePair<ResourceLocation, ProcessCatalogEntry>(
+            ResourceLocation.Parse(entry.Key),
+            new ProcessCatalogEntry(ResourceLocation.Parse(entry.Type), entry.Hash))));
 
     private static ItemDefinition ItemDefinition(string name, int id = -1, string ns = "omniblock") => new()
     {

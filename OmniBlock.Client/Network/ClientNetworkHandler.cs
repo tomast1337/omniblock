@@ -368,6 +368,7 @@ public class ClientNetworkHandler : NetHandler
 
     private long _snapshotRecords;
     private long _snapshotBytes;
+    private string _serverCatalogFingerprint = "";
 
     /// <summary>
     ///     Sends a message, or drops it when the server never advertised the key — the designed
@@ -386,14 +387,7 @@ public class ClientNetworkHandler : NetHandler
 
     public override void onMessageRegistrySync(MessageRegistrySyncS2CPacket packet)
     {
-        if (packet.CatalogFingerprint.Length != 0 &&
-            !string.Equals(packet.CatalogFingerprint, _context.Content.Manifest.Fingerprint, StringComparison.Ordinal))
-        {
-            _logger.LogError("Server content catalog {ServerFingerprint} does not match client catalog {ClientFingerprint}",
-                packet.CatalogFingerprint, _context.Content.Manifest.Fingerprint);
-            _netManager.disconnect("disconnect.catalog_mismatch");
-            return;
-        }
+        _serverCatalogFingerprint = packet.CatalogFingerprint;
         base.onMessageRegistrySync(packet);
 
         // Closes the capability loop. The client declared its own revision inside the login field on
@@ -1550,7 +1544,16 @@ public class ClientNetworkHandler : NetHandler
 
     private void onFinishConfiguration(FinishConfigurationMessage packet)
     {
-        _clientRegistries.CompleteConfiguration();
+        try
+        {
+            _clientRegistries.CompleteConfiguration(_serverCatalogFingerprint);
+        }
+        catch (InvalidDataException error)
+        {
+            _logger.LogError(error, "Server/client content catalogs are incompatible");
+            _netManager.disconnect("disconnect.catalog_mismatch");
+            return;
+        }
         _logger.LogInformation("Configuration finished");
 
         // After registry negotiation and before the server queues a single chunk. See OfferChunkCache.

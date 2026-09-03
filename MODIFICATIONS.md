@@ -277,3 +277,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-09-03 — Refactor crafting and smelting processes to utilize runtime process registry; add tests for crafting screen and static recipe consumer access (Nicolas Vyčas Nery; `9c16dd9f01f075f9cb292ff210a1f9ef4dd5c005`)
 - 2026-09-03 — Enhance process management by introducing staging for content updates; refactor related classes and add tests for process reload atomicity (Nicolas Vyčas Nery; `06a681a59269b93d1b4009fb9a1de452522b988e`)
 - 2026-09-03 — Refactor Profiler and ProfilerRenderer for consistency; use var for variable declarations and improve readability (Nicolas Vyčas Nery; `7642dc41a2badc2a29ab87b330a9f6a2ed88d2c0`)
+- 2026-09-03 — Implemented process compatibility rules (Nicolas Vyčas Nery; `49fa29e240b443209460e3243cb437d5a8c8e15a`)

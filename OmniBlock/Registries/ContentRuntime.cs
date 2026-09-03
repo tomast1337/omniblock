@@ -34,7 +34,8 @@ public sealed class ContentRuntime
         Items = new RuntimeItemRegistry(itemEntries, blockItemEntries, Blocks);
         Manifest = new ContentCatalogManifest(Blocks.Keys.Select(key =>
                 new KeyValuePair<ResourceLocation, int>(key, Blocks.Get(key).Id)),
-            itemEntries.Select(entry => new KeyValuePair<ResourceLocation, int>(entry.Key, entry.Item.Id)));
+            itemEntries.Select(entry => new KeyValuePair<ResourceLocation, int>(entry.Key, entry.Item.Id)),
+            processes.ManifestEntries);
         BlockBehaviorProviders = blockBehaviorProviders;
         ItemBehaviorProviders = itemBehaviorProviders;
         ProcessProviders = processProviders;
@@ -45,7 +46,8 @@ public sealed class ContentRuntime
     {
         Blocks = source.Blocks;
         Items = source.Items;
-        Manifest = source.Manifest;
+        Manifest = new ContentCatalogManifest(source.Manifest.BlockIds, source.Manifest.ItemIds,
+            processes.ManifestEntries);
         BlockBehaviorProviders = source.BlockBehaviorProviders;
         ItemBehaviorProviders = source.ItemBehaviorProviders;
         ProcessProviders = source.ProcessProviders;

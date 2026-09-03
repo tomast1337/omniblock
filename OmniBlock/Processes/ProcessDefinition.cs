@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Security.Cryptography;
 using OmniBlock.Registries.Data;
 
 namespace OmniBlock.Processes;
@@ -40,4 +41,35 @@ public sealed class ProcessDefinition : DataAsset
 
     /// <summary>Returns only the provider-owned portion of the definition.</summary>
     public JsonElement GetProviderDefinition() => JsonSerializer.SerializeToElement(ProviderData);
+
+    public string ComputeCanonicalHash()
+    {
+        using MemoryStream stream = new();
+        using (var writer = new Utf8JsonWriter(stream)) WriteCanonical(writer, GetProviderDefinition());
+        return Convert.ToHexStringLower(SHA256.HashData(stream.ToArray()));
+    }
+
+    private static void WriteCanonical(Utf8JsonWriter writer, JsonElement value)
+    {
+        switch (value.ValueKind)
+        {
+            case JsonValueKind.Object:
+                writer.WriteStartObject();
+                foreach (JsonProperty property in value.EnumerateObject().OrderBy(p => p.Name, StringComparer.Ordinal))
+                {
+                    writer.WritePropertyName(property.Name);
+                    WriteCanonical(writer, property.Value);
+                }
+                writer.WriteEndObject();
+                break;
+            case JsonValueKind.Array:
+                writer.WriteStartArray();
+                foreach (JsonElement element in value.EnumerateArray()) WriteCanonical(writer, element);
+                writer.WriteEndArray();
+                break;
+            default:
+                value.WriteTo(writer);
+                break;
+        }
+    }
 }

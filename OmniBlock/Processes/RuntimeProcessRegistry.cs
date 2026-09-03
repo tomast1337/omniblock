@@ -1,6 +1,7 @@
 using System.Collections.Frozen;
 using OmniBlock.Inventories;
 using OmniBlock.Items;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Processes;
 
@@ -9,10 +10,12 @@ public sealed class RuntimeProcessRegistry
 {
     private readonly FrozenDictionary<ResourceLocation, ICompiledProcess> _byId;
     private readonly FrozenDictionary<ResourceLocation, IReadOnlyList<ICompiledProcess>> _byType;
+    private readonly FrozenDictionary<ResourceLocation, ProcessCatalogEntry> _manifestEntries;
 
     internal RuntimeProcessRegistry(
         IEnumerable<ICompiledProcess> processes,
-        IProcessProviderRegistry providers)
+        IProcessProviderRegistry providers,
+        IEnumerable<KeyValuePair<ResourceLocation, ProcessCatalogEntry>>? manifestEntries = null)
     {
         ArgumentNullException.ThrowIfNull(processes);
         ArgumentNullException.ThrowIfNull(providers);
@@ -31,6 +34,9 @@ public sealed class RuntimeProcessRegistry
             group => (IReadOnlyList<ICompiledProcess>)Array.AsReadOnly(group.ToArray()));
         Crafting = new RuntimeCraftingProcessView(entries.OfType<CompiledCraftingProcess>());
         Smelting = new RuntimeSmeltingProcessView(entries.OfType<CompiledSmeltingProcess>());
+        _manifestEntries = (manifestEntries ?? entries.Select(process =>
+            new KeyValuePair<ResourceLocation, ProcessCatalogEntry>(process.Id,
+                new(process.ProviderType, "")))).ToFrozenDictionary();
     }
 
     internal static RuntimeProcessRegistry Compile(
@@ -40,14 +46,16 @@ public sealed class RuntimeProcessRegistry
     {
         var ids = new HashSet<ResourceLocation>();
         var compiled = new List<ICompiledProcess>();
+        var manifestEntries = new List<KeyValuePair<ResourceLocation, ProcessCatalogEntry>>();
         foreach (ProcessDefinition definition in definitions)
         {
             ResourceLocation id = definition.GetProcessId();
             if (!ids.Add(id)) throw new InvalidOperationException($"Duplicate process id '{id}'.");
             ResourceLocation type = definition.GetProviderType();
             compiled.Add(providers.Build(type, id, definition.GetProviderDefinition(), context));
+            manifestEntries.Add(new(id, new ProcessCatalogEntry(type, definition.ComputeCanonicalHash())));
         }
-        return new RuntimeProcessRegistry(compiled, providers);
+        return new RuntimeProcessRegistry(compiled, providers, manifestEntries);
     }
 
     public static RuntimeProcessRegistry Empty { get; } = new(
@@ -56,6 +64,7 @@ public sealed class RuntimeProcessRegistry
     public int Count => _byId.Count;
     public IEnumerable<ResourceLocation> Keys => _byId.Keys;
     public IEnumerable<ICompiledProcess> Values => _byId.Values;
+    public IReadOnlyDictionary<ResourceLocation, ProcessCatalogEntry> ManifestEntries => _manifestEntries;
     public RuntimeCraftingProcessView Crafting { get; }
     public RuntimeSmeltingProcessView Smelting { get; }
 

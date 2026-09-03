@@ -59,9 +59,14 @@ internal sealed class ClientRegistryAccess(ContentRuntime content, Action<Conten
         }
     }
 
-    public void CompleteConfiguration()
+    public void CompleteConfiguration(string? requiredFingerprint = null)
     {
         ContentRuntime? candidate = Interlocked.Exchange(ref _pendingContent, null);
+        ContentRuntime effective = candidate ?? content;
+        if (!string.IsNullOrEmpty(requiredFingerprint)
+            && !string.Equals(requiredFingerprint, effective.Manifest.Fingerprint, StringComparison.Ordinal))
+            throw new InvalidDataException(
+                $"Server content catalog {requiredFingerprint} does not match compiled client catalog {effective.Manifest.Fingerprint}.");
         if (candidate is not null) stageContent(candidate);
     }
 

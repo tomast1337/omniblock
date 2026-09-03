@@ -46,6 +46,23 @@ public sealed class ProcessReloadAtomicityTests
         Assert.Null(staged);
     }
 
+    [Fact]
+    public void Client_rejects_server_fingerprint_after_compiling_synchronized_processes()
+    {
+        ContentRuntime? staged = null;
+        var access = new ClientRegistryAccess(ContentRuntime.Current, candidate => staged = candidate);
+        access.Accumulate(Message("example:coal_to_stick", """
+            {"type":"shaped","pattern":["#"],"key":{"#":"omniblock:coal"},
+             "result":{"id":"omniblock:stick"}}
+            """));
+
+        InvalidDataException error = Assert.Throws<InvalidDataException>(
+            () => access.CompleteConfiguration(new string('0', 64)));
+
+        Assert.Contains("does not match", error.Message);
+        Assert.Null(staged);
+    }
+
     private static RegistryDataMessage Message(string id, string json)
     {
         var message = new RegistryDataMessage { RegistryId = RegistryKeys.Recipes.Location };
