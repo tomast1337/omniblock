@@ -151,6 +151,68 @@ public sealed class RuntimeProcessRegistryTests
         Assert.Same(published, ContentRuntime.Current);
     }
 
+    [Fact]
+    public void WithProcesses_creates_a_new_snapshot_while_sharing_immutable_blocks_and_items()
+    {
+        ContentRuntime current = ContentRuntime.Current;
+
+        ContentRuntime replacement = current.WithProcesses(
+        [
+            BuiltInDefinition("example:coal_to_stick", """
+                {"type":"shaped","pattern":["#"],"key":{"#":"omniblock:coal"},
+                 "result":{"id":"omniblock:stick","count":2}}
+                """)
+        ]);
+
+        Assert.NotSame(current, replacement);
+        Assert.Same(current.Blocks, replacement.Blocks);
+        Assert.Same(current.Items, replacement.Items);
+        Assert.NotSame(current.Processes, replacement.Processes);
+        Assert.Equal(160, current.Processes.Count);
+        Assert.Equal(1, replacement.Processes.Count);
+    }
+
+    [Fact]
+    public void Failed_process_replacement_leaves_the_previous_snapshot_usable()
+    {
+        ContentRuntime current = ContentRuntime.Current;
+
+        Assert.Throws<InvalidOperationException>(() => current.WithProcesses(
+        [
+            BuiltInDefinition("example:invalid", """
+                {"type":"shaped","pattern":["#"],"key":{"#":"example:missing"},
+                 "result":{"id":"omniblock:stick"}}
+                """)
+        ]));
+
+        Assert.Same(current, ContentRuntime.Current);
+        Assert.Equal(160, current.Processes.Count);
+        Assert.NotNull(current.Processes.Get("omniblock:stick"));
+    }
+
+    [Fact]
+    public void Existing_player_screen_observes_world_snapshot_replacement()
+    {
+        var world = new FakeWorldContext();
+        var player = new TestEntityPlayer(world);
+        var screen = Assert.IsType<PlayerScreenHandler>(player.PlayerScreenHandler);
+        ContentRuntime replacement = world.Content.WithProcesses(
+        [
+            BuiltInDefinition("example:coal_to_stick", """
+                {"type":"shaped","pattern":["#"],"key":{"#":"omniblock:coal"},
+                 "result":{"id":"omniblock:stick","count":2}}
+                """)
+        ]);
+
+        world.ReplaceContent(replacement);
+        screen.craftingInput.SetStack(0, new ItemStack(world.Content.Items.Get("omniblock:coal")));
+
+        ItemStack? result = screen.craftingResult.GetStack(0);
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Count);
+        Assert.Same(world.Content.Items.Get("omniblock:stick"), result.GetItem());
+    }
+
     private static ContentRuntimeBuilder Builder(IProcessProvider provider)
     {
         var providers = new ProcessProviderRegistry(
@@ -167,6 +229,15 @@ public sealed class RuntimeProcessRegistryTests
     {
         ProcessDefinition definition = JsonSerializer.Deserialize<ProcessDefinition>(
             $$"""{"id":"{{id}}","type":"{{type}}","value":1}""")!;
+        return definition;
+    }
+
+    private static ProcessDefinition BuiltInDefinition(string id, string json)
+    {
+        ProcessDefinition definition = JsonSerializer.Deserialize<ProcessDefinition>(json)!;
+        ResourceLocation key = ResourceLocation.Parse(id);
+        definition.Namespace = key.Namespace;
+        definition.Name = key.Path;
         return definition;
     }
 

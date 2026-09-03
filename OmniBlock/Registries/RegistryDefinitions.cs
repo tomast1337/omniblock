@@ -3,6 +3,7 @@ using OmniBlock.Blocks.Materials;
 using OmniBlock.Entities;
 using OmniBlock.Items;
 using OmniBlock.Recipes;
+using OmniBlock.Processes;
 using OmniBlock.Registries.Data;
 using OmniBlock.Worlds.Generation.Biomes;
 
@@ -13,7 +14,7 @@ internal static class RegistryDefinitions
     public static readonly RegistryDefinition<GameMode> GameModes =
         new(RegistryKeys.GameModes, "gamemode");
 
-    public static readonly RegistryDefinition<RecipeDefinition> Recipes =
+    public static readonly RegistryDefinition<ProcessDefinition> Recipes =
         new(RegistryKeys.Recipes, "recipe");
 
     public static readonly RegistryDefinition<ItemDefinition> Items =

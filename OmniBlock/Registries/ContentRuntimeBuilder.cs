@@ -208,42 +208,11 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView
 
     private RuntimeProcessRegistry BuildProcesses()
     {
-        var processIds = new HashSet<ResourceLocation>();
-        var compiled = new List<ICompiledProcess>(_pendingProcessDefinitions.Count);
         RuntimeBlockRegistry blocks = new(_blocks.Select(static entry => (entry.Key, entry.Block)));
         RuntimeItemRegistry items = new(
             _items.Select(static entry => (entry.Key, entry.Item)), _blockItems, blocks);
         ProcessBuildContext context = new(items, blocks);
-
-        foreach (ProcessDefinition definition in _pendingProcessDefinitions)
-        {
-            ResourceLocation id;
-            try
-            {
-                id = definition.GetProcessId();
-            }
-            catch (Exception error)
-            {
-                throw new InvalidOperationException(
-                    $"Process definition '{definition}' has invalid identity: {error.Message}", error);
-            }
-            if (!processIds.Add(id)) throw new InvalidOperationException($"Duplicate process id '{id}'.");
-
-            ResourceLocation providerType;
-            try
-            {
-                providerType = definition.GetProviderType();
-            }
-            catch (Exception error)
-            {
-                throw new InvalidOperationException(
-                    $"Process '{id}' has invalid provider type '{definition.Type}': {error.Message}", error);
-            }
-            compiled.Add(ProcessProviders.Build(
-                providerType, id, definition.GetProviderDefinition(), context));
-        }
-
-        return new RuntimeProcessRegistry(compiled, ProcessProviders);
+        return RuntimeProcessRegistry.Compile(_pendingProcessDefinitions, ProcessProviders, context);
     }
 
     private void BuildPendingItems()

@@ -4,6 +4,7 @@ using OmniBlock.Blocks.Materials;
 using OmniBlock.Entities;
 using OmniBlock.Items;
 using OmniBlock.Recipes;
+using OmniBlock.Processes;
 using OmniBlock.Rules;
 using OmniBlock.Worlds.Generation.Biomes;
 
@@ -22,7 +23,7 @@ public static class RegistryKeys
     public static readonly RegistryKey<BlockDefinition> Blocks = new("omniblock:block");
     public static readonly RegistryKey<IGameRule> GameRules = new("omniblock:game_rule");
     public static readonly RegistryKey<GameMode> GameModes = new("omniblock:game_mode");
-    public static readonly RegistryKey<RecipeDefinition> Recipes = new("omniblock:recipe");
+    public static readonly RegistryKey<ProcessDefinition> Recipes = new("omniblock:recipe");
     public static readonly RegistryKey<ItemDefinition> Items = new("omniblock:item");
     public static readonly RegistryKey<EntityDefinition> Entities = new("omniblock:entity");
     public static readonly RegistryKey<ToolMaterialDefinition> ToolMaterials = new("omniblock:item_material");

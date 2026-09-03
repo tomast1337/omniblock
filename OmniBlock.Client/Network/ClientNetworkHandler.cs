@@ -107,7 +107,7 @@ public class ClientNetworkHandler : NetHandler
     public ClientNetworkHandler(ClientNetworkContext context, string address, int port)
     {
         _context = context;
-        _clientRegistries = new ClientRegistryAccess(context.Content.Items);
+        _clientRegistries = new ClientRegistryAccess(context.Content, context.StageContent);
         Messages = BuildMessageRegistry(context.Content.Items);
 
         IPAddress[] addresses = Dns.GetHostAddresses(address);
@@ -147,7 +147,7 @@ public class ClientNetworkHandler : NetHandler
     public ClientNetworkHandler(ClientNetworkContext context, Connection connection)
     {
         _context = context;
-        _clientRegistries = new ClientRegistryAccess(context.Content.Items);
+        _clientRegistries = new ClientRegistryAccess(context.Content, context.StageContent);
         Messages = BuildMessageRegistry(context.Content.Items);
         _netManager = connection;
 
@@ -1550,6 +1550,7 @@ public class ClientNetworkHandler : NetHandler
 
     private void onFinishConfiguration(FinishConfigurationMessage packet)
     {
+        _clientRegistries.CompleteConfiguration();
         _logger.LogInformation("Configuration finished");
 
         // After registry negotiation and before the server queues a single chunk. See OfferChunkCache.

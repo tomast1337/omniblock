@@ -50,7 +50,8 @@ public sealed class FakeWorldContext : IWorldContext
     }
 
     public FakeBlockGrid ReaderWriter { get; }
-    public ContentRuntime Content { get; }
+    public ContentRuntime Content { get; private set; }
+    public void ReplaceContent(ContentRuntime content) => Content = content;
     public RecordingTickScheduler TickSchedulerSpy { get; }
 
     public IBlockReader Reader => ReaderWriter;

@@ -33,6 +33,23 @@ public sealed class RuntimeProcessRegistry
         Smelting = new RuntimeSmeltingProcessView(entries.OfType<CompiledSmeltingProcess>());
     }
 
+    internal static RuntimeProcessRegistry Compile(
+        IEnumerable<ProcessDefinition> definitions,
+        IProcessProviderRegistry providers,
+        in ProcessBuildContext context)
+    {
+        var ids = new HashSet<ResourceLocation>();
+        var compiled = new List<ICompiledProcess>();
+        foreach (ProcessDefinition definition in definitions)
+        {
+            ResourceLocation id = definition.GetProcessId();
+            if (!ids.Add(id)) throw new InvalidOperationException($"Duplicate process id '{id}'.");
+            ResourceLocation type = definition.GetProviderType();
+            compiled.Add(providers.Build(type, id, definition.GetProviderDefinition(), context));
+        }
+        return new RuntimeProcessRegistry(compiled, providers);
+    }
+
     public static RuntimeProcessRegistry Empty { get; } = new(
         [], new ProcessProviderRegistry([]));
 

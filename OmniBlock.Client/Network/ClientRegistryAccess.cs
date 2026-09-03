@@ -4,6 +4,7 @@ using OmniBlock.Network.Messages;
 using OmniBlock.Registries;
 using OmniBlock.Registries.Data;
 using Microsoft.Extensions.Logging;
+using OmniBlock.Processes;
 
 namespace OmniBlock.Client.Network;
 
@@ -11,8 +12,15 @@ namespace OmniBlock.Client.Network;
 /// Accumulates <see cref="RegistryDataMessage"/>s received during the login configuration
 /// phase and provides typed, holder-based access to the deserialized data.
 /// </summary>
-internal sealed class ClientRegistryAccess(RuntimeItemRegistry items)
+internal sealed class ClientRegistryAccess(ContentRuntime content, Action<ContentRuntime> stageContent)
 {
+    private ContentRuntime? _pendingContent;
+    internal ClientRegistryAccess(RuntimeItemRegistry items)
+        : this(ContentRuntime.Current, _ => { })
+    {
+        if (!ReferenceEquals(items, ContentRuntime.Current.Items))
+            throw new ArgumentException("Item registry must belong to the active content runtime.", nameof(items));
+    }
 
     ILogger<ClientRegistryAccess> _logger = Log.Instance.For<ClientRegistryAccess>();
 
@@ -41,12 +49,20 @@ internal sealed class ClientRegistryAccess(RuntimeItemRegistry items)
 
         _logger.LogDebug($"Received {packet.Entries.Count} entries for {packet.RegistryId}");
 
-        // TODO: this is a hack to force the recipe manager to rebuild.
-        //       this should be done using listeners instead.
         if (packet.RegistryId.IsVanilla && packet.RegistryId.Path == "recipe")
         {
-            Recipes.RecipeManager.Rebuild(GetAll<Recipes.RecipeDefinition>(packet.RegistryId).Values, items);
+            IEnumerable<ProcessDefinition> definitions =
+                GetAll<ProcessDefinition>(packet.RegistryId).Values.Select(holder => holder.Value);
+            ContentRuntime candidate = content.WithProcesses(definitions);
+            content = candidate;
+            _pendingContent = candidate;
         }
+    }
+
+    public void CompleteConfiguration()
+    {
+        ContentRuntime? candidate = Interlocked.Exchange(ref _pendingContent, null);
+        if (candidate is not null) stageContent(candidate);
     }
 
     /// <summary>

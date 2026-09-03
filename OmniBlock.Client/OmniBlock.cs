@@ -59,7 +59,8 @@ public partial class OmniBlock :
     IInternalServerHost,
     ISingleplayerHost
 {
-    public ContentRuntime Content { get; }
+    public ContentRuntime Content { get; private set; }
+    private ContentRuntime? _pendingContent;
 
     #region Constants & Static Members
 
@@ -1107,6 +1108,7 @@ public partial class OmniBlock :
 
     public void RunTick(float partialTicks)
     {
+        CommitPendingContent();
         using Profiler.ProfilerScope _tick = Profiler.Begin("Tick");
 
         // Per docs/luau-persistent-lifecycle-plan.md §3/§4: reset the instruction budget and
@@ -1988,7 +1990,18 @@ public partial class OmniBlock :
     }
 
     private MainMenuScreen CreateMainMenuScreen() => new(UIContext, Session, this, CreateNetworkContext(), TexturePackList, Shutdown);
-    private ClientNetworkContext CreateNetworkContext() => new(this, this, this, Session, StatFileWriter, ParticleManager, HUD.AddChatMessage, this, Path.Combine(_gameDataDir, "chunkcache"), Content);
+    private ClientNetworkContext CreateNetworkContext() => new(this, this, this, Session, StatFileWriter, ParticleManager, HUD.AddChatMessage, this, Path.Combine(_gameDataDir, "chunkcache"), Content, StageContent);
+
+    private void StageContent(ContentRuntime content) =>
+        Volatile.Write(ref _pendingContent, content);
+
+    private void CommitPendingContent()
+    {
+        ContentRuntime? candidate = Interlocked.Exchange(ref _pendingContent, null);
+        if (candidate is null) return;
+        Content = candidate;
+        World?.ReplaceContent(candidate);
+    }
 
     #endregion
 

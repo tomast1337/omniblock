@@ -146,7 +146,9 @@ public abstract class World : IWorldContext
     }
 
     public ChunkHost BlockHost { get; }
-    public ContentRuntime Content { get; }
+    public ContentRuntime Content { get; private set; }
+    public void ReplaceContent(ContentRuntime content) =>
+        Content = content ?? throw new ArgumentNullException(nameof(content));
     public IBlockReader Reader { get; }
     public IBlockWriter Writer { get; }
     public WorldEventBroadcaster Broadcaster { get; }

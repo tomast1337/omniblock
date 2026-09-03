@@ -15,7 +15,8 @@ public sealed class ClientNetworkContext(
     Action<string> addChatMessage,
     IClientNetworkFactory factory,
     string chunkCacheDirectory,
-    ContentRuntime content)
+    ContentRuntime content,
+    Action<ContentRuntime>? stageContent = null)
 {
     /// <summary>
     ///     Where per-server chunk caches live. Passed in rather than read from a static so a test can
@@ -33,4 +34,5 @@ public sealed class ClientNetworkContext(
     public Action<string> AddChatMessage => addChatMessage;
     public IClientNetworkFactory Factory => factory;
     public ContentRuntime Content => content;
+    public Action<ContentRuntime> StageContent => stageContent ?? (_ => { });
 }

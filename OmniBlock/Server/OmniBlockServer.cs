@@ -3,7 +3,6 @@ using OmniBlock.Diagnostics;
 using OmniBlock.Network.Messages;
 using OmniBlock.Network.Packets;
 using OmniBlock.Profiling;
-using OmniBlock.Recipes;
 using OmniBlock.Registries;
 using OmniBlock.Registries.Data;
 using OmniBlock.Server.Command;
@@ -25,7 +24,7 @@ namespace OmniBlock.Server;
 
 public abstract class OmniBlockServer : ICommandOutput
 {
-    public ContentRuntime Content { get; }
+    public ContentRuntime Content { get; private set; }
     public RegistryAccess RegistryAccess { get; set; } = RegistryAccess.Empty;
 
     /// <summary>
@@ -91,6 +90,7 @@ public abstract class OmniBlockServer : ICommandOutput
     private float _currentTps;
 
     private volatile bool _isPaused;
+    private ContentRuntime? _pendingContent;
 
     private long _tickLength = 50L;
     private long _accumulatedTime;
@@ -129,7 +129,7 @@ public abstract class OmniBlockServer : ICommandOutput
         _commandHandler = new ServerCommandHandler(this);
 
         RegisterReloadListener(new DefaultGameModeListener(this));
-        RegisterReloadListener(new RecipeManager(Content.Items));
+        RegisterReloadListener(new ProcessReloadListener(this));
 
         // Freeze the message table before the listener accepts anyone. Every client is told this
         // ordering during configuration, so it must not be able to change afterwards. Mods register
@@ -179,6 +179,7 @@ public abstract class OmniBlockServer : ICommandOutput
         {
             listener.OnRegistriesRebuilt(RegistryAccess);
         }
+        CommitPendingContent();
 
         if (logHelp)
         {
@@ -567,6 +568,7 @@ public abstract class OmniBlockServer : ICommandOutput
 
     public void Tick()
     {
+        CommitPendingContent();
         _ticks++;
 
         // Captured before anything moves. Every position written during this call describes this
@@ -598,6 +600,22 @@ public abstract class OmniBlockServer : ICommandOutput
                 world.Entities.TickEntities();
             }
         }
+    }
+
+    internal void StageContent(ContentRuntime candidate)
+    {
+        ArgumentNullException.ThrowIfNull(candidate);
+        Volatile.Write(ref _pendingContent, candidate);
+    }
+
+    private void CommitPendingContent()
+    {
+        ContentRuntime? candidate = Interlocked.Exchange(ref _pendingContent, null);
+        if (candidate is null) return;
+        Content = candidate;
+        if (worlds is null) return;
+        foreach (ServerWorld world in worlds)
+            world?.ReplaceContent(candidate);
     }
 
     public void QueueCommands(string str, ICommandOutput cmd)
@@ -687,15 +705,19 @@ public abstract class OmniBlockServer : ICommandOutput
         playerManager.sendToAll(new ChatMessage { Text = "§eReloading datapacks..." });
         try
         {
-            RegistryAccess = RegistryAccess.Rebuild();
+            RegistryAccess candidateRegistries = RegistryAccess.Rebuild();
+            foreach (IRegistryReloadListener listener in _reloadListeners)
+                listener.OnRegistriesRebuilt(candidateRegistries);
 
-            RegistryReloadPipeline.SyncToPlayers(RegistryAccess, _reloadListeners, playerManager.players);
+            RegistryReloadPipeline.SyncToPlayers(candidateRegistries, _reloadListeners, playerManager.players);
+            RegistryAccess = candidateRegistries;
 
             _logger.LogInformation("Datapacks reloaded.");
             playerManager.sendToAll(new ChatMessage { Text = "§aDatapacks reloaded." });
         }
-        catch (AssetLoadException ex)
+        catch (Exception ex)
         {
+            Interlocked.Exchange(ref _pendingContent, null);
             _logger.LogError("Datapack reload failed: {Message}.", ex.Message);
 
             if (this is InternalServer)

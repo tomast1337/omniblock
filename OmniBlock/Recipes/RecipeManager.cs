@@ -3,10 +3,8 @@ using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Recipes;
 
-public class RecipeManager : IRegistryReloadListener
+public class RecipeManager
 {
-    private readonly RuntimeItemRegistry _items;
-    public RecipeManager(RuntimeItemRegistry items) => _items = items;
     private static readonly ILogger<RecipeManager> s_logger = Log.Instance.For<RecipeManager>();
 
     /// <summary>
@@ -17,19 +15,6 @@ public class RecipeManager : IRegistryReloadListener
         new ShapelessCraftingRegistry(),
         new SmeltingCraftingRegistry()
     ];
-
-    public void OnRegistriesRebuilt(RegistryAccess registryAccess)
-    {
-        var a = registryAccess.GetOrThrow(RegistryKeys.Recipes);
-        if (!a.Any())
-        {
-            s_logger.LogCritical("Registries Rebuilt with 0 recipes. ignoring recipes reload.");
-            return;
-        }
-
-        ClearRecipes();
-        BuildRecipes(registryAccess.GetOrThrow(RegistryKeys.Recipes), _items);
-    }
 
     public static void Rebuild(IEnumerable<RecipeDefinition> definitions, RuntimeItemRegistry items)
     {

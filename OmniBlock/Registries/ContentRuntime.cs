@@ -41,6 +41,26 @@ public sealed class ContentRuntime
         Processes = processes;
     }
 
+    private ContentRuntime(ContentRuntime source, RuntimeProcessRegistry processes)
+    {
+        Blocks = source.Blocks;
+        Items = source.Items;
+        Manifest = source.Manifest;
+        BlockBehaviorProviders = source.BlockBehaviorProviders;
+        ItemBehaviorProviders = source.ItemBehaviorProviders;
+        ProcessProviders = source.ProcessProviders;
+        Processes = processes;
+    }
+
+    public ContentRuntime WithProcesses(IEnumerable<ProcessDefinition> definitions)
+    {
+        ArgumentNullException.ThrowIfNull(definitions);
+        ProcessBuildContext context = new(Items, Blocks);
+        RuntimeProcessRegistry processes = RuntimeProcessRegistry.Compile(
+            definitions, ProcessProviders, context);
+        return new ContentRuntime(this, processes);
+    }
+
     public static ContentRuntime Current => Volatile.Read(ref s_current)
         ?? throw new InvalidOperationException("Content runtime has not been published. Run Bootstrap.Initialize() first.");
 
