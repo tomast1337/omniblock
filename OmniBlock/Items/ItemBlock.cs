@@ -9,6 +9,7 @@ namespace OmniBlock.Items;
 internal class ItemBlock : Item
 {
     protected readonly Block Block;
+    internal Block RuntimeBlock => Block;
     private int BlockId => Block.Id;
 
     public ItemBlock(Block block) : base(block.Id - 256)

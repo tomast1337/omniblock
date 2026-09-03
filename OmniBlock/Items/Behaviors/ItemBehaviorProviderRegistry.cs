@@ -89,7 +89,7 @@ public sealed class ItemBehaviorProviderRegistry : IItemBehaviorProviderRegistry
     private static IItemBehavior BuildPlaceBlock(JsonElement json, ItemBuildContext context)
     {
         Block block = context.ResolveBlock(ResourceLocation.Parse(String(json, "PlacesBlock")));
-        return new PlaceBlockBehavior(() => block);
+        return new PlaceBlockBehavior(block);
     }
 
     private static IItemBehavior BuildThrowable(JsonElement json, ItemBuildContext context)

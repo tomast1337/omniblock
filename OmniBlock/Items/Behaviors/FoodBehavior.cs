@@ -17,6 +17,7 @@ internal sealed class FoodBehavior : IItemBehavior
     internal int HealAmount { get; }
 
     internal bool IsMeat { get; }
+    internal Item? ReturnItem => _returnItem;
 
     public ItemStack Use(Item item, ItemStack itemStack, IWorldContext world, EntityPlayer player)
     {
