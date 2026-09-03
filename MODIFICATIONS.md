@@ -270,3 +270,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-09-03 — Refactor item handling and command structure (Nicolas Vyčas Nery; `fcdd8b9821fa4790e5b358491875bfb22aeae9bd`)
 - 2026-09-03 — Added the five atomicity and isolation guarantees in OmniBlock.Tests/Catalog/ItemRuntimeAtomicityTests.cs: (Nicolas Vyčas Nery; `e8689ce54d2812a424d5af0f893ffbd648a79b22`)
 - 2026-09-03 — Enhance content catalog synchronization and item ID allocation (Nicolas Vyčas Nery; `ad7e925c1d7bf3ef6506f424fcec30f028a2c397`)
+- 2026-09-03 — Add process provider registry and related interfaces for process management (Nicolas Vyčas Nery; `e2a147ccc725ee363c261b1cd5e8b8da596a7e31`)
