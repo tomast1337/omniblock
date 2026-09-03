@@ -6,8 +6,10 @@ using OmniBlock.Items.Behaviors;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
+using OmniBlock.Entities.State;
 using OmniBlock.Processes;
 using OmniBlock.Worlds.Core.Systems;
+using OmniBlock.Util;
 
 namespace OmniBlock.Registries;
 
@@ -44,7 +46,8 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         ItemBuildContext itemBuildContext,
         StagedBlockRuntimeView? blockRuntimeView = null,
         IProcessProviderRegistry? processProviders = null,
-        IEntityBehaviorProviderRegistry? entityBehaviorProviders = null)
+        IEntityBehaviorProviderRegistry? entityBehaviorProviders = null,
+        IEntityConstructorProviderRegistry? entityConstructorProviders = null)
     {
         ArgumentNullException.ThrowIfNull(blockBehaviorProviders);
         BlockBehaviorProviders = blockBehaviorProviders;
@@ -52,6 +55,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         ItemBehaviorProviders = itemBehaviorProviders;
         ProcessProviders = processProviders ?? BuiltInProcessProviders.CreateRegistry();
         EntityBehaviorProviders = entityBehaviorProviders ?? new EntityBehaviorProviderRegistry();
+        EntityConstructorProviders = entityConstructorProviders ?? new EntityConstructorProviderRegistry();
         _blockRuntimeView = blockRuntimeView ?? new StagedBlockRuntimeView();
         BlockBuildContext = blockBuildContext;
         ItemBuildContext = itemBuildContext;
@@ -62,6 +66,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
     public IItemBehaviorProviderRegistry ItemBehaviorProviders { get; }
     public IProcessProviderRegistry ProcessProviders { get; }
     public IEntityBehaviorProviderRegistry EntityBehaviorProviders { get; }
+    public IEntityConstructorProviderRegistry EntityConstructorProviders { get; }
     public ItemBuildContext ItemBuildContext { get; }
     public BehaviorBuildContext BehaviorBuildContext => BlockBuildContext.Behaviors;
     internal IBlockRuntimeView StagedBlocks => _blockRuntimeView;
@@ -280,8 +285,8 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         // Establish every key before behavior construction so forward entity references can resolve.
         foreach ((ResourceLocation key, EntityDefinition definition) in definitionsByKey)
         {
-            (Type runtimeType, Func<IWorldContext, EntityType, Entity> factory) = ConstructorFor(key);
-            EntityType draft = new(factory, runtimeType, DisplayName(key), definition);
+            IEntityConstructorProvider constructor = ConstructorFor(key, definition);
+            EntityType draft = new(constructor.Create, constructor.RuntimeType, DisplayName(key), definition);
             _entityTypesByKey.Add(key, draft);
             _entityTypesByProtocolId.Add(definition.ProtocolId, draft);
         }
@@ -292,9 +297,11 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
             EntityType draft = _entityTypesByKey[key];
             try
             {
+                ValidateEntityDefinitionReferences(key, definition);
                 EntityBehaviorSet behaviors = EntityFactory.BuildBehaviors(
                     definition, draft.BaseType, context, EntityBehaviorProviders);
-                EntityType finalized = new(ConstructorFor(key).Factory, draft.BaseType, draft.Id, definition, behaviors);
+                IEntityConstructorProvider constructor = ConstructorFor(key, definition);
+                EntityType finalized = new(constructor.Create, draft.BaseType, draft.Id, definition, behaviors);
                 _entityTypesByKey[key] = finalized;
                 _entityTypesByProtocolId[definition.ProtocolId] = finalized;
                 _entityTypes.Add((key, definition, finalized));
@@ -314,19 +321,36 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         _entityTypes.Add((playerKey, null, player));
     }
 
-    private static (Type RuntimeType, Func<IWorldContext, EntityType, Entity> Factory) ConstructorFor(ResourceLocation key)
+    private void ValidateEntityDefinitionReferences(ResourceLocation key, EntityDefinition definition)
     {
-        if (key.Namespace != Namespace.OmniBlock)
-            throw new InvalidOperationException($"Entity '{key}' has no constructor provider.");
-        return key.Path switch
+        if (definition.HeldItem is { } heldItem)
+            _ = Get(ResourceLocation.Parse(heldItem));
+
+        DataSynchronizer synchronizer = new(this);
+        synchronizer.MakeProperty<byte>(0, 0);
+        SyncedPropertyFactory.Declare(synchronizer, definition.SyncedProperties, key.ToString());
+    }
+
+    private IEntityConstructorProvider ConstructorFor(ResourceLocation key, EntityDefinition definition)
+    {
+        ResourceLocation providerType = definition.Constructor is { Length: > 0 } declared
+            ? ResourceLocation.Parse(declared)
+            : key.Path switch
+            {
+                "slime" or "ghast" or "squid" => ResourceLocation.Parse("omniblock:living"),
+                "creeper" or "skeleton" or "spider" or "giant" or "zombie" or "pigzombie" or
+                    "pig" or "sheep" or "cow" or "chicken" or "wolf" => ResourceLocation.Parse("omniblock:creature"),
+                _ => ResourceLocation.Parse("omniblock:object")
+            };
+        try
         {
-            "slime" or "ghast" or "squid" =>
-                (typeof(EntityLiving), static (world, type) => new EntityLiving(world, type)),
-            "creeper" or "skeleton" or "spider" or "giant" or "zombie" or "pigzombie" or
-                "pig" or "sheep" or "cow" or "chicken" or "wolf" =>
-                (typeof(EntityCreature), static (world, type) => new EntityCreature(world, type)),
-            _ => (typeof(EntityObject), static (world, type) => new EntityObject(world, type))
-        };
+            return EntityConstructorProviders.Get(providerType);
+        }
+        catch (KeyNotFoundException error)
+        {
+            throw new InvalidOperationException(
+                $"Entity '{key}' references unknown constructor provider '{providerType}'.", error);
+        }
     }
 
     private static string DisplayName(ResourceLocation key) => key.Path switch

@@ -22,6 +22,9 @@ public sealed record EntityDefinition : IDataAsset
     /// </summary>
     public int ProtocolId { get; init; } = -1;
 
+    /// <summary>Namespaced factory for the runtime entity body. Omitted by legacy built-ins.</summary>
+    public string? Constructor { get; init; }
+
     /// <summary>
     ///     Which natural-spawn budget this mob counts against and spawns from:
     ///     <c>"monster"</c>, <c>"creature"</c>, <c>"water_creature"</c>, or empty for mobs that never

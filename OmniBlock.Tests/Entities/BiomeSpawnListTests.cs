@@ -1,7 +1,9 @@
 using System.Linq;
 using OmniBlock;
 using OmniBlock.Entities;
+using OmniBlock.Registries;
 using OmniBlock.Worlds.Generation.Biomes;
+using OmniBlock.Registries.Data;
 
 namespace OmniBlock.Tests.Entities;
 
@@ -97,6 +99,31 @@ public sealed class BiomeSpawnListTests
                     Assert.Equal(kind.Category, mob.Definition.SpawnCategory);
                 }
             }
+        }
+    }
+
+    [Fact]
+    public void Unknown_spawn_entry_identifies_the_referenced_entity_before_publication()
+    {
+        var invalid = new BiomeSpawnDefinition
+        {
+            Name = "sky",
+            Creatures = [new BiomeSpawnEntry("example:missing_mob", 10)]
+        };
+
+        try
+        {
+            ArgumentException error = Assert.Throws<ArgumentException>(() =>
+                Biome.LoadSpawnLists([invalid], ContentRuntime.Current.EntityTypes));
+            Assert.Contains("example:missing_mob", error.Message);
+        }
+        finally
+        {
+            var shipped = new DataAssetLoader<BiomeSpawnDefinition>(
+                RegistryDefinitions.BiomeSpawns.AssetPath, LoadLocations.Assets, allowUnhandled: false);
+            shipped.LoadFromPaths(null, null, null);
+            Assert.False(shipped.HasErrors, shipped.FirstErrorMessage);
+            Biome.LoadSpawnLists(shipped, ContentRuntime.Current.EntityTypes);
         }
     }
 

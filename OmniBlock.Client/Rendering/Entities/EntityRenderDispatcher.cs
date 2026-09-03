@@ -60,11 +60,19 @@ public class EntityRenderDispatcher
     /// </summary>
     private void RegisterDeclaredRenderers()
     {
-        foreach (EntityType type in DefaultRegistries.EntityTypes)
+        foreach (ResourceLocation key in ContentRuntime.Current.EntityTypes.Keys)
         {
+            EntityType type = ContentRuntime.Current.EntityTypes.Get(key);
             if (type.Definition?.Renderer is not { } json) continue;
-
-            _declaredRenderMap[type] = EntityRendererRegistry.Create(json);
+            try
+            {
+                _declaredRenderMap[type] = EntityRendererRegistry.Create(json);
+            }
+            catch (Exception error)
+            {
+                throw new InvalidOperationException(
+                    $"Entity '{key}' references an invalid renderer: {error.Message}", error);
+            }
         }
     }
 

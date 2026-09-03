@@ -108,7 +108,16 @@ public sealed class ThrownProjectileDefinition : EntityBehaviorDefinition
         new ThrownProjectileBehavior(
             context.Layout,
             ImpactParticle,
-            Hatch is { } hatch ? (hatch.Entity, hatch.Chance, hatch.BonusChance, hatch.BonusCount) : null);
+            Hatch is { } hatch
+                ? (ResolveEntity(context.EntityTypes, hatch.Entity), hatch.Chance, hatch.BonusChance, hatch.BonusCount)
+                : null);
+
+    private static string ResolveEntity(IEntityTypeBuildView entities, string name)
+    {
+        ResourceLocation key = ResourceLocation.Parse(name);
+        if (!entities.TryGet(key, out _)) throw new KeyNotFoundException($"Unknown entity type '{key}'.");
+        return key.ToString();
+    }
 }
 
 public sealed class FireballDefinition : EntityBehaviorDefinition

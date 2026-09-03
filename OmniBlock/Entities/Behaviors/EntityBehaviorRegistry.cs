@@ -116,9 +116,9 @@ public sealed class EntityBehaviorProviderRegistry : IEntityBehaviorProviderRegi
         // Lifecycle
         ["split_on_death"] = (in c) => new SplitOnDeathBehavior(c.Int("child_count", 4)),
         ["spawn_rider"] = (in c) => new SpawnRiderBehavior(
-            c.Json.GetProperty("rider").GetString()!,
+            ValidateEntity(c, "rider"),
             c.Int("chance_one_in", 100)),
-        ["lightning_conversion"] = (in c) => new LightningConversionBehavior(c.Json.GetProperty("becomes").GetString()!)
+        ["lightning_conversion"] = (in c) => new LightningConversionBehavior(ValidateEntity(c, "becomes"))
     };
 
     /// <summary>
@@ -128,6 +128,16 @@ public sealed class EntityBehaviorProviderRegistry : IEntityBehaviorProviderRegi
     internal static Achievement Achievement(string key) =>
         Achievements.AllAchievements.Find(a => a.TranslationKey == "achievement." + key)
         ?? throw new ArgumentException($"Unknown achievement '{key}'.", nameof(key));
+
+    private static string ValidateEntity(in EntityBehaviorContext context, string property)
+    {
+        string name = context.Json.GetProperty(property).GetString()
+                      ?? throw new ArgumentException($"Entity reference '{property}' is null.");
+        ResourceLocation key = ResourceLocation.Parse(name);
+        if (!context.EntityTypes.TryGet(key, out _))
+            throw new KeyNotFoundException($"Unknown entity type '{key}'.");
+        return key.ToString();
+    }
 
     public EntityBehaviorProviderRegistry()
     {

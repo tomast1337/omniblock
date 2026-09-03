@@ -30,6 +30,14 @@ internal static class EntityFactory
 
         foreach (JsonElement entry in definition.Behaviors)
         {
+            string providerName = entry.TryGetProperty("Type", out JsonElement typeElement)
+                ? typeElement.GetString() ?? "<null>"
+                : "<missing>";
+            ResourceLocation? providerType = ResourceLocation.TryParse(providerName, out ResourceLocation? parsed)
+                ? parsed
+                : null;
+            if (providerType is not null && !providerName.Contains(':'))
+                providerType = new ResourceLocation(Namespace.OmniBlock, providerType.Path);
             // Runs inside a static constructor chain, so without this the failure surfaces as a bare
             // TypeInitializationException naming neither the entity nor the behavior.
             object behavior;
@@ -39,7 +47,9 @@ internal static class EntityFactory
             }
             catch (Exception ex)
             {
-                throw new ArgumentException($"Failed to build {entry} on entity '{definition.Name}': {ex.Message}", ex);
+                string owner = new ResourceLocation(definition.Namespace, definition.Name).ToString();
+                throw new ArgumentException(
+                    $"Entity '{owner}' behavior '{providerType?.ToString() ?? providerName}': {ex.Message}", ex);
             }
 
             if (!entry.TryGetProperty("Slots", out JsonElement slots) || slots.GetArrayLength() == 0)
