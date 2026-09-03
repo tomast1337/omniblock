@@ -4,6 +4,7 @@ using OmniBlock.Blocks.Materials;
 using OmniBlock.Diagnostics;
 using OmniBlock.Entities;
 using OmniBlock.Items;
+using OmniBlock.Processes;
 using OmniBlock.Registries.Data;
 using OmniBlock.Rules;
 using OmniBlock.Worlds.Generation.Biomes;
@@ -80,6 +81,14 @@ public static class DefaultRegistries
         // Blocks and entity definitions now exist, so every item cross-reference can be resolved
         // and the item catalog frozen before entity constructors consume item behaviors.
         content.FinalizeItemsForBootstrap();
+
+        // Compile the built-in process catalog as part of the same atomic content snapshot. The
+        // legacy dynamic recipe registry remains registered below until its runtime consumers move.
+        var processLoader = new DataAssetLoader<ProcessDefinition>("recipe", LoadLocations.Assets, allowUnhandled: false);
+        processLoader.LoadFromPaths(null, null, null);
+        if (processLoader.HasErrors)
+            throw new AssetLoadException(processLoader.FirstErrorMessage ?? "Failed to load process definitions.");
+        foreach (ProcessDefinition definition in processLoader) content.AddProcessDefinition(definition);
 
         EntityTypes.Bootstrap(typeof(EntityRegistry));
         Biomes.Bootstrap(typeof(Biome));

@@ -57,4 +57,24 @@ public sealed class ProcessProviderRegistry : IProcessProviderRegistry
                 error);
         }
     }
+
+    public void Validate(IEnumerable<ICompiledProcess> processes)
+    {
+        ArgumentNullException.ThrowIfNull(processes);
+        foreach (IGrouping<ResourceLocation, ICompiledProcess> group in processes.GroupBy(process => process.ProviderType))
+        {
+            if (!_providers.TryGetValue(group.Key, out IProcessProvider? provider))
+                throw new InvalidOperationException($"No provider remains registered for process type '{group.Key}'.");
+            ICompiledProcess[] entries = group.ToArray();
+            try
+            {
+                provider.Validate(entries);
+            }
+            catch (Exception error)
+            {
+                throw new InvalidOperationException(
+                    $"Process type '{group.Key}' failed conflict validation: {error.Message}", error);
+            }
+        }
+    }
 }

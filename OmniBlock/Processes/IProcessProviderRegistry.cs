@@ -9,4 +9,6 @@ public interface IProcessProviderRegistry
         ResourceLocation processId,
         JsonElement definition,
         in ProcessBuildContext context);
+
+    void Validate(IEnumerable<ICompiledProcess> processes);
 }

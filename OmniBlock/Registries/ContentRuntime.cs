@@ -3,6 +3,7 @@ using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Items;
 using OmniBlock.Items.Behaviors;
+using OmniBlock.Processes;
 using System.Diagnostics.CodeAnalysis;
 
 namespace OmniBlock.Registries;
@@ -21,7 +22,9 @@ public sealed class ContentRuntime
         IEnumerable<(ResourceLocation Key, Item Item)> items,
         IEnumerable<(ResourceLocation Key, Item Item)> blockItems,
         IBlockBehaviorProviderRegistry blockBehaviorProviders,
-        IItemBehaviorProviderRegistry itemBehaviorProviders)
+        IItemBehaviorProviderRegistry itemBehaviorProviders,
+        IProcessProviderRegistry processProviders,
+        RuntimeProcessRegistry processes)
     {
         ArgumentNullException.ThrowIfNull(blockBehaviorProviders);
         var blockEntries = blocks.ToArray();
@@ -34,6 +37,8 @@ public sealed class ContentRuntime
             itemEntries.Select(entry => new KeyValuePair<ResourceLocation, int>(entry.Key, entry.Item.Id)));
         BlockBehaviorProviders = blockBehaviorProviders;
         ItemBehaviorProviders = itemBehaviorProviders;
+        ProcessProviders = processProviders;
+        Processes = processes;
     }
 
     public static ContentRuntime Current => Volatile.Read(ref s_current)
@@ -52,6 +57,8 @@ public sealed class ContentRuntime
     public ContentCatalogManifest Manifest { get; }
     public IBlockBehaviorProviderRegistry BlockBehaviorProviders { get; }
     public IItemBehaviorProviderRegistry ItemBehaviorProviders { get; }
+    public IProcessProviderRegistry ProcessProviders { get; }
+    public RuntimeProcessRegistry Processes { get; }
 
     internal static void Publish(ContentRuntime runtime)
     {
@@ -73,6 +80,27 @@ public interface IItemRuntimeView
     Item GetByProtocolId(int protocolId);
     bool TryGet(ResourceLocation key, out Item? item);
     bool TryGetByProtocolId(int protocolId, out Item? item);
+    bool TryParse(string input, [NotNullWhen(true)] out ItemStack? stack, int count = 1, int defaultMeta = 0)
+    {
+        stack = null;
+        if (string.IsNullOrWhiteSpace(input)) return false;
+        string name = input;
+        int meta = defaultMeta;
+        int separator = input.LastIndexOf(':');
+        if (separator >= 0 && int.TryParse(input[(separator + 1)..], out int parsedMeta))
+        {
+            name = input[..separator];
+            meta = parsedMeta;
+        }
+
+        Item? item;
+        if (int.TryParse(name, out int protocolId)) TryGetByProtocolId(protocolId, out item);
+        else if (ResourceLocation.TryParse(name, out ResourceLocation? key)) TryGet(key, out item);
+        else item = null;
+        if (item is null) return false;
+        stack = new ItemStack(item, count, meta);
+        return true;
+    }
 }
 
 public sealed class RuntimeItemRegistry : IItemRuntimeView

@@ -5,6 +5,7 @@ using OmniBlock.Items;
 using OmniBlock.Items.Behaviors;
 using OmniBlock.Blocks.Materials;
 using OmniBlock.Entities;
+using OmniBlock.Processes;
 
 namespace OmniBlock.Registries;
 
@@ -21,6 +22,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView
     private readonly List<(ResourceLocation Key, Item Item)> _blockItems = [];
     private readonly List<BlockDefinition> _pendingBlockDefinitions = [];
     private readonly List<ItemDefinition> _pendingItemDefinitions = [];
+    private readonly List<ProcessDefinition> _pendingProcessDefinitions = [];
     private readonly List<(ResourceLocation Key, ItemDefinition Definition, Item Item)> _items = [];
     private readonly Dictionary<ResourceLocation, Item> _itemsByKey = [];
     private readonly Dictionary<int, Item> _itemsByProtocolId = [];
@@ -34,12 +36,14 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView
         BlockBuildContext blockBuildContext,
         IItemBehaviorProviderRegistry itemBehaviorProviders,
         ItemBuildContext itemBuildContext,
-        StagedBlockRuntimeView? blockRuntimeView = null)
+        StagedBlockRuntimeView? blockRuntimeView = null,
+        IProcessProviderRegistry? processProviders = null)
     {
         ArgumentNullException.ThrowIfNull(blockBehaviorProviders);
         BlockBehaviorProviders = blockBehaviorProviders;
         ArgumentNullException.ThrowIfNull(itemBehaviorProviders);
         ItemBehaviorProviders = itemBehaviorProviders;
+        ProcessProviders = processProviders ?? BuiltInProcessProviders.CreateRegistry();
         _blockRuntimeView = blockRuntimeView ?? new StagedBlockRuntimeView();
         BlockBuildContext = blockBuildContext;
         ItemBuildContext = itemBuildContext;
@@ -48,6 +52,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView
     public IBlockBehaviorProviderRegistry BlockBehaviorProviders { get; }
     public BlockBuildContext BlockBuildContext { get; }
     public IItemBehaviorProviderRegistry ItemBehaviorProviders { get; }
+    public IProcessProviderRegistry ProcessProviders { get; }
     public ItemBuildContext ItemBuildContext { get; }
     public BehaviorBuildContext BehaviorBuildContext => BlockBuildContext.Behaviors;
 
@@ -66,6 +71,13 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView
         if (_built) throw new InvalidOperationException("Cannot add content after the runtime has been built.");
         ArgumentNullException.ThrowIfNull(definition);
         _pendingItemDefinitions.Add(definition);
+    }
+
+    internal void AddProcessDefinition(ProcessDefinition definition)
+    {
+        if (_built) throw new InvalidOperationException("Cannot add content after the runtime has been built.");
+        ArgumentNullException.ThrowIfNull(definition);
+        _pendingProcessDefinitions.Add(definition);
     }
 
     public Item Get(ResourceLocation key) => _itemsByKey.TryGetValue(key, out Item? item)
@@ -181,14 +193,57 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView
         foreach ((_, _, Item item) in _items) item.Freeze();
         foreach ((_, Item item) in _blockItems) item.Freeze();
         _blockRuntimeView.Freeze();
+        RuntimeProcessRegistry processes = BuildProcesses();
         ContentRuntime runtime = new(
             _blocks.Select(static entry => (entry.Key, entry.Block)),
             _items.Select(static entry => (entry.Key, entry.Item)),
             _blockItems,
             BlockBehaviorProviders,
-            ItemBehaviorProviders);
+            ItemBehaviorProviders,
+            ProcessProviders,
+            processes);
         _built = true;
         return runtime;
+    }
+
+    private RuntimeProcessRegistry BuildProcesses()
+    {
+        var processIds = new HashSet<ResourceLocation>();
+        var compiled = new List<ICompiledProcess>(_pendingProcessDefinitions.Count);
+        RuntimeBlockRegistry blocks = new(_blocks.Select(static entry => (entry.Key, entry.Block)));
+        RuntimeItemRegistry items = new(
+            _items.Select(static entry => (entry.Key, entry.Item)), _blockItems, blocks);
+        ProcessBuildContext context = new(items, blocks);
+
+        foreach (ProcessDefinition definition in _pendingProcessDefinitions)
+        {
+            ResourceLocation id;
+            try
+            {
+                id = definition.GetProcessId();
+            }
+            catch (Exception error)
+            {
+                throw new InvalidOperationException(
+                    $"Process definition '{definition}' has invalid identity: {error.Message}", error);
+            }
+            if (!processIds.Add(id)) throw new InvalidOperationException($"Duplicate process id '{id}'.");
+
+            ResourceLocation providerType;
+            try
+            {
+                providerType = definition.GetProviderType();
+            }
+            catch (Exception error)
+            {
+                throw new InvalidOperationException(
+                    $"Process '{id}' has invalid provider type '{definition.Type}': {error.Message}", error);
+            }
+            compiled.Add(ProcessProviders.Build(
+                providerType, id, definition.GetProviderDefinition(), context));
+        }
+
+        return new RuntimeProcessRegistry(compiled, ProcessProviders);
     }
 
     private void BuildPendingItems()

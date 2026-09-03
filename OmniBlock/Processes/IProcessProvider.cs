@@ -9,4 +9,9 @@ public interface IProcessProvider
         ResourceLocation id,
         JsonElement definition,
         in ProcessBuildContext context);
+
+    /// <summary>Validates conflicts that are meaningful only within this provider's schema.</summary>
+    void Validate(IReadOnlyList<ICompiledProcess> processes)
+    {
+    }
 }

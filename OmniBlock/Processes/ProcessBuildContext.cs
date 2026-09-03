@@ -15,6 +15,13 @@ public readonly record struct ProcessBuildContext(
     public Block ResolveBlock(ResourceLocation key) =>
         Blocks?.Get(key) ?? throw MissingContext(nameof(Blocks));
 
+    public ItemStack ResolveItemStack(string reference, int count = 1, int defaultMeta = 0)
+    {
+        if (Items is null) throw MissingContext(nameof(Items));
+        if (Items.TryParse(reference, out ItemStack? stack, count, defaultMeta)) return stack;
+        throw new KeyNotFoundException($"Unknown process item/block reference '{reference}'.");
+    }
+
     private static InvalidOperationException MissingContext(string dependency) =>
         new($"{nameof(ProcessBuildContext)} has no {dependency} dependency.");
 }
