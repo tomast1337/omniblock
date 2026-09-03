@@ -116,10 +116,11 @@ internal sealed class SmeltingProcessProvider : IProcessProvider
         SmeltingDefinition schema = ProcessJson.Deserialize<SmeltingDefinition>(definition, id);
         if (string.IsNullOrWhiteSpace(schema.Input))
             throw new ArgumentException("Smelting process has no input.");
+        ItemStack input = context.ResolveItemStack(schema.Input, defaultMeta: -1);
         return new CompiledSmeltingProcess(
             id,
             ProcessTypes.Smelting,
-            ProcessItemStack.FromStack(context.ResolveItemStack(schema.Input, defaultMeta: -1)),
+            new ProcessItemStack(input.GetItem(), 1, -1),
             ProcessItemStack.FromStack(ProcessJson.ResolveResult(schema.Result, context)));
     }
 

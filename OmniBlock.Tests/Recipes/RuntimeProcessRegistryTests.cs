@@ -7,6 +7,7 @@ using OmniBlock.Items.Behaviors;
 using OmniBlock.Processes;
 using OmniBlock.Registries;
 using OmniBlock.Screens;
+using OmniBlock.Tests.TestSupport;
 
 namespace OmniBlock.Tests.Recipes;
 
@@ -82,6 +83,31 @@ public sealed class RuntimeProcessRegistryTests
             .Where(type => type.GetInterfaces().Contains(typeof(ICompiledProcess)))
             .SelectMany(type => type.GetProperties()), property =>
                 property.Name is "Progress" or "Inventory" or "NetworkState");
+    }
+
+    [Fact]
+    public void Player_crafting_screen_uses_the_world_process_runtime()
+    {
+        var player = new TestEntityPlayer(new FakeWorldContext());
+        var screen = Assert.IsType<PlayerScreenHandler>(player.PlayerScreenHandler);
+        Item planks = player.World.Content.Items.Get("omniblock:planks");
+
+        screen.craftingInput.SetStack(0, new ItemStack(planks));
+        screen.craftingInput.SetStack(2, new ItemStack(planks));
+
+        ItemStack? result = screen.craftingResult.GetStack(0);
+        Assert.NotNull(result);
+        Assert.Same(player.World.Content.Items.Get("omniblock:stick"), result.GetItem());
+        Assert.Equal(4, result.Count);
+    }
+
+    [Fact]
+    public void Crafted_statistics_are_discovered_from_published_process_outputs()
+    {
+        RuntimeItemRegistry items = ContentRuntime.Current.Items;
+
+        Assert.NotNull(OmniBlock.Stats.Stats.Crafted[items.Get("omniblock:stick").Id]);
+        Assert.NotNull(OmniBlock.Stats.Stats.Crafted[items.Get("omniblock:ingot_iron").Id]);
     }
 
     [Fact]

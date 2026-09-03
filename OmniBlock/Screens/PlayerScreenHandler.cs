@@ -2,7 +2,7 @@ using OmniBlock.Entities;
 using OmniBlock.Inventories;
 using OmniBlock.Items;
 using OmniBlock.Items.Behaviors;
-using OmniBlock.Recipes;
+using OmniBlock.Processes;
 using OmniBlock.Screens.Slots;
 
 namespace OmniBlock.Screens;
@@ -13,13 +13,24 @@ public class PlayerScreenHandler : ScreenHandler
     public InventoryCrafting craftingInput;
     public IInventory craftingResult;
     public bool isLocal;
+    private readonly RuntimeCraftingProcessView _processes;
 
     public PlayerScreenHandler(InventoryPlayer inventoryPlayer) : this(inventoryPlayer, true)
     {
     }
 
     public PlayerScreenHandler(InventoryPlayer inventoryPlayer, bool isLocal)
+        : this(inventoryPlayer, inventoryPlayer.Player.World.Content.Processes, isLocal)
     {
+    }
+
+    internal PlayerScreenHandler(
+        InventoryPlayer inventoryPlayer,
+        RuntimeProcessRegistry processes,
+        bool isLocal)
+    {
+        ArgumentNullException.ThrowIfNull(processes);
+        _processes = processes.Crafting;
         craftingInput = new InventoryCrafting(this, 2, 2);
         craftingResult = new InventoryCraftResult();
         this.isLocal = false;
@@ -59,7 +70,7 @@ public class PlayerScreenHandler : ScreenHandler
 
     public override void onSlotUpdate(IInventory inv)
     {
-        craftingResult.SetStack(0, RecipesCrafting.Craft(craftingInput));
+        craftingResult.SetStack(0, _processes.Craft(craftingInput));
     }
 
     public override void onClosed(EntityPlayer player)

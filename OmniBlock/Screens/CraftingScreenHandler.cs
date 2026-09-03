@@ -2,7 +2,7 @@ using OmniBlock.Blocks;
 using OmniBlock.Entities;
 using OmniBlock.Inventories;
 using OmniBlock.Items;
-using OmniBlock.Recipes;
+using OmniBlock.Processes;
 using OmniBlock.Screens.Slots;
 using OmniBlock.Worlds.Core.Systems;
 
@@ -17,6 +17,7 @@ public class CraftingScreenHandler : ScreenHandler
     private int x;
     private int y;
     private int z;
+    private readonly RuntimeCraftingProcessView _processes;
 
     public CraftingScreenHandler(InventoryPlayer playerInventory, IWorldContext world, int x, int y, int z)
     {
@@ -25,6 +26,7 @@ public class CraftingScreenHandler : ScreenHandler
         this.x = x;
         this.y = y;
         this.z = z;
+        _processes = world.Content.Processes.Crafting;
         AddSlot(new CraftingResultSlot(playerInventory.Player, input, result, 0, 124, 35));
 
         int row;
@@ -55,7 +57,7 @@ public class CraftingScreenHandler : ScreenHandler
 
     public override void onSlotUpdate(IInventory inv)
     {
-        result.SetStack(0, RecipesCrafting.Craft(input));
+        result.SetStack(0, _processes.Craft(input));
     }
 
     public override void onClosed(EntityPlayer player)

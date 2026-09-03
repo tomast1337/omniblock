@@ -4,7 +4,6 @@ using OmniBlock.Entities;
 using OmniBlock.Inventories;
 using OmniBlock.Items;
 using OmniBlock.NBT;
-using OmniBlock.Recipes;
 using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Blocks.Entities;
@@ -167,7 +166,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
         var input = _inventory[0];
         if (input is null) return false;
 
-        var output = RecipesSmelting.Craft(input.GetItem().Id);
+        var output = World!.Content.Processes.Smelting.Smelt(input);
         if (output is null) return false;
 
         var slot2 = _inventory[2];
@@ -187,7 +186,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
 
         if (item1 is null) return;
 
-        var outputStack = RecipesSmelting.Craft(item1.GetItem().Id);
+        var outputStack = World!.Content.Processes.Smelting.Smelt(item1);
 
         if (outputStack == null) return;
 

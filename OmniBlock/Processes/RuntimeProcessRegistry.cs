@@ -38,6 +38,7 @@ public sealed class RuntimeProcessRegistry
 
     public int Count => _byId.Count;
     public IEnumerable<ResourceLocation> Keys => _byId.Keys;
+    public IEnumerable<ICompiledProcess> Values => _byId.Values;
     public RuntimeCraftingProcessView Crafting { get; }
     public RuntimeSmeltingProcessView Smelting { get; }
 

@@ -1,7 +1,7 @@
 using OmniBlock.Blocks;
 using OmniBlock.Items;
 using OmniBlock.Registries;
-using OmniBlock.Recipes;
+using OmniBlock.Processes;
 
 namespace OmniBlock.Stats;
 
@@ -51,7 +51,6 @@ public static class Stats
         Used = InitItemUsedStats(content, Used, "stat.useItem", 16908288, 0, BlockRegistry.ProtocolIdCapacity);
         Broken = InitializeBrokenItemStats(content, Broken, "stat.breakItem", 16973824, 0, BlockRegistry.ProtocolIdCapacity);
         _hasBasicItemStatsInitialized = true;
-        InitializeCraftedItemStats(content);
     }
 
     public static void InitializeExtendedItemStats(IItemRuntimeView items)
@@ -59,23 +58,27 @@ public static class Stats
         Used = InitItemUsedStats(items, Used, "stat.useItem", 16908288, BlockRegistry.ProtocolIdCapacity, 32000);
         Broken = InitializeBrokenItemStats(items, Broken, "stat.breakItem", 16973824, BlockRegistry.ProtocolIdCapacity, 32000);
         _hasExtendedItemStatsInitialized = true;
-        InitializeCraftedItemStats(items);
     }
 
-    public static void InitializeCraftedItemStats(IItemRuntimeView items)
+    public static void InitializeCraftedItemStats(
+        IItemRuntimeView items,
+        RuntimeProcessRegistry processes)
     {
         if (_hasBasicItemStatsInitialized && _hasExtendedItemStatsInitialized)
         {
             HashSet<int> craftedIds = new HashSet<int>();
 
-            foreach (IRecipe recipe in RecipesCrafting.Recipes.Values)
+            foreach (ICompiledProcess process in processes.Values)
             {
-                craftedIds.Add(recipe.GetRecipeOutput().ItemId);
-            }
-
-            foreach (ItemStack itemStack in RecipesSmelting.Recipes.Values)
-            {
-                craftedIds.Add(itemStack.ItemId);
+                switch (process)
+                {
+                    case ICompiledCraftingProcess crafting:
+                        craftedIds.Add(crafting.Output.Item.Id);
+                        break;
+                    case ICompiledSmeltingProcess smelting:
+                        craftedIds.Add(smelting.Output.Item.Id);
+                        break;
+                }
             }
 
             Crafted = new StatBase[32000];
