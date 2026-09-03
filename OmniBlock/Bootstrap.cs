@@ -7,17 +7,19 @@ public class Bootstrap
 {
     private static readonly object s_lock = new();
 
-    public static void Initialize()
+    public static ContentRuntime Initialize()
     {
         lock (s_lock)
         {
-            if (ContentRuntime.IsPublished) return;
+            if (ContentRuntime.IsPublished) return ContentRuntime.Current;
 
             ContentRuntimeBuilder content = ContentRuntimeBuilder.CreateBuiltIns();
             try
             {
                 DefaultRegistries.Initialize(content);
-                ContentRuntime.Publish(content.Build());
+                ContentRuntime runtime = content.Build();
+                ContentRuntime.Publish(runtime);
+                return runtime;
             }
             finally
             {

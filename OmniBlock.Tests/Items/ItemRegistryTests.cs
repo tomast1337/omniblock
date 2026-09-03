@@ -12,7 +12,7 @@ public sealed class ItemRegistryTests
         Holder<ItemDefinition>? holder = DefaultRegistries.Items.Get(ResourceLocation.Parse("omniblock:apple"));
 
         Assert.NotNull(holder);
-        Assert.Equal(Item.ByName("apple").Id, holder.Value.ProtocolId);
+        Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:apple").Id, holder.Value.ProtocolId);
         Assert.Equal("food", holder.Value.Behaviors.Single().GetProperty("Type").GetString());
     }
 
@@ -22,30 +22,30 @@ public sealed class ItemRegistryTests
         // Both records share the translation key "record"; the first declared keeps the plain
         // name and the second is disambiguated with its protocol ID suffix.
         Holder<ItemDefinition>? thirteen = DefaultRegistries.Items.Get(ResourceLocation.Parse("omniblock:record"));
-        Holder<ItemDefinition>? cat = DefaultRegistries.Items.Get(ResourceLocation.Parse($"omniblock:record_{Item.ByName("record_2257").Id}"));
+        Holder<ItemDefinition>? cat = DefaultRegistries.Items.Get(ResourceLocation.Parse($"omniblock:record_{ContentRuntime.Current.Items.Get("omniblock:record_2257").Id}"));
 
         Assert.NotNull(thirteen);
         Assert.NotNull(cat);
-        Assert.Equal(Item.ByName("record").Id, thirteen.Value.ProtocolId);
-        Assert.Equal(Item.ByName("record_2257").Id, cat.Value.ProtocolId);
+        Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:record").Id, thirteen.Value.ProtocolId);
+        Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:record_2257").Id, cat.Value.ProtocolId);
     }
 
     [Fact]
     public void JsonLoadedItems_AreRegistered()
     {
-        Assert.True(DefaultRegistries.Items.ContainsId(Item.ByName("shovel_iron").Id));
-        Assert.True(DefaultRegistries.Items.ContainsId(Item.ByName("boots_diamond").Id));
-        Assert.True(DefaultRegistries.Items.ContainsId(Item.ByName("map").Id));
+        Assert.True(DefaultRegistries.Items.ContainsId(ContentRuntime.Current.Items.Get("omniblock:shovel_iron").Id));
+        Assert.True(DefaultRegistries.Items.ContainsId(ContentRuntime.Current.Items.Get("omniblock:boots_diamond").Id));
+        Assert.True(DefaultRegistries.Items.ContainsId(ContentRuntime.Current.Items.Get("omniblock:map").Id));
     }
 
     [Fact]
     public void CraftingReturnItems_AreWiredAfterBoot()
     {
-        Item bucket = Item.ByName("bucket");
+        Item bucket = ContentRuntime.Current.Items.Get("omniblock:bucket");
 
-        Assert.Same(bucket, Item.ByName("bucket_water").GetContainerItem());
-        Assert.Same(bucket, Item.ByName("bucket_lava").GetContainerItem());
-        Assert.Same(bucket, Item.ByName("milk").GetContainerItem());
+        Assert.Same(bucket, ContentRuntime.Current.Items.Get("omniblock:bucket_water").GetContainerItem());
+        Assert.Same(bucket, ContentRuntime.Current.Items.Get("omniblock:bucket_lava").GetContainerItem());
+        Assert.Same(bucket, ContentRuntime.Current.Items.Get("omniblock:milk").GetContainerItem());
     }
 
     [Fact]
@@ -67,11 +67,11 @@ public sealed class ItemRegistryTests
             ProtocolId = 31901,
         };
 
-        Item.Items[referencing.ProtocolId] = ItemFactory.Create(referencing);
-        Item.Items[target.ProtocolId] = ItemFactory.Create(target);
-        ItemFactory.ResolveCrossReferences(referencing);
-        ItemFactory.ResolveCrossReferences(target);
+        ContentRuntimeBuilder builder = ContentRuntimeBuilder.CreateBuiltIns();
+        builder.AddItemDefinition(referencing);
+        builder.AddItemDefinition(target);
+        ContentRuntime runtime = builder.Build();
 
-        Assert.Same(Item.Items[31901], Item.Items[31900]!.GetContainerItem());
+        Assert.Same(runtime.Items.GetByProtocolId(31901), runtime.Items.GetByProtocolId(31900).GetContainerItem());
     }
 }

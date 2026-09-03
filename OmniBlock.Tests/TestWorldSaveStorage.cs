@@ -22,21 +22,21 @@ public class TestWorldSaveStorage
         FakeWorldContext world = new();
 
         var alice = new TestEntityPlayer(world) { Name = "Alice" };
-        alice.Inventory.Main[0] = new ItemStack(Item.ByName("diamond"), 5);
+        alice.Inventory.Main[0] = new ItemStack(ContentRuntime.Current.Items.Get("omniblock:diamond"), 5);
         storage.SavePlayerData(alice);
 
         var bob = new TestEntityPlayer(world) { Name = "Bob" };
-        bob.Inventory.Main[0] = new ItemStack(Item.ByName("arrow"), 1);
+        bob.Inventory.Main[0] = new ItemStack(ContentRuntime.Current.Items.Get("omniblock:arrow"), 1);
         storage.SavePlayerData(bob);
 
         var aliceReload = new TestEntityPlayer(world) { Name = "Alice" };
         storage.LoadPlayerData(aliceReload);
-        Assert.Equal(Item.ByName("diamond"), aliceReload.Inventory.Main[0]?.GetItem());
+        Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:diamond"), aliceReload.Inventory.Main[0]?.GetItem());
         Assert.Equal(5, aliceReload.Inventory.Main[0]?.Count);
 
         var bobReload = new TestEntityPlayer(world) { Name = "Bob" };
         storage.LoadPlayerData(bobReload);
-        Assert.Equal(Item.ByName("arrow"), bobReload.Inventory.Main[0]?.GetItem());
+        Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:arrow"), bobReload.Inventory.Main[0]?.GetItem());
         Assert.Equal(1, bobReload.Inventory.Main[0]?.Count);
 
         Directory.Delete(baseDir, true);

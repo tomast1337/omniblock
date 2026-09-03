@@ -79,7 +79,7 @@ public sealed class EntityPersistenceTests
     [Fact]
     public void Only_properties_naming_an_nbt_key_are_persisted()
     {
-        DataSynchronizer sync = new();
+        DataSynchronizer sync = new(ContentRuntime.Current.Items);
         SyncedPropertyDefinition[] declarations =
         [
             new("saved", 16, SyncedValueKind.Int, 7, Nbt: "Saved"),
@@ -103,12 +103,12 @@ public sealed class EntityPersistenceTests
     {
         SyncedPropertyDefinition[] declarations = [new("value", 16, kind, 12, Nbt: "Value")];
 
-        DataSynchronizer saved = new();
+        DataSynchronizer saved = new(ContentRuntime.Current.Items);
         SyncedPropertyFactory.Declare(saved, declarations, "test");
         NBTTagCompound nbt = new();
         SyncedPropertyFactory.Write(saved, declarations, nbt);
 
-        DataSynchronizer loaded = new();
+        DataSynchronizer loaded = new(ContentRuntime.Current.Items);
         SyncedPropertyFactory.Declare(loaded, [declarations[0] with { Default = 0 }], "test");
         SyncedPropertyFactory.Read(loaded, declarations, nbt);
 
@@ -128,12 +128,12 @@ public sealed class EntityPersistenceTests
     {
         SyncedPropertyDefinition[] declarations = [new("owner", 17, SyncedValueKind.String, DefaultString: "tester", Nbt: "Owner")];
 
-        DataSynchronizer saved = new();
+        DataSynchronizer saved = new(ContentRuntime.Current.Items);
         SyncedPropertyFactory.Declare(saved, declarations, "test");
         NBTTagCompound nbt = new();
         SyncedPropertyFactory.Write(saved, declarations, nbt);
 
-        DataSynchronizer loaded = new();
+        DataSynchronizer loaded = new(ContentRuntime.Current.Items);
         SyncedPropertyFactory.Declare(loaded, declarations, "test");
         SyncedPropertyFactory.Read(loaded, declarations, nbt);
 

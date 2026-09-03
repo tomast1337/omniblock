@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using OmniBlock.Blocks;
 using OmniBlock.Items;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Entities.Behaviors;
 
@@ -12,10 +13,7 @@ namespace OmniBlock.Entities.Behaviors;
 internal static class BehaviorDefinitionHelpers
 {
     /// <summary>Resolves an item name, accepting blocks that are dropped as items (planks, chest).</summary>
-    public static int ItemId(string name) =>
-        ItemLookup.TryGetItemId(ResourceLocation.Parse(name).Path, out int id)
-            ? id
-            : throw new ArgumentException($"Unknown item '{name}'.");
+    public static int ItemId(IItemRuntimeView items, string name) => items.Get(ResourceLocation.Parse(name)).Id;
 
     public static Achievement Achievement(string key) =>
         Achievements.AllAchievements.Find(a => a.TranslationKey == "achievement." + key)
@@ -74,16 +72,19 @@ public sealed class DroppedItemDefinition : EntityBehaviorDefinition
     public int Health { get; init; } = 5;
     public PickupAchievement[] PickupAchievements { get; init; } = [];
 
-    public override object Build(in EntityBehaviorBuildContext context) =>
-        new DroppedItemBehavior(
+    public override object Build(in EntityBehaviorBuildContext context)
+    {
+        IItemRuntimeView items = context.Items;
+        return new DroppedItemBehavior(
             context.Layout,
             DespawnAge,
             Health,
             [
                 .. PickupAchievements.Select(entry => (
-                    BehaviorDefinitionHelpers.ItemId(entry.Item),
+                    BehaviorDefinitionHelpers.ItemId(items, entry.Item),
                     BehaviorDefinitionHelpers.Achievement(entry.Achievement)))
             ]);
+    }
 }
 
 /// <summary>The egg's hatch roll: a chance of one hatchling, itself upgradable to several.</summary>
@@ -129,7 +130,7 @@ public sealed class HangingArtDefinition : EntityBehaviorDefinition
     public string Drops { get; init; } = "";
 
     public override object Build(in EntityBehaviorBuildContext context) =>
-        new HangingArtBehavior(context.Layout, CheckInterval, Item.ByName(ResourceLocation.Parse(Drops).Path));
+        new HangingArtBehavior(context.Layout, CheckInterval, context.Items.Get(ResourceLocation.Parse(Drops)));
 }
 
 public sealed class FishingBobberDefinition : EntityBehaviorDefinition
@@ -143,8 +144,8 @@ public sealed class FishingBobberDefinition : EntityBehaviorDefinition
     public override object Build(in EntityBehaviorBuildContext context) =>
         new FishingBobberBehavior(
             context.Layout,
-            Item.ByName(ResourceLocation.Parse(HeldItem).Path),
-            Item.ByName(ResourceLocation.Parse(Catches).Path),
+            context.Items.Get(ResourceLocation.Parse(HeldItem)),
+            context.Items.Get(ResourceLocation.Parse(Catches)),
             BiteDelay,
             BiteDelayRaining,
             MaxAnglerDistance);
@@ -162,11 +163,14 @@ public sealed class BoatDefinition : EntityBehaviorDefinition
     public int BreakDamage { get; init; } = 40;
     public WreckagePiece[] Wreckage { get; init; } = [];
 
-    public override object Build(in EntityBehaviorBuildContext context) =>
-        new BoatBehavior(
+    public override object Build(in EntityBehaviorBuildContext context)
+    {
+        IItemRuntimeView items = context.Items;
+        return new BoatBehavior(
             context.Layout,
             BreakDamage,
-            [.. Wreckage.Select(piece => (BehaviorDefinitionHelpers.ItemId(piece.Item), piece.Count))]);
+            [.. Wreckage.Select(piece => (BehaviorDefinitionHelpers.ItemId(items, piece.Item), piece.Count))]);
+    }
 }
 
 /// <summary>One cart kind: its object-spawn id and the pieces it breaks into.</summary>
@@ -184,12 +188,15 @@ public sealed class MinecartDefinition : EntityBehaviorDefinition
     public int FuelPerCoal { get; init; } = 1200;
     public MinecartKind[] WireIds { get; init; } = [];
 
-    public override object Build(in EntityBehaviorBuildContext context) =>
-        new MinecartBehavior(
+    public override object Build(in EntityBehaviorBuildContext context)
+    {
+        IItemRuntimeView items = context.Items;
+        return new MinecartBehavior(
             context.Layout,
             BreakDamage,
-            BehaviorDefinitionHelpers.ItemId(FuelItem),
+            BehaviorDefinitionHelpers.ItemId(context.Items, FuelItem),
             FuelPerCoal,
             WireIds.ToDictionary(kind => kind.Type, kind => kind.Id),
-            WireIds.ToDictionary(kind => kind.Type, kind => kind.Drops.Select(BehaviorDefinitionHelpers.ItemId).ToArray()));
+            WireIds.ToDictionary(kind => kind.Type, kind => kind.Drops.Select(drop => BehaviorDefinitionHelpers.ItemId(items, drop)).ToArray()));
+    }
 }

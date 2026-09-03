@@ -11,7 +11,7 @@ namespace OmniBlock.Client.Network;
 /// Accumulates <see cref="RegistryDataMessage"/>s received during the login configuration
 /// phase and provides typed, holder-based access to the deserialized data.
 /// </summary>
-internal sealed class ClientRegistryAccess
+internal sealed class ClientRegistryAccess(RuntimeItemRegistry items)
 {
 
     ILogger<ClientRegistryAccess> _logger = Log.Instance.For<ClientRegistryAccess>();
@@ -45,7 +45,7 @@ internal sealed class ClientRegistryAccess
         //       this should be done using listeners instead.
         if (packet.RegistryId.IsVanilla && packet.RegistryId.Path == "recipe")
         {
-            Recipes.RecipeManager.Rebuild(GetAll<Recipes.RecipeDefinition>(packet.RegistryId).Values);
+            Recipes.RecipeManager.Rebuild(GetAll<Recipes.RecipeDefinition>(packet.RegistryId).Values, items);
         }
     }
 

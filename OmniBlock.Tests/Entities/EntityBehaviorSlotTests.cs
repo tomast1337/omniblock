@@ -109,7 +109,7 @@ public sealed class EntityBehaviorSlotTests
         List<int> dropped = CollectDrops(world, cow, killer: null, rolls: 100);
 
         Assert.NotEmpty(dropped);
-        Assert.All(dropped, id => Assert.Equal(Item.ByName("leather").Id, id));
+        Assert.All(dropped, id => Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:leather").Id, id));
     }
 
     [Fact]
@@ -120,9 +120,9 @@ public sealed class EntityBehaviorSlotTests
 
         List<int> dropped = CollectDrops(world, skeleton, killer: null, rolls: 100);
 
-        Assert.Contains(Item.ByName("arrow").Id, dropped);
-        Assert.Contains(Item.ByName("bone").Id, dropped);
-        Assert.All(dropped, id => Assert.True(id == Item.ByName("arrow").Id || id == Item.ByName("bone").Id));
+        Assert.Contains(ContentRuntime.Current.Items.Get("omniblock:arrow").Id, dropped);
+        Assert.Contains(ContentRuntime.Current.Items.Get("omniblock:bone").Id, dropped);
+        Assert.All(dropped, id => Assert.True(id == ContentRuntime.Current.Items.Get("omniblock:arrow").Id || id == ContentRuntime.Current.Items.Get("omniblock:bone").Id));
     }
 
     [Fact]
@@ -131,11 +131,11 @@ public sealed class EntityBehaviorSlotTests
         FakeWorldContext world = new();
         EntityCreature creeper = Spawn(world, (EntityCreature)EntityRegistry.ByName("creeper").Create(world), 8.5, 65.0, 8.5);
         EntityCreature skeleton = Spawn(world, (EntityCreature)EntityRegistry.ByName("skeleton").Create(world), 12.5, 65.0, 12.5);
-        int recordId = Item.ByName("record").Id;
+        int recordId = ContentRuntime.Current.Items.Get("omniblock:record").Id;
 
         List<int> withoutSkeleton = CollectDrops(world, creeper, killer: null, rolls: 60);
         Assert.DoesNotContain(recordId, withoutSkeleton);
-        Assert.All(withoutSkeleton, id => Assert.Equal(Item.ByName("gunpowder").Id, id));
+        Assert.All(withoutSkeleton, id => Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:gunpowder").Id, id));
 
         List<int> withSkeleton = CollectDrops(world, creeper, skeleton, rolls: 60);
         Assert.Contains(recordId, withSkeleton);
@@ -163,12 +163,12 @@ public sealed class EntityBehaviorSlotTests
 
         List<int> raw = CollectDrops(world, pig, killer: null, rolls: 60);
         Assert.NotEmpty(raw);
-        Assert.All(raw, id => Assert.Equal(Item.ByName("porkchop_raw").Id, id));
+        Assert.All(raw, id => Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:porkchop_raw").Id, id));
 
         pig.Ignite();
         List<int> cooked = CollectDrops(world, pig, killer: null, rolls: 60);
         Assert.NotEmpty(cooked);
-        Assert.All(cooked, id => Assert.Equal(Item.ByName("porkchop_cooked").Id, id));
+        Assert.All(cooked, id => Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:porkchop_cooked").Id, id));
     }
 
     [Fact]
@@ -184,7 +184,7 @@ public sealed class EntityBehaviorSlotTests
         body.SetSize(slime, 1);
         List<int> drops = CollectDrops(world, slime, killer: null, rolls: 60);
         Assert.NotEmpty(drops);
-        Assert.All(drops, id => Assert.Equal(Item.ByName("slimeball").Id, id));
+        Assert.All(drops, id => Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:slimeball").Id, id));
     }
 
     [Fact]

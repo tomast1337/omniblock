@@ -22,7 +22,7 @@ public sealed class SendPriorityTests
     private static OmniMessagePacket Envelope(Message message)
     {
         MessageRegistry registry = new();
-        DefaultMessages.RegisterAll(registry);
+        DefaultMessages.RegisterAll(registry, ContentRuntime.Current.Items);
         registry.NegotiateAsServer();
 
         return OmniMessagePacket.For(registry, message)!;

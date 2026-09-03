@@ -35,8 +35,6 @@ public sealed class BuilderOwnedItemTests
         Assert.True(empty.IsFrozen);
         Assert.Same(filled, runtime.Items.GetByProtocolId(31800));
         Assert.Same(empty, runtime.Items.GetByProtocolId(31801));
-        Assert.Null(Item.Items[31800]);
-        Assert.Null(Item.Items[31801]);
     }
 
     [Fact]
@@ -69,7 +67,7 @@ public sealed class BuilderOwnedItemTests
 
         Assert.Contains("omniblock:broken", error.Message);
         Assert.Contains("31804", error.Message);
-        Assert.Null(Item.Items[31803]);
+        Assert.False(ContentRuntime.Current.Items.TryGetByProtocolId(31803, out _));
     }
 
     [Fact]

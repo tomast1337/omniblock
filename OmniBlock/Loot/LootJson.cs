@@ -1,6 +1,7 @@
 using System.Text.Json;
 using OmniBlock.Items;
 using OmniBlock.Loot.Conditions;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Loot;
 
@@ -18,19 +19,19 @@ internal static class LootJson
         ["size"] = json => new SizeCondition(json.GetProperty("size").GetInt32())
     };
 
-    public static LootTable ParseTable(JsonElement json)
+    public static LootTable ParseTable(JsonElement json, IItemRuntimeView items)
     {
         if (!json.TryGetProperty("Pools", out JsonElement pools))
         {
             throw new ArgumentException("Loot behavior is missing its 'Pools' array.");
         }
 
-        return new LootTable(pools.EnumerateArray().Select(ParsePool).ToArray());
+        return new LootTable(pools.EnumerateArray().Select(pool => ParsePool(pool, items)).ToArray());
     }
 
-    private static LootPool ParsePool(JsonElement json)
+    private static LootPool ParsePool(JsonElement json, IItemRuntimeView items)
     {
-        LootEntry[] entries = json.GetProperty("Entries").EnumerateArray().Select(ParseEntry).ToArray();
+        LootEntry[] entries = json.GetProperty("Entries").EnumerateArray().Select(entry => ParseEntry(entry, items)).ToArray();
         if (entries.Length == 0)
         {
             throw new ArgumentException("Loot pool declares no entries.");
@@ -43,7 +44,7 @@ internal static class LootJson
         return new LootPool(entries, min, max, condition);
     }
 
-    private static LootEntry ParseEntry(JsonElement json)
+    private static LootEntry ParseEntry(JsonElement json, IItemRuntimeView items)
     {
         string itemName = json.GetProperty("Item").GetString()
             ?? throw new ArgumentException("Loot entry has a null 'Item'.");
@@ -57,17 +58,15 @@ internal static class LootJson
 
         // Resolved lazily: entity definitions load before blocks' item bridging is complete, and an
         // entry may name a block-derived item id that does not exist yet at parse time.
-        int? cached = null;
-        int ResolveId() => cached ??= ItemLookup.TryGetItemId(itemName, out int id)
-            ? id
-            : throw new ArgumentException($"Unknown item or block in loot entry: '{itemName}'.");
+        Item resolved = items.Get(ResourceLocation.Parse(itemName));
 
         return new LootEntry(
             context =>
             {
-                int id = ResolveId();
-                if (randomVariants > 1) id += context.Random.Next(randomVariants);
-                return new ItemStack(id, 1, metaSource.Resolve(context, literalMeta));
+                Item item = randomVariants > 1
+                    ? items.GetByProtocolId(resolved.Id + context.Random.Next(randomVariants))
+                    : resolved;
+                return new ItemStack(item, 1, metaSource.Resolve(context, literalMeta));
             },
             weight);
     }

@@ -339,7 +339,7 @@ public sealed class ClientRegistryAccessTests
         var survival = new GameMode { Name = "survival" };
         var creative = new GameMode { Name = "creative" };
 
-        var access = new ClientRegistryAccess();
+        var access = new ClientRegistryAccess(ContentRuntime.Current.Items);
         access.Accumulate(BuildMessage(survival, creative));
 
         IReadOnlyDictionary<ResourceLocation, Holder<GameMode>> all = access.GetAll(s_gameModeKey);
@@ -354,7 +354,7 @@ public sealed class ClientRegistryAccessTests
         var survival = new GameMode { Name = "survival" };                    // BreakSpeed = 1f
         var creative = new GameMode { Name = "creative", BreakSpeed = 0.5f }; // distinct value
 
-        var access = new ClientRegistryAccess();
+        var access = new ClientRegistryAccess(ContentRuntime.Current.Items);
         access.Accumulate(BuildMessage(survival, creative));
 
         GameMode? found = access.Get(s_gameModeKey, "creative")?.Value;
@@ -365,7 +365,7 @@ public sealed class ClientRegistryAccessTests
     [Fact]
     public void Get_returns_null_for_unknown_name()
     {
-        var access = new ClientRegistryAccess();
+        var access = new ClientRegistryAccess(ContentRuntime.Current.Items);
         access.Accumulate(BuildMessage(new GameMode { Name = "survival" }));
 
         Assert.Null(access.Get(s_gameModeKey, "spectator"));
@@ -374,7 +374,7 @@ public sealed class ClientRegistryAccessTests
     [Fact]
     public void GetAll_for_unknown_registry_returns_empty_dictionary()
     {
-        var access = new ClientRegistryAccess();
+        var access = new ClientRegistryAccess(ContentRuntime.Current.Items);
         // Accumulate nothing for this registry.
 
         IReadOnlyDictionary<ResourceLocation, Holder<GameMode>> all = access.GetAll(s_gameModeKey);
@@ -385,7 +385,7 @@ public sealed class ClientRegistryAccessTests
     public void Re_accumulate_invalidates_cache_and_reflects_new_data()
     {
         var initial = new GameMode { Name = "survival", BreakSpeed = 1f };
-        var access = new ClientRegistryAccess();
+        var access = new ClientRegistryAccess(ContentRuntime.Current.Items);
         access.Accumulate(BuildMessage(initial));
 
         // Force the cache to populate.
@@ -420,7 +420,7 @@ public sealed class ClientRegistryAccessTests
             BreakSpeed = 0f
         };
 
-        var access = new ClientRegistryAccess();
+        var access = new ClientRegistryAccess(ContentRuntime.Current.Items);
         access.Accumulate(BuildMessage(creative));
 
         GameMode? result = access.Get(s_gameModeKey, "creative")?.Value;
@@ -439,7 +439,7 @@ public sealed class ClientRegistryAccessTests
     {
         var survival = new GameMode { Name = "survival" };
         var creative = new GameMode { Name = "creative" };
-        var access = new ClientRegistryAccess();
+        var access = new ClientRegistryAccess(ContentRuntime.Current.Items);
         access.Accumulate(BuildMessage(survival, creative));
 
         // Retain a holder reference before the resync.
@@ -459,7 +459,7 @@ public sealed class ClientRegistryAccessTests
     public void Deserialized_entry_has_Name_set_to_the_registry_entry_name()
     {
         var mode = new GameMode { Name = "survival" };
-        var access = new ClientRegistryAccess();
+        var access = new ClientRegistryAccess(ContentRuntime.Current.Items);
         access.Accumulate(BuildMessage(mode));
 
         GameMode? result = access.Get(s_gameModeKey, "survival")?.Value;

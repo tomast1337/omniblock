@@ -16,15 +16,15 @@ public sealed class BlockDropsAndTexturesTests
     public void IronOre_DropsItself() => Assert.Equal(BlockRegistry.Get("iron_ore").Id, BlockRegistry.Get("iron_ore").GetDroppedItemId(0));
 
     [Fact]
-    public void CoalOre_DropsCoalItem() => Assert.Equal(Item.ByName("coal").Id, BlockRegistry.Get("coal_ore").GetDroppedItemId(0));
+    public void CoalOre_DropsCoalItem() => Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:coal").Id, BlockRegistry.Get("coal_ore").GetDroppedItemId(0));
 
     [Fact]
-    public void DiamondOre_DropsDiamondItem() => Assert.Equal(Item.ByName("diamond").Id, BlockRegistry.Get("diamond_ore").GetDroppedItemId(0));
+    public void DiamondOre_DropsDiamondItem() => Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:diamond").Id, BlockRegistry.Get("diamond_ore").GetDroppedItemId(0));
 
     [Fact]
     public void LapisOre_DropsDyeItemInRange()
     {
-        Assert.Equal(Item.ByName("dye_powder").Id, BlockRegistry.Get("lapis_ore").GetDroppedItemId(0));
+        Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:dye_powder").Id, BlockRegistry.Get("lapis_ore").GetDroppedItemId(0));
         for (int i = 0; i < 50; i++)
         {
             int count = BlockRegistry.Get("lapis_ore").GetDroppedItemCount();
@@ -35,7 +35,7 @@ public sealed class BlockDropsAndTexturesTests
     [Fact]
     public void Glowstone_DropsGlowstoneDustInRange()
     {
-        Assert.Equal(Item.ByName("yellow_dust").Id, BlockRegistry.Get("glowstone").GetDroppedItemId(0));
+        Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:yellow_dust").Id, BlockRegistry.Get("glowstone").GetDroppedItemId(0));
         for (int i = 0; i < 50; i++)
         {
             int count = BlockRegistry.Get("glowstone").GetDroppedItemCount();
@@ -46,7 +46,7 @@ public sealed class BlockDropsAndTexturesTests
     [Fact]
     public void Clay_DropsFourClayItems()
     {
-        Assert.Equal(Item.ByName("clay").Id, BlockRegistry.Get("clay").GetDroppedItemId(0));
+        Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:clay").Id, BlockRegistry.Get("clay").GetDroppedItemId(0));
         Assert.Equal(4, BlockRegistry.Get("clay").GetDroppedItemCount());
     }
 
@@ -58,9 +58,9 @@ public sealed class BlockDropsAndTexturesTests
         for (int i = 0; i < 200; i++)
         {
             int itemId = BlockRegistry.Get("gravel").GetDroppedItemId(0);
-            Assert.True(itemId == BlockRegistry.Get("gravel").Id || itemId == Item.ByName("flint").Id);
+            Assert.True(itemId == BlockRegistry.Get("gravel").Id || itemId == ContentRuntime.Current.Items.Get("omniblock:flint").Id);
             sawGravel |= itemId == BlockRegistry.Get("gravel").Id;
-            sawFlint |= itemId == Item.ByName("flint").Id;
+            sawFlint |= itemId == ContentRuntime.Current.Items.Get("omniblock:flint").Id;
         }
 
         Assert.True(sawGravel);

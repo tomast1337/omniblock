@@ -220,7 +220,7 @@ public class PlayerEntityRenderer : LivingEntityRenderer
             GLManager.ModelView.Translate(-(1.0F / 16.0F), 7.0F / 16.0F, 1.0F / 16.0F);
             if (playerEntity.FishHook != null)
             {
-                heldItem = new ItemStack(Item.ByName("stick"));
+                heldItem = new ItemStack(playerEntity.World.Content.Items.Get("omniblock:stick"));
             }
 
             if (heldItem.ItemId < 256 && BlockRenderer.IsSideLit(BlockRegistry.GetByProtocolId(heldItem.ItemId).RenderType))
@@ -232,10 +232,10 @@ public class PlayerEntityRenderer : LivingEntityRenderer
                 GLManager.ModelView.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
                 GLManager.ModelView.Scale(heldItemScale, -heldItemScale, heldItemScale);
             }
-            else if (Item.Items[heldItem.ItemId].IsHandheld())
+            else if (heldItem.GetItem().IsHandheld())
             {
                 heldItemScale = 10.0F / 16.0F;
-                if (Item.Items[heldItem.ItemId].IsHandheldRod())
+                if (heldItem.GetItem().IsHandheldRod())
                 {
                     GLManager.ModelView.Rotate(180.0F, 0.0F, 0.0F, 1.0F);
                     GLManager.ModelView.Translate(0.0F, -(2.0F / 16.0F), 0.0F);

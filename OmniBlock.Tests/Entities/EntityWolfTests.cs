@@ -39,7 +39,7 @@ public sealed class EntityWolfTests
         for (int attempt = 0; attempt < 500; attempt++)
         {
             EntityCreature wolf = Wolf(world);
-            owner.Inventory.SetStack(owner.Inventory.SelectedSlot, new ItemStack(Item.ByName("bone"), 64));
+            owner.Inventory.SetStack(owner.Inventory.SelectedSlot, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:bone"), 64));
 
             Assert.True(wolf.Interact(owner));
             if (Tame.IsTamed(wolf)) return wolf;
@@ -111,7 +111,7 @@ public sealed class EntityWolfTests
         EntityCreature wolf = Wolf(world);
 
         Assert.False(wolf.Interact(Player(world)));
-        Assert.False(wolf.Interact(Player(world, Item.ByName("stick"), name: "other", x: 9.5)));
+        Assert.False(wolf.Interact(Player(world, ContentRuntime.Current.Items.Get("omniblock:stick"), name: "other", x: 9.5)));
         Assert.False(Tame.IsTamed(wolf));
     }
 
@@ -143,7 +143,7 @@ public sealed class EntityWolfTests
         wolf.Health = 5;
         wolf.Tick();
 
-        owner.Inventory.SetStack(owner.Inventory.SelectedSlot, new ItemStack(Item.ByName("porkchop_raw"), 4));
+        owner.Inventory.SetStack(owner.Inventory.SelectedSlot, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:porkchop_raw"), 4));
         Assert.True(wolf.Interact(owner));
 
         Assert.True(wolf.Health > 5);

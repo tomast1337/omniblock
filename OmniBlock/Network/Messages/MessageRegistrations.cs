@@ -1,5 +1,7 @@
 namespace OmniBlock.Network.Messages;
 
+using OmniBlock.Registries;
+
 /// <summary>
 ///     Every message type whose <c>Read</c>/<c>Write</c>/<c>Size</c> live in a <c>*.Wire.cs</c>
 ///     companion file. Registering a new one here is the other half of adding such a file — nothing
@@ -7,14 +9,14 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 internal static class MessageRegistrations
 {
-    public static void RegisterAll(MessageRegistry registry)
+    public static void RegisterAll(MessageRegistry registry, IItemRuntimeView items)
     {
         registry.Register(BlockUpdateMessage.Id, 1, static () => new BlockUpdateMessage());
         registry.Register(ChatMessage.Id, 1, static () => new ChatMessage());
         registry.Register(ChunkDataMessage.Id, 1, static () => new ChunkDataMessage());
         registry.Register(ChunkStatusUpdateMessage.Id, 1, static () => new ChunkStatusUpdateMessage());
         registry.Register(ChunkUnchangedMessage.Id, 1, static () => new ChunkUnchangedMessage());
-        registry.Register(ClickSlotMessage.Id, 1, static () => new ClickSlotMessage());
+        registry.Register(ClickSlotMessage.Id, 1, () => new ClickSlotMessage(items));
         registry.Register(ClientCommandMessage.Id, 1, static () => new ClientCommandMessage());
         registry.Register(CloseScreenMessage.Id, 1, static () => new CloseScreenMessage());
         registry.Register(DisconnectMessage.Id, 1, static () => new DisconnectMessage());
@@ -33,9 +35,9 @@ internal static class MessageRegistrations
         registry.Register(GlobalEntitySpawnMessage.Id, 1, static () => new GlobalEntitySpawnMessage());
         registry.Register(HealthUpdateMessage.Id, 1, static () => new HealthUpdateMessage());
         registry.Register(IncreaseStatMessage.Id, 1, static () => new IncreaseStatMessage());
-        registry.Register(InteractBlockMessage.Id, 1, static () => new InteractBlockMessage());
+        registry.Register(InteractBlockMessage.Id, 1, () => new InteractBlockMessage(items));
         registry.Register(InteractEntityMessage.Id, 1, static () => new InteractEntityMessage());
-        registry.Register(InventoryMessage.Id, 1, static () => new InventoryMessage());
+        registry.Register(InventoryMessage.Id, 1, () => new InventoryMessage(items));
         registry.Register(ItemEntitySpawnMessage.Id, 1, static () => new ItemEntitySpawnMessage());
         registry.Register(ItemPickupMessage.Id, 1, static () => new ItemPickupMessage());
         registry.Register(KeepAliveMessage.Id, 1, static () => new KeepAliveMessage());
@@ -60,7 +62,7 @@ internal static class MessageRegistrations
         registry.Register(RegionDataMessage.Id, 1, static () => new RegionDataMessage());
         registry.Register(ScreenHandlerAckMessage.Id, 1, static () => new ScreenHandlerAckMessage());
         registry.Register(ScreenHandlerPropertyMessage.Id, 1, static () => new ScreenHandlerPropertyMessage());
-        registry.Register(ScreenHandlerSlotMessage.Id, 1, static () => new ScreenHandlerSlotMessage());
+        registry.Register(ScreenHandlerSlotMessage.Id, 1, () => new ScreenHandlerSlotMessage(items));
         registry.Register(SelectedSlotMessage.Id, 1, static () => new SelectedSlotMessage());
         registry.Register(ServerStatusMessage.Id, 1, static () => new ServerStatusMessage());
         registry.Register(SnapshotAckMessage.Id, 1, static () => new SnapshotAckMessage());

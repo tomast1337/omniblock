@@ -9,7 +9,7 @@ namespace OmniBlock.Entities.Behaviors;
 /// </summary>
 public sealed class LayEggsBehavior : IEntityTicker
 {
-    private static readonly Item s_egg = Item.ByName("egg");
+    private readonly Item _egg;
     private readonly int _minDelay;
     private readonly int _range;
 
@@ -17,6 +17,7 @@ public sealed class LayEggsBehavior : IEntityTicker
 
     public LayEggsBehavior(in EntityBehaviorContext context)
     {
+        _egg = context.Items.Get(new ResourceLocation(Namespace.OmniBlock, "egg"));
         _minDelay = context.Int("min_delay", 6000);
         _range = context.Int("delay_range", 6000);
         _ticksUntilNextEgg = context.DeclareInt();
@@ -44,7 +45,7 @@ public sealed class LayEggsBehavior : IEntityTicker
         }
 
         self.World.Broadcaster.PlaySoundAtEntity(self, "mob.chickenplop", 1.0F, (self.Random.NextFloat() - self.Random.NextFloat()) * 0.2F + 1.0F);
-        self.DropItem(s_egg.Id, 1);
+        self.DropItem(_egg.Id, 1);
         Reset(self);
     }
 

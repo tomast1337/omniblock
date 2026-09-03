@@ -48,14 +48,14 @@ public class ClientNetworkHandler : NetHandler
     private int _ticks;
     private int _lastKeepAliveTime;
 
-    private readonly ClientRegistryAccess _clientRegistries = new();
+    private readonly ClientRegistryAccess _clientRegistries;
 
     /// <summary>
     ///     This connection's message table. Populated locally at construction, then re-ordered to
     ///     match the server's when <c>MessageRegistrySyncS2CPacket</c> arrives during configuration.
     ///     Per-connection rather than static, since two servers may advertise different tables.
     /// </summary>
-    public override MessageRegistry? Messages { get; } = BuildMessageRegistry();
+    public override MessageRegistry? Messages { get; }
 
     /// <summary>
     ///     Registers the same set the server does. Both sides go through
@@ -63,10 +63,10 @@ public class ClientNetworkHandler : NetHandler
     ///     silent in both directions — a key the server advertises and this peer lacks becomes a
     ///     hole and its messages are dropped, and a key registered only here can never be sent.
     /// </summary>
-    private static MessageRegistry BuildMessageRegistry()
+    private static MessageRegistry BuildMessageRegistry(IItemRuntimeView items)
     {
         MessageRegistry registry = new();
-        DefaultMessages.RegisterAll(registry);
+        DefaultMessages.RegisterAll(registry, items);
         return registry;
     }
 
@@ -107,6 +107,8 @@ public class ClientNetworkHandler : NetHandler
     public ClientNetworkHandler(ClientNetworkContext context, string address, int port)
     {
         _context = context;
+        _clientRegistries = new ClientRegistryAccess(context.Content.Items);
+        Messages = BuildMessageRegistry(context.Content.Items);
 
         IPAddress[] addresses = Dns.GetHostAddresses(address);
         IPEndPoint endPoint = new(
@@ -145,6 +147,8 @@ public class ClientNetworkHandler : NetHandler
     public ClientNetworkHandler(ClientNetworkContext context, Connection connection)
     {
         _context = context;
+        _clientRegistries = new ClientRegistryAccess(context.Content.Items);
+        Messages = BuildMessageRegistry(context.Content.Items);
         _netManager = connection;
 
         RegisterMessageHandlers();
@@ -741,7 +745,7 @@ public class ClientNetworkHandler : NetHandler
         double x = packet.X / 32.0D;
         double y = packet.Y / 32.0D;
         double z = packet.Z / 32.0D;
-        Entity entityItem = DroppedItemBehavior.Create(_worldClient, x, y, z, new ItemStack(packet.ItemRawId, packet.ItemCount, packet.ItemDamage));
+        Entity entityItem = DroppedItemBehavior.Create(_worldClient, x, y, z, new ItemStack(_worldClient.Content.Items, packet.ItemRawId, packet.ItemCount, packet.ItemDamage));
         entityItem.VelocityX = packet.VelocityX / 128.0D;
         entityItem.VelocityY = packet.VelocityY / 128.0D;
         entityItem.VelocityZ = packet.VelocityZ / 128.0D;
@@ -890,7 +894,7 @@ public class ClientNetworkHandler : NetHandler
         }
         else
         {
-            ent.Inventory.Main[ent.Inventory.SelectedSlot] = new ItemStack(currentItem, 1, 0);
+            ent.Inventory.Main[ent.Inventory.SelectedSlot] = new ItemStack(_worldClient.Content.Items, currentItem, 1, 0);
         }
 
         ent.SetPositionAndAngles(x, y, z, rotation, pitch);
@@ -1493,7 +1497,7 @@ public class ClientNetworkHandler : NetHandler
 
     private void onMapUpdate(MapUpdateMessage packet)
     {
-        if (packet.ItemRawId == Item.ByName("map").Id)
+        if (packet.ItemRawId == _context.Content.Items.Get("omniblock:map").Id)
         {
             MapBehavior.GetMapState(packet.MapId, _context.WorldHost.World).UpdateData(packet.Data);
         }

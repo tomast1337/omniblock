@@ -232,7 +232,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
                     self.X + offsetX,
                     self.Y + offsetY,
                     self.Z + offsetZ,
-                    new ItemStack(stack.ItemId, dropCount, stack.GetDamage()));
+                    new ItemStack(stack.GetItem(), dropCount, stack.GetDamage()));
 
                 const float scatterSpeed = 0.05F;
                 dropped.VelocityX = (float)self.Random.NextGaussian() * scatterSpeed;
@@ -297,7 +297,7 @@ public sealed class MinecartBehavior : IEntityTicker, IEntityLifecycle, IEntityP
                 int slotIndex = itemTag.GetByte("Slot") & 255;
                 if (slotIndex >= 0 && slotIndex < cargo.SlotCount)
                 {
-                    cargo.SetStack(slotIndex, new ItemStack(itemTag));
+                    cargo.SetStack(slotIndex, new ItemStack(self.World.Content.Items, itemTag));
                 }
             }
         }

@@ -39,7 +39,7 @@ internal sealed class ItemBlockBrowserWindow : DebugWindow
         foreach (ItemDefinition def in DefaultRegistries.Items)
         {
             if (DefaultRegistries.Items.GetKey(def) is not { } location) continue;
-            if (Item.Items[def.ProtocolId] is not { } item) continue;
+            if (!ctx.Content.Items.TryGetByProtocolId(def.ProtocolId, out Item? item) || item is null) continue;
 
             _entries.Add(MakeEntry(location.Path, item.GetStatName(), def.ProtocolId, false, itemsTexture, item.GetTextureId(0)));
         }

@@ -16,7 +16,7 @@ internal class CompassSprite : Rendering.Core.Textures.DynamicTexture
     private OmniBlock _game;
     private int _resolution = 16;
 
-    public CompassSprite(OmniBlock game) : base(Item.ByName("compass").GetTextureId(0))
+    public CompassSprite(OmniBlock game) : base(game.Content.Items.Get("omniblock:compass").GetTextureId(0))
     {
         _game = game;
         Atlas = FxImage.Items;

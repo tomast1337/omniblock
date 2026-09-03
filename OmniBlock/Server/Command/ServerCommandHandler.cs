@@ -19,7 +19,6 @@ internal class ServerCommandHandler : ICommandHandler
     public ServerCommandHandler(OmniBlockServer server)
     {
         Server = server;
-        ItemLookup.Initialize();
         RegisterAllCommands();
     }
 
@@ -75,13 +74,13 @@ internal class ServerCommandHandler : ICommandHandler
         Register(new ClearCommand());
         Register(new TeleportCommand());
         Register(new TeleportDimensionCommand());
-        Register(new GiveCommand());
+        Register(new GiveCommand(Server.Content.Items));
         Register(new GameModeCommand());
 
         // Info commands
         Register(new ListCommand());
         Register(new DataCommand());
-        Register(new BlockCommand());
+        Register(new BlockCommand(Server.Content.Items));
 
 
         // World commands

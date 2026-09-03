@@ -67,7 +67,7 @@ internal class BlockEntityChest : BlockEntity, IInventory
         {
             var itemsTag = (NBTTagCompound)itemList.TagAt(itemIndex);
             var slot = itemsTag.GetByte("Slot") & 255;
-            if (slot >= 0 && slot < _inventory.Length) _inventory[slot] = new ItemStack(itemsTag);
+            if (slot >= 0 && slot < _inventory.Length) _inventory[slot] = new ItemStack(World!.Content.Items, itemsTag);
         }
     }
 

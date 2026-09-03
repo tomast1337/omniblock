@@ -11,16 +11,16 @@ namespace OmniBlock.Client.UI.Screens.Menu.World;
 
 public class FlatPresetsScreen(UIContext context, CreateFlatWorldScreen parent) : UIScreen(context)
 {
-    public static readonly List<PresetItem> Presets =
+    private readonly List<PresetItem> _presets =
     [
         new("Classic Flat", "2;7,2x3,2;1;village"),
         new("Tunnelers' Dream", "2;7,230x1,5x3,2;1;biome_1,dungeon,decoration,stronghold,mineshaft", BlockRegistry.Get("stone").Id),
         new("Water World", "2;7,5x1,5x3,5x12,90x9;1;village,biome_1"),
         new("Overworld", "2;7,59x1,3x3,2;1;village,biome_1,decoration,stronghold,mineshaft,dungeon,lake,lava_lake", BlockRegistry.Get("dead_bush").Id),
         new("Snowy Kingdom", "2;7,59x1,3x3,2,78;1;village,biome_1"),
-        new("Bottomless Pit", "2;2x4,3x3,2;1;village,biome_1", Item.ByName("feather").Id),
+        new("Bottomless Pit", "2;2x4,3x3,2;1;village,biome_1", context.Content.Items.Get("omniblock:feather").Id),
         new("Desert", "2;7,3x1,52x24,8x12;1;village,biome_1,decoration,stronghold,mineshaft,dungeon"),
-        new("Redstone Ready", "2;7,3x1,52x24;1;", Item.ByName("redstone").Id)
+        new("Redstone Ready", "2;7,3x1,52x24;1;", context.Content.Items.Get("omniblock:redstone").Id)
     ];
 
     private readonly List<FlatPresetListItem> _listItems = [];
@@ -94,7 +94,7 @@ public class FlatPresetsScreen(UIContext context, CreateFlatWorldScreen parent) 
     private void PopulatePresetList()
     {
         _listItems.Clear();
-        foreach (PresetItem preset in Presets)
+        foreach (PresetItem preset in _presets)
         {
             int index = _listItems.Count;
             FlatPresetListItem item = new(preset);

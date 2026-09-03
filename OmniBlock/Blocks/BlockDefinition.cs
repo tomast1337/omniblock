@@ -62,4 +62,5 @@ public sealed record BlockItemDefinition
 {
     public string Type { get; init; } = "block";
     public string? TranslationKey { get; init; }
+    public string[] Aliases { get; init; } = [];
 }

@@ -39,7 +39,7 @@ public sealed class EntityPaintingTests
 
     private static bool DroppedAPainting(FakeWorldContext world) =>
         world.Entities.Entities.Any(e =>
-            EntityTestHarness.DroppedStack(e) is { } stack && stack.ItemId == Item.ByName("painting").Id);
+            EntityTestHarness.DroppedStack(e) is { } stack && stack.ItemId == ContentRuntime.Current.Items.Get("omniblock:painting").Id);
 
     [Fact]
     public void A_painting_has_no_class_of_its_own()

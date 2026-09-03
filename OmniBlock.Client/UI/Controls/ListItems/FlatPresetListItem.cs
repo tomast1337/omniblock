@@ -30,8 +30,7 @@ public class FlatPresetListItem(FlatPresetsScreen.PresetItem preset) : ListItem<
         }
         else
         {
-            Item item = Item.Items[Value.IconId];
-            if (item != null)
+            if (renderer.Context.Content.Items.TryGetByProtocolId(Value.IconId, out Item? item) && item is not null)
             {
                 int textureId = item.GetTextureId(Value.IconMeta);
                 renderer.DrawItemIntoGui(s_itemRenderer, Value.IconId, Value.IconMeta, textureId, 5, 5);

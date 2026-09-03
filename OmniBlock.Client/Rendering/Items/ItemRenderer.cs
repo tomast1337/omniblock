@@ -107,7 +107,7 @@ public class ItemRenderer : EntityRenderer
             float blue;
             if (useCustomDisplayColor)
             {
-                colorMultiplier = Item.Items[stack.ItemId].GetColorMultiplier(stack.GetDamage());
+                colorMultiplier = stack.GetItem().GetColorMultiplier(stack.GetDamage());
                 red = (colorMultiplier >> 16 & 255) / 255.0F;
                 green = (colorMultiplier >> 8 & 255) / 255.0F;
                 blue = (colorMultiplier & 255) / 255.0F;
@@ -141,8 +141,9 @@ public class ItemRenderer : EntityRenderer
         GLManager.ModelView.Pop();
     }
 
-    public void drawItemIntoGui(TextRenderer fontRenderer, TextureManager textureManager, int itemId, int itemDamage, int iconIndex, int x, int y)
+    public void drawItemIntoGui(TextRenderer fontRenderer, TextureManager textureManager, Item item, int itemDamage, int iconIndex, int x, int y)
     {
+        int itemId = item.Id;
         float blue;
         if (itemId < 256 && BlockRenderer.IsSideLit(BlockRegistry.GetByProtocolId(itemId).RenderType))
         {
@@ -155,7 +156,7 @@ public class ItemRenderer : EntityRenderer
             GLManager.ModelView.Scale(1.0F, 1.0F, -1.0F);
             GLManager.ModelView.Rotate(210.0F, 1.0F, 0.0F, 0.0F);
             GLManager.ModelView.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
-            int itemColor = Item.Items[itemId].GetColorMultiplier(itemDamage);
+            int itemColor = item.GetColorMultiplier(itemDamage);
             blue = (itemColor >> 16 & 255) / 255.0F;
             float greenChannel = (itemColor >> 8 & 255) / 255.0F;
             float blueChannel = (itemColor & 255) / 255.0F;
@@ -180,7 +181,7 @@ public class ItemRenderer : EntityRenderer
                 textureManager.BindTexture(textureManager.GetTextureId("/gui/items.png"));
             }
 
-            int colorMultiplier = Item.Items[itemId].GetColorMultiplier(itemDamage);
+            int colorMultiplier = item.GetColorMultiplier(itemDamage);
             float red = (colorMultiplier >> 16 & 255) / 255.0F;
             float green = (colorMultiplier >> 8 & 255) / 255.0F;
             blue = (colorMultiplier & 255) / 255.0F;
@@ -197,7 +198,7 @@ public class ItemRenderer : EntityRenderer
     {
         if (stack != null)
         {
-            drawItemIntoGui(fontRenderer, textureManager, stack.ItemId, stack.GetDamage(), stack.GetTextureId(), x, y);
+            drawItemIntoGui(fontRenderer, textureManager, stack.GetItem(), stack.GetDamage(), stack.GetTextureId(), x, y);
         }
     }
 

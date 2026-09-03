@@ -105,7 +105,7 @@ public sealed class BlockBatch7Tests
         Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build(type, doc.RootElement));
     }
 
-    // Unknown ITEM name: Item.ByName throws ArgumentException (its own registry lookup, not
+    // Unknown item name: the runtime registry throws for its own catalog lookup, not
     // CanonicalRegistry.Get's).
     [Theory]
     [InlineData("dispenser", """{"Type":"dispenser","arrow":"omniblock:arrow","egg":"omniblock:egg","snowball":"not_a_real_item"}""")]
@@ -114,6 +114,6 @@ public sealed class BlockBatch7Tests
     public void BehaviorRegistry_Build_UnknownItemName_Throws(string type, string json)
     {
         using JsonDocument doc = JsonDocument.Parse(json);
-        Assert.Throws<ArgumentException>(() => BehaviorRegistry.Build(type, doc.RootElement));
+        Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build(type, doc.RootElement));
     }
 }

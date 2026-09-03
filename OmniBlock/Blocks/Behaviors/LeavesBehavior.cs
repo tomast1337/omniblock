@@ -55,7 +55,7 @@ public sealed class LeavesBehavior(Block trunk, Block saplingItem, Item harvestT
         if (ctx.World.IsRemote || hand == null || hand.ItemId != harvestToolItem.Id) return;
 
         ctx.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[block.Id], 1);
-        Block.DropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(block.Id, 1, ctx.Meta & 3));
+        Block.DropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(ctx.World.Content.Items, block.Id, 1, ctx.Meta & 3));
     }
 
     public int GetDroppedItemCount(Block block, int defaultCount)

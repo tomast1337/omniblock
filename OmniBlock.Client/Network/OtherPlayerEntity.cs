@@ -119,7 +119,7 @@ public class OtherPlayerEntity : EntityPlayer
         ItemStack itemStack = null;
         if (itemId >= 0)
         {
-            itemStack = new ItemStack(itemId, 1, damage);
+            itemStack = new ItemStack(World.Content.Items, itemId, 1, damage);
         }
 
         if (slotIndex == 0)

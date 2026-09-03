@@ -20,7 +20,7 @@ public sealed class EntityFishHookTests
     {
         TestEntityPlayer player = new(world) { Name = "angler" };
         player.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
-        player.Inventory.SetStack(player.Inventory.SelectedSlot, new ItemStack(Item.ByName("fishing_rod"), 1));
+        player.Inventory.SetStack(player.Inventory.SelectedSlot, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:fishing_rod"), 1));
         Assert.True(world.Entities.SpawnEntity(player));
         return player;
     }
@@ -76,7 +76,7 @@ public sealed class EntityFishHookTests
         TestEntityPlayer angler = Angler(world);
         Entity bobber = Cast(world, angler);
 
-        angler.Inventory.SetStack(angler.Inventory.SelectedSlot, new ItemStack(Item.ByName("stick"), 1));
+        angler.Inventory.SetStack(angler.Inventory.SelectedSlot, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 1));
         bobber.Tick();
 
         Assert.True(bobber.Dead);

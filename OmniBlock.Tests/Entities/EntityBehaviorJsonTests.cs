@@ -26,7 +26,8 @@ public sealed class EntityBehaviorJsonTests
         EntityBehaviorRegistry.Build(new EntityBehaviorContext(
             Json(json),
             definition ?? new EntityDefinition { ProtocolId = 1, Name = "test" },
-            new EntityStateLayout()));
+            new EntityStateLayout(),
+            ContentRuntime.Current.Items));
 
     [Fact]
     public void Registry_builds_each_attack_type_with_its_parameters()
@@ -90,13 +91,13 @@ public sealed class EntityBehaviorJsonTests
             { "Entries": [{"Item":"omniblock:bone"}], "MinCount": 1, "MaxCount": 1 }
           ]
         }
-        """));
+        """), ContentRuntime.Current.Items);
 
         List<int> ids = table.Roll(new LootContext(null, null, 0, System.Random.Shared)).Select(s => s.ItemId).ToList();
 
         Assert.Equal(2, ids.Count);
-        Assert.Contains(Item.ByName("arrow").Id, ids);
-        Assert.Contains(Item.ByName("bone").Id, ids);
+        Assert.Contains(ContentRuntime.Current.Items.Get("omniblock:arrow").Id, ids);
+        Assert.Contains(ContentRuntime.Current.Items.Get("omniblock:bone").Id, ids);
     }
 
     [Fact]
@@ -104,21 +105,18 @@ public sealed class EntityBehaviorJsonTests
     {
         LootTable table = LootJson.ParseTable(Json("""
         { "Pools": [ { "Entries": [{"Item":"omniblock:wool"}], "MinCount": 1, "MaxCount": 1 } ] }
-        """));
+        """), ContentRuntime.Current.Items);
 
         ItemStack stack = Assert.Single(table.Roll(new LootContext(null, null, 0, System.Random.Shared)));
         Assert.Equal(OmniBlock.Blocks.BlockRegistry.Get("wool").Id, stack.ItemId);
     }
 
     [Fact]
-    public void Unknown_item_in_a_loot_entry_fails_when_rolled()
+    public void Unknown_item_in_a_loot_entry_fails_when_parsed()
     {
-        LootTable table = LootJson.ParseTable(Json("""
-        { "Pools": [ { "Entries": [{"Item":"omniblock:not_a_real_item"}], "MinCount": 1, "MaxCount": 1 } ] }
-        """));
-
-        ArgumentException error = Assert.Throws<ArgumentException>(
-            () => table.Roll(new LootContext(null, null, 0, System.Random.Shared)).ToList());
+        KeyNotFoundException error = Assert.Throws<KeyNotFoundException>(() => LootJson.ParseTable(Json("""
+            { "Pools": [ { "Entries": [{"Item":"omniblock:not_a_real_item"}], "MinCount": 1, "MaxCount": 1 } ] }
+            """), ContentRuntime.Current.Items));
         Assert.Contains("not_a_real_item", error.Message);
     }
 
@@ -131,7 +129,7 @@ public sealed class EntityBehaviorJsonTests
 
         LootTable table = LootJson.ParseTable(Json("""
         { "Pools": [ { "Entries": [{"Item":"omniblock:wool","MetaFrom":"FleeceColor"}], "MinCount": 1, "MaxCount": 1 } ] }
-        """));
+        """), ContentRuntime.Current.Items);
 
         ItemStack stack = Assert.Single(table.Roll(LootContext.ForMob(sheep, null)));
         Assert.Equal(11, stack.GetDamage());

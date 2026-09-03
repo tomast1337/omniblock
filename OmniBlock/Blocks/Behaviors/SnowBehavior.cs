@@ -24,7 +24,7 @@ internal sealed class SnowBehavior(Item dropItem, float dropSpread) : BlockRunti
         var offsetX = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
         var offsetY = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
         var offsetZ = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
-        var entityItem = DroppedItemBehavior.Create(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(dropItem.Id, 1, 0), 10);
+        var entityItem = DroppedItemBehavior.Create(@event.World, @event.X + offsetX, @event.Y + offsetY, @event.Z + offsetZ, new ItemStack(dropItem, 1, 0), 10);
         @event.World.Entities.SpawnEntity(entityItem);
         @event.World.Writer.SetBlock(@event.X, @event.Y, @event.Z, 0);
         @event.Player.IncreaseStat(Stats.Stats.MineBlockStatArray[block.Id], 1);

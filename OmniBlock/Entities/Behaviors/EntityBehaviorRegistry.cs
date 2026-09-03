@@ -46,12 +46,12 @@ internal static class EntityBehaviorRegistry
         ["darkness_only"] = (in c) => new DarknessOnlyTargetBehavior(c.Double("radius", 16.0D)),
 
         // Loot
-        ["loot_table"] = (in c) => new LootTableBehavior(LootJson.ParseTable(c.Json)),
+        ["loot_table"] = (in c) => new LootTableBehavior(LootJson.ParseTable(c.Json, c.Items)),
 
         // Interactable
         ["swap_held_item"] = (in c) => new SwapHeldItemBehavior(
-            Item.ByName(ResourceLocation.Parse(c.Json.GetProperty("required").GetString()!).Path),
-            Item.ByName(ResourceLocation.Parse(c.Json.GetProperty("result").GetString()!).Path)),
+            c.Items.Get(ResourceLocation.Parse(c.Json.GetProperty("required").GetString()!)),
+            c.Items.Get(ResourceLocation.Parse(c.Json.GetProperty("result").GetString()!))),
         ["ride_if_saddled"] = (in c) => new RideIfSaddledBehavior(c),
         ["wool"] = (in c) => new WoolBehavior(c),
         ["contact_damage"] = (in c) => new ContactDamageBehavior(

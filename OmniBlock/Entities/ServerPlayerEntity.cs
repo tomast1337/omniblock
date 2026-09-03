@@ -221,7 +221,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
         for (int slotIndex = 0; slotIndex < Inventory.Size; slotIndex++)
         {
             ItemStack? itemStack = Inventory.GetStack(slotIndex);
-            if (NetworkHandler != null && (itemStack == null || !Item.Items[itemStack.ItemId]!.IsNetworkSynced() || NetworkHandler?.getBlockDataSendQueueSize() > 2))
+            if (NetworkHandler != null && (itemStack == null || !itemStack.GetItem().IsNetworkSynced() || NetworkHandler?.getBlockDataSendQueueSize() > 2))
             {
                 continue;
             }
@@ -231,7 +231,7 @@ public class ServerPlayerEntity : EntityPlayer, ScreenHandlerListener
                 continue;
             }
 
-            Message? packet = Item.Items[itemStack.ItemId]!.GetUpdatePacket(itemStack, World, this);
+            Message? packet = itemStack.GetItem().GetUpdatePacket(itemStack, World, this);
             if (packet != null)
             {
                 NetworkHandler?.SendMessage(packet);

@@ -2,10 +2,11 @@ using OmniBlock.Entities;
 using OmniBlock.Items;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Server.Commands;
 
-public class GiveCommand : Command.Command
+public class GiveCommand(RuntimeItemRegistry items) : Command.Command
 {
     public override string Usage => "give <player> <item> <count>";
     public override string Description => "Gives yourself an item";
@@ -13,18 +14,18 @@ public class GiveCommand : Command.Command
 
     public override LiteralArgumentBuilder<CommandSource> Register(LiteralArgumentBuilder<CommandSource> argBuilder) =>
         argBuilder
-            .Then(ArgumentItemStack("item")
+            .Then(ArgumentItemStack("item", items)
                 .Executes(GiveItem)
                 .Then(ArgumentInt("count")
                     .Executes(GiveItemCount)))
             .Then(ArgumentPlayer("player")
-                .Then(ArgumentItemStack("item")
+                .Then(ArgumentItemStack("item", items)
                     .Executes(GivePlayerItem)
                     .Then(ArgumentInt("count")
                         .Executes(GivePlayerItemCount))));
 
     // give <item> -> give 1 of item to self
-    private static int GiveItem(CommandContext<CommandSource> context)
+    private int GiveItem(CommandContext<CommandSource> context)
     {
         ItemStack item = context.GetArgument<ItemStack>("item");
 
@@ -32,7 +33,7 @@ public class GiveCommand : Command.Command
         return 1;
     }
 
-    private static int GiveItemCount(CommandContext<CommandSource> context)
+    private int GiveItemCount(CommandContext<CommandSource> context)
     {
         ItemStack item = context.GetArgument<ItemStack>("item");
         int count = context.GetArgument<int>("count");
@@ -42,7 +43,7 @@ public class GiveCommand : Command.Command
     }
 
 
-    private static int GivePlayerItem(CommandContext<CommandSource> context)
+    private int GivePlayerItem(CommandContext<CommandSource> context)
     {
         ItemStack item = context.GetArgument<ItemStack>("item");
         ServerPlayerEntity player = context.GetArgument<ServerPlayerEntity>("player");
@@ -51,7 +52,7 @@ public class GiveCommand : Command.Command
         return 1;
     }
 
-    private static int GivePlayerItemCount(CommandContext<CommandSource> context)
+    private int GivePlayerItemCount(CommandContext<CommandSource> context)
     {
         ItemStack item = context.GetArgument<ItemStack>("item");
         ServerPlayerEntity player = context.GetArgument<ServerPlayerEntity>("player");
@@ -61,7 +62,7 @@ public class GiveCommand : Command.Command
         return 1;
     }
 
-    private static void GiveTo(CommandSource source, ItemStack item, int count)
+    private void GiveTo(CommandSource source, ItemStack item, int count)
     {
         ServerPlayerEntity? sender = source.Server.playerManager.getPlayer(source.SenderName);
         if (sender == null)
@@ -73,11 +74,11 @@ public class GiveCommand : Command.Command
         GiveTo(source, sender, item, count);
     }
 
-    private static void GiveTo(CommandSource source, ServerPlayerEntity target, ItemStack item, int count)
+    private void GiveTo(CommandSource source, ServerPlayerEntity target, ItemStack item, int count)
     {
         item.Count = count;
         target.Inventory.AddItemStackToInventoryOrDrop(item);
-        string msg = $"Gave {count} [{ItemLookup.ResolveItemName(item)}] to {target.Name}";
+        string msg = $"Gave {count} [{items.GetName(item)}] to {target.Name}";
         source.LogOp($"{target.Name} {msg}");
         source.Output.SendMessage(msg);
     }

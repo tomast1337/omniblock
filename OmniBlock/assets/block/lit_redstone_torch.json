@@ -13,6 +13,9 @@
   "TickRate": 2,
   "NotFullCube": true,
   "NoCollision": true,
+  "BlockItem": {
+    "Aliases": ["litredstonetorch"]
+  },
   "LootTable": {
     "Entries": [
       {

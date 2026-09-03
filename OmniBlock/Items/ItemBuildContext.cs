@@ -106,21 +106,6 @@ public readonly struct ItemBuildContext
         }
     }
 
-    internal static ItemBuildContext BuiltIns { get; } = new(
-        static key => BlockRegistry.Get(key.Path),
-        static key => ContentRuntime.Current.Items.GetByProtocolId(ContentRuntime.Current.Blocks.Get(key).Id),
-        static key => Item.ByName(key.Path),
-        static key => ToolMaterialRegistry.Get(key.Path),
-        static key => ArmorMaterialRegistry.Get(key.Path),
-        static key => MaterialRegistry.Get(key.Path),
-        static key => Textures.Atlases.Items.IndexOf(key),
-        static key => EntityRegistry.ByName(key.Path),
-        static key => DefaultRegistries.BlockEntityTypes.Get(key)?.Value
-                      ?? throw new KeyNotFoundException($"Unknown block-entity type '{key}'."),
-        static key => throw new KeyNotFoundException($"Unknown recipe dependency '{key}'."),
-        static key => throw new KeyNotFoundException($"Unknown interaction dependency '{key}'."),
-        static key => _ = EntityDefinitionRegistry.Get(key.Path));
-
     private static InvalidOperationException Uninitialized() =>
         new($"{nameof(ItemBuildContext)} must be initialized before resolving dependencies.");
 }

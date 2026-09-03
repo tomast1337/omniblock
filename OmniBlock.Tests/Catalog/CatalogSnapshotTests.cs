@@ -71,8 +71,7 @@ internal static class CatalogSnapshot
         snapshot.AppendLine("[items]");
         foreach (ItemDefinition definition in DefaultRegistries.Items.OrderBy(static d => d.ProtocolId))
         {
-            Item item = Item.Items[definition.ProtocolId]
-                ?? throw new InvalidOperationException($"Item '{definition.Name}' was defined but not constructed.");
+            Item item = ContentRuntime.Current.Items.GetByProtocolId(definition.ProtocolId);
             snapshot.Append(definition.ProtocolId.ToString(CultureInfo.InvariantCulture)).Append(' ')
                 .Append(Key(definition.Namespace, definition.Name))
                 .Append(" stack=").Append(item.GetMaxCount().ToString(CultureInfo.InvariantCulture))

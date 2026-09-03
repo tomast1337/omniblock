@@ -31,14 +31,14 @@ public class StatItemRow : UIElement
 
     public override void Render(UIRenderer renderer)
     {
-        if (Item.Items[ItemId] == null)
+        if (!renderer.Context.Content.Items.TryGetByProtocolId(ItemId, out Item? item) || item is null)
         {
             return;
         }
 
         DrawBackground(renderer);
 
-        ItemStack itemStack = new(ItemId, 1, 0);
+        ItemStack itemStack = new(item, 1, 0);
 
         renderer.DrawRect(IconX, IconY, IconSize, IconSize, Color.BackgroundBlackAlpha);
         renderer.DrawItem(itemStack, IconX + 1, IconY + 1);

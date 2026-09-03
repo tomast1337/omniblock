@@ -9,9 +9,6 @@ internal class FurnaceOutputSlot : Slot
 
     private EntityPlayer thePlayer;
 
-    private static readonly Item s_ingotIron = Item.ByName("ingot_iron");
-    private static readonly Item s_fishCooked = Item.ByName("fish_cooked");
-
     public FurnaceOutputSlot(EntityPlayer player, IInventory inventory, int slotIndex, int x, int y) : base(inventory, slotIndex, x, y)
     {
         thePlayer = player;
@@ -25,12 +22,12 @@ internal class FurnaceOutputSlot : Slot
     public override void onTakeItem(ItemStack stack)
     {
         stack.OnCraft(thePlayer.World, thePlayer);
-        if (stack.ItemId == s_ingotIron.Id)
+        if (stack.ItemId == thePlayer.World.Content.Items.Get("omniblock:ingot_iron").Id)
         {
             thePlayer.IncreaseStat(Achievements.AcquireIron, 1);
         }
 
-        if (stack.ItemId == s_fishCooked.Id)
+        if (stack.ItemId == thePlayer.World.Content.Items.Get("omniblock:fish_cooked").Id)
         {
             thePlayer.IncreaseStat(Achievements.CookFish, 1);
         }

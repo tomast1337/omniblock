@@ -39,10 +39,10 @@ public sealed class ItemCatalogCharacterizationTests
     {
         foreach (ItemDefinition definition in DefaultRegistries.Items)
         {
-            Item item = Assert.IsAssignableFrom<Item>(Item.Items[definition.ProtocolId]);
+            Item item = ContentRuntime.Current.Items.GetByProtocolId(definition.ProtocolId);
 
             Assert.Equal(definition.ProtocolId, item.Id);
-            Assert.Same(item, Item.ByName(definition.Name));
+            Assert.Same(item, ContentRuntime.Current.Items.Get(new ResourceLocation(definition.Namespace, definition.Name)));
             Assert.Equal(definition.MaxStackSize, item.GetMaxCount());
             Assert.Equal(ExpectedDurability(definition), item.GetMaxDamage());
             Assert.Equal(definition.HasSubtypes, item.GetHasSubtypes());
@@ -54,7 +54,7 @@ public sealed class ItemCatalogCharacterizationTests
             if (definition.CraftingReturnItemProtocolId is { } returnId)
             {
                 Assert.True(item.HasContainerItem());
-                Assert.Same(Item.Items[returnId], item.GetContainerItem());
+                Assert.Same(ContentRuntime.Current.Items.GetByProtocolId(returnId), item.GetContainerItem());
             }
             else
             {
@@ -101,7 +101,7 @@ public sealed class ItemCatalogCharacterizationTests
         {
             foreach (LootEntryDefinition entry in block.LootTable?.Entries ?? [])
             {
-                Assert.True(ItemLookup.TryGetItemId(entry.ItemName, out _),
+                Assert.True(ContentRuntime.Current.Items.TryParse(entry.ItemName, out _),
                     $"Block '{block.Namespace}:{block.Name}' loot references unknown item '{entry.ItemName}'.");
             }
         }
@@ -112,7 +112,7 @@ public sealed class ItemCatalogCharacterizationTests
         StringBuilder text = new();
         foreach (ItemDefinition definition in DefaultRegistries.Items.OrderBy(static item => item.ProtocolId))
         {
-            Item item = Item.Items[definition.ProtocolId]!;
+            Item item = ContentRuntime.Current.Items.GetByProtocolId(definition.ProtocolId);
             text.Append(definition.ProtocolId.ToString(CultureInfo.InvariantCulture)).Append(' ')
                 .Append(definition.Namespace).Append(':').Append(definition.Name)
                 .Append(" definition=").Append(JsonSerializer.Serialize(definition, s_json))
@@ -169,15 +169,15 @@ public sealed class ItemCatalogCharacterizationTests
     }
 
     private static void AssertItem(string key, ItemDefinition owner) =>
-        Assert.True(ItemLookup.TryGetItemId(key, out _), $"Item '{owner.Namespace}:{owner.Name}' references unknown item '{key}'.");
+        Assert.True(ContentRuntime.Current.Items.TryParse(key, out _), $"Item '{owner.Namespace}:{owner.Name}' references unknown item '{key}'.");
 
     private static void AssertBlock(string? key, ItemDefinition owner)
     {
         Assert.False(string.IsNullOrWhiteSpace(key), $"Item '{owner.Namespace}:{owner.Name}' has no referenced block.");
         ResourceLocation location = ResourceLocation.Parse(key!);
         bool resolved = ContentRuntime.Current.Blocks.TryGet(location, out _)
-                        || (ItemLookup.TryGetItemId(location.Path, out int protocolId)
-                            && ContentRuntime.Current.Blocks.TryGetByProtocolId(protocolId, out _))
+                        || (ContentRuntime.Current.Items.TryParse(location.Path, out ItemStack? stack)
+                            && ContentRuntime.Current.Blocks.TryGetByProtocolId(stack.ItemId, out _))
                         || LoadBlocks().Any(block => block.Namespace == location.Namespace
                                                      && block.TranslationKey == location.Path);
         Assert.True(resolved,

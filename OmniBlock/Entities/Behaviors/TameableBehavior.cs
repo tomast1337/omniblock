@@ -42,10 +42,10 @@ public sealed class TameableBehavior : IEntityInteractable, IEntityPersistence, 
 
     public TameableBehavior(in EntityBehaviorContext context)
     {
-        _tamingItem = Item.ByName(ResourceLocation.Parse(context.Json.GetProperty("taming_item").GetString()!).Path);
+        _tamingItem = context.Items.Get(ResourceLocation.Parse(context.Json.GetProperty("taming_item").GetString()!));
         _tamingChanceOneIn = context.Int("taming_chance_one_in", 3);
         _tamedHealth = context.Int("tamed_health", 20);
-        _feedHealAmount = Item.ByName(ResourceLocation.Parse(context.Json.GetProperty("feed_heal_like").GetString()!).Path)
+        _feedHealAmount = context.Items.Get(ResourceLocation.Parse(context.Json.GetProperty("feed_heal_like").GetString()!))
             .GetBehavior<FoodBehavior>()!.HealAmount;
 
         _tamedTexture = context.Json.GetProperty("tamed_texture").GetString()!;
@@ -314,7 +314,7 @@ public sealed class TameableBehavior : IEntityInteractable, IEntityPersistence, 
     {
         ItemStack? held = player.Inventory.ItemInHand;
         if (held != null
-            && Item.Items[held.ItemId]?.GetBehavior<FoodBehavior>() is { IsMeat: true }
+            && held.GetItem().GetBehavior<FoodBehavior>() is { IsMeat: true }
             && ShownHealth(self) < _tamedHealth)
         {
             Consume(held, player);

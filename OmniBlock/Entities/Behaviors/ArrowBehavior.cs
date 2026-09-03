@@ -56,7 +56,7 @@ public sealed class ArrowBehavior : IEntityTicker, IEntityPersistence, IEntityIn
             return;
         }
 
-        if (!self.State[_inGround] || !self.State[_belongsToPlayer] || self.State[_shake] > 0 || !player.Inventory.AddItemStackToInventory(new ItemStack(Item.ByName("arrow"), 1)))
+        if (!self.State[_inGround] || !self.State[_belongsToPlayer] || self.State[_shake] > 0 || !player.Inventory.AddItemStackToInventory(new ItemStack(self.World.Content.Items.Get(new ResourceLocation(Namespace.OmniBlock, "arrow")), 1)))
         {
             return;
         }

@@ -11,7 +11,7 @@ namespace OmniBlock.Entities.Behaviors;
 internal sealed class LegacyBehaviorDefinition(string typeName, JsonElement json) : EntityBehaviorDefinition
 {
     public override object Build(in EntityBehaviorBuildContext context) =>
-        EntityBehaviorRegistry.Build(new EntityBehaviorContext(json, context.Definition, context.Layout));
+        EntityBehaviorRegistry.Build(new EntityBehaviorContext(json, context.Definition, context.Layout, context.Items));
 
     public override string ToString() => $"legacy behavior '{typeName}'";
 }

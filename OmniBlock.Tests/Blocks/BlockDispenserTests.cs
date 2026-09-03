@@ -123,7 +123,7 @@ public sealed class BlockDispenserTests
         FakeWorldContext world = new();
         world.ReaderWriter.SetInitial(23, 64, 23, BlockRegistry.Get("dispenser").Id, 3);
         AttachDispenser(world, 23, 64, 23);
-        world.Entities.GetBlockEntity<BlockEntityDispenser>(23, 64, 23)!.SetStack(0, new ItemStack(Item.ByName("arrow"), 1));
+        world.Entities.GetBlockEntity<BlockEntityDispenser>(23, 64, 23)!.SetStack(0, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:arrow"), 1));
 
         int before = world.Entities.Entities.Count;
         BlockRegistry.Get("dispenser").OnTick(DispenserTick(world, 23, 64, 23));
@@ -148,7 +148,7 @@ public sealed class BlockDispenserTests
         world.ReaderWriter.SetInitial(3, 63, 3, BlockRegistry.Get("lit_redstone_torch").Id);
         world.ReaderWriter.SetInitial(3, 64, 3, BlockRegistry.Get("dispenser").Id, 3);
         AttachDispenser(world, 3, 64, 3);
-        world.Entities.GetBlockEntity<BlockEntityDispenser>(3, 64, 3)!.SetStack(0, new ItemStack(Item.ByName("arrow"), 1));
+        world.Entities.GetBlockEntity<BlockEntityDispenser>(3, 64, 3)!.SetStack(0, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:arrow"), 1));
 
         BlockRegistry.Get("dispenser").OnTick(DispenserTick(world, 3, 64, 3));
 
@@ -162,7 +162,7 @@ public sealed class BlockDispenserTests
         world.ReaderWriter.SetInitial(30, 63, 30, BlockRegistry.Get("lit_redstone_torch").Id);
         world.ReaderWriter.SetInitial(30, 64, 30, BlockRegistry.Get("dispenser").Id, 2);
         AttachDispenser(world, 30, 64, 30);
-        world.Entities.GetBlockEntity<BlockEntityDispenser>(30, 64, 30)!.SetStack(0, new ItemStack(Item.ByName("arrow"), 1));
+        world.Entities.GetBlockEntity<BlockEntityDispenser>(30, 64, 30)!.SetStack(0, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:arrow"), 1));
 
         BlockRegistry.Get("dispenser").OnTick(DispenserTick(world, 30, 64, 30));
 
@@ -176,7 +176,7 @@ public sealed class BlockDispenserTests
         world.ReaderWriter.SetInitial(31, 63, 31, BlockRegistry.Get("lit_redstone_torch").Id);
         world.ReaderWriter.SetInitial(31, 64, 31, BlockRegistry.Get("dispenser").Id, 5);
         AttachDispenser(world, 31, 64, 31);
-        world.Entities.GetBlockEntity<BlockEntityDispenser>(31, 64, 31)!.SetStack(0, new ItemStack(Item.ByName("arrow"), 1));
+        world.Entities.GetBlockEntity<BlockEntityDispenser>(31, 64, 31)!.SetStack(0, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:arrow"), 1));
 
         BlockRegistry.Get("dispenser").OnTick(DispenserTick(world, 31, 64, 31));
 
@@ -190,7 +190,7 @@ public sealed class BlockDispenserTests
         world.ReaderWriter.SetInitial(32, 63, 32, BlockRegistry.Get("lit_redstone_torch").Id);
         world.ReaderWriter.SetInitial(32, 64, 32, BlockRegistry.Get("dispenser").Id, 4);
         AttachDispenser(world, 32, 64, 32);
-        world.Entities.GetBlockEntity<BlockEntityDispenser>(32, 64, 32)!.SetStack(0, new ItemStack(Item.ByName("arrow"), 1));
+        world.Entities.GetBlockEntity<BlockEntityDispenser>(32, 64, 32)!.SetStack(0, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:arrow"), 1));
 
         BlockRegistry.Get("dispenser").OnTick(DispenserTick(world, 32, 64, 32));
 
@@ -204,7 +204,7 @@ public sealed class BlockDispenserTests
         world.ReaderWriter.SetInitial(4, 63, 4, BlockRegistry.Get("lit_redstone_torch").Id);
         world.ReaderWriter.SetInitial(4, 64, 4, BlockRegistry.Get("dispenser").Id, 3);
         AttachDispenser(world, 4, 64, 4);
-        world.Entities.GetBlockEntity<BlockEntityDispenser>(4, 64, 4)!.SetStack(0, new ItemStack(Item.ByName("egg"), 1));
+        world.Entities.GetBlockEntity<BlockEntityDispenser>(4, 64, 4)!.SetStack(0, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:egg"), 1));
 
         BlockRegistry.Get("dispenser").OnTick(DispenserTick(world, 4, 64, 4));
 
@@ -218,7 +218,7 @@ public sealed class BlockDispenserTests
         world.ReaderWriter.SetInitial(5, 63, 5, BlockRegistry.Get("lit_redstone_torch").Id);
         world.ReaderWriter.SetInitial(5, 64, 5, BlockRegistry.Get("dispenser").Id, 3);
         AttachDispenser(world, 5, 64, 5);
-        world.Entities.GetBlockEntity<BlockEntityDispenser>(5, 64, 5)!.SetStack(0, new ItemStack(Item.ByName("snowball"), 1));
+        world.Entities.GetBlockEntity<BlockEntityDispenser>(5, 64, 5)!.SetStack(0, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:snowball"), 1));
 
         BlockRegistry.Get("dispenser").OnTick(DispenserTick(world, 5, 64, 5));
 
@@ -232,11 +232,11 @@ public sealed class BlockDispenserTests
         world.ReaderWriter.SetInitial(6, 63, 6, BlockRegistry.Get("lit_redstone_torch").Id);
         world.ReaderWriter.SetInitial(6, 64, 6, BlockRegistry.Get("dispenser").Id, 3);
         AttachDispenser(world, 6, 64, 6);
-        world.Entities.GetBlockEntity<BlockEntityDispenser>(6, 64, 6)!.SetStack(0, new ItemStack(Item.ByName("stick"), 1));
+        world.Entities.GetBlockEntity<BlockEntityDispenser>(6, 64, 6)!.SetStack(0, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 1));
 
         BlockRegistry.Get("dispenser").OnTick(DispenserTick(world, 6, 64, 6));
 
-        Assert.Contains(world.Entities.Entities, e => EntityTestHarness.DroppedStack(e)?.ItemId == Item.ByName("stick").Id);
+        Assert.Contains(world.Entities.Entities, e => EntityTestHarness.DroppedStack(e)?.ItemId == ContentRuntime.Current.Items.Get("omniblock:stick").Id);
     }
 
     [Fact]
@@ -420,7 +420,7 @@ public sealed class BlockDispenserTests
         int x = 80, y = 64, z = 80;
         world.ReaderWriter.SetInitial(x, y, z, BlockRegistry.Get("dispenser").Id, 3);
         AttachDispenser(world, x, y, z);
-        world.Entities.GetBlockEntity<BlockEntityDispenser>(x, y, z)!.SetStack(0, new ItemStack(Item.ByName("ingot_iron"), 24));
+        world.Entities.GetBlockEntity<BlockEntityDispenser>(x, y, z)!.SetStack(0, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:ingot_iron"), 24));
 
         BlockRegistry.Get("dispenser").OnBreak(new OnBreakEvent(world, null, x, y, z));
 

@@ -128,8 +128,8 @@ public sealed class EntityIdentityTests
         EntityLiving zombie = (EntityLiving)EntityRegistry.ByName("zombie").Create(world);
         EntityLiving pigZombie = (EntityLiving)EntityRegistry.ByName("pigzombie").Create(world);
 
-        Assert.Equal(Item.ByName("bow").Id, skeleton.HeldItem!.ItemId);
-        Assert.Equal(Item.ByName("sword_gold").Id, pigZombie.HeldItem!.ItemId);
+        Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:bow").Id, skeleton.HeldItem!.ItemId);
+        Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:sword_gold").Id, pigZombie.HeldItem!.ItemId);
         Assert.Null(zombie.HeldItem);
     }
 }

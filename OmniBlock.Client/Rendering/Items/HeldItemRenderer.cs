@@ -163,7 +163,7 @@ public class HeldItemRenderer
         float sqrtSwing;
         if (itemToRender != null)
         {
-            int itemColor = Item.Items[itemToRender.ItemId].GetColorMultiplier(itemToRender.GetDamage());
+            int itemColor = itemToRender.GetItem().GetColorMultiplier(itemToRender.GetDamage());
             red = (itemColor >> 16 & 255) / 255.0F;
             sineSwing = (itemColor >> 8 & 255) / 255.0F;
             sqrtSwing = (itemColor & 255) / 255.0F;
@@ -175,7 +175,7 @@ public class HeldItemRenderer
         }
 
         float baseScale;
-        if (itemToRender != null && itemToRender.ItemId == Item.ByName("map").Id)
+        if (itemToRender != null && itemToRender.ItemId == _game.Content.Items.Get("omniblock:map").Id)
         {
             GLManager.ModelView.Push();
             baseScale = 0.8F;

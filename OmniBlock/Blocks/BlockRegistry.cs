@@ -123,7 +123,6 @@ public static class BlockRegistry
 
         foreach (var def in defs) content.AddBlock(def, BlockFactory.Create(def, content.BlockBuildContext));
 
-        ItemLookup.Initialize();
 
         foreach (var def in defs)
         {

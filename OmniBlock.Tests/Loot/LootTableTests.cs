@@ -13,8 +13,8 @@ namespace OmniBlock.Tests.Loot;
 /// </summary>
 public sealed class LootTableTests
 {
-    private static readonly Item s_arrow = Item.ByName("arrow");
-    private static readonly Item s_bone = Item.ByName("bone");
+    private static readonly Item s_arrow = ContentRuntime.Current.Items.Get("omniblock:arrow");
+    private static readonly Item s_bone = ContentRuntime.Current.Items.Get("omniblock:bone");
 
     private static LootContext Context(Entity? self = null, Entity? killer = null) =>
         new(self, killer, 0, System.Random.Shared);
@@ -132,7 +132,7 @@ public sealed class LootTableTests
     public void Entry_can_resolve_its_stack_from_the_context()
     {
         LootTable table = new(new LootPool(
-            [new LootEntry(context => new ItemStack(s_arrow.Id, 1, context.BlockMeta))], 1, 1));
+            [new LootEntry(context => new ItemStack(s_arrow, 1, context.BlockMeta))], 1, 1));
 
         ItemStack stack = Assert.Single(table.Roll(new LootContext(null, null, 7, System.Random.Shared)));
         Assert.Equal(7, stack.GetDamage());

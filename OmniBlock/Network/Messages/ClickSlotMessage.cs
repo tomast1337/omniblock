@@ -1,4 +1,5 @@
 using OmniBlock.Items;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Network.Messages;
 
@@ -12,6 +13,9 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class ClickSlotMessage : Message
 {
+    private readonly IItemRuntimeView? _items;
+    public ClickSlotMessage() { }
+    internal ClickSlotMessage(IItemRuntimeView items) => _items = items;
     public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "click_slot");
     public sbyte SyncId { get; set; }
 
@@ -37,7 +41,7 @@ public sealed class ClickSlotMessage : Message
         Button = (sbyte)stream.ReadByte();
         ActionType = stream.ReadShort();
         HoldingShift = stream.ReadBoolean();
-        Stack = stream.ReadItemStack();
+        Stack = stream.ReadItemStack(_items ?? throw new InvalidOperationException("No item catalog was supplied for decoding."));
     }
 
     public override void Write(Stream stream)

@@ -18,7 +18,6 @@ namespace OmniBlock.Entities;
 public abstract class EntityPlayer : EntityLiving
 {
     protected const float AirFlySpeedMult = 5f;
-    private static readonly Item s_apple = Item.ByName("apple");
     public readonly InventoryPlayer Inventory;
     public readonly ScreenHandler PlayerScreenHandler;
     private int _damageSpill;
@@ -318,7 +317,7 @@ public abstract class EntityPlayer : EntityLiving
         VelocityY = 0.1F;
         if (Name is "Notch")
         {
-            DropItem(new ItemStack(s_apple, 1), true);
+            DropItem(new ItemStack(World.Content.Items.Get(new ResourceLocation(Namespace.OmniBlock, "apple")), 1), true);
         }
 
         Inventory.DropInventory();

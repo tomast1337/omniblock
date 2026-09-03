@@ -33,7 +33,8 @@ public sealed class EntityBoatTests
 
     private static int CountDropped(FakeWorldContext world, string itemName)
     {
-        ItemLookup.TryGetItemId(itemName, out int itemId);
+        Assert.True(ContentRuntime.Current.Items.TryParse(itemName, out ItemStack? resolved));
+        int itemId = resolved.ItemId;
         return world.Entities.Entities
             .Select(EntityTestHarness.DroppedStack)
             .Where(stack => stack is not null && stack.ItemId == itemId)

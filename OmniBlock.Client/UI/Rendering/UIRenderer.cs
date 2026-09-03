@@ -47,6 +47,7 @@ public class UIRenderer
     private float _translateY;
 
     public UIRenderer(UIContext context) => _context = context;
+    public UIContext Context => _context;
     public TextureManager TextureManager => _context.TextureManager;
     public TextRenderer TextRenderer => _context.TextRenderer;
     private GameOptions _gameOptions => _context.Options;
@@ -386,7 +387,7 @@ public class UIRenderer
         {
             _batch.Flush();
             Lighting.turnOnGui();
-            itemRenderer.drawItemIntoGui(TextRenderer, TextureManager, itemId, itemMeta, textureId, (int)(x + _translateX), (int)(y + _translateY));
+            itemRenderer.drawItemIntoGui(TextRenderer, TextureManager, _context.Content.Items.GetByProtocolId(itemId), itemMeta, textureId, (int)(x + _translateX), (int)(y + _translateY));
             Lighting.turnOff();
             return;
         }
@@ -398,7 +399,7 @@ public class UIRenderer
 
         TextureHandle texHandle = itemId < 256 ? _terrainTexture : _itemsTexture;
 
-        int colorMultiplier = Item.Items[itemId]!.GetColorMultiplier(itemMeta);
+        int colorMultiplier = _context.Content.Items.GetByProtocolId(itemId).GetColorMultiplier(itemMeta);
         float finalX = MathF.Floor(x + _translateX);
         float finalY = MathF.Floor(y + _translateY);
         float u0 = textureId % 16 * 16 / 256f;
@@ -444,7 +445,7 @@ public class UIRenderer
 
             TextureHandle texHandle = stack.ItemId < 256 ? _terrainTexture : _itemsTexture;
 
-            int colorMultiplier = Item.Items[stack.ItemId]!.GetColorMultiplier(stack.GetDamage());
+            int colorMultiplier = stack.GetItem().GetColorMultiplier(stack.GetDamage());
             uint rgba = (uint)Color.FromRgb((uint)colorMultiplier);
 
             float finalX = MathF.Floor(x + _translateX);

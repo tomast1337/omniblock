@@ -3,6 +3,7 @@ using OmniBlock.Blocks;
 using OmniBlock.Blocks.Behaviors;
 using OmniBlock.Items;
 using OmniBlock.Items.Behaviors;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OmniBlock.Registries;
 
@@ -24,7 +25,7 @@ public sealed class ContentRuntime
     {
         ArgumentNullException.ThrowIfNull(blockBehaviorProviders);
         Blocks = new RuntimeBlockRegistry(blocks);
-        Items = new RuntimeItemRegistry(items, blockItems);
+        Items = new RuntimeItemRegistry(items, blockItems, Blocks);
         Manifest = new ContentCatalogManifest(Blocks.Keys.Select(key =>
             new KeyValuePair<ResourceLocation, int>(key, Blocks.Get(key).Id)));
         BlockBehaviorProviders = blockBehaviorProviders;
@@ -62,22 +63,71 @@ public sealed class ContentRuntime
 /// Immutable unified index over standalone and block-derived items. Standalone items win the
 /// resource-key lookup when a legacy block and item share a name; both remain addressable by ID.
 /// </summary>
-public sealed class RuntimeItemRegistry
+public interface IItemRuntimeView
+{
+    Item Get(ResourceLocation key);
+    Item GetByProtocolId(int protocolId);
+    bool TryGet(ResourceLocation key, out Item? item);
+    bool TryGetByProtocolId(int protocolId, out Item? item);
+}
+
+public sealed class RuntimeItemRegistry : IItemRuntimeView
 {
     private readonly FrozenDictionary<ResourceLocation, Item> _byKey;
     private readonly FrozenDictionary<int, Item> _byProtocolId;
+    private readonly FrozenDictionary<string, (Item Item, int Meta)> _aliases;
+    private readonly FrozenDictionary<int, string> _namesById;
 
     internal RuntimeItemRegistry(
         IEnumerable<(ResourceLocation Key, Item Item)> items,
-        IEnumerable<(ResourceLocation Key, Item Item)> blockItems)
+        IEnumerable<(ResourceLocation Key, Item Item)> blockItems,
+        RuntimeBlockRegistry blocks)
     {
         var byKey = new Dictionary<ResourceLocation, Item>();
         var byProtocolId = new Dictionary<int, Item>();
+        var aliases = new Dictionary<string, (Item, int)>(StringComparer.OrdinalIgnoreCase);
+        var namesById = new Dictionary<int, string>();
         Add(items, allowKeyCollision: false);
         Add(blockItems, allowKeyCollision: true);
 
         _byKey = byKey.ToFrozenDictionary();
         _byProtocolId = byProtocolId.ToFrozenDictionary();
+        foreach ((ResourceLocation key, Item item) in byKey)
+        {
+            aliases.TryAdd(key.Path, (item, 0));
+            aliases.TryAdd(key.ToString(), (item, 0));
+            namesById.TryAdd(item.Id, key.Path);
+            if (blocks.TryGetByProtocolId(item.Id, out Block? namedBlock) && namedBlock is not null)
+            {
+                aliases.TryAdd(key.Path.Replace("_", "", StringComparison.Ordinal), (item, 0));
+                aliases.TryAdd($"{key.Namespace}:{key.Path.Replace("_", "", StringComparison.Ordinal)}", (item, 0));
+            }
+            AddAliases(item.GetItemAlias, key.Namespace, item);
+            if (blocks.TryGetByProtocolId(item.Id, out Block? block) && block is not null)
+                AddAliases(block.GetBlockAlias, key.Namespace, item);
+        }
+        _aliases = aliases.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+        _namesById = namesById.ToFrozenDictionary();
+
+        void AddAliases(IEnumerable<string> values, Namespace itemNamespace, Item item)
+        {
+            foreach (string value in values)
+            {
+                string alias = value.ToLowerInvariant();
+                int separator = alias.LastIndexOf(':');
+                if (separator >= 0 && int.TryParse(alias[(separator + 1)..], out int meta))
+                {
+                    string name = alias[..separator];
+                    aliases.TryAdd(name, (item, meta));
+                    if (!name.Contains(':')) aliases.TryAdd($"{itemNamespace}:{name}", (item, meta));
+                }
+                else
+                {
+                    aliases.TryAdd(alias, (item, 0));
+                    if (!alias.Contains(':')) aliases.TryAdd($"{itemNamespace}:{alias}", (item, 0));
+                }
+            }
+        }
 
         void Add(IEnumerable<(ResourceLocation Key, Item Item)> entries, bool allowKeyCollision)
         {
@@ -102,6 +152,37 @@ public sealed class RuntimeItemRegistry
         ? item : throw new KeyNotFoundException($"Unknown item protocol id {protocolId}.");
     public bool TryGet(ResourceLocation key, out Item? item) => _byKey.TryGetValue(key, out item);
     public bool TryGetByProtocolId(int protocolId, out Item? item) => _byProtocolId.TryGetValue(protocolId, out item);
+
+    public bool TryParse(string input, [NotNullWhen(true)] out ItemStack? stack, int count = 1, int defaultMeta = 0)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+        string name = input;
+        int meta = defaultMeta;
+        int separator = input.LastIndexOf(':');
+        if (separator >= 0 && int.TryParse(input[(separator + 1)..], out int parsedMeta))
+        {
+            name = input[..separator];
+            meta = parsedMeta;
+        }
+
+        Item? item = null;
+        if (int.TryParse(name, out int protocolId)) _byProtocolId.TryGetValue(protocolId, out item);
+        else if (_aliases.TryGetValue(name, out (Item Item, int Meta) alias))
+        {
+            item = alias.Item;
+            if (meta == defaultMeta) meta = alias.Meta;
+        }
+        else if (ResourceLocation.TryParse(name, out ResourceLocation? key)) _byKey.TryGetValue(key, out item);
+
+        stack = item is null ? null : new ItemStack(item, count, meta);
+        return stack is not null;
+    }
+
+    public string GetName(ItemStack stack) => _namesById.TryGetValue(stack.ItemId, out string? name)
+        ? name : stack.GetItemName();
+
+    public IReadOnlyList<string> GetAvailableNames(string prefix = "") =>
+        [.. _aliases.Keys.Where(name => name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)).Order()];
 }
 
 /// <summary>Frozen key and protocol-ID indexes over the constructed block catalog.</summary>

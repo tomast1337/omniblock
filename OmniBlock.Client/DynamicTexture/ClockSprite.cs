@@ -18,7 +18,7 @@ internal class ClockSprite : Rendering.Core.Textures.DynamicTexture
     private OmniBlock _game;
     private int _resolution = 16;
 
-    public ClockSprite(OmniBlock game) : base(Item.ByName("clock").GetTextureId(0))
+    public ClockSprite(OmniBlock game) : base(game.Content.Items.Get("omniblock:clock").GetTextureId(0))
     {
         _game = game;
         Atlas = FxImage.Items;

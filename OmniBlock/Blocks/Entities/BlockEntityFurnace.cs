@@ -11,9 +11,6 @@ namespace OmniBlock.Blocks.Entities;
 
 public class BlockEntityFurnace : BlockEntity, IInventory
 {
-    private static readonly int s_stickId = Item.ByName("stick").Id;
-    private static readonly int s_coalId = Item.ByName("coal").Id;
-    private static readonly int s_bucketLavaId = Item.ByName("bucket_lava").Id;
 
     private ItemStack?[] _inventory = new ItemStack[3];
     protected override BlockEntityType Type => Furnace;
@@ -77,7 +74,7 @@ public class BlockEntityFurnace : BlockEntity, IInventory
         {
             var itemTag = (NBTTagCompound)itemList.TagAt(itemIndex);
             var slot = itemTag.GetByte("Slot");
-            if (slot >= 0 && slot < _inventory.Length) _inventory[slot] = new ItemStack(itemTag);
+            if (slot >= 0 && slot < _inventory.Length) _inventory[slot] = new ItemStack(World!.Content.Items, itemTag);
         }
 
         BurnTime = nbt.GetShort("BurnTime");
@@ -217,9 +214,9 @@ public class BlockEntityFurnace : BlockEntity, IInventory
         if (itemStack == null) return 0;
         var itemId = itemStack.GetItem().Id;
         return itemId < 256 && World!.Content.Blocks.GetByProtocolId(itemId).Material == MaterialRegistry.Get("wood") ? 300 :
-            itemId == s_stickId ? 100 :
-            itemId == s_coalId ? 1600 :
-            itemId == s_bucketLavaId ? 20000 :
+            itemId == World!.Content.Items.Get(new ResourceLocation(Namespace.OmniBlock, "stick")).Id ? 100 :
+            itemId == World.Content.Items.Get(new ResourceLocation(Namespace.OmniBlock, "coal")).Id ? 1600 :
+            itemId == World.Content.Items.Get(new ResourceLocation(Namespace.OmniBlock, "bucket_lava")).Id ? 20000 :
             itemId == World!.Content.Blocks.Get("sapling").Id ? 100 : 0;
     }
 }

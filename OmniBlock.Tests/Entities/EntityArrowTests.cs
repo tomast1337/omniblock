@@ -122,7 +122,7 @@ public sealed class EntityArrowTests
         arrow.OnPlayerInteraction(player);
 
         Assert.True(arrow.Dead);
-        Assert.True(CountInInventory(player, Item.ByName("arrow").Id) > 0);
+        Assert.True(CountInInventory(player, ContentRuntime.Current.Items.Get("omniblock:arrow").Id) > 0);
     }
 
     private static int CountInInventory(TestEntityPlayer player, int itemId)

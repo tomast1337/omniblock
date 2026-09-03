@@ -13,8 +13,8 @@ public sealed class BlockCropTests
         FakeWorldContext world = new();
         Block customSoil = BlockRegistry.Get("sand");
         Block vanillaFarmland = BlockRegistry.Get("farmland");
-        Item wheat = Item.ByName("wheat");
-        Item seeds = Item.ByName("seeds");
+        Item wheat = ContentRuntime.Current.Items.Get("omniblock:wheat");
+        Item seeds = ContentRuntime.Current.Items.Get("omniblock:seeds");
 
         world.ReaderWriter.SetInitial(0, 63, 0, customSoil.Id);
         CropBehavior behavior = new(customSoil, wheat, seeds, 0.7F, 15, 100, stages: [0, 0, 0, 0, 0, 0, 0, 0]);
@@ -28,8 +28,8 @@ public sealed class BlockCropTests
     [Fact]
     public void GetDroppedItemId_CustomWheat_ReturnsConfiguredItemOnlyWhenMature()
     {
-        Item apple = Item.ByName("apple");
-        CropBehavior behavior = new(BlockRegistry.Get("farmland"), apple, Item.ByName("seeds"), 0.7F, 15, 100, stages: [0, 0, 0, 0, 0, 0, 0, 0]);
+        Item apple = ContentRuntime.Current.Items.Get("omniblock:apple");
+        CropBehavior behavior = new(BlockRegistry.Get("farmland"), apple, ContentRuntime.Current.Items.Get("omniblock:seeds"), 0.7F, 15, 100, stages: [0, 0, 0, 0, 0, 0, 0, 0]);
 
         Assert.Equal(apple.Id, behavior.GetDroppedItemId(BlockRegistry.Get("wheat"), 7, 0));
         Assert.Equal(-1, behavior.GetDroppedItemId(BlockRegistry.Get("wheat"), 3, 0));

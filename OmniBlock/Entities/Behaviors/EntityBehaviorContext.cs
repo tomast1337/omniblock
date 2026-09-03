@@ -1,5 +1,6 @@
 using System.Text.Json;
 using OmniBlock.Entities.State;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Entities.Behaviors;
 
@@ -12,7 +13,7 @@ namespace OmniBlock.Entities.Behaviors;
 /// <param name="Json">This behavior's own JSON entry, for its parameters.</param>
 /// <param name="Definition">The owning entity's definition, for resolving synced property names.</param>
 /// <param name="Layout">The type's state layout, for declaring unsynced fields.</param>
-public readonly record struct EntityBehaviorContext(JsonElement Json, EntityDefinition Definition, EntityStateLayout Layout)
+public readonly record struct EntityBehaviorContext(JsonElement Json, EntityDefinition Definition, EntityStateLayout Layout, IItemRuntimeView Items)
 {
     public StateHandle<int> DeclareInt(int initial = 0) => Layout.DeclareInt(initial);
     public StateHandle<long> DeclareLong() => Layout.DeclareLong();

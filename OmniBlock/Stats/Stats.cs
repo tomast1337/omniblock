@@ -1,5 +1,6 @@
 using OmniBlock.Blocks;
 using OmniBlock.Items;
+using OmniBlock.Registries;
 using OmniBlock.Recipes;
 
 namespace OmniBlock.Stats;
@@ -44,23 +45,24 @@ public static class Stats
     private static bool _hasBasicItemStatsInitialized;
     private static bool _hasExtendedItemStatsInitialized;
 
-    public static void InitializeItemStats()
+    public static void InitializeItemStats(ContentRuntimeBuilder content)
     {
-        Used = InitItemUsedStats(Used, "stat.useItem", 16908288, 0, BlockRegistry.ProtocolIdCapacity);
-        Broken = InitializeBrokenItemStats(Broken, "stat.breakItem", 16973824, 0, BlockRegistry.ProtocolIdCapacity);
+        OmniBlock.Achievements.Initialize(content);
+        Used = InitItemUsedStats(content, Used, "stat.useItem", 16908288, 0, BlockRegistry.ProtocolIdCapacity);
+        Broken = InitializeBrokenItemStats(content, Broken, "stat.breakItem", 16973824, 0, BlockRegistry.ProtocolIdCapacity);
         _hasBasicItemStatsInitialized = true;
-        InitializeCraftedItemStats();
+        InitializeCraftedItemStats(content);
     }
 
-    public static void InitializeExtendedItemStats()
+    public static void InitializeExtendedItemStats(IItemRuntimeView items)
     {
-        Used = InitItemUsedStats(Used, "stat.useItem", 16908288, BlockRegistry.ProtocolIdCapacity, 32000);
-        Broken = InitializeBrokenItemStats(Broken, "stat.breakItem", 16973824, BlockRegistry.ProtocolIdCapacity, 32000);
+        Used = InitItemUsedStats(items, Used, "stat.useItem", 16908288, BlockRegistry.ProtocolIdCapacity, 32000);
+        Broken = InitializeBrokenItemStats(items, Broken, "stat.breakItem", 16973824, BlockRegistry.ProtocolIdCapacity, 32000);
         _hasExtendedItemStatsInitialized = true;
-        InitializeCraftedItemStats();
+        InitializeCraftedItemStats(items);
     }
 
-    public static void InitializeCraftedItemStats()
+    public static void InitializeCraftedItemStats(IItemRuntimeView items)
     {
         if (_hasBasicItemStatsInitialized && _hasExtendedItemStatsInitialized)
         {
@@ -80,9 +82,9 @@ public static class Stats
 
             foreach (int itemId in craftedIds)
             {
-                if (Item.Items[itemId] != null)
+                if (items.TryGetByProtocolId(itemId, out Item? item) && item is not null)
                 {
-                    string translatedName = StatCollector.TranslateToLocalFormatted("stat.craftItem", Item.Items[itemId]!.GetStatName());
+                    string translatedName = StatCollector.TranslateToLocalFormatted("stat.craftItem", item.GetStatName());
                     Crafted[itemId] = new StatCrafting(16842752 + itemId, translatedName, itemId).RegisterStat();
                 }
             }
@@ -109,15 +111,15 @@ public static class Stats
         return statsArray;
     }
 
-    private static StatBase[] InitItemUsedStats(StatBase[] statsArray, string baseName, int baseId, int startIdx, int endIdx)
+    private static StatBase[] InitItemUsedStats(IItemRuntimeView items, StatBase[] statsArray, string baseName, int baseId, int startIdx, int endIdx)
     {
         statsArray ??= new StatBase[32000];
 
         for (int i = startIdx; i < endIdx; ++i)
         {
-            if (Item.Items[i] != null)
+            if (items.TryGetByProtocolId(i, out Item? item) && item is not null)
             {
-                string translatedName = StatCollector.TranslateToLocalFormatted(baseName, Item.Items[i]!.GetStatName());
+                string translatedName = StatCollector.TranslateToLocalFormatted(baseName, item.GetStatName());
                 statsArray[i] = new StatCrafting(baseId + i, translatedName, i).RegisterStat();
 
                 if (i >= BlockRegistry.ProtocolIdCapacity)
@@ -131,15 +133,15 @@ public static class Stats
         return statsArray;
     }
 
-    private static StatBase[] InitializeBrokenItemStats(StatBase[] statsArray, string baseName, int baseId, int startIdx, int endIdx)
+    private static StatBase[] InitializeBrokenItemStats(IItemRuntimeView items, StatBase[] statsArray, string baseName, int baseId, int startIdx, int endIdx)
     {
         statsArray ??= new StatBase[32000];
 
         for (int i = startIdx; i < endIdx; ++i)
         {
-            if (Item.Items[i] != null && Item.Items[i].IsDamagable())
+            if (items.TryGetByProtocolId(i, out Item? item) && item is not null && item.IsDamagable())
             {
-                string translatedName = StatCollector.TranslateToLocalFormatted(baseName, Item.Items[i].GetStatName());
+                string translatedName = StatCollector.TranslateToLocalFormatted(baseName, item.GetStatName());
                 statsArray[i] = new StatCrafting(baseId + i, translatedName, i).RegisterStat();
             }
         }
@@ -183,8 +185,4 @@ public static class Stats
         return IdToStat[id];
     }
 
-    static Stats()
-    {
-        OmniBlock.Achievements.initialize();
-    }
 }

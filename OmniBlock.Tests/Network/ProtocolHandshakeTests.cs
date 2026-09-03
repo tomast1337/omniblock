@@ -101,7 +101,7 @@ public sealed class ProtocolHandshakeTests
     public void The_registry_sync_carries_the_servers_version()
     {
         MessageRegistry server = new();
-        DefaultMessages.RegisterAll(server);
+        DefaultMessages.RegisterAll(server, ContentRuntime.Current.Items);
 
         MemoryStream stream = new();
         Packet.Write(MessageRegistrySyncS2CPacket.Get(server.NegotiateAsServer()), stream);

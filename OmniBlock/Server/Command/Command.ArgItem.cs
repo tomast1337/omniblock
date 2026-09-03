@@ -2,19 +2,20 @@ using OmniBlock.Items;
 using Brigadier.NET;
 using Brigadier.NET.ArgumentTypes;
 using Brigadier.NET.Exceptions;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Server.Command;
 
 public abstract partial class Command
 {
-    private class ArgItemStack : IArgumentType<ItemStack>
+    private class ArgItemStack(RuntimeItemRegistry items) : IArgumentType<ItemStack>
     {
         private static readonly DynamicCommandExceptionType s_itemNotFound = new(expected => new LiteralMessage($"Item \"{expected}\" not found."));
 
         public ItemStack Parse(IStringReader reader)
         {
             string name = ParseString(reader);
-            if (ItemLookup.TryGetItem(name, out ItemStack? result))
+            if (items.TryParse(name, out ItemStack? result))
             {
                 return result;
             }

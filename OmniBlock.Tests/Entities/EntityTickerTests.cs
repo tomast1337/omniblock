@@ -73,7 +73,7 @@ public sealed class EntityTickerTests
         Assert.True(world.Entities.SpawnEntity(chicken));
 
         LayEggsBehavior ticker = Assert.IsType<LayEggsBehavior>(EntityRegistry.ByName("chicken").Behaviors.Ticker);
-        int eggId = OmniBlock.Items.Item.ByName("egg").Id;
+        int eggId = ContentRuntime.Current.Items.Get("omniblock:egg").Id;
 
         // Drive the countdown to zero rather than ticking ~6000 times.
         for (int tick = 0; tick < 12100; tick++)

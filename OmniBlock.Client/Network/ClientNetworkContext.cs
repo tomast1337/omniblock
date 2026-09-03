@@ -1,6 +1,7 @@
 using OmniBlock.Client.Rendering;
 using OmniBlock.Client.UI.Screens;
 using OmniBlock.Stats;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Client.Network;
 
@@ -13,7 +14,8 @@ public sealed class ClientNetworkContext(
     ParticleManager particleManager,
     Action<string> addChatMessage,
     IClientNetworkFactory factory,
-    string chunkCacheDirectory)
+    string chunkCacheDirectory,
+    ContentRuntime content)
 {
     /// <summary>
     ///     Where per-server chunk caches live. Passed in rather than read from a static so a test can
@@ -30,4 +32,5 @@ public sealed class ClientNetworkContext(
     public ParticleManager ParticleManager => particleManager;
     public Action<string> AddChatMessage => addChatMessage;
     public IClientNetworkFactory Factory => factory;
+    public ContentRuntime Content => content;
 }

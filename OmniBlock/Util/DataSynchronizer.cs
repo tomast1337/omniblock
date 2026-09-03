@@ -1,14 +1,18 @@
 using OmniBlock.Items;
+using OmniBlock.Registries;
 using OmniBlock.Util.Maths;
 
 namespace OmniBlock.Util;
 
 public sealed class DataSynchronizer
 {
+    private readonly IItemRuntimeView _items;
     public static readonly Dictionary<Type, SyncedDataType> TypeIds = [];
 
     private readonly Dictionary<int, ISyncedProperty> _syncedProperties = new();
     public bool Dirty { get; internal set; }
+
+    public DataSynchronizer(IItemRuntimeView items) => _items = items ?? throw new ArgumentNullException(nameof(items));
 
     static DataSynchronizer()
     {
@@ -136,7 +140,7 @@ public sealed class DataSynchronizer
                 ((SyncedProperty<string>)prop).Value = stream.ReadLongString();
                 break;
             case SyncedDataType.ItemStack:
-                ((SyncedProperty<ItemStack>)prop).Value = new ItemStack(stream.ReadShort(), (sbyte)stream.ReadByte(), stream.ReadShort());
+                ((SyncedProperty<ItemStack>)prop).Value = new ItemStack(_items, stream.ReadShort(), (sbyte)stream.ReadByte(), stream.ReadShort());
                 break;
             case SyncedDataType.Vec3i:
                 ((SyncedProperty<Vec3I>)prop).Value = new Vec3I(stream.ReadInt(), stream.ReadInt(), stream.ReadInt());

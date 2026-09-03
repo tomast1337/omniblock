@@ -2,7 +2,6 @@ using System.Text.Json;
 using OmniBlock.Client.Rendering.Entities.Models;
 using OmniBlock.Entities;
 using BlockRegistry = OmniBlock.Blocks.BlockRegistry;
-using Item = OmniBlock.Items.Item;
 
 namespace OmniBlock.Client.Rendering.Entities;
 
@@ -46,7 +45,7 @@ internal static class EntityRendererRegistry
         ["boat"] = (in JsonElement json) => new BoatEntityRenderer(),
         ["minecart"] = (in JsonElement json) => new MinecartEntityRenderer(),
         ["projectile"] = (in JsonElement json) => new ProjectileEntityRenderer(
-            Item.ByName(json.GetProperty("Item").GetString()!).GetTextureId(0),
+            ResourceLocation.Parse(json.GetProperty("Item").GetString()!),
             json.TryGetProperty("Scale", out JsonElement scale) ? scale.GetSingle() : 0.5F),
         ["primed_block"] = (in JsonElement json) => new PrimedBlockEntityRenderer(
             BlockRegistry.Get(json.GetProperty("Block").GetString()!),

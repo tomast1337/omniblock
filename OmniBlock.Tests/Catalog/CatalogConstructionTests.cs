@@ -35,9 +35,9 @@ public sealed class CatalogConstructionTests
     {
         foreach (ItemDefinition definition in DefaultRegistries.Items)
         {
-            Item item = Assert.IsAssignableFrom<Item>(Item.Items[definition.ProtocolId]);
+            Item item = ContentRuntime.Current.Items.GetByProtocolId(definition.ProtocolId);
             Assert.Equal(definition.ProtocolId, item.Id);
-            Assert.Same(item, Item.ByName(definition.Name));
+            Assert.Same(item, ContentRuntime.Current.Items.Get(new ResourceLocation(definition.Namespace, definition.Name)));
         }
     }
 
@@ -52,7 +52,6 @@ public sealed class CatalogConstructionTests
 
             Assert.Equal(definition.ProtocolId, item.Id);
             Assert.Same(item, runtime.Items.GetByProtocolId(definition.ProtocolId));
-            Assert.Same(item, Item.Items[definition.ProtocolId]);
         }
     }
 

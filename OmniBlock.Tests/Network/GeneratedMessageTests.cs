@@ -19,7 +19,7 @@ public sealed class GeneratedMessageTests
     private static MessageRegistry Negotiated()
     {
         MessageRegistry registry = new();
-        DefaultMessages.RegisterAll(registry);
+        DefaultMessages.RegisterAll(registry, ContentRuntime.Current.Items);
         registry.NegotiateAsServer();
         return registry;
     }
@@ -216,13 +216,13 @@ public sealed class GeneratedMessageTests
             Button = 1,
             ActionType = 42,
             HoldingShift = true,
-            Stack = new ItemStack(Item.ByName("stick"), 7, 2),
+            Stack = new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 7, 2),
         };
 
         byte[] bytes = Serialise(written);
         Assert.Equal(bytes.Length, written.Size());
 
-        ClickSlotMessage read = new();
+        ClickSlotMessage read = new(ContentRuntime.Current.Items);
         read.Read(new MemoryStream(bytes));
 
         Assert.Equal(written.SyncId, read.SyncId);
@@ -245,7 +245,7 @@ public sealed class GeneratedMessageTests
     public void An_empty_slot_costs_three_bytes_less_than_a_filled_one()
     {
         ClickSlotMessage empty = new();
-        ClickSlotMessage filled = new() { Stack = new ItemStack(Item.ByName("stick"), 1, 0) };
+        ClickSlotMessage filled = new() { Stack = new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 1, 0) };
 
         Assert.Equal(Serialise(empty).Length, empty.Size());
         Assert.Equal(Serialise(filled).Length, filled.Size());
@@ -400,7 +400,7 @@ public sealed class GeneratedMessageTests
         InventoryMessage message = new()
         {
             SyncId = 0,
-            Contents = [new ItemStack(Item.ByName("stick"), 64, 0), null, null, new ItemStack(Item.ByName("bucket"), 1, 0)],
+            Contents = [new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 64, 0), null, null, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:bucket"), 1, 0)],
         };
 
         byte[] bytes = Serialise(message);
@@ -417,10 +417,10 @@ public sealed class GeneratedMessageTests
         InventoryMessage written = new()
         {
             SyncId = 3,
-            Contents = [null, new ItemStack(Item.ByName("stick"), 7, 2), null],
+            Contents = [null, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 7, 2), null],
         };
 
-        InventoryMessage read = new();
+        InventoryMessage read = new(ContentRuntime.Current.Items);
         read.Read(new MemoryStream(Serialise(written)));
 
         Assert.Equal(3, read.Contents.Length);
@@ -440,7 +440,7 @@ public sealed class GeneratedMessageTests
         stream.WriteVarInt(InventoryMessage.MaxSlots + 1);
         stream.Position = 0;
 
-        Assert.Throws<InvalidDataException>(() => new InventoryMessage().Read(stream));
+        Assert.Throws<InvalidDataException>(() => new InventoryMessage(ContentRuntime.Current.Items).Read(stream));
     }
 
     /// <summary>

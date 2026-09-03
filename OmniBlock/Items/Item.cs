@@ -8,7 +8,6 @@ using OmniBlock.Registries;
 using OmniBlock.Stats;
 using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core.Systems;
-using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Items;
 
@@ -16,45 +15,6 @@ public class Item
 {
     public const int MaxBehaviors = 8;
     internal static JavaRandom s_itemRand = new();
-    public static Item?[] Items = new Item[32000];
-
-    private static Block[]? s_spadeBlocksLazy;
-    internal static Block[] s_spadeBlocks => s_spadeBlocksLazy ??=
-        [BlockRegistry.Get("grass_block"), BlockRegistry.Get("dirt"), BlockRegistry.Get("sand"), BlockRegistry.Get("gravel"), BlockRegistry.Get("snow"), BlockRegistry.Get("snow_block"), BlockRegistry.Get("clay"), BlockRegistry.Get("farmland")];
-
-    private static Block[]? s_pickaxeBlocksLazy;
-    internal static Block[] s_pickaxeBlocks => s_pickaxeBlocksLazy ??= [BlockRegistry.Get("cobblestone"), BlockRegistry.Get("double_slab"), BlockRegistry.Get("slab"), BlockRegistry.Get("stone"), BlockRegistry.Get("sandstone"), BlockRegistry.Get("mossy_cobblestone"), BlockRegistry.Get("iron_ore"), BlockRegistry.Get("iron_block"), BlockRegistry.Get("coal_ore"), BlockRegistry.Get("gold_block"), BlockRegistry.Get("gold_ore"), BlockRegistry.Get("diamond_ore"), BlockRegistry.Get("diamond_block"), BlockRegistry.Get("ice"), BlockRegistry.Get("netherrack"), BlockRegistry.Get("lapis_ore"), BlockRegistry.Get("lapis_block"), BlockRegistry.Get("redstone_ore"), BlockRegistry.Get("cobblestone_stairs")];
-
-    private static Block[]? s_axeBlocksLazy;
-    internal static Block[] s_axeBlocks => s_axeBlocksLazy ??= [BlockRegistry.Get("planks"), BlockRegistry.Get("bookshelf"), BlockRegistry.Get("log"), BlockRegistry.Get("chest"), BlockRegistry.Get("crafting_table"), BlockRegistry.Get("wooden_stairs"), BlockRegistry.Get("ladder"), BlockRegistry.Get("trapdoor"), BlockRegistry.Get("fence")];
-
-    /// <summary>
-    /// Resolves an item by its registry path (e.g. <c>"apple"</c>, <c>"shovel_iron"</c> —
-    /// see <c>OmniBlock/assets/item/omniblock/*.json</c> for the full list of names).
-    /// Requires <see cref="Registries.DefaultRegistries.Initialize"/> to have run.
-    ///
-    /// TODO: This will become obsolete once Entities and Blocks are fully data-driven
-    /// and resolve their drops/interactions via ResourceLocations directly from JSON data files.
-    /// </summary>
-    public static Item ByName(string name)
-    {
-        ResourceLocation key = new(Namespace.OmniBlock, name);
-        if (ContentRuntime.TryGetCurrent(out ContentRuntime? runtime) && runtime is not null)
-        {
-            if (runtime.Items.TryGet(key, out Item? runtimeItem) && runtimeItem is not null) return runtimeItem;
-            throw new ArgumentException($"Unknown item: '{name}'", nameof(name));
-        }
-
-        ItemDefinition? def = DefaultRegistries.Items.Get(new ResourceLocation(Namespace.OmniBlock, name))?.Value;
-        if (def is null || Items[def.ProtocolId] is not { } item)
-        {
-            throw new ArgumentException($"Unknown item: '{name}'", nameof(name));
-        }
-
-        return item;
-    }
-
-    private readonly ILogger<Item> _logger = Log.Instance.For<Item>();
 
     public readonly int Id;
     private readonly IItemBehavior?[] _behaviors = new IItemBehavior[MaxBehaviors];
@@ -67,25 +27,27 @@ public class Item
     private int _maxDamage;
     internal int _textureId;
     private string _translationKey;
+    private string[] _aliases = [];
     private bool _frozen;
 
     public bool IsFrozen => _frozen;
 
-    internal Item(int id, bool publishLegacy = true)
+    internal Item(int id)
     {
         Id = 256 + id;
-        if (publishLegacy && Items[256 + id] != null)
-        {
-            _logger.LogInformation($"CONFLICT @ {id}");
-        }
-
-        if (publishLegacy) Items[256 + id] = this;
     }
 
     public int BehaviorCount => _behaviorCount;
 
     public IReadOnlyList<string> GetItemAlias =>
-        _behaviors.Take(_behaviorCount).SelectMany(behavior => behavior!.GetItemAliases(this)).Distinct().ToArray();
+        _aliases.Concat(_behaviors.Take(_behaviorCount).SelectMany(behavior => behavior!.GetItemAliases(this))).Distinct().ToArray();
+
+    internal Item SetAliases(IEnumerable<string> aliases)
+    {
+        EnsureMutable();
+        _aliases = [.. aliases];
+        return this;
+    }
 
     public Item AddBehavior(IItemBehavior behavior)
     {
@@ -320,38 +282,4 @@ public class Item
         return null;
     }
 
-    internal static Func<Block, bool> PickaxeSuitableFor(ToolMaterial material) => block =>
-    {
-        if (block == BlockRegistry.Get("obsidian"))
-        {
-            return material.HarvestLevel == 3;
-        }
-
-        if (block == BlockRegistry.Get("diamond_block") || block == BlockRegistry.Get("diamond_ore"))
-        {
-            return material.HarvestLevel >= 2;
-        }
-
-        if (block == BlockRegistry.Get("gold_block") || block == BlockRegistry.Get("gold_ore"))
-        {
-            return material.HarvestLevel >= 2;
-        }
-
-        if (block == BlockRegistry.Get("iron_block") || block == BlockRegistry.Get("iron_ore"))
-        {
-            return material.HarvestLevel >= 1;
-        }
-
-        if (block == BlockRegistry.Get("lapis_block") || block == BlockRegistry.Get("lapis_ore"))
-        {
-            return material.HarvestLevel >= 1;
-        }
-
-        if (block == BlockRegistry.Get("redstone_ore") || block == BlockRegistry.Get("lit_redstone_ore"))
-        {
-            return material.HarvestLevel >= 2;
-        }
-
-        return block.Material == Material.Stone || block.Material == Material.Metal;
-    };
 }

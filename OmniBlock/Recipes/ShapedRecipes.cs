@@ -69,7 +69,7 @@ internal class ShapedRecipes(int width, int height, ItemStack?[] items, ItemStac
 
     public ItemStack GetCraftingResult(InventoryCrafting craftingInventory)
     {
-        return new ItemStack(output.ItemId, output.Count, output.GetDamage());
+        return new ItemStack(output.GetItem(), output.Count, output.GetDamage());
     }
 
     public int GetRecipeSize()

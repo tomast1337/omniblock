@@ -31,7 +31,7 @@ internal sealed class TntBehavior(Item igniter, int top, int side, int bottom) :
 
         if ((@event.Meta & 1) == 0)
         {
-            Block.DropStack(@event.World, @event.X, @event.Y, @event.Z, new ItemStack(block.Id, 1, 0));
+            Block.DropStack(@event.World, @event.X, @event.Y, @event.Z, new ItemStack(@event.World.Content.Items, block.Id, 1, 0));
         }
         else
         {

@@ -35,7 +35,7 @@ public class UndeadEntityRenderer : LivingEntityRenderer
                 GLManager.ModelView.Rotate(45.0F, 0.0F, 1.0F, 0.0F);
                 GLManager.ModelView.Scale(itemScale, -itemScale, itemScale);
             }
-            else if (Item.Items[heldItem.ItemId].IsHandheld())
+            else if (heldItem.GetItem().IsHandheld())
             {
                 itemScale = 10.0F / 16.0F;
                 GLManager.ModelView.Translate(0.0F, 3.0F / 16.0F, 0.0F);

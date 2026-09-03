@@ -11,7 +11,7 @@ internal class ItemBlock : Item
     protected readonly Block Block;
     private int BlockId => Block.Id;
 
-    public ItemBlock(Block block) : base(block.Id - 256, publishLegacy: false)
+    public ItemBlock(Block block) : base(block.Id - 256)
     {
         Block = block;
         SetTextureId(block.GetTexture(2.ToSide()));

@@ -70,7 +70,7 @@ public sealed class JukeboxBehavior(float dropSpread) : IBlockInteractable, IBlo
         var offsetX = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
         var offsetY = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.2D + 0.6D;
         var offsetZ = Random.Shared.NextSingle() * dropSpread + (1.0F - dropSpread) * 0.5D;
-        var entityItem = DroppedItemBehavior.Create(level, x + offsetX, y + offsetY, z + offsetZ, new ItemStack(recordId, 1, 0), 10);
+        var entityItem = DroppedItemBehavior.Create(level, x + offsetX, y + offsetY, z + offsetZ, new ItemStack(level.Content.Items, recordId, 1, 0), 10);
         level.SpawnEntity(entityItem);
     }
 }

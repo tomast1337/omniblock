@@ -57,14 +57,12 @@ public readonly struct BlockBuildContext
         }
     }
 
-    internal static BlockBuildContext BuiltIns(BehaviorBuildContext behaviors)
+    internal static BlockBuildContext BuiltIns(BehaviorBuildContext behaviors, Func<ResourceLocation, int>? resolveItem = null)
     {
         return new BlockBuildContext(
             behaviors,
             static key => SoundGroupRegistry.Get(key.Path),
-            static key => ItemLookup.TryGetItemId(key.Path, out var id)
-                ? id
-                : throw new ArgumentException($"Unknown item or block: '{key}'"),
+            resolveItem ?? (static key => throw new ArgumentException($"Unknown item or block: '{key}'")),
             static key => BlockEntityFactoryRegistry.Get(key.Path));
     }
 

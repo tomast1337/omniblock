@@ -113,7 +113,7 @@ public sealed class DroppedItemBehavior : IEntityTicker, IEntityLifecycle, IEnti
     {
         self.State[_health] = nbt.GetShort("Health") & 255;
         self.State[_age] = nbt.GetShort("Age");
-        SetStack(self, new ItemStack(nbt.GetCompoundTag("Item")));
+        SetStack(self, new ItemStack(self.World.Content.Items, nbt.GetCompoundTag("Item")));
     }
 
     /// <summary>The item's whole box probes for water, and the current carries it in the same pass.</summary>

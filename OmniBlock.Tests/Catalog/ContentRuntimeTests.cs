@@ -34,7 +34,7 @@ public sealed class ContentRuntimeTests
     public void Published_runtime_has_one_unified_item_registry()
     {
         ContentRuntime runtime = ContentRuntime.Current;
-        Item coal = Item.ByName("coal");
+        Item coal = ContentRuntime.Current.Items.Get("omniblock:coal");
         Block stone = BlockRegistry.Get("stone");
 
         Assert.Same(coal, runtime.Items.Get("omniblock:coal"));
@@ -46,7 +46,7 @@ public sealed class ContentRuntimeTests
     public void Standalone_item_key_wins_legacy_block_item_name_collision_but_both_ids_resolve()
     {
         ContentRuntime runtime = ContentRuntime.Current;
-        Item bed = Item.ByName("bed");
+        Item bed = ContentRuntime.Current.Items.Get("omniblock:bed");
         Item bedBlockItem = runtime.Items.GetByProtocolId(runtime.Blocks.Get("omniblock:bed").Id);
 
         Assert.Same(bed, runtime.Items.Get("omniblock:bed"));

@@ -385,7 +385,7 @@ public class Block
                 if (!(Random.Shared.NextSingle() <= ctx.Luck)) continue;
 
                 var itemId = GetDroppedItemId(ctx.Meta);
-                if (itemId > 0) DropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(itemId, 1, GetDroppedItemMeta(ctx.Meta)));
+                if (itemId > 0) DropStack(ctx.World, ctx.X, ctx.Y, ctx.Z, new ItemStack(ctx.World.Content.Items, itemId, 1, GetDroppedItemMeta(ctx.Meta)));
             }
         }
 

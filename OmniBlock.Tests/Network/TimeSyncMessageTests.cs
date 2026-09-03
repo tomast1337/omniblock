@@ -18,10 +18,10 @@ public sealed class TimeSyncMessageTests
     private static (MessageRegistry Server, MessageRegistry Client) NegotiatedPair()
     {
         MessageRegistry server = new();
-        DefaultMessages.RegisterAll(server);
+        DefaultMessages.RegisterAll(server, ContentRuntime.Current.Items);
 
         MessageRegistry client = new();
-        DefaultMessages.RegisterAll(client);
+        DefaultMessages.RegisterAll(client, ContentRuntime.Current.Items);
         client.AdoptOrdering(server.NegotiateAsServer());
 
         return (server, client);
@@ -177,7 +177,7 @@ public sealed class TimeSyncMessageTests
     public void A_message_the_peer_never_advertised_is_not_sent()
     {
         MessageRegistry client = new();
-        DefaultMessages.RegisterAll(client);
+        DefaultMessages.RegisterAll(client, ContentRuntime.Current.Items);
 
         // A server that advertises only one of the three.
         MessageRegistry server = new();

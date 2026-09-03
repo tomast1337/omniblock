@@ -17,6 +17,6 @@ public sealed class BlockTntIgniterTests
     public void BehaviorRegistry_Build_UnknownItemName_Throws()
     {
         using JsonDocument json = JsonDocument.Parse("""{"Type":"tnt","igniter":"not_a_real_item"}""");
-        Assert.Throws<ArgumentException>(() => BehaviorRegistry.Build("tnt", json.RootElement));
+        Assert.Throws<KeyNotFoundException>(() => BehaviorRegistry.Build("tnt", json.RootElement));
     }
 }

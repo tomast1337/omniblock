@@ -25,6 +25,7 @@ namespace OmniBlock.Server;
 
 public abstract class OmniBlockServer : ICommandOutput
 {
+    public ContentRuntime Content { get; }
     public RegistryAccess RegistryAccess { get; set; } = RegistryAccess.Empty;
 
     /// <summary>
@@ -120,6 +121,7 @@ public abstract class OmniBlockServer : ICommandOutput
     protected OmniBlockServer(IServerConfiguration config)
     {
         this.config = config;
+        Content = ContentRuntime.Current;
     }
 
     protected virtual bool Init()
@@ -127,13 +129,13 @@ public abstract class OmniBlockServer : ICommandOutput
         _commandHandler = new ServerCommandHandler(this);
 
         RegisterReloadListener(new DefaultGameModeListener(this));
-        RegisterReloadListener(new RecipeManager());
+        RegisterReloadListener(new RecipeManager(Content.Items));
 
         // Freeze the message table before the listener accepts anyone. Every client is told this
         // ordering during configuration, so it must not be able to change afterwards. Mods register
         // between here and RegisterAll; ordering does not matter, since IDs come from the sorted key
         // set rather than from registration sequence.
-        DefaultMessages.RegisterAll(Messages);
+        DefaultMessages.RegisterAll(Messages, Content.Items);
         Messages.NegotiateAsServer();
 
         onlineMode = config.GetOnlineMode(true);

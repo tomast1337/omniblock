@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using OmniBlock.Entities.State;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Entities.Behaviors;
 
@@ -37,7 +38,7 @@ public abstract class EntityBehaviorDefinition
 /// </summary>
 /// <param name="Definition">The owning entity's definition, for resolving synced property names.</param>
 /// <param name="Layout">The type's state layout, for declaring unsynced per-entity fields.</param>
-public readonly record struct EntityBehaviorBuildContext(EntityDefinition Definition, EntityStateLayout Layout)
+public readonly record struct EntityBehaviorBuildContext(EntityDefinition Definition, EntityStateLayout Layout, IItemRuntimeView Items)
 {
     public StateHandle<int> DeclareInt(int initial = 0) => Layout.DeclareInt(initial);
     public StateHandle<long> DeclareLong() => Layout.DeclareLong();

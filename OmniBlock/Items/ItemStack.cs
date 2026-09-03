@@ -1,58 +1,64 @@
 using OmniBlock.Blocks;
 using OmniBlock.Entities;
 using OmniBlock.NBT;
+using OmniBlock.Registries;
 using OmniBlock.Worlds.Core.Systems;
 
 namespace OmniBlock.Items;
 
 public class ItemStack
 {
+    private Item _item;
     private int _damage;
     public int AnimationTime;
     public int Count;
     public int ItemId;
 
-    public ItemStack(Block block) : this((Block)block, 1)
+    public ItemStack(IItemRuntimeView items, Block block) : this(items, block, 1)
     {
     }
 
-    public ItemStack(Block block, int count) : this(block.Id, count, 0)
+    public ItemStack(IItemRuntimeView items, Block block, int count) : this(items.GetByProtocolId(block.Id), count, 0)
     {
     }
 
-    public ItemStack(Item item) : this(item.Id, 1, 0)
+    public ItemStack(Item item) : this(item, 1, 0)
     {
     }
 
-    public ItemStack(Item item, int count) : this(item.Id, count, 0)
+    public ItemStack(Item item, int count) : this(item, count, 0)
     {
     }
 
-    public ItemStack(Item item, int count, int damage) : this(item.Id, count, damage)
+    public ItemStack(Item item, int count, int damage)
     {
-    }
-
-    public ItemStack(int itemId, int count, int damage)
-    {
-        Count = 0;
-        ItemId = itemId;
+        _item = item ?? throw new ArgumentNullException(nameof(item));
+        ItemId = item.Id;
         Count = count;
         _damage = damage;
     }
 
-    public ItemStack(NBTTagCompound nbt)
+    public ItemStack(IItemRuntimeView items, int itemId, int count, int damage)
+        : this(items.GetByProtocolId(itemId), count, damage)
     {
-        Count = 0;
-        ReadFromNbt(nbt);
+    }
+
+    public ItemStack(IItemRuntimeView items, NBTTagCompound nbt)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+        ItemId = nbt.GetShort("id");
+        _item = items.GetByProtocolId(ItemId);
+        Count = nbt.GetByte("Count");
+        _damage = nbt.GetShort("Damage");
     }
 
     public ItemStack Split(int splitAmount)
     {
         Count -= splitAmount;
-        return new ItemStack(ItemId, splitAmount, _damage);
+        return new ItemStack(_item, splitAmount, _damage);
     }
 
-    public Item GetItem() => Item.Items[ItemId];
+    public Item GetItem() => _item;
 
     public int GetTextureId() => GetItem().GetTextureId(this);
 
@@ -81,7 +87,9 @@ public class ItemStack
 
     public void ReadFromNbt(NBTTagCompound nbt)
     {
-        ItemId = nbt.GetShort("id");
+        int itemId = nbt.GetShort("id");
+        if (itemId != ItemId)
+            throw new InvalidOperationException("An item stack cannot be rebound to a different runtime item.");
         Count = nbt.GetByte("Count");
         _damage = nbt.GetShort("Damage");
     }
@@ -90,9 +98,9 @@ public class ItemStack
 
     public bool IsStackable() => GetMaxCount() > 1 && (!IsDamageable() || !IsDamaged());
 
-    public bool IsDamageable() => Item.Items[ItemId].GetMaxDamage() > 0;
+    public bool IsDamageable() => _item.GetMaxDamage() > 0;
 
-    public bool GetHasSubtypes() => Item.Items[ItemId].GetHasSubtypes();
+    public bool GetHasSubtypes() => _item.GetHasSubtypes();
 
     public bool IsDamaged() => IsDamageable() && _damage > 0;
 
@@ -102,7 +110,7 @@ public class ItemStack
 
     public void SetDamage(int damage) => _damage = damage;
 
-    public int GetMaxDamage() => Item.Items[ItemId].GetMaxDamage();
+    public int GetMaxDamage() => _item.GetMaxDamage();
 
     public void ConsumeItem(EntityPlayer player)
     {
@@ -175,7 +183,7 @@ public class ItemStack
 
     public void PostHit(EntityLiving entityLiving, EntityPlayer entityPlayer)
     {
-        bool hit = Item.Items[ItemId].PostHit(this, entityLiving, entityPlayer);
+        bool hit = _item.PostHit(this, entityLiving, entityPlayer);
         if (hit)
         {
             entityPlayer.IncreaseStat(Stats.Stats.Used[ItemId], 1);
@@ -184,24 +192,24 @@ public class ItemStack
 
     public void PostMine(int blockId, int x, int y, int z, EntityPlayer entityPlayer)
     {
-        bool mined = Item.Items[ItemId].PostMine(this, blockId, x, y, z, entityPlayer);
+        bool mined = _item.PostMine(this, blockId, x, y, z, entityPlayer);
         if (mined)
         {
             entityPlayer.IncreaseStat(Stats.Stats.Used[ItemId], 1);
         }
     }
 
-    public int GetAttackDamage(Entity entity) => Item.Items[ItemId].GetAttackDamage(entity);
+    public int GetAttackDamage(Entity entity) => _item.GetAttackDamage(entity);
 
-    public bool IsSuitableFor(Block block) => Item.Items[ItemId].IsSuitableFor(block);
+    public bool IsSuitableFor(Block block) => _item.IsSuitableFor(block);
 
     public static void OnRemoved(EntityPlayer entityPlayer)
     {
     }
 
-    public void useOnEntity(EntityLiving entityLiving, EntityPlayer entityPlayer) => Item.Items[ItemId].useOnEntity(this, entityLiving, entityPlayer);
+    public void useOnEntity(EntityLiving entityLiving, EntityPlayer entityPlayer) => _item.useOnEntity(this, entityLiving, entityPlayer);
 
-    public ItemStack Copy() => new(ItemId, Count, _damage);
+    public ItemStack Copy() => new(_item, Count, _damage);
 
     public static bool AreEqual(ItemStack? a, ItemStack? b) => a == null && b == null || a != null && b != null && a.Equals2(b);
 
@@ -209,11 +217,11 @@ public class ItemStack
 
     public bool IsItemEqual(ItemStack itemStack) => ItemId == itemStack.ItemId && _damage == itemStack._damage;
 
-    public string GetItemName() => Item.Items[ItemId].GetItemNameIs(this);
+    public string GetItemName() => _item.GetItemNameIs(this);
 
     public static ItemStack Clone(ItemStack itemStack) => itemStack == null ? null : itemStack.Copy();
 
-    public override string ToString() => $"{Count}x{Item.Items[ItemId].GetItemName()}@{_damage}";
+    public override string ToString() => $"{Count}x{_item.GetItemName()}@{_damage}";
 
     public void InventoryTick(IWorldContext world, Entity entity, int slotIndex, bool shouldUpdate)
     {
@@ -222,13 +230,13 @@ public class ItemStack
             --AnimationTime;
         }
 
-        Item.Items[ItemId].InventoryTick(this, world, entity, slotIndex, shouldUpdate);
+        _item.InventoryTick(this, world, entity, slotIndex, shouldUpdate);
     }
 
     public void OnCraft(IWorldContext world, EntityPlayer entityPlayer)
     {
         entityPlayer.IncreaseStat(Stats.Stats.Crafted[ItemId], Count);
-        Item.Items[ItemId].OnCraft(this, world, entityPlayer);
+        _item.OnCraft(this, world, entityPlayer);
     }
 
     public bool Equals(ItemStack itemStack) => ItemId == itemStack.ItemId && Count == itemStack.Count && _damage == itemStack._damage;

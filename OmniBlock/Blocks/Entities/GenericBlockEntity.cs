@@ -94,7 +94,7 @@ public class GenericBlockEntity : BlockEntity
         {
             var itemTag = (NBTTagCompound)itemList.TagAt(itemIndex);
             var slot = itemTag.GetByte("Slot") & 255;
-            if (slot >= 0 && slot < _inventory.Length) _inventory[slot] = new ItemStack(itemTag);
+            if (slot >= 0 && slot < _inventory.Length) _inventory[slot] = new ItemStack(World!.Content.Items, itemTag);
         }
     }
 

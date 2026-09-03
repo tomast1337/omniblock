@@ -1,6 +1,7 @@
 using System.Collections.Frozen;
 using System.Text.Json;
 using OmniBlock.Blocks;
+using OmniBlock.Blocks.Materials;
 using OmniBlock.Entities;
 using OmniBlock.Entities.Behaviors;
 
@@ -35,7 +36,7 @@ public sealed class ItemBehaviorProviderRegistry : IItemBehaviorProviderRegistry
         [Key("shears")] = static (_, _) => new ShearsBehavior(),
         [Key("flint_and_steel")] = static (_, _) => new FlintAndSteelBehavior(),
         [Key("fishing_rod")] = static (j, c) => new FishingRodBehavior(c.ResolveItemTexture(String(j, "Cast"))),
-        [Key("bow")] = static (_, _) => new BowBehavior(),
+        [Key("bow")] = static (_, c) => new BowBehavior(c.ResolveItem(Key("arrow"))),
         [Key("bucket")] = static (j, c) => BuildBucket(j, c),
         [Key("minecart")] = static (j, _) => new MinecartBehavior(Int(j, "CartType")),
         [Key("boat")] = static (_, _) => new BoatBehavior(), [Key("bed")] = static (_, _) => new BedBehavior(),
@@ -55,8 +56,9 @@ public sealed class ItemBehaviorProviderRegistry : IItemBehaviorProviderRegistry
         ToolMaterial material = context.ResolveToolMaterial(ResourceLocation.Parse(String(json, "Material")));
         return String(json, "Kind", "shovel") switch
         {
-            "pickaxe" => new ToolBehavior(material, 2, () => Item.s_pickaxeBlocks, Item.PickaxeSuitableFor(material)),
-            "axe" => new ToolBehavior(material, 3, () => Item.s_axeBlocks),
+            "pickaxe" => BuildPickaxe(material, context),
+            "axe" => new ToolBehavior(material, 3, ResolveBlocks(context,
+                "planks", "bookshelf", "log", "chest", "crafting_table", "wooden_stairs", "ladder", "trapdoor", "fence")),
             "shovel" => BuildShovel(material, context),
             string kind => throw new ArgumentException($"Unknown tool kind '{kind}'.")
         };
@@ -71,7 +73,11 @@ public sealed class ItemBehaviorProviderRegistry : IItemBehaviorProviderRegistry
             "milk" => -1,
             _ => 0
         };
-        return new BucketBehavior(() => liquid);
+        return new BucketBehavior(
+            () => liquid,
+            context.ResolveItem(Key("bucket")),
+            context.ResolveItem(Key("bucket_water")),
+            context.ResolveItem(Key("bucket_lava")));
     }
 
     private static IItemBehavior BuildSeeds(JsonElement json, ItemBuildContext context)
@@ -97,8 +103,28 @@ public sealed class ItemBehaviorProviderRegistry : IItemBehaviorProviderRegistry
     {
         Block snow = context.ResolveBlock("omniblock:snow");
         Block snowBlock = context.ResolveBlock("omniblock:snow_block");
-        return new ToolBehavior(material, 1, () => Item.s_spadeBlocks, block => block == snow || block == snowBlock);
+        return new ToolBehavior(material, 1, ResolveBlocks(context,
+            "grass_block", "dirt", "sand", "gravel", "snow", "snow_block", "clay", "farmland"),
+            block => block == snow || block == snowBlock);
     }
+
+    private static IItemBehavior BuildPickaxe(ToolMaterial material, ItemBuildContext context)
+    {
+        Block obsidian = context.ResolveBlock("omniblock:obsidian");
+        Block[] levelTwo = ResolveBlocks(context, "diamond_block", "diamond_ore", "gold_block", "gold_ore", "redstone_ore", "lit_redstone_ore");
+        Block[] levelOne = ResolveBlocks(context, "iron_block", "iron_ore", "lapis_block", "lapis_ore");
+        Block[] effective = ResolveBlocks(context, "cobblestone", "double_slab", "slab", "stone", "sandstone",
+            "mossy_cobblestone", "iron_ore", "iron_block", "coal_ore", "gold_block", "gold_ore", "diamond_ore",
+            "diamond_block", "ice", "netherrack", "lapis_ore", "lapis_block", "redstone_ore", "cobblestone_stairs");
+        return new ToolBehavior(material, 2, effective, block =>
+            block == obsidian ? material.HarvestLevel == 3 :
+            levelTwo.Contains(block) ? material.HarvestLevel >= 2 :
+            levelOne.Contains(block) ? material.HarvestLevel >= 1 :
+            block.Material == Material.Stone || block.Material == Material.Metal);
+    }
+
+    private static Block[] ResolveBlocks(ItemBuildContext context, params string[] names) =>
+        [.. names.Select(name => context.ResolveBlock(new ResourceLocation(Namespace.OmniBlock, name)))];
 
     private static ResourceLocation Key(string path) => new(Namespace.OmniBlock, path);
     private static string String(JsonElement json, string property, string? fallback = null) =>

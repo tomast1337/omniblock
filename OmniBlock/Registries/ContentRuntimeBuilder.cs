@@ -13,7 +13,7 @@ namespace OmniBlock.Registries;
 /// A builder is confined to bootstrap; runtime blocks retain only the immutable behaviors it
 /// creates. Future native and Luau providers register with this owner during the Registry phase.
 /// </summary>
-public sealed class ContentRuntimeBuilder
+public sealed class ContentRuntimeBuilder : IItemRuntimeView
 {
     private readonly List<(ResourceLocation Key, BlockDefinition Definition, Block Block)> _blocks = [];
     private readonly Dictionary<ResourceLocation, Block> _blocksByKey = [];
@@ -68,16 +68,21 @@ public sealed class ContentRuntimeBuilder
         _pendingItemDefinitions.Add(definition);
     }
 
-    internal Item GetItem(ResourceLocation key) => _itemsByKey.TryGetValue(key, out Item? item)
+    public Item Get(ResourceLocation key) => _itemsByKey.TryGetValue(key, out Item? item)
         ? item : throw new KeyNotFoundException($"Unknown item '{key}'.");
 
-    internal Item GetItemByProtocolId(int protocolId) => _itemsByProtocolId.TryGetValue(protocolId, out Item? item)
+    public Item GetByProtocolId(int protocolId) => _itemsByProtocolId.TryGetValue(protocolId, out Item? item)
         ? item : throw new KeyNotFoundException($"Unknown item protocol id {protocolId}.");
+
+    public bool TryGet(ResourceLocation key, out Item? item) => _itemsByKey.TryGetValue(key, out item);
+    public bool TryGetByProtocolId(int protocolId, out Item? item) => _itemsByProtocolId.TryGetValue(protocolId, out item);
+
+    internal Item GetItem(ResourceLocation key) => Get(key);
+    internal Item GetItemByProtocolId(int protocolId) => GetByProtocolId(protocolId);
 
     internal void BuildItemsForBootstrap()
     {
         CreatePendingItemDrafts();
-        foreach ((_, _, Item item) in _items) Item.Items[item.Id] = item;
     }
 
     internal void FinalizeItemsForBootstrap() => BuildPendingItems();
@@ -114,6 +119,14 @@ public sealed class ContentRuntimeBuilder
         throw new KeyNotFoundException($"Unknown block '{key}'.");
     }
 
+    private int ResolveLootItemOrBlockId(ResourceLocation key)
+    {
+        if (_itemsByKey.TryGetValue(key, out Item? item)) return item.Id;
+        foreach ((ResourceLocation _, BlockDefinition definition, Block block) in _blocks)
+            if (definition.BlockItem.Aliases.Contains(key.Path, StringComparer.OrdinalIgnoreCase)) return block.Id;
+        return ResolveBlockReference(key).Id;
+    }
+
     internal Block GetBlockByProtocolId(int protocolId) =>
         _blocksByProtocolId.TryGetValue(protocolId, out Block? block)
             ? block
@@ -142,7 +155,7 @@ public sealed class ContentRuntimeBuilder
             Item item = BlockItemFactory.Create(definition, block);
             if (item.Id != block.Id)
                 throw new InvalidOperationException($"Block item '{key}' has id {item.Id}, expected {block.Id}.");
-            if (Item.Items[item.Id] is not null)
+            if (_itemsByProtocolId.ContainsKey(item.Id))
                 throw new InvalidOperationException($"Block item '{key}' collides with item protocol id {item.Id}.");
             staged.Add((key, block, item));
         }
@@ -150,7 +163,8 @@ public sealed class ContentRuntimeBuilder
         foreach ((ResourceLocation key, Block block, Item item) in staged)
         {
             _blockItems.Add((key, item));
-            Item.Items[item.Id] = item; // Transitional publication for legacy item consumers.
+            _itemsByKey.TryAdd(key, item);
+            _itemsByProtocolId.Add(item.Id, item);
             block.Init();
         }
     }
@@ -220,7 +234,7 @@ public sealed class ContentRuntimeBuilder
                 throw new InvalidOperationException($"Duplicate item protocol id {definition.ProtocolId} for '{key}'.");
             try
             {
-                Item item = ItemFactory.CreateDraft(definition, ItemBuildContext, publishLegacy: false);
+                Item item = ItemFactory.CreateDraft(definition, ItemBuildContext);
                 _itemsByKey.Add(key, item);
                 _itemsByProtocolId.Add(definition.ProtocolId, item);
                 _items.Add((key, definition, item));
@@ -310,16 +324,18 @@ public sealed class ContentRuntimeBuilder
     }
 
     internal static ContentRuntimeBuilder CreateBuiltIns() =>
-        CreateBuiltIns(BehaviorBuildContext.BuiltIns);
+        CreateWithRuntimeView(BehaviorBuildContext.BuiltIns, bindRuntime: true);
 
     internal static ContentRuntimeBuilder CreateBuiltIns(BehaviorBuildContext context) =>
-        CreateWithRuntimeView(context);
+        CreateWithRuntimeView(context, bindRuntime: false);
 
-    private static ContentRuntimeBuilder CreateWithRuntimeView(BehaviorBuildContext context)
+    private static ContentRuntimeBuilder CreateWithRuntimeView(BehaviorBuildContext context, bool bindRuntime)
     {
         StagedBlockRuntimeView blocks = new();
-        BehaviorBuildContext runtimeContext = context.WithBlocks(blocks);
         ContentRuntimeBuilder? builder = null;
+        BehaviorBuildContext runtimeContext = bindRuntime
+            ? context.WithContent(blocks, key => builder!.GetItem(key))
+            : context;
         ItemBuildContext items = new(
             key => builder!.ResolveBlockReference(key),
             key => builder!._blockItems.First(entry => entry.Key == key).Item,
@@ -336,7 +352,7 @@ public sealed class ContentRuntimeBuilder
             key => _ = EntityDefinitionRegistry.Get(key.Path));
         builder = new(
             new BlockBehaviorProviderRegistry(runtimeContext),
-            BlockBuildContext.BuiltIns(runtimeContext),
+            BlockBuildContext.BuiltIns(runtimeContext, key => builder!.ResolveLootItemOrBlockId(key)),
             new ItemBehaviorProviderRegistry(),
             items,
             blocks);

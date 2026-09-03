@@ -70,12 +70,12 @@ public static class DefaultRegistries
         // below — Achievements references specific blocks by name.
         BlockRegistry.Initialize(content);
 
-        Stats.Stats.InitializeItemStats();
-        Stats.Stats.InitializeExtendedItemStats();
+        Stats.Stats.InitializeItemStats(content);
+        Stats.Stats.InitializeExtendedItemStats(content);
 
         // Must precede the Bootstrap below: EntityRegistry's static fields resolve each mob's
         // EntityDefinition from here as they run, and touching the class is what triggers them.
-        EntityDefinitionRegistry.Initialize();
+        EntityDefinitionRegistry.Initialize(content);
 
         // Blocks and entity definitions now exist, so every item cross-reference can be resolved
         // and the item catalog frozen before entity constructors consume item behaviors.

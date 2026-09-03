@@ -89,7 +89,7 @@ public abstract class BlockEntity : IEntity
     {
     }
 
-    public static BlockEntity? CreateFromNbt(NBTTagCompound nbt)
+    public static BlockEntity? CreateFromNbt(IWorldContext world, NBTTagCompound nbt)
     {
         var id = nbt.GetString("id");
         if (string.IsNullOrEmpty(id)) return null;
@@ -104,6 +104,7 @@ public abstract class BlockEntity : IEntity
         try
         {
             var blockEntity = type.Create();
+            blockEntity.World = world;
             blockEntity.ReadNbt(nbt);
             return blockEntity;
         }

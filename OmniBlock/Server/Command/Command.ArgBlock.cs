@@ -3,12 +3,13 @@ using OmniBlock.Items;
 using Brigadier.NET;
 using Brigadier.NET.ArgumentTypes;
 using Brigadier.NET.Exceptions;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Server.Command;
 
 public abstract partial class Command
 {
-    private class ArgBlock : IArgumentType<(int id, int meta)>
+    private class ArgBlock(RuntimeItemRegistry items) : IArgumentType<(int id, int meta)>
     {
         private const string AirBlockAlias = "air";
         private static readonly DynamicCommandExceptionType s_blockNotFound = new(expected => new LiteralMessage($"Block \"{expected}\" not found."));
@@ -51,7 +52,7 @@ public abstract partial class Command
             }
 
 
-            if (ItemLookup.TryGetItem(name, out ItemStack? result)
+            if (items.TryParse(name, out ItemStack? result)
                 && BlockRegistry.TryGetByProtocolId(result.ItemId, out _))
             {
                 return (result.ItemId, result.GetDamage());

@@ -206,7 +206,7 @@ internal class RegionChunkStorage : IChunkStorage
             for (int blockEntityIndex = 0; blockEntityIndex < blockEntityTags.TagCount(); ++blockEntityIndex)
             {
                 NBTTagCompound blockEntityTag = (NBTTagCompound)blockEntityTags.TagAt(blockEntityIndex);
-                BlockEntity? blockEntity = BlockEntity.CreateFromNbt(blockEntityTag);
+                BlockEntity? blockEntity = BlockEntity.CreateFromNbt(world, blockEntityTag);
                 if (blockEntity != null)
                 {
                     chunk.AddBlockEntity(blockEntity);

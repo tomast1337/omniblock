@@ -59,6 +59,8 @@ public partial class OmniBlock :
     IInternalServerHost,
     ISingleplayerHost
 {
+    public ContentRuntime Content { get; }
+
     #region Constants & Static Members
 
     public static string Version { get; private set; } = UnknownVersion;
@@ -238,8 +240,9 @@ public partial class OmniBlock :
 
     #region Initialization & Lifecycle
 
-    private OmniBlock(int width, int height, bool isFullscreen, ClientLaunchOptions launchOptions)
+    private OmniBlock(int width, int height, bool isFullscreen, ClientLaunchOptions launchOptions, ContentRuntime content)
     {
+        Content = content;
         _launchOptions = launchOptions;
         if (launchOptions.E2ETest is { } e2eTest)
         {
@@ -547,7 +550,8 @@ public partial class OmniBlock :
                 }
 
                 return new Vector2D<int>(Display.getFramebufferWidth(), Display.getFramebufferHeight());
-            }
+            },
+            content: Content
         );
 
         SkinManager = new SkinManager(TextureManager);
@@ -1984,7 +1988,7 @@ public partial class OmniBlock :
     }
 
     private MainMenuScreen CreateMainMenuScreen() => new(UIContext, Session, this, CreateNetworkContext(), TexturePackList, Shutdown);
-    private ClientNetworkContext CreateNetworkContext() => new(this, this, this, Session, StatFileWriter, ParticleManager, HUD.AddChatMessage, this, Path.Combine(_gameDataDir, "chunkcache"));
+    private ClientNetworkContext CreateNetworkContext() => new(this, this, this, Session, StatFileWriter, ParticleManager, HUD.AddChatMessage, this, Path.Combine(_gameDataDir, "chunkcache"), Content);
 
     #endregion
 
@@ -2227,15 +2231,15 @@ public partial class OmniBlock :
     {
         ClientLaunchOptions options = ClientLaunchOptions.Parse(args);
 
-        Bootstrap.Initialize();
-        StartMainThread(options);
+        ContentRuntime content = Bootstrap.Initialize();
+        StartMainThread(options, content);
     }
 
-    private static void StartMainThread(ClientLaunchOptions options)
+    private static void StartMainThread(ClientLaunchOptions options, ContentRuntime content)
     {
         Thread.CurrentThread.Name = "OmniBlock Main Thread";
 
-        OmniBlock game = new(850, 480, false, options) { ForceDebugOnStart = options.Debug };
+        OmniBlock game = new(850, 480, false, options, content) { ForceDebugOnStart = options.Debug };
         game.Session = new Session(options.Username, options.SessionToken);
 
         if (options.SessionToken == "-")

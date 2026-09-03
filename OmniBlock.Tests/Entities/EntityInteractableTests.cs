@@ -28,10 +28,10 @@ public sealed class EntityInteractableTests
     {
         FakeWorldContext world = new();
         EntityCreature cow = (EntityCreature)EntityRegistry.ByName("cow").Create(world);
-        TestEntityPlayer player = Player(world, Item.ByName("bucket"));
+        TestEntityPlayer player = Player(world, ContentRuntime.Current.Items.Get("omniblock:bucket"));
 
         Assert.True(cow.Interact(player));
-        Assert.Equal(Item.ByName("milk").Id, player.Inventory.ItemInHand!.ItemId);
+        Assert.Equal(ContentRuntime.Current.Items.Get("omniblock:milk").Id, player.Inventory.ItemInHand!.ItemId);
     }
 
     [Fact]
@@ -41,7 +41,7 @@ public sealed class EntityInteractableTests
         EntityCreature cow = (EntityCreature)EntityRegistry.ByName("cow").Create(world);
 
         Assert.False(cow.Interact(Player(world)));
-        Assert.False(cow.Interact(Player(world, Item.ByName("stick"))));
+        Assert.False(cow.Interact(Player(world, ContentRuntime.Current.Items.Get("omniblock:stick"))));
     }
 
     [Fact]

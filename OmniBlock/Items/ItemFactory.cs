@@ -5,10 +5,6 @@ namespace OmniBlock.Items;
 
 public static class ItemFactory
 {
-    private static readonly IItemBehaviorProviderRegistry s_builtInBehaviors = new ItemBehaviorProviderRegistry();
-
-    public static Item Create(ItemDefinition def) => Create(def, ItemBuildContext.BuiltIns, s_builtInBehaviors);
-
     public static Item Create(
         ItemDefinition def,
         in ItemBuildContext context,
@@ -16,14 +12,14 @@ public static class ItemFactory
     {
         ArgumentNullException.ThrowIfNull(def);
         ArgumentNullException.ThrowIfNull(behaviorProviders);
-        Item item = CreateDraft(def, context, publishLegacy: true);
+        Item item = CreateDraft(def, context);
         AttachBehavior(item, def, context, behaviorProviders);
         return item;
     }
 
-    internal static Item CreateDraft(ItemDefinition def, in ItemBuildContext context, bool publishLegacy)
+    internal static Item CreateDraft(ItemDefinition def, in ItemBuildContext context)
     {
-        var item = new Item(def.ProtocolId - 256, publishLegacy);
+        var item = new Item(def.ProtocolId - 256);
         item.SetItemName(def.TranslationKey ?? def.Name);
         if (def.MaxStackSize != 64) item.SetMaxCount(def.MaxStackSize);
         if (def.MaxDurability > 0) item.SetMaxDamage(def.MaxDurability);
@@ -48,11 +44,4 @@ public static class ItemFactory
         }
     }
 
-    public static void ResolveCrossReferences(ItemDefinition def)
-    {
-        if (def.CraftingReturnItemProtocolId is { } returnId)
-        {
-            Item.Items[def.ProtocolId]!.SetCraftingReturnItem(Item.Items[returnId]!);
-        }
-    }
 }

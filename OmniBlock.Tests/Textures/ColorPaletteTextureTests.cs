@@ -41,7 +41,7 @@ public sealed class ColorPaletteTextureTests
     [Fact]
     public void Dye_texture_per_damage_matches_the_legacy_palette_walk()
     {
-        Item dye = Item.ByName("dye_powder");
+        Item dye = ContentRuntime.Current.Items.Get("omniblock:dye_powder");
 
         for (int damage = 0; damage < 16; damage++)
         {
@@ -63,7 +63,7 @@ public sealed class ColorPaletteTextureTests
             "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
         ];
 
-        Item dye = Item.ByName("dye_powder");
+        Item dye = ContentRuntime.Current.Items.Get("omniblock:dye_powder");
         int inkSac = Atlases.Items.IndexOf("ink_sac");
 
         for (int damage = 0; damage < 16; damage++)

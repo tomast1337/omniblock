@@ -3,6 +3,7 @@ using OmniBlock.Client.Options;
 using OmniBlock.Client.Rendering;
 using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Client.Rendering.UI;
+using OmniBlock.Registries;
 using OmniBlock.Client.UI.Screens;
 using Silk.NET.Maths;
 
@@ -24,7 +25,8 @@ public sealed class UIContext(
     IScreenNavigator navigator,
     Func<bool> hasWorld,
     Func<Vector2D<int>> mouseOffset,
-    Func<Vector2D<int>>? renderTargetSize = null
+    Func<Vector2D<int>>? renderTargetSize,
+    ContentRuntime content
 )
 {
     public GameOptions Options => options;
@@ -64,4 +66,5 @@ public sealed class UIContext(
                                              ?? new Vector2D<int>(Display.getFramebufferWidth(), Display.getFramebufferHeight());
 
     public IControllerState ControllerState => controllerState;
+    public ContentRuntime Content => content;
 }

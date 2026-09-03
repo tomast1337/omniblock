@@ -22,7 +22,7 @@ public sealed class BlockBehaviorProviderRegistryTests
     public void Build_context_resolves_every_dependency_through_injected_functions()
     {
         Block expectedBlock = BlockRegistry.Get("stone");
-        Item expectedItem = Item.ByName("stick");
+        Item expectedItem = ContentRuntime.Current.Items.Get("omniblock:stick");
         Material expectedMaterial = MaterialRegistry.Get("wood");
         List<string> calls = [];
 
@@ -70,7 +70,7 @@ public sealed class BlockBehaviorProviderRegistryTests
     public void Built_in_factories_resolve_all_content_dependencies_through_the_builder_context()
     {
         Block block = BlockRegistry.Get("dirt");
-        Item item = Item.ByName("snowball");
+        Item item = ContentRuntime.Current.Items.Get("omniblock:snowball");
         Material material = MaterialRegistry.Get("wood");
         List<string> calls = [];
         BehaviorBuildContext context = new(

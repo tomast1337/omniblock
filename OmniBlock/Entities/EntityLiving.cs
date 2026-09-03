@@ -49,7 +49,7 @@ public class EntityLiving : Entity
 
         if (definition.HeldItem is { } held)
         {
-            HeldItem = new ItemStack(Item.ByName(ResourceLocation.Parse(held).Path), 1);
+            HeldItem = new ItemStack(world.Content.Items.Get(ResourceLocation.Parse(held)), 1);
         }
     }
 

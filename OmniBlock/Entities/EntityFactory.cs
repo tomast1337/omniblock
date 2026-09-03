@@ -19,7 +19,7 @@ internal static class EntityFactory
         EntityStateLayout layout = new();
         EntityBehaviorSet set = new(layout);
 
-        EntityBehaviorBuildContext context = new(definition, layout);
+        EntityBehaviorBuildContext context = new(definition, layout, EntityDefinitionRegistry.Items);
 
         foreach (EntityBehaviorDefinition entry in definition.Behaviors)
         {

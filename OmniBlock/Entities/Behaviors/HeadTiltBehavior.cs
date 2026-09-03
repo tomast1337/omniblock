@@ -20,7 +20,7 @@ public sealed class HeadTiltBehavior : IEntityPhysics, IEntityTicker
 
     public HeadTiltBehavior(in EntityBehaviorContext context)
     {
-        _wantedWhileWild = Item.ByName(ResourceLocation.Parse(context.Json.GetProperty("wanted_while_wild").GetString()!).Path);
+        _wantedWhileWild = context.Items.Get(ResourceLocation.Parse(context.Json.GetProperty("wanted_while_wild").GetString()!));
         _tiltSpeed = context.Float("tilt_speed", 0.4F);
         _holdGazeTicks = context.Int("hold_gaze_ticks", 10);
 
@@ -55,7 +55,7 @@ public sealed class HeadTiltBehavior : IEntityPhysics, IEntityTicker
         }
 
         self.State[_interested] = tame.IsTamed(mob)
-            ? Item.Items[held.ItemId]?.GetBehavior<FoodBehavior>() is { IsMeat: true }
+            ? held.GetItem().GetBehavior<FoodBehavior>() is { IsMeat: true }
             : held.ItemId == _wantedWhileWild.Id;
     }
 

@@ -1089,9 +1089,9 @@ public class WorldRenderer : IWorldEventListener, IDisposable
                     case "splash": pm.AddSplash(x, y, z, velocityX, velocityY, velocityZ); break;
                     case "largesmoke": pm.AddSmoke(x, y, z, velocityX, velocityY, velocityZ, 2.5f); break;
                     case "reddust": pm.AddReddust(x, y, z, (float)velocityX, (float)velocityY, (float)velocityZ); break;
-                    case "snowballpoof": pm.AddSlime(x, y, z, Item.ByName("snowball")); break;
+                    case "snowballpoof": pm.AddSlime(x, y, z, _world.Content.Items.Get("omniblock:snowball")); break;
                     case "snowshovel": pm.AddSnowShovel(x, y, z, velocityX, velocityY, velocityZ); break;
-                    case "slime": pm.AddSlime(x, y, z, Item.ByName("slimeball")); break;
+                    case "slime": pm.AddSlime(x, y, z, _world.Content.Items.Get("omniblock:slimeball")); break;
                     case "heart": pm.AddHeart(x, y, z, velocityX, velocityY, velocityZ); break;
                 }
             }
@@ -1140,7 +1140,7 @@ public class WorldRenderer : IWorldEventListener, IDisposable
 
                 break;
             case 1005:
-                if (Item.Items[data]?.GetBehavior<RecordBehavior>() is { } record)
+                if (_world.Content.Items.TryGetByProtocolId(data, out Item? item) && item?.GetBehavior<RecordBehavior>() is { } record)
                 {
                     _game.SoundManager.PlayStreaming(record.RecordName, x, y, z, 1.0F, 1.0F);
                 }

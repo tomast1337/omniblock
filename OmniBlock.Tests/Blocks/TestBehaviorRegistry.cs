@@ -9,8 +9,6 @@ namespace OmniBlock.Blocks.Behaviors;
 /// </summary>
 internal static class BehaviorRegistry
 {
-    private static readonly ContentRuntimeBuilder s_content = ContentRuntimeBuilder.CreateBuiltIns();
-
     public static object Build(string type, JsonElement definition) =>
-        s_content.BuildBlockBehavior(ResourceLocation.Parse(type), definition);
+        ContentRuntime.Current.BlockBehaviorProviders.Build(ResourceLocation.Parse(type), definition, default);
 }

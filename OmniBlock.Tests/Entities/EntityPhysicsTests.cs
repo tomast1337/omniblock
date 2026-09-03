@@ -151,7 +151,7 @@ public sealed class EntityPhysicsTests
 
         TestEntityPlayer player = new(world) { Name = "tester" };
         player.SetPositionAndAngles(8.5, 65.0, 8.5, 0f, 0f);
-        player.Inventory.SetStack(player.Inventory.SelectedSlot, new ItemStack(Item.ByName("shears")));
+        player.Inventory.SetStack(player.Inventory.SelectedSlot, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:shears")));
 
         sheep.Interact(player);
 

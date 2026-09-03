@@ -229,7 +229,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
             return remainingCount;
         }
 
-        ItemStack stack = Main[slotIndex] ??= new ItemStack(itemId, 0, itemStack.GetDamage());
+        ItemStack stack = Main[slotIndex] ??= new ItemStack(player.World.Content.Items, itemId, 0, itemStack.GetDamage());
 
         int spaceAvailable = remainingCount;
         if (remainingCount > stack.GetMaxCount() - stack.Count)
@@ -360,11 +360,7 @@ public class InventoryPlayer(EntityPlayer player) : IInventory
         {
             NBTTagCompound itemTag = (NBTTagCompound)nbt.TagAt(i);
             int slotIndex = itemTag.GetByte("Slot") & 255;
-            ItemStack itemStack = new(itemTag);
-            if (itemStack.GetItem() == null)
-            {
-                continue;
-            }
+            ItemStack itemStack = new(player.World.Content.Items, itemTag);
 
             if (slotIndex >= 0 && slotIndex < Main.Length)
             {

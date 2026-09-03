@@ -273,7 +273,7 @@ public sealed class EntityMinecartTests
         var player = new TestEntityPlayer(world);
         player.SetPosition(12.0, 65.0, 10.5);
         Assert.True(world.Entities.SpawnEntity(player));
-        player.Inventory.SetStack(0, new ItemStack(Item.ByName("coal"), 16));
+        player.Inventory.SetStack(0, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:coal"), 16));
         player.Inventory.SelectedSlot = 0;
 
         bool interacted = cart.Interact(player);
@@ -314,9 +314,9 @@ public sealed class EntityMinecartTests
         EntityTestHarness.PlaceRailRunX(world, 4, 10, 64, 4);
         Entity cart = Place(world, 8.5, 65.0, 4.5, MinecartBehavior.Chest);
         MinecartCargo cargo = Cart.Cargo(cart)!;
-        cargo.SetStack(3, new ItemStack(Item.ByName("stick"), 4));
+        cargo.SetStack(3, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 4));
         Assert.Equal(2, cargo.RemoveStack(3, 2)!.Count);
-        cargo.SetStack(3, new ItemStack(Item.ByName("stick"), 4));
+        cargo.SetStack(3, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 4));
 
         Assert.True(world.Entities.SpawnEntity(cart));
 
@@ -344,8 +344,10 @@ public sealed class EntityMinecartTests
         Assert.True(cart.Damage(null, 5));
 
         Assert.True(cart.Dead);
-        ItemLookup.TryGetItemId(expectedDrop, out int expectedId);
-        ItemLookup.TryGetItemId("minecart", out int minecartId);
+        Assert.True(ContentRuntime.Current.Items.TryParse(expectedDrop, out ItemStack? expected));
+        Assert.True(ContentRuntime.Current.Items.TryParse("minecart", out ItemStack? minecart));
+        int expectedId = expected.ItemId;
+        int minecartId = minecart.ItemId;
         List<int> dropped = [.. world.Entities.Entities
             .Select(EntityTestHarness.DroppedStack)
             .Where(stack => stack is not null)
@@ -408,7 +410,7 @@ public sealed class EntityMinecartTests
         FakeWorldContext worldA = new();
         EntityTestHarness.PlaceStoneFloor(worldA, 0, 15, 0, 15, 63);
         Entity original = Place(worldA, 8.5, 65.0, 8.5, MinecartBehavior.Chest);
-        Cart.Cargo(original)!.SetStack(5, new ItemStack(Item.ByName("stick"), 3));
+        Cart.Cargo(original)!.SetStack(5, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 3));
 
         var nbt = new NBTTagCompound();
         Assert.True(original.SaveSelfNbt(nbt));
@@ -468,7 +470,7 @@ public sealed class EntityMinecartTests
     {
         FakeWorldContext world = new();
         Entity cart = Place(world, 8.5, 65.0, 8.5, MinecartBehavior.Chest);
-        Cart.Cargo(cart)!.SetStack(0, new ItemStack(Item.ByName("stick"), 24));
+        Cart.Cargo(cart)!.SetStack(0, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 24));
         Assert.True(world.Entities.SpawnEntity(cart));
 
         cart.MarkDead();
@@ -476,7 +478,7 @@ public sealed class EntityMinecartTests
         Assert.True(cart.Dead);
         Assert.Equal(24, world.Entities.Entities
             .Select(EntityTestHarness.DroppedStack)
-            .Where(stack => stack is not null && stack.ItemId == Item.ByName("stick").Id)
+            .Where(stack => stack is not null && stack.ItemId == ContentRuntime.Current.Items.Get("omniblock:stick").Id)
             .Sum(stack => stack!.Count));
     }
 

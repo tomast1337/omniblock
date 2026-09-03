@@ -22,6 +22,7 @@ internal static class BlockItemFactory
 
         return item.SetItemName(definition.BlockItem.TranslationKey
                                 ?? definition.TranslationKey
-                                ?? definition.Name);
+                                ?? definition.Name)
+            .SetAliases(definition.BlockItem.Aliases);
     }
 }

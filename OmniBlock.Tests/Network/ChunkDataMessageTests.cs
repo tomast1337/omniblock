@@ -45,11 +45,11 @@ public sealed class ChunkDataMessageTests
     public void A_chunk_survives_the_whole_send_path(long seed, int chunkX, int chunkZ)
     {
         MessageRegistry server = new();
-        DefaultMessages.RegisterAll(server);
+        DefaultMessages.RegisterAll(server, ContentRuntime.Current.Items);
         server.NegotiateAsServer();
 
         MessageRegistry client = new();
-        DefaultMessages.RegisterAll(client);
+        DefaultMessages.RegisterAll(client, ContentRuntime.Current.Items);
         client.AdoptOrdering(server.NegotiatedOrder);
 
         Chunk chunk = Generate(seed, chunkX, chunkZ);

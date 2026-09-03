@@ -1,4 +1,5 @@
 using OmniBlock.Items;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Network.Messages;
 
@@ -8,6 +9,9 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class ScreenHandlerSlotMessage : Message
 {
+    private readonly IItemRuntimeView? _items;
+    public ScreenHandlerSlotMessage() { }
+    internal ScreenHandlerSlotMessage(IItemRuntimeView items) => _items = items;
     public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "screen_slot");
 
     /// <summary>-1 with slot -1 addresses the cursor stack rather than a screen.</summary>
@@ -25,7 +29,7 @@ public sealed class ScreenHandlerSlotMessage : Message
     {
         SyncId = (sbyte)stream.ReadByte();
         Slot = stream.ReadShort();
-        Stack = stream.ReadItemStack();
+        Stack = stream.ReadItemStack(_items ?? throw new InvalidOperationException("No item catalog was supplied for decoding."));
     }
 
     public override void Write(Stream stream)

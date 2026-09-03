@@ -12,18 +12,20 @@ public class BlockEntityMobSpawnerRenderer : BlockEntitySpecialRenderer
 
     public void renderTileEntityMobSpawner(BlockEntityMobSpawner spawner, double x, double y, double z, float tickDelta)
     {
+        if (spawner.World is not { } world) return;
+
         GLManager.ModelView.Push();
         GLManager.ModelView.Translate((float)x + 0.5F, (float)y, (float)z + 0.5F);
         _entityDict.TryGetValue(spawner.GetSpawnedEntityId(), out Entity? displayEntity);
-        if (displayEntity == null)
+        if (displayEntity == null || !ReferenceEquals(displayEntity.World.Content, world.Content))
         {
-            displayEntity = EntityRegistry.Create(spawner.GetSpawnedEntityId(), null);
-            _entityDict.Add(spawner.GetSpawnedEntityId(), displayEntity);
+            displayEntity = EntityRegistry.Create(spawner.GetSpawnedEntityId(), world);
+            _entityDict[spawner.GetSpawnedEntityId()] = displayEntity;
         }
 
         if (displayEntity != null)
         {
-            displayEntity.SetWorld(spawner.World);
+            displayEntity.SetWorld(world);
             float scale = 7.0F / 16.0F;
             GLManager.ModelView.Translate(0.0F, 0.4F, 0.0F);
             GLManager.ModelView.Rotate((float)(spawner.LastRotation + (spawner.Rotation - spawner.LastRotation) * (double)tickDelta) * 10.0F, 0.0F, 1.0F, 0.0F);

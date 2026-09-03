@@ -78,7 +78,7 @@ public sealed class EntityStateTests
     [Fact]
     public void Declared_synced_properties_reach_the_synchronizer()
     {
-        DataSynchronizer sync = new();
+        DataSynchronizer sync = new(ContentRuntime.Current.Items);
         sync.MakeProperty<byte>(0, 0); // the shared flags byte every entity carries
 
         SyncedPropertyFactory.Declare(sync, [
@@ -95,10 +95,10 @@ public sealed class EntityStateTests
     {
         // The wire header is (type << 5) | id, so a declared property must be byte-identical to the
         // hand-written MakeProperty call it replaces, or the client desynchronises.
-        DataSynchronizer hardcoded = new();
+        DataSynchronizer hardcoded = new(ContentRuntime.Current.Items);
         hardcoded.MakeProperty(17, true);
 
-        DataSynchronizer declared = new();
+        DataSynchronizer declared = new(ContentRuntime.Current.Items);
         SyncedPropertyFactory.Declare(declared, [new SyncedPropertyDefinition("powered", 17, SyncedValueKind.Bool, 1)], "creeper");
 
         Assert.Equal(Serialize(hardcoded), Serialize(declared));
@@ -107,7 +107,7 @@ public sealed class EntityStateTests
     [Fact]
     public void Reserved_and_out_of_range_ids_fail_loudly()
     {
-        DataSynchronizer sync = new();
+        DataSynchronizer sync = new(ContentRuntime.Current.Items);
 
         ArgumentException flags = Assert.Throws<ArgumentException>(() => SyncedPropertyFactory.Declare(
             sync, [new SyncedPropertyDefinition("bad", 0, SyncedValueKind.Bool)], "test"));

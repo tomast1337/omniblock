@@ -39,7 +39,7 @@ public sealed class WoolBehavior : IEntityInteractable, IEntityPersistence, IEnt
         _property = context.Json.TryGetProperty("property", out JsonElement name)
             ? name.GetString() ?? "wool"
             : "wool";
-        _tool = Item.ByName(ResourceLocation.Parse(context.Json.GetProperty("tool").GetString()!).Path);
+        _tool = context.Items.Get(ResourceLocation.Parse(context.Json.GetProperty("tool").GetString()!));
         _minDrop = context.Int("min_drop", 2);
         _dropRange = context.Int("drop_range", 3);
     }
@@ -59,7 +59,7 @@ public sealed class WoolBehavior : IEntityInteractable, IEntityPersistence, IEnt
 
             for (int i = 0; i < count; ++i)
             {
-                Entity wool = self.DropItem(new ItemStack(BlockRegistry.Get("wool").Id, 1, ColorOf(self)), 1.0F);
+                Entity wool = self.DropItem(new ItemStack(self.World.Content.Items, self.World.Content.Blocks.Get(new ResourceLocation(Namespace.OmniBlock, "wool")).Id, 1, ColorOf(self)), 1.0F);
                 wool.VelocityY += self.Random.NextFloat() * 0.05F;
                 wool.VelocityX += (self.Random.NextFloat() - self.Random.NextFloat()) * 0.1F;
                 wool.VelocityZ += (self.Random.NextFloat() - self.Random.NextFloat()) * 0.1F;

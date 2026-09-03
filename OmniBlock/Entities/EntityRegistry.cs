@@ -13,7 +13,7 @@ public static class EntityRegistry
 
     /// <summary>
     ///     Resolves a registered type by its registry path (e.g. <c>"zombie"</c>), matching
-    ///     <c>Item.ByName</c>. Callers on a hot path should cache the result in a
+    ///     the runtime item registry. Callers on a hot path should cache the result in a
     ///     <c>static readonly</c> field instead of resolving per call.
     /// </summary>
     private static readonly Dictionary<Type, EntityType> s_byRuntimeType = [];

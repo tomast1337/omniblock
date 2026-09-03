@@ -5,6 +5,8 @@ namespace OmniBlock.Recipes;
 
 public class RecipeManager : IRegistryReloadListener
 {
+    private readonly RuntimeItemRegistry _items;
+    public RecipeManager(RuntimeItemRegistry items) => _items = items;
     private static readonly ILogger<RecipeManager> s_logger = Log.Instance.For<RecipeManager>();
 
     /// <summary>
@@ -26,30 +28,28 @@ public class RecipeManager : IRegistryReloadListener
         }
 
         ClearRecipes();
-        BuildRecipes(registryAccess.GetOrThrow(RegistryKeys.Recipes));
+        BuildRecipes(registryAccess.GetOrThrow(RegistryKeys.Recipes), _items);
     }
 
-    public static void Rebuild(IEnumerable<RecipeDefinition> items)
+    public static void Rebuild(IEnumerable<RecipeDefinition> definitions, RuntimeItemRegistry items)
     {
         ClearRecipes();
-        BuildRecipes(items);
+        BuildRecipes(definitions, items);
     }
 
-    public static void Rebuild(IEnumerable<Holder<RecipeDefinition>> items)
+    public static void Rebuild(IEnumerable<Holder<RecipeDefinition>> definitions, RuntimeItemRegistry items)
     {
         ClearRecipes();
-        BuildRecipes(items);
+        BuildRecipes(definitions, items);
     }
 
-    private static void BuildRecipes(IEnumerable<RecipeDefinition> items)
+    private static void BuildRecipes(IEnumerable<RecipeDefinition> definitions, RuntimeItemRegistry items)
     {
-        ItemLookup.Initialize();
-
-        foreach (RecipeDefinition def in items)
+        foreach (RecipeDefinition def in definitions)
         {
             try
             {
-                if (!BuildRecipe(def))
+                if (!BuildRecipe(def, items))
                 {
                     throw new InvalidOperationException($"Unknown crafting type: {def.Type}");
                 }
@@ -66,17 +66,15 @@ public class RecipeManager : IRegistryReloadListener
         }
     }
 
-    private static void BuildRecipes(IEnumerable<Holder<RecipeDefinition>> items)
+    private static void BuildRecipes(IEnumerable<Holder<RecipeDefinition>> definitions, RuntimeItemRegistry items)
     {
-        ItemLookup.Initialize();
-
-        foreach (Holder<RecipeDefinition> holder in items)
+        foreach (Holder<RecipeDefinition> holder in definitions)
         {
             RecipeDefinition def = holder.Value;
 
             try
             {
-                if (!BuildRecipe(def))
+                if (!BuildRecipe(def, items))
                 {
                     throw new InvalidOperationException($"Unknown crafting type: {def.Type}");
                 }
@@ -93,13 +91,13 @@ public class RecipeManager : IRegistryReloadListener
         }
     }
 
-    private static bool BuildRecipe(RecipeDefinition def)
+    private static bool BuildRecipe(RecipeDefinition def, RuntimeItemRegistry items)
     {
         foreach (ICraftingRegistry craftingType in CraftingTypes)
         {
             if (string.Equals(def.Type, craftingType.Name, StringComparison.OrdinalIgnoreCase))
             {
-                craftingType.BuildRecipe(def);
+                craftingType.BuildRecipe(def, items);
                 return true;
             }
         }

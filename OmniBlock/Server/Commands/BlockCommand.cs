@@ -6,10 +6,11 @@ using OmniBlock.Util.Maths;
 using OmniBlock.Worlds.Core.Systems;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Server.Commands;
 
-public class BlockCommand : Command.Command
+public class BlockCommand(RuntimeItemRegistry items) : Command.Command
 {
 
     public override string Usage => "block get [position]";
@@ -21,7 +22,7 @@ public class BlockCommand : Command.Command
             .Then(Literal("get")
                 .Executes(BlockGet)
                 .Then(ArgumentPos("position").Executes(c => BlockGet(c, c.GetArgument<Vec3D>("position"))))
-            ).Then(Literal("set").Then(ArgumentBlock("block")
+            ).Then(Literal("set").Then(ArgumentBlock("block", items)
                 .Executes(c => BlockSet(c, c.GetArgument<(int id, int meta)>("block")))
                 .Then(ArgumentPos("position").Executes(c => BlockSet(c, c.GetArgument<(int id, int meta)>("block"), c.GetArgument<Vec3D>("position"))))));
 

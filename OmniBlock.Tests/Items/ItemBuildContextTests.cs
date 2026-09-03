@@ -15,7 +15,7 @@ public sealed class ItemBuildContextTests
     public void Context_routes_every_dependency_through_injected_resolvers()
     {
         Block block = BlockRegistry.Get("stone");
-        Item item = Item.ByName("stick");
+        Item item = ContentRuntime.Current.Items.Get("omniblock:stick");
         ToolMaterial tool = ToolMaterialRegistry.Get("iron");
         ArmorMaterial armor = ArmorMaterialRegistry.Get("diamond");
         Material material = MaterialRegistry.Get("wood");
@@ -72,18 +72,11 @@ public sealed class ItemBuildContextTests
             Behaviors = [Behavior("""{"Type":"shears"}""")]
         };
 
-        try
-        {
-            Item item = ItemFactory.Create(definition, context, providers);
+        Item item = ItemFactory.Create(definition, context, providers);
 
-            Assert.Equal(91, item.GetTextureId(0));
-            Assert.IsType<ShearsBehavior>(item.GetBehavior<IItemBehavior>());
-            Assert.Equal(["texture:example:icon", "type:shears"], calls);
-        }
-        finally
-        {
-            Item.Items[definition.ProtocolId] = null;
-        }
+        Assert.Equal(91, item.GetTextureId(0));
+        Assert.IsType<ShearsBehavior>(item.GetBehavior<IItemBehavior>());
+        Assert.Equal(["texture:example:icon", "type:shears"], calls);
     }
 
     [Fact]
@@ -126,27 +119,20 @@ public sealed class ItemBuildContextTests
             Behaviors = [Behavior("""{"Type":"example:first"}"""), Behavior("""{"Type":"example:second"}""")]
         };
 
-        try
-        {
-            Item item = ItemFactory.Create(definition, context, providers);
-            Assert.Equal(2, item.BehaviorCount);
-            Assert.NotNull(item.GetBehavior<FirstTestBehavior>());
-            Assert.NotNull(item.GetBehavior<SecondTestBehavior>());
-            Assert.Throws<InvalidOperationException>(() => item.AddBehavior(new FirstTestBehavior()));
-            item.AddBehavior(new TestBehavior3());
-            item.AddBehavior(new TestBehavior4());
-            item.AddBehavior(new TestBehavior5());
-            item.AddBehavior(new TestBehavior6());
-            item.AddBehavior(new TestBehavior7());
-            item.AddBehavior(new TestBehavior8());
-            Assert.Throws<InvalidOperationException>(() => item.AddBehavior(new OverflowTestBehavior()));
-            item.Freeze();
-            Assert.Throws<InvalidOperationException>(() => item.AddBehavior(new OverflowTestBehavior()));
-        }
-        finally
-        {
-            Item.Items[definition.ProtocolId] = null;
-        }
+        Item item = ItemFactory.Create(definition, context, providers);
+        Assert.Equal(2, item.BehaviorCount);
+        Assert.NotNull(item.GetBehavior<FirstTestBehavior>());
+        Assert.NotNull(item.GetBehavior<SecondTestBehavior>());
+        Assert.Throws<InvalidOperationException>(() => item.AddBehavior(new FirstTestBehavior()));
+        item.AddBehavior(new TestBehavior3());
+        item.AddBehavior(new TestBehavior4());
+        item.AddBehavior(new TestBehavior5());
+        item.AddBehavior(new TestBehavior6());
+        item.AddBehavior(new TestBehavior7());
+        item.AddBehavior(new TestBehavior8());
+        Assert.Throws<InvalidOperationException>(() => item.AddBehavior(new OverflowTestBehavior()));
+        item.Freeze();
+        Assert.Throws<InvalidOperationException>(() => item.AddBehavior(new OverflowTestBehavior()));
     }
 
     private static ItemBuildContext Context(
@@ -154,7 +140,7 @@ public sealed class ItemBuildContextTests
         Func<string, int>? texture = null)
     {
         Block block = BlockRegistry.Get("stone");
-        Item fallbackItem = Item.ByName("stick");
+        Item fallbackItem = ContentRuntime.Current.Items.Get("omniblock:stick");
         return new ItemBuildContext(
             _ => block,
             _ => fallbackItem,

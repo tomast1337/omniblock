@@ -1,5 +1,6 @@
 using OmniBlock.Inventories;
 using OmniBlock.Items;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Recipes;
 
@@ -9,7 +10,7 @@ public class ShapedCraftingRegistry : ICraftingRegistry
     string ICraftingRegistry.Name => Name;
     public int Count => RecipesCrafting.ShapedRecipeCount;
     public void Clear() => RecipesCrafting.Clear();
-    public void BuildRecipe(RecipeDefinition def) => RecipesCrafting.BuildShapedRecipe(def);
+    public void BuildRecipe(RecipeDefinition def, RuntimeItemRegistry items) => RecipesCrafting.BuildShapedRecipe(def, items);
 }
 
 public class ShapelessCraftingRegistry : ICraftingRegistry
@@ -18,7 +19,7 @@ public class ShapelessCraftingRegistry : ICraftingRegistry
     string ICraftingRegistry.Name => Name;
     public int Count => RecipesCrafting.ShapelessRecipeCount;
     public void Clear() => RecipesCrafting.Clear();
-    public void BuildRecipe(RecipeDefinition def) => RecipesCrafting.BuildShapelessRecipe(def);
+    public void BuildRecipe(RecipeDefinition def, RuntimeItemRegistry items) => RecipesCrafting.BuildShapelessRecipe(def, items);
 }
 
 public static class RecipesCrafting
@@ -35,7 +36,7 @@ public static class RecipesCrafting
         Recipes.Clear();
     }
 
-    public static void BuildShapedRecipe(RecipeDefinition def)
+    public static void BuildShapedRecipe(RecipeDefinition def, RuntimeItemRegistry items)
     {
         if (def.Pattern == null || def.Pattern.Length == 0)
             throw new InvalidOperationException("Shaped recipe has no pattern.");
@@ -47,7 +48,7 @@ public static class RecipesCrafting
 
         var keyMap = new Dictionary<char, ItemStack?>();
         foreach ((string keyStr, string ingredientRef) in def.Key)
-            keyMap[keyStr[0]] = ParseIngredient(ingredientRef, def.Name);
+            keyMap[keyStr[0]] = ParseIngredient(items, ingredientRef, def.Name);
 
         var grid = new ItemStack?[width * height];
         for (int row = 0; row < height; row++)
@@ -62,7 +63,7 @@ public static class RecipesCrafting
         }
 
         ResourceLocation key = new(def.Namespace, def.Name);
-        ShapedRecipes recipe = new(width, height, grid, ParseResult(def.Result, def.Name));
+        ShapedRecipes recipe = new(width, height, grid, ParseResult(items, def.Result, def.Name));
 
         foreach (var r in Recipes)
         {
@@ -80,19 +81,19 @@ public static class RecipesCrafting
         ShapedRecipeCount++;
     }
 
-    public static void BuildShapelessRecipe(RecipeDefinition def)
+    public static void BuildShapelessRecipe(RecipeDefinition def, RuntimeItemRegistry items)
     {
         if (def.Ingredients == null || def.Ingredients.Length == 0)
             throw new InvalidOperationException("Shapeless recipe has no ingredients.");
 
         var stacks = def.Ingredients
-            .Select(i => ParseIngredient(i, def.Name))
+            .Select(i => ParseIngredient(items, i, def.Name))
             .Where(s => s != null)
             .Select(s => s!)
             .ToList();
 
         ResourceLocation key = new(def.Namespace, def.Name);
-        ShapelessRecipes recipe = new(ParseResult(def.Result, def.Name), stacks);
+        ShapelessRecipes recipe = new(ParseResult(items, def.Result, def.Name), stacks);
 
         foreach (var r in Recipes)
         {
@@ -110,15 +111,15 @@ public static class RecipesCrafting
         ShapelessRecipeCount++;
     }
 
-    private static ItemStack ParseIngredient(string name, string recipeName)
+    private static ItemStack ParseIngredient(RuntimeItemRegistry items, string name, string recipeName)
     {
-        if (ItemLookup.TryGetItem(name, out ItemStack? item, 1, -1)) return item;
+        if (items.TryParse(name, out ItemStack? item, 1, -1)) return item;
         throw new InvalidOperationException($"Recipe '{recipeName}': unknown item/block '{name}'.");
     }
 
-    private static ItemStack ParseResult(ResultRef result, string recipeName)
+    private static ItemStack ParseResult(RuntimeItemRegistry items, ResultRef result, string recipeName)
     {
-        if (ItemLookup.TryGetItem(result.Id, out ItemStack? item, result.Count)) return item;
+        if (items.TryParse(result.Id, out ItemStack? item, result.Count)) return item;
         throw new InvalidOperationException($"Recipe '{recipeName}': unknown item/block result '{result.Id}'.");
     }
 

@@ -78,7 +78,7 @@ public class BlockEntityDispenser : BlockEntity, IInventory
         {
             var itemTag = (NBTTagCompound)itemList.TagAt(itemIndex);
             var slotIndex = itemTag.GetByte("Slot") & 255;
-            if (slotIndex >= 0 && slotIndex < _itemStacks.Length) _itemStacks[slotIndex] = new ItemStack(itemTag);
+            if (slotIndex >= 0 && slotIndex < _itemStacks.Length) _itemStacks[slotIndex] = new ItemStack(World!.Content.Items, itemTag);
         }
     }
 

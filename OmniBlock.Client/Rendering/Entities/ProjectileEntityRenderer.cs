@@ -6,17 +6,18 @@ namespace OmniBlock.Client.Rendering.Entities;
 public class ProjectileEntityRenderer : EntityRenderer
 {
 
-    private readonly int itemIconIndex;
+    private readonly ResourceLocation _item;
     private readonly float scale;
 
-    public ProjectileEntityRenderer(int itemIconIndex, float scale = 0.5F)
+    public ProjectileEntityRenderer(ResourceLocation item, float scale = 0.5F)
     {
-        this.itemIconIndex = itemIconIndex;
+        _item = item;
         this.scale = scale;
     }
 
     public override void Render(Entity target, double x, double y, double z, float yaw, float tickDelta)
     {
+        int itemIconIndex = target.World.Content.Items.Get(_item).GetTextureId(0);
         GLManager.ModelView.Push();
         GLManager.ModelView.Translate((float)x, (float)y, (float)z);
         GLManager.ModelView.Scale(scale, scale, scale);

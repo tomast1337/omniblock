@@ -1,5 +1,7 @@
 namespace OmniBlock.Network.Messages;
 
+using OmniBlock.Registries;
+
 /// <summary>
 ///     The message types the base game registers, in one place so both peers register the same set.
 ///     <para>
@@ -17,11 +19,11 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public static class DefaultMessages
 {
-    public static void RegisterAll(MessageRegistry registry)
+    public static void RegisterAll(MessageRegistry registry, IItemRuntimeView items)
     {
         ArgumentNullException.ThrowIfNull(registry);
 
-        MessageRegistrations.RegisterAll(registry);
+        MessageRegistrations.RegisterAll(registry, items);
 
         // The two messages whose payloads don't fit the Wire.cs field-list shape: a list of chunk
         // position/hash pairs, and a variable-length run of field-masked entity deltas. Both are

@@ -76,14 +76,14 @@ public readonly struct BehaviorBuildContext
 
     public IBlockRuntimeView Blocks { get; }
 
-    internal BehaviorBuildContext WithBlocks(IBlockRuntimeView blocks)
+    internal BehaviorBuildContext WithContent(IBlockRuntimeView blocks, Func<ResourceLocation, Item> resolveItem)
     {
-        return new BehaviorBuildContext(_resolveBlock, _resolveItem, _resolveMaterial, _resolveTerrainTexture, blocks);
+        return new BehaviorBuildContext(blocks.Get, resolveItem, _resolveMaterial, _resolveTerrainTexture, blocks);
     }
 
     internal static BehaviorBuildContext BuiltIns { get; } = new(
-        static key => BlockRegistry.Get(key.Path),
-        static key => Item.ByName(key.Path),
+        static key => throw new InvalidOperationException("The block builder has not supplied its staged block view."),
+        static key => throw new InvalidOperationException("The content builder has not supplied its staged item view."),
         static key => MaterialRegistry.Get(key.Path),
         static key => Atlases.Terrain.IndexOf(key));
 

@@ -39,7 +39,7 @@ public sealed class LoopbackMessageTests
     private static MessageRegistry Negotiated()
     {
         MessageRegistry registry = new();
-        DefaultMessages.RegisterAll(registry);
+        DefaultMessages.RegisterAll(registry, ContentRuntime.Current.Items);
         registry.NegotiateAsServer();
         return registry;
     }

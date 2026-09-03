@@ -123,7 +123,7 @@ internal class DungeonFeature : Feature
                     BlockEntityChest? chest = level.Entities.GetBlockEntity<BlockEntityChest>(chestX, y, chestZ);
                     for (int k = 0; k < 8; ++k)
                     {
-                        ItemStack? loot = PickCheckLootItem(rand);
+                        ItemStack? loot = PickCheckLootItem(level.Content.Items, rand);
                         if (loot != null)
                         {
                             chest!.SetStack(rand.NextInt(chest!.Size), loot);
@@ -139,23 +139,23 @@ internal class DungeonFeature : Feature
         return true;
     }
 
-    private static ItemStack? PickCheckLootItem(JavaRandom rand)
+    private static ItemStack? PickCheckLootItem(Registries.RuntimeItemRegistry items, JavaRandom rand)
     {
         int chance = rand.NextInt(11);
 
         return chance switch
         {
-            0 => new ItemStack(Item.ByName("saddle")),
-            1 => new ItemStack(Item.ByName("ingot_iron"), rand.NextInt(4) + 1),
-            2 => new ItemStack(Item.ByName("bread")),
-            3 => new ItemStack(Item.ByName("wheat"), rand.NextInt(4) + 1),
-            4 => new ItemStack(Item.ByName("gunpowder"), rand.NextInt(4) + 1),
-            5 => new ItemStack(Item.ByName("string"), rand.NextInt(4) + 1),
-            6 => new ItemStack(Item.ByName("bucket")),
-            7 => rand.NextInt(100) == 0 ? new ItemStack(Item.ByName("apple_gold")) : null,
-            8 => rand.NextInt(2) == 0 ? new ItemStack(Item.ByName("redstone"), rand.NextInt(4) + 1) : null,
-            9 => rand.NextInt(10) == 0 ? new ItemStack(Item.Items[Item.ByName("record").Id + rand.NextInt(2)]) : null,
-            10 => new ItemStack(Item.ByName("dye_powder"), 1, 3),
+            0 => new ItemStack(items.Get("omniblock:saddle")),
+            1 => new ItemStack(items.Get("omniblock:ingot_iron"), rand.NextInt(4) + 1),
+            2 => new ItemStack(items.Get("omniblock:bread")),
+            3 => new ItemStack(items.Get("omniblock:wheat"), rand.NextInt(4) + 1),
+            4 => new ItemStack(items.Get("omniblock:gunpowder"), rand.NextInt(4) + 1),
+            5 => new ItemStack(items.Get("omniblock:string"), rand.NextInt(4) + 1),
+            6 => new ItemStack(items.Get("omniblock:bucket")),
+            7 => rand.NextInt(100) == 0 ? new ItemStack(items.Get("omniblock:apple_gold")) : null,
+            8 => rand.NextInt(2) == 0 ? new ItemStack(items.Get("omniblock:redstone"), rand.NextInt(4) + 1) : null,
+            9 => rand.NextInt(10) == 0 ? new ItemStack(items.GetByProtocolId(items.Get("omniblock:record").Id + rand.NextInt(2))) : null,
+            10 => new ItemStack(items.Get("omniblock:dye_powder"), 1, 3),
             _ => null
         };
     }

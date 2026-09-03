@@ -11,13 +11,6 @@ internal class CraftingResultSlot : Slot
     private readonly IInventory craftMatrix;
     private EntityPlayer thePlayer;
 
-    private static readonly Item s_pickaxeWood = Item.ByName("pickaxe_wood");
-    private static readonly Item s_hoeWood = Item.ByName("hoe_wood");
-    private static readonly Item s_bread = Item.ByName("bread");
-    private static readonly Item s_cake = Item.ByName("cake");
-    private static readonly Item s_pickaxeStone = Item.ByName("pickaxe_stone");
-    private static readonly Item s_swordWood = Item.ByName("sword_wood");
-
     public CraftingResultSlot(EntityPlayer player, IInventory craftMatrix, IInventory resultInventory, int slotIndex, int x, int y) : base(resultInventory, slotIndex, x, y)
     {
         thePlayer = player;
@@ -36,7 +29,7 @@ internal class CraftingResultSlot : Slot
         {
             thePlayer.IncreaseStat(Achievements.BuildWorkbench, 1);
         }
-        else if (stack.ItemId == s_pickaxeWood.Id)
+        else if (stack.ItemId == thePlayer.World.Content.Items.Get("omniblock:pickaxe_wood").Id)
         {
             thePlayer.IncreaseStat(Achievements.BuildPickaxe, 1);
         }
@@ -44,23 +37,23 @@ internal class CraftingResultSlot : Slot
         {
             thePlayer.IncreaseStat(Achievements.BuildFurnace, 1);
         }
-        else if (stack.ItemId == s_hoeWood.Id)
+        else if (stack.ItemId == thePlayer.World.Content.Items.Get("omniblock:hoe_wood").Id)
         {
             thePlayer.IncreaseStat(Achievements.BuildHoe, 1);
         }
-        else if (stack.ItemId == s_bread.Id)
+        else if (stack.ItemId == thePlayer.World.Content.Items.Get("omniblock:bread").Id)
         {
             thePlayer.IncreaseStat(Achievements.MakeBread, 1);
         }
-        else if (stack.ItemId == s_cake.Id)
+        else if (stack.ItemId == thePlayer.World.Content.Items.Get("omniblock:cake").Id)
         {
             thePlayer.IncreaseStat(Achievements.MakeCake, 1);
         }
-        else if (stack.ItemId == s_pickaxeStone.Id)
+        else if (stack.ItemId == thePlayer.World.Content.Items.Get("omniblock:pickaxe_stone").Id)
         {
             thePlayer.IncreaseStat(Achievements.CraftStonePickaxe, 1);
         }
-        else if (stack.ItemId == s_swordWood.Id)
+        else if (stack.ItemId == thePlayer.World.Content.Items.Get("omniblock:sword_wood").Id)
         {
             thePlayer.IncreaseStat(Achievements.CraftSword, 1);
         }

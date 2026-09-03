@@ -1,4 +1,5 @@
 using OmniBlock.Items;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Network.Messages;
 
@@ -14,6 +15,9 @@ namespace OmniBlock.Network.Messages;
 /// </summary>
 public sealed class InteractBlockMessage : Message
 {
+    private readonly IItemRuntimeView? _items;
+    public InteractBlockMessage() { }
+    internal InteractBlockMessage(IItemRuntimeView items) => _items = items;
     public static readonly ResourceLocation Id = new(Namespace.Get("omniblock"), "interact_block");
     public int X { get; set; }
 
@@ -40,7 +44,7 @@ public sealed class InteractBlockMessage : Message
         Y = (byte)stream.ReadByte();
         Z = stream.ReadInt();
         Side = (byte)stream.ReadByte();
-        Stack = stream.ReadItemStack();
+        Stack = stream.ReadItemStack(_items ?? throw new InvalidOperationException("No item catalog was supplied for decoding."));
     }
 
     public override void Write(Stream stream)

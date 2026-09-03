@@ -62,7 +62,7 @@ public sealed class ThrownProjectileBehavior : IEntityTicker, IEntityPersistence
     /// </summary>
     public void OnPlayerCollision(Entity self, EntityPlayer player)
     {
-        if (!self.State[_inGround] || !Equals(Thrower(self), player) || self.State[_shake] > 0 || !player.Inventory.AddItemStackToInventory(new ItemStack(Item.ByName("arrow"), 1)))
+        if (!self.State[_inGround] || !Equals(Thrower(self), player) || self.State[_shake] > 0 || !player.Inventory.AddItemStackToInventory(new ItemStack(self.World.Content.Items.Get(new ResourceLocation(Namespace.OmniBlock, "arrow")), 1)))
         {
             return;
         }

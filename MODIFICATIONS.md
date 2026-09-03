@@ -267,3 +267,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-09-01 — Add builder-owned item definitions (Nicolas Vyčas Nery; `67fce6f6fc543362a423b6952daef21b26621c3e`)
 - 2026-09-02 — Implemented the behavior-aligned item model (Nicolas Vyčas Nery; `ab8e18da1944cc3b2366d1dd20d0854480ae8472`)
 - 2026-09-02 — Implemented pre-publication item cross-reference resolution (Nicolas Vyčas Nery; `1291a9ab111c33c70eacad62d3e561932c6a1654`)
+- 2026-09-03 — Refactor item handling and command structure (Nicolas Vyčas Nery; `fcdd8b9821fa4790e5b358491875bfb22aeae9bd`)

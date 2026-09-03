@@ -19,7 +19,9 @@ public abstract partial class Entity : IEntity
 
     protected Entity(IWorldContext world, EntityType? type = null)
     {
+        ArgumentNullException.ThrowIfNull(world);
         World = world;
+        DataSynchronizer = new DataSynchronizer(world.Content.Items);
         SetPosition(0.0D, 0.0D, 0.0D);
         _flags = DataSynchronizer.MakeProperty<byte>(0, 0);
 
@@ -140,7 +142,7 @@ public abstract partial class Entity : IEntity
     public int Air { get; protected set; } = 300;
     public string? CloakUrl { get; set; }
     protected internal bool IsImmuneToFire { get; set; }
-    public DataSynchronizer DataSynchronizer { get; } = new();
+    public DataSynchronizer DataSynchronizer { get; }
     public float MinBrightness { get; set; }
     public bool IsPersistent { get; set; }
     public int ChunkX { get; set; }
@@ -396,7 +398,7 @@ public abstract partial class Entity : IEntity
 
     protected internal void DropItem(int id, int count) => DropItem(id, count, 0.0F);
 
-    protected internal Entity DropItem(int id, int count, float y) => DropItem(new ItemStack(id, count, 0), y);
+    protected internal Entity DropItem(int id, int count, float y) => DropItem(new ItemStack(World.Content.Items, id, count, 0), y);
 
     protected internal Entity DropItem(ItemStack stack, float y)
     {

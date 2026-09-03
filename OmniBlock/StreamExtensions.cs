@@ -1,6 +1,7 @@
 using System.Buffers.Binary;
 using System.Text;
 using OmniBlock.Items;
+using OmniBlock.Registries;
 using OmniBlock.Util;
 
 namespace OmniBlock;
@@ -458,7 +459,7 @@ internal static class StreamExtensions
         ///         should not get the memory.
         ///     </para>
         /// </summary>
-        public ItemStack?[] ReadItemStacks(int maximumCount = ushort.MaxValue)
+        public ItemStack?[] ReadItemStacks(IItemRuntimeView items, int maximumCount = ushort.MaxValue)
         {
             int count = stream.ReadVarInt();
 
@@ -472,14 +473,14 @@ internal static class StreamExtensions
 
             for (int i = 0; i < count; i++)
             {
-                stacks[i] = stream.ReadItemStack();
+                stacks[i] = stream.ReadItemStack(items);
             }
 
             return stacks;
         }
 
         /// <summary>Reads a slot written by <see cref="WriteItemStack" />; null for an empty one.</summary>
-        public ItemStack? ReadItemStack()
+        public ItemStack? ReadItemStack(IItemRuntimeView items)
         {
             short itemId = stream.ReadShort();
             if (itemId < 0)
@@ -490,7 +491,7 @@ internal static class StreamExtensions
             sbyte count = (sbyte)stream.ReadByte();
             short damage = stream.ReadShort();
 
-            return new ItemStack(itemId, count, damage);
+            return new ItemStack(items, itemId, count, damage);
         }
 
         /// <summary>

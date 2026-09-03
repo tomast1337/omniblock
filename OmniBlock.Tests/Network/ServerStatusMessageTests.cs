@@ -75,7 +75,7 @@ public sealed class ServerStatusMessageTests
     public void Is_registered_so_both_peers_agree_on_its_id()
     {
         MessageRegistry registry = new();
-        DefaultMessages.RegisterAll(registry);
+        DefaultMessages.RegisterAll(registry, ContentRuntime.Current.Items);
         registry.NegotiateAsServer();
 
         int id = registry.GetId(new ServerStatusMessage().Key);

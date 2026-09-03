@@ -97,7 +97,7 @@ public static class EntityTestHarness
     {
         if (type == EntityRegistry.ByName("item"))
         {
-            return DroppedItemBehavior.Create(world, 8.5, 65.0, 8.5, new ItemStack(Item.ByName("stick"), 1));
+            return DroppedItemBehavior.Create(world, 8.5, 65.0, 8.5, new ItemStack(ContentRuntime.Current.Items.Get("omniblock:stick"), 1));
         }
 
         if (type == EntityRegistry.ByName("primedtnt"))

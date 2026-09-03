@@ -14,11 +14,13 @@ namespace OmniBlock.Entities;
 public static class EntityDefinitionRegistry
 {
     private static EntityDefinitionJsonLoader? s_loader;
+    internal static IItemRuntimeView Items { get; private set; } = null!;
 
     internal static IEnumerable<EntityDefinition> All => s_loader ?? Enumerable.Empty<EntityDefinition>();
 
-    internal static void Initialize()
+    internal static void Initialize(IItemRuntimeView items)
     {
+        Items = items ?? throw new ArgumentNullException(nameof(items));
         EntityDefinitionJsonLoader loader = new(RegistryDefinitions.Entities.AssetPath, LoadLocations.Assets);
         loader.LoadFromPaths(null, null, null);
         if (loader.HasErrors)

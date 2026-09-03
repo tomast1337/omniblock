@@ -39,7 +39,7 @@ public sealed class ItemReferenceValidationTests
             Assert.True(ContentRuntime.TryGetCurrent(out ContentRuntime? publishedAfter));
             Assert.Same(publishedBefore, publishedAfter);
         }
-        Assert.Null(Item.Items[definition.ProtocolId]);
+        Assert.False(ContentRuntime.Current.Items.TryGetByProtocolId(definition.ProtocolId, out _));
     }
 
     private static ItemDefinition Definition(

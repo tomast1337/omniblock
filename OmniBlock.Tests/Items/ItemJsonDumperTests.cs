@@ -18,7 +18,7 @@ public sealed class ItemJsonDumperTests
             return;
         }
 
-        _ = Item.ByName("stick").Id;
+        _ = ContentRuntime.Current.Items.Get("omniblock:stick").Id;
 
         string outDir = Path.Combine(FindRepoRoot(), "OmniBlock", "assets", "item");
         Directory.CreateDirectory(outDir);

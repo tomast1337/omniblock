@@ -5,6 +5,7 @@ using Brigadier.NET;
 using Brigadier.NET.Builder;
 using Brigadier.NET.Context;
 using Microsoft.Extensions.Logging;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Server.Command;
 
@@ -48,8 +49,8 @@ public abstract partial class Command
     protected static RequiredArgumentBuilder<CommandSource, int> ArgumentInt(string name) => RequiredArgumentBuilder<CommandSource, int>.RequiredArgument(name, Arguments.Integer());
     protected static RequiredArgumentBuilder<CommandSource, string> ArgumentGreedy(string name) => RequiredArgumentBuilder<CommandSource, string>.RequiredArgument(name, Arguments.GreedyString());
     protected static RequiredArgumentBuilder<CommandSource, string> ArgumentString(string name) => RequiredArgumentBuilder<CommandSource, string>.RequiredArgument(name, Arguments.Word());
-    protected static RequiredArgumentBuilder<CommandSource, ItemStack> ArgumentItemStack(string name) => RequiredArgumentBuilder<CommandSource, ItemStack>.RequiredArgument(name, new ArgItemStack());
-    protected static RequiredArgumentBuilder<CommandSource, (int id, int meta)> ArgumentBlock(string name) => RequiredArgumentBuilder<CommandSource, (int id, int meta)>.RequiredArgument(name, new ArgBlock());
+    protected static RequiredArgumentBuilder<CommandSource, ItemStack> ArgumentItemStack(string name, RuntimeItemRegistry items) => RequiredArgumentBuilder<CommandSource, ItemStack>.RequiredArgument(name, new ArgItemStack(items));
+    protected static RequiredArgumentBuilder<CommandSource, (int id, int meta)> ArgumentBlock(string name, RuntimeItemRegistry items) => RequiredArgumentBuilder<CommandSource, (int id, int meta)>.RequiredArgument(name, new ArgBlock(items));
 
 
     public class CommandSource(ICommandHandler handler, string senderName, ICommandOutput output)
