@@ -32,13 +32,20 @@ public sealed class ContentRuntime
         var blockEntries = blocks.ToArray();
         var itemEntries = items.ToArray();
         var blockItemEntries = blockItems.ToArray();
+        var entityEntries = entityTypes.ToArray();
         Blocks = new RuntimeBlockRegistry(blockEntries);
         Items = new RuntimeItemRegistry(itemEntries, blockItemEntries, Blocks);
-        EntityTypes = new RuntimeEntityTypeRegistry(entityTypes);
+        EntityTypes = new RuntimeEntityTypeRegistry(entityEntries);
         Manifest = new ContentCatalogManifest(Blocks.Keys.Select(key =>
                 new KeyValuePair<ResourceLocation, int>(key, Blocks.Get(key).Id)),
             itemEntries.Select(entry => new KeyValuePair<ResourceLocation, int>(entry.Key, entry.Item.Id)),
-            processes.ManifestEntries);
+            processes.ManifestEntries,
+            entityEntries.Select(entry => new KeyValuePair<ResourceLocation, EntityCatalogEntry>(entry.Key,
+                new(entry.Type.ConstructorProviderType ?? ResourceLocation.Parse("omniblock:player"),
+                    entry.Type.Definition?.ComputeCanonicalHash() ?? "",
+                    entry.ProtocolId,
+                    entry.Type.Definition?.SpawnObjectId is > 0 ? entry.Type.Definition.SpawnObjectId : null,
+                    entry.Type.Definition?.GlobalSpawnId is > 0 ? entry.Type.Definition.GlobalSpawnId : null))));
         BlockBehaviorProviders = blockBehaviorProviders;
         ItemBehaviorProviders = itemBehaviorProviders;
         ProcessProviders = processProviders;
@@ -51,7 +58,7 @@ public sealed class ContentRuntime
         Items = source.Items;
         EntityTypes = source.EntityTypes;
         Manifest = new ContentCatalogManifest(source.Manifest.BlockIds, source.Manifest.ItemIds,
-            processes.ManifestEntries);
+            processes.ManifestEntries, source.Manifest.Entities);
         BlockBehaviorProviders = source.BlockBehaviorProviders;
         ItemBehaviorProviders = source.ItemBehaviorProviders;
         ProcessProviders = source.ProcessProviders;

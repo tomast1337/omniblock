@@ -88,7 +88,7 @@ public abstract partial class Entity
         return true;
     }
 
-    private string? GetRegistryEntry() => Type?.Id;
+    private string? GetRegistryEntry() => World.Content.EntityTypes.GetKey(this)?.ToString();
 
     protected abstract void ReadNbt(NBTTagCompound nbt);
 

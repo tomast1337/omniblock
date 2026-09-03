@@ -3,6 +3,7 @@ using OmniBlock.Items;
 using OmniBlock.NBT;
 using OmniBlock.Registries;
 using OmniBlock.Processes;
+using OmniBlock.Entities;
 using System.Text.Json;
 
 namespace OmniBlock.Tests.Catalog;
@@ -79,6 +80,7 @@ public sealed class ContentIdAllocationTests
         Assert.Equal(ContentRuntime.Current.Blocks.Count, ContentRuntime.Current.Manifest.BlockIds.Count);
         Assert.Equal(DefaultRegistries.Items.Count(), ContentRuntime.Current.Manifest.ItemIds.Count);
         Assert.Equal(160, ContentRuntime.Current.Manifest.Processes.Count);
+        Assert.Equal(ContentRuntime.Current.EntityTypes.Count, ContentRuntime.Current.Manifest.Entities.Count);
     }
 
     [Fact]
@@ -176,6 +178,50 @@ public sealed class ContentIdAllocationTests
         Assert.NotEqual(withProcess.Fingerprint, changed.Fingerprint);
     }
 
+    [Fact]
+    public void Entity_manifest_contains_identity_provider_definition_and_wire_mappings()
+    {
+        EntityCatalogEntry zombie = ContentRuntime.Current.Manifest.Entities[
+            ResourceLocation.Parse("omniblock:zombie")];
+        EntityCatalogEntry arrow = ContentRuntime.Current.Manifest.Entities[
+            ResourceLocation.Parse("omniblock:arrow")];
+        EntityCatalogEntry lightning = ContentRuntime.Current.Manifest.Entities[
+            ResourceLocation.Parse("omniblock:lightningbolt")];
+
+        Assert.Equal(ResourceLocation.Parse("omniblock:creature"), zombie.ConstructorProviderType);
+        Assert.Equal(54, zombie.ProtocolId);
+        Assert.Equal(64, zombie.DefinitionHash.Length);
+        Assert.Equal(60, arrow.ObjectSpawnId);
+        Assert.Equal(1, lightning.GlobalSpawnId);
+    }
+
+    [Fact]
+    public void Entity_manifest_round_trips_and_reports_missing_or_changed_content()
+    {
+        ContentCatalogManifest required = EntityManifest(
+            ("omniblock:zombie", "omniblock:creature", "hash-a", 54, null, null),
+            ("example:drone", "example:machine", "hash-b", 90, 72, null));
+        ContentCatalogManifest missingMod = EntityManifest(
+            ("omniblock:zombie", "omniblock:creature", "hash-a", 54, null, null));
+        ContentCatalogManifest remapped = EntityManifest(
+            ("omniblock:zombie", "omniblock:creature", "hash-a", 55, null, null),
+            ("example:drone", "example:machine", "hash-b", 90, 72, null));
+        ContentCatalogManifest restored = ContentCatalogManifest.FromNbt(required.ToNbt());
+
+        CatalogCompatibility missing = missingMod.CompareTo(required);
+        CatalogCompatibility changed = remapped.CompareTo(required);
+        Assert.Equal(required.Entities, restored.Entities);
+        Assert.Equal(required.Fingerprint, restored.Fingerprint);
+        Assert.Contains(ResourceLocation.Parse("example:drone"), missing.MissingEntities);
+        Assert.Contains(ResourceLocation.Parse("example:machine"), missing.MissingEntityConstructorProviders);
+        Assert.Contains("required mods may be absent", missing.Diagnostic);
+        Assert.Contains(changed.ChangedEntities, mismatch => mismatch.Key == "omniblock:zombie");
+        Assert.True(changed.CanLoadWorld);
+        Assert.False(changed.CanSynchronizeClient);
+        Assert.False(missing.CanLoadWorld);
+        Assert.False(missing.CanSynchronizeClient);
+    }
+
     private static BlockDefinition Definition(string name, int id = -1, string ns = "omniblock") => new()
     {
         Name = name,
@@ -199,6 +245,12 @@ public sealed class ContentIdAllocationTests
         processes.Select(entry => new KeyValuePair<ResourceLocation, ProcessCatalogEntry>(
             ResourceLocation.Parse(entry.Key),
             new ProcessCatalogEntry(ResourceLocation.Parse(entry.Type), entry.Hash))));
+
+    private static ContentCatalogManifest EntityManifest(
+        params (string Key, string Constructor, string Hash, int Protocol, int? Object, int? Global)[] entities) =>
+        new([], [], [], entities.Select(entry => new KeyValuePair<ResourceLocation, EntityCatalogEntry>(
+            ResourceLocation.Parse(entry.Key), new(ResourceLocation.Parse(entry.Constructor), entry.Hash,
+                entry.Protocol, entry.Object, entry.Global))));
 
     private static ItemDefinition ItemDefinition(string name, int id = -1, string ns = "omniblock") => new()
     {

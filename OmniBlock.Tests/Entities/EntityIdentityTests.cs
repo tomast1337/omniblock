@@ -48,7 +48,7 @@ public sealed class EntityIdentityTests
         Assert.True(saved.SaveSelfNbt(nbt));
 
         // The on-disk name is the capitalised vanilla one, unchanged by the class going away.
-        Assert.Equal("Cow", nbt.GetString("id"));
+        Assert.Equal("omniblock:cow", nbt.GetString("id"));
 
         Entity? loaded = EntityRegistry.GetEntityFromNbt(nbt, world);
 

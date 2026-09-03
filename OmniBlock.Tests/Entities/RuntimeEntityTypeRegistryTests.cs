@@ -54,6 +54,19 @@ public sealed class RuntimeEntityTypeRegistryTests
     }
 
     [Fact]
+    public void Nbt_uses_the_namespaced_resource_id_instead_of_the_transport_id()
+    {
+        FakeWorldContext world = new(ContentRuntime.Current);
+        Entity cow = world.Content.EntityTypes.Create("omniblock:cow", world);
+        NBTTagCompound nbt = new();
+
+        Assert.True(cow.SaveSelfNbt(nbt));
+
+        Assert.Equal("omniblock:cow", nbt.GetString("id"));
+        Assert.NotEqual(world.Content.EntityTypes.GetProtocolId(cow).ToString(), nbt.GetString("id"));
+    }
+
+    [Fact]
     public void Independently_built_runtimes_have_independent_entity_registries_and_types()
     {
         ContentRuntimeBuilder firstBuilder = ContentRuntimeBuilder.CreateBuiltIns();
@@ -80,6 +93,36 @@ public sealed class RuntimeEntityTypeRegistryTests
         Assert.False(entities.TryCreate(127, world, out _));
         Assert.Throws<KeyNotFoundException>(() => entities.Get("example:missing"));
         Assert.Throws<KeyNotFoundException>(() => entities.GetByProtocolId(127));
+    }
+
+    [Fact]
+    public void Unknown_persisted_entity_can_be_skipped_with_a_missing_mod_warning()
+    {
+        NBTTagCompound nbt = new();
+        nbt.SetString("id", "example:missing_mob");
+        string? warning = null;
+
+        Entity? loaded = ContentRuntime.Current.EntityTypes.ReadFromNbt(
+            nbt, new FakeWorldContext(), UnknownEntityLoadPolicy.SkipWithWarning,
+            message => warning = message);
+
+        Assert.Null(loaded);
+        Assert.Contains("example:missing_mob", warning);
+        Assert.Contains("defining mod may be missing", warning);
+    }
+
+    [Fact]
+    public void Unknown_persisted_entity_can_fail_explicitly()
+    {
+        NBTTagCompound nbt = new();
+        nbt.SetString("id", "example:missing_mob");
+
+        InvalidOperationException error = Assert.Throws<InvalidOperationException>(() =>
+            ContentRuntime.Current.EntityTypes.ReadFromNbt(
+                nbt, new FakeWorldContext(), UnknownEntityLoadPolicy.Fail));
+
+        Assert.Contains("example:missing_mob", error.Message);
+        Assert.Contains("content catalog", error.Message);
     }
 
     private static EntityDefinition Definition(string name, int protocolId) => new()

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Security.Cryptography;
 using OmniBlock.Entities.Behaviors;
 using OmniBlock.Entities.State;
 using OmniBlock.Registries.Data;
@@ -198,6 +199,38 @@ public sealed record EntityDefinition : IDataAsset
     ///     <c>"Type"</c> naming the definition class to deserialize into.
     /// </summary>
     public JsonElement[] Behaviors { get; init; } = [];
+
+    public string ComputeCanonicalHash()
+    {
+        JsonElement value = JsonSerializer.SerializeToElement(this);
+        using MemoryStream stream = new();
+        using (var writer = new Utf8JsonWriter(stream)) WriteCanonical(writer, value);
+        return Convert.ToHexStringLower(SHA256.HashData(stream.ToArray()));
+
+        static void WriteCanonical(Utf8JsonWriter writer, JsonElement element)
+        {
+            switch (element.ValueKind)
+            {
+                case JsonValueKind.Object:
+                    writer.WriteStartObject();
+                    foreach (JsonProperty property in element.EnumerateObject().OrderBy(p => p.Name, StringComparer.Ordinal))
+                    {
+                        writer.WritePropertyName(property.Name);
+                        WriteCanonical(writer, property.Value);
+                    }
+                    writer.WriteEndObject();
+                    break;
+                case JsonValueKind.Array:
+                    writer.WriteStartArray();
+                    foreach (JsonElement child in element.EnumerateArray()) WriteCanonical(writer, child);
+                    writer.WriteEndArray();
+                    break;
+                default:
+                    element.WriteTo(writer);
+                    break;
+            }
+        }
+    }
 
     /// <summary>Set by the loader from the JSON filename.</summary>
     [JsonIgnore]

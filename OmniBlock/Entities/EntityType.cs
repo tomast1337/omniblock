@@ -8,7 +8,8 @@ public class EntityType(
     string id,
     EntityDefinition? definition = null,
     EntityBehaviorSet? behaviors = null,
-    EntityRenderDescriptor? renderDescriptor = null)
+    EntityRenderDescriptor? renderDescriptor = null,
+    ResourceLocation? constructorProviderType = null)
 {
     public Type BaseType { get; } = baseType;
     public string Id { get; } = id;
@@ -27,6 +28,7 @@ public class EntityType(
 
     /// <summary>Client-interpreted presentation descriptor; never resolves a client-side type here.</summary>
     public EntityRenderDescriptor? RenderDescriptor { get; } = renderDescriptor;
+    public ResourceLocation? ConstructorProviderType { get; } = constructorProviderType;
 
     /// <summary>
     ///     Hands the type to the entity it creates, so identity travels with the instance instead of

@@ -13,24 +13,32 @@ public sealed class ContentCatalogManifest
     private readonly FrozenDictionary<ResourceLocation, int> _blockIds;
     private readonly FrozenDictionary<ResourceLocation, int> _itemIds;
     private readonly FrozenDictionary<ResourceLocation, ProcessCatalogEntry> _processes;
+    private readonly FrozenDictionary<ResourceLocation, EntityCatalogEntry> _entities;
 
     public ContentCatalogManifest(IEnumerable<KeyValuePair<ResourceLocation, int>> blockIds)
-        : this(blockIds, [], []) { }
+        : this(blockIds, [], [], []) { }
 
     public ContentCatalogManifest(IEnumerable<KeyValuePair<ResourceLocation, int>> blockIds,
         IEnumerable<KeyValuePair<ResourceLocation, int>> itemIds)
-        : this(blockIds, itemIds, []) { }
+        : this(blockIds, itemIds, [], []) { }
 
     public ContentCatalogManifest(IEnumerable<KeyValuePair<ResourceLocation, int>> blockIds,
         IEnumerable<KeyValuePair<ResourceLocation, int>> itemIds,
         IEnumerable<KeyValuePair<ResourceLocation, ProcessCatalogEntry>> processes)
+        : this(blockIds, itemIds, processes, []) { }
+
+    public ContentCatalogManifest(IEnumerable<KeyValuePair<ResourceLocation, int>> blockIds,
+        IEnumerable<KeyValuePair<ResourceLocation, int>> itemIds,
+        IEnumerable<KeyValuePair<ResourceLocation, ProcessCatalogEntry>> processes,
+        IEnumerable<KeyValuePair<ResourceLocation, EntityCatalogEntry>> entities)
     {
         _blockIds = Validate(blockIds, "block").ToFrozenDictionary();
         _itemIds = Validate(itemIds, "item").ToFrozenDictionary();
         _processes = processes.ToFrozenDictionary(
             pair => pair.Key, pair => pair.Value,
             EqualityComparer<ResourceLocation>.Default);
-        Fingerprint = ComputeFingerprint(_blockIds, _itemIds, _processes);
+        _entities = ValidateEntities(entities).ToFrozenDictionary();
+        Fingerprint = ComputeFingerprint(_blockIds, _itemIds, _processes, _entities);
 
         static Dictionary<ResourceLocation, int> Validate(IEnumerable<KeyValuePair<ResourceLocation, int>> entries, string kind)
         {
@@ -45,11 +53,36 @@ public sealed class ContentCatalogManifest
             }
             return ids;
         }
+
+        static Dictionary<ResourceLocation, EntityCatalogEntry> ValidateEntities(
+            IEnumerable<KeyValuePair<ResourceLocation, EntityCatalogEntry>> entries)
+        {
+            var result = new Dictionary<ResourceLocation, EntityCatalogEntry>();
+            var protocolIds = new Dictionary<int, ResourceLocation>();
+            var objectIds = new Dictionary<int, ResourceLocation>();
+            var globalIds = new Dictionary<int, ResourceLocation>();
+            foreach ((ResourceLocation key, EntityCatalogEntry entry) in entries)
+            {
+                if (!result.TryAdd(key, entry)) throw new ArgumentException($"Duplicate entity catalog name '{key}'.");
+                Add(protocolIds, entry.ProtocolId, "protocol", key);
+                if (entry.ObjectSpawnId is { } objectId) Add(objectIds, objectId, "object-spawn", key);
+                if (entry.GlobalSpawnId is { } globalId) Add(globalIds, globalId, "global-spawn", key);
+            }
+            return result;
+
+            static void Add(Dictionary<int, ResourceLocation> ids, int id, string kind, ResourceLocation key)
+            {
+                if (ids.TryGetValue(id, out ResourceLocation existing))
+                    throw new ArgumentException($"Entity {kind} ID {id} is assigned to both '{existing}' and '{key}'.");
+                ids.Add(id, key);
+            }
+        }
     }
 
     public IReadOnlyDictionary<ResourceLocation, int> BlockIds => _blockIds;
     public IReadOnlyDictionary<ResourceLocation, int> ItemIds => _itemIds;
     public IReadOnlyDictionary<ResourceLocation, ProcessCatalogEntry> Processes => _processes;
+    public IReadOnlyDictionary<ResourceLocation, EntityCatalogEntry> Entities => _entities;
     public string Fingerprint { get; }
 
     public CatalogCompatibility CompareTo(ContentCatalogManifest required)
@@ -65,9 +98,18 @@ public sealed class ContentCatalogManifest
             else if (actual != wanted) changedProcesses.Add(new(key, wanted, actual));
         foreach (ResourceLocation key in _processes.Keys)
             if (!required._processes.ContainsKey(key)) addedProcesses.Add(key);
+        List<ResourceLocation> missingEntities = [], addedEntities = [];
+        List<EntityCatalogMismatch> changedEntities = [];
+        foreach ((ResourceLocation key, EntityCatalogEntry wanted) in required._entities)
+            if (!_entities.TryGetValue(key, out EntityCatalogEntry? actual)) missingEntities.Add(key);
+            else if (actual != wanted) changedEntities.Add(new(key, wanted, actual));
+        foreach (ResourceLocation key in _entities.Keys)
+            if (!required._entities.ContainsKey(key)) addedEntities.Add(key);
         return new(Fingerprint == required.Fingerprint, missingBlocks, addedBlocks, missingItems,
             addedItems, mismatched, missingProcesses, addedProcesses, changedProcesses,
-            [.. missingProcesses.Select(key => required._processes[key].ProviderType).Distinct()]);
+            [.. missingProcesses.Select(key => required._processes[key].ProviderType).Distinct()],
+            missingEntities, addedEntities, changedEntities,
+            [.. missingEntities.Select(key => required._entities[key].ConstructorProviderType).Distinct()]);
 
         static void CompareKind(IReadOnlyDictionary<ResourceLocation, int> actual,
             IReadOnlyDictionary<ResourceLocation, int> wanted, CatalogEntryKind kind,
@@ -96,6 +138,19 @@ public sealed class ContentCatalogManifest
             processList.SetTag(entry);
         }
         tag.SetTag("Processes", processList);
+        NBTTagList entityList = new();
+        foreach ((ResourceLocation key, EntityCatalogEntry entity) in _entities.OrderBy(pair => pair.Key))
+        {
+            NBTTagCompound entry = new();
+            entry.SetString("Name", key.ToString());
+            entry.SetString("Constructor", entity.ConstructorProviderType.ToString());
+            entry.SetString("Hash", entity.DefinitionHash);
+            entry.SetInteger("ProtocolId", entity.ProtocolId);
+            if (entity.ObjectSpawnId is { } objectId) entry.SetInteger("ObjectSpawnId", objectId);
+            if (entity.GlobalSpawnId is { } globalId) entry.SetInteger("GlobalSpawnId", globalId);
+            entityList.SetTag(entry);
+        }
+        tag.SetTag("Entities", entityList);
         tag.SetString("Fingerprint", Fingerprint);
         return tag;
         static NBTTagList Write(IReadOnlyDictionary<ResourceLocation, int> entries)
@@ -113,7 +168,21 @@ public sealed class ContentCatalogManifest
     }
 
     public static ContentCatalogManifest FromNbt(NBTTagCompound tag) =>
-        new(Read(tag, "Blocks"), Read(tag, "Items"), ReadProcesses(tag));
+        new(Read(tag, "Blocks"), Read(tag, "Items"), ReadProcesses(tag), ReadEntities(tag));
+
+    private static IEnumerable<KeyValuePair<ResourceLocation, EntityCatalogEntry>> ReadEntities(NBTTagCompound tag)
+    {
+        NBTTagList list = tag.GetTagList("Entities");
+        for (int i = 0; i < list.TagCount(); i++)
+        {
+            NBTTagCompound entry = (NBTTagCompound)list.TagAt(i);
+            yield return new(ResourceLocation.Parse(entry.GetString("Name")), new(
+                ResourceLocation.Parse(entry.GetString("Constructor")), entry.GetString("Hash"),
+                entry.GetInteger("ProtocolId"),
+                entry.HasKey("ObjectSpawnId") ? entry.GetInteger("ObjectSpawnId") : null,
+                entry.HasKey("GlobalSpawnId") ? entry.GetInteger("GlobalSpawnId") : null));
+        }
+    }
 
     private static IEnumerable<KeyValuePair<ResourceLocation, ProcessCatalogEntry>> ReadProcesses(NBTTagCompound tag)
     {
@@ -138,7 +207,8 @@ public sealed class ContentCatalogManifest
 
     private static string ComputeFingerprint(IReadOnlyDictionary<ResourceLocation, int> blocks,
         IReadOnlyDictionary<ResourceLocation, int> items,
-        IReadOnlyDictionary<ResourceLocation, ProcessCatalogEntry> processes)
+        IReadOnlyDictionary<ResourceLocation, ProcessCatalogEntry> processes,
+        IReadOnlyDictionary<ResourceLocation, EntityCatalogEntry> entities)
     {
         StringBuilder canonical = new();
         Append("block", blocks);
@@ -146,6 +216,11 @@ public sealed class ContentCatalogManifest
         foreach ((ResourceLocation key, ProcessCatalogEntry process) in processes.OrderBy(pair => pair.Key))
             canonical.Append("process:").Append(key).Append('=').Append(process.ProviderType)
                 .Append('@').Append(process.DefinitionHash).Append('\n');
+        foreach ((ResourceLocation key, EntityCatalogEntry entity) in entities.OrderBy(pair => pair.Key))
+            canonical.Append("entity:").Append(key).Append('=').Append(entity.ConstructorProviderType)
+                .Append('@').Append(entity.DefinitionHash).Append(':').Append(entity.ProtocolId)
+                .Append(':').Append(entity.ObjectSpawnId?.ToString() ?? "-")
+                .Append(':').Append(entity.GlobalSpawnId?.ToString() ?? "-").Append('\n');
         return Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())));
         void Append(string kind, IReadOnlyDictionary<ResourceLocation, int> entries)
         {
@@ -157,6 +232,16 @@ public sealed class ContentCatalogManifest
 
 public sealed record ProcessCatalogEntry(ResourceLocation ProviderType, string DefinitionHash);
 public sealed record ProcessCatalogMismatch(ResourceLocation Key, ProcessCatalogEntry Required, ProcessCatalogEntry Actual);
+public sealed record EntityCatalogEntry(ResourceLocation ConstructorProviderType, string DefinitionHash,
+    int ProtocolId, int? ObjectSpawnId, int? GlobalSpawnId);
+public sealed record EntityCatalogMismatch(ResourceLocation Key, EntityCatalogEntry Required, EntityCatalogEntry Actual)
+{
+    public bool DefinitionChanged => Required.ConstructorProviderType != Actual.ConstructorProviderType
+                                     || Required.DefinitionHash != Actual.DefinitionHash;
+    public bool TransportMappingChanged => Required.ProtocolId != Actual.ProtocolId
+                                           || Required.ObjectSpawnId != Actual.ObjectSpawnId
+                                           || Required.GlobalSpawnId != Actual.GlobalSpawnId;
+}
 
 public enum CatalogEntryKind { Block, Item }
 public sealed record CatalogIdMismatch(CatalogEntryKind Kind, ResourceLocation Key, int RequiredId, int ActualId);
@@ -171,12 +256,18 @@ public sealed record CatalogCompatibility(
     IReadOnlyList<ResourceLocation> MissingProcesses,
     IReadOnlyList<ResourceLocation> AdditionalProcesses,
     IReadOnlyList<ProcessCatalogMismatch> ChangedProcesses,
-    IReadOnlyList<ResourceLocation> MissingProcessProviders)
+    IReadOnlyList<ResourceLocation> MissingProcessProviders,
+    IReadOnlyList<ResourceLocation> MissingEntities,
+    IReadOnlyList<ResourceLocation> AdditionalEntities,
+    IReadOnlyList<EntityCatalogMismatch> ChangedEntities,
+    IReadOnlyList<ResourceLocation> MissingEntityConstructorProviders)
 {
-    public IReadOnlyList<ResourceLocation> MissingEntries => [.. MissingBlocks, .. MissingItems, .. MissingProcesses];
-    public IReadOnlyList<ResourceLocation> AdditionalEntries => [.. AdditionalBlocks, .. AdditionalItems, .. AdditionalProcesses];
+    public IReadOnlyList<ResourceLocation> MissingEntries => [.. MissingBlocks, .. MissingItems, .. MissingProcesses, .. MissingEntities];
+    public IReadOnlyList<ResourceLocation> AdditionalEntries => [.. AdditionalBlocks, .. AdditionalItems, .. AdditionalProcesses, .. AdditionalEntities];
     /// <summary>Additional content is safe for a save; missing or remapped content is not.</summary>
-    public bool CanLoadWorld => MissingEntries.Count == 0 && IdMismatches.Count == 0 && ChangedProcesses.Count == 0;
+    public bool CanLoadWorld => MissingEntries.Count == 0 && IdMismatches.Count == 0
+                                && ChangedProcesses.Count == 0
+                                && ChangedEntities.All(static mismatch => !mismatch.DefinitionChanged);
     /// <summary>Network peers require precisely the same numeric catalog.</summary>
     public bool CanSynchronizeClient => IsExactMatch;
     public string Diagnostic => string.Join("; ", new[]
@@ -185,6 +276,9 @@ public sealed record CatalogCompatibility(
         MissingItems.Count == 0 ? null : $"missing items: {string.Join(", ", MissingItems)}",
         MissingProcesses.Count == 0 ? null : $"missing processes: {string.Join(", ", MissingProcesses)}",
         MissingProcessProviders.Count == 0 ? null : $"required process providers: {string.Join(", ", MissingProcessProviders)}",
+        MissingEntities.Count == 0 ? null : $"missing entity types (required mods may be absent): {string.Join(", ", MissingEntities)}",
+        MissingEntityConstructorProviders.Count == 0 ? null : $"required entity constructor providers: {string.Join(", ", MissingEntityConstructorProviders)}",
+        ChangedEntities.Count == 0 ? null : $"changed entity definitions: {string.Join(", ", ChangedEntities.Select(m => m.Key))}",
         ChangedProcesses.Count == 0 ? null : $"changed processes: {string.Join(", ", ChangedProcesses.Select(m => $"{m.Key} ({m.Required.ProviderType} -> {m.Actual.ProviderType})"))}",
         IdMismatches.Count == 0 ? null : $"remapped entries: {string.Join(", ", IdMismatches.Select(m => $"{m.Kind.ToString().ToLowerInvariant()} {m.Key} ({m.RequiredId} -> {m.ActualId})"))}"
     }.Where(static value => value is not null));

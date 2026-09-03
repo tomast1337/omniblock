@@ -2,12 +2,14 @@ using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 using OmniBlock.NBT;
 using OmniBlock.Worlds.Core.Systems;
+using Microsoft.Extensions.Logging;
 
 namespace OmniBlock.Entities;
 
 /// <summary>Immutable indexes and construction operations for one finalized entity catalog.</summary>
 public sealed class RuntimeEntityTypeRegistry : IEntityTypeBuildView
 {
+    private static readonly ILogger s_logger = Log.Instance.For<RuntimeEntityTypeRegistry>();
     private readonly FrozenDictionary<ResourceLocation, EntityType> _byKey;
     private readonly FrozenDictionary<int, EntityType> _byProtocolId;
     private readonly FrozenDictionary<int, EntityType> _bySpawnObjectId;
@@ -103,9 +105,33 @@ public sealed class RuntimeEntityTypeRegistry : IEntityTypeBuildView
     public ResourceLocation? GetKey(Entity entity) =>
         entity.Type is { } type ? _keysByType.GetValueOrDefault(type) : null;
 
-    public Entity? ReadFromNbt(NBTTagCompound nbt, IWorldContext world)
+    public Entity? ReadFromNbt(
+        NBTTagCompound nbt,
+        IWorldContext world,
+        UnknownEntityLoadPolicy unknownPolicy = UnknownEntityLoadPolicy.SkipWithWarning,
+        Action<string>? reportWarning = null)
     {
-        if (!TryCreate(nbt.GetString("id"), world, out Entity? entity, Get("omniblock:player"))) return null;
+        string persistedId = nbt.GetString("id");
+        EntityType? type = null;
+        try
+        {
+            TryGet(persistedId, out type);
+        }
+        catch (Exception error) when (error is ArgumentException or FormatException)
+        {
+            // Invalid resource names follow the same policy as names whose defining mod is absent.
+        }
+        if (type is null)
+        {
+            string diagnostic =
+                $"Cannot load persisted entity type '{persistedId}': it is not present in the content catalog; the defining mod may be missing.";
+            if (unknownPolicy == UnknownEntityLoadPolicy.Fail)
+                throw new InvalidOperationException(diagnostic);
+            (reportWarning ?? (message => s_logger.LogWarning(message)))(diagnostic);
+            return null;
+        }
+        if (ReferenceEquals(type, Get("omniblock:player"))) return null;
+        Entity entity = type.Create(world);
         entity.Read(nbt);
         return entity;
     }
@@ -118,4 +144,10 @@ public sealed class RuntimeEntityTypeRegistry : IEntityTypeBuildView
         if (id != 0 && !index.TryAdd(id, type))
             throw new ArgumentException($"Duplicate entity {kind} id {id} for '{key}'.");
     }
+}
+
+public enum UnknownEntityLoadPolicy
+{
+    SkipWithWarning,
+    Fail
 }

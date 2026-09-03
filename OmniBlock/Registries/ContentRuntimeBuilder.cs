@@ -285,8 +285,9 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         // Establish every key before behavior construction so forward entity references can resolve.
         foreach ((ResourceLocation key, EntityDefinition definition) in definitionsByKey)
         {
-            IEntityConstructorProvider constructor = ConstructorFor(key, definition);
-            EntityType draft = new(constructor.Create, constructor.RuntimeType, DisplayName(key), definition);
+            (ResourceLocation constructorType, IEntityConstructorProvider constructor) = ConstructorFor(key, definition);
+            EntityType draft = new(constructor.Create, constructor.RuntimeType, DisplayName(key), definition,
+                constructorProviderType: constructorType);
             _entityTypesByKey.Add(key, draft);
             _entityTypesByProtocolId.Add(definition.ProtocolId, draft);
         }
@@ -303,9 +304,10 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
                 EntityRenderDescriptor? renderDescriptor = definition.Renderer is { } renderer
                     ? EntityRenderDescriptor.Compile(renderer)
                     : null;
-                IEntityConstructorProvider constructor = ConstructorFor(key, definition);
+                (ResourceLocation constructorType, IEntityConstructorProvider constructor) = ConstructorFor(key, definition);
                 EntityType finalized = new(
-                    constructor.Create, draft.BaseType, draft.Id, definition, behaviors, renderDescriptor);
+                    constructor.Create, draft.BaseType, draft.Id, definition, behaviors, renderDescriptor,
+                    constructorType);
                 _entityTypesByKey[key] = finalized;
                 _entityTypesByProtocolId[definition.ProtocolId] = finalized;
                 _entityTypes.Add((key, definition, finalized));
@@ -319,7 +321,8 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         ResourceLocation playerKey = ResourceLocation.Parse("omniblock:player");
         EntityType player = new(
             static (_, _) => throw new NotSupportedException("Players must be created via ServerPlayerEntity constructor"),
-            typeof(ServerPlayerEntity), "Player");
+            typeof(ServerPlayerEntity), "Player",
+            constructorProviderType: ResourceLocation.Parse("omniblock:player"));
         _entityTypesByKey.Add(playerKey, player);
         _entityTypesByProtocolId.Add(100, player);
         _entityTypes.Add((playerKey, null, player));
@@ -335,7 +338,8 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
         SyncedPropertyFactory.Declare(synchronizer, definition.SyncedProperties, key.ToString());
     }
 
-    private IEntityConstructorProvider ConstructorFor(ResourceLocation key, EntityDefinition definition)
+    private (ResourceLocation Type, IEntityConstructorProvider Provider) ConstructorFor(
+        ResourceLocation key, EntityDefinition definition)
     {
         ResourceLocation providerType = definition.Constructor is { Length: > 0 } declared
             ? ResourceLocation.Parse(declared)
@@ -348,7 +352,7 @@ public sealed class ContentRuntimeBuilder : IItemRuntimeView, IEntityTypeBuildVi
             };
         try
         {
-            return EntityConstructorProviders.Get(providerType);
+            return (providerType, EntityConstructorProviders.Get(providerType));
         }
         catch (KeyNotFoundException error)
         {
