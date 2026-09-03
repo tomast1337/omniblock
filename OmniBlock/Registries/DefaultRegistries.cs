@@ -74,13 +74,16 @@ public static class DefaultRegistries
         Stats.Stats.InitializeItemStats(content);
         Stats.Stats.InitializeExtendedItemStats(content);
 
-        // Must precede the Bootstrap below: EntityRegistry's static fields resolve each mob's
-        // EntityDefinition from here as they run, and touching the class is what triggers them.
-        EntityDefinitionRegistry.Initialize(content);
+        var entityLoader = new EntityDefinitionJsonLoader(RegistryDefinitions.Entities.AssetPath, LoadLocations.Assets);
+        entityLoader.LoadFromPaths(null, null, null);
+        if (entityLoader.HasErrors)
+            throw new AssetLoadException(entityLoader.FirstErrorMessage ?? "Failed to load entity definitions.");
+        foreach (EntityDefinition definition in entityLoader) content.AddEntityDefinition(definition);
 
         // Blocks and entity definitions now exist, so every item cross-reference can be resolved
         // and the item catalog frozen before entity constructors consume item behaviors.
         content.FinalizeItemsForBootstrap();
+        content.BuildEntitiesForBootstrap();
 
         // Compile the built-in process catalog as part of the same atomic content snapshot. The
         // legacy dynamic recipe registry remains registered below until its runtime consumers move.
@@ -90,7 +93,6 @@ public static class DefaultRegistries
             throw new AssetLoadException(processLoader.FirstErrorMessage ?? "Failed to load process definitions.");
         foreach (ProcessDefinition definition in processLoader) content.AddProcessDefinition(definition);
 
-        EntityTypes.Bootstrap(typeof(EntityRegistry));
         Biomes.Bootstrap(typeof(Biome));
 
         // After both registries above: every spawn entry names an entity type that must already exist.

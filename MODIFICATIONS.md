@@ -280,3 +280,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-09-03 — Implemented process compatibility rules (Nicolas Vyčas Nery; `49fa29e240b443209460e3243cb437d5a8c8e15a`)
 - 2026-09-03 — Removed the legacy recipe-global layer (Nicolas Vyčas Nery; `a57216821f635af65414d7ae938c550472d0d2c4`)
 - 2026-09-03 — Implemented entity build dependencies and namespaced behavior providers (Nicolas Vyčas Nery; `a2799422c68f915d29cd140dd59ca5e3f600daa3`)
+- 2026-09-03 — Implemented builder-owned entity definition construction. (Nicolas Vyčas Nery; `04856f9c1c2a697aa22b6fba4b5054c0773c5a07`)
