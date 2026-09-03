@@ -48,13 +48,40 @@ public sealed class RuntimeProcessRegistryTests
         RuntimeItemRegistry items = ContentRuntime.Current.Items;
         ItemStack input = new(items.Get("omniblock:iron_ore"));
 
-        ItemStack? first = ContentRuntime.Current.Processes.Smelting.Find(input);
-        ItemStack? second = ContentRuntime.Current.Processes.Smelting.Find(input);
+        ICompiledSmeltingProcess? process = ContentRuntime.Current.Processes.Smelting.Find(input);
+        ItemStack? first = ContentRuntime.Current.Processes.Smelting.Smelt(input);
+        ItemStack? second = ContentRuntime.Current.Processes.Smelting.Smelt(input);
 
+        Assert.NotNull(process);
         Assert.NotNull(first);
         Assert.NotNull(second);
+        Assert.Equal(items.Get("omniblock:iron_ore").Id, process.Input.Item.Id);
+        Assert.Equal(items.Get("omniblock:ingot_iron").Id, process.Output.Item.Id);
         Assert.Same(items.Get("omniblock:ingot_iron"), first.GetItem());
         Assert.NotSame(first, second);
+    }
+
+    [Fact]
+    public void Compiled_processes_describe_matching_and_results_without_machine_execution_state()
+    {
+        RuntimeItemRegistry items = ContentRuntime.Current.Items;
+        var input = new InventoryCrafting(new TestScreenHandler(), 3, 3);
+        input.SetStack(0, new ItemStack(items.Get("omniblock:planks")));
+        input.SetStack(3, new ItemStack(items.Get("omniblock:planks")));
+
+        ICompiledCraftingProcess? process = ContentRuntime.Current.Processes.Crafting.Find(input);
+
+        Assert.NotNull(process);
+        Assert.True(process.Matches(input));
+        Assert.Equal(2, process.IngredientCount);
+        Assert.Same(items.Get("omniblock:stick"), process.Output.Item);
+        Assert.Equal(4, process.Output.Count);
+        Assert.DoesNotContain(typeof(ICompiledProcess).GetMethods(), method =>
+            method.Name is "Tick" or "Execute" or "Advance");
+        Assert.DoesNotContain(typeof(ICompiledProcess).Assembly.GetTypes()
+            .Where(type => type.GetInterfaces().Contains(typeof(ICompiledProcess)))
+            .SelectMany(type => type.GetProperties()), property =>
+                property.Name is "Progress" or "Inventory" or "NetworkState");
     }
 
     [Fact]

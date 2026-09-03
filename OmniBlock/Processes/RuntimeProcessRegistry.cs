@@ -57,35 +57,41 @@ public sealed class RuntimeProcessRegistry
 
 public sealed class RuntimeCraftingProcessView
 {
-    private readonly CompiledCraftingProcess[] _recipes;
+    private readonly ICompiledCraftingProcess[] _recipes;
 
     internal RuntimeCraftingProcessView(IEnumerable<CompiledCraftingProcess> recipes) =>
         _recipes = [.. recipes];
 
     public int Count => _recipes.Length;
 
-    public ItemStack? Craft(InventoryCrafting input)
+    public ICompiledCraftingProcess? Find(InventoryCrafting input)
     {
         ArgumentNullException.ThrowIfNull(input);
-        foreach (CompiledCraftingProcess process in _recipes)
-            if (process.Recipe.Matches(input)) return process.Recipe.GetCraftingResult(input);
+        foreach (ICompiledCraftingProcess process in _recipes)
+            if (process.Matches(input)) return process;
         return null;
     }
+
+    public ItemStack? Craft(InventoryCrafting input) => Find(input)?.CreateResult();
 }
 
 public sealed class RuntimeSmeltingProcessView
 {
-    private readonly FrozenDictionary<int, CompiledSmeltingProcess> _byInputItemId;
+    private readonly FrozenDictionary<int, ICompiledSmeltingProcess> _byInputItemId;
 
     internal RuntimeSmeltingProcessView(IEnumerable<CompiledSmeltingProcess> processes) =>
-        _byInputItemId = processes.ToFrozenDictionary(process => process.Input.ItemId);
+        _byInputItemId = processes.ToFrozenDictionary(
+            process => process.Input.Item.Id,
+            process => (ICompiledSmeltingProcess)process);
 
     public int Count => _byInputItemId.Count;
 
-    public ItemStack? Find(ItemStack input) => Find(input.ItemId);
+    public ICompiledSmeltingProcess? Find(ItemStack input) =>
+        _byInputItemId.TryGetValue(input.ItemId, out ICompiledSmeltingProcess? process)
+        && process.Matches(input) ? process : null;
 
-    public ItemStack? Find(int inputItemId) =>
-        _byInputItemId.TryGetValue(inputItemId, out CompiledSmeltingProcess? process)
-            ? process.Output.Copy()
-            : null;
+    public ICompiledSmeltingProcess? Find(int inputItemId) =>
+        _byInputItemId.GetValueOrDefault(inputItemId);
+
+    public ItemStack? Smelt(ItemStack input) => Find(input)?.CreateResult();
 }

@@ -20,13 +20,23 @@ public static class BuiltInProcessProviders
 internal sealed record CompiledCraftingProcess(
     ResourceLocation Id,
     ResourceLocation ProviderType,
-    IRecipe Recipe) : ICompiledProcess;
+    IRecipe Recipe) : ICompiledCraftingProcess
+{
+    public ProcessItemStack Output { get; } = ProcessItemStack.FromStack(Recipe.GetRecipeOutput());
+    public int IngredientCount => Recipe.GetRecipeSize();
+    public bool Matches(OmniBlock.Inventories.InventoryCrafting input) => Recipe.Matches(input);
+    public ItemStack CreateResult() => Output.CreateStack();
+}
 
 internal sealed record CompiledSmeltingProcess(
     ResourceLocation Id,
     ResourceLocation ProviderType,
-    ItemStack Input,
-    ItemStack Output) : ICompiledProcess;
+    ProcessItemStack Input,
+    ProcessItemStack Output) : ICompiledSmeltingProcess
+{
+    public bool Matches(ItemStack input) => Input.Matches(input);
+    public ItemStack CreateResult() => Output.CreateStack();
+}
 
 internal sealed class ShapedCraftingProcessProvider : IProcessProvider
 {
@@ -109,8 +119,8 @@ internal sealed class SmeltingProcessProvider : IProcessProvider
         return new CompiledSmeltingProcess(
             id,
             ProcessTypes.Smelting,
-            context.ResolveItemStack(schema.Input, defaultMeta: -1),
-            ProcessJson.ResolveResult(schema.Result, context));
+            ProcessItemStack.FromStack(context.ResolveItemStack(schema.Input, defaultMeta: -1)),
+            ProcessItemStack.FromStack(ProcessJson.ResolveResult(schema.Result, context)));
     }
 
     public void Validate(IReadOnlyList<ICompiledProcess> processes)
@@ -118,9 +128,9 @@ internal sealed class SmeltingProcessProvider : IProcessProvider
         var inputs = new Dictionary<int, ResourceLocation>();
         foreach (CompiledSmeltingProcess process in processes.Cast<CompiledSmeltingProcess>())
         {
-            if (!inputs.TryAdd(process.Input.ItemId, process.Id))
+            if (!inputs.TryAdd(process.Input.Item.Id, process.Id))
                 throw new InvalidOperationException(
-                    $"Processes '{inputs[process.Input.ItemId]}' and '{process.Id}' overlap on input item {process.Input.ItemId}.");
+                    $"Processes '{inputs[process.Input.Item.Id]}' and '{process.Id}' overlap on input item {process.Input.Item.Id}.");
         }
     }
 }
