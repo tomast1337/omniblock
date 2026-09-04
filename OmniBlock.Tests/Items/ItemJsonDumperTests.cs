@@ -28,10 +28,9 @@ public sealed class ItemJsonDumperTests
         File.WriteAllText(Path.Combine(outDir, "_defaults.json"), JsonSerializer.Serialize(defaults, s_options));
 
         int count = 0;
-        foreach (ItemDefinition definition in DefaultRegistries.Items)
+        foreach (ItemDefinition definition in TestItemCatalog.LoadDefinitions())
         {
-            ResourceLocation? location = DefaultRegistries.Items.GetKey(definition);
-            if (location is null) continue;
+            ResourceLocation location = new(definition.Namespace, definition.Name);
 
             JsonElement full = JsonSerializer.SerializeToElement(definition, s_options);
             JsonElement minimal = JsonMerge.StripDefaults(full, defaults, s_options, s_alwaysKeepFields);

@@ -23,9 +23,6 @@ public static class DefaultRegistries
     public static readonly IRegistry<IGameRule> GameRules =
         new IndexedRegistry<IGameRule>(ResourceLocation.Parse("game_rules"));
 
-    public static readonly IndexedRegistry<ItemDefinition> Items =
-        new IndexedRegistry<ItemDefinition>(ResourceLocation.Parse("items"));
-
     public static void Initialize(ContentRuntimeBuilder content)
     {
         ArgumentNullException.ThrowIfNull(content);
@@ -55,7 +52,6 @@ public static class DefaultRegistries
 
         foreach (ItemDefinition definition in ContentIdAllocator.AssignItemIds(itemBootLoader))
         {
-            Items.Register(definition.ProtocolId, new ResourceLocation(definition.Namespace, definition.Name), definition);
             content.AddItemDefinition(definition);
         }
 
@@ -108,7 +104,6 @@ public static class DefaultRegistries
         RegistryAccess.AddBuiltIn(RegistryKeys.Biomes, Biomes);
         RegistryAccess.AddBuiltIn(RegistryKeys.BlockEntityTypes, BlockEntityTypes);
         RegistryAccess.AddBuiltIn(RegistryKeys.GameRules, GameRules);
-        RegistryAccess.AddBuiltIn(RegistryKeys.Items, Items);
         RegistryAccess.AddDynamic(RegistryDefinitions.GameModes);
         RegistryAccess.AddDynamic(RegistryDefinitions.Recipes);
         RegistryAccess.AddDynamic(RegistryDefinitions.ToolMaterials);
@@ -122,6 +117,5 @@ public static class DefaultRegistries
     {
         Biomes.Freeze();
         BlockEntityTypes.Freeze();
-        Items.Freeze();
     }
 }

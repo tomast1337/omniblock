@@ -16,8 +16,8 @@ namespace OmniBlock.Client.Diagnostics.Windows;
 internal sealed class ItemBlockBrowserWindow : DebugWindow
 {
     private readonly record struct BrowserEntry(
-        string GiveName, string DisplayName, int ProtocolId, bool IsBlock,
-        uint AtlasTexture, Vector2 Uv0, Vector2 Uv1);
+        ResourceLocation Key, string DisplayName, int ProtocolId, bool IsBlock,
+        TextureHandle AtlasTexture, Item Item, Block? Block);
 
     private enum Filter { All, Items, Blocks }
 
@@ -28,88 +28,71 @@ internal sealed class ItemBlockBrowserWindow : DebugWindow
     private string _search = string.Empty;
     private Filter _filter = Filter.All;
     private int _giveCount = 1;
+    private int _metadata;
+    private BrowserEntry? _selected;
 
     public ItemBlockBrowserWindow(DebugWindowContext ctx)
     {
         _ctx = ctx;
 
-        uint itemsTexture = (uint)ctx.TextureManager.GetTextureId("/gui/items.png").Id;
-        uint terrainTexture = (uint)ctx.TextureManager.GetTextureId("/terrain.png").Id;
+        TextureHandle itemsTexture = ctx.TextureManager.GetTextureId("/gui/items.png");
+        TextureHandle terrainTexture = ctx.TextureManager.GetTextureId("/terrain.png");
 
-        foreach (ItemDefinition def in DefaultRegistries.Items)
+        foreach ((ResourceLocation location, int protocolId) in ctx.Content.Manifest.ItemIds)
         {
-            if (DefaultRegistries.Items.GetKey(def) is not { } location) continue;
-            if (!ctx.Content.Items.TryGetByProtocolId(def.ProtocolId, out Item? item) || item is null) continue;
+            if (!ctx.Content.Items.TryGetByProtocolId(protocolId, out Item? item) || item is null) continue;
 
-            _entries.Add(MakeEntry(location.Path, item.GetStatName(), def.ProtocolId, false, itemsTexture, item.GetTextureId(0)));
+            _entries.Add(new BrowserEntry(location, item.GetStatName(), protocolId, false, itemsTexture, item, null));
         }
 
-        for (int id = 0; id < BlockRegistry.ProtocolIdCapacity; id++)
+        foreach (ResourceLocation location in ctx.Content.Blocks.Keys)
         {
-            if (!BlockRegistry.TryGetByProtocolId(id, out Block? block)) continue;
-            if (BlockRegistry.TryGetName(id) is not { } name) continue;
+            Block block = ctx.Content.Blocks.Get(location);
+            if (!ctx.Content.Items.TryGetByProtocolId(block.Id, out Item? item) || item is null) continue;
 
-            _entries.Add(MakeEntry(name, block.TranslateBlockName(), id, true, terrainTexture, block.GetTexture(2.ToSide())));
+            _entries.Add(new BrowserEntry(location, block.TranslateBlockName(), block.Id, true, terrainTexture, item, block));
         }
 
-        _entries.Sort((a, b) => string.Compare(a.GiveName, b.GiveName, StringComparison.OrdinalIgnoreCase));
-    }
-
-    private static BrowserEntry MakeEntry(string giveName, string displayName, int protocolId, bool isBlock, uint atlasTexture, int textureIndex)
-    {
-        Vector2 uv0 = new(textureIndex % 16 / 16f, textureIndex / 16 / 16f);
-        Vector2 uv1 = uv0 + new Vector2(1 / 16f, 1 / 16f);
-
-        return new BrowserEntry(giveName, displayName, protocolId, isBlock, atlasTexture, uv0, uv1);
+        _entries.Sort((a, b) => string.Compare(a.Key.ToString(), b.Key.ToString(), StringComparison.OrdinalIgnoreCase));
     }
 
     protected override void OnDraw()
     {
-        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-        ImGui.InputText("##Search", ref _search, 256);
+        ImGui.SetNextItemWidth(Math.Max(180, ImGui.GetContentRegionAvail().X - 245));
+        ImGui.InputTextWithHint("##catalog_search", "Search name, namespace, or protocol ID...", ref _search, 256);
+        ImGui.SameLine();
+        if (ImGui.Button("Clear")) _search = string.Empty;
 
+        ImGui.TextUnformatted("Show:");
+        ImGui.SameLine();
         if (ImGui.RadioButton("All", _filter == Filter.All)) _filter = Filter.All;
         ImGui.SameLine();
         if (ImGui.RadioButton("Items", _filter == Filter.Items)) _filter = Filter.Items;
         ImGui.SameLine();
         if (ImGui.RadioButton("Blocks", _filter == Filter.Blocks)) _filter = Filter.Blocks;
 
-        ImGui.SetNextItemWidth(120f);
-        ImGui.InputInt("Give count", ref _giveCount);
-        _giveCount = Math.Clamp(_giveCount, 1, 64);
-
         ImGui.Separator();
 
         bool canGive = _ctx.Player is not null;
-        ImGuiTextSafe.TextDisabled(canGive
-            ? "Click a tile to give yourself some. Hover for details."
-            : "Not in a world — hover to inspect, click-to-give is unavailable.");
+        List<BrowserEntry> visible = _entries.Where(IsVisible).ToList();
+        ImGuiTextSafe.TextDisabled($"{visible.Count} of {_entries.Count} entries · click an icon to inspect");
 
-        if (ImGui.BeginChild("ItemBlockBrowserScrollview", Vector2.Zero))
+        float inspectorWidth = Math.Clamp(ImGui.GetContentRegionAvail().X * 0.34f, 230f, 330f);
+        if (ImGui.BeginChild("ItemBlockCatalog", new Vector2(-inspectorWidth - 8, 0)))
         {
-            const float iconSize = 28f;
-            const float cellPadding = 16f;
-            const float cellSize = iconSize + cellPadding;
+            const float iconSize = 32f;
+            const float cellPadding = 10f;
+            const float cellSize = iconSize + cellPadding + 8f;
 
-            ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(cellPadding, cellPadding));
+            ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(cellPadding, cellPadding + 8));
 
             int columns = Math.Max(1, (int)(ImGui.GetContentRegionAvail().X / cellSize));
             int column = 0;
 
-            foreach (BrowserEntry entry in _entries)
+            foreach (BrowserEntry entry in visible)
             {
-                if (_filter == Filter.Items && entry.IsBlock) continue;
-                if (_filter == Filter.Blocks && !entry.IsBlock) continue;
-
-                if (!string.IsNullOrWhiteSpace(_search) &&
-                    !entry.GiveName.Contains(_search, StringComparison.OrdinalIgnoreCase) &&
-                    !entry.DisplayName.Contains(_search, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
                 if (column > 0) ImGui.SameLine();
-                DrawCell(entry, canGive, iconSize);
+                DrawCell(entry, iconSize);
                 column = (column + 1) % columns;
             }
 
@@ -122,34 +105,119 @@ internal sealed class ItemBlockBrowserWindow : DebugWindow
         // window in the invisible state left ImGui's window stack unbalanced, and the very next
         // End() elsewhere asserted "Must call EndChild() and not End()!".
         ImGui.EndChild();
+        ImGui.SameLine();
+
+        if (ImGui.BeginChild("ItemBlockInspector", Vector2.Zero))
+            DrawInspector(canGive);
+        ImGui.EndChild();
     }
 
-    private void DrawCell(BrowserEntry entry, bool canGive, float iconSize)
+    private bool IsVisible(BrowserEntry entry)
     {
-        string id = (entry.IsBlock ? "block_" : "item_") + entry.GiveName;
+        if (_filter == Filter.Items && entry.IsBlock) return false;
+        if (_filter == Filter.Blocks && !entry.IsBlock) return false;
+        if (string.IsNullOrWhiteSpace(_search)) return true;
 
-        if (!canGive) ImGui.BeginDisabled();
+        string query = _search.Trim();
+        return entry.Key.ToString().Contains(query, StringComparison.OrdinalIgnoreCase) ||
+               entry.Key.Path.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+               entry.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+               entry.ProtocolId.ToString().Contains(query, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void DrawCell(BrowserEntry entry, float iconSize)
+    {
+        string id = (entry.IsBlock ? "block_" : "item_") + entry.Key;
+        int textureIndex = entry.Block?.GetTexture(2.ToSide()) ?? entry.Item.GetTextureId(_metadata);
+        Vector2 uv0 = new(textureIndex % 16 / 16f, textureIndex / 16 / 16f);
+        Vector2 uv1 = uv0 + new Vector2(1 / 16f, 1 / 16f);
 
         bool clicked;
+        ulong textureId = _ctx.GetImGuiTextureId(entry.AtlasTexture);
         unsafe
         {
-            clicked = ImGui.ImageButton(id, new ImTextureRef(null, new ImTextureID((ulong)entry.AtlasTexture)), new Vector2(iconSize, iconSize), entry.Uv0, entry.Uv1);
+            clicked = textureId != 0 && ImGui.ImageButton(id, new ImTextureRef(null, new ImTextureID(textureId)), new Vector2(iconSize, iconSize), uv0, uv1);
         }
 
-        if (!canGive) ImGui.EndDisabled();
-
-        if (clicked && canGive)
+        if (clicked)
         {
-            _ctx.Player?.SendChatMessage($"/give {entry.GiveName} {_giveCount}");
+            _selected = entry;
+            _metadata = 0;
         }
 
         if (ImGui.IsItemHovered())
         {
             ImGui.BeginTooltip();
             ImGuiTextSafe.Text(entry.DisplayName);
-            ImGuiTextSafe.TextDisabled(entry.GiveName);
+            ImGuiTextSafe.TextDisabled(entry.Key.ToString());
             ImGuiTextSafe.TextDisabled($"id {entry.ProtocolId} · {(entry.IsBlock ? "block" : "item")}");
             ImGui.EndTooltip();
         }
+    }
+
+    private void DrawInspector(bool canGive)
+    {
+        if (_selected is not { } entry)
+        {
+            ImGuiTextSafe.TextDisabled("Select an entry to inspect it.");
+            return;
+        }
+
+        int textureIndex = entry.Block?.GetTexture(2.ToSide()) ?? entry.Item.GetTextureId(_metadata);
+        Vector2 uv0 = new(textureIndex % 16 / 16f, textureIndex / 16 / 16f);
+        Vector2 uv1 = uv0 + new Vector2(1 / 16f, 1 / 16f);
+        ulong textureId = _ctx.GetImGuiTextureId(entry.AtlasTexture);
+        unsafe
+        {
+            if (textureId != 0)
+                ImGui.Image(new ImTextureRef(null, new ImTextureID(textureId)), new Vector2(64), uv0, uv1);
+        }
+        ImGuiTextSafe.Text(entry.DisplayName);
+        ImGuiTextSafe.TextDisabled(entry.Key.ToString());
+        ImGui.Separator();
+        Detail("Kind", entry.IsBlock ? "Block + item" : "Item");
+        Detail("Protocol ID", entry.ProtocolId.ToString());
+        Detail("Runtime type", entry.Item.GetType().Name);
+        Detail("Max stack", entry.Item.GetMaxCount().ToString());
+        Detail("Durability", entry.Item.GetMaxDamage().ToString());
+        Detail("Subtypes", entry.Item.GetHasSubtypes() ? "yes" : "no");
+        Detail("Behaviors", entry.Item.BehaviorCount.ToString());
+        Detail("Frozen", entry.Item.IsFrozen ? "yes" : "no");
+
+        if (entry.Block is { } block)
+        {
+            ImGui.Spacing();
+            Detail("Block type", block.GetType().Name);
+            Detail("Solid / fluid", $"{(block.Material.IsSolid ? "solid" : "non-solid")} / {(block.Material.IsFluid ? "fluid" : "dry")}");
+            Detail("Hardness", block.Hardness.ToString("0.###"));
+            Detail("Opacity", block.Opacity.ToString());
+            Detail("Light", block.LightEmission.ToString());
+            Detail("Random tick", block.TickRandomly ? "yes" : "no");
+            Detail("Block entity", block.HasBlockEntity ? "yes" : "no");
+        }
+
+        ImGui.Separator();
+        ImGui.SetNextItemWidth(90);
+        ImGui.InputInt("Count", ref _giveCount);
+        _giveCount = Math.Clamp(_giveCount, 1, entry.Item.GetMaxCount());
+        ImGui.SetNextItemWidth(90);
+        ImGui.InputInt("Metadata", ref _metadata);
+        _metadata = Math.Clamp(_metadata, 0, 32767);
+
+        if (!canGive) ImGui.BeginDisabled();
+        if (ImGui.Button("Give to player"))
+        {
+            string itemArgument = _metadata == 0 ? entry.Key.ToString() : $"{entry.Key}:{_metadata}";
+            _ctx.Player?.SendChatMessage($"/give {itemArgument} {_giveCount}");
+        }
+        if (!canGive) ImGui.EndDisabled();
+        if (!canGive) ImGuiTextSafe.TextDisabled("Join a world to use /give.");
+    }
+
+    private static void Detail(string label, string value)
+    {
+        ImGuiTextSafe.TextDisabled(label);
+        ImGui.SameLine(105);
+        ImGuiTextSafe.Text(value);
     }
 }

@@ -33,7 +33,7 @@ public sealed class CatalogConstructionTests
     [Fact]
     public void Every_shipped_item_definition_has_a_constructed_item()
     {
-        foreach (ItemDefinition definition in DefaultRegistries.Items)
+        foreach (ItemDefinition definition in TestItemCatalog.LoadDefinitions())
         {
             Item item = ContentRuntime.Current.Items.GetByProtocolId(definition.ProtocolId);
             Assert.Equal(definition.ProtocolId, item.Id);

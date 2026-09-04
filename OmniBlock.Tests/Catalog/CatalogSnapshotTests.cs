@@ -69,7 +69,7 @@ internal static class CatalogSnapshot
     private static void AppendItems(StringBuilder snapshot)
     {
         snapshot.AppendLine("[items]");
-        foreach (ItemDefinition definition in DefaultRegistries.Items.OrderBy(static d => d.ProtocolId))
+        foreach (ItemDefinition definition in TestItemCatalog.LoadDefinitions().OrderBy(static d => d.ProtocolId))
         {
             Item item = ContentRuntime.Current.Items.GetByProtocolId(definition.ProtocolId);
             snapshot.Append(definition.ProtocolId.ToString(CultureInfo.InvariantCulture)).Append(' ')

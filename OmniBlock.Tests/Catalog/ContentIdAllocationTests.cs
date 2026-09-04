@@ -78,7 +78,7 @@ public sealed class ContentIdAllocationTests
     {
         Assert.Equal(64, ContentRuntime.Current.Manifest.Fingerprint.Length);
         Assert.Equal(ContentRuntime.Current.Blocks.Count, ContentRuntime.Current.Manifest.BlockIds.Count);
-        Assert.Equal(DefaultRegistries.Items.Count(), ContentRuntime.Current.Manifest.ItemIds.Count);
+        Assert.Equal(TestItemCatalog.LoadDefinitions().Count, ContentRuntime.Current.Manifest.ItemIds.Count);
         Assert.Equal(160, ContentRuntime.Current.Manifest.Processes.Count);
         Assert.Equal(ContentRuntime.Current.EntityTypes.Count, ContentRuntime.Current.Manifest.Entities.Count);
     }

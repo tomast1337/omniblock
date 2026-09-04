@@ -52,6 +52,7 @@ internal sealed class DebugWindowContext(OmniBlock game)
     public UIContext UIContext => game.UIContext;
     public SoundManager SoundManager => game.SoundManager;
     public TextureManager TextureManager => game.TextureManager;
+    public ulong GetImGuiTextureId(TextureHandle texture) => game.WebGpuRenderer.GetImGuiTextureId(texture);
     public LuauState? LuauState => game.LuauState;
     public string GameDataDir => game.GameDataDir;
     public ContentRuntime Content => game.Content;

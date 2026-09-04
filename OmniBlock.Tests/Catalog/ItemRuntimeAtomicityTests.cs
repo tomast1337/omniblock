@@ -93,6 +93,8 @@ public sealed class ItemRuntimeAtomicityTests
 
         Assert.Empty(legacyArrays);
         Assert.Null(typeof(Item).Assembly.GetType("OmniBlock.ItemLookup"));
+        Assert.Null(typeof(DefaultRegistries).GetField("Items",
+            BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic));
     }
 
     private static ItemDefinition ItemDefinition(string name, int protocolId, string? behavior = null) => new()

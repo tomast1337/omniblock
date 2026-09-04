@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using OmniBlock.Client.Rendering.Chunks;
 using OmniBlock.Client.Rendering.Entities;
+using OmniBlock.Client.Rendering.Core.Textures;
 using OmniBlock.Entities;
 using Hexa.NET.ImGui;
 using Silk.NET.Maths;
@@ -23,6 +24,7 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     private WgpuCloudBlurPass? _cloudBlurPass;
     private readonly WebGpuDrawTarget _drawTarget;
     private ImGuiWgpuBackend? _imguiWgpu;
+    private readonly Dictionary<Texture2D, (WgpuTexture Texture, ulong ImGuiId)> _imguiTextures = [];
     private bool _disposed;
 
     /// <summary>
@@ -38,6 +40,30 @@ public sealed unsafe class WebGpuGameRenderer : IDisposable
     ///     is set. Zero otherwise.
     /// </summary>
     public ulong ViewportTextureId { get; private set; }
+
+    /// <summary>
+    /// Returns an ImGui texture id for an engine texture. <see cref="Texture2D.Id"/> is only a
+    /// renderer batching key and must never be passed to ImGui directly.
+    /// </summary>
+    internal ulong GetImGuiTextureId(TextureHandle handle)
+    {
+        WgpuTexture? texture = handle.Texture?.Wgpu;
+        if (texture is null || _imguiWgpu is null) return 0;
+
+        if (_imguiTextures.TryGetValue(handle.Texture!, out var registered))
+        {
+            if (!ReferenceEquals(registered.Texture, texture))
+            {
+                _imguiWgpu.UpdateExternalTexture(registered.ImGuiId, texture.View);
+                _imguiTextures[handle.Texture!] = (texture, registered.ImGuiId);
+            }
+            return registered.ImGuiId;
+        }
+
+        ulong id = _imguiWgpu.RegisterExternalTexture(texture.View);
+        _imguiTextures.Add(handle.Texture!, (texture, id));
+        return id;
+    }
 
     /// <summary>
     ///     Set by the caller to whether the debug UI is open this frame. ImGui only calls

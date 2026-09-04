@@ -37,7 +37,7 @@ public sealed class ItemCatalogCharacterizationTests
     [Fact]
     public void Every_item_definition_matches_its_constructed_runtime_item()
     {
-        foreach (ItemDefinition definition in DefaultRegistries.Items)
+        foreach (ItemDefinition definition in TestItemCatalog.LoadDefinitions())
         {
             Item item = ContentRuntime.Current.Items.GetByProtocolId(definition.ProtocolId);
 
@@ -66,7 +66,7 @@ public sealed class ItemCatalogCharacterizationTests
     [Fact]
     public void Every_item_behavior_and_block_loot_reference_resolves()
     {
-        foreach (ItemDefinition definition in DefaultRegistries.Items)
+        foreach (ItemDefinition definition in TestItemCatalog.LoadDefinitions())
         {
             foreach (JsonElement behavior in definition.Behaviors)
             {
@@ -110,7 +110,7 @@ public sealed class ItemCatalogCharacterizationTests
     private static string BuildSnapshot()
     {
         StringBuilder text = new();
-        foreach (ItemDefinition definition in DefaultRegistries.Items.OrderBy(static item => item.ProtocolId))
+        foreach (ItemDefinition definition in TestItemCatalog.LoadDefinitions().OrderBy(static item => item.ProtocolId))
         {
             Item item = ContentRuntime.Current.Items.GetByProtocolId(definition.ProtocolId);
             text.Append(definition.ProtocolId.ToString(CultureInfo.InvariantCulture)).Append(' ')
