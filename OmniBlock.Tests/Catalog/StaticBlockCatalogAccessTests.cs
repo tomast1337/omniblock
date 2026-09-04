@@ -116,6 +116,30 @@ public sealed class StaticBlockCatalogAccessTests
             + string.Join(Environment.NewLine, violations));
     }
 
+    [Fact]
+    public void Migrated_hot_path_world_systems_cannot_access_the_static_block_registry()
+    {
+        string root = FindRepositoryRoot();
+        string[] files =
+        [
+            Path.Combine(root, "OmniBlock", "Worlds", "Chunks", "Chunk.cs"),
+            Path.Combine(root, "OmniBlock", "Worlds", "Lighting", "LightUpdate.cs"),
+            Path.Combine(root, "OmniBlock", "Worlds", "Core", "Systems", "LightingEngine.cs"),
+            Path.Combine(root, "OmniBlock", "Worlds", "Mechanics", "Explosion.cs"),
+            Path.Combine(root, "OmniBlock", "PathFinding", "PathFinder.cs")
+        ];
+        string[] violations = files
+            .SelectMany(file => File.ReadLines(file)
+                .Select((line, index) => (line, number: index + 1, file))
+                .Where(static entry => entry.line.Contains("BlockRegistry."))
+                .Select(entry => $"{Path.GetRelativePath(root, entry.file)}:{entry.number}"))
+            .ToArray();
+
+        Assert.True(violations.Length == 0,
+            $"Migrated world systems must resolve blocks through their owning runtime:{Environment.NewLine}"
+            + string.Join(Environment.NewLine, violations));
+    }
+
     private static IReadOnlyList<StaticAccess> FindAccesses()
     {
         string sourceRoot = FindRepositoryRoot();

@@ -289,3 +289,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-09-03 — Implemented entity compatibility and save rules (Nicolas Vyčas Nery; `2595017816151ecc49e73b0c8463af9afc830875`)
 - 2026-09-03 — Removed the transitional entity globals (Nicolas Vyčas Nery; `d0116ed9ad31b8b63a26708d1b5c85f7b5d18f18`)
 - 2026-09-03 — Refactor item handling to use TestItemCatalog for loading item definitions and remove DefaultRegistries.Items (Nicolas Vyčas Nery; `2c4facebd970b6bca5af830a619d7cb22c74723b`)
+- 2026-09-03 — Refactor block access to use IBlockRuntimeView across various systems (Nicolas Vyčas Nery; `1438158d17d53b30551b6e42c3ab4b17e18f6a3b`)

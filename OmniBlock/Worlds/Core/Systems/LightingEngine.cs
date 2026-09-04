@@ -266,7 +266,7 @@ public class LightingEngine : ILightProvider
                     _pendingLightCells.Remove(new PendingLightCell(updateTask.LightType,
                         updateTask.MinX, updateTask.MinY, updateTask.MinZ));
                 }
-                updateTask.UpdateLight(_world.Reader, _world.ChunkHost, this);
+                updateTask.UpdateLight(_world.Reader, _world.ChunkHost, this, _world.Content.Blocks);
             }
 
             return false;

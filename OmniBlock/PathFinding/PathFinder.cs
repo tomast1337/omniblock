@@ -17,10 +17,16 @@ internal class PathFinder
     private readonly PathPoint[] _pointPool = new PathPoint[4096];
     private int _poolIndex;
     private IBlockReader _worldMap;
+    private readonly IBlockRuntimeView _blocks;
+    private readonly int _ironDoorId;
+    private readonly int _woodenDoorId;
 
     public PathFinder(IWorldContext world)
     {
         _worldMap = world.Reader;
+        _blocks = world.Content.Blocks;
+        _ironDoorId = _blocks.Get("omniblock:iron_door").Id;
+        _woodenDoorId = _blocks.Get("omniblock:door").Id;
         for (int i = 0; i < _pointPool.Length; i++)
         {
             _pointPool[i] = new PathPoint(0, 0, 0);
@@ -280,9 +286,9 @@ internal class PathFinder
                         continue;
                     }
 
-                    if (blockId != BlockRegistry.Get("iron_door").Id && blockId != BlockRegistry.Get("door").Id)
+                    if (blockId != _ironDoorId && blockId != _woodenDoorId)
                     {
-                        Material material = BlockRegistry.GetByProtocolId(blockId).Material;
+                        Material material = _blocks.GetByProtocolId(blockId).Material;
                         if (material.BlocksMovement)
                         {
                             return 0;

@@ -127,7 +127,7 @@ public class Chunk
                 int y = h;
                 int index = ChuckFormat.GetIndex(localX, localZ);
 
-                while (y > 0 && BlockRegistry.GetOpacity(Blocks[index + y - 1]) == 0)
+                while (y > 0 && World.Content.Blocks.GetOpacity(Blocks[index + y - 1]) == 0)
                 {
                     --y;
                 }
@@ -153,7 +153,7 @@ public class Chunk
                 int y = h;
                 int index = ChuckFormat.GetIndex(localX, localZ);
 
-                while (y > 0 && BlockRegistry.GetOpacity(Blocks[index + y - 1]) == 0)
+                while (y > 0 && World.Content.Blocks.GetOpacity(Blocks[index + y - 1]) == 0)
                 {
                     --y;
                 }
@@ -168,7 +168,7 @@ public class Chunk
 
                     do
                     {
-                        lightLevel -= BlockRegistry.GetOpacity(Blocks[index + currentY]);
+                        lightLevel -= World.Content.Blocks.GetOpacity(Blocks[index + currentY]);
                         if (lightLevel > 0)
                         {
                             SkyLight.SetNibble(localX, currentY, localZ, lightLevel);
@@ -221,7 +221,7 @@ public class Chunk
 
                 for (int y = 0; y < ChuckFormat.ChunkHeight; ++y)
                 {
-                    if (BlockRegistry.GetLightEmission(Blocks[column + y]) == 0)
+                    if (World.Content.Blocks.GetLightEmission(Blocks[column + y]) == 0)
                     {
                         continue;
                     }
@@ -267,7 +267,7 @@ public class Chunk
         if (y > oldHeight) newHeight = y;
 
         int index = ChuckFormat.GetIndex(localX, localZ);
-        while (newHeight > 0 && BlockRegistry.GetOpacity(Blocks[index + newHeight - 1]) == 0)
+        while (newHeight > 0 && World.Content.Blocks.GetOpacity(Blocks[index + newHeight - 1]) == 0)
         {
             --newHeight;
         }
@@ -338,14 +338,14 @@ public class Chunk
                 SkyLight.SetNibble(localX, newHeight, localZ, lightLevel);
                 --newHeight;
 
-                int opacity = BlockRegistry.GetOpacity(GetBlockId(localX, newHeight, localZ));
+                int opacity = World.Content.Blocks.GetOpacity(GetBlockId(localX, newHeight, localZ));
                 if (opacity == 0) opacity = 1;
 
                 lightLevel -= opacity;
                 if (lightLevel < 0) lightLevel = 0;
             }
 
-            while (newHeight > 0 && BlockRegistry.GetOpacity(GetBlockId(localX, newHeight - 1, localZ)) == 0)
+            while (newHeight > 0 && World.Content.Blocks.GetOpacity(GetBlockId(localX, newHeight - 1, localZ)) == 0)
             {
                 --newHeight;
             }
@@ -384,14 +384,14 @@ public class Chunk
 
         if (notifyBlockPlaced && oldId != 0 && !World.IsRemote)
         {
-            BlockRegistry.GetByProtocolId(oldId).OnBreak(new OnBreakEvent(World, null, worldX, y, worldZ));
+            World.Content.Blocks.GetByProtocolId(oldId).OnBreak(new OnBreakEvent(World, null, worldX, y, worldZ));
         }
 
         Meta.SetNibble(localX, y, localZ, meta);
 
         if (!World.Dimension.HasCeiling)
         {
-            if (BlockRegistry.GetOpacity(newId) != 0)
+            if (World.Content.Blocks.GetOpacity(newId) != 0)
             {
                 if (y >= height) UpdateHeightMap(localX, y + 1, localZ);
             }
@@ -410,12 +410,12 @@ public class Chunk
         {
             if (rawId != 0 && !World.IsRemote)
             {
-                BlockRegistry.GetByProtocolId(rawId).OnPlaced(new OnPlacedEvent(World, null, 0, 0, worldX, y, worldZ));
+                World.Content.Blocks.GetByProtocolId(rawId).OnPlaced(new OnPlacedEvent(World, null, 0, 0, worldX, y, worldZ));
             }
 
             if (sameId)
             {
-                BlockRegistry.GetByProtocolId(rawId).OnMetadataChange(new OnMetadataChangeEvent(World, worldX, y, worldZ, meta));
+                World.Content.Blocks.GetByProtocolId(rawId).OnMetadataChange(new OnMetadataChangeEvent(World, worldX, y, worldZ, meta));
             }
         }
 
@@ -438,12 +438,12 @@ public class Chunk
 
         if (oldId != 0)
         {
-            BlockRegistry.GetByProtocolId(oldId).OnBreak(new OnBreakEvent(World, null, worldX, y, worldZ));
+            World.Content.Blocks.GetByProtocolId(oldId).OnBreak(new OnBreakEvent(World, null, worldX, y, worldZ));
         }
 
         Meta.SetNibble(localX, y, localZ, 0);
 
-        if (BlockRegistry.GetOpacity(newId) != 0)
+        if (World.Content.Blocks.GetOpacity(newId) != 0)
         {
             if (y >= height) UpdateHeightMap(localX, y + 1, localZ);
         }
@@ -458,7 +458,7 @@ public class Chunk
 
         if (notifyBlockPlaced && rawId != 0 && !World.IsRemote)
         {
-            BlockRegistry.GetByProtocolId(rawId).OnPlaced(new OnPlacedEvent(World, null, 0, 0, worldX, y, worldZ));
+            World.Content.Blocks.GetByProtocolId(rawId).OnPlaced(new OnPlacedEvent(World, null, 0, 0, worldX, y, worldZ));
         }
 
         Dirty = true;
@@ -703,7 +703,7 @@ public class Chunk
         blockEntity.Z = Z * 16 + localZ;
 
         int id = GetBlockId(localX, y, localZ);
-        if (id != 0 && BlockRegistry.HasBlockEntity(id))
+        if (id != 0 && World.Content.Blocks.TryGetByProtocolId(id, out Block? block) && block.HasBlockEntity)
         {
             blockEntity.CancelRemoval();
             BlockEntities[pos] = blockEntity;
@@ -869,7 +869,7 @@ public class Chunk
                     for (int y = minY; y < maxY; y++)
                     {
                         int id = GetBlockId(x, y, z);
-                        if (id > 0 && BlockRegistry.HasBlockEntity(id))
+                        if (id > 0 && World.Content.Blocks.TryGetByProtocolId(id, out Block? block) && block.HasBlockEntity)
                         {
                             GetBlockEntity(x, y, z);
                         }
@@ -913,7 +913,7 @@ public class Chunk
                     for (int y = 0; y < ChuckFormat.ChunkHeight; y++)
                     {
                         int id = GetBlockId(x, y, z);
-                        if (id > 0 && BlockRegistry.HasBlockEntity(id))
+                        if (id > 0 && World.Content.Blocks.TryGetByProtocolId(id, out Block? block) && block.HasBlockEntity)
                         {
                             GetBlockEntity(x, y, z);
                         }

@@ -67,7 +67,7 @@ public class Explosion
                             int blockId = _level.Reader.GetBlockId(blockX, blockY, blockZ);
                             if (blockId > 0)
                             {
-                                blastPower -= (BlockRegistry.GetByProtocolId(blockId).GetBlastResistance(exploder) + 0.3F) * stepSize;
+                                blastPower -= (_level.Content.Blocks.GetByProtocolId(blockId).GetBlastResistance(exploder) + 0.3F) * stepSize;
                             }
 
                             if (blastPower > 0.0F)
@@ -128,9 +128,9 @@ public class Explosion
             int z = blockPos.Z;
             int blockIdAtPos = _level.Reader.GetBlockId(x, y, z);
             int belowBlockId = _level.Reader.GetBlockId(x, y - 1, z);
-            if (blockIdAtPos == 0 && BlockRegistry.IsOpaque(belowBlockId) && ExplosionRNG.NextInt(3) == 0)
+            if (blockIdAtPos == 0 && _level.Content.Blocks.IsOpaque(belowBlockId) && ExplosionRNG.NextInt(3) == 0)
             {
-                _level.Writer.SetBlock(x, y, z, BlockRegistry.Get("fire").Id);
+                _level.Writer.SetBlock(x, y, z, _level.Content.Blocks.Get("omniblock:fire").Id);
             }
         }
     }
@@ -170,9 +170,10 @@ public class Explosion
 
             if (blockId > 0)
             {
-                BlockRegistry.GetByProtocolId(blockId).DropStacks(new OnDropEvent(_level, x, y, z, _level.Reader.GetBlockMeta(x, y, z), 0.3F));
+                Block block = _level.Content.Blocks.GetByProtocolId(blockId);
+                block.DropStacks(new OnDropEvent(_level, x, y, z, _level.Reader.GetBlockMeta(x, y, z), 0.3F));
                 _level.Writer.SetBlock(x, y, z, 0);
-                BlockRegistry.GetByProtocolId(blockId).OnDestroyedByExplosion(new OnDestroyedByExplosionEvent(_level, x, y, z));
+                block.OnDestroyedByExplosion(new OnDestroyedByExplosionEvent(_level, x, y, z));
             }
         }
     }
