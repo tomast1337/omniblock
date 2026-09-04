@@ -7,9 +7,9 @@ namespace OmniBlock.Worlds.Generation.Generators.Carvers;
 
 internal class NetherCaveCarver : Carver
 {
-    protected void CarveNetherCavesInChunk(int chunkX, int chunkZ, byte[] blocks, double x, double y, double z) => CarveNetherCaves(chunkX, chunkZ, blocks, x, y, z, 1.0F + Rand.NextFloat() * 6.0F, 0.0F, 0.0F, -1, -1, 0.5D);
+    protected void CarveNetherCavesInChunk(int chunkX, int chunkZ, byte[] blocks, IBlockRuntimeView blocksView, double x, double y, double z) => CarveNetherCaves(chunkX, chunkZ, blocks, blocksView, x, y, z, 1.0F + Rand.NextFloat() * 6.0F, 0.0F, 0.0F, -1, -1, 0.5D);
 
-    protected void CarveNetherCaves(int chunkX, int chunkZ, byte[] blocks, double x, double y, double z, float tunnelRadius, float yaw, float pitch, int tunnelStep, int tunnelLength, double verticalScale)
+    protected void CarveNetherCaves(int chunkX, int chunkZ, byte[] blocks, IBlockRuntimeView blocksView, double x, double y, double z, float tunnelRadius, float yaw, float pitch, int tunnelStep, int tunnelLength, double verticalScale)
     {
         double chunkCenterX = chunkX * 16 + 8;
         double chunkCenterZ = chunkZ * 16 + 8;
@@ -57,8 +57,8 @@ internal class NetherCaveCarver : Carver
             yawSpeed += (caveRand.NextFloat() - caveRand.NextFloat()) * caveRand.NextFloat() * 4.0F;
             if (!isStartingPoint && tunnelStep == branchStep && tunnelRadius > 1.0F)
             {
-                CarveNetherCaves(chunkX, chunkZ, blocks, x, y, z, caveRand.NextFloat() * 0.5F + 0.5F, yaw - (float)Math.PI * 0.5F, pitch / 3.0F, tunnelStep, tunnelLength, 1.0D);
-                CarveNetherCaves(chunkX, chunkZ, blocks, x, y, z, caveRand.NextFloat() * 0.5F + 0.5F, yaw + (float)Math.PI * 0.5F, pitch / 3.0F, tunnelStep, tunnelLength, 1.0D);
+                CarveNetherCaves(chunkX, chunkZ, blocks, blocksView, x, y, z, caveRand.NextFloat() * 0.5F + 0.5F, yaw - (float)Math.PI * 0.5F, pitch / 3.0F, tunnelStep, tunnelLength, 1.0D);
+                CarveNetherCaves(chunkX, chunkZ, blocks, blocksView, x, y, z, caveRand.NextFloat() * 0.5F + 0.5F, yaw + (float)Math.PI * 0.5F, pitch / 3.0F, tunnelStep, tunnelLength, 1.0D);
                 return;
             }
 
@@ -124,7 +124,7 @@ internal class NetherCaveCarver : Carver
                                 indexOrBlockZ = (blockX * 16 + blockZ) * 128 + blockY;
                                 if (blockY >= 0 && blockY < 128)
                                 {
-                                    if (blocks[indexOrBlockZ] == BlockRegistry.Get("flowing_lava").Id || blocks[indexOrBlockZ] == BlockRegistry.Get("lava").Id)
+                                    if (blocks[indexOrBlockZ] == blocksView.Get("flowing_lava").Id || blocks[indexOrBlockZ] == blocksView.Get("lava").Id)
                                     {
                                         lavaIsPresent = true;
                                     }
@@ -155,7 +155,7 @@ internal class NetherCaveCarver : Carver
                                     if (localY > -0.7D && localX * localX + localY * localY + localZ * localZ < 1.0D)
                                     {
                                         byte blockType = blocks[blockIndex];
-                                        if (blockType == BlockRegistry.Get("netherrack").Id || blockType == BlockRegistry.Get("dirt").Id || blockType == BlockRegistry.Get("grass_block").Id)
+                                        if (blockType == blocksView.Get("netherrack").Id || blockType == blocksView.Get("dirt").Id || blockType == blocksView.Get("grass_block").Id)
                                         {
                                             blocks[blockIndex] = 0;
                                         }
@@ -192,7 +192,7 @@ internal class NetherCaveCarver : Carver
             int branchCount = 1;
             if (Rand.NextInt(4) == 0)
             {
-                CarveNetherCavesInChunk(centerChunkX, centerChunkZ, blocks, randX, randY, randZ);
+                CarveNetherCavesInChunk(centerChunkX, centerChunkZ, blocks, world.Content.Blocks, randX, randY, randZ);
                 branchCount += Rand.NextInt(4);
             }
 
@@ -201,7 +201,7 @@ internal class NetherCaveCarver : Carver
                 float yaw = Rand.NextFloat() * (float)Math.PI * 2.0F;
                 float pitch = (Rand.NextFloat() - 0.5F) * 2.0F / 8.0F;
                 float tunnelRadius = Rand.NextFloat() * 2.0F + Rand.NextFloat();
-                CarveNetherCaves(centerChunkX, centerChunkZ, blocks, randX, randY, randZ, tunnelRadius * 2.0F, yaw, pitch, 0, 0, 0.5D);
+                CarveNetherCaves(centerChunkX, centerChunkZ, blocks, world.Content.Blocks, randX, randY, randZ, tunnelRadius * 2.0F, yaw, pitch, 0, 0, 0.5D);
             }
         }
     }

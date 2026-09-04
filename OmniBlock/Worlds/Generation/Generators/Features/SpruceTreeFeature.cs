@@ -40,7 +40,7 @@ internal class SpruceTreeFeature : Feature
                     if (cy >= 0 && cy < ChuckFormat.WorldHeight)
                     {
                         int blockId = level.Reader.GetBlockId(cx, cy, cz);
-                        if (blockId != 0 && blockId != BlockRegistry.Get("leaves").Id)
+                        if (blockId != 0 && blockId != level.Content.Blocks.Get("leaves").Id)
                         {
                             canPlace = false;
                         }
@@ -59,12 +59,12 @@ internal class SpruceTreeFeature : Feature
         }
 
         int groundId = level.Reader.GetBlockId(x, y - 1, z);
-        if (!((groundId == BlockRegistry.Get("grass_block").Id || groundId == BlockRegistry.Get("dirt").Id) && y < ChuckFormat.WorldHeight - totalHeight - 1))
+        if (!((groundId == level.Content.Blocks.Get("grass_block").Id || groundId == level.Content.Blocks.Get("dirt").Id) && y < ChuckFormat.WorldHeight - totalHeight - 1))
         {
             return false;
         }
 
-        level.Writer.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, BlockRegistry.Get("dirt").Id, 0, false);
+        level.Writer.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, level.Content.Blocks.Get("dirt").Id, 0, false);
         int currentRadius = rand.NextInt(2);
         int radiusTarget = 1;
         byte radiusStep = 0;
@@ -81,9 +81,9 @@ internal class SpruceTreeFeature : Feature
                 {
                     int offsetZ = cz - z;
 
-                    if ((Math.Abs(offsetX) != currentRadius || Math.Abs(offsetZ) != currentRadius || currentRadius <= 0) && !BlockRegistry.IsOpaque(level.Reader.GetBlockId(cx, leafY, cz)))
+                    if ((Math.Abs(offsetX) != currentRadius || Math.Abs(offsetZ) != currentRadius || currentRadius <= 0) && !level.Content.Blocks.IsOpaque(level.Reader.GetBlockId(cx, leafY, cz)))
                     {
-                        level.Writer.SetBlockWithoutNotifyingNeighbors(cx, leafY, cz, BlockRegistry.Get("leaves").Id, 1, false);
+                        level.Writer.SetBlockWithoutNotifyingNeighbors(cx, leafY, cz, level.Content.Blocks.Get("leaves").Id, 1, false);
                     }
                 }
             }
@@ -109,9 +109,9 @@ internal class SpruceTreeFeature : Feature
         for (int trunkY = 0; trunkY < totalHeight - trunkVariability; ++trunkY)
         {
             int blockAtTrunk = level.Reader.GetBlockId(x, y + trunkY, z);
-            if (blockAtTrunk == 0 || blockAtTrunk == BlockRegistry.Get("leaves").Id)
+            if (blockAtTrunk == 0 || blockAtTrunk == level.Content.Blocks.Get("leaves").Id)
             {
-                level.Writer.SetBlockWithoutNotifyingNeighbors(x, y + trunkY, z, BlockRegistry.Get("log").Id, 1, false);
+                level.Writer.SetBlockWithoutNotifyingNeighbors(x, y + trunkY, z, level.Content.Blocks.Get("log").Id, 1, false);
             }
         }
 

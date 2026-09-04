@@ -137,12 +137,12 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
 
     private void InitFeatures()
     {
-        _featureNetherLavaSpring = new NetherLavaSpringFeature(BlockRegistry.Get("flowing_lava").Id);
+        _featureNetherLavaSpring = new NetherLavaSpringFeature(_world.Content.Blocks.Get("flowing_lava").Id);
         _featureNetherFire = new NetherFirePatchFeature();
         _featureGlowstoneFull = new GlowstoneClusterFeature();
         _featureGlowstoneRare = new GlowstoneClusterFeatureRare();
-        _featureBrownMushroom = new PlantPatchFeature(BlockRegistry.Get("brown_mushroom").Id);
-        _featureRedMushroom = new PlantPatchFeature(BlockRegistry.Get("red_mushroom").Id);
+        _featureBrownMushroom = new PlantPatchFeature(_world.Content.Blocks.Get("brown_mushroom").Id);
+        _featureRedMushroom = new PlantPatchFeature(_world.Content.Blocks.Get("red_mushroom").Id);
     }
 
     public void BuildTerrain(int chunkX, int chunkZ, byte[] blocks)
@@ -191,12 +191,12 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
                                 int blockType = 0;
                                 if (sampleY * 8 + subY < lavaLevel)
                                 {
-                                    blockType = BlockRegistry.Get("lava").Id;
+                                    blockType = _world.Content.Blocks.Get("lava").Id;
                                 }
 
                                 if (terrainDensity > 0.0D)
                                 {
-                                    blockType = BlockRegistry.Get("netherrack").Id;
+                                    blockType = _world.Content.Blocks.Get("netherrack").Id;
                                 }
 
                                 blocks[blockIndex] = (byte)blockType;
@@ -234,19 +234,19 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
                 bool isGravel = _gravelBuffer[localX + localZ * 16] + _random.NextDouble() * 0.2D > 0.0D;
                 int surfaceDepth = (int)(_depthBuffer[localX + localZ * 16] / 3.0D + 3.0D + _random.NextDouble() * 0.25D);
                 int currentDepth = -1;
-                byte topBlock = (byte)BlockRegistry.Get("netherrack").Id;
-                byte soilBlock = (byte)BlockRegistry.Get("netherrack").Id;
+                byte topBlock = (byte)_world.Content.Blocks.Get("netherrack").Id;
+                byte soilBlock = (byte)_world.Content.Blocks.Get("netherrack").Id;
 
                 for (int blockY = 127; blockY >= 0; --blockY)
                 {
                     int blockIndex = (localZ * 16 + localX) * 128 + blockY;
                     if (blockY >= 127 - _random.NextInt(5))
                     {
-                        blocks[blockIndex] = (byte)BlockRegistry.Get("bedrock").Id;
+                        blocks[blockIndex] = (byte)_world.Content.Blocks.Get("bedrock").Id;
                     }
                     else if (blockY <= 0 + _random.NextInt(5))
                     {
-                        blocks[blockIndex] = (byte)BlockRegistry.Get("bedrock").Id;
+                        blocks[blockIndex] = (byte)_world.Content.Blocks.Get("bedrock").Id;
                     }
                     else
                     {
@@ -255,43 +255,43 @@ internal class NetherChunkGenerator : CommonChunkGenerator, IChunkSource
                         {
                             currentDepth = -1;
                         }
-                        else if (currentBlock == BlockRegistry.Get("netherrack").Id)
+                        else if (currentBlock == _world.Content.Blocks.Get("netherrack").Id)
                         {
                             if (currentDepth == -1)
                             {
                                 if (surfaceDepth <= 0)
                                 {
                                     topBlock = 0;
-                                    soilBlock = (byte)BlockRegistry.Get("netherrack").Id;
+                                    soilBlock = (byte)_world.Content.Blocks.Get("netherrack").Id;
                                 }
                                 else if (blockY >= seaLevel - 4 && blockY <= seaLevel + 1)
                                 {
-                                    topBlock = (byte)BlockRegistry.Get("netherrack").Id;
-                                    soilBlock = (byte)BlockRegistry.Get("netherrack").Id;
+                                    topBlock = (byte)_world.Content.Blocks.Get("netherrack").Id;
+                                    soilBlock = (byte)_world.Content.Blocks.Get("netherrack").Id;
                                     if (isGravel)
                                     {
-                                        topBlock = (byte)BlockRegistry.Get("gravel").Id;
+                                        topBlock = (byte)_world.Content.Blocks.Get("gravel").Id;
                                     }
 
                                     if (isGravel)
                                     {
-                                        soilBlock = (byte)BlockRegistry.Get("netherrack").Id;
+                                        soilBlock = (byte)_world.Content.Blocks.Get("netherrack").Id;
                                     }
 
                                     if (isSoulsand)
                                     {
-                                        topBlock = (byte)BlockRegistry.Get("soulsand").Id;
+                                        topBlock = (byte)_world.Content.Blocks.Get("soulsand").Id;
                                     }
 
                                     if (isSoulsand)
                                     {
-                                        soilBlock = (byte)BlockRegistry.Get("soulsand").Id;
+                                        soilBlock = (byte)_world.Content.Blocks.Get("soulsand").Id;
                                     }
                                 }
 
                                 if (blockY < seaLevel && topBlock == 0)
                                 {
-                                    topBlock = (byte)BlockRegistry.Get("lava").Id;
+                                    topBlock = (byte)_world.Content.Blocks.Get("lava").Id;
                                 }
 
                                 currentDepth = surfaceDepth;

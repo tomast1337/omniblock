@@ -28,7 +28,7 @@ public class SkyDimension : Dimension
     {
         int topBlockId = World.GetSpawnBlockId(x, y);
         return topBlockId != 0
-               && BlockRegistry.TryGetByProtocolId(topBlockId, out Block? block)
+               && World.Content.Blocks.TryGetByProtocolId(topBlockId, out Block? block)
                && block.Material.BlocksMovement;
     }
 

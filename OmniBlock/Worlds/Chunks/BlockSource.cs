@@ -5,37 +5,17 @@ namespace OmniBlock.Worlds.Chunks;
 
 internal class BlockSource
 {
-    private static readonly ILogger<BlockSource> _logger = Log.Instance.For<BlockSource>();
-
-    private static byte[] SanitizationTable = new byte[256];
-
-    static BlockSource()
+    public static void Fill(byte[] blocks, IBlockRuntimeView runtimeBlocks)
     {
-        try
-        {
-            for (int i = 0; i < 256; i++)
-            {
-                byte blockId = (byte)i;
+        Span<byte> sanitizationTable = stackalloc byte[BlockRegistry.ProtocolIdCapacity];
+        for (int i = 0; i < sanitizationTable.Length; i++)
+            sanitizationTable[i] = i == 0 || runtimeBlocks.TryGetByProtocolId(i, out _) ? (byte)i : (byte)0;
 
-                if (blockId != 0 && !BlockRegistry.TryGetByProtocolId(blockId, out _))
-                    blockId = 0;
-
-                SanitizationTable[i] = blockId;
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error initializing block sanitization table");
-        }
-    }
-
-    public static void Fill(byte[] blocks)
-    {
         Span<byte> blocksSpan = blocks;
 
         for (int i = 0; i < blocksSpan.Length; i++)
         {
-            blocksSpan[i] = SanitizationTable[blocksSpan[i]];
+            blocksSpan[i] = sanitizationTable[blocksSpan[i]];
         }
     }
 }

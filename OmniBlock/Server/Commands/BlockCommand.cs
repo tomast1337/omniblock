@@ -10,7 +10,7 @@ using OmniBlock.Registries;
 
 namespace OmniBlock.Server.Commands;
 
-public class BlockCommand(RuntimeItemRegistry items) : Command.Command
+public class BlockCommand(RuntimeItemRegistry items, RuntimeBlockRegistry blocks) : Command.Command
 {
 
     public override string Usage => "block get [position]";
@@ -22,7 +22,7 @@ public class BlockCommand(RuntimeItemRegistry items) : Command.Command
             .Then(Literal("get")
                 .Executes(BlockGet)
                 .Then(ArgumentPos("position").Executes(c => BlockGet(c, c.GetArgument<Vec3D>("position"))))
-            ).Then(Literal("set").Then(ArgumentBlock("block", items)
+            ).Then(Literal("set").Then(ArgumentBlock("block", items, blocks)
                 .Executes(c => BlockSet(c, c.GetArgument<(int id, int meta)>("block")))
                 .Then(ArgumentPos("position").Executes(c => BlockSet(c, c.GetArgument<(int id, int meta)>("block"), c.GetArgument<Vec3D>("position"))))));
 
@@ -54,7 +54,7 @@ public class BlockCommand(RuntimeItemRegistry items) : Command.Command
         int meta = world.Reader.GetBlockMeta(p.X, p.Y, p.Z);
         BlockEntity? blockEntity = world.Entities.GetBlockEntity<BlockEntity>(p.X, p.Y, p.Z);
 
-        if (!BlockRegistry.TryGetByProtocolId(id, out Block? block))
+        if (!world.Content.Blocks.TryGetByProtocolId(id, out Block? block))
         {
             context.Source.Output.SendMessage($"Block at {p.X} {p.Y} {p.Z} -> {id}:{meta}");
         }

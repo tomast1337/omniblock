@@ -52,7 +52,7 @@ public abstract class Dimension
         int topBlockId = World.Reader.GetBlockId(x, y, z);
 
         return topBlockId != 0
-               && BlockRegistry.TryGetByProtocolId(topBlockId, out Block? block)
+               && World.Content.Blocks.TryGetByProtocolId(topBlockId, out Block? block)
                && block.Material.BlocksMovement;
     }
 

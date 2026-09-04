@@ -38,7 +38,7 @@ internal class BirchTreeFeature : Feature
                     if (cy >= 0 && cy < ChuckFormat.WorldHeight)
                     {
                         int blockId = level.Reader.GetBlockId(cx, cy, cz);
-                        if (blockId != 0 && blockId != BlockRegistry.Get("leaves").Id)
+                        if (blockId != 0 && blockId != level.Content.Blocks.Get("leaves").Id)
                         {
                             canPlace = false;
                         }
@@ -57,9 +57,9 @@ internal class BirchTreeFeature : Feature
         }
 
         int soilId = level.Reader.GetBlockId(x, y - 1, z);
-        if ((soilId == BlockRegistry.Get("grass_block").Id || soilId == BlockRegistry.Get("dirt").Id) && y < ChuckFormat.WorldHeight - treeHeight - 1)
+        if ((soilId == level.Content.Blocks.Get("grass_block").Id || soilId == level.Content.Blocks.Get("dirt").Id) && y < ChuckFormat.WorldHeight - treeHeight - 1)
         {
-            level.Writer.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, BlockRegistry.Get("dirt").Id, 0, false);
+            level.Writer.SetBlockWithoutNotifyingNeighbors(x, y - 1, z, level.Content.Blocks.Get("dirt").Id, 0, false);
 
 
             for (int leafY = y - 3 + treeHeight; leafY <= y + treeHeight; ++leafY)
@@ -75,10 +75,10 @@ internal class BirchTreeFeature : Feature
                         int offsetZ = leafZ - z;
                         bool isCorner = (Math.Abs(offsetX) != leafRadius ||
                                          Math.Abs(offsetZ) != leafRadius ||
-                                         (rand.NextInt(2) != 0 && relativeY != 0)) && !BlockRegistry.IsOpaque(level.Reader.GetBlockId(leafX, leafY, leafZ));
+                                         (rand.NextInt(2) != 0 && relativeY != 0)) && !level.Content.Blocks.IsOpaque(level.Reader.GetBlockId(leafX, leafY, leafZ));
                         if (isCorner)
                         {
-                            level.Writer.SetBlockWithoutNotifyingNeighbors(leafX, leafY, leafZ, BlockRegistry.Get("leaves").Id, 2, false);
+                            level.Writer.SetBlockWithoutNotifyingNeighbors(leafX, leafY, leafZ, level.Content.Blocks.Get("leaves").Id, 2, false);
                         }
                     }
                 }
@@ -87,9 +87,9 @@ internal class BirchTreeFeature : Feature
             for (int trunkY = 0; trunkY < treeHeight; ++trunkY)
             {
                 int blockAtTrunk = level.Reader.GetBlockId(x, y + trunkY, z);
-                if (blockAtTrunk == 0 || blockAtTrunk == BlockRegistry.Get("leaves").Id)
+                if (blockAtTrunk == 0 || blockAtTrunk == level.Content.Blocks.Get("leaves").Id)
                 {
-                    level.Writer.SetBlockWithoutNotifyingNeighbors(x, y + trunkY, z, BlockRegistry.Get("log").Id, 2, false);
+                    level.Writer.SetBlockWithoutNotifyingNeighbors(x, y + trunkY, z, level.Content.Blocks.Get("log").Id, 2, false);
                 }
             }
 

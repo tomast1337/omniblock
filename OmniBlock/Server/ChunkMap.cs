@@ -509,7 +509,8 @@ internal class ChunkMap
                         BlockRawId = (byte)sWorld.Reader.GetBlockId(worldX, worldY, worldZ),
                         BlockMetadata = (byte)sWorld.Reader.GetBlockMeta(worldX, worldY, worldZ)
                     });
-                    if (BlockRegistry.HasBlockEntity(sWorld.Reader.GetBlockId(worldX, worldY, worldZ)))
+                    if (sWorld.Content.Blocks.TryGetByProtocolId(sWorld.Reader.GetBlockId(worldX, worldY, worldZ), out Block? block)
+                        && block.HasBlockEntity)
                     {
                         sendBlockEntityUpdate(sWorld.Entities.GetBlockEntity<BlockEntity>(worldX, worldY, worldZ));
                     }
@@ -555,7 +556,8 @@ internal class ChunkMap
                         int worldX = _chunkPos.X * 16 + (_dirtyBlocks[i] >> 12 & 15);
                         int worldY = _dirtyBlocks[i] & 0xFF;
                         int worldZ = _chunkPos.Z * 16 + (_dirtyBlocks[i] >> 8 & 15);
-                        if (BlockRegistry.HasBlockEntity(sWorld.Reader.GetBlockId(worldX, worldY, worldZ)))
+                        if (sWorld.Content.Blocks.TryGetByProtocolId(sWorld.Reader.GetBlockId(worldX, worldY, worldZ), out Block? block)
+                            && block.HasBlockEntity)
                         {
                             sendBlockEntityUpdate(sWorld.Entities.GetBlockEntity<BlockEntity>(worldX, worldY, worldZ));
                         }

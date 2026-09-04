@@ -49,7 +49,7 @@ internal class OverworldDimension : Dimension
             if (topSolidY <= 0) return false;
             int blockId = World.Reader.GetBlockId(x, topSolidY - 1, z);
             return blockId != 0
-                   && BlockRegistry.TryGetByProtocolId(blockId, out Block? block)
+                   && World.Content.Blocks.TryGetByProtocolId(blockId, out Block? block)
                    && block.Material.BlocksMovement;
         }
 

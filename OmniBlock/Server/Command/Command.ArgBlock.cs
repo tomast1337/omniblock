@@ -9,7 +9,7 @@ namespace OmniBlock.Server.Command;
 
 public abstract partial class Command
 {
-    private class ArgBlock(RuntimeItemRegistry items) : IArgumentType<(int id, int meta)>
+    private class ArgBlock(RuntimeItemRegistry items, RuntimeBlockRegistry blocks) : IArgumentType<(int id, int meta)>
     {
         private const string AirBlockAlias = "air";
         private static readonly DynamicCommandExceptionType s_blockNotFound = new(expected => new LiteralMessage($"Block \"{expected}\" not found."));
@@ -24,7 +24,7 @@ public abstract partial class Command
                 // No meta data, resolve id.
                 if (int.TryParse(name, out int id))
                 {
-                    if (id == 0 || BlockRegistry.TryGetByProtocolId(id, out _)) return (id, 0);
+                    if (id == 0 || blocks.TryGetByProtocolId(id, out _)) return (id, 0);
                     throw s_blockNotFound.Create(name);
                 }
 
@@ -41,7 +41,7 @@ public abstract partial class Command
                 // Resolve id and meta data.
                 if (int.TryParse(idPart, out int id))
                 {
-                    if (id != 0 && !BlockRegistry.TryGetByProtocolId(id, out _)) throw s_blockNotFound.Create(name);
+                    if (id != 0 && !blocks.TryGetByProtocolId(id, out _)) throw s_blockNotFound.Create(name);
                     return (id, int.Parse(metaPart));
                 }
 
@@ -53,7 +53,7 @@ public abstract partial class Command
 
 
             if (items.TryParse(name, out ItemStack? result)
-                && BlockRegistry.TryGetByProtocolId(result.ItemId, out _))
+                && blocks.TryGetByProtocolId(result.ItemId, out _))
             {
                 return (result.ItemId, result.GetDamage());
             }

@@ -14,35 +14,58 @@ internal class FlatChunkGenerator : IChunkSource
     private readonly FlatGeneratorInfo _generatorInfo;
     private readonly JavaRandom _random;
 
-    private readonly LakeFeature _featureWaterLake = new(BlockRegistry.Get("water").Id);
-    private readonly LakeFeature _featureLavaLake = new(BlockRegistry.Get("lava").Id);
+    private LakeFeature _featureWaterLake;
+    private LakeFeature _featureLavaLake;
     private readonly DungeonFeature _featureDungeon = new();
     private readonly ClayOreFeature _featureClay = new(32);
-    private readonly OreFeature _featureDirt = new(BlockRegistry.Get("dirt").Id, 32);
-    private readonly OreFeature _featureGravel = new(BlockRegistry.Get("gravel").Id, 32);
-    private readonly OreFeature _featureCoal = new(BlockRegistry.Get("coal_ore").Id, 16);
-    private readonly OreFeature _featureIron = new(BlockRegistry.Get("iron_ore").Id, 8);
-    private readonly OreFeature _featureGold = new(BlockRegistry.Get("gold_ore").Id, 8);
-    private readonly OreFeature _featureRedstone = new(BlockRegistry.Get("redstone_ore").Id, 7);
-    private readonly OreFeature _featureDiamond = new(BlockRegistry.Get("diamond_ore").Id, 7);
-    private readonly OreFeature _featureLapis = new(BlockRegistry.Get("lapis_ore").Id, 6);
-    private readonly PlantPatchFeature _featureDandelion = new(BlockRegistry.Get("dandelion").Id);
-    private readonly PlantPatchFeature _featureRose = new(BlockRegistry.Get("rose").Id);
-    private readonly PlantPatchFeature _featureBrownMushroom = new(BlockRegistry.Get("brown_mushroom").Id);
-    private readonly PlantPatchFeature _featureRedMushroom = new(BlockRegistry.Get("red_mushroom").Id);
+    private OreFeature _featureDirt;
+    private OreFeature _featureGravel;
+    private OreFeature _featureCoal;
+    private OreFeature _featureIron;
+    private OreFeature _featureGold;
+    private OreFeature _featureRedstone;
+    private OreFeature _featureDiamond;
+    private OreFeature _featureLapis;
+    private PlantPatchFeature _featureDandelion;
+    private PlantPatchFeature _featureRose;
+    private PlantPatchFeature _featureBrownMushroom;
+    private PlantPatchFeature _featureRedMushroom;
     private readonly SugarCanePatchFeature _featureSugarcane = new();
     private readonly PumpkinPatchFeature _featurePumpkin = new();
     private readonly CactusPatchFeature _featureCactus = new();
-    private readonly DeadBushPatchFeature _featureDeadBush = new(BlockRegistry.Get("dead_bush").Id);
-    private readonly GrassPatchFeature _featureGrass = new(BlockRegistry.Get("grass").Id, 1);
-    private readonly SpringFeature _featureWaterSpring = new(BlockRegistry.Get("flowing_water").Id);
-    private readonly SpringFeature _featureLavaSpring = new(BlockRegistry.Get("flowing_lava").Id);
+    private DeadBushPatchFeature _featureDeadBush;
+    private GrassPatchFeature _featureGrass;
+    private SpringFeature _featureWaterSpring;
+    private SpringFeature _featureLavaSpring;
 
     public FlatChunkGenerator(IWorldContext world)
     {
         _world = world;
-        _generatorInfo = FlatGeneratorInfo.CreateFromString(world.Properties.GeneratorOptions);
+        _generatorInfo = FlatGeneratorInfo.CreateFromString(world.Properties.GeneratorOptions, world.Content.Blocks);
         _random = new JavaRandom(world.Seed);
+        InitFeatures();
+    }
+
+    private void InitFeatures()
+    {
+        _featureWaterLake = new LakeFeature(_world.Content.Blocks.Get("water").Id);
+        _featureLavaLake = new LakeFeature(_world.Content.Blocks.Get("lava").Id);
+        _featureDirt = new OreFeature(_world.Content.Blocks.Get("dirt").Id, 32);
+        _featureGravel = new OreFeature(_world.Content.Blocks.Get("gravel").Id, 32);
+        _featureCoal = new OreFeature(_world.Content.Blocks.Get("coal_ore").Id, 16);
+        _featureIron = new OreFeature(_world.Content.Blocks.Get("iron_ore").Id, 8);
+        _featureGold = new OreFeature(_world.Content.Blocks.Get("gold_ore").Id, 8);
+        _featureRedstone = new OreFeature(_world.Content.Blocks.Get("redstone_ore").Id, 7);
+        _featureDiamond = new OreFeature(_world.Content.Blocks.Get("diamond_ore").Id, 7);
+        _featureLapis = new OreFeature(_world.Content.Blocks.Get("lapis_ore").Id, 6);
+        _featureDandelion = new PlantPatchFeature(_world.Content.Blocks.Get("dandelion").Id);
+        _featureRose = new PlantPatchFeature(_world.Content.Blocks.Get("rose").Id);
+        _featureBrownMushroom = new PlantPatchFeature(_world.Content.Blocks.Get("brown_mushroom").Id);
+        _featureRedMushroom = new PlantPatchFeature(_world.Content.Blocks.Get("red_mushroom").Id);
+        _featureDeadBush = new DeadBushPatchFeature(_world.Content.Blocks.Get("dead_bush").Id);
+        _featureGrass = new GrassPatchFeature(_world.Content.Blocks.Get("grass").Id, 1);
+        _featureWaterSpring = new SpringFeature(_world.Content.Blocks.Get("flowing_water").Id);
+        _featureLavaSpring = new SpringFeature(_world.Content.Blocks.Get("flowing_lava").Id);
     }
 
     public IChunkSource CreateParallelInstance() => new FlatChunkGenerator(_world);

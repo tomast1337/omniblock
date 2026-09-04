@@ -80,7 +80,7 @@ internal class ServerCommandHandler : ICommandHandler
         // Info commands
         Register(new ListCommand());
         Register(new DataCommand());
-        Register(new BlockCommand(Server.Content.Items));
+        Register(new BlockCommand(Server.Content.Items, Server.Content.Blocks));
 
 
         // World commands

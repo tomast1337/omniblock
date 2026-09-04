@@ -13,13 +13,13 @@ internal class GlowstoneClusterFeature : Feature
             return false;
         }
 
-        if (level.Reader.GetBlockId(x, y + 1, z) != BlockRegistry.Get("netherrack").Id)
+        if (level.Reader.GetBlockId(x, y + 1, z) != level.Content.Blocks.Get("netherrack").Id)
         {
             return false;
         }
 
 
-        level.Writer.SetBlock(x, y, z, BlockRegistry.Get("glowstone").Id, 0, false);
+        level.Writer.SetBlock(x, y, z, level.Content.Blocks.Get("glowstone").Id, 0, false);
 
         for (int i = 0; i < 1500; ++i)
         {
@@ -64,7 +64,7 @@ internal class GlowstoneClusterFeature : Feature
                         blockId = level.Reader.GetBlockId(genX, genY, genZ + 1);
                     }
 
-                    if (blockId == BlockRegistry.Get("glowstone").Id)
+                    if (blockId == level.Content.Blocks.Get("glowstone").Id)
                     {
                         ++GlowstoneNeighbors;
                     }
@@ -72,7 +72,7 @@ internal class GlowstoneClusterFeature : Feature
 
                 if (GlowstoneNeighbors == 1)
                 {
-                    level.Writer.SetBlock(genX, genY, genZ, BlockRegistry.Get("glowstone").Id, 0, false);
+                    level.Writer.SetBlock(genX, genY, genZ, level.Content.Blocks.Get("glowstone").Id, 0, false);
                 }
             }
         }

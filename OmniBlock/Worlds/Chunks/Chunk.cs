@@ -997,5 +997,5 @@ public class Chunk
 
     public virtual bool IsEmpty() => false;
 
-    public void Fill() => BlockSource.Fill(Blocks);
+    public void Fill() => BlockSource.Fill(Blocks, World.Content.Blocks);
 }

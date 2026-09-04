@@ -30,9 +30,9 @@ internal class SugarCanePatchFeature : Feature
 
                 for (int h = 0; h < height; ++h)
                 {
-                    if (BlockRegistry.Get("sugar_cane").CanGrow(new OnTickEvent(level, genX, y + h, genZ, level.Reader.GetBlockMeta(genX, y + h, genZ), level.Reader.GetBlockId(genX, y + h, genZ))))
+                    if (level.Content.Blocks.Get("sugar_cane").CanGrow(new OnTickEvent(level, genX, y + h, genZ, level.Reader.GetBlockMeta(genX, y + h, genZ), level.Reader.GetBlockId(genX, y + h, genZ))))
                     {
-                        level.Writer.SetBlock(genX, y + h, genZ, BlockRegistry.Get("sugar_cane").Id, 0, false);
+                        level.Writer.SetBlock(genX, y + h, genZ, level.Content.Blocks.Get("sugar_cane").Id, 0, false);
                     }
                 }
             }

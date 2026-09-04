@@ -7,10 +7,10 @@ namespace OmniBlock.Worlds.Generation.Generators.Carvers;
 
 internal class CaveCarver : Carver
 {
-    protected void CarveCavesInChunk(int chunkX, int chunkZ, byte[] blocks, double offsetX, double offsetY, double offsetZ) =>
-        CarveCaves(chunkX, chunkZ, blocks, offsetX, offsetY, offsetZ, 1.0F + Rand.NextFloat() * 6.0F, 0.0F, 0.0F, -1, -1, 0.5D);
+    protected void CarveCavesInChunk(int chunkX, int chunkZ, byte[] blocks, IBlockRuntimeView blocksView, double offsetX, double offsetY, double offsetZ) =>
+        CarveCaves(chunkX, chunkZ, blocks, blocksView, offsetX, offsetY, offsetZ, 1.0F + Rand.NextFloat() * 6.0F, 0.0F, 0.0F, -1, -1, 0.5D);
 
-    protected void CarveCaves(int chunkX, int chunkZ, byte[] blocks, double offsetX, double offsetY, double offsetZ, float tunnelRadius, float yaw, float pitch, int tunnelStep, int tunnelLength, double verticalScale)
+    protected void CarveCaves(int chunkX, int chunkZ, byte[] blocks, IBlockRuntimeView blocksView, double offsetX, double offsetY, double offsetZ, float tunnelRadius, float yaw, float pitch, int tunnelStep, int tunnelLength, double verticalScale)
     {
         double chunkCenterX = chunkX * 16 + 8;
         double chunkCenterZ = chunkZ * 16 + 8;
@@ -58,8 +58,8 @@ internal class CaveCarver : Carver
             yawSpeed += (caveRand.NextFloat() - caveRand.NextFloat()) * caveRand.NextFloat() * 4.0F;
             if (!isStartingPoint && tunnelStep == branchStep && tunnelRadius > 1.0F)
             {
-                CarveCaves(chunkX, chunkZ, blocks, offsetX, offsetY, offsetZ, caveRand.NextFloat() * 0.5F + 0.5F, yaw - (float)Math.PI * 0.5F, pitch / 3.0F, tunnelStep, tunnelLength, 1.0D);
-                CarveCaves(chunkX, chunkZ, blocks, offsetX, offsetY, offsetZ, caveRand.NextFloat() * 0.5F + 0.5F, yaw + (float)Math.PI * 0.5F, pitch / 3.0F, tunnelStep, tunnelLength, 1.0D);
+                CarveCaves(chunkX, chunkZ, blocks, blocksView, offsetX, offsetY, offsetZ, caveRand.NextFloat() * 0.5F + 0.5F, yaw - (float)Math.PI * 0.5F, pitch / 3.0F, tunnelStep, tunnelLength, 1.0D);
+                CarveCaves(chunkX, chunkZ, blocks, blocksView, offsetX, offsetY, offsetZ, caveRand.NextFloat() * 0.5F + 0.5F, yaw + (float)Math.PI * 0.5F, pitch / 3.0F, tunnelStep, tunnelLength, 1.0D);
                 return;
             }
 
@@ -124,7 +124,7 @@ internal class CaveCarver : Carver
                                 int blockIndex = (blockX * 16 + blockZ) * 128 + blockY;
                                 if (blockY >= 0 && blockY < 128)
                                 {
-                                    if (blocks[blockIndex] == BlockRegistry.Get("flowing_water").Id || blocks[blockIndex] == BlockRegistry.Get("water").Id)
+                                    if (blocks[blockIndex] == blocksView.Get("flowing_water").Id || blocks[blockIndex] == blocksView.Get("water").Id)
                                     {
                                         waterIsPresent = true;
                                     }
@@ -157,23 +157,23 @@ internal class CaveCarver : Carver
                                         if (localY > -0.7D && localX * localX + localY * localY + localZ * localZ < 1.0D)
                                         {
                                             byte blockType = blocks[blockIndex];
-                                            if (blockType == BlockRegistry.Get("grass_block").Id)
+                                            if (blockType == blocksView.Get("grass_block").Id)
                                             {
                                                 isGrassBlock = true;
                                             }
 
-                                            if (blockType == BlockRegistry.Get("stone").Id || blockType == BlockRegistry.Get("dirt").Id || blockType == BlockRegistry.Get("grass_block").Id)
+                                            if (blockType == blocksView.Get("stone").Id || blockType == blocksView.Get("dirt").Id || blockType == blocksView.Get("grass_block").Id)
                                             {
                                                 if (blockY < 10)
                                                 {
-                                                    blocks[blockIndex] = (byte)BlockRegistry.Get("flowing_lava").Id;
+                                                    blocks[blockIndex] = (byte)blocksView.Get("flowing_lava").Id;
                                                 }
                                                 else
                                                 {
                                                     blocks[blockIndex] = 0;
-                                                    if (isGrassBlock && blocks[blockIndex - 1] == BlockRegistry.Get("dirt").Id)
+                                                    if (isGrassBlock && blocks[blockIndex - 1] == blocksView.Get("dirt").Id)
                                                     {
-                                                        blocks[blockIndex - 1] = (byte)BlockRegistry.Get("grass_block").Id;
+                                                        blocks[blockIndex - 1] = (byte)blocksView.Get("grass_block").Id;
                                                     }
                                                 }
                                             }
@@ -211,7 +211,7 @@ internal class CaveCarver : Carver
             int branchCount = 1;
             if (Rand.NextInt(4) == 0)
             {
-                CarveCavesInChunk(centerChunkX, centerChunkZ, blocks, caveX, caveY, caveZ);
+                CarveCavesInChunk(centerChunkX, centerChunkZ, blocks, world.Content.Blocks, caveX, caveY, caveZ);
                 branchCount += Rand.NextInt(4);
             }
 
@@ -220,7 +220,7 @@ internal class CaveCarver : Carver
                 float yaw = Rand.NextFloat() * (float)Math.PI * 2.0F;
                 float pitch = (Rand.NextFloat() - 0.5F) * 2.0F / 8.0F;
                 float tunnelRadius = Rand.NextFloat() * 2.0F + Rand.NextFloat();
-                CarveCaves(centerChunkX, centerChunkZ, blocks, caveX, caveY, caveZ, tunnelRadius, yaw, pitch, 0, 0, 1.0D);
+                CarveCaves(centerChunkX, centerChunkZ, blocks, world.Content.Blocks, caveX, caveY, caveZ, tunnelRadius, yaw, pitch, 0, 0, 1.0D);
             }
         }
     }

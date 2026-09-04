@@ -237,7 +237,7 @@ internal class RegionChunkStorage : IChunkStorage
                 }
 
                 int blockId = tickTag.GetInteger("i");
-                if (blockId <= 0 || !BlockRegistry.TryGetByProtocolId(blockId, out _))
+                if (blockId <= 0 || !world.Content.Blocks.TryGetByProtocolId(blockId, out _))
                 {
                     continue;
                 }

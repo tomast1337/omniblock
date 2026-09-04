@@ -1,5 +1,6 @@
 using System.Text;
 using OmniBlock.Blocks;
+using OmniBlock.Registries;
 
 namespace OmniBlock.Worlds.Gen.Flat;
 
@@ -67,7 +68,7 @@ public class FlatGeneratorInfo
         return sb.ToString();
     }
 
-    private static FlatLayerInfo? ParseLayer(string input, int minY)
+    private static FlatLayerInfo? ParseLayer(string input, int minY, IBlockRuntimeView blocks)
     {
         string[] parts = input.Split('x');
         int count = 1;
@@ -90,7 +91,7 @@ public class FlatGeneratorInfo
                 meta = int.Parse(blockParts[1]);
             }
 
-            if (!BlockRegistry.TryGetByProtocolId(blockId, out _))
+            if (!blocks.TryGetByProtocolId(blockId, out _))
             {
                 blockId = 0;
                 meta = 0;
@@ -106,11 +107,14 @@ public class FlatGeneratorInfo
         return new FlatLayerInfo(count, blockId, meta) { MinY = minY };
     }
 
-    public static FlatGeneratorInfo CreateFromString(string input)
+    public static FlatGeneratorInfo CreateFromString(string input) =>
+        CreateFromString(input, ContentRuntime.Current.Blocks);
+
+    public static FlatGeneratorInfo CreateFromString(string input, IBlockRuntimeView blocks)
     {
         if (string.IsNullOrEmpty(input))
         {
-            return GetDefault();
+            return GetDefault(blocks);
         }
 
         string[] parts = input.Split(';');
@@ -125,7 +129,7 @@ public class FlatGeneratorInfo
             int currentY = 0;
             foreach (string layerStr in layers)
             {
-                FlatLayerInfo? layer = ParseLayer(layerStr, currentY);
+                FlatLayerInfo? layer = ParseLayer(layerStr, currentY, blocks);
                 if (layer != null)
                 {
                     info.FlatLayers.Add(layer);
@@ -174,16 +178,19 @@ public class FlatGeneratorInfo
         return info;
     }
 
-    public static FlatGeneratorInfo GetDefault()
+    public static FlatGeneratorInfo GetDefault() =>
+        GetDefault(ContentRuntime.Current.Blocks);
+
+    public static FlatGeneratorInfo GetDefault(IBlockRuntimeView blocks)
     {
         FlatGeneratorInfo info = new()
         {
             Biome = 1
         };
 
-        info.FlatLayers.Add(new FlatLayerInfo(1, BlockRegistry.Get("bedrock").Id));
-        info.FlatLayers.Add(new FlatLayerInfo(2, BlockRegistry.Get("dirt").Id));
-        info.FlatLayers.Add(new FlatLayerInfo(1, BlockRegistry.Get("grass_block").Id));
+        info.FlatLayers.Add(new FlatLayerInfo(1, blocks.Get("bedrock").Id));
+        info.FlatLayers.Add(new FlatLayerInfo(2, blocks.Get("dirt").Id));
+        info.FlatLayers.Add(new FlatLayerInfo(1, blocks.Get("grass_block").Id));
         info.UpdateLayerHeights();
         info.WorldFeatures["village"] = [];
         return info;
