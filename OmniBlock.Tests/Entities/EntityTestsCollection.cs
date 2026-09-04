@@ -31,7 +31,7 @@ public sealed class EntityTestsFixture
 
             // Trigger class initialization in a stable order for tests.
             _ = ContentRuntime.Current.Items.Get("omniblock:stick").Id;
-            _ = BlockRegistry.Get("stone").Id;
+            _ = TestBlocks.Get("stone").Id;
 
             s_initialized = true;
         }

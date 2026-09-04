@@ -19,25 +19,25 @@ public sealed class BlockLeavesTests
     public void OnTick_DecayCheck_ComparesAgainstRealLogAndLeavesIds()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("log").Id);
-        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("leaves").Id, 8);
+        world.ReaderWriter.SetInitial(0, 63, 0, TestBlocks.Get("log").Id);
+        world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("leaves").Id, 8);
 
-        BlockRegistry.Get("leaves").OnTick(Tick(world));
+        TestBlocks.Get("leaves").OnTick(Tick(world));
 
         Assert.Equal(0, world.Reader.GetBlockMeta(0, 64, 0) & 8);
     }
 
     [Fact]
     public void GetDroppedItemId_IsSapling()
-        => Assert.Equal(BlockRegistry.Get("sapling").Id, BlockRegistry.Get("leaves").GetDroppedItemId(0));
+        => Assert.Equal(TestBlocks.Get("sapling").Id, TestBlocks.Get("leaves").GetDroppedItemId(0));
 
     [Fact]
     public void OnTick_CustomTrunk_DecaysAgainstConfiguredTrunkNotVanillaLog()
     {
         FakeWorldContext world = new();
-        Block leavesBlock = BlockRegistry.Get("leaves");
-        Block customTrunk = BlockRegistry.Get("stone");
-        Block sapling = BlockRegistry.Get("sapling");
+        Block leavesBlock = TestBlocks.Get("leaves");
+        Block customTrunk = TestBlocks.Get("stone");
+        Block sapling = TestBlocks.Get("sapling");
         Item shears = ContentRuntime.Current.Items.Get("omniblock:shears");
 
         world.ReaderWriter.SetInitial(0, 63, 0, customTrunk.Id);
@@ -52,12 +52,12 @@ public sealed class BlockLeavesTests
     [Fact]
     public void GetDroppedItemId_CustomSapling_ReturnsConfiguredItem()
     {
-        Block log = BlockRegistry.Get("log");
-        Block sand = BlockRegistry.Get("sand");
+        Block log = TestBlocks.Get("log");
+        Block sand = TestBlocks.Get("sand");
         Item shears = ContentRuntime.Current.Items.Get("omniblock:shears");
 
         LeavesBehavior behavior = new(log, sand, shears, fancyTextures: [0, 0, 0, 0], fastTextures: [0, 0, 0, 0]);
-        Assert.Equal(sand.Id, behavior.GetDroppedItemId(BlockRegistry.Get("leaves"), 0, 0));
+        Assert.Equal(sand.Id, behavior.GetDroppedItemId(TestBlocks.Get("leaves"), 0, 0));
     }
 
     // No built-in default and no null fallback: an omitted or unknown "trunk"/"sapling"/

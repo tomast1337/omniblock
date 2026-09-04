@@ -16,7 +16,7 @@ public sealed class BlockFactoryArrayTests
     [Fact]
     public void Leaves_MultiSlotEntry_SharesSameInstanceAcrossAllListedSlots()
     {
-        Block leaves = BlockRegistry.Get("leaves");
+        Block leaves = TestBlocks.Get("leaves");
         Assert.Same((object?)leaves.Ticker, (object?)leaves.Lifecycle);
         Assert.Same((object?)leaves.Ticker, (object?)leaves.Visuals);
     }
@@ -24,14 +24,14 @@ public sealed class BlockFactoryArrayTests
     [Fact]
     public void Log_MultiSlotEntry_SharesSameInstanceAcrossAllListedSlots()
     {
-        Block log = BlockRegistry.Get("log");
+        Block log = TestBlocks.Get("log");
         Assert.Same((object?)log.Visuals, (object?)log.Lifecycle);
     }
 
     [Fact]
     public void Fire_MultiSlotEntry_SharesSameInstanceAcrossAllListedSlots()
     {
-        Block fire = BlockRegistry.Get("fire");
+        Block fire = TestBlocks.Get("fire");
         Assert.Same((object?)fire.Ticker, (object?)fire.Physics);
         Assert.Same((object?)fire.Ticker, (object?)fire.Lifecycle);
     }
@@ -39,7 +39,7 @@ public sealed class BlockFactoryArrayTests
     [Fact]
     public void Wheat_MultiSlotEntry_SharesSameInstanceAcrossAllListedSlots()
     {
-        Block wheat = BlockRegistry.Get("wheat");
+        Block wheat = TestBlocks.Get("wheat");
         Assert.Same((object?)wheat.Ticker, (object?)wheat.Physics);
         Assert.Same((object?)wheat.Ticker, (object?)wheat.Lifecycle);
         Assert.Same((object?)wheat.Ticker, (object?)wheat.Visuals);
@@ -48,7 +48,7 @@ public sealed class BlockFactoryArrayTests
     [Fact]
     public void Farmland_MultiSlotEntry_SharesSameInstanceAcrossAllListedSlots()
     {
-        Block farmland = BlockRegistry.Get("farmland");
+        Block farmland = TestBlocks.Get("farmland");
         Assert.Same((object?)farmland.Ticker, (object?)farmland.Physics);
         Assert.Same((object?)farmland.Ticker, (object?)farmland.Interactable);
         Assert.Same((object?)farmland.Ticker, (object?)farmland.Lifecycle);

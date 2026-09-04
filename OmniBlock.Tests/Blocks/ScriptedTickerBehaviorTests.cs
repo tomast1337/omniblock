@@ -14,38 +14,38 @@ public sealed class ScriptedTickerBehaviorTests
     public void OnTick_WithRegisteredHook_InvokesHookWithPrimitiveArgs()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(1, 64, 2, BlockRegistry.Get("stone").Id, meta: 3);
+        world.ReaderWriter.SetInitial(1, 64, 2, TestBlocks.Get("stone").Id, meta: 3);
 
         (TickHost Host, int X, int Y, int Z, int Meta, int BlockId)? captured = null;
         ScriptTickHookRegistry.Register("test:capture_hook",
             (host, x, y, z, meta, blockId) => captured = (host, x, y, z, meta, blockId));
 
         ScriptedTickerBehavior behavior = new("test:capture_hook");
-        behavior.OnTick(BlockRegistry.Get("stone"),
-            Tick(world, 1, 64, 2, meta: 3, blockId: BlockRegistry.Get("stone").Id));
+        behavior.OnTick(TestBlocks.Get("stone"),
+            Tick(world, 1, 64, 2, meta: 3, blockId: TestBlocks.Get("stone").Id));
 
         Assert.NotNull(captured);
-        Assert.Equal((1, 64, 2, 3, BlockRegistry.Get("stone").Id), (captured!.Value.X, captured.Value.Y, captured.Value.Z, captured.Value.Meta, captured.Value.BlockId));
+        Assert.Equal((1, 64, 2, 3, TestBlocks.Get("stone").Id), (captured!.Value.X, captured.Value.Y, captured.Value.Z, captured.Value.Meta, captured.Value.BlockId));
     }
 
     [Fact]
     public void TickHost_ReadsAndWritesThroughToTheWorld()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(5, 64, 5, BlockRegistry.Get("stone").Id, meta: 0);
+        world.ReaderWriter.SetInitial(5, 64, 5, TestBlocks.Get("stone").Id, meta: 0);
 
         ScriptTickHookRegistry.Register("test:mutate_hook", (host, x, y, z, _, _) =>
         {
-            Assert.Equal(BlockRegistry.Get("stone").Id, host.GetBlockId(x, y, z));
-            host.SetBlock(x, y, z, BlockRegistry.Get("dirt").Id);
+            Assert.Equal(TestBlocks.Get("stone").Id, host.GetBlockId(x, y, z));
+            host.SetBlock(x, y, z, TestBlocks.Get("dirt").Id);
             host.SetBlockMeta(x, y, z, 7);
         });
 
         ScriptedTickerBehavior behavior = new("test:mutate_hook");
-        behavior.OnTick(BlockRegistry.Get("stone"),
-            Tick(world, 5, 64, 5, meta: 0, blockId: BlockRegistry.Get("stone").Id));
+        behavior.OnTick(TestBlocks.Get("stone"),
+            Tick(world, 5, 64, 5, meta: 0, blockId: TestBlocks.Get("stone").Id));
 
-        Assert.Equal(BlockRegistry.Get("dirt").Id, world.Reader.GetBlockId(5, 64, 5));
+        Assert.Equal(TestBlocks.Get("dirt").Id, world.Reader.GetBlockId(5, 64, 5));
         Assert.Equal(7, world.Reader.GetBlockMeta(5, 64, 5));
     }
 
@@ -53,13 +53,13 @@ public sealed class ScriptedTickerBehaviorTests
     public void OnTick_WithUnregisteredHookKey_DoesNothing()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("stone").Id);
 
         ScriptedTickerBehavior behavior = new("test:never_registered_hook_key");
 
-        behavior.OnTick(BlockRegistry.Get("stone"),
-            Tick(world, 0, 64, 0, meta: 0, blockId: BlockRegistry.Get("stone").Id));
+        behavior.OnTick(TestBlocks.Get("stone"),
+            Tick(world, 0, 64, 0, meta: 0, blockId: TestBlocks.Get("stone").Id));
 
-        Assert.Equal(BlockRegistry.Get("stone").Id, world.Reader.GetBlockId(0, 64, 0));
+        Assert.Equal(TestBlocks.Get("stone").Id, world.Reader.GetBlockId(0, 64, 0));
     }
 }

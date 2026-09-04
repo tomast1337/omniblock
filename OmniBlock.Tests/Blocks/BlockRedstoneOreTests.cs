@@ -12,8 +12,8 @@ public sealed class BlockRedstoneOreTests
     public void OnTick_ConfiguredLitOre_RevertsToConfiguredUnlitOre()
     {
         FakeWorldContext world = new();
-        Block customUnlit = BlockRegistry.Get("stone");
-        Block customLit = BlockRegistry.Get("glowstone");
+        Block customUnlit = TestBlocks.Get("stone");
+        Block customLit = TestBlocks.Get("glowstone");
         world.ReaderWriter.SetInitial(0, 64, 0, customLit.Id);
 
         RedstoneOreBehavior behavior = new(customUnlit, customLit);
@@ -26,9 +26,9 @@ public sealed class BlockRedstoneOreTests
     public void OnTick_VanillaLitRedstoneOreNotInCustomConfig_DoesNotRevert()
     {
         FakeWorldContext world = new();
-        Block customUnlit = BlockRegistry.Get("stone");
-        Block customLit = BlockRegistry.Get("glowstone");
-        Block vanillaLit = BlockRegistry.Get("lit_redstone_ore");
+        Block customUnlit = TestBlocks.Get("stone");
+        Block customLit = TestBlocks.Get("glowstone");
+        Block vanillaLit = TestBlocks.Get("lit_redstone_ore");
         world.ReaderWriter.SetInitial(0, 64, 0, vanillaLit.Id);
 
         RedstoneOreBehavior behavior = new(customUnlit, customLit);
@@ -41,8 +41,8 @@ public sealed class BlockRedstoneOreTests
     public void OnUse_ConfiguredUnlitOre_LightsToConfiguredLitOre()
     {
         FakeWorldContext world = new();
-        Block customUnlit = BlockRegistry.Get("stone");
-        Block customLit = BlockRegistry.Get("glowstone");
+        Block customUnlit = TestBlocks.Get("stone");
+        Block customLit = TestBlocks.Get("glowstone");
         world.ReaderWriter.SetInitial(0, 64, 0, customUnlit.Id);
 
         RedstoneOreBehavior behavior = new(customUnlit, customLit);

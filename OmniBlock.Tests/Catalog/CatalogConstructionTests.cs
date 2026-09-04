@@ -17,7 +17,7 @@ public sealed class CatalogConstructionTests
 
         foreach (BlockDefinition definition in loader)
         {
-            Block block = BlockRegistry.Get(definition.Name);
+            Block block = TestBlocks.Get(definition.Name);
             Assert.Equal(definition.ProtocolId, block.Id);
 
             foreach (JsonElement behavior in definition.Behaviors)

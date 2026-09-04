@@ -30,7 +30,7 @@ public sealed class EntityMobScenarioTests
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 15, 0, 15, 63);
         Entity sand = TestEntityCatalog.ByName("fallingsand").Create(world);
-        sand.Behaviors.Find<SettleAsBlockBehavior>()!.SetBlock(sand, BlockRegistry.Get("sand").Id);
+        sand.Behaviors.Find<SettleAsBlockBehavior>()!.SetBlock(sand, TestBlocks.Get("sand").Id);
         sand.SetPositionAndAngles(8.5, 72.0, 8.5, 0.0F, 0.0F);
         Assert.True(world.Entities.SpawnEntity(sand));
         EntityTestHarness.AdvanceGameTicks(world, 150);

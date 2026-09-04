@@ -8,13 +8,13 @@ public sealed class BlockLeverTests
     public void OnUse_TogglesPoweredBitInMetadata()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(-1, 64, 0, BlockRegistry.Get("stone").Id); // support for facing=1
-        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("lever").Id, 1);
+        world.ReaderWriter.SetInitial(-1, 64, 0, TestBlocks.Get("stone").Id); // support for facing=1
+        world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("lever").Id, 1);
 
-        bool firstUse = BlockRegistry.Get("lever").OnUse(new OnUseEvent(world, null!, 0, 64, 0));
+        bool firstUse = TestBlocks.Get("lever").OnUse(new OnUseEvent(world, null!, 0, 64, 0));
         int poweredMeta = world.Reader.GetBlockMeta(0, 64, 0);
 
-        bool secondUse = BlockRegistry.Get("lever").OnUse(new OnUseEvent(world, null!, 0, 64, 0));
+        bool secondUse = TestBlocks.Get("lever").OnUse(new OnUseEvent(world, null!, 0, 64, 0));
         int unpoweredMeta = world.Reader.GetBlockMeta(0, 64, 0);
 
         Assert.True(firstUse);
@@ -27,11 +27,11 @@ public sealed class BlockLeverTests
     public void PoweredLever_StrongPowersAttachedSide()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(-1, 64, 0, BlockRegistry.Get("stone").Id);
-        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("lever").Id, 9); // facing=1, powered
+        world.ReaderWriter.SetInitial(-1, 64, 0, TestBlocks.Get("stone").Id);
+        world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("lever").Id, 9); // facing=1, powered
 
-        bool strongPowerOnAttachedSide = BlockRegistry.Get("lever").IsStrongPoweringSide(world.Reader, 0, 64, 0, 5);
-        bool strongPowerOnOtherSide = BlockRegistry.Get("lever").IsStrongPoweringSide(world.Reader, 0, 64, 0, 4);
+        bool strongPowerOnAttachedSide = TestBlocks.Get("lever").IsStrongPoweringSide(world.Reader, 0, 64, 0, 5);
+        bool strongPowerOnOtherSide = TestBlocks.Get("lever").IsStrongPoweringSide(world.Reader, 0, 64, 0, 4);
 
         Assert.True(strongPowerOnAttachedSide);
         Assert.False(strongPowerOnOtherSide);
@@ -41,11 +41,11 @@ public sealed class BlockLeverTests
     public void NeighborUpdate_WhenSupportRemoved_DropsLever()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(-1, 64, 0, BlockRegistry.Get("stone").Id);
-        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("lever").Id, 1); // attached to west block
+        world.ReaderWriter.SetInitial(-1, 64, 0, TestBlocks.Get("stone").Id);
+        world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("lever").Id, 1); // attached to west block
 
         world.ReaderWriter.SetBlock(-1, 64, 0, 0);
-        BlockRegistry.Get("lever").NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 1, BlockRegistry.Get("stone").Id));
+        TestBlocks.Get("lever").NeighborUpdate(new OnTickEvent(world, 0, 64, 0, 1, TestBlocks.Get("stone").Id));
 
         Assert.Equal(0, world.Reader.GetBlockId(0, 64, 0));
     }

@@ -10,10 +10,10 @@ public sealed class BlockReedTests
     public void CanPlaceAt_ConfiguredGroundNextToWater_ReturnsTrue()
     {
         FakeWorldContext world = new();
-        Block reeds = BlockRegistry.Get("sugar_cane");
-        Block customGround = BlockRegistry.Get("stone");
+        Block reeds = TestBlocks.Get("sugar_cane");
+        Block customGround = TestBlocks.Get("stone");
         world.ReaderWriter.SetInitial(0, 63, 0, customGround.Id);
-        world.ReaderWriter.SetInitial(1, 63, 0, BlockRegistry.Get("water").Id);
+        world.ReaderWriter.SetInitial(1, 63, 0, TestBlocks.Get("water").Id);
 
         ReedBehavior behavior = new([customGround]);
 
@@ -24,8 +24,8 @@ public sealed class BlockReedTests
     public void CanPlaceAt_ConfiguredGroundWithoutWater_ReturnsFalse()
     {
         FakeWorldContext world = new();
-        Block reeds = BlockRegistry.Get("sugar_cane");
-        Block customGround = BlockRegistry.Get("stone");
+        Block reeds = TestBlocks.Get("sugar_cane");
+        Block customGround = TestBlocks.Get("stone");
         world.ReaderWriter.SetInitial(0, 63, 0, customGround.Id);
 
         ReedBehavior behavior = new([customGround]);
@@ -37,10 +37,10 @@ public sealed class BlockReedTests
     public void CanPlaceAt_VanillaGroundNotInCustomConfig_ReturnsFalse()
     {
         FakeWorldContext world = new();
-        Block reeds = BlockRegistry.Get("sugar_cane");
-        Block customGround = BlockRegistry.Get("stone");
-        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("dirt").Id);
-        world.ReaderWriter.SetInitial(1, 63, 0, BlockRegistry.Get("water").Id);
+        Block reeds = TestBlocks.Get("sugar_cane");
+        Block customGround = TestBlocks.Get("stone");
+        world.ReaderWriter.SetInitial(0, 63, 0, TestBlocks.Get("dirt").Id);
+        world.ReaderWriter.SetInitial(1, 63, 0, TestBlocks.Get("water").Id);
 
         ReedBehavior behavior = new([customGround]);
 

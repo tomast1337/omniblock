@@ -17,9 +17,9 @@ public sealed class BlockBatch7Tests
     public void PortalBehavior_Create_ConfiguredBlocks_BuildsPortalInFrame()
     {
         FakeWorldContext world = new();
-        Block obsidian = BlockRegistry.Get("obsidian");
-        Block fire = BlockRegistry.Get("fire");
-        Block netherPortal = BlockRegistry.Get("nether_portal");
+        Block obsidian = TestBlocks.Get("obsidian");
+        Block fire = TestBlocks.Get("fire");
+        Block netherPortal = TestBlocks.Get("nether_portal");
 
         // 4-wide, 5-tall obsidian frame enclosing a 2x3 empty interior at x=1..2, y=1..3.
         for (int x = 0; x <= 3; x++)
@@ -42,9 +42,9 @@ public sealed class BlockBatch7Tests
     public void PortalBehavior_Create_NoObsidianFrame_ReturnsFalse()
     {
         FakeWorldContext world = new();
-        Block obsidian = BlockRegistry.Get("obsidian");
-        Block fire = BlockRegistry.Get("fire");
-        Block netherPortal = BlockRegistry.Get("nether_portal");
+        Block obsidian = TestBlocks.Get("obsidian");
+        Block fire = TestBlocks.Get("fire");
+        Block netherPortal = TestBlocks.Get("nether_portal");
 
         Assert.False(PortalBehavior.Create(world.Reader, world.Writer, 1, 1, 0, obsidian, fire, netherPortal));
     }
@@ -53,10 +53,10 @@ public sealed class BlockBatch7Tests
     public void RedstoneWireBehavior_IsPowerProviderOrWire_ConfiguredConductor_ReturnsTrue()
     {
         FakeWorldContext world = new();
-        Block wire = BlockRegistry.Get("redstone_wire");
-        Block customConductor = BlockRegistry.Get("torch");
-        Block repeater = BlockRegistry.Get("repeater");
-        Block poweredRepeater = BlockRegistry.Get("powered_repeater");
+        Block wire = TestBlocks.Get("redstone_wire");
+        Block customConductor = TestBlocks.Get("torch");
+        Block repeater = TestBlocks.Get("repeater");
+        Block poweredRepeater = TestBlocks.Get("powered_repeater");
         world.ReaderWriter.SetInitial(0, 64, 0, customConductor.Id);
 
         RedstoneWireBehavior behavior = new(wire, [customConductor], repeater, poweredRepeater);
@@ -69,17 +69,17 @@ public sealed class BlockBatch7Tests
     public void RedstoneWireBehavior_IsPowerProviderOrWire_VanillaLeverNotInCustomConfig_ChecksCanEmitInstead()
     {
         FakeWorldContext world = new();
-        Block wire = BlockRegistry.Get("redstone_wire");
-        Block customConductor = BlockRegistry.Get("torch");
-        Block repeater = BlockRegistry.Get("repeater");
-        Block poweredRepeater = BlockRegistry.Get("powered_repeater");
-        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("lever").Id);
+        Block wire = TestBlocks.Get("redstone_wire");
+        Block customConductor = TestBlocks.Get("torch");
+        Block repeater = TestBlocks.Get("repeater");
+        Block poweredRepeater = TestBlocks.Get("powered_repeater");
+        world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("lever").Id);
 
         RedstoneWireBehavior behavior = new(wire, [customConductor], repeater, poweredRepeater);
         behavior.BindRuntime(OmniBlock.Registries.ContentRuntime.Current.Blocks);
 
         // Lever isn't in the custom conductor list, but it still falls through to
-        // BlockRegistry.GetByProtocolId(id).canEmitRedstonePower(), which is independently true for levers.
+        // Blocks.GetByProtocolId(id).canEmitRedstonePower(), which is independently true for levers.
         Assert.True(behavior.IsPowerProviderOrWire(world.Reader, 0, 64, 0, -1));
     }
 

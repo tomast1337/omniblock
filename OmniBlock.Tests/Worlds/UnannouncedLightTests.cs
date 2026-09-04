@@ -62,7 +62,7 @@ public sealed class UnannouncedLightTests
         RecordingListener announced = new();
         server.Broadcaster.AddWorldAccess(announced);
 
-        server.Writer.SetBlock(8, PlacedY, 8, BlockRegistry.Get("stone").Id, 0);
+        server.Writer.SetBlock(8, PlacedY, 8, TestBlocks.Get("stone").Id, 0);
         server.DrainLighting();
 
         Replay(announced, server, client);
@@ -84,7 +84,7 @@ public sealed class UnannouncedLightTests
         RecordingListener announced = new();
         server.Broadcaster.AddWorldAccess(announced);
 
-        server.Writer.SetBlock(8, PlacedY, 8, BlockRegistry.Get("stone").Id, 0);
+        server.Writer.SetBlock(8, PlacedY, 8, TestBlocks.Get("stone").Id, 0);
         server.DrainLighting();
 
         Assert.Contains((8, PlacedY - 1, 8), announced.BlockUpdates);

@@ -121,7 +121,7 @@ public sealed class EntityBehaviorJsonTests
         """), ContentRuntime.Current.Items);
 
         ItemStack stack = Assert.Single(table.Roll(new LootContext(null, null, 0, System.Random.Shared)));
-        Assert.Equal(OmniBlock.Blocks.BlockRegistry.Get("wool").Id, stack.ItemId);
+        Assert.Equal(TestBlocks.Get("wool").Id, stack.ItemId);
     }
 
     [Fact]

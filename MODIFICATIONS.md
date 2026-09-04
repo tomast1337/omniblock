@@ -291,3 +291,4 @@ OmniBlock is derived from BetaSharp. Beginning with the first entry below, these
 - 2026-09-03 — Refactor item handling to use TestItemCatalog for loading item definitions and remove DefaultRegistries.Items (Nicolas Vyčas Nery; `2c4facebd970b6bca5af830a619d7cb22c74723b`)
 - 2026-09-03 — Refactor block access to use IBlockRuntimeView across various systems (Nicolas Vyčas Nery; `1438158d17d53b30551b6e42c3ab4b17e18f6a3b`)
 - 2026-09-04 — Refactor block retrieval to use level.Content.Blocks for consistency (Nicolas Vyčas Nery; `7c31b6c5e8be7a32bba14f9192264f7ce3a5ff62`)
+- 2026-09-04 — Refactor tests to use TestBlocks for block lookups (Nicolas Vyčas Nery; `d8646c6bcbaad807eb2057c16c44deb932166a14`)

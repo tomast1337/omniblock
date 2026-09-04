@@ -30,7 +30,7 @@ public sealed class ColorPaletteTextureTests
     [Fact]
     public void Wool_texture_per_block_meta_matches_the_legacy_palette_walk()
     {
-        Block wool = BlockRegistry.Get("wool");
+        Block wool = TestBlocks.Get("wool");
 
         for (int meta = 0; meta < 16; meta++)
         {

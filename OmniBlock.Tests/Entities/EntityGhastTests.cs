@@ -133,7 +133,7 @@ public sealed class EntityGhastTests
         Assert.True(world.Entities.SpawnEntity(ghast));
         Player(world, 20.5, 8.5);
 
-        int stone = BlockRegistry.Get("stone").Id;
+        int stone = TestBlocks.Get("stone").Id;
         for (int y = 60; y < 72; y++) world.ReaderWriter.SetBlock(14, y, 8, stone, 0);
 
         FireballAttackBehavior attack = ghast.Behaviors.Find<FireballAttackBehavior>()!;

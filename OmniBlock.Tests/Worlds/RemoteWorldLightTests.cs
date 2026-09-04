@@ -41,7 +41,7 @@ public sealed class RemoteWorldLightTests
         LightTestWorld world = new() { IsRemote = remote };
         world.Chunks.Add(0, 0);
 
-        int torchId = BlockRegistry.Get("torch").Id;
+        int torchId = TestBlocks.Get("torch").Id;
         world.Writer.SetBlock(8, 1, 8, torchId, 0);
 
         return world;

@@ -7,7 +7,7 @@ namespace OmniBlock.Blocks.Behaviors;
 
 internal sealed class BlockBehaviorProviderRegistry : IBlockBehaviorProviderRegistry
 {
-    public delegate object BehaviorFactory(JsonElement json);
+    private delegate object BehaviorFactory(JsonElement json);
 
     private readonly BehaviorBuildContext _context;
     private readonly FrozenDictionary<ResourceLocation, BehaviorFactory> _factories;

@@ -50,7 +50,7 @@ internal static class CatalogSnapshot
         snapshot.AppendLine("[blocks]");
         foreach (BlockDefinition definition in loader.OrderBy(static d => d.ProtocolId))
         {
-            Block block = BlockRegistry.Get(definition.Name);
+            Block block = TestBlocks.Get(definition.Name);
             snapshot.Append(definition.ProtocolId.ToString(CultureInfo.InvariantCulture)).Append(' ')
                 .Append(Key(definition.Namespace, definition.Name))
                 .Append(" material=").Append(definition.Material)

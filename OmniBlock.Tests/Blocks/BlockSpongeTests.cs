@@ -10,7 +10,7 @@ public sealed class BlockSpongeTests
     public void OnBreak_ConfiguredRadius_RunsWithoutError()
     {
         FakeWorldContext world = new();
-        Block sponge = BlockRegistry.Get("sponge");
+        Block sponge = TestBlocks.Get("sponge");
 
         SpongeLifecycleBehavior behavior = new(1);
         behavior.OnBreak(sponge, new OnBreakEvent(world, null, 0, 64, 0));

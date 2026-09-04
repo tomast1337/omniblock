@@ -10,8 +10,8 @@ public sealed class BlockLogTests
     public void OnBreak_DefaultConfig_MarksVanillaLeavesForDecay()
     {
         FakeWorldContext world = new();
-        Block logBlock = BlockRegistry.Get("log");
-        Block leavesBlock = BlockRegistry.Get("leaves");
+        Block logBlock = TestBlocks.Get("log");
+        Block leavesBlock = TestBlocks.Get("leaves");
 
         world.ReaderWriter.SetInitial(0, 64, 0, logBlock.Id);
         world.ReaderWriter.SetInitial(1, 64, 0, leavesBlock.Id);
@@ -25,9 +25,9 @@ public sealed class BlockLogTests
     public void OnBreak_CustomLeavesId_MarksConfiguredNeighborNotVanillaLeaves()
     {
         FakeWorldContext world = new();
-        Block logBlock = BlockRegistry.Get("log");
-        Block customLeaves = BlockRegistry.Get("wool");
-        Block vanillaLeaves = BlockRegistry.Get("leaves");
+        Block logBlock = TestBlocks.Get("log");
+        Block customLeaves = TestBlocks.Get("wool");
+        Block vanillaLeaves = TestBlocks.Get("leaves");
 
         world.ReaderWriter.SetInitial(0, 64, 0, logBlock.Id);
         world.ReaderWriter.SetInitial(1, 64, 0, customLeaves.Id);

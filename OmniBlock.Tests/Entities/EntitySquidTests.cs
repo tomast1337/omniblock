@@ -12,7 +12,7 @@ namespace OmniBlock.Tests.Entities;
 [Collection("EntityTests")]
 public sealed class EntitySquidTests
 {
-    private static readonly int s_water = BlockRegistry.Get("water").Id;
+    private static readonly int s_water = TestBlocks.Get("water").Id;
 
     private static EntityLiving Squid(FakeWorldContext world, double x = 8.5, double y = 65.0, double z = 8.5)
     {

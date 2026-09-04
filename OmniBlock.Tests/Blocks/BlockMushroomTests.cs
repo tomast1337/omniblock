@@ -12,8 +12,8 @@ public sealed class BlockMushroomTests
     public void CanGrow_ConfiguredSubstrate_ReturnsTrue()
     {
         FakeWorldContext world = new();
-        Block mushroom = BlockRegistry.Get("brown_mushroom");
-        Block customGround = BlockRegistry.Get("sand");
+        Block mushroom = TestBlocks.Get("brown_mushroom");
+        Block customGround = TestBlocks.Get("sand");
         world.ReaderWriter.SetInitial(0, 63, 0, customGround.Id);
 
         MushroomBehavior behavior = new([customGround], 100, 13);
@@ -25,9 +25,9 @@ public sealed class BlockMushroomTests
     public void CanGrow_VanillaSubstrateNotInCustomConfig_ReturnsFalse()
     {
         FakeWorldContext world = new();
-        Block mushroom = BlockRegistry.Get("brown_mushroom");
-        Block customGround = BlockRegistry.Get("sand");
-        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("dirt").Id);
+        Block mushroom = TestBlocks.Get("brown_mushroom");
+        Block customGround = TestBlocks.Get("sand");
+        world.ReaderWriter.SetInitial(0, 63, 0, TestBlocks.Get("dirt").Id);
 
         MushroomBehavior behavior = new([customGround], 100, 13);
 

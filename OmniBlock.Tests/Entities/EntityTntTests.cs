@@ -94,7 +94,7 @@ public sealed class EntityTntTests
     public void A_spent_fuse_detonates_and_breaks_the_world()
     {
         FakeWorldContext world = new();
-        int stone = BlockRegistry.Get("stone").Id;
+        int stone = TestBlocks.Get("stone").Id;
         world.Writer.SetBlock(9, 66, 8, stone);
         Entity tnt = Tnt(world);
         Fuse.SetFuse(tnt, 0);
@@ -111,7 +111,7 @@ public sealed class EntityTntTests
     {
         FakeWorldContext world = new();
         world.Rules.Set(DefaultRules.TntExplodes, new BoolValue(false));
-        int stone = BlockRegistry.Get("stone").Id;
+        int stone = TestBlocks.Get("stone").Id;
         world.Writer.SetBlock(9, 66, 8, stone);
         Entity tnt = Tnt(world);
         Fuse.SetFuse(tnt, 0);

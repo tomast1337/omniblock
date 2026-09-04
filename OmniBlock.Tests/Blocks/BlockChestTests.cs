@@ -13,8 +13,8 @@ public sealed class BlockChestTests
         FakeWorldContext world = new();
         PlaceNorthSouthDoubleChest(world);
 
-        Assert.Equal(s_terrain.IndexOf("chest_double_front_right"), BlockRegistry.Get("chest").GetTextureId(world.Reader, 0, 64, 0, Side.East));
-        Assert.Equal(s_terrain.IndexOf("chest_double_front_left"), BlockRegistry.Get("chest").GetTextureId(world.Reader, 0, 64, 1, Side.East));
+        Assert.Equal(s_terrain.IndexOf("chest_double_front_right"), TestBlocks.Get("chest").GetTextureId(world.Reader, 0, 64, 0, Side.East));
+        Assert.Equal(s_terrain.IndexOf("chest_double_front_left"), TestBlocks.Get("chest").GetTextureId(world.Reader, 0, 64, 1, Side.East));
     }
 
     [Fact]
@@ -22,16 +22,16 @@ public sealed class BlockChestTests
     {
         FakeWorldContext world = new();
         PlaceNorthSouthDoubleChest(world);
-        world.ReaderWriter.SetInitial(1, 64, 0, BlockRegistry.Get("stone").Id);
-        world.ReaderWriter.SetInitial(1, 64, 1, BlockRegistry.Get("stone").Id);
+        world.ReaderWriter.SetInitial(1, 64, 0, TestBlocks.Get("stone").Id);
+        world.ReaderWriter.SetInitial(1, 64, 1, TestBlocks.Get("stone").Id);
 
-        Assert.Equal(s_terrain.IndexOf("chest_double_front_left"), BlockRegistry.Get("chest").GetTextureId(world.Reader, 0, 64, 0, Side.West));
-        Assert.Equal(s_terrain.IndexOf("chest_double_front_right"), BlockRegistry.Get("chest").GetTextureId(world.Reader, 0, 64, 1, Side.West));
+        Assert.Equal(s_terrain.IndexOf("chest_double_front_left"), TestBlocks.Get("chest").GetTextureId(world.Reader, 0, 64, 0, Side.West));
+        Assert.Equal(s_terrain.IndexOf("chest_double_front_right"), TestBlocks.Get("chest").GetTextureId(world.Reader, 0, 64, 1, Side.West));
     }
 
     private static void PlaceNorthSouthDoubleChest(FakeWorldContext world)
     {
-        world.ReaderWriter.SetInitial(0, 64, 0, BlockRegistry.Get("chest").Id);
-        world.ReaderWriter.SetInitial(0, 64, 1, BlockRegistry.Get("chest").Id);
+        world.ReaderWriter.SetInitial(0, 64, 0, TestBlocks.Get("chest").Id);
+        world.ReaderWriter.SetInitial(0, 64, 1, TestBlocks.Get("chest").Id);
     }
 }

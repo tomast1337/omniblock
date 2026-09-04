@@ -8,7 +8,7 @@ namespace OmniBlock.Blocks.Behaviors;
 /// <summary>
 ///     Bed: a two-block structure (head + foot half, linked by meta direction) with sleep
 ///     interaction, explosion-on-no-spawn, and half-dependent drops (only the foot half drops the
-///     item). The meta helpers and <see cref="FindWakeUpPosition" /> are public statics consumed
+///     item). The meta-helpers and <see cref="FindWakeUpPosition" /> are public statics consumed
 ///     externally by <c>EntityPlayer</c>, <c>NaturalSpawner</c>, and the client's bed renderer.
 /// </summary>
 public sealed class BedBehavior(int bottom, int footTop, int footSide, int footEnd, int headTop, int headSide, int headEnd, Item bedItem) : IBlockInteractable, IBlockPhysics, IBlockLifecycle, IBlockVisuals

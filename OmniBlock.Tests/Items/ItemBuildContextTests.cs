@@ -14,7 +14,7 @@ public sealed class ItemBuildContextTests
     [Fact]
     public void Context_routes_every_dependency_through_injected_resolvers()
     {
-        Block block = BlockRegistry.Get("stone");
+        Block block = TestBlocks.Get("stone");
         Item item = ContentRuntime.Current.Items.Get("omniblock:stick");
         ToolMaterial tool = ToolMaterialRegistry.Get("iron");
         ArmorMaterial armor = ArmorMaterialRegistry.Get("diamond");
@@ -139,7 +139,7 @@ public sealed class ItemBuildContextTests
         Func<ResourceLocation, Item>? item = null,
         Func<string, int>? texture = null)
     {
-        Block block = BlockRegistry.Get("stone");
+        Block block = TestBlocks.Get("stone");
         Item fallbackItem = ContentRuntime.Current.Items.Get("omniblock:stick");
         return new ItemBuildContext(
             _ => block,

@@ -171,7 +171,7 @@ public sealed class EntityArrowTests
 
         Assert.True(Flight.BelongsToPlayer(restored));
         Assert.Equal(Flight.Shake(arrow), Flight.Shake(restored));
-        Assert.Equal(BlockRegistry.Get("stone").Id, nbt.GetByte("inTile") & 255);
+        Assert.Equal(TestBlocks.Get("stone").Id, nbt.GetByte("inTile") & 255);
         Assert.Equal(1, nbt.GetByte("inGround"));
     }
 

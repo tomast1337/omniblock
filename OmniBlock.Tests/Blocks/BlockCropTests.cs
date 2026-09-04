@@ -11,28 +11,28 @@ public sealed class BlockCropTests
     public void CanPlaceAt_CustomFarmland_MatchesConfiguredBlockNotVanillaFarmland()
     {
         FakeWorldContext world = new();
-        Block customSoil = BlockRegistry.Get("sand");
-        Block vanillaFarmland = BlockRegistry.Get("farmland");
+        Block customSoil = TestBlocks.Get("sand");
+        Block vanillaFarmland = TestBlocks.Get("farmland");
         Item wheat = ContentRuntime.Current.Items.Get("omniblock:wheat");
         Item seeds = ContentRuntime.Current.Items.Get("omniblock:seeds");
 
         world.ReaderWriter.SetInitial(0, 63, 0, customSoil.Id);
         CropBehavior behavior = new(customSoil, wheat, seeds, 0.7F, 15, 100, stages: [0, 0, 0, 0, 0, 0, 0, 0]);
 
-        Assert.True(behavior.CanPlaceAt(BlockRegistry.Get("wheat"), new CanPlaceAtContext(world, Side.Up, 0, 64, 0)));
+        Assert.True(behavior.CanPlaceAt(TestBlocks.Get("wheat"), new CanPlaceAtContext(world, Side.Up, 0, 64, 0)));
 
         world.ReaderWriter.SetInitial(0, 63, 0, vanillaFarmland.Id);
-        Assert.False(behavior.CanPlaceAt(BlockRegistry.Get("wheat"), new CanPlaceAtContext(world, Side.Up, 0, 64, 0)));
+        Assert.False(behavior.CanPlaceAt(TestBlocks.Get("wheat"), new CanPlaceAtContext(world, Side.Up, 0, 64, 0)));
     }
 
     [Fact]
     public void GetDroppedItemId_CustomWheat_ReturnsConfiguredItemOnlyWhenMature()
     {
         Item apple = ContentRuntime.Current.Items.Get("omniblock:apple");
-        CropBehavior behavior = new(BlockRegistry.Get("farmland"), apple, ContentRuntime.Current.Items.Get("omniblock:seeds"), 0.7F, 15, 100, stages: [0, 0, 0, 0, 0, 0, 0, 0]);
+        CropBehavior behavior = new(TestBlocks.Get("farmland"), apple, ContentRuntime.Current.Items.Get("omniblock:seeds"), 0.7F, 15, 100, stages: [0, 0, 0, 0, 0, 0, 0, 0]);
 
-        Assert.Equal(apple.Id, behavior.GetDroppedItemId(BlockRegistry.Get("wheat"), 7, 0));
-        Assert.Equal(-1, behavior.GetDroppedItemId(BlockRegistry.Get("wheat"), 3, 0));
+        Assert.Equal(apple.Id, behavior.GetDroppedItemId(TestBlocks.Get("wheat"), 7, 0));
+        Assert.Equal(-1, behavior.GetDroppedItemId(TestBlocks.Get("wheat"), 3, 0));
     }
 
     [Fact]

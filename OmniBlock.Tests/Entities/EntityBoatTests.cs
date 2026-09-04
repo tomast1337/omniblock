@@ -196,7 +196,7 @@ public sealed class EntityBoatTests
     {
         FakeWorldContext world = new();
         EntityTestHarness.PlaceStoneFloor(world, 0, 15, 0, 15, 63);
-        int snowId = BlockRegistry.Get("snow").Id;
+        int snowId = TestBlocks.Get("snow").Id;
         for (int x = 7; x <= 10; x++)
         {
             for (int z = 7; z <= 10; z++) world.Writer.SetBlock(x, 64, z, snowId);

@@ -12,7 +12,7 @@ public sealed class BlockFallingBlockTests
     public void CanFallThrough_ConfiguredObstacle_ReturnsTrue()
     {
         FakeWorldContext world = new();
-        Block customPassable = BlockRegistry.Get("torch");
+        Block customPassable = TestBlocks.Get("torch");
         world.ReaderWriter.SetInitial(0, 63, 0, customPassable.Id);
 
         FallingBlockBehavior behavior = Bound(new FallingBlockBehavior([customPassable], 32));
@@ -24,8 +24,8 @@ public sealed class BlockFallingBlockTests
     public void CanFallThrough_VanillaFireNotInCustomConfig_ReturnsFalse()
     {
         FakeWorldContext world = new();
-        Block customPassable = BlockRegistry.Get("torch");
-        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("fire").Id);
+        Block customPassable = TestBlocks.Get("torch");
+        world.ReaderWriter.SetInitial(0, 63, 0, TestBlocks.Get("fire").Id);
 
         FallingBlockBehavior behavior = Bound(new FallingBlockBehavior([customPassable], 32));
 
@@ -45,7 +45,7 @@ public sealed class BlockFallingBlockTests
     public void CanFallThrough_WaterMaterial_AlwaysReturnsTrue()
     {
         FakeWorldContext world = new();
-        world.ReaderWriter.SetInitial(0, 63, 0, BlockRegistry.Get("water").Id);
+        world.ReaderWriter.SetInitial(0, 63, 0, TestBlocks.Get("water").Id);
         FallingBlockBehavior behavior = Bound(new FallingBlockBehavior([], 32));
 
         Assert.True(behavior.CanFallThrough(Tick(world, 0, 63, 0)));

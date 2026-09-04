@@ -21,7 +21,7 @@ public sealed class ChunkBorderLightTests
     /// <summary>Fills one chunk with a solid roof, leaving everything under it in shadow.</summary>
     private static void Roofed(Chunk chunk)
     {
-        int stone = BlockRegistry.Get("stone").Id;
+        int stone = TestBlocks.Get("stone").Id;
 
         for (int localX = 0; localX < 16; localX++)
         {
@@ -75,8 +75,8 @@ public sealed class ChunkBorderLightTests
     [Fact]
     public void A_light_source_already_in_the_terrain_lights_the_chunk_it_loads_with()
     {
-        int glowstone = BlockRegistry.Get("glowstone").Id;
-        int luminance = BlockRegistry.GetLightEmission(glowstone);
+        int glowstone = TestBlocks.Get("glowstone").Id;
+        int luminance = TestBlocks.GetLightEmission(glowstone);
         Assert.True(luminance > 0, "test needs an emitting block");
 
         LightTestWorld world = new();
@@ -100,7 +100,7 @@ public sealed class ChunkBorderLightTests
     [Fact]
     public void A_light_source_survives_its_chunk_arriving_before_its_neighbors()
     {
-        int glowstone = BlockRegistry.Get("glowstone").Id;
+        int glowstone = TestBlocks.Get("glowstone").Id;
         LightTestWorld world = new();
 
         world.Chunks.Add(1, 0, chunk => chunk.Blocks[ChuckFormat.GetIndex(8, 8) + 40] = (byte)glowstone);
@@ -112,7 +112,7 @@ public sealed class ChunkBorderLightTests
             world.DrainLighting();
         }
 
-        Assert.Equal(BlockRegistry.GetLightEmission(glowstone), world.Lighting.GetBrightness(LightType.Block, 24, 40, 8));
+        Assert.Equal(TestBlocks.GetLightEmission(glowstone), world.Lighting.GetBrightness(LightType.Block, 24, 40, 8));
     }
 
     /// <summary>

@@ -25,8 +25,8 @@ public sealed class ContentRuntimeTests
     {
         ContentRuntime runtime = ContentRuntime.Current;
         Assert.NotEqual(0, runtime.Blocks.Count);
-        Assert.Same(BlockRegistry.Get("stone"), runtime.Blocks.Get("omniblock:stone"));
-        Assert.Same(BlockRegistry.Get("stone"), runtime.Blocks.GetByProtocolId(1));
+        Assert.Same(TestBlocks.Get("stone"), runtime.Blocks.Get("omniblock:stone"));
+        Assert.Same(TestBlocks.Get("stone"), runtime.Blocks.GetByProtocolId(1));
         Assert.NotNull(runtime.BlockBehaviorProviders);
     }
 
@@ -35,7 +35,7 @@ public sealed class ContentRuntimeTests
     {
         ContentRuntime runtime = ContentRuntime.Current;
         Item coal = ContentRuntime.Current.Items.Get("omniblock:coal");
-        Block stone = BlockRegistry.Get("stone");
+        Block stone = TestBlocks.Get("stone");
 
         Assert.Same(coal, runtime.Items.Get("omniblock:coal"));
         Assert.Same(coal, runtime.Items.GetByProtocolId(coal.Id));
@@ -72,11 +72,11 @@ public sealed class ContentRuntimeTests
     {
         ContentRuntime runtime = ContentRuntime.Current;
 
-        Assert.Same(runtime.Blocks.Get("omniblock:stone"), BlockRegistry.Get("stone"));
-        Assert.Same(runtime.Blocks.Get("omniblock:stone"), BlockRegistry.Get("omniblock:stone"));
-        Assert.Same(runtime.Blocks.GetByProtocolId(1), BlockRegistry.GetByProtocolId(1));
-        Assert.Throws<KeyNotFoundException>(() => BlockRegistry.Get("example:stone"));
-        Assert.Throws<KeyNotFoundException>(() => BlockRegistry.GetByProtocolId(256));
+        Assert.Same(runtime.Blocks.Get("omniblock:stone"), TestBlocks.Get("stone"));
+        Assert.Same(runtime.Blocks.Get("omniblock:stone"), TestBlocks.Get("omniblock:stone"));
+        Assert.Same(runtime.Blocks.GetByProtocolId(1), TestBlocks.GetByProtocolId(1));
+        Assert.Throws<KeyNotFoundException>(() => TestBlocks.Get("example:stone"));
+        Assert.Throws<KeyNotFoundException>(() => TestBlocks.GetByProtocolId(256));
     }
 
     [Fact]
@@ -86,17 +86,17 @@ public sealed class ContentRuntimeTests
         Block glass = ContentRuntime.Current.Blocks.Get("omniblock:glass");
         Block chest = ContentRuntime.Current.Blocks.Get("omniblock:chest");
 
-        Assert.Equal(glowstone.LightEmission, BlockRegistry.GetLightEmission(glowstone.Id));
-        Assert.Equal(glass.Opacity, BlockRegistry.GetOpacity(glass.Id));
-        Assert.Equal(glass.IsOpaque, BlockRegistry.IsOpaque(glass.Id));
-        Assert.Equal(chest.HasBlockEntity, BlockRegistry.HasBlockEntity(chest.Id));
-        Assert.True(BlockRegistry.AllowsVision(0));
-        Assert.False(BlockRegistry.IsOpaque(0));
-        Assert.Equal(0, BlockRegistry.GetOpacity(0));
-        Assert.Equal(0, BlockRegistry.GetLightEmission(0));
-        Assert.False(BlockRegistry.HasBlockEntity(0));
-        Assert.False(BlockRegistry.TicksRandomly(0));
-        Assert.False(BlockRegistry.IgnoresMetaUpdates(0));
+        Assert.Equal(glowstone.LightEmission, TestBlocks.GetLightEmission(glowstone.Id));
+        Assert.Equal(glass.Opacity, TestBlocks.GetOpacity(glass.Id));
+        Assert.Equal(glass.IsOpaque, TestBlocks.IsOpaque(glass.Id));
+        Assert.Equal(chest.HasBlockEntity, TestBlocks.HasBlockEntity(chest.Id));
+        Assert.True(TestBlocks.AllowsVision(0));
+        Assert.False(TestBlocks.IsOpaque(0));
+        Assert.Equal(0, TestBlocks.GetOpacity(0));
+        Assert.Equal(0, TestBlocks.GetLightEmission(0));
+        Assert.False(TestBlocks.HasBlockEntity(0));
+        Assert.False(TestBlocks.TicksRandomly(0));
+        Assert.False(TestBlocks.IgnoresMetaUpdates(0));
     }
 
     [Fact]
@@ -104,7 +104,7 @@ public sealed class ContentRuntimeTests
     {
         ContentRuntime published = ContentRuntime.Current;
         ContentRuntimeBuilder builder = ContentRuntimeBuilder.CreateBuiltIns();
-        Block stone = BlockRegistry.Get("stone");
+        Block stone = TestBlocks.Get("stone");
         BlockDefinition duplicate = new() { Name = "duplicate", ProtocolId = stone.Id };
         builder.AddBlock(duplicate, stone);
         builder.AddBlock(duplicate, stone);
@@ -128,7 +128,7 @@ public sealed class ContentRuntimeTests
     {
         ContentRuntimeBuilder firstBuilder = ContentRuntimeBuilder.CreateBuiltIns();
         ContentRuntimeBuilder secondBuilder = ContentRuntimeBuilder.CreateBuiltIns();
-        Block stone = BlockRegistry.Get("stone");
+        Block stone = TestBlocks.Get("stone");
         firstBuilder.AddBlock(Definition("first_stone", stone.Id), stone);
         secondBuilder.AddBlock(Definition("second_stone", stone.Id), stone);
 
@@ -165,8 +165,8 @@ public sealed class ContentRuntimeTests
     [Fact]
     public void Definition_order_does_not_change_the_finalized_catalog()
     {
-        Block stone = BlockRegistry.Get("stone");
-        Block dirt = BlockRegistry.Get("dirt");
+        Block stone = TestBlocks.Get("stone");
+        Block dirt = TestBlocks.Get("dirt");
         ContentRuntimeBuilder forwardBuilder = ContentRuntimeBuilder.CreateBuiltIns();
         forwardBuilder.AddBlock(Definition("stone", stone.Id), stone);
         forwardBuilder.AddBlock(Definition("dirt", dirt.Id), dirt);

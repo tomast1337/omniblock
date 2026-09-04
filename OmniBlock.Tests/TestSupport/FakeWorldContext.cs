@@ -190,7 +190,7 @@ public sealed class TestWorldEventBroadcaster(IWorldContext ctx, World world) : 
         int blockId = ctx.Reader.GetBlockId(x, y, z);
         if (blockId > 0)
         {
-            BlockRegistry.GetByProtocolId(blockId).OnBlockAction(new OnBlockActionEvent(ctx, soundType, pitch, x, y, z));
+            TestBlocks.GetByProtocolId(blockId).OnBlockAction(new OnBlockActionEvent(ctx, soundType, pitch, x, y, z));
         }
     }
 }
@@ -279,19 +279,19 @@ public sealed class FakeBlockGrid : IBlockReader, IBlockWriter
     public Material GetMaterial(int x, int y, int z)
     {
         int id = GetBlockId(x, y, z);
-        return id == 0 ? Material.Air : BlockRegistry.GetByProtocolId(id).Material;
+        return id == 0 ? Material.Air : TestBlocks.GetByProtocolId(id).Material;
     }
 
     public bool IsOpaque(int x, int y, int z)
     {
         int id = GetBlockId(x, y, z);
-        return id != 0 && BlockRegistry.IsOpaque(id);
+        return id != 0 && TestBlocks.IsOpaque(id);
     }
 
     public bool ShouldSuffocate(int x, int y, int z)
     {
         int id = GetBlockId(x, y, z);
-        return id != 0 && BlockRegistry.IsOpaque(id);
+        return id != 0 && TestBlocks.IsOpaque(id);
     }
 
     public BiomeSource GetBiomeSource() => throw new NotSupportedException();
@@ -381,7 +381,7 @@ public sealed class FakeBlockGrid : IBlockReader, IBlockWriter
     {
         int blockId = WriteMetaCell(x, y, z, meta);
 
-        if (BlockRegistry.IgnoresMetaUpdates(blockId & 255))
+        if (TestBlocks.IgnoresMetaUpdates(blockId & 255))
         {
             OnBlockChanged?.Invoke(x, y, z, blockId);
         }

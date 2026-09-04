@@ -16,10 +16,10 @@ public sealed class GameEventsTests
         GameEvents.BlockPlaced += handler;
         try
         {
-            world.ReaderWriter.SetInitial(101, 64, 202, BlockRegistry.Get("stone").Id, meta: 5);
-            BlockRegistry.Get("stone").OnPlaced(new OnPlacedEvent(world, null, Side.Up, Side.Up, 101, 64, 202));
+            world.ReaderWriter.SetInitial(101, 64, 202, TestBlocks.Get("stone").Id, meta: 5);
+            TestBlocks.Get("stone").OnPlaced(new OnPlacedEvent(world, null, Side.Up, Side.Up, 101, 64, 202));
 
-            Assert.Contains(captured, e => e is { X: 101, Y: 64, Z: 202, Meta: 5 } && e.BlockId == BlockRegistry.Get("stone").Id);
+            Assert.Contains(captured, e => e is { X: 101, Y: 64, Z: 202, Meta: 5 } && e.BlockId == TestBlocks.Get("stone").Id);
         }
         finally
         {
@@ -36,10 +36,10 @@ public sealed class GameEventsTests
         GameEvents.BlockBreak += handler;
         try
         {
-            world.ReaderWriter.SetInitial(103, 64, 204, BlockRegistry.Get("dirt").Id);
-            BlockRegistry.Get("dirt").OnBreak(new OnBreakEvent(world, null, 103, 64, 204));
+            world.ReaderWriter.SetInitial(103, 64, 204, TestBlocks.Get("dirt").Id);
+            TestBlocks.Get("dirt").OnBreak(new OnBreakEvent(world, null, 103, 64, 204));
 
-            Assert.Contains(captured, e => e is { X: 103, Y: 64, Z: 204 } && e.BlockId == BlockRegistry.Get("dirt").Id);
+            Assert.Contains(captured, e => e is { X: 103, Y: 64, Z: 204 } && e.BlockId == TestBlocks.Get("dirt").Id);
         }
         finally
         {
@@ -59,8 +59,8 @@ public sealed class GameEventsTests
         GameEvents.BlockPlaced += second;
         try
         {
-            world.ReaderWriter.SetInitial(107, 64, 208, BlockRegistry.Get("stone").Id);
-            BlockRegistry.Get("stone").OnPlaced(new OnPlacedEvent(world, null, Side.Up, Side.Up, 107, 64, 208));
+            world.ReaderWriter.SetInitial(107, 64, 208, TestBlocks.Get("stone").Id);
+            TestBlocks.Get("stone").OnPlaced(new OnPlacedEvent(world, null, Side.Up, Side.Up, 107, 64, 208));
 
             Assert.True(firstCount > 0);
             Assert.True(secondCount > 0);
